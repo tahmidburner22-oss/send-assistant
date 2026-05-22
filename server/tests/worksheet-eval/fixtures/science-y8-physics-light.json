@@ -1,0 +1,26 @@
+{
+  "id": "science-y8-physics-light",
+  "title": "Year 8 Physics — Reflection and refraction",
+  "bucket": "science",
+  "params": {
+    "subject": "Physics",
+    "topic": "Reflection and refraction",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}

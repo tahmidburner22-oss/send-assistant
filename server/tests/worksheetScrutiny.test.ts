@@ -2477,343 +2477,402 @@ describe("Phase 5 — enforceCurriculumAuthorityInvariants", () => {
 });
 
 
-// ─── PR-3 — Diagram coupling, distractor pedagogy, vocab tier, notation hygiene ──
+// ─── PR-2 — Pure post-validators: command-word, SI units, reading age ──────
 //
-// Audit items #4, #10, #13, #15. Four new pure / idempotent validators.
-// #16 (Common Mistakes for non-maths) is deferred to a follow-up PR — see
-// SESSION-HANDOFF.
+// Audit items #1, #2, #14. Three new validators, each pure / idempotent,
+// each warn-only (never rewrites question content). All three are wired
+// at the end of `runWorksheetPostValidators` so they audit the FINAL
+// post-validated content.
 
 import {
-  enforceDiagramDependencyIntegrity,
-  enforceDistractorPedagogy,
-  enforceTier3VocabularyDeclared,
-  enforceMathsNotationHygiene,
+  enforceCommandWordFidelity,
+  enforceSiUnitNormalisation,
+  enforceReadingAgeBudget,
 } from "../../client/src/lib/worksheetPostValidator";
 
 import {
-  normaliseMathNotation,
-  findNotationDrift,
-  isNotationClean,
-} from "../../client/src/lib/notationHygieneNormaliser";
+  findImperialUnits,
+  isUnitConversionTopic,
+  findOffSpecCommandWords,
+  extractLeadingCommandWord,
+  computeReadingAge,
+  countSyllables,
+  getCommandWordsForBoard,
+  COMMAND_WORDS_BY_BOARD,
+} from "../../client/src/lib/curriculumAuthorityPrompt";
 
-describe("PR-3 / normaliseMathNotation", () => {
-  it("rewrites Latin x to × between numeric operands", () => {
-    const r = normaliseMathNotation("Calculate 2 x 3");
-    expect(r.rewritten).toBe("Calculate 2 × 3");
-    expect(r.substitutions.length).toBe(1);
-    expect(r.substitutions[0].label).toBe("x→×");
+describe("PR-2 / extractLeadingCommandWord", () => {
+  it("strips checkbox + question number + bold prefix and returns the canonical verb", () => {
+    expect(extractLeadingCommandWord("[ ] 1. **Calculate** the value of x")).toBe("calculate");
+    expect(extractLeadingCommandWord("Q1. **Explain** why")).toBe("explain");
+    expect(extractLeadingCommandWord("3) Describe the process")).toBe("describe");
+    expect(extractLeadingCommandWord("**Show that** y = 2x + 3")).toBe("show that");
+    expect(extractLeadingCommandWord("Work out 7 × 8")).toBe("work out");
   });
 
-  it("does not rewrite x in narrative prose", () => {
-    expect(normaliseMathNotation("the bus to school takes ten minutes").rewritten)
-      .toBe("the bus to school takes ten minutes");
-    expect(normaliseMathNotation("solve x = 5").rewritten).toBe("solve x = 5");
+  it("returns null when the stem opens with a non-verb", () => {
+    expect(extractLeadingCommandWord("The diagram shows a circuit.")).toBeNull();
+    expect(extractLeadingCommandWord("")).toBeNull();
+    expect(extractLeadingCommandWord("   ")).toBeNull();
   });
 
-  it("rewrites hyphen to typographic minus only between numbers with surrounding whitespace", () => {
-    const r = normaliseMathNotation("Calculate 5 - 3");
-    expect(r.rewritten).toBe("Calculate 5 − 3");
-    expect(r.substitutions[0].label).toBe("-→−");
-  });
-
-  it("does not rewrite hyphens in compound words", () => {
-    expect(normaliseMathNotation("step-by-step method").rewritten).toBe("step-by-step method");
-    expect(normaliseMathNotation("a well-known fact").rewritten).toBe("a well-known fact");
-  });
-
-  it("rewrites letter o to ° after numeric values for temperature", () => {
-    const r = normaliseMathNotation("Heat to 90 o C");
-    expect(r.rewritten).toBe("Heat to 90°C");
-    expect(r.substitutions[0].label).toBe("o→°");
-    expect(normaliseMathNotation("Cool to 5oC").rewritten).toBe("Cool to 5°C");
-  });
-
-  it("is idempotent — running twice yields the same output", () => {
-    const input = "Calculate 2 x 3 and 5 - 1, heat to 90 o C.";
-    const r1 = normaliseMathNotation(input);
-    const r2 = normaliseMathNotation(r1.rewritten);
-    expect(r2.rewritten).toBe(r1.rewritten);
-    expect(r2.substitutions.length).toBe(0);
-  });
-
-  it("isNotationClean returns true for clean text", () => {
-    expect(isNotationClean("Calculate 2 × 3 = 6")).toBe(true);
-    expect(isNotationClean("Calculate 2 x 3 = 6")).toBe(false);
-  });
-
-  it("findNotationDrift returns the same substitutions list as normaliseMathNotation", () => {
-    const text = "Calculate 2 x 3";
-    expect(findNotationDrift(text).length).toBe(normaliseMathNotation(text).substitutions.length);
+  it("handles emoji + checkbox decorators (ADHD profile)", () => {
+    expect(extractLeadingCommandWord("🌿 [ ] **Calculate** the area")).toBe("calculate");
   });
 });
 
-describe("PR-3 / enforceMathsNotationHygiene", () => {
-  it("rewrites student-visible content and produces one warning per drift type", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [
-        { type: "q-short", title: "Q1", content: "Calculate 2 x 3" },
-        { type: "q-short", title: "Q2", content: "Calculate 5 - 1 and 4 x 2" },
-      ],
-    };
-    const r = enforceMathsNotationHygiene(ws);
-    expect(r.worksheet.sections![0].content).toBe("Calculate 2 × 3");
-    expect(r.worksheet.sections![1].content).toBe("Calculate 5 − 1 and 4 × 2");
-    expect(r.warnings.some(w => /x→×/.test(w))).toBe(true);
-    expect(r.warnings.some(w => /-→−/.test(w))).toBe(true);
+describe("PR-2 / getCommandWordsForBoard + COMMAND_WORDS_BY_BOARD", () => {
+  it("returns a non-empty list for every UK awarding-body code", () => {
+    for (const code of ["aqa", "edexcel", "pearson", "ocr", "wjec", "eduqas", "ccea", "cie", "cambridge"]) {
+      const list = getCommandWordsForBoard(code);
+      expect(list.length).toBeGreaterThan(20);
+      // The neutral set ("calculate", "describe", "explain") must be present
+      // on every per-board union.
+      expect(list).toContain("calculate");
+      expect(list).toContain("describe");
+      expect(list).toContain("explain");
+    }
   });
 
-  it("skips teacher-only sections", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [
-        { type: "mark-scheme", title: "MS", teacherOnly: true, content: "answer: 2 x 3 = 6" },
-      ],
-    };
-    const r = enforceMathsNotationHygiene(ws);
-    expect(r.worksheet.sections![0].content).toBe("answer: 2 x 3 = 6");
-    expect(r.warnings).toEqual([]);
+  it("returns the KS-neutral set for unknown / missing boards (so KS3 / KS1+2 stays permissive)", () => {
+    expect(getCommandWordsForBoard("").length).toBeGreaterThan(20);
+    expect(getCommandWordsForBoard(null as unknown as string).length).toBeGreaterThan(20);
+    expect(getCommandWordsForBoard("not-a-board").length).toBeGreaterThan(20);
   });
 
-  it("is idempotent — running twice yields the same content + no new warnings", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [{ type: "q-short", title: "Q1", content: "Calculate 2 x 3" }],
-    };
-    const r1 = enforceMathsNotationHygiene(ws);
-    const r2 = enforceMathsNotationHygiene(r1.worksheet);
-    expect(r2.worksheet.sections![0].content).toBe(r1.worksheet.sections![0].content);
-    expect(r2.warnings).toEqual([]);
+  it("freezes the per-board lists so they cannot be mutated at runtime", () => {
+    expect(() => {
+      (COMMAND_WORDS_BY_BOARD.aqa as string[]).push("badverb");
+    }).toThrow();
   });
 });
 
-describe("PR-3 / enforceDiagramDependencyIntegrity", () => {
-  it("warns when a question references Diagram A but no Diagram A section exists", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [
-        { type: "q-short", title: "Q1", content: "Use Diagram A to identify the labelled cell." },
-        { type: "q-short", title: "Q2", content: "What is shown in Diagram A?" },
-      ],
-    };
-    const r = enforceDiagramDependencyIntegrity(ws);
-    expect(r.warnings.length).toBeGreaterThanOrEqual(1);
-    expect(r.warnings[0]).toMatch(/Diagram A/);
-    expect(r.warnings[0]).toMatch(/Q1.*Q2|Q2.*Q1/);
+describe("PR-2 / findOffSpecCommandWords", () => {
+  it("flags invented verbs ('reflect on', 'brainstorm') as off-spec for AQA", () => {
+    const text = "1. Reflect on the diagram.\n2. Brainstorm three ideas.\n3. Calculate the area.";
+    const off = findOffSpecCommandWords(text, "aqa");
+    expect(off).toContain("reflect on");
+    expect(off).toContain("brainstorm");
+    expect(off).not.toContain("calculate");
   });
 
-  it("is a no-op when the referenced diagram section exists (matched by type)", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [
-        { type: "diagram-a", title: "Diagram A", content: "(diagram of cell)" },
-        { type: "q-short", title: "Q1", content: "Use Diagram A to identify the labelled cell." },
-      ],
-    };
-    expect(enforceDiagramDependencyIntegrity(ws).warnings).toEqual([]);
+  it("recognises Edexcel-specific 'Investigate' as on-spec for Edexcel but off-spec for AQA", () => {
+    const text = "1. Investigate how temperature affects rate.";
+    expect(findOffSpecCommandWords(text, "edexcel")).not.toContain("investigate");
+    expect(findOffSpecCommandWords(text, "aqa")).toContain("investigate");
+    // OCR doesn't carry "comment on" — Edexcel does.
+    const ocrText = "1. Comment on the changes shown.";
+    expect(findOffSpecCommandWords(ocrText, "ocr")).toContain("comment on");
+    expect(findOffSpecCommandWords(ocrText, "edexcel")).not.toContain("comment on");
   });
 
-  it("is a no-op when no question references any diagram", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [{ type: "q-short", title: "Q1", content: "What is 2 + 2?" }],
-    };
-    expect(enforceDiagramDependencyIntegrity(ws).warnings).toEqual([]);
+  it("deduplicates so a worksheet that opens 12 questions with one off-spec verb produces one entry", () => {
+    const text = Array.from({ length: 12 }, (_, i) => `${i + 1}. Reflect on this.`).join("\n");
+    const off = findOffSpecCommandWords(text, "aqa");
+    expect(off).toEqual(["reflect on"]);
   });
 
-  it("never rewrites content (warn-only)", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [{ type: "q-short", title: "Q1", content: "Use Diagram A here." }],
-    };
-    const r = enforceDiagramDependencyIntegrity(ws);
-    expect(r.worksheet.sections![0].content).toBe("Use Diagram A here.");
-  });
-
-  it("is idempotent", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [{ type: "q-short", title: "Q1", content: "Use Diagram A here." }],
-    };
-    const r1 = enforceDiagramDependencyIntegrity(ws);
-    const r2 = enforceDiagramDependencyIntegrity(r1.worksheet);
-    expect(r2.warnings).toEqual(r1.warnings);
+  it("ignores mid-sentence appearances — only flags leading verbs", () => {
+    const text = "1. Calculate the value. Then reflect on your answer.";
+    expect(findOffSpecCommandWords(text, "aqa")).toEqual([]);
   });
 });
 
-describe("PR-3 / enforceDistractorPedagogy", () => {
-  it("warns when an MCQ has duplicate distractors", () => {
+describe("PR-2 / enforceCommandWordFidelity", () => {
+  it("warns once per off-spec verb, listing the question numbers it appeared in", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
+      metadata: { examBoard: "aqa" },
       sections: [
-        {
-          type: "q-mcq",
-          title: "Q1",
-          content: "Which is the largest planet?\nA. Jupiter ✓\nB. Mars\nC. Mars\nD. Saturn",
-        },
+        { type: "q-short", title: "Q1", content: "Reflect on the diagram." },
+        { type: "q-short", title: "Q2", content: "Brainstorm three ideas." },
+        { type: "q-short", title: "Q3", content: "Reflect on your answer." },
+        { type: "q-short", title: "Q4", content: "Calculate the area." },
       ],
     };
-    const r = enforceDistractorPedagogy(ws);
-    expect(r.warnings.some(w => /duplicate distractor/i.test(w))).toBe(true);
+    const r = enforceCommandWordFidelity(ws);
+    expect(r.warnings.length).toBe(2);
+    const reflectWarn = r.warnings.find(w => w.includes('"reflect on"'))!;
+    expect(reflectWarn).toMatch(/Q1.*Q3|Q3.*Q1/);
+    const brainstormWarn = r.warnings.find(w => w.includes('"brainstorm"'))!;
+    expect(brainstormWarn).toMatch(/Q2/);
+    expect(r.warnings.some(w => w.includes('"calculate"'))).toBe(false);
   });
 
-  it("warns when a distractor is one character away from the correct answer (typo decoy)", () => {
+  it("is a no-op when every leading verb is on-spec", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
+      metadata: { examBoard: "aqa" },
       sections: [
-        {
-          type: "q-mcq",
-          title: "Q1",
-          content: "What is photosynthesis?\nA. The process plants use to make food ✓\nB. The process plants use to make foods\nC. Respiration\nD. Pollination",
-        },
+        { type: "q-short", title: "Q1", content: "Calculate the value of x." },
+        { type: "q-short", title: "Q2", content: "Explain why this happens." },
       ],
     };
-    const r = enforceDistractorPedagogy(ws);
-    expect(r.warnings.some(w => /one character away|typo decoy/i.test(w))).toBe(true);
+    expect(enforceCommandWordFidelity(ws).warnings).toEqual([]);
   });
 
-  it("warns on near-empty distractors", () => {
+  it("never rewrites question content (warn-only)", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
-      sections: [
-        {
-          type: "q-mcq",
-          title: "Q1",
-          content: "What is 2 + 2?\nA. 4 ✓\nB. 5\nC. 6\nD. -",
-        },
-      ],
+      metadata: { examBoard: "aqa" },
+      sections: [{ type: "q-short", title: "Q1", content: "Reflect on the diagram." }],
     };
-    const r = enforceDistractorPedagogy(ws);
-    expect(r.warnings.some(w => /near-empty distractor/i.test(w))).toBe(true);
-  });
-
-  it("is a no-op when distractors are substantive misconceptions", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [
-        {
-          type: "q-mcq",
-          title: "Q1",
-          content: "What is 4/8 in lowest terms?\nA. 1/2 ✓\nB. 4/8\nC. 2/4\nD. 0.5",
-        },
-      ],
-    };
-    expect(enforceDistractorPedagogy(ws).warnings).toEqual([]);
+    const r = enforceCommandWordFidelity(ws);
+    expect(r.worksheet.sections![0].content).toBe("Reflect on the diagram.");
   });
 
   it("is idempotent — running twice yields the same warnings", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
-      sections: [
-        {
-          type: "q-mcq",
-          title: "Q1",
-          content: "What is 2 + 2?\nA. 4 ✓\nB. 4\nC. 5\nD. 6",
-        },
-      ],
+      metadata: { examBoard: "aqa" },
+      sections: [{ type: "q-short", title: "Q1", content: "Reflect on the diagram." }],
     };
-    const r1 = enforceDistractorPedagogy(ws);
-    const r2 = enforceDistractorPedagogy(r1.worksheet);
+    const r1 = enforceCommandWordFidelity(ws);
+    const r2 = enforceCommandWordFidelity(r1.worksheet);
     expect(r2.warnings).toEqual(r1.warnings);
   });
 });
 
-describe("PR-3 / enforceTier3VocabularyDeclared", () => {
-  it("warns when a Tier 3 word in a question stem is not in the Word Bank", () => {
+describe("PR-2 / findImperialUnits", () => {
+  it("detects mph, °F, lbs, ft, in, miles, gallons", () => {
+    const tokens = findImperialUnits("Calculate the speed if the car travels at 60 mph in 32°F weather. The 100 lbs mass falls 5 ft.");
+    const labels = tokens.map(t => t.label).sort();
+    expect(labels).toContain("miles per hour");
+    expect(labels).toContain("degrees Fahrenheit");
+    expect(labels).toContain("pounds (mass)");
+    expect(labels).toContain("feet");
+  });
+
+  it("does not false-flag pounds-sterling", () => {
+    expect(findImperialUnits("The book costs 5 pounds sterling.")).toEqual([]);
+    expect(findImperialUnits("The total is 5 pounds (£5.00).")).toEqual([]);
+  });
+
+  it("deduplicates exact-match tokens", () => {
+    const tokens = findImperialUnits("60 mph and 60 mph again — both at 60 mph.");
+    const mphTokens = tokens.filter(t => t.label === "miles per hour");
+    expect(mphTokens.length).toBe(1);
+  });
+});
+
+describe("PR-2 / isUnitConversionTopic", () => {
+  it("returns true when topic + subject indicate unit conversion", () => {
+    expect(isUnitConversionTopic("Converting between metric and imperial units", "Mathematics")).toBe(true);
+    expect(isUnitConversionTopic("Imperial to metric units", "Maths")).toBe(true);
+    expect(isUnitConversionTopic("Converting units of measurement", "Mathematics")).toBe(true);
+  });
+
+  it("returns false for unrelated topics", () => {
+    expect(isUnitConversionTopic("Forces and motion", "Physics")).toBe(false);
+    expect(isUnitConversionTopic("Photosynthesis", "Biology")).toBe(false);
+  });
+});
+
+describe("PR-2 / enforceSiUnitNormalisation", () => {
+  it("warns per imperial unit type, listing the questions it appeared in", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
+      metadata: { subject: "Physics", topic: "Forces and motion" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "A car travels at 60 mph." },
+        { type: "q-short", title: "Q2", content: "The temperature is 32°F." },
+        { type: "q-short", title: "Q3", content: "Another car at 40 mph." },
+      ],
+    };
+    const r = enforceSiUnitNormalisation(ws);
+    expect(r.warnings.length).toBe(2);
+    const mphWarn = r.warnings.find(w => w.includes("miles per hour"))!;
+    expect(mphWarn).toMatch(/Q1.*Q3|Q3.*Q1/);
+    expect(mphWarn).toMatch(/km\/h/);
+    const fWarn = r.warnings.find(w => w.includes("Fahrenheit"))!;
+    expect(fWarn).toMatch(/Q2/);
+    expect(fWarn).toMatch(/°C/);
+  });
+
+  it("is a no-op when the topic IS unit conversion (legitimate imperial usage)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Mathematics", topic: "Converting between imperial and metric units" },
+      sections: [{ type: "q-short", title: "Q1", content: "Convert 60 mph to km/h." }],
+    };
+    expect(enforceSiUnitNormalisation(ws).warnings).toEqual([]);
+  });
+
+  it("never rewrites question content (warn-only)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces" },
+      sections: [{ type: "q-short", title: "Q1", content: "A car travels at 60 mph." }],
+    };
+    const r = enforceSiUnitNormalisation(ws);
+    expect(r.worksheet.sections![0].content).toBe("A car travels at 60 mph.");
+  });
+
+  it("is idempotent — running twice yields the same warnings", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces" },
+      sections: [{ type: "q-short", title: "Q1", content: "A car at 60 mph." }],
+    };
+    const r1 = enforceSiUnitNormalisation(ws);
+    const r2 = enforceSiUnitNormalisation(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-2 / countSyllables + computeReadingAge", () => {
+  it("counts syllables on common UK academic vocabulary correctly enough for FK", () => {
+    expect(countSyllables("calculate")).toBe(3);
+    expect(countSyllables("photosynthesis")).toBeGreaterThanOrEqual(4);
+    expect(countSyllables("the")).toBe(1);
+    expect(countSyllables("a")).toBe(1);
+    // Trailing silent 'e' rule: "make" = 1
+    expect(countSyllables("make")).toBe(1);
+    // Polysyllabic
+    expect(countSyllables("mitochondria")).toBeGreaterThanOrEqual(4);
+  });
+
+  it("returns null for empty / sub-5-word inputs", () => {
+    expect(computeReadingAge("")).toBeNull();
+    expect(computeReadingAge(null)).toBeNull();
+    expect(computeReadingAge("Too short.")).toBeNull();
+  });
+
+  it("computes plausible UK reading ages for KS2-level prose", () => {
+    // Simple Year 4-ish text. Should land in the 8-11 reading age band.
+    const text = "The cat sat on the mat. It was a sunny day. The cat was very happy.";
+    const r = computeReadingAge(text)!;
+    expect(r.readingAge).toBeGreaterThanOrEqual(5);
+    expect(r.readingAge).toBeLessThanOrEqual(12);
+  });
+
+  it("computes plausible UK reading ages for GCSE-level prose", () => {
+    const text =
+      "Photosynthesis is the process by which green plants convert light energy " +
+      "into chemical energy stored in glucose, demonstrating the fundamental " +
+      "principles of energy conservation in biological systems.";
+    const r = computeReadingAge(text)!;
+    expect(r.readingAge).toBeGreaterThanOrEqual(13);
+  });
+});
+
+describe("PR-2 / enforceReadingAgeBudget", () => {
+  it("warns when actual reading age exceeds declared by more than 1.5 years", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { yearGroup: "Year 7" },
       sections: [
         {
-          type: "vocabulary",
-          title: "Key Vocabulary",
-          content: "Photosynthesis: process of making food from light",
+          // GCSE-level prose declared as Year 7 (reading age ~11).
+          type: "q-short",
+          title: "Q1",
+          content:
+            "Photosynthesis is the biochemical process by which chlorophyll-containing organisms " +
+            "transform electromagnetic radiation into the chemical energy stored within glucose " +
+            "molecules, illustrating fundamental thermodynamic principles of biological systems.",
+          expectedReadingAge: 11,
         },
+      ],
+    };
+    const r = enforceReadingAgeBudget(ws);
+    expect(r.warnings.length).toBeGreaterThanOrEqual(1);
+    expect(r.warnings[0]).toMatch(/Q1/);
+    expect(r.warnings[0]).toMatch(/Reading age/);
+  });
+
+  it("is a no-op when actual reading age is within the 1.5-year tolerance", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { yearGroup: "Year 4" },
+      sections: [
         {
           type: "q-short",
           title: "Q1",
-          content: "Describe how photosynthesis relates to respiration in mitochondria.",
+          content: "The cat sat on the mat. It was a sunny day. The cat was very happy.",
+          expectedReadingAge: 9,
         },
       ],
     };
-    const r = enforceTier3VocabularyDeclared(ws);
-    // "respiration" and "mitochondria" are >= 11 chars and not in vocab
-    expect(r.warnings.some(w => /respiration/.test(w))).toBe(true);
-    expect(r.warnings.some(w => /mitochondria/.test(w))).toBe(true);
-    // "photosynthesis" IS in vocab — should NOT warn
-    expect(r.warnings.some(w => /photosynthesis/.test(w))).toBe(false);
+    const r = enforceReadingAgeBudget(ws);
+    expect(r.warnings).toEqual([]);
   });
 
-  it("is a no-op when the worksheet has no vocabulary section (KS1 / number-bond practice)", () => {
+  it("falls back to a year-group default when expectedReadingAge is missing", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
+      metadata: { yearGroup: "Year 7" },
       sections: [
-        { type: "q-short", title: "Q1", content: "Describe how photosynthesis works." },
+        {
+          type: "q-short",
+          title: "Q1",
+          content:
+            "Photosynthesis is the biochemical process by which chlorophyll-containing organisms " +
+            "transform electromagnetic radiation into the chemical energy stored within glucose " +
+            "molecules, illustrating fundamental thermodynamic principles of biological systems.",
+        },
       ],
     };
-    expect(enforceTier3VocabularyDeclared(ws).warnings).toEqual([]);
+    const r = enforceReadingAgeBudget(ws);
+    expect(r.warnings.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("does not flag everyday polysyllabic words on the stop list", () => {
+  it("never rewrites question content (warn-only)", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
+      metadata: { yearGroup: "Year 7" },
       sections: [
-        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push or pull" },
-        { type: "q-short", title: "Q1", content: "Investigate the force using a thermometer carefully." },
+        {
+          type: "q-short",
+          title: "Q1",
+          content:
+            "Photosynthesis is the biochemical process by which chlorophyll-containing organisms " +
+            "transform electromagnetic radiation into chemical energy stored within glucose molecules.",
+          expectedReadingAge: 11,
+        },
       ],
     };
-    const r = enforceTier3VocabularyDeclared(ws);
-    // "investigate" and "thermometer" are on the stop list
-    expect(r.warnings.some(w => /investigate/.test(w))).toBe(false);
-    expect(r.warnings.some(w => /thermometer/.test(w))).toBe(false);
+    const before = ws.sections![0].content;
+    const r = enforceReadingAgeBudget(ws);
+    expect(r.worksheet.sections![0].content).toBe(before);
   });
 
-  it("never rewrites content (warn-only)", () => {
+  it("is idempotent — running twice yields the same warnings", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
+      metadata: { yearGroup: "Year 7" },
       sections: [
-        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push or pull" },
-        { type: "q-short", title: "Q1", content: "Describe photosynthesis briefly." },
+        {
+          type: "q-short",
+          title: "Q1",
+          content:
+            "Photosynthesis is the biochemical process by which chlorophyll-containing organisms " +
+            "transform electromagnetic radiation into chemical energy.",
+          expectedReadingAge: 11,
+        },
       ],
     };
-    const before = ws.sections![1].content;
-    const r = enforceTier3VocabularyDeclared(ws);
-    expect(r.worksheet.sections![1].content).toBe(before);
-  });
-
-  it("is idempotent", () => {
-    const ws: PostValidatorWorksheet = {
-      title: "T",
-      sections: [
-        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push" },
-        { type: "q-short", title: "Q1", content: "Describe photosynthesis briefly." },
-      ],
-    };
-    const r1 = enforceTier3VocabularyDeclared(ws);
-    const r2 = enforceTier3VocabularyDeclared(r1.worksheet);
+    const r1 = enforceReadingAgeBudget(ws);
+    const r2 = enforceReadingAgeBudget(r1.worksheet);
     expect(r2.warnings).toEqual(r1.warnings);
   });
 });
 
-describe("PR-3 / runWorksheetPostValidators integration", () => {
-  it("the four new validators show up in the chain output", () => {
+describe("PR-2 / runWorksheetPostValidators integration", () => {
+  it("the three new validators show up in the chain output", () => {
     const ws: PostValidatorWorksheet = {
       title: "T",
-      metadata: { subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7" },
+      metadata: { subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa" },
       sections: [
-        { type: "vocabulary", title: "Key Vocabulary", content: "Multiplication: repeated addition" },
-        { type: "q-mcq", title: "Q1", content: "What is 3 x 4?\nA. 12 ✓\nB. 12\nC. 7\nD. 7" },
-        { type: "q-short", title: "Q2", content: "Use Diagram A to find the answer." },
+        { type: "q-short", title: "Q1", content: "Reflect on a car travelling at 60 mph." },
       ],
     };
     const r = runWorksheetPostValidators(ws, {
-      subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7",
+      subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa",
     });
-    // Notation hygiene rewrote `3 x 4` to `3 × 4`
-    expect(r.worksheet.sections![1].content).toMatch(/3 × 4/);
-    // Diagram integrity warned about missing Diagram A
-    expect(r.warnings.some(w => /Diagram A/.test(w))).toBe(true);
-    // Distractor pedagogy warned about duplicate distractors
-    expect(r.warnings.some(w => /duplicate distractor/i.test(w))).toBe(true);
+    // Command-word fidelity warning.
+    expect(r.warnings.some(w => /Command-word fidelity.*reflect on/i.test(w))).toBe(true);
+    // SI unit warning.
+    expect(r.warnings.some(w => /SI units.*miles per hour/i.test(w))).toBe(true);
   });
 });
 
@@ -3445,5 +3504,345 @@ describe("PR-4 / runWorksheetPostValidators — qaScore stamped on every output"
     expect((r.worksheet.metadata as any)?.qaScore?.total).toBeGreaterThan(0);
     expect((r.worksheet.metadata as any)?.qaScore?.total).toBeLessThanOrEqual(100);
     expect((r.worksheet.metadata as any)?.validationStatus).toMatch(/pass|warn|fail/);
+  });
+});
+
+// ─── PR-3 — Diagram coupling, distractor pedagogy, vocab tier, notation hygiene ──
+//
+// Audit items #4, #10, #13, #15. Four new pure / idempotent validators.
+// #16 (Common Mistakes for non-maths) is deferred to a follow-up PR — see
+// SESSION-HANDOFF.
+
+import {
+  enforceDiagramDependencyIntegrity,
+  enforceDistractorPedagogy,
+  enforceTier3VocabularyDeclared,
+  enforceMathsNotationHygiene,
+} from "../../client/src/lib/worksheetPostValidator";
+
+import {
+  normaliseMathNotation,
+  findNotationDrift,
+  isNotationClean,
+} from "../../client/src/lib/notationHygieneNormaliser";
+
+describe("PR-3 / normaliseMathNotation", () => {
+  it("rewrites Latin x to × between numeric operands", () => {
+    const r = normaliseMathNotation("Calculate 2 x 3");
+    expect(r.rewritten).toBe("Calculate 2 × 3");
+    expect(r.substitutions.length).toBe(1);
+    expect(r.substitutions[0].label).toBe("x→×");
+  });
+
+  it("does not rewrite x in narrative prose", () => {
+    expect(normaliseMathNotation("the bus to school takes ten minutes").rewritten)
+      .toBe("the bus to school takes ten minutes");
+    expect(normaliseMathNotation("solve x = 5").rewritten).toBe("solve x = 5");
+  });
+
+  it("rewrites hyphen to typographic minus only between numbers with surrounding whitespace", () => {
+    const r = normaliseMathNotation("Calculate 5 - 3");
+    expect(r.rewritten).toBe("Calculate 5 − 3");
+    expect(r.substitutions[0].label).toBe("-→−");
+  });
+
+  it("does not rewrite hyphens in compound words", () => {
+    expect(normaliseMathNotation("step-by-step method").rewritten).toBe("step-by-step method");
+    expect(normaliseMathNotation("a well-known fact").rewritten).toBe("a well-known fact");
+  });
+
+  it("rewrites letter o to ° after numeric values for temperature", () => {
+    const r = normaliseMathNotation("Heat to 90 o C");
+    expect(r.rewritten).toBe("Heat to 90°C");
+    expect(r.substitutions[0].label).toBe("o→°");
+    expect(normaliseMathNotation("Cool to 5oC").rewritten).toBe("Cool to 5°C");
+  });
+
+  it("is idempotent — running twice yields the same output", () => {
+    const input = "Calculate 2 x 3 and 5 - 1, heat to 90 o C.";
+    const r1 = normaliseMathNotation(input);
+    const r2 = normaliseMathNotation(r1.rewritten);
+    expect(r2.rewritten).toBe(r1.rewritten);
+    expect(r2.substitutions.length).toBe(0);
+  });
+
+  it("isNotationClean returns true for clean text", () => {
+    expect(isNotationClean("Calculate 2 × 3 = 6")).toBe(true);
+    expect(isNotationClean("Calculate 2 x 3 = 6")).toBe(false);
+  });
+
+  it("findNotationDrift returns the same substitutions list as normaliseMathNotation", () => {
+    const text = "Calculate 2 x 3";
+    expect(findNotationDrift(text).length).toBe(normaliseMathNotation(text).substitutions.length);
+  });
+});
+
+describe("PR-3 / enforceMathsNotationHygiene", () => {
+  it("rewrites student-visible content and produces one warning per drift type", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "q-short", title: "Q1", content: "Calculate 2 x 3" },
+        { type: "q-short", title: "Q2", content: "Calculate 5 - 1 and 4 x 2" },
+      ],
+    };
+    const r = enforceMathsNotationHygiene(ws);
+    expect(r.worksheet.sections![0].content).toBe("Calculate 2 × 3");
+    expect(r.worksheet.sections![1].content).toBe("Calculate 5 − 1 and 4 × 2");
+    expect(r.warnings.some(w => /x→×/.test(w))).toBe(true);
+    expect(r.warnings.some(w => /-→−/.test(w))).toBe(true);
+  });
+
+  it("skips teacher-only sections", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "mark-scheme", title: "MS", teacherOnly: true, content: "answer: 2 x 3 = 6" },
+      ],
+    };
+    const r = enforceMathsNotationHygiene(ws);
+    expect(r.worksheet.sections![0].content).toBe("answer: 2 x 3 = 6");
+    expect(r.warnings).toEqual([]);
+  });
+
+  it("is idempotent — running twice yields the same content + no new warnings", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Q1", content: "Calculate 2 x 3" }],
+    };
+    const r1 = enforceMathsNotationHygiene(ws);
+    const r2 = enforceMathsNotationHygiene(r1.worksheet);
+    expect(r2.worksheet.sections![0].content).toBe(r1.worksheet.sections![0].content);
+    expect(r2.warnings).toEqual([]);
+  });
+});
+
+describe("PR-3 / enforceDiagramDependencyIntegrity", () => {
+  it("warns when a question references Diagram A but no Diagram A section exists", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "q-short", title: "Q1", content: "Use Diagram A to identify the labelled cell." },
+        { type: "q-short", title: "Q2", content: "What is shown in Diagram A?" },
+      ],
+    };
+    const r = enforceDiagramDependencyIntegrity(ws);
+    expect(r.warnings.length).toBeGreaterThanOrEqual(1);
+    expect(r.warnings[0]).toMatch(/Diagram A/);
+    expect(r.warnings[0]).toMatch(/Q1.*Q2|Q2.*Q1/);
+  });
+
+  it("is a no-op when the referenced diagram section exists (matched by type)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "diagram-a", title: "Diagram A", content: "(diagram of cell)" },
+        { type: "q-short", title: "Q1", content: "Use Diagram A to identify the labelled cell." },
+      ],
+    };
+    expect(enforceDiagramDependencyIntegrity(ws).warnings).toEqual([]);
+  });
+
+  it("is a no-op when no question references any diagram", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Q1", content: "What is 2 + 2?" }],
+    };
+    expect(enforceDiagramDependencyIntegrity(ws).warnings).toEqual([]);
+  });
+
+  it("never rewrites content (warn-only)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Q1", content: "Use Diagram A here." }],
+    };
+    const r = enforceDiagramDependencyIntegrity(ws);
+    expect(r.worksheet.sections![0].content).toBe("Use Diagram A here.");
+  });
+
+  it("is idempotent", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Q1", content: "Use Diagram A here." }],
+    };
+    const r1 = enforceDiagramDependencyIntegrity(ws);
+    const r2 = enforceDiagramDependencyIntegrity(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-3 / enforceDistractorPedagogy", () => {
+  it("warns when an MCQ has duplicate distractors", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "Which is the largest planet?\nA. Jupiter ✓\nB. Mars\nC. Mars\nD. Saturn",
+        },
+      ],
+    };
+    const r = enforceDistractorPedagogy(ws);
+    expect(r.warnings.some(w => /duplicate distractor/i.test(w))).toBe(true);
+  });
+
+  it("warns when a distractor is one character away from the correct answer (typo decoy)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "What is photosynthesis?\nA. The process plants use to make food ✓\nB. The process plants use to make foods\nC. Respiration\nD. Pollination",
+        },
+      ],
+    };
+    const r = enforceDistractorPedagogy(ws);
+    expect(r.warnings.some(w => /one character away|typo decoy/i.test(w))).toBe(true);
+  });
+
+  it("warns on near-empty distractors", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "What is 2 + 2?\nA. 4 ✓\nB. 5\nC. 6\nD. -",
+        },
+      ],
+    };
+    const r = enforceDistractorPedagogy(ws);
+    expect(r.warnings.some(w => /near-empty distractor/i.test(w))).toBe(true);
+  });
+
+  it("is a no-op when distractors are substantive misconceptions", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "What is 4/8 in lowest terms?\nA. 1/2 ✓\nB. 4/8\nC. 2/4\nD. 0.5",
+        },
+      ],
+    };
+    expect(enforceDistractorPedagogy(ws).warnings).toEqual([]);
+  });
+
+  it("is idempotent — running twice yields the same warnings", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "What is 2 + 2?\nA. 4 ✓\nB. 4\nC. 5\nD. 6",
+        },
+      ],
+    };
+    const r1 = enforceDistractorPedagogy(ws);
+    const r2 = enforceDistractorPedagogy(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-3 / enforceTier3VocabularyDeclared", () => {
+  it("warns when a Tier 3 word in a question stem is not in the Word Bank", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "vocabulary",
+          title: "Key Vocabulary",
+          content: "Photosynthesis: process of making food from light",
+        },
+        {
+          type: "q-short",
+          title: "Q1",
+          content: "Describe how photosynthesis relates to respiration in mitochondria.",
+        },
+      ],
+    };
+    const r = enforceTier3VocabularyDeclared(ws);
+    // "respiration" and "mitochondria" are >= 11 chars and not in vocab
+    expect(r.warnings.some(w => /respiration/.test(w))).toBe(true);
+    expect(r.warnings.some(w => /mitochondria/.test(w))).toBe(true);
+    // "photosynthesis" IS in vocab — should NOT warn
+    expect(r.warnings.some(w => /photosynthesis/.test(w))).toBe(false);
+  });
+
+  it("is a no-op when the worksheet has no vocabulary section (KS1 / number-bond practice)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "q-short", title: "Q1", content: "Describe how photosynthesis works." },
+      ],
+    };
+    expect(enforceTier3VocabularyDeclared(ws).warnings).toEqual([]);
+  });
+
+  it("does not flag everyday polysyllabic words on the stop list", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push or pull" },
+        { type: "q-short", title: "Q1", content: "Investigate the force using a thermometer carefully." },
+      ],
+    };
+    const r = enforceTier3VocabularyDeclared(ws);
+    // "investigate" and "thermometer" are on the stop list
+    expect(r.warnings.some(w => /investigate/.test(w))).toBe(false);
+    expect(r.warnings.some(w => /thermometer/.test(w))).toBe(false);
+  });
+
+  it("never rewrites content (warn-only)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push or pull" },
+        { type: "q-short", title: "Q1", content: "Describe photosynthesis briefly." },
+      ],
+    };
+    const before = ws.sections![1].content;
+    const r = enforceTier3VocabularyDeclared(ws);
+    expect(r.worksheet.sections![1].content).toBe(before);
+  });
+
+  it("is idempotent", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push" },
+        { type: "q-short", title: "Q1", content: "Describe photosynthesis briefly." },
+      ],
+    };
+    const r1 = enforceTier3VocabularyDeclared(ws);
+    const r2 = enforceTier3VocabularyDeclared(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-3 / runWorksheetPostValidators integration", () => {
+  it("the four new validators show up in the chain output", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7" },
+      sections: [
+        { type: "vocabulary", title: "Key Vocabulary", content: "Multiplication: repeated addition" },
+        { type: "q-mcq", title: "Q1", content: "What is 3 x 4?\nA. 12 ✓\nB. 12\nC. 7\nD. 7" },
+        { type: "q-short", title: "Q2", content: "Use Diagram A to find the answer." },
+      ],
+    };
+    const r = runWorksheetPostValidators(ws, {
+      subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7",
+    });
+    // Notation hygiene rewrote `3 x 4` to `3 × 4`
+    expect(r.worksheet.sections![1].content).toMatch(/3 × 4/);
+    // Diagram integrity warned about missing Diagram A
+    expect(r.warnings.some(w => /Diagram A/.test(w))).toBe(true);
+    // Distractor pedagogy warned about duplicate distractors
+    expect(r.warnings.some(w => /duplicate distractor/i.test(w))).toBe(true);
   });
 });

@@ -1,0 +1,26 @@
+{
+  "id": "science-y11-physics-radioactivity",
+  "title": "Year 11 Physics — Half-life of radioactive isotopes",
+  "bucket": "science",
+  "params": {
+    "subject": "Physics",
+    "topic": "Half-life of radioactive isotopes",
+    "yearGroup": "Year 11",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    14,
+    18
+  ],
+  "estimatedTokens": 4000
+}

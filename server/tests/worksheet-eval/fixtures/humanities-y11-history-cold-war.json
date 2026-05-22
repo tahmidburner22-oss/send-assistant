@@ -1,0 +1,26 @@
+{
+  "id": "humanities-y11-history-cold-war",
+  "title": "Year 11 History — Origins of the Cold War",
+  "bucket": "humanities",
+  "params": {
+    "subject": "History",
+    "topic": "Origins of the Cold War",
+    "yearGroup": "Year 11",
+    "examBoard": "Edexcel",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    14,
+    18
+  ],
+  "estimatedTokens": 4000
+}

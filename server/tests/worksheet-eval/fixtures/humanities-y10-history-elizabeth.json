@@ -1,0 +1,26 @@
+{
+  "id": "humanities-y10-history-elizabeth",
+  "title": "Year 10 History — Elizabethan religious settlement",
+  "bucket": "humanities",
+  "params": {
+    "subject": "History",
+    "topic": "Elizabethan religious settlement",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    13,
+    17
+  ],
+  "estimatedTokens": 4000
+}

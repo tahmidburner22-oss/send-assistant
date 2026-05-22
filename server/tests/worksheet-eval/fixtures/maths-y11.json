@@ -1,0 +1,26 @@
+{
+  "id": "maths-y11",
+  "title": "Year 11 Maths — Simultaneous equations",
+  "bucket": "maths",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Simultaneous equations",
+    "yearGroup": "Year 11",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    14,
+    18
+  ],
+  "estimatedTokens": 4000
+}
