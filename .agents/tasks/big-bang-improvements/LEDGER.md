@@ -54,7 +54,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 
 | #  | Item                                                                                  | PR     | Status      |
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 39 | Server-side prompt unification (port manifesto into server/routes/ai.ts)              | PR-7   | not started |
+| 39 | Server-side prompt unification (port manifesto into server/routes/ai.ts)              | PR-7   | shipped — PR pending |
 | 40 | Prompt versioning + diff store                                                        | PR-11  | not started |
 | 41 | Structured-output retry with diagnostic-only re-prompt                                | PR-9   | not started |
 | 42 | Token budget transparency (PD13)                                                      | PR-9   | not started |
