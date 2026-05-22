@@ -46,7 +46,8 @@ export interface WorksheetSection {
     // Legacy types (kept for renderer compatibility)
     | "objective" | "example" | "guided" | "independent" | "answers"
     | "adaptations" | "review" | "teacher-notes" | "mark-scheme"
-    | "extension" | "prior-knowledge" | "misconceptions" | "self-reflection" | "diagnostic";
+    | "extension" | "prior-knowledge" | "misconceptions" | "self-reflection" | "diagnostic"
+    | "revision-tips";  // Phase 3 — examiner-voice revision tips section
   content: string;
   teacherOnly?: boolean;
   studentVisible?: boolean;    // spec §10.2 — explicit student visibility flag
@@ -1772,6 +1773,7 @@ function validatePlan(questions: QuestionPlan[], ageProfile: string): string[] {
 
 // ── SEND overlay spec ─────────────────────────────────────────────────────────
 interface SENDOverlay {
+  // Cosmetic / layout flags (existing)
   extraAnswerLinesMultiplier: number;
   simplifyLanguage: boolean;
   addStepScaffolds: boolean;
@@ -1782,8 +1784,22 @@ interface SENDOverlay {
   sentenceFrames: boolean;
   fontSizeBoost: number;
   lineHeightBoost: number;
+  // Phase 4 — Non-cosmetic pedagogical flags:
+  // HI: full topic summary block at top of each section (compensates for missed verbal instruction)
+  topicContextBlock: boolean;
+  // HI: every technical term in questions annotated with inline definition
+  glossaryInline: boolean;
+  // HI: exit ticket note clarifying no verbal sharing required
+  fullSelfContained: boolean;
+  // ADHD: tick-box before every question for visible progress
+  checkboxProgress: boolean;
+  // ADHD: brain break prompt midway through Section 1
+  brainBreakSection1: boolean;
+  // Anxiety / SEMH: positive framing on section titles and challenge label
+  positiveFraming: boolean;
+  // MLD / Dyscalculia: working memory aids (formula reference, number line) on calculation questions
+  workingMemoryAids: boolean;
 }
-
 const DEFAULT_SEND_OVERLAY: SENDOverlay = {
   extraAnswerLinesMultiplier: 1,
   simplifyLanguage: false,
@@ -1795,22 +1811,39 @@ const DEFAULT_SEND_OVERLAY: SENDOverlay = {
   sentenceFrames: false,
   fontSizeBoost: 0,
   lineHeightBoost: 0,
+  // Phase 4 defaults (all off)
+  topicContextBlock: false,
+  glossaryInline: false,
+  fullSelfContained: false,
+  checkboxProgress: false,
+  brainBreakSection1: false,
+  positiveFraming: false,
+  workingMemoryAids: false,
 };
-
 const SEND_OVERLAY_MAP: Record<string, Partial<SENDOverlay>> = {
   dyslexia:       { extraAnswerLinesMultiplier: 1.5, reducedDensity: true, fontSizeBoost: 1, lineHeightBoost: 0.3, maxWordsPerPrompt: 40 },
-  adhd:           { addStepScaffolds: true, reducedDensity: true, iconCues: true, maxWordsPerPrompt: 30 },
+  adhd:           { addStepScaffolds: true, reducedDensity: true, iconCues: true, maxWordsPerPrompt: 30,
+                    checkboxProgress: true, brainBreakSection1: true },
   asc:            { addStepScaffolds: true, reducedDensity: true, simplifyLanguage: true, maxWordsPerPrompt: 25 },
   asperger:       { addStepScaffolds: true, reducedDensity: true, simplifyLanguage: true, maxWordsPerPrompt: 30 },
-  mld:            { extraAnswerLinesMultiplier: 2, simplifyLanguage: true, addWordBanks: true, addStepScaffolds: true, reducedDensity: true, iconCues: true, fontSizeBoost: 1, lineHeightBoost: 0.2, sentenceFrames: true, maxWordsPerPrompt: 20 },
-  slcn:           { extraAnswerLinesMultiplier: 1.5, simplifyLanguage: true, addWordBanks: true, reducedDensity: true, iconCues: true, sentenceFrames: true, maxWordsPerPrompt: 20 },
+  mld:            { extraAnswerLinesMultiplier: 2, simplifyLanguage: true, addWordBanks: true, addStepScaffolds: true,
+                    reducedDensity: true, iconCues: true, fontSizeBoost: 1, lineHeightBoost: 0.2, sentenceFrames: true,
+                    maxWordsPerPrompt: 20, topicContextBlock: true, workingMemoryAids: true },
+  slcn:           { extraAnswerLinesMultiplier: 1.5, simplifyLanguage: true, addWordBanks: true, reducedDensity: true,
+                    iconCues: true, sentenceFrames: true, maxWordsPerPrompt: 20 },
   dyspraxia:      { extraAnswerLinesMultiplier: 2, reducedDensity: true, fontSizeBoost: 1, lineHeightBoost: 0.2, addStepScaffolds: true },
-  dyscalculia:    { extraAnswerLinesMultiplier: 2, addStepScaffolds: true, addWordBanks: true, reducedDensity: true, maxWordsPerPrompt: 30 },
+  dyscalculia:    { extraAnswerLinesMultiplier: 2, addStepScaffolds: true, addWordBanks: true, reducedDensity: true,
+                    maxWordsPerPrompt: 30, workingMemoryAids: true },
   vi:             { extraAnswerLinesMultiplier: 2, reducedDensity: true, fontSizeBoost: 6, lineHeightBoost: 0.3 },
-  hi:             { reducedDensity: true, iconCues: true, simplifyLanguage: true },
-  eal:            { addWordBanks: true, simplifyLanguage: true, reducedDensity: true, sentenceFrames: true, maxWordsPerPrompt: 25, addStepScaffolds: true },
-  anxiety:        { reducedDensity: true, addStepScaffolds: true, iconCues: true, fontSizeBoost: 1 },
-  "pda-odd":      { reducedDensity: true, simplifyLanguage: true, iconCues: true },
+  // HI: Phase 4 — full self-contained worksheet with topic summaries, inline glossary, no verbal reliance
+  hi:             { reducedDensity: true, iconCues: true, simplifyLanguage: true,
+                    topicContextBlock: true, glossaryInline: true, fullSelfContained: true },
+  eal:            { addWordBanks: true, simplifyLanguage: true, reducedDensity: true, sentenceFrames: true,
+                    maxWordsPerPrompt: 25, addStepScaffolds: true, glossaryInline: true },
+  // Anxiety / SEMH: Phase 4 — positive framing, invitational language, no pressure
+  anxiety:        { reducedDensity: true, addStepScaffolds: true, iconCues: true, fontSizeBoost: 1, positiveFraming: true },
+  semh:           { reducedDensity: true, addStepScaffolds: true, iconCues: true, fontSizeBoost: 1, positiveFraming: true },
+  "pda-odd":      { reducedDensity: true, simplifyLanguage: true, iconCues: true, positiveFraming: true },
   tourettes:      { reducedDensity: true },
   "older-learners":{ maxWordsPerPrompt: 50 },
 };
@@ -2385,17 +2418,19 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   interface PlanEntry { section: string; layout: LayoutFamily; marks: number; requiresDiagram: boolean; }
   const questionPlan: PlanEntry[] = [];
 
-  const sectionDefs = isPrimary
-    ? [
-        { key: "recall",      qs: 3 },
-        { key: "understanding", qs: 3 },
-        { key: "application", qs: 3 },
-      ]
-    : [
-        { key: "recall",      qs: 3 },
-        { key: "understanding", qs: 3 },
-        { key: "application", qs: 3 },
-      ];
+  // Phase 1 — Curriculum structure:
+  // Secondary: Section 1 = 6-8 questions (recall), Section 2 = 6-8 (understanding), Section 3 = 5 (exam-style)
+  // Primary:   Section 1 = 5 questions, Section 2 = 4 questions, Section 3 = 3 questions
+  // The number of questions in Section 1 and 2 is randomised within the range to ensure variety.
+  const sec1Count = isPrimary ? 5 : (difficulty === "foundation" || difficulty === "basic" ? 6 : difficulty === "higher" || difficulty === "stretch" ? 8 : 7);
+  const sec2Count = isPrimary ? 4 : (difficulty === "foundation" || difficulty === "basic" ? 6 : difficulty === "higher" || difficulty === "stretch" ? 8 : 7);
+  const sec3Count = isPrimary ? 3 : 5; // Section 3 is always 5 for secondary (exam-style)
+
+  const sectionDefs = [
+    { key: "recall",        qs: sec1Count },
+    { key: "understanding", qs: sec2Count },
+    { key: "application",  qs: sec3Count },
+  ];
 
   for (const sec of sectionDefs) {
     for (let q = 0; q < sec.qs; q++) {
@@ -2735,27 +2770,89 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── Phase 12: Self Reflection ─────────────────────────────────────────────
-  const reflectionTopics = [
-    `Understanding of ${topic}`,
-    "Using key vocabulary correctly",
-    "Applying knowledge to new problems",
-    "Explaining my reasoning clearly",
-    "Checking my work for errors",
-  ].slice(0, isPrimary ? 3 : 5);
+  // ── Phase 12: Self Reflection (Phase 2 — topic-specific, non-repetitive) ────
+  // Build topic-specific reflection criteria from the topic's vocabulary and objective.
+  // Each row targets a distinct skill so no two rows say the same thing.
+  const vocabSample = (topicData.vocabulary || []).slice(0, 3);
+  const reflectionTopics: string[] = isPrimary
+    ? [
+        `I can describe what ${topic} is in my own words`,
+        `I can name at least two key words for ${topic}`,
+        `I can give one example of ${topic} in real life`,
+      ]
+    : [
+        `I can state the learning objective for ${topic}`,
+        vocabSample.length >= 1 ? `I can define '${vocabSample[0]}' correctly` : `I can use the correct vocabulary for ${topic}`,
+        vocabSample.length >= 2 ? `I can explain the difference between '${vocabSample[0]}' and '${vocabSample[1]}'` : `I can explain a key concept in ${topic}`,
+        `I can apply my knowledge of ${topic} to an unfamiliar problem`,
+        `I can identify a common mistake students make in ${topic} and explain how to avoid it`,
+      ];
+
+  // Phase 4: positive framing for Anxiety/SEMH overlays
+  const reflectionLabel = sendOverlay.positiveFraming
+    ? "A  How did you get on today? (No pressure — be honest with yourself!)"
+    : "A  How confident do you feel? Tick the column that best describes you.";
+
+  const exitTicketLabel = sendOverlay.positiveFraming
+    ? `Exit Ticket: Write ONE thing you found interesting about ${topic} today in a single sentence:`
+    : `Exit Ticket: Write ONE thing you learned today about ${topic} in a single sentence:`;
+
+  // Phase 4: HI — clarify no verbal sharing needed
+  const hiNote = sendOverlay.fullSelfContained
+    ? "\n\u2139\ufe0f Note: You do not need to share your answer aloud. Write your response in the space below.\n"
+    : "";
 
   sections.push({
     title: "SELF REFLECTION",
     type: "reflection",
     content: [
-      "A  How confident do you feel about today’s learning objective?\n",
-      `Learning objective: ${topicData.objective}\n`,
-      reflectionTopics.map(t => `${t} | Not Yet | Getting There | Confident`).join("\n"),
+      `${reflectionLabel}\n`,
+      `TOPIC | NOT YET | GETTING THERE | CONFIDENT`,
+      reflectionTopics.map(t => `${t} | □ | □ | □`).join("\n"),
       "\nB  Written reflection:\n",
-      "One concept I feel confident about is ...\n",
-      "One area I still need to practise is ...\n",
-      "A question I still want to ask my teacher is ...\n",
-      "\nExit Ticket: Write ONE thing you learned today in one sentence:",
+      `One thing I now understand about ${topic} that I did not before is ...\n`,
+      `One part of ${topic} I still need to practise is ...\n`,
+      `A question I would like to ask my teacher about ${topic} is ...\n`,
+      hiNote,
+      `\n${exitTicketLabel}`,
+    ].join("\n"),
+  });
+
+  // ── Phase 3: Revision Tips (examiner-voice, topic-specific) ──────────────────
+  // Build 5 specific, actionable revision tips tied to this topic's vocabulary,
+  // common mistakes, and exam technique. These are NOT generic study advice.
+  const vocabForTips = (topicData.vocabulary || []).slice(0, 5);
+  const tipIntro = isPrimary
+    ? `Here are some ways to practise ${topic} at home:`
+    : `Examiner's top tips for ${topic} — what students lose marks on and how to avoid it:`;
+
+  const revisionTips: string[] = isPrimary
+    ? [
+        `Draw a picture that shows what ${topic} means and label it.`,
+        `Ask someone at home to quiz you on the key words: ${vocabForTips.slice(0, 3).join(", ")}.`,
+        `Write three sentences using the words: ${vocabForTips.slice(0, 3).join(", ")}.`,
+        `Find one real-life example of ${topic} and explain it to someone.`,
+        `Re-read your notes and highlight the most important fact about ${topic}.`,
+      ]
+    : [
+        `Learn the exact definitions of these key terms — examiners award marks for precision: ${vocabForTips.join("; ")}.`,
+        `When answering 'explain' questions on ${topic}, always state the cause AND the effect — one alone will not score full marks.`,
+        `Practise writing the ${/science|biology|chemistry|physics|maths?|mathematics|computing|geography/i.test(subject) ? "equations and formulae" : "key quotations and techniques"} for ${topic} from memory — these are frequently tested.`,
+        `Common examiner complaint: students describe ${topic} in vague terms. Use the exact vocabulary from the specification every time.`,
+        `For higher-mark questions on ${topic}, structure your answer as: Point → Evidence → Explanation (PEE) to ensure you address all mark-scheme criteria.`,
+      ];
+
+  sections.push({
+    title: `REVISION TIPS — ${topic.toUpperCase()}`,
+    type: "revision-tips",
+    content: [
+      tipIntro,
+      "",
+      ...revisionTips.map((tip, i) => `${i + 1}. ${tip}`),
+      "",
+      isPrimary
+        ? `Keep practising — you are doing brilliantly!`
+        : `Remember: the examiner wants to see that you understand ${topic} deeply, not just that you have memorised facts. Practise applying your knowledge to unfamiliar contexts.`,
     ].join("\n"),
   });
 
@@ -2880,7 +2977,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     if (s.studentVisible === undefined) s.studentVisible = !s.teacherOnly;
     if (s.teacherVisible === undefined) s.teacherVisible = true;
     // Populate altText on diagram sections from caption/title if missing
-    if ((s.type === "diagram-a" || s.type === "diagram-b" || s.type === "diagram") && !s.altText) {
+    if (((s.type as string) === "diagram-a" || (s.type as string) === "diagram-b" || (s.type as string) === "diagram") && !s.altText) {
       s.altText = s.title || `${s.type === "diagram-a" ? "Reference" : "Completion"} diagram for ${topic}`;
     }
   });

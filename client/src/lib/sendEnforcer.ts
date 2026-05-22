@@ -288,13 +288,14 @@ function enforceAdhd(
     }
 
     if (isQuestionSection(s) || sectionLooksLikeSectionA(s) || sectionLooksLikeSectionB(s)) {
-      // 1. Hard cap
+      // 1. Hard cap — Phase 1 update: Section 1 = 6 questions, Section 2 = 8 questions.
+      // (Old caps of 3/5 were for the legacy 3-question-per-section structure.)
       if (sectionLooksLikeSectionA(s)) {
-        const [capped, warn] = capQuestionCount(content, 3);
+        const [capped, warn] = capQuestionCount(content, 6);
         content = capped;
         if (warn) warnings.push(warn);
       } else if (sectionLooksLikeSectionB(s)) {
-        const [capped, warn] = capQuestionCount(content, 5);
+        const [capped, warn] = capQuestionCount(content, 8);
         content = capped;
         if (warn) warnings.push(warn);
       }
