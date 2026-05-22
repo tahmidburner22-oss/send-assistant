@@ -28,6 +28,11 @@ import { buildSelfReflection } from "@/lib/selfReflectionBuilder";
 import { buildRevisionTips, type RevisionTip } from "@/lib/revisionTipsBuilder";
 import katex from "katex";
 import "katex/dist/katex.min.css";
+// PR-6 / audit item #79 — "Why this looks like this" consolidated
+// audit-trail panel. Read-only; reads only metadata fields already
+// stamped by the generator + post-validator chain. Default-collapsed,
+// print-hidden via the existing `ws-no-print-on-student` class.
+import AuditTrailPanel, { type AuditTrailWorksheet } from "@/components/AuditTrailPanel";
 
 const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
   // Legacy question type aliases
@@ -4717,7 +4722,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                     fontFamily: fmt.fontFamily,
                   }}>
-                    <span>QA: {worksheet.metadata?.qaScore.overallScore}%</span>
+                    <span>QA: {(worksheet.metadata?.qaScore as { total?: number; overallScore?: number }).total ?? (worksheet.metadata?.qaScore as { total?: number; overallScore?: number }).overallScore ?? "—"}%</span>
                     <span style={{ fontSize: "8px", opacity: 0.9 }}>[{worksheet.metadata?.validationStatus.toUpperCase()}]</span>
                   </div>
                 )}
@@ -4802,7 +4807,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     gap: "6px",
                     fontFamily: fmt.fontFamily,
                   }}>
-                    <span>QA SCORE: {worksheet.metadata?.qaScore.overallScore}%</span>
+                    <span>QA SCORE: {(worksheet.metadata?.qaScore as { total?: number; overallScore?: number }).total ?? (worksheet.metadata?.qaScore as { total?: number; overallScore?: number }).overallScore ?? "—"}%</span>
                     <div style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.3)" }} />
                     <span>{worksheet.metadata?.validationStatus.toUpperCase()}</span>
                   </div>
@@ -8250,6 +8255,16 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           </div>
         );
       })()}
+
+      {/* ── PR-6 / audit item #79 — "Why this looks like this" panel ── */}
+      {/* Single consolidated audit-trail view. Read-only; reads only      */}
+      {/* metadata fields the generator + post-validator chain already     */}
+      {/* stamp. Default-collapsed via native <details> so it never        */}
+      {/* prints in the worksheet. Sits below the per-feature audit cards  */}
+      {/* (FEAT-PB6 SEND fidelity, FEAT-PC10 coverage map) so a teacher    */}
+      {/* who needs the one-stop view has it; the per-feature cards keep   */}
+      {/* their place for at-a-glance teacher reading.                     */}
+      <AuditTrailPanel worksheet={worksheet as AuditTrailWorksheet} isTeacherView={isTeacherView} />
 
       {/* ── Phase 4 / FEAT-005 — teacher-only hint-ladder preview ── */}
       {isTeacherView &&
