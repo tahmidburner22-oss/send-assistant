@@ -2475,3 +2475,403 @@ describe("Phase 5 — enforceCurriculumAuthorityInvariants", () => {
     expect(r.worksheet.sections![0].content).toBe("Calculate the colour of 100 metres.");
   });
 });
+
+
+// ─── PR-2 — Pure post-validators: command-word, SI units, reading age ──────
+//
+// Audit items #1, #2, #14. Three new validators, each pure / idempotent,
+// each warn-only (never rewrites question content). All three are wired
+// at the end of `runWorksheetPostValidators` so they audit the FINAL
+// post-validated content.
+
+import {
+  enforceCommandWordFidelity,
+  enforceSiUnitNormalisation,
+  enforceReadingAgeBudget,
+} from "../../client/src/lib/worksheetPostValidator";
+
+import {
+  findImperialUnits,
+  isUnitConversionTopic,
+  findOffSpecCommandWords,
+  extractLeadingCommandWord,
+  computeReadingAge,
+  countSyllables,
+  getCommandWordsForBoard,
+  COMMAND_WORDS_BY_BOARD,
+} from "../../client/src/lib/curriculumAuthorityPrompt";
+
+describe("PR-2 / extractLeadingCommandWord", () => {
+  it("strips checkbox + question number + bold prefix and returns the canonical verb", () => {
+    expect(extractLeadingCommandWord("[ ] 1. **Calculate** the value of x")).toBe("calculate");
+    expect(extractLeadingCommandWord("Q1. **Explain** why")).toBe("explain");
+    expect(extractLeadingCommandWord("3) Describe the process")).toBe("describe");
+    expect(extractLeadingCommandWord("**Show that** y = 2x + 3")).toBe("show that");
+    expect(extractLeadingCommandWord("Work out 7 × 8")).toBe("work out");
+  });
+
+  it("returns null when the stem opens with a non-verb", () => {
+    expect(extractLeadingCommandWord("The diagram shows a circuit.")).toBeNull();
+    expect(extractLeadingCommandWord("")).toBeNull();
+    expect(extractLeadingCommandWord("   ")).toBeNull();
+  });
+
+  it("handles emoji + checkbox decorators (ADHD profile)", () => {
+    expect(extractLeadingCommandWord("🌿 [ ] **Calculate** the area")).toBe("calculate");
+  });
+});
+
+describe("PR-2 / getCommandWordsForBoard + COMMAND_WORDS_BY_BOARD", () => {
+  it("returns a non-empty list for every UK awarding-body code", () => {
+    for (const code of ["aqa", "edexcel", "pearson", "ocr", "wjec", "eduqas", "ccea", "cie", "cambridge"]) {
+      const list = getCommandWordsForBoard(code);
+      expect(list.length).toBeGreaterThan(20);
+      // The neutral set ("calculate", "describe", "explain") must be present
+      // on every per-board union.
+      expect(list).toContain("calculate");
+      expect(list).toContain("describe");
+      expect(list).toContain("explain");
+    }
+  });
+
+  it("returns the KS-neutral set for unknown / missing boards (so KS3 / KS1+2 stays permissive)", () => {
+    expect(getCommandWordsForBoard("").length).toBeGreaterThan(20);
+    expect(getCommandWordsForBoard(null as unknown as string).length).toBeGreaterThan(20);
+    expect(getCommandWordsForBoard("not-a-board").length).toBeGreaterThan(20);
+  });
+
+  it("freezes the per-board lists so they cannot be mutated at runtime", () => {
+    expect(() => {
+      (COMMAND_WORDS_BY_BOARD.aqa as string[]).push("badverb");
+    }).toThrow();
+  });
+});
+
+describe("PR-2 / findOffSpecCommandWords", () => {
+  it("flags invented verbs ('reflect on', 'brainstorm') as off-spec for AQA", () => {
+    const text = "1. Reflect on the diagram.\n2. Brainstorm three ideas.\n3. Calculate the area.";
+    const off = findOffSpecCommandWords(text, "aqa");
+    expect(off).toContain("reflect on");
+    expect(off).toContain("brainstorm");
+    expect(off).not.toContain("calculate");
+  });
+
+  it("recognises Edexcel-specific 'Investigate' as on-spec for Edexcel but off-spec for AQA", () => {
+    const text = "1. Investigate how temperature affects rate.";
+    expect(findOffSpecCommandWords(text, "edexcel")).not.toContain("investigate");
+    expect(findOffSpecCommandWords(text, "aqa")).toContain("investigate");
+    // OCR doesn't carry "comment on" — Edexcel does.
+    const ocrText = "1. Comment on the changes shown.";
+    expect(findOffSpecCommandWords(ocrText, "ocr")).toContain("comment on");
+    expect(findOffSpecCommandWords(ocrText, "edexcel")).not.toContain("comment on");
+  });
+
+  it("deduplicates so a worksheet that opens 12 questions with one off-spec verb produces one entry", () => {
+    const text = Array.from({ length: 12 }, (_, i) => `${i + 1}. Reflect on this.`).join("\n");
+    const off = findOffSpecCommandWords(text, "aqa");
+    expect(off).toEqual(["reflect on"]);
+  });
+
+  it("ignores mid-sentence appearances — only flags leading verbs", () => {
+    const text = "1. Calculate the value. Then reflect on your answer.";
+    expect(findOffSpecCommandWords(text, "aqa")).toEqual([]);
+  });
+});
+
+describe("PR-2 / enforceCommandWordFidelity", () => {
+  it("warns once per off-spec verb, listing the question numbers it appeared in", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { examBoard: "aqa" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "Reflect on the diagram." },
+        { type: "q-short", title: "Q2", content: "Brainstorm three ideas." },
+        { type: "q-short", title: "Q3", content: "Reflect on your answer." },
+        { type: "q-short", title: "Q4", content: "Calculate the area." },
+      ],
+    };
+    const r = enforceCommandWordFidelity(ws);
+    expect(r.warnings.length).toBe(2);
+    const reflectWarn = r.warnings.find(w => w.includes('"reflect on"'))!;
+    expect(reflectWarn).toMatch(/Q1.*Q3|Q3.*Q1/);
+    const brainstormWarn = r.warnings.find(w => w.includes('"brainstorm"'))!;
+    expect(brainstormWarn).toMatch(/Q2/);
+    expect(r.warnings.some(w => w.includes('"calculate"'))).toBe(false);
+  });
+
+  it("is a no-op when every leading verb is on-spec", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { examBoard: "aqa" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "Calculate the value of x." },
+        { type: "q-short", title: "Q2", content: "Explain why this happens." },
+      ],
+    };
+    expect(enforceCommandWordFidelity(ws).warnings).toEqual([]);
+  });
+
+  it("never rewrites question content (warn-only)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { examBoard: "aqa" },
+      sections: [{ type: "q-short", title: "Q1", content: "Reflect on the diagram." }],
+    };
+    const r = enforceCommandWordFidelity(ws);
+    expect(r.worksheet.sections![0].content).toBe("Reflect on the diagram.");
+  });
+
+  it("is idempotent — running twice yields the same warnings", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { examBoard: "aqa" },
+      sections: [{ type: "q-short", title: "Q1", content: "Reflect on the diagram." }],
+    };
+    const r1 = enforceCommandWordFidelity(ws);
+    const r2 = enforceCommandWordFidelity(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-2 / findImperialUnits", () => {
+  it("detects mph, °F, lbs, ft, in, miles, gallons", () => {
+    const tokens = findImperialUnits("Calculate the speed if the car travels at 60 mph in 32°F weather. The 100 lbs mass falls 5 ft.");
+    const labels = tokens.map(t => t.label).sort();
+    expect(labels).toContain("miles per hour");
+    expect(labels).toContain("degrees Fahrenheit");
+    expect(labels).toContain("pounds (mass)");
+    expect(labels).toContain("feet");
+  });
+
+  it("does not false-flag pounds-sterling", () => {
+    expect(findImperialUnits("The book costs 5 pounds sterling.")).toEqual([]);
+    expect(findImperialUnits("The total is 5 pounds (£5.00).")).toEqual([]);
+  });
+
+  it("deduplicates exact-match tokens", () => {
+    const tokens = findImperialUnits("60 mph and 60 mph again — both at 60 mph.");
+    const mphTokens = tokens.filter(t => t.label === "miles per hour");
+    expect(mphTokens.length).toBe(1);
+  });
+});
+
+describe("PR-2 / isUnitConversionTopic", () => {
+  it("returns true when topic + subject indicate unit conversion", () => {
+    expect(isUnitConversionTopic("Converting between metric and imperial units", "Mathematics")).toBe(true);
+    expect(isUnitConversionTopic("Imperial to metric units", "Maths")).toBe(true);
+    expect(isUnitConversionTopic("Converting units of measurement", "Mathematics")).toBe(true);
+  });
+
+  it("returns false for unrelated topics", () => {
+    expect(isUnitConversionTopic("Forces and motion", "Physics")).toBe(false);
+    expect(isUnitConversionTopic("Photosynthesis", "Biology")).toBe(false);
+  });
+});
+
+describe("PR-2 / enforceSiUnitNormalisation", () => {
+  it("warns per imperial unit type, listing the questions it appeared in", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces and motion" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "A car travels at 60 mph." },
+        { type: "q-short", title: "Q2", content: "The temperature is 32°F." },
+        { type: "q-short", title: "Q3", content: "Another car at 40 mph." },
+      ],
+    };
+    const r = enforceSiUnitNormalisation(ws);
+    expect(r.warnings.length).toBe(2);
+    const mphWarn = r.warnings.find(w => w.includes("miles per hour"))!;
+    expect(mphWarn).toMatch(/Q1.*Q3|Q3.*Q1/);
+    expect(mphWarn).toMatch(/km\/h/);
+    const fWarn = r.warnings.find(w => w.includes("Fahrenheit"))!;
+    expect(fWarn).toMatch(/Q2/);
+    expect(fWarn).toMatch(/°C/);
+  });
+
+  it("is a no-op when the topic IS unit conversion (legitimate imperial usage)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Mathematics", topic: "Converting between imperial and metric units" },
+      sections: [{ type: "q-short", title: "Q1", content: "Convert 60 mph to km/h." }],
+    };
+    expect(enforceSiUnitNormalisation(ws).warnings).toEqual([]);
+  });
+
+  it("never rewrites question content (warn-only)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces" },
+      sections: [{ type: "q-short", title: "Q1", content: "A car travels at 60 mph." }],
+    };
+    const r = enforceSiUnitNormalisation(ws);
+    expect(r.worksheet.sections![0].content).toBe("A car travels at 60 mph.");
+  });
+
+  it("is idempotent — running twice yields the same warnings", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces" },
+      sections: [{ type: "q-short", title: "Q1", content: "A car at 60 mph." }],
+    };
+    const r1 = enforceSiUnitNormalisation(ws);
+    const r2 = enforceSiUnitNormalisation(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-2 / countSyllables + computeReadingAge", () => {
+  it("counts syllables on common UK academic vocabulary correctly enough for FK", () => {
+    expect(countSyllables("calculate")).toBe(3);
+    expect(countSyllables("photosynthesis")).toBeGreaterThanOrEqual(4);
+    expect(countSyllables("the")).toBe(1);
+    expect(countSyllables("a")).toBe(1);
+    // Trailing silent 'e' rule: "make" = 1
+    expect(countSyllables("make")).toBe(1);
+    // Polysyllabic
+    expect(countSyllables("mitochondria")).toBeGreaterThanOrEqual(4);
+  });
+
+  it("returns null for empty / sub-5-word inputs", () => {
+    expect(computeReadingAge("")).toBeNull();
+    expect(computeReadingAge(null)).toBeNull();
+    expect(computeReadingAge("Too short.")).toBeNull();
+  });
+
+  it("computes plausible UK reading ages for KS2-level prose", () => {
+    // Simple Year 4-ish text. Should land in the 8-11 reading age band.
+    const text = "The cat sat on the mat. It was a sunny day. The cat was very happy.";
+    const r = computeReadingAge(text)!;
+    expect(r.readingAge).toBeGreaterThanOrEqual(5);
+    expect(r.readingAge).toBeLessThanOrEqual(12);
+  });
+
+  it("computes plausible UK reading ages for GCSE-level prose", () => {
+    const text =
+      "Photosynthesis is the process by which green plants convert light energy " +
+      "into chemical energy stored in glucose, demonstrating the fundamental " +
+      "principles of energy conservation in biological systems.";
+    const r = computeReadingAge(text)!;
+    expect(r.readingAge).toBeGreaterThanOrEqual(13);
+  });
+});
+
+describe("PR-2 / enforceReadingAgeBudget", () => {
+  it("warns when actual reading age exceeds declared by more than 1.5 years", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { yearGroup: "Year 7" },
+      sections: [
+        {
+          // GCSE-level prose declared as Year 7 (reading age ~11).
+          type: "q-short",
+          title: "Q1",
+          content:
+            "Photosynthesis is the biochemical process by which chlorophyll-containing organisms " +
+            "transform electromagnetic radiation into the chemical energy stored within glucose " +
+            "molecules, illustrating fundamental thermodynamic principles of biological systems.",
+          expectedReadingAge: 11,
+        },
+      ],
+    };
+    const r = enforceReadingAgeBudget(ws);
+    expect(r.warnings.length).toBeGreaterThanOrEqual(1);
+    expect(r.warnings[0]).toMatch(/Q1/);
+    expect(r.warnings[0]).toMatch(/Reading age/);
+  });
+
+  it("is a no-op when actual reading age is within the 1.5-year tolerance", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { yearGroup: "Year 4" },
+      sections: [
+        {
+          type: "q-short",
+          title: "Q1",
+          content: "The cat sat on the mat. It was a sunny day. The cat was very happy.",
+          expectedReadingAge: 9,
+        },
+      ],
+    };
+    const r = enforceReadingAgeBudget(ws);
+    expect(r.warnings).toEqual([]);
+  });
+
+  it("falls back to a year-group default when expectedReadingAge is missing", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { yearGroup: "Year 7" },
+      sections: [
+        {
+          type: "q-short",
+          title: "Q1",
+          content:
+            "Photosynthesis is the biochemical process by which chlorophyll-containing organisms " +
+            "transform electromagnetic radiation into the chemical energy stored within glucose " +
+            "molecules, illustrating fundamental thermodynamic principles of biological systems.",
+        },
+      ],
+    };
+    const r = enforceReadingAgeBudget(ws);
+    expect(r.warnings.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("never rewrites question content (warn-only)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { yearGroup: "Year 7" },
+      sections: [
+        {
+          type: "q-short",
+          title: "Q1",
+          content:
+            "Photosynthesis is the biochemical process by which chlorophyll-containing organisms " +
+            "transform electromagnetic radiation into chemical energy stored within glucose molecules.",
+          expectedReadingAge: 11,
+        },
+      ],
+    };
+    const before = ws.sections![0].content;
+    const r = enforceReadingAgeBudget(ws);
+    expect(r.worksheet.sections![0].content).toBe(before);
+  });
+
+  it("is idempotent — running twice yields the same warnings", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { yearGroup: "Year 7" },
+      sections: [
+        {
+          type: "q-short",
+          title: "Q1",
+          content:
+            "Photosynthesis is the biochemical process by which chlorophyll-containing organisms " +
+            "transform electromagnetic radiation into chemical energy.",
+          expectedReadingAge: 11,
+        },
+      ],
+    };
+    const r1 = enforceReadingAgeBudget(ws);
+    const r2 = enforceReadingAgeBudget(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-2 / runWorksheetPostValidators integration", () => {
+  it("the three new validators show up in the chain output", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "Reflect on a car travelling at 60 mph." },
+      ],
+    };
+    const r = runWorksheetPostValidators(ws, {
+      subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa",
+    });
+    // Command-word fidelity warning.
+    expect(r.warnings.some(w => /Command-word fidelity.*reflect on/i.test(w))).toBe(true);
+    // SI unit warning.
+    expect(r.warnings.some(w => /SI units.*miles per hour/i.test(w))).toBe(true);
+  });
+});

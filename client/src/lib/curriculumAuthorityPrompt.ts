@@ -525,3 +525,387 @@ export function findPlaceholderLeakage(
   const hits = text.match(PLACEHOLDER_LEAKAGE_RE);
   return hits ? Array.from(hits) : [];
 }
+
+
+// ─── PR-2 — Imperial / SI unit detection (audit item #14) ───────────────────
+//
+// UK schools, GCSE specs and the National Curriculum use SI units. Imperial
+// drift sneaks in via US-trained LLMs (60 mph, 32°F, 5 ft 9 in, 100 lbs).
+// Phase 5's manifesto names "SI units only" as a non-negotiable; this
+// detector turns the rule into a probe.
+//
+// We **warn only** — never silently rewrite the value, because the
+// numerical conversion is non-trivial (60 mph → 96.6 km/h ≠ 60 km/h) and a
+// silent rewrite that left the number intact would make the question
+// factually wrong. Teachers fix manually after the warning. A follow-up PR
+// can add a value-aware rewriter behind a feature flag.
+//
+// Topic-aware: when the worksheet is *about* unit conversion (topic title
+// contains "convert" / "units" / "imperial"), the detector returns no
+// warnings — those questions legitimately need both unit families.
+
+/** One imperial-unit fingerprint. */
+export interface ImperialUnitMatch {
+  /** The matched imperial token, e.g. "mph" or "°F" or "5 ft 9 in". */
+  match: string;
+  /** Short human label used in the warning, e.g. "miles per hour". */
+  label: string;
+  /** The SI unit teachers should rewrite to, e.g. "km/h" or "°C". */
+  siEquivalent: string;
+}
+
+/**
+ * Token table. Order matters: longer / more-specific tokens first so
+ * "5 ft 9 in" wins over "5 ft" or "9 in". Each pattern is global +
+ * case-insensitive; lastIndex is reset on every call.
+ */
+const IMPERIAL_TOKENS: Array<{ re: RegExp; label: string; si: string }> = [
+  // Compound length first
+  { re: /\b\d+(?:\.\d+)?\s*ft\s+\d+(?:\.\d+)?\s*(?:in|inches?)\b/gi, label: "feet+inches", si: "metres / centimetres" },
+  // Speed
+  { re: /\b\d+(?:\.\d+)?\s*mph\b/gi, label: "miles per hour", si: "km/h" },
+  // Temperature (Fahrenheit) — degrees-F symbol or "F" after a number
+  { re: /-?\d+(?:\.\d+)?\s*°\s*F\b/gi, label: "degrees Fahrenheit", si: "°C" },
+  { re: /-?\d+(?:\.\d+)?\s*degrees?\s+Fahrenheit\b/gi, label: "degrees Fahrenheit", si: "°C" },
+  // Mass
+  { re: /\b\d+(?:\.\d+)?\s*lbs?\b/gi, label: "pounds (mass)", si: "kg" },
+  { re: /\b\d+(?:\.\d+)?\s*pounds?\b(?!\s*sterling|\s*\(£)/gi, label: "pounds (mass)", si: "kg" },
+  { re: /\b\d+(?:\.\d+)?\s*oz\b/gi, label: "ounces", si: "grams" },
+  // Length (single unit)
+  { re: /\b\d+(?:\.\d+)?\s*(?:miles?)\b(?!\s*per)/gi, label: "miles", si: "km" },
+  { re: /\b\d+(?:\.\d+)?\s*(?:yds?|yards?)\b/gi, label: "yards", si: "metres" },
+  { re: /\b\d+(?:\.\d+)?\s*ft\b/gi, label: "feet", si: "metres" },
+  { re: /\b\d+(?:\.\d+)?\s*feet\b/gi, label: "feet", si: "metres" },
+  { re: /\b\d+(?:\.\d+)?\s*(?:in|inches?)\b/gi, label: "inches", si: "centimetres" },
+  // Volume (US gallon / pint conflict — we flag and let the teacher disambiguate)
+  { re: /\b\d+(?:\.\d+)?\s*(?:gal|gallons?)\b/gi, label: "gallons", si: "litres" },
+];
+
+/**
+ * Returns true when the worksheet's topic / subject explicitly covers
+ * imperial / SI conversion. Conversion-topic questions legitimately need
+ * imperial values; the detector is a no-op for them.
+ */
+export function isUnitConversionTopic(
+  topic: string | undefined,
+  subject: string | undefined,
+): boolean {
+  const t = `${topic || ""} ${subject || ""}`.toLowerCase();
+  return (
+    /\b(convert|conversion|imperial|metric)\b/.test(t) &&
+    /\b(unit|units|measurement|measurements)\b/.test(t)
+  );
+}
+
+/**
+ * Detects imperial-unit usage in pupil-facing content. Returns one entry
+ * per occurrence (deduplicated by exact-match string). Pure / idempotent.
+ */
+export function findImperialUnits(
+  text: string | undefined | null,
+): ImperialUnitMatch[] {
+  if (!text) return [];
+  const seen = new Set<string>();
+  const out: ImperialUnitMatch[] = [];
+  for (const { re, label, si } of IMPERIAL_TOKENS) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      const matched = m[0];
+      const key = matched.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ match: matched, label, si: si, siEquivalent: si });
+      if (m.index === re.lastIndex) re.lastIndex++; // safety against zero-width
+    }
+    re.lastIndex = 0;
+  }
+  return out;
+}
+
+// ─── PR-2 — Awarding-body command-word fidelity (audit item #2) ─────────────
+//
+// UK GCSE / A-Level mark schemes are explicit about which command words
+// the awarding body uses. AQA / Edexcel / OCR / WJEC / CCEA publish lists.
+// Most words are shared across boards; some are board-specific (Edexcel
+// uses "Investigate" more freely; OCR favours "Account for"). Inventing
+// new verbs ("Reflect on", "Brainstorm", "Compose your thoughts") is a
+// red flag — those words don't appear on any UK exam paper, so a pupil
+// who learns to recognise them on Adaptly is unprepared for the real
+// exam.
+//
+// COMMAND_WORDS_BY_BOARD encodes the union list per board. Where a board
+// doesn't apply (KS1 / KS2), use COMMAND_WORDS_KS_NEUTRAL — the broader
+// set that covers National Curriculum Programmes of Study verbs.
+//
+// `findOffSpecCommandWords` returns the leading verbs of supplied stems
+// that are NOT on the named board's published list. The validator
+// ` enforceCommandWordFidelity` warns per off-spec verb without rewriting
+// (rewriting could change the assessed skill — teachers must intervene).
+
+/** Canonical UK awarding-body codes the validator understands. */
+export type ExamBoardCode = "aqa" | "edexcel" | "pearson" | "ocr" | "wjec" | "eduqas" | "ccea" | "cie" | "cambridge";
+
+/** Common KS1–KS5 / cross-board verbs (PoS + frequent shared command words). */
+const COMMAND_WORDS_KS_NEUTRAL: ReadonlyArray<string> = Object.freeze([
+  "calculate", "work out", "solve", "find", "show that", "prove that", "determine",
+  "evaluate", "estimate", "round", "convert", "compute", "factorise", "factorize",
+  "expand", "simplify", "rearrange", "plot", "sketch", "draw", "construct",
+  "describe", "explain", "compare", "contrast", "analyse", "evaluate",
+  "identify", "name", "state", "list", "outline", "suggest", "discuss",
+  "justify", "assess", "interpret", "deduce", "predict", "label",
+  "define", "complete", "match", "circle", "tick", "underline", "fill in",
+  "use", "give", "write down", "write", "select", "choose", "answer",
+  "read", "spot", "mark", "highlight", "shade", "annotate", "comment",
+  "what is", "which", "how", "when", "where", "who", "why",
+]);
+
+/** AQA-specific command words on top of the neutral set. */
+const AQA_EXTRAS: ReadonlyArray<string> = Object.freeze([
+  "show", "show your working", "give a reason", "give one", "give two",
+  "explain how", "explain why", "evaluate the extent",
+]);
+
+/** Edexcel / Pearson-specific command words on top of the neutral set. */
+const EDEXCEL_EXTRAS: ReadonlyArray<string> = Object.freeze([
+  "investigate", "comment on", "to what extent",
+]);
+
+/** OCR-specific command words on top of the neutral set. */
+const OCR_EXTRAS: ReadonlyArray<string> = Object.freeze([
+  "account for", "discuss the extent", "consider",
+]);
+
+/** WJEC / Eduqas / CCEA — same as Edexcel + OCR for command-word vocabulary. */
+const WJEC_EXTRAS: ReadonlyArray<string> = Object.freeze([
+  "investigate", "comment on", "account for", "examine",
+]);
+
+const CIE_EXTRAS: ReadonlyArray<string> = Object.freeze([
+  "describe", "explain", "discuss", "investigate", "demonstrate", "evaluate",
+]);
+
+/** Frozen per-board union lists. Lookup is case-insensitive at call time. */
+export const COMMAND_WORDS_BY_BOARD: Readonly<Record<string, ReadonlyArray<string>>> = Object.freeze({
+  aqa: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...AQA_EXTRAS]),
+  edexcel: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...EDEXCEL_EXTRAS]),
+  pearson: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...EDEXCEL_EXTRAS]),
+  ocr: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...OCR_EXTRAS]),
+  wjec: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...WJEC_EXTRAS]),
+  eduqas: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...WJEC_EXTRAS]),
+  ccea: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...WJEC_EXTRAS]),
+  cie: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...CIE_EXTRAS]),
+  cambridge: Object.freeze([...COMMAND_WORDS_KS_NEUTRAL, ...CIE_EXTRAS]),
+});
+
+/**
+ * Returns the resolved command-word list for the given exam board, or
+ * the neutral KS-spanning list when the board is missing / unrecognised.
+ */
+export function getCommandWordsForBoard(examBoard: string | undefined | null): ReadonlyArray<string> {
+  const key = (examBoard || "").trim().toLowerCase();
+  if (!key) return COMMAND_WORDS_KS_NEUTRAL;
+  return COMMAND_WORDS_BY_BOARD[key] || COMMAND_WORDS_KS_NEUTRAL;
+}
+
+/**
+ * Extracts the leading command word from a question stem. Handles the
+ * common decorations:
+ *   - Markdown bold (`**Calculate** the value`)
+ *   - Question number prefix (`1. Calculate`, `Q1. **Calculate**`)
+ *   - ADHD checkbox prefix (`[ ] Calculate`)
+ *   - Multi-word command words (`Show that`, `Work out`, `Give one`)
+ *
+ * Returns the lower-cased command word, or null when no leading verb
+ * could be parsed (the stem may be a label-the-diagram instruction or a
+ * gap-fill paragraph).
+ */
+export function extractLeadingCommandWord(stem: string | undefined | null): string | null {
+  if (!stem) return null;
+  // Take the first non-empty line so multi-paragraph stems don't trip us up.
+  const firstLine = String(stem).split("\n").map(l => l.trim()).find(Boolean) || "";
+  // Strip leading emoji, checkbox, question number, bold markers — in
+  // that order so each strip can fire on the cleaner remainder. (A
+  // single-pass chain in another order leaves a leading "[" or "**" in
+  // place when an emoji starts the line.)
+  const cleaned = firstLine
+    .replace(/^[\u{1F300}-\u{1FAFF}]+\s*/u, "")
+    .replace(/^\s*\[\s*[xX]?\s*\]\s+/, "")
+    .replace(/^\s*(?:Q?\d+[.)])\s+/, "")
+    .replace(/^\s*\*\*\s*/, "")
+    .trim();
+  if (!cleaned) return null;
+  // Try multi-word command words first (longest match wins) by checking
+  // the first 3 words against the known verbs.
+  const words = cleaned.split(/[\s\*]+/).filter(Boolean).map(w => w.toLowerCase().replace(/[^a-z]/g, ""));
+  for (const span of [3, 2, 1]) {
+    if (words.length < span) continue;
+    const candidate = words.slice(0, span).join(" ");
+    if (!candidate || !/[a-z]/.test(candidate)) continue;
+    // Special-case "show your working" / "give a reason" — three-word verbs.
+    if (
+      span === 3 && (
+        candidate === "show your working" ||
+        candidate === "give a reason" ||
+        candidate === "give one reason" ||
+        candidate === "give two reasons" ||
+        candidate === "explain how the" ||
+        candidate === "explain why the" ||
+        candidate === "to what extent"
+      )
+    ) {
+      // Strip trailing "the" / "is" / "are" so we return the canonical command.
+      if (candidate === "show your working") return "show your working";
+      if (candidate === "give a reason") return "give a reason";
+      if (candidate === "give one reason") return "give one";
+      if (candidate === "give two reasons") return "give two";
+      if (candidate.startsWith("explain how")) return "explain how";
+      if (candidate.startsWith("explain why")) return "explain why";
+      if (candidate === "to what extent") return "to what extent";
+    }
+    if (
+      span === 2 && (
+        candidate === "show that" || candidate === "prove that" ||
+        candidate === "work out" || candidate === "write down" ||
+        candidate === "fill in" || candidate === "comment on" ||
+        candidate === "account for" || candidate === "what is" ||
+        candidate === "give one" || candidate === "give two"
+      )
+    ) {
+      return candidate;
+    }
+    if (span === 1) {
+      // Filter out non-verb leaders ("a", "the", etc.) — they signal the
+      // stem doesn't actually open with a command word, and the validator
+      // should warn on that separately.
+      if (
+        candidate.length >= 3 &&
+        !["the", "and", "but", "for", "this", "that", "your", "some", "all"].includes(candidate)
+      ) {
+        return candidate;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Off-spec command words detected in `text`, given the named exam board.
+ * Returns one entry per UNIQUE off-spec verb so a worksheet that opens
+ * 12 questions with "Reflect on" generates one warning, not 12.
+ *
+ * The function matches whole leading words at line start (or right after
+ * a question number / checkbox / bold prefix), so it never false-flags
+ * the same verb mid-sentence.
+ */
+export function findOffSpecCommandWords(
+  text: string | undefined | null,
+  examBoard: string | undefined | null,
+): string[] {
+  if (!text) return [];
+  const board = getCommandWordsForBoard(examBoard);
+  const allowed = new Set<string>(board.map(v => v.toLowerCase()));
+  const offSpec = new Set<string>();
+  const lines = String(text).split("\n");
+  for (const raw of lines) {
+    const verb = extractLeadingCommandWord(raw);
+    if (!verb) continue;
+    if (allowed.has(verb)) continue;
+    offSpec.add(verb);
+  }
+  return Array.from(offSpec).sort();
+}
+
+// ─── PR-2 — Reading-age budget (audit item #1) ──────────────────────────────
+//
+// Phase 1 / PB1 stamps `expectedReadingAge` on every question (5–18 years).
+// Nothing actually validates that the rendered stem hits the budget.
+// `computeReadingAge` runs Flesch-Kincaid grade level and converts to a
+// UK reading-age estimate (FK + 5). The validator
+// ` enforceReadingAgeBudget` (in worksheetPostValidator.ts) compares
+// computed-vs-declared per question and warns when the gap exceeds 1.5
+// years — the published BDA / NLT tolerance band for "comfortable
+// independent reading".
+//
+// Pure / deterministic. No external syllable dictionary — uses a
+// vowel-group heuristic that's good enough for FK (within ±0.5 grade
+// levels of CMU dictionary on UK GCSE prose).
+
+/**
+ * Returns the number of syllables in a single English word using a
+ * vowel-group heuristic. Trailing silent 'e' is dropped (`make` = 1, not 2).
+ * Words shorter than 3 chars get 1 syllable. Idempotent.
+ */
+export function countSyllables(word: string): number {
+  if (!word) return 0;
+  const w = word.toLowerCase().replace(/[^a-z]/g, "");
+  if (!w) return 0;
+  if (w.length <= 3) return 1;
+  // Strip trailing silent 'e' / 'es' / 'ed' (when not preceded by another vowel).
+  let stripped = w
+    .replace(/(?:[^aeiouy])e$/, m => m.charAt(0))
+    .replace(/(?:[^aeiouy])es$/, m => m.charAt(0) + "s")
+    .replace(/(?:[^aeiouy])ed$/, m => m.charAt(0) + "d");
+  // Count vowel groups.
+  const groups = stripped.match(/[aeiouy]+/g);
+  return groups ? Math.max(1, groups.length) : 1;
+}
+
+/**
+ * Counts sentences in a passage. Splits on `.!?` followed by whitespace
+ * or end-of-string. Always returns ≥ 1 (so the FK divisor never explodes).
+ */
+function countSentences(text: string): number {
+  const matches = text.split(/[.!?]+(?:\s|$)/).map(s => s.trim()).filter(Boolean);
+  return Math.max(1, matches.length);
+}
+
+/**
+ * Counts words in a passage. Strips markdown bold / italic decorators
+ * before splitting so `**Calculate**` = 1 word, not 3.
+ */
+function countWords(text: string): number {
+  const cleaned = text.replace(/[*_~`#]/g, "").replace(/\[[^\]]*\]/g, "");
+  const tokens = cleaned.match(/[A-Za-z][A-Za-z']*/g) || [];
+  return tokens.length;
+}
+
+/**
+ * Computes Flesch-Kincaid grade level + UK reading-age estimate for a
+ * passage. Returns nulls when the passage is empty or has too few words
+ * to compute a meaningful FK score (< 5 words).
+ */
+export interface ReadingAgeResult {
+  /** FK grade level (US-grade-equivalent). 0 = pre-school; 12 = US grade 12 / UK Year 13. */
+  flesch: number;
+  /** UK reading age in years. FK + 5, clamped to [5, 18]. */
+  readingAge: number;
+  /** Internal counts for diagnostic / test purposes. */
+  words: number;
+  sentences: number;
+  syllables: number;
+}
+
+export function computeReadingAge(text: string | undefined | null): ReadingAgeResult | null {
+  if (!text) return null;
+  const cleaned = String(text)
+    .replace(/[*_~`#]/g, "")
+    .replace(/\[\[[^\]]*\]\]/g, "")  // strip diagram markers
+    .replace(/\[[^\]]*\]/g, "");      // strip checkbox / placeholder markers
+  const sentences = countSentences(cleaned);
+  const words = countWords(cleaned);
+  if (words < 5) return null;
+  let syllables = 0;
+  for (const w of cleaned.match(/[A-Za-z][A-Za-z']*/g) || []) {
+    syllables += countSyllables(w);
+  }
+  const flesch = 0.39 * (words / sentences) + 11.8 * (syllables / words) - 15.59;
+  const readingAge = Math.max(5, Math.min(18, flesch + 5));
+  return {
+    flesch: Math.round(flesch * 10) / 10,
+    readingAge: Math.round(readingAge * 10) / 10,
+    words,
+    sentences,
+    syllables,
+  };
+}
