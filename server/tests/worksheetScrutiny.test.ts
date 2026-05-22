@@ -3256,3 +3256,253 @@ describe("Phase 4 follow-up — applySendFidelityAudit accumulates warnings into
     expect(warnings.some((w) => /SEND fidelity.*Demand-Avoidant.*rule 1/i.test(w))).toBe(true);
   });
 });
+
+
+
+// ─── PR-4 — Quality scorecard (audit item #50) ─────────────────────────────
+//
+// Wires the existing `WorksheetQAScore` schema field to a deterministic
+// scorer that reads the post-validator warnings + structured reports
+// (sendFidelityReport, commonMistakesAudit, etc.) and produces a /100
+// score. Pure / idempotent. Stamped onto `metadata.qaScore` and
+// `metadata.validationStatus` as the LAST step in the post-validator
+// chain.
+
+import { computeQaScore, applyQaScore, mapStatusToValidation } from "../../client/src/lib/qaScoreBuilder";
+
+describe("PR-4 / computeQaScore — happy path on a strong worksheet", () => {
+  it("returns publish-ready when the worksheet has every required surface and no warnings", () => {
+    const ws = {
+      title: "Adding fractions",
+      sections: [
+        { type: "learning-objective", title: "LO", content: "Add proper fractions with different denominators." },
+        { type: "q-short-answer", title: "Q1", content: "Calculate 1/2 + 1/4", specRef: "AQA-N-2-a" },
+        { type: "q-short-answer", title: "Q2", content: "Calculate 2/3 + 1/6", specRef: "AQA-N-2-a" },
+        { type: "q-extended", title: "Q3", content: "Show that 3/8 + 1/4 = 5/8", specRef: "AQA-N-2-b" },
+        { type: "q-mcq", title: "Q4", content: "A. 1/4\nB. 1/3 ✓\nC. 1/2", specRef: "AQA-N-2-a" },
+        { type: "challenge", title: "Challenge", content: "Calculate 5/6 - 3/8", specRef: "AQA-N-2-b" },
+        { type: "diagram", title: "Diagram A", content: "fraction wall", imageUrl: "/diagrams/fraction-wall.png" },
+        { type: "vocabulary", title: "Word Bank", content: "numerator, denominator" },
+        { type: "self-reflection", title: "Reflection", content: "I can calculate adding fractions confidently." },
+        { type: "mark-scheme", title: "Teacher Key", content: "Q1: 3/4 [1]" },
+      ],
+      metadata: {
+        subject: "Mathematics",
+        topic: "Adding fractions",
+        yearGroup: "Year 9",
+        examBoard: "aqa",
+        generatorVersion: "v3",
+        readingAge: 11,
+      },
+    };
+    const score = computeQaScore(ws);
+    expect(score.failConditions).toEqual([]);
+    expect(score.total).toBeGreaterThanOrEqual(90);
+    expect(score.status).toBe("publish-ready");
+  });
+});
+
+describe("PR-4 / computeQaScore — deductions are bucket-targeted", () => {
+  it("command-word warnings only deduct from examStyleAccuracy", () => {
+    const baseSections = [
+      { type: "learning-objective", title: "LO", content: "..." },
+      { type: "q-short-answer", title: "Q1", content: "...", specRef: "AQA-X" },
+      { type: "challenge", title: "Q2", content: "...", specRef: "AQA-X" },
+      { type: "mark-scheme", title: "Teacher Key", content: "..." },
+    ];
+    const meta = {
+      subject: "S", topic: "T", yearGroup: "Y10", examBoard: "aqa",
+      generatorVersion: "v1", readingAge: 11,
+      postValidatorWarnings: [
+        "Command-word fidelity: 'reflect on' is not on AQA's published list",
+        "Command-word fidelity: 'discuss with a friend' is not on AQA's published list",
+      ],
+    };
+    const ws = { title: "T", sections: baseSections, metadata: meta };
+    const score = computeQaScore(ws);
+    expect(score.examStyleAccuracy).toBe(11); // 15 − 2*2
+    expect(score.notationAccuracy).toBe(10);  // untouched
+    expect(score.curriculumAlignment).toBe(15); // untouched
+  });
+
+  it("notation hygiene warnings deduct from notationAccuracy only", () => {
+    const ws = {
+      title: "T",
+      sections: [
+        { type: "learning-objective", title: "LO", content: "..." },
+        { type: "q-short-answer", title: "Q1", content: "Calculate 3 × 4", specRef: "S-1" },
+        { type: "challenge", title: "Q2", content: "...", specRef: "S-1" },
+        { type: "mark-scheme", title: "TK", content: "..." },
+      ],
+      metadata: {
+        subject: "S", topic: "T", yearGroup: "Y9", examBoard: "aqa", generatorVersion: "v1", readingAge: 11,
+        postValidatorWarnings: [
+          "notation hygiene: rewrote x to ×",
+          "notation hygiene: rewrote o to °",
+        ],
+      },
+    };
+    const score = computeQaScore(ws);
+    expect(score.notationAccuracy).toBe(8); // 10 − 2*1
+    expect(score.examStyleAccuracy).toBe(15);
+  });
+
+  it("placeholder leakage drives layoutPrintQuality down AND triggers an auto-fail at ≥3 placeholders", () => {
+    const ws = {
+      title: "T",
+      sections: [
+        { type: "learning-objective", title: "LO", content: "..." },
+        { type: "q-short-answer", title: "Q1", content: "...", specRef: "S-1" },
+        { type: "challenge", title: "Q2", content: "...", specRef: "S-1" },
+        { type: "mark-scheme", title: "TK", content: "..." },
+      ],
+      metadata: {
+        subject: "S", topic: "T", yearGroup: "Y10", examBoard: "aqa", generatorVersion: "v1", readingAge: 11,
+        postValidatorWarnings: [
+          "Phase 5: placeholder leakage detected — '${topic}'",
+          "Phase 5: placeholder leakage detected — '[N marks]'",
+          "Phase 5: placeholder leakage detected — '___'",
+        ],
+      },
+    };
+    const score = computeQaScore(ws);
+    expect(score.layoutPrintQuality).toBe(4); // 10 − 4 (cap) − 2 (distinct types <6)
+    expect(score.failConditions).toContain(
+      "Multiple placeholder leakage warnings — output not pupil-ready",
+    );
+    expect(score.status).toBe("do-not-publish");
+  });
+});
+
+describe("PR-4 / computeQaScore — fail conditions", () => {
+  it("auto-fails with do-not-publish when there are no question sections", () => {
+    const ws = {
+      title: "T",
+      sections: [
+        { type: "learning-objective", title: "LO", content: "..." },
+        { type: "vocabulary", title: "WB", content: "..." },
+      ],
+      metadata: { subject: "S", topic: "T", yearGroup: "Y9", examBoard: "aqa", generatorVersion: "v1" },
+    };
+    const score = computeQaScore(ws);
+    expect(score.failConditions).toContain("No question sections present");
+    expect(score.failConditions).toContain("Missing Teacher Key");
+    expect(score.status).toBe("do-not-publish");
+    expect(score.questionProgression).toBe(0);
+  });
+
+  it("auto-fails when more than 50% of SEND fidelity rules are missing", () => {
+    const ws = {
+      title: "T",
+      sections: [
+        { type: "learning-objective", title: "LO", content: "..." },
+        { type: "q-short-answer", title: "Q1", content: "...", specRef: "S-1" },
+        { type: "challenge", title: "Q2", content: "...", specRef: "S-1" },
+        { type: "mark-scheme", title: "TK", content: "..." },
+      ],
+      metadata: {
+        subject: "S", topic: "T", yearGroup: "Y9", examBoard: "aqa", generatorVersion: "v1", readingAge: 11,
+        sendNeed: "asc-rigid",
+        sendFidelityReport: {
+          sendNeedId: "asc-rigid",
+          rules: [
+            { status: "missing" }, { status: "missing" }, { status: "missing" },
+            { status: "missing" }, { status: "applied" }, { status: "applied" },
+            { status: "not-checked" },
+          ],
+        },
+      },
+    };
+    const score = computeQaScore(ws);
+    expect(score.failConditions).toContain(
+      "SEND adaptation severely incomplete (> 50% rules missing)",
+    );
+    expect(score.status).toBe("do-not-publish");
+    expect(score.sendAdaptationQuality).toBeLessThan(15);
+  });
+});
+
+describe("PR-4 / computeQaScore — purity and idempotency", () => {
+  it("running computeQaScore twice on the same input returns deep-equal output", () => {
+    const ws = {
+      title: "T",
+      sections: [
+        { type: "learning-objective", title: "LO", content: "Add fractions." },
+        { type: "q-short-answer", title: "Q1", content: "Calculate 1/2 + 1/4", specRef: "AQA-N-2-a" },
+        { type: "challenge", title: "Q2", content: "Calculate 5/6 - 3/8", specRef: "AQA-N-2-b" },
+        { type: "mark-scheme", title: "TK", content: "Q1: 3/4" },
+      ],
+      metadata: {
+        subject: "S", topic: "T", yearGroup: "Y9", examBoard: "aqa", generatorVersion: "v1", readingAge: 11,
+        postValidatorWarnings: ["Command-word fidelity: 'reflect on' is not on AQA's list"],
+      },
+    };
+    const a = computeQaScore(ws);
+    const b = computeQaScore(ws);
+    expect(b).toEqual(a);
+  });
+
+  it("applyQaScore is idempotent — running it twice yields identical metadata", () => {
+    const ws = {
+      title: "T",
+      sections: [
+        { type: "learning-objective", title: "LO", content: "..." },
+        { type: "q-short-answer", title: "Q1", content: "...", specRef: "S-1" },
+        { type: "challenge", title: "Q2", content: "...", specRef: "S-1" },
+        { type: "mark-scheme", title: "TK", content: "..." },
+      ],
+      metadata: {
+        subject: "S", topic: "T", yearGroup: "Y9", examBoard: "aqa", generatorVersion: "v1", readingAge: 11,
+      },
+    };
+    const a = applyQaScore(ws);
+    const b = applyQaScore(a);
+    expect(b.metadata?.qaScore).toEqual(a.metadata?.qaScore);
+    expect(b.metadata?.validationStatus).toBe(a.metadata?.validationStatus);
+  });
+});
+
+describe("PR-4 / mapStatusToValidation — legacy three-bucket mapping", () => {
+  it("publish-ready and good map to pass", () => {
+    expect(mapStatusToValidation("publish-ready")).toBe("pass");
+    expect(mapStatusToValidation("good")).toBe("pass");
+    expect(mapStatusToValidation("pass")).toBe("pass");
+  });
+
+  it("needs-revision maps to warn", () => {
+    expect(mapStatusToValidation("needs-revision")).toBe("warn");
+    expect(mapStatusToValidation("warn")).toBe("warn");
+  });
+
+  it("regenerate and do-not-publish map to fail", () => {
+    expect(mapStatusToValidation("regenerate")).toBe("fail");
+    expect(mapStatusToValidation("do-not-publish")).toBe("fail");
+    expect(mapStatusToValidation("fail")).toBe("fail");
+  });
+});
+
+describe("PR-4 / runWorksheetPostValidators — qaScore stamped on every output", () => {
+  it("the post-validator chain attaches qaScore + validationStatus to metadata", () => {
+    const ws = {
+      title: "T",
+      sections: [
+        { type: "learning-objective", title: "LO", content: "Add proper fractions." },
+        { type: "q-short-answer", title: "Q1", content: "Calculate 1/2 + 1/4", specRef: "AQA-N-2-a" },
+        { type: "challenge", title: "Q2", content: "Calculate 5/6 - 3/8", specRef: "AQA-N-2-b" },
+        { type: "mark-scheme", title: "TK", content: "Q1: 3/4 [1]" },
+      ],
+      metadata: {
+        subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9",
+        examBoard: "aqa", generatorVersion: "v3", readingAge: 11,
+      },
+    };
+    const r = runWorksheetPostValidators(ws, {
+      subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9", examBoard: "aqa",
+    });
+    expect(r.worksheet.metadata?.qaScore).toBeDefined();
+    expect(typeof (r.worksheet.metadata as any)?.qaScore?.total).toBe("number");
+    expect((r.worksheet.metadata as any)?.qaScore?.total).toBeGreaterThan(0);
+    expect((r.worksheet.metadata as any)?.qaScore?.total).toBeLessThanOrEqual(100);
+    expect((r.worksheet.metadata as any)?.validationStatus).toMatch(/pass|warn|fail/);
+  });
+});

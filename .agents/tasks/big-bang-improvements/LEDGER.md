@@ -65,7 +65,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 47 | Self-consistency sampling on extended-answer questions                                | PR-20  | not started |
 | 48 | Citation-grounded factual layer (history dates, science values, English Lit quotes)   | PR-20  | not started |
 | 49 | Promote postValidatorWarnings to tiered SLA P0 / P1 / P2                              | PR-22  | not started |
-| 50 | Quality scorecard implementation (WorksheetQAScore actually computed)                 | PR-4   | not started |
+| 50 | Quality scorecard implementation (WorksheetQAScore actually computed)                 | PR-4   | shipped — PR #88 |
 | 51 | Generator-version baseline + regression detector                                      | PR-22  | not started |
 | 52 | Idempotency proof in tests (every validator runs twice, deep-equal output)            | PR-21  | not started |
 | 53 | Schema deprecation policy                                                             | PR-22  | not started |
