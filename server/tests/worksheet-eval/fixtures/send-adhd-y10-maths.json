@@ -1,0 +1,27 @@
+{
+  "id": "send-adhd-y10-maths",
+  "title": "Year 10 Mathematics (adhd) — Quadratic equations",
+  "bucket": "send",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Quadratic equations",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "sendNeed": "adhd",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "send-fidelity-floor"
+  ],
+  "readingAgeRange": [
+    13,
+    17
+  ],
+  "estimatedTokens": 4000
+}

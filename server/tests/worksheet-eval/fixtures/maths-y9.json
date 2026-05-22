@@ -1,0 +1,26 @@
+{
+  "id": "maths-y9",
+  "title": "Year 9 Maths — Solving linear equations",
+  "bucket": "maths",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Solving linear equations",
+    "yearGroup": "Year 9",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    12,
+    16
+  ],
+  "estimatedTokens": 4000
+}

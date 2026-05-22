@@ -1,0 +1,26 @@
+{
+  "id": "maths-y3",
+  "title": "Year 3 Maths — Fractions of amounts",
+  "bucket": "maths",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Fractions of amounts",
+    "yearGroup": "Year 3",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    6,
+    10
+  ],
+  "estimatedTokens": 4000
+}

@@ -1,0 +1,26 @@
+{
+  "id": "science-y10-physics-electricity",
+  "title": "Year 10 Physics — Series and parallel circuits",
+  "bucket": "science",
+  "params": {
+    "subject": "Physics",
+    "topic": "Series and parallel circuits",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    13,
+    17
+  ],
+  "estimatedTokens": 4000
+}
