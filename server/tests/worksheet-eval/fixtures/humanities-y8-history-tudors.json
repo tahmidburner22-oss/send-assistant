@@ -1,0 +1,26 @@
+{
+  "id": "humanities-y8-history-tudors",
+  "title": "Year 8 History — Henry VIII's break from Rome",
+  "bucket": "humanities",
+  "params": {
+    "subject": "History",
+    "topic": "Henry VIII's break from Rome",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}

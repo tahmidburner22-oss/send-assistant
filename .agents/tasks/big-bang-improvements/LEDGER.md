@@ -59,7 +59,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 41 | Structured-output retry with diagnostic-only re-prompt                                | PR-9   | not started |
 | 42 | Token budget transparency (PD13)                                                      | PR-9   | not started |
 | 43 | Generation cache by hash key (PD13)                                                   | PR-9   | not started |
-| 44 | Eval harness FEAT-PR5 (200 canonical UK NC + GCSE prompts)                            | PR-5   | not started |
+| 44 | Eval harness FEAT-PR5 (200 canonical UK NC + GCSE prompts)                            | PR-5   | shipped — PR pending |
 | 45 | A/B prompt experiment framework                                                       | PR-20  | not started |
 | 46 | Per-subject prompt families refactor                                                  | PR-20  | not started |
 | 47 | Self-consistency sampling on extended-answer questions                                | PR-20  | not started |

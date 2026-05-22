@@ -1,0 +1,26 @@
+{
+  "id": "english-y10-non-fiction",
+  "title": "Year 10 English — Comparing non-fiction texts",
+  "bucket": "english",
+  "params": {
+    "subject": "English",
+    "topic": "Comparing non-fiction texts",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    13,
+    17
+  ],
+  "estimatedTokens": 4000
+}

@@ -1,0 +1,27 @@
+{
+  "id": "send-dyslexia-y9-english",
+  "title": "Year 9 English (dyslexia) — Romeo and Juliet — Act 1",
+  "bucket": "send",
+  "params": {
+    "subject": "English",
+    "topic": "Romeo and Juliet — Act 1",
+    "yearGroup": "Year 9",
+    "examBoard": "AQA",
+    "sendNeed": "dyslexia",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "send-fidelity-floor"
+  ],
+  "readingAgeRange": [
+    12,
+    16
+  ],
+  "estimatedTokens": 4000
+}
