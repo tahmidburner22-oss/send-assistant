@@ -14,19 +14,19 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 1  | Per-question reading-age enforcement                                                  | PR-2   | not started |
 | 2  | Awarding-body command-word fidelity audit                                             | PR-2   | not started |
 | 3  | Past-paper verbatim / fingerprint detection                                           | PR-15  | not started |
-| 4  | Distractor pedagogy audit on MCQs                                                     | PR-3   | not started |
+| 4  | Distractor pedagogy audit on MCQs                                                     | PR-3   | shipped — PR pending |
 | 5  | Synonym / equivalent-answer expansion in mark schemes                                 | PR-13  | not started |
 | 6  | Method-marks itemisation (M1 / M2 / A1) per multi-mark calc                           | PR-13  | not started |
 | 7  | Numerical answer plausibility / order-of-magnitude rail                               | PR-13  | not started |
 | 8  | Question-difficulty Bloom-monotonicity check                                          | PR-14  | not started |
 | 9  | Sciences "Working:" stub on calc questions                                            | PR-14  | not started |
-| 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | not started |
+| 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | shipped — PR pending |
 | 11 | Cross-curricular UK context whitelist                                                 | PR-2   | not started |
 | 12 | Cultural-context bias audit (PD9)                                                     | PR-12  | not started |
-| 13 | Mathematical notation hygiene (× vs x, − vs -, ° vs o)                                | PR-3   | not started |
+| 13 | Mathematical notation hygiene (× vs x, − vs -, ° vs o)                                | PR-3   | shipped — PR pending |
 | 14 | SI unit normalisation (mph → km/h, lbs → kg, °F → °C, in/ft → cm/m)                   | PR-2   | not started |
-| 15 | Diagram-question coupling check                                                       | PR-3   | not started |
-| 16 | Common Mistakes for non-maths                                                         | PR-3   | not started |
+| 15 | Diagram-question coupling check                                                       | PR-3   | shipped — PR pending |
+| 16 | Common Mistakes for non-maths                                                         | PR-13  | not started |
 | 17 | Misconception bank backing (formal registry)                                          | PR-13  | not started |
 | 18 | Self-Reflection: command-word echo guarantee                                          | PR-2   | not started |
 | 19 | Revision-Tips: time-budget reconcile with estimatedTime                               | PR-13  | not started |

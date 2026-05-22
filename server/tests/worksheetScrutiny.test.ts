@@ -2475,3 +2475,344 @@ describe("Phase 5 — enforceCurriculumAuthorityInvariants", () => {
     expect(r.worksheet.sections![0].content).toBe("Calculate the colour of 100 metres.");
   });
 });
+
+
+// ─── PR-3 — Diagram coupling, distractor pedagogy, vocab tier, notation hygiene ──
+//
+// Audit items #4, #10, #13, #15. Four new pure / idempotent validators.
+// #16 (Common Mistakes for non-maths) is deferred to a follow-up PR — see
+// SESSION-HANDOFF.
+
+import {
+  enforceDiagramDependencyIntegrity,
+  enforceDistractorPedagogy,
+  enforceTier3VocabularyDeclared,
+  enforceMathsNotationHygiene,
+} from "../../client/src/lib/worksheetPostValidator";
+
+import {
+  normaliseMathNotation,
+  findNotationDrift,
+  isNotationClean,
+} from "../../client/src/lib/notationHygieneNormaliser";
+
+describe("PR-3 / normaliseMathNotation", () => {
+  it("rewrites Latin x to × between numeric operands", () => {
+    const r = normaliseMathNotation("Calculate 2 x 3");
+    expect(r.rewritten).toBe("Calculate 2 × 3");
+    expect(r.substitutions.length).toBe(1);
+    expect(r.substitutions[0].label).toBe("x→×");
+  });
+
+  it("does not rewrite x in narrative prose", () => {
+    expect(normaliseMathNotation("the bus to school takes ten minutes").rewritten)
+      .toBe("the bus to school takes ten minutes");
+    expect(normaliseMathNotation("solve x = 5").rewritten).toBe("solve x = 5");
+  });
+
+  it("rewrites hyphen to typographic minus only between numbers with surrounding whitespace", () => {
+    const r = normaliseMathNotation("Calculate 5 - 3");
+    expect(r.rewritten).toBe("Calculate 5 − 3");
+    expect(r.substitutions[0].label).toBe("-→−");
+  });
+
+  it("does not rewrite hyphens in compound words", () => {
+    expect(normaliseMathNotation("step-by-step method").rewritten).toBe("step-by-step method");
+    expect(normaliseMathNotation("a well-known fact").rewritten).toBe("a well-known fact");
+  });
+
+  it("rewrites letter o to ° after numeric values for temperature", () => {
+    const r = normaliseMathNotation("Heat to 90 o C");
+    expect(r.rewritten).toBe("Heat to 90°C");
+    expect(r.substitutions[0].label).toBe("o→°");
+    expect(normaliseMathNotation("Cool to 5oC").rewritten).toBe("Cool to 5°C");
+  });
+
+  it("is idempotent — running twice yields the same output", () => {
+    const input = "Calculate 2 x 3 and 5 - 1, heat to 90 o C.";
+    const r1 = normaliseMathNotation(input);
+    const r2 = normaliseMathNotation(r1.rewritten);
+    expect(r2.rewritten).toBe(r1.rewritten);
+    expect(r2.substitutions.length).toBe(0);
+  });
+
+  it("isNotationClean returns true for clean text", () => {
+    expect(isNotationClean("Calculate 2 × 3 = 6")).toBe(true);
+    expect(isNotationClean("Calculate 2 x 3 = 6")).toBe(false);
+  });
+
+  it("findNotationDrift returns the same substitutions list as normaliseMathNotation", () => {
+    const text = "Calculate 2 x 3";
+    expect(findNotationDrift(text).length).toBe(normaliseMathNotation(text).substitutions.length);
+  });
+});
+
+describe("PR-3 / enforceMathsNotationHygiene", () => {
+  it("rewrites student-visible content and produces one warning per drift type", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "q-short", title: "Q1", content: "Calculate 2 x 3" },
+        { type: "q-short", title: "Q2", content: "Calculate 5 - 1 and 4 x 2" },
+      ],
+    };
+    const r = enforceMathsNotationHygiene(ws);
+    expect(r.worksheet.sections![0].content).toBe("Calculate 2 × 3");
+    expect(r.worksheet.sections![1].content).toBe("Calculate 5 − 1 and 4 × 2");
+    expect(r.warnings.some(w => /x→×/.test(w))).toBe(true);
+    expect(r.warnings.some(w => /-→−/.test(w))).toBe(true);
+  });
+
+  it("skips teacher-only sections", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "mark-scheme", title: "MS", teacherOnly: true, content: "answer: 2 x 3 = 6" },
+      ],
+    };
+    const r = enforceMathsNotationHygiene(ws);
+    expect(r.worksheet.sections![0].content).toBe("answer: 2 x 3 = 6");
+    expect(r.warnings).toEqual([]);
+  });
+
+  it("is idempotent — running twice yields the same content + no new warnings", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Q1", content: "Calculate 2 x 3" }],
+    };
+    const r1 = enforceMathsNotationHygiene(ws);
+    const r2 = enforceMathsNotationHygiene(r1.worksheet);
+    expect(r2.worksheet.sections![0].content).toBe(r1.worksheet.sections![0].content);
+    expect(r2.warnings).toEqual([]);
+  });
+});
+
+describe("PR-3 / enforceDiagramDependencyIntegrity", () => {
+  it("warns when a question references Diagram A but no Diagram A section exists", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "q-short", title: "Q1", content: "Use Diagram A to identify the labelled cell." },
+        { type: "q-short", title: "Q2", content: "What is shown in Diagram A?" },
+      ],
+    };
+    const r = enforceDiagramDependencyIntegrity(ws);
+    expect(r.warnings.length).toBeGreaterThanOrEqual(1);
+    expect(r.warnings[0]).toMatch(/Diagram A/);
+    expect(r.warnings[0]).toMatch(/Q1.*Q2|Q2.*Q1/);
+  });
+
+  it("is a no-op when the referenced diagram section exists (matched by type)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "diagram-a", title: "Diagram A", content: "(diagram of cell)" },
+        { type: "q-short", title: "Q1", content: "Use Diagram A to identify the labelled cell." },
+      ],
+    };
+    expect(enforceDiagramDependencyIntegrity(ws).warnings).toEqual([]);
+  });
+
+  it("is a no-op when no question references any diagram", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Q1", content: "What is 2 + 2?" }],
+    };
+    expect(enforceDiagramDependencyIntegrity(ws).warnings).toEqual([]);
+  });
+
+  it("never rewrites content (warn-only)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Q1", content: "Use Diagram A here." }],
+    };
+    const r = enforceDiagramDependencyIntegrity(ws);
+    expect(r.worksheet.sections![0].content).toBe("Use Diagram A here.");
+  });
+
+  it("is idempotent", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Q1", content: "Use Diagram A here." }],
+    };
+    const r1 = enforceDiagramDependencyIntegrity(ws);
+    const r2 = enforceDiagramDependencyIntegrity(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-3 / enforceDistractorPedagogy", () => {
+  it("warns when an MCQ has duplicate distractors", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "Which is the largest planet?\nA. Jupiter ✓\nB. Mars\nC. Mars\nD. Saturn",
+        },
+      ],
+    };
+    const r = enforceDistractorPedagogy(ws);
+    expect(r.warnings.some(w => /duplicate distractor/i.test(w))).toBe(true);
+  });
+
+  it("warns when a distractor is one character away from the correct answer (typo decoy)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "What is photosynthesis?\nA. The process plants use to make food ✓\nB. The process plants use to make foods\nC. Respiration\nD. Pollination",
+        },
+      ],
+    };
+    const r = enforceDistractorPedagogy(ws);
+    expect(r.warnings.some(w => /one character away|typo decoy/i.test(w))).toBe(true);
+  });
+
+  it("warns on near-empty distractors", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "What is 2 + 2?\nA. 4 ✓\nB. 5\nC. 6\nD. -",
+        },
+      ],
+    };
+    const r = enforceDistractorPedagogy(ws);
+    expect(r.warnings.some(w => /near-empty distractor/i.test(w))).toBe(true);
+  });
+
+  it("is a no-op when distractors are substantive misconceptions", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "What is 4/8 in lowest terms?\nA. 1/2 ✓\nB. 4/8\nC. 2/4\nD. 0.5",
+        },
+      ],
+    };
+    expect(enforceDistractorPedagogy(ws).warnings).toEqual([]);
+  });
+
+  it("is idempotent — running twice yields the same warnings", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "q-mcq",
+          title: "Q1",
+          content: "What is 2 + 2?\nA. 4 ✓\nB. 4\nC. 5\nD. 6",
+        },
+      ],
+    };
+    const r1 = enforceDistractorPedagogy(ws);
+    const r2 = enforceDistractorPedagogy(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-3 / enforceTier3VocabularyDeclared", () => {
+  it("warns when a Tier 3 word in a question stem is not in the Word Bank", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        {
+          type: "vocabulary",
+          title: "Key Vocabulary",
+          content: "Photosynthesis: process of making food from light",
+        },
+        {
+          type: "q-short",
+          title: "Q1",
+          content: "Describe how photosynthesis relates to respiration in mitochondria.",
+        },
+      ],
+    };
+    const r = enforceTier3VocabularyDeclared(ws);
+    // "respiration" and "mitochondria" are >= 11 chars and not in vocab
+    expect(r.warnings.some(w => /respiration/.test(w))).toBe(true);
+    expect(r.warnings.some(w => /mitochondria/.test(w))).toBe(true);
+    // "photosynthesis" IS in vocab — should NOT warn
+    expect(r.warnings.some(w => /photosynthesis/.test(w))).toBe(false);
+  });
+
+  it("is a no-op when the worksheet has no vocabulary section (KS1 / number-bond practice)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "q-short", title: "Q1", content: "Describe how photosynthesis works." },
+      ],
+    };
+    expect(enforceTier3VocabularyDeclared(ws).warnings).toEqual([]);
+  });
+
+  it("does not flag everyday polysyllabic words on the stop list", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push or pull" },
+        { type: "q-short", title: "Q1", content: "Investigate the force using a thermometer carefully." },
+      ],
+    };
+    const r = enforceTier3VocabularyDeclared(ws);
+    // "investigate" and "thermometer" are on the stop list
+    expect(r.warnings.some(w => /investigate/.test(w))).toBe(false);
+    expect(r.warnings.some(w => /thermometer/.test(w))).toBe(false);
+  });
+
+  it("never rewrites content (warn-only)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push or pull" },
+        { type: "q-short", title: "Q1", content: "Describe photosynthesis briefly." },
+      ],
+    };
+    const before = ws.sections![1].content;
+    const r = enforceTier3VocabularyDeclared(ws);
+    expect(r.worksheet.sections![1].content).toBe(before);
+  });
+
+  it("is idempotent", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      sections: [
+        { type: "vocabulary", title: "Key Vocabulary", content: "Force: a push" },
+        { type: "q-short", title: "Q1", content: "Describe photosynthesis briefly." },
+      ],
+    };
+    const r1 = enforceTier3VocabularyDeclared(ws);
+    const r2 = enforceTier3VocabularyDeclared(r1.worksheet);
+    expect(r2.warnings).toEqual(r1.warnings);
+  });
+});
+
+describe("PR-3 / runWorksheetPostValidators integration", () => {
+  it("the four new validators show up in the chain output", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7" },
+      sections: [
+        { type: "vocabulary", title: "Key Vocabulary", content: "Multiplication: repeated addition" },
+        { type: "q-mcq", title: "Q1", content: "What is 3 x 4?\nA. 12 ✓\nB. 12\nC. 7\nD. 7" },
+        { type: "q-short", title: "Q2", content: "Use Diagram A to find the answer." },
+      ],
+    };
+    const r = runWorksheetPostValidators(ws, {
+      subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7",
+    });
+    // Notation hygiene rewrote `3 x 4` to `3 × 4`
+    expect(r.worksheet.sections![1].content).toMatch(/3 × 4/);
+    // Diagram integrity warned about missing Diagram A
+    expect(r.warnings.some(w => /Diagram A/.test(w))).toBe(true);
+    // Distractor pedagogy warned about duplicate distractors
+    expect(r.warnings.some(w => /duplicate distractor/i.test(w))).toBe(true);
+  });
+});
