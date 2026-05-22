@@ -150,6 +150,22 @@ import {
   renderRevisionTipsAsMarkerBlock,
 } from './revisionTipsBuilder';
 
+// ─── Phase 5 — Curriculum-authority system prompt ─────────────────────────
+// Single source of truth for the worksheet system prompt's voice and
+// authority layer. The preamble replaces the thin "expert UK teacher"
+// opener with a properly bound (board × subject × year × topic × key
+// stage) manifesto; the non-negotiables block consolidates the UK
+// English / SI units / no-US-contexts / awarding-body / no-fabricated-
+// codes / no-softeners rules in one labelled section; the register
+// note scales tonally by key stage. Imported here so the prompt
+// always asks the AI for the authority backbone the post-validator
+// then enforces.
+import {
+  buildCurriculumAuthorityPreamble,
+  buildNonNegotiablesBlock,
+  buildPedagogicalRegisterNote,
+} from './curriculumAuthorityPrompt';
+
 // ─── Phase 4 — Misconception bank ──────────────────────────────────────────
 // UK-curriculum misconception library. Injected into the worksheet system
 // prompt so questions diagnose common pupil errors, not just test recall.
@@ -2324,6 +2340,7 @@ ABSOLUTE RULES:
 
     const ksGcseNote = (yearNum >= 7 && yearNum <= 11) ? `
 KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
+- The rules below are implementations of the CURRICULUM AUTHORITY preamble — every section is bound to the authority chain (UK National Curriculum + named awarding body), the NON-NEGOTIABLES (UK English, SI units, awarding-body command words, no fabricated codes) and the pedagogical register note above.
 - This worksheet must be usable as a COMPLETE, STANDALONE lesson resource — not a quiz or revision aid.
 - Every section must be substantive and teach/reinforce the topic, not just test it.
 - LEARNING OBJECTIVE: One clear, specific, measurable objective using Bloom's taxonomy verbs (identify, describe, explain, calculate, evaluate, analyse, compare).
@@ -2524,9 +2541,40 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
     //   like Groq and Cerebras. We now filter to non-empty trimmed blocks
     //   and join with single newlines so the prompt stays compact.
     const structuredSystemSections: string[] = [
-      `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`,
+      // Phase 5 — Curriculum-authority preamble. Replaces the thin
+      // "expert UK teacher creating a worksheet" opener with a
+      // properly bound (board × subject × year × topic × key stage)
+      // manifesto. Names the awarding body, UK National Curriculum
+      // Programmes of Study, UK English and the output contract up
+      // front so every downstream rule is enforcing a contract the
+      // model has already agreed to.
+      buildCurriculumAuthorityPreamble({
+        subject: params.subject,
+        yearGroup: params.yearGroup,
+        examBoard: params.examBoard,
+        topic: params.topic,
+        isSTEM,
+      }),
+      // Phase 5 — Consolidated UK-English / SI-units / UK-contexts /
+      // no-fabricated-codes / no-softeners block. Static text — same
+      // six clauses on every prompt — so the model sees a stable
+      // authority backbone across topics. Phases 1–4 still enforce
+      // each rule downstream; this block names them up front.
+      buildNonNegotiablesBlock(),
       `SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}`,
       readingAgeNote,
+      // Phase 5 — Pedagogical register note. Sets the tonal expectation
+      // (KS1/KS2 = warm but precise; KS3 = clear and explanatory; GCSE
+      // = examiner voice; A-Level = academic but direct). Sits next to
+      // readingAgeNote because reading age is vocabulary granularity
+      // and the register note is *voice* — distinct concerns.
+      buildPedagogicalRegisterNote({
+        subject: params.subject,
+        yearGroup: params.yearGroup,
+        examBoard: params.examBoard,
+        topic: params.topic,
+        isSTEM,
+      }),
       sendNote,
       stemPreservationNote,
       requiredPracticalNote,
@@ -2570,7 +2618,7 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
 - "ao": "AO1" | "AO2" | "AO3" | "AO4". Match the cognitive demand.
 - "bloomLevel": "remember" | "understand" | "apply" | "analyse" | "evaluate" | "create".
 - "expectedReadingAge": integer 5–18 matched to ${params.yearGroup || 'the year group'} (Y9 ≈ 13, Y10 ≈ 14, Y11 ≈ 15) unless a SEND overlay lowers it.`,
-      `QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate. Questions must be traceable to the NC Programme-of-Study + the named exam-board specification — do not invent content the curriculum does not assess.`,
+      `QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate. Questions must be traceable to the NC Programme-of-Study + the named exam-board specification — do not invent content the curriculum does not assess. Every question is bound to the CURRICULUM AUTHORITY preamble above and the NON-NEGOTIABLES block — UK English, SI units, awarding-body command words, no fabricated AO codes (AO1–AO4 only), no US drift, no softeners. The post-validator will warn on every drift it detects.`,
       specExamples,
     ].map(s => (typeof s === 'string' ? s.trim() : '')).filter(Boolean);
 

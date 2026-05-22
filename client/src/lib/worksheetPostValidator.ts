@@ -57,6 +57,19 @@ import {
   isGenericRevisionTips,
 } from "./revisionTipsBuilder";
 
+// Phase 5 — Curriculum-authority invariants. Pure helpers from the
+// curriculum-authority module: silent US → UK English rewriter
+// (idempotent), banned-softener detector (warn only — silent rewrite
+// would paper over a real generation failure), fabricated-AO-code
+// detector (UK awarding bodies use AO1–AO4 only), placeholder-leakage
+// detector. Used by enforceCurriculumAuthorityInvariants below.
+import {
+  applyUKEnglishSubstitutions,
+  findBannedSofteners,
+  findFabricatedAoCodes,
+  findPlaceholderLeakage,
+} from "./curriculumAuthorityPrompt";
+
 export interface PostValidatorSection {
   id?: string;
   type?: string;
@@ -1244,6 +1257,193 @@ export function enforceRevisionTipsPresence(
 }
 
 /**
+ * Phase 5 — Curriculum-authority invariants.
+ *
+ * The voice-and-authority counterpart to the Phase 1–4 enforcers.
+ * Phase 5 ships a manifesto at the top of the system prompt that
+ * binds every worksheet to the UK National Curriculum, the named
+ * awarding body, UK English, SI units and the awarding-body
+ * command-word vocabulary. This validator is the post-generation
+ * safety net for the bits a prompt alone cannot reliably enforce
+ * across providers (OpenAI / Groq / Cerebras / Anthropic — all
+ * trained on US-heavy corpora).
+ *
+ * Four detection rules, applied to every pupil-facing section:
+ *
+ *   1. SILENT UK ENGLISH REWRITE. Walks UK_ENGLISH_SUBSTITUTIONS
+ *      over title + content. Every match is rewritten in place —
+ *      "color" → "colour", "aluminum" → "aluminium", "math" →
+ *      "maths" (standalone only — never `mathematics`),
+ *      "kilometer" → "kilometre", "organize" → "organise", and
+ *      every -re/-our/-ll- variant the table covers. One warning
+ *      per drift fixed so the regression is traceable. Compound
+ *      words (`voltmeter`, `parameter`, `diameter`) and Greek-root
+ *      words are NEVER touched — the regex word boundaries
+ *      naturally exclude them.
+ *
+ *   2. BANNED SOFTENERS. Warn only — never silently rewritten.
+ *      Phrases like "Have a think about", "Talk about", "Make sure
+ *      you revise", "Good luck", "Do your best" are noise the
+ *      manifesto explicitly bans. Silent rewriting would paper
+ *      over a real generation failure that the prompt should be
+ *      teaching the model to avoid. The warning surfaces in the
+ *      developer console + adaptations panel so the regression is
+ *      visible.
+ *
+ *   3. FABRICATED AO CODES. UK awarding bodies use AO1–AO4 only.
+ *      AO5 / AO6 / AO7+ do not exist on any UK GCSE or A-Level
+ *      specification. When the structured `ao` field on a question
+ *      section carries a fabricated code we clamp to "AO1" and
+ *      warn (the field is structurally invalid — better a known
+ *      conservative value than a fabrication). When a fabricated
+ *      code appears in pupil-facing content we warn only — content
+ *      rewrites can mask the underlying spec-mapping failure.
+ *
+ *   4. PLACEHOLDER LEAKAGE. `${...}` template-literal syntax,
+ *      literal `[topic]` / `[subject]` / `[year]` / `[N marks]`
+ *      tokens — all signs that the model copied the worked-example
+ *      template instead of filling it in. Warn only — these are
+ *      generation bugs the model should be taught to avoid, not
+ *      papered over.
+ *
+ * Skip rules:
+ *   - Sections with `teacherOnly === true` are skipped — the
+ *     teacher answer key may legitimately mention "the teacher
+ *     should..." or similar that would otherwise look like a
+ *     softener; teacher-facing content has its own register.
+ *
+ * Pure / idempotent — running the validator twice produces the
+ * same result; the second run finds zero substitutions to apply
+ * and emits zero warnings.
+ *
+ * Runs LAST in the post-validator chain so it normalises any text
+ * earlier validators may have written (e.g. the deterministic
+ * Self-Reflection / Revision-Tips rewrites in Phases 2 / 3).
+ */
+export function enforceCurriculumAuthorityInvariants(
+  ws: PostValidatorWorksheet,
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections;
+
+  if (!Array.isArray(sections) || sections.length === 0) {
+    return { worksheet: ws, warnings };
+  }
+
+  let mutated = false;
+
+  const rewrittenSections = sections.map((section, idx) => {
+    if (section.teacherOnly === true) return section;
+
+    const sectionLabel = section.title?.trim()
+      || section.type
+      || `section ${idx + 1}`;
+
+    let nextTitle = section.title;
+    let nextContent = section.content;
+    let titleChanged = false;
+    let contentChanged = false;
+
+    // 1. Silent UK English rewrite — title.
+    if (typeof nextTitle === "string" && nextTitle.length > 0) {
+      const r = applyUKEnglishSubstitutions(nextTitle);
+      if (r.substitutions.length > 0) {
+        nextTitle = r.rewritten;
+        titleChanged = true;
+        for (const sub of r.substitutions) {
+          warnings.push(
+            `Phase 5 — UK English: "${sub.from}" → "${sub.to}" in "${sectionLabel}" (title).`,
+          );
+        }
+      }
+    }
+
+    // 1. Silent UK English rewrite — content.
+    if (typeof nextContent === "string" && nextContent.length > 0) {
+      const r = applyUKEnglishSubstitutions(nextContent);
+      if (r.substitutions.length > 0) {
+        nextContent = r.rewritten;
+        contentChanged = true;
+        for (const sub of r.substitutions) {
+          warnings.push(
+            `Phase 5 — UK English: "${sub.from}" → "${sub.to}" in "${sectionLabel}".`,
+          );
+        }
+      }
+    }
+
+    // 2. Banned softeners — warn only on the post-rewrite text.
+    for (const [fieldName, fieldValue] of [
+      ["title", nextTitle],
+      ["content", nextContent],
+    ] as const) {
+      if (typeof fieldValue !== "string") continue;
+      const hits = findBannedSofteners(fieldValue);
+      for (const hit of hits) {
+        warnings.push(
+          `Phase 5 — Banned softener "${hit}" in "${sectionLabel}" (${fieldName}). Rewrite the stem with an awarding-body command word.`,
+        );
+      }
+    }
+
+    // 3. Fabricated AO code — structured field clamp + content warn.
+    const aoField = (section as { ao?: unknown }).ao;
+    let nextAo: string | undefined = typeof aoField === "string" ? aoField : undefined;
+    let aoChanged = false;
+    if (typeof aoField === "string" && aoField.length > 0) {
+      const hits = findFabricatedAoCodes(aoField);
+      if (hits.length > 0) {
+        warnings.push(
+          `Phase 5 — Fabricated AO code "${aoField}" in "${sectionLabel}".ao. UK awarding bodies use AO1–AO4 only. Clamped to AO1.`,
+        );
+        nextAo = "AO1";
+        aoChanged = true;
+      }
+    }
+    if (typeof nextContent === "string") {
+      const hits = findFabricatedAoCodes(nextContent);
+      for (const hit of hits) {
+        warnings.push(
+          `Phase 5 — Fabricated AO code "${hit}" in "${sectionLabel}" content. UK awarding bodies use AO1–AO4 only.`,
+        );
+      }
+    }
+
+    // 4. Placeholder leakage — warn only on title + content.
+    for (const [fieldName, fieldValue] of [
+      ["title", nextTitle],
+      ["content", nextContent],
+    ] as const) {
+      if (typeof fieldValue !== "string") continue;
+      const hits = findPlaceholderLeakage(fieldValue);
+      for (const hit of hits) {
+        warnings.push(
+          `Phase 5 — Placeholder leakage "${hit}" in "${sectionLabel}" (${fieldName}). The prompt template was not fully filled in.`,
+        );
+      }
+    }
+
+    if (!titleChanged && !contentChanged && !aoChanged) return section;
+
+    mutated = true;
+    const next: PostValidatorSection = { ...section };
+    if (titleChanged) next.title = nextTitle;
+    if (contentChanged) next.content = nextContent;
+    if (aoChanged) (next as { ao?: string }).ao = nextAo;
+    return next;
+  });
+
+  if (!mutated && warnings.length === 0) {
+    return { worksheet: ws, warnings };
+  }
+
+  return {
+    worksheet: mutated ? { ...ws, sections: rewrittenSections } : ws,
+    warnings,
+  };
+}
+
+/**
  * Runs every post-generation validator in order. Collects warnings and
  * stamps them onto worksheet.metadata.postValidatorWarnings.
  */
@@ -1303,6 +1503,18 @@ export function runWorksheetPostValidators(
     // section list — including any reconciled mark-scheme that the
     // earlier reconcileMarkScheme pass has settled.
     (ws: PostValidatorWorksheet) => enforceRevisionTipsPresence(ws, opts),
+    // Phase 5 — curriculum-authority invariants. Walks every pupil-
+    // facing section and (a) silently rewrites US-English drift to UK
+    // English, (b) warns on banned softener phrases ("Have a think
+    // about", "Make sure you revise", "Good luck", "Do your best"),
+    // (c) clamps fabricated assessment-objective codes (AO5+) to AO1
+    // and warns on the same fabrication in pupil-facing content,
+    // (d) warns on template-literal / placeholder leakage. Pure /
+    // idempotent. Runs LAST so any text written by earlier validators
+    // (e.g. deterministic Self-Reflection / Revision-Tips rewrites in
+    // Phases 2 / 3) is also normalised to UK English before the
+    // worksheet leaves the post-validator chain.
+    enforceCurriculumAuthorityInvariants,
   ]) {
     const r = fn(current);
     current = r.worksheet;
