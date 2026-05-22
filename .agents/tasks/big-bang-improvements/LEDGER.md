@@ -38,7 +38,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 25 | Continuous accessibility audit (Lighthouse + axe-core in CI)                          | PR-18  | not started |
 | 26 | Plain-English / Crystal Mark check on every section                                   | PR-18  | not started |
 | 27 | Dyslexia-friendly typography pre-flight                                               | PR-18  | not started |
-| 28 | Phase 4 follow-up: SEND fidelity probes for the 12 missing profiles                   | PR-1   | not started |
+| 28 | Phase 4 follow-up: SEND fidelity probes for the 12 missing profiles                   | PR-1   | shipped — PR pending |
 | 29 | Per-pupil profile linkage (Pupil Passport → worksheet)                                | PR-16  | not started |
 | 30 | Reading-age memory per pupil                                                          | PR-16  | not started |
 | 31 | Class Pack visual diff                                                                | PR-6   | not started |
