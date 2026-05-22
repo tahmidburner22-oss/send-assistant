@@ -10,10 +10,10 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-22 (PR-6 in flight on branch
-`big-bang/pr-6-audit-trail-panel`, PR #90; PR-1 (#85), PR-2 (#86),
-PR-4 (#88) and PR-5 (#89) merged; PR-3 (#87) open with conflicts
-re-resolved against current main).
+Last updated: 2026-05-22 (PR-8 in flight on branch
+`big-bang/pr-8-data-driven-validator-chain`; PR-1 (#85), PR-2 (#86),
+PR-3 (#87), PR-4 (#88), PR-5 (#89) and PR-6 (#90) merged; PR-7 (#91)
+open in parallel).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -143,71 +143,127 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 2 source files (1 new) + 3 tracker docs. Net source
   diff: ~ +570 lines.
 
+- **PR-7 — Server-prompt unification: port curriculumAuthorityPrompt
+  to server/routes/ai.ts** (branch
+  `big-bang/pr-7-server-prompt-unification`, PR #91 — currently open
+  in parallel with this PR). Audit item **#39**. New
+  `server/lib/curriculumAuthorityPromptServer.ts` shim re-exports the
+  named-section helpers from the client-side curriculum-authority
+  module; nine worksheet-content endpoints in `server/routes/ai.ts`
+  now prepend the manifesto via `buildServerWorksheetSystemPrompt`.
+  Non-worksheet endpoints (CV, cover letter, etc.) are unchanged.
+
+- **PR-8 — Data-driven post-validator chain** (this PR, branch
+  `big-bang/pr-8-data-driven-validator-chain`). Audit item **#74**.
+  The 22-step validator chain that `runWorksheetPostValidators` walks
+  is now a frozen ordered registry with stable kebab-case names so
+  callers can disable individual validators per-tenant without
+  forking the chain.
+
+  What changed:
+  - `client/src/lib/worksheetPostValidatorRegistry.ts` (new) — single
+    source of truth for chain order. Exports
+    `WORKSHEET_POST_VALIDATORS` (a frozen
+    `ReadonlyArray<PostValidatorRegistration>`),
+    `listValidatorNames()` (a public read-only accessor), and
+    `runRegistry(ws, opts, overrides)` which walks the array in order
+    and returns
+    `{ worksheet, warnings, ranNames, skippedNames, unknownOverrides }`.
+    `overrides[name] === false` skips that row; unknown override
+    keys are surfaced via `unknownOverrides` so a typo in tenant
+    config never silently disables nothing. Each row is registered
+    via an inline arrow `(ws, opts) => fn(ws[, opts])` so the
+    validator references resolve at call-time, keeping the
+    circular-import shape between `worksheetPostValidator.ts` ↔
+    `worksheetPostValidatorRegistry.ts` safe under ESM live-binding.
+  - `client/src/lib/worksheetPostValidator.ts`:
+    `runWorksheetPostValidators` now delegates to `runRegistry`,
+    surfaces unknown-override warnings prefixed
+    `[Phase PR-8 — Validator registry]`, then continues with the
+    same warning-merge + `applyQaScore` (PR-4) tail it always had.
+    `PostValidatorOptions` gains an optional
+    `validatorOverrides?: Readonly<Record<string, boolean>>` field
+    so callers route per-tenant flags through the existing options
+    object. `stripVisiblePlaceholdersAndAnswerLeakage` is now
+    `export`ed so the registry can reference the same
+    implementation the legacy chain did, instead of a shim.
+  - `server/tests/worksheetScrutiny.test.ts`: 6 new describe blocks
+    locking the registry's behaviour — order matches the
+    pre-refactor chain, every name is kebab-case, the array is
+    frozen, ranNames / skippedNames audit trail is correct,
+    disabling by name suppresses both warnings and rewrites,
+    unknown override keys are reported via `unknownOverrides`,
+    runner is pure / idempotent, and legacy `runWorksheetPostValidators`
+    callers see identical behaviour when no `validatorOverrides`
+    are passed.
+
+  Out of scope (per PHASE-PLAN.md):
+  - Per-validator config schemas (PR-22 SLA work).
+  - The actual UI for toggling validators (PR-27 telemetry surface).
+
+  Files touched: 2 source files (1 new) + 1 test file + 3 tracker
+  docs. Net source diff: ~ +330 lines.
+
 ## What is in flight
 
-- **PR-3 (#87), PR-6 (#90)** push + open / merge bookkeeping.
+- **PR-7 (#91), PR-8** push + open / merge bookkeeping.
 
 ## Related sibling PRs
 
-- **PR-3 (#87) — Diagram coupling + distractor pedagogy + Tier-3
-  vocab + notation hygiene** is currently open in parallel with this
-  PR-6 (#90). PR-3 stamps four new bucket-prefixed warning families
-  on `metadata.postValidatorWarnings`
-  (`[Phase 1 — Notation hygiene]`, `[Phase 1 — Diagram integrity]`,
-  `[Phase 1 — Distractor pedagogy]`, `[Phase 1 — Vocabulary tier]`)
-  which this PR's audit-trail panel surfaces in its
-  "Warnings rolled up by bucket" tab — once PR-3 lands, the new
-  buckets render automatically because the panel keys off the
-  `[Phase N — <label>]` prefix the validator chain already uses.
-  No file overlap with this PR (PR-3 is validator + tests; PR-6 is
-  renderer-side panel). Either PR can ship first. See
+- **PR-7 (#91) — Server-prompt unification** is currently open in
+  parallel with this PR-8. The two PRs do not touch overlapping files
+  (PR-7 is `server/lib/` + `server/routes/ai.ts` + `server/tests/`;
+  PR-8 is `client/src/lib/` + `server/tests/worksheetScrutiny.test.ts`)
+  and can ship in either order. See
   `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md` on
-  `big-bang/pr-3-diagram-distractor-vocab-notation` for PR-3's own
-  context.
-
-## Related sibling PRs
-
-- **PR-6 (#90) — Audit-trail panel** is currently open in parallel
-  with this PR-3 (#87). PR-6 surfaces the metadata fields the
-  PR-3 validators stamp (`postValidatorWarnings` rolled up by bucket
-  prefix, including the new `[Phase 1 — Notation hygiene]`,
-  `[Phase 1 — Diagram integrity]`, `[Phase 1 — Distractor pedagogy]`,
-  `[Phase 1 — Vocabulary tier]` buckets emitted by this PR's four
-  validators) into a single read-only "Why this looks like this"
-  teacher view. The two PRs do not touch overlapping files (PR-3 is
-  validator + tests; PR-6 is renderer-side panel) and can ship in
-  either order. See `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md`
-  on `big-bang/pr-6-audit-trail-panel` for PR-6's own context.
+  `big-bang/pr-7-server-prompt-unification` for PR-7's own context.
 
 ## What is next
 
-**PR-7 — Server-prompt unification: port curriculumAuthorityPrompt to
-server/routes/ai.ts.**
+**PR-9 — PD13 cost transparency + generation cache scaffolding.**
 
-Audit item: #39.
+Audit items: #41 (structured-output retry with diagnostic), #42
+(token budget transparency), #43 (generation cache by hash key), #76
+(PII redaction in telemetry — partial; rest in PR-22).
 
 Files to touch:
-- `server/routes/ai.ts` — port the curriculum-authority prompt
-  sections + Phase 5 manifesto from
-  `client/src/lib/curriculumAuthorityPrompt.ts` so server-side AI
-  calls use the same system prompt as the client-side path. Today
-  server has its own legacy prompt; client and server have drifted.
-- `server/lib/curriculumAuthorityPromptServer.ts` (new) — thin
-  server-side shim that re-exports the named-section helpers from the
-  shared client lib. Avoids forking the prompt; client stays the
-  source of truth.
-- `server/tests/aiServerPrompt.test.ts` (new) — pure assertion that
-  the server-emitted system prompt contains every named section the
-  client manifesto declares.
+- `shared/aiSchemas.ts` — additive optional fields on the worksheet
+  metadata shape: `costEstimate?: { promptTokens, completionTokens,
+  estimatedUsd, provider, model }`, `cacheKey?: string`,
+  `cacheHit?: boolean`. All optional so older worksheets keep
+  rendering.
+- `client/src/lib/aiCostEstimate.ts` (new) — pure helper:
+  `estimateCost(provider, model, promptTokens, completionTokens)`,
+  shipping the per-provider unit-price table (OpenAI / Anthropic /
+  Groq / Gemini / OpenRouter). Single source of truth for $ figures.
+- `client/src/lib/aiCacheKey.ts` (new) — pure deterministic hash of
+  the cache-relevant request fields (subject / topic / yearGroup /
+  examBoard / sendNeed / generatorVersion / etc.). The hash is
+  caller-side only; no I/O.
+- `server/lib/generationCache.ts` (new) — server-side LRU + sqlite
+  fallback wrapper around `aiCacheKey`, exposes
+  `getCached(key) / setCached(key, ws, ttlMs)`. Hits are stamped on
+  the worksheet metadata. Disabled by default behind
+  `GENERATION_CACHE_ENABLED=1` env flag.
+- `server/db/schema.sql` — `generation_cache` table (key, payload,
+  inserted_at, hits). Migration is idempotent.
+- `server/routes/ai.ts` — wire the cache into the structured
+  worksheet endpoints (cache lookup before model call; cache write
+  on success). PII-redaction pass strips pupil names / IEP content
+  before write.
+- `server/tests/generationCache.test.ts` (new) — pure tests of the
+  cache key + cost estimator + the cache wrapper using an in-memory
+  store.
 
-Out of scope for PR-7:
-- Per-tenant prompt feature flags (PR-22 SLA work).
+Out of scope for PR-9:
 - A/B traffic split (PR-20).
+- Per-tenant cache namespacing (PR-22).
+- The telemetry dashboard surface (PR-27).
 
-Sizing budget: ≤ ~700 net lines, ≤ ~6 files. Sandbox is
-INTEGRATIONS_ONLY; never run `npm install`. Read narrow ranges of
-`server/routes/ai.ts` (1,000+ lines).
-Branch name: `big-bang/pr-7-server-prompt-unification`.
+Sizing budget: ≤ ~700 net lines, ≤ ~7 files. Read narrow ranges of
+`server/routes/ai.ts` (1,000+ lines). Sandbox is INTEGRATIONS_ONLY —
+do not run `npm install`. Type-check + tests run in CI on PR push.
+Branch name: `big-bang/pr-9-cost-transparency-cache`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 

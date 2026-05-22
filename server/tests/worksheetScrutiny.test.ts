@@ -3846,3 +3846,305 @@ describe("PR-3 / runWorksheetPostValidators integration", () => {
     expect(r.warnings.some(w => /duplicate distractor/i.test(w))).toBe(true);
   });
 });
+
+
+
+// ─── PR-8 — Data-driven post-validator chain (audit item #74) ────────────────
+//
+// The 22-step validator chain that `runWorksheetPostValidators` walks
+// is now a data-driven registry: `WORKSHEET_POST_VALIDATORS` in
+// `worksheetPostValidatorRegistry.ts`. The legacy entry point still
+// exposes the same `runWorksheetPostValidators(ws, opts)` API, but
+// callers can now pass `opts.validatorOverrides` (a
+// `Record<name, boolean>`) to disable individual validators by name
+// without forking the chain. This block locks the registry's
+// observable behaviour:
+//
+//   - Order is preserved (and matches the pre-PR-8 inline chain).
+//   - Disabling a validator by name skips it (no warnings from that
+//     row, no rewrites that row would have made).
+//   - Unknown override keys are surfaced via a warning so a typo in
+//     tenant config is observable instead of silently disabling
+//     nothing.
+//   - The runner stays idempotent: running twice on the same input is
+//     deep-equal to running once.
+
+import {
+  WORKSHEET_POST_VALIDATORS,
+  listValidatorNames,
+  runRegistry,
+} from "../../client/src/lib/worksheetPostValidatorRegistry";
+
+describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-refactor chain", () => {
+  // The exact order the legacy `for (const fn of [ … ])` block ran in,
+  // captured here as a string array so a future reorder shows up as a
+  // diff rather than passing silently.
+  const EXPECTED_ORDER: readonly string[] = [
+    "single-mcq-correct",
+    "dedupe-word-bank",
+    "strip-foreign-diagrams",
+    "strip-empty-diagram-placeholders",
+    "year-group-lock",
+    "cap-worked-example-steps",
+    "strip-leaked-generator-instructions",
+    "strip-visible-placeholders-and-answer-leakage",
+    "reinforce-dyscalculia-maths-scaffolding",
+    "reconcile-mark-scheme",
+    "extract-misconception-links",
+    "section-question-counts",
+    "spec-anchor-presence",
+    "self-reflection-topic-anchor",
+    "revision-tips-presence",
+    "curriculum-authority-invariants",
+    "command-word-fidelity",
+    "si-unit-normalisation",
+    "reading-age-budget",
+    "maths-notation-hygiene",
+    "diagram-dependency-integrity",
+    "distractor-pedagogy",
+    "tier3-vocabulary-declared",
+  ];
+
+  it("listValidatorNames() returns the registered order", () => {
+    expect(listValidatorNames()).toEqual(EXPECTED_ORDER);
+  });
+
+  it("WORKSHEET_POST_VALIDATORS has one entry per expected validator (no duplicates, no gaps)", () => {
+    const names = WORKSHEET_POST_VALIDATORS.map((r) => r.name);
+    expect(names).toEqual(EXPECTED_ORDER);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it("every registered validator has a kebab-case name (no whitespace, no camelCase)", () => {
+    const KEBAB = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    for (const entry of WORKSHEET_POST_VALIDATORS) {
+      expect(entry.name).toMatch(KEBAB);
+    }
+  });
+
+  it("WORKSHEET_POST_VALIDATORS is frozen — registry mutation is rejected", () => {
+    expect(Object.isFrozen(WORKSHEET_POST_VALIDATORS)).toBe(true);
+  });
+});
+
+describe("PR-8 / runRegistry — ranNames + skippedNames audit trail", () => {
+  it("runs every registered validator by default and reports each in ranNames", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "English", topic: "Macbeth", yearGroup: "Year 10" },
+      sections: [{ type: "q-short", title: "Q1", content: "Explain how Macbeth feels." }],
+    };
+    const r = runRegistry(ws, { subject: "English", topic: "Macbeth", yearGroup: "Year 10" });
+    expect(r.ranNames).toEqual(listValidatorNames());
+    expect(r.skippedNames).toEqual([]);
+  });
+
+  it("disabling a validator by name skips it and records the skip", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "English", topic: "Macbeth", yearGroup: "Year 10" },
+      sections: [{ type: "q-short", title: "Q1", content: "Explain how Macbeth feels." }],
+    };
+    const r = runRegistry(
+      ws,
+      { subject: "English", topic: "Macbeth", yearGroup: "Year 10" },
+      { "command-word-fidelity": false },
+    );
+    expect(r.ranNames).not.toContain("command-word-fidelity");
+    expect(r.skippedNames).toContain("command-word-fidelity");
+    // Other validators still ran.
+    expect(r.ranNames).toContain("single-mcq-correct");
+    expect(r.ranNames).toContain("tier3-vocabulary-declared");
+  });
+
+  it("setting an override to true is a no-op (defaults are already enabled)", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "English", topic: "Macbeth", yearGroup: "Year 10" },
+      sections: [{ type: "q-short", title: "Q1", content: "Explain Macbeth." }],
+    };
+    const baseline = runRegistry(ws, { subject: "English" });
+    const explicit = runRegistry(ws, { subject: "English" }, { "command-word-fidelity": true });
+    expect(explicit.ranNames).toEqual(baseline.ranNames);
+    expect(explicit.skippedNames).toEqual(baseline.skippedNames);
+  });
+});
+
+describe("PR-8 / runRegistry — disabling a validator stops its warnings", () => {
+  it("disabling si-unit-normalisation suppresses the SI-unit warning", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "A car travels at 60 mph. Calculate the time." },
+      ],
+    };
+
+    const onChain = runRegistry(ws, {
+      subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa",
+    });
+    expect(onChain.warnings.some((w) => /SI units/i.test(w))).toBe(true);
+
+    const offChain = runRegistry(
+      ws,
+      { subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa" },
+      { "si-unit-normalisation": false },
+    );
+    expect(offChain.warnings.some((w) => /SI units/i.test(w))).toBe(false);
+    expect(offChain.skippedNames).toContain("si-unit-normalisation");
+  });
+
+  it("disabling maths-notation-hygiene leaves `x` un-rewritten", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7" },
+      sections: [{ type: "q-short", title: "Q1", content: "Calculate 3 x 4." }],
+    };
+
+    const offChain = runRegistry(
+      ws,
+      { subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7" },
+      { "maths-notation-hygiene": false },
+    );
+    // The rewriter never ran, so `3 x 4` is preserved verbatim.
+    expect(offChain.worksheet.sections![0].content).toMatch(/3 x 4/);
+    expect(offChain.skippedNames).toContain("maths-notation-hygiene");
+  });
+});
+
+describe("PR-8 / runRegistry — unknown overrides are reported, never silent", () => {
+  it("collects unknown override keys into result.unknownOverrides", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "English", yearGroup: "Year 10" },
+      sections: [{ type: "q-short", title: "Q1", content: "Explain." }],
+    };
+    const r = runRegistry(
+      ws,
+      {},
+      {
+        "command-word-fidelity": false,
+        "not-a-real-validator": false,
+        "another-typo-name": true,
+      },
+    );
+    expect(r.unknownOverrides).toEqual(
+      expect.arrayContaining(["not-a-real-validator", "another-typo-name"]),
+    );
+    expect(r.unknownOverrides).not.toContain("command-word-fidelity");
+  });
+
+  it("an unknown override does not stop the rest of the chain from running", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "English", yearGroup: "Year 10" },
+      sections: [{ type: "q-short", title: "Q1", content: "Explain." }],
+    };
+    const r = runRegistry(ws, {}, { "not-a-real-validator": false });
+    expect(r.ranNames).toEqual(listValidatorNames());
+    expect(r.skippedNames).toEqual([]);
+  });
+});
+
+describe("PR-8 / runRegistry — purity and idempotency", () => {
+  it("running the registry twice produces deep-equal results", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "A car travels at 60 mph. Calculate the time." },
+        { type: "q-mcq", title: "Q2", content: "What is 3 x 4?\nA. 12\nB. 11\nC. 7\nD. 13" },
+      ],
+    };
+    const opts = { subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa" };
+    const r1 = runRegistry(ws, opts);
+    const r2 = runRegistry(r1.worksheet, opts);
+    // Warnings on the SECOND pass should be empty (the first pass
+    // already rewrote / warned on every drift), or at minimum equal
+    // to itself across consecutive idempotent passes — i.e. the
+    // worksheet has reached a fixed point.
+    const r3 = runRegistry(r2.worksheet, opts);
+    expect(r3.worksheet.sections).toEqual(r2.worksheet.sections);
+    expect(r3.warnings).toEqual(r2.warnings);
+  });
+
+  it("does not mutate the input worksheet", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7" },
+      sections: [{ type: "q-short", title: "Q1", content: "Calculate 3 x 4." }],
+    };
+    const before = JSON.parse(JSON.stringify(ws));
+    runRegistry(ws, { subject: "Mathematics", topic: "Multiplication", yearGroup: "Year 7" });
+    expect(ws).toEqual(before);
+  });
+
+  it("does not mutate the overrides object", () => {
+    const overrides = { "command-word-fidelity": false };
+    const before = { ...overrides };
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "English", yearGroup: "Year 10" },
+      sections: [{ type: "q-short", title: "Q1", content: "Explain." }],
+    };
+    runRegistry(ws, {}, overrides);
+    expect(overrides).toEqual(before);
+  });
+});
+
+describe("PR-8 / runWorksheetPostValidators — backwards compatibility", () => {
+  it("legacy callers (no validatorOverrides) get the same warning surface as before", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "Reflect on a car travelling at 60 mph." },
+      ],
+    };
+    const r = runWorksheetPostValidators(ws, {
+      subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa",
+    });
+    // Both PR-2 warnings are still present (proves the chain still
+    // runs end-to-end after the registry refactor).
+    expect(r.warnings.some((w) => /Command-word fidelity.*reflect on/i.test(w))).toBe(true);
+    expect(r.warnings.some((w) => /SI units.*miles per hour/i.test(w))).toBe(true);
+    // qaScore stamping (PR-4) still happens after the chain.
+    expect(r.worksheet.metadata?.qaScore).toBeDefined();
+  });
+
+  it("validatorOverrides on PostValidatorOptions disables a single row of the chain", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "Reflect on a car travelling at 60 mph." },
+      ],
+    };
+    const r = runWorksheetPostValidators(ws, {
+      subject: "Physics", topic: "Forces", yearGroup: "Year 10", examBoard: "aqa",
+      validatorOverrides: { "command-word-fidelity": false },
+    });
+    // SI-unit warning still fires …
+    expect(r.warnings.some((w) => /SI units.*miles per hour/i.test(w))).toBe(true);
+    // … but the disabled command-word-fidelity warning does not.
+    expect(r.warnings.some((w) => /Command-word fidelity/i.test(w))).toBe(false);
+  });
+
+  it("an unknown validatorOverrides key produces a `[Phase PR-8 — Validator registry]` warning", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "T",
+      metadata: { subject: "English", yearGroup: "Year 10" },
+      sections: [{ type: "q-short", title: "Q1", content: "Explain." }],
+    };
+    const r = runWorksheetPostValidators(ws, {
+      validatorOverrides: { "not-a-real-validator": false },
+    });
+    expect(
+      r.warnings.some((w) =>
+        /\[Phase PR-8 — Validator registry\] Unknown validatorOverrides key 'not-a-real-validator'/.test(
+          w,
+        ),
+      ),
+    ).toBe(true);
+  });
+});
