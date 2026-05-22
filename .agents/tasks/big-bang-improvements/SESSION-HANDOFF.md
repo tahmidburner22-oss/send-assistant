@@ -149,6 +149,20 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 - **PR-2 (#86), PR-3 (#87), PR-5** push + open / merge bookkeeping.
 
+## Related sibling PRs
+
+- **PR-6 (#90) — Audit-trail panel** is currently open in parallel
+  with this PR-3 (#87). PR-6 surfaces the metadata fields the
+  PR-3 validators stamp (`postValidatorWarnings` rolled up by bucket
+  prefix, including the new `[Phase 1 — Notation hygiene]`,
+  `[Phase 1 — Diagram integrity]`, `[Phase 1 — Distractor pedagogy]`,
+  `[Phase 1 — Vocabulary tier]` buckets emitted by this PR's four
+  validators) into a single read-only "Why this looks like this"
+  teacher view. The two PRs do not touch overlapping files (PR-3 is
+  validator + tests; PR-6 is renderer-side panel) and can ship in
+  either order. See `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md`
+  on `big-bang/pr-6-audit-trail-panel` for PR-6's own context.
+
 ## What is next
 
 **PR-6 — Audit-trail panel: surface coverageMap / aoHistogram /
