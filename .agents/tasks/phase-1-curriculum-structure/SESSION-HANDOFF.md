@@ -1,11 +1,11 @@
 # Phase 1 — Session Handoff
 
-This file is the **resume point** for any fresh chat picking up Phase 1.
-Read it first, then `PHASE-PLAN.md`, then proceed.
+> **Status: SHIPPED.** Merged to `main` as PR #73 / commit `64b794d` on
+> 2026-05-21. This file is kept for the historical record so subsequent
+> phases can see exactly which conventions were locked in. Do not edit
+> the conventions block — Phase 2+ inherits it verbatim.
 
-Last updated: see `git log -1 --format=%cI -- .agents/tasks/phase-1-curriculum-structure/SESSION-HANDOFF.md`
-
-## Quick-resume header (paste into a fresh chat)
+## Quick-resume header (for the historical record)
 
 ```
 Context: send-assistant repo, branch phase-1-curriculum-structure.
@@ -18,7 +18,7 @@ Goal: complete Phase 1 (counts 7-7-5+1, per-Q answer lines, maths working-out
       box, curriculum + GCSE spec lock) and open / update the PR.
 ```
 
-## What is done
+## What shipped
 
 - `client/src/lib/worksheetSectionTargets.ts` — single source of truth for
   `SECTION_QUESTION_TARGETS` (recall 6/7/8, understanding 6/7/8, application
@@ -90,16 +90,13 @@ Goal: complete Phase 1 (counts 7-7-5+1, per-Q answer lines, maths working-out
     untouched, falls back to cross-board union, never invents on
     unhinted questions, warns when no taxonomy bundled.
 
-## What is left (in this branch)
+## What is left in this branch
 
-- **Task 9 — CI run.** `npm test` + `tsc --noEmit` will run on PR push.
-  Sandbox cannot run them locally (`INTEGRATIONS_ONLY`). If CI raises any
-  TypeScript or test failures, fix them on this branch.
+Nothing. PR #73 is merged. Phase 2 picks up the next slice (Topic-specific
+Self-Reflection) on a fresh branch off `main` — see
+`.agents/tasks/phase-2-self-reflection/`.
 
-- **Task 10 — Open / update the PR.** Title:
-  `Phase 1 — Curriculum-aligned structure (7-7-5 counts, per-Q answer lines, maths working-out, spec anchor)`
-
-## Conventions established (do not break)
+## Conventions established (Phase 2+ MUST honour these)
 
 - The **single source of truth** for question counts and the marks→lines
   ramp is `client/src/lib/worksheetSectionTargets.ts`. Never inline a
@@ -116,7 +113,7 @@ Goal: complete Phase 1 (counts 7-7-5+1, per-Q answer lines, maths working-out
 - **Never invent spec codes.** The post-validator must fail loudly on
   unmatched `specRef` rather than silently filling an ID-shaped string.
 
-## Files modified so far (commit before context dies)
+## Files modified in the merged PR
 
 ```
 client/src/lib/worksheetSectionTargets.ts        (new file)
@@ -124,7 +121,9 @@ client/src/lib/worksheet-generator.ts            (interface + plan builder)
 client/src/lib/worksheetConstraints.ts           (plan + cap)
 client/src/components/WorksheetRenderer.tsx      (renderer + subject plumb)
 client/src/lib/ai.ts                             (prompt + spec-anchor block)
+client/src/lib/worksheetPostValidator.ts         (+ 2 validators + helper)
 shared/aiSchemas.ts                              (Zod schema)
+server/tests/worksheetScrutiny.test.ts           (Phase 1 test suites)
 .agents/tasks/phase-1-curriculum-structure/PHASE-PLAN.md
 .agents/tasks/phase-1-curriculum-structure/SESSION-HANDOFF.md   (this file)
 .kiro/steering/session-continuity.md             (auto-include resume hint)

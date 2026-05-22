@@ -20,6 +20,7 @@ import {
   shouldRenderWorkingOutBox,
   workingOutRowsForMarks,
 } from "@/lib/worksheetSectionTargets";
+import { buildSelfReflection } from "@/lib/selfReflectionBuilder";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 
@@ -3205,8 +3206,28 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
 /**
  * Self-Reflection section — shown at the end of every worksheet.
  * "I can" statements with traffic-light circles + an open reflection question.
+ *
+ * Phase 2 — when topic + subject are available, the pad-to-3 fallback
+ * uses selfReflectionBuilder so we never display the generic string
+ * "I can apply what I have learned today" again. Display also bolds the
+ * leading command word (Calculate / Solve / Describe / etc.) on every
+ * "I can <Verb> …" row that the builder produced. Both behaviours fall
+ * back gracefully when topic is unavailable (legacy worksheets, library
+ * imports without metadata).
  */
-function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
+function SelfReflectionSection({
+  content,
+  fmt,
+  overlayColor = "white",
+  topic,
+  subject,
+}: {
+  content: string;
+  fmt: ReturnType<typeof getSendFormatting>;
+  overlayColor?: string;
+  topic?: string;
+  subject?: string;
+}) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
 
   // ── Parse structured markers from AI output ──────────────────────────────
@@ -3287,9 +3308,32 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
     topics = topicLines.map(l => l.replace(/^[•\-\*\d.)]\s*/, "").replace(/^I can\s*/i, "").trim()).filter(Boolean);
   }
 
-  // Ensure we always have at least 3 topic rows (pad with generic ones if needed)
-  while (topics.length < 3) {
-    topics.push("I can apply what I have learned today");
+  // Phase 2 — pad-to-3 fallback. Pre-Phase-2 this pushed the literal
+  // string "I can apply what I have learned today" — generic, topic-free
+  // pedagogical noise. When the parent worksheet has a topic available
+  // we now pad with deterministic builder output so every visible row
+  // names the actual topic. Falls back to the legacy generic string only
+  // when topic is genuinely unknown (e.g. a stand-alone library asset
+  // rendered without worksheet metadata).
+  if (topics.length < 3) {
+    const t = (topic || "").trim();
+    if (t) {
+      const built = buildSelfReflection({ topic: t, subject });
+      // Skip statements already present (case-insensitive match on the
+      // verb-and-topic substring) so we don't duplicate the AI's lines.
+      const existingLower = topics.map(s => s.toLowerCase());
+      const isDuplicate = (s: string) =>
+        existingLower.some(e => e === s.toLowerCase() || e.includes(s.toLowerCase().slice(0, 12)));
+      for (const stmt of built.iCanStatements) {
+        if (topics.length >= 5) break;
+        if (!isDuplicate(stmt)) topics.push(stmt);
+      }
+    }
+    while (topics.length < 3) {
+      // Last-resort generic pad — preserved for backward compatibility
+      // with library worksheets that have no topic metadata.
+      topics.push("I can apply what I have learned today");
+    }
   }
 
   return (
@@ -3313,16 +3357,35 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
           ))}
         </div>
         {/* Table rows */}
-        {topics.map((topic, ti) => (
-          <div key={ti} style={{ display: "grid", gridTemplateColumns: "1fr 80px 100px 80px", borderBottom: "1px solid #e5e7eb" }}>
-            <div style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight, padding: "7px 0" }}>{topic}</div>
-            {[0, 1, 2].map(ci => (
-              <div key={ci} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "7px 4px" }}>
-                <div style={{ width: "18px", height: "18px", border: "1.5px solid #9ca3af", borderRadius: "2px" }} />
+        {topics.map((topic, ti) => {
+          // Phase 2 — bold the leading command word on builder-shaped rows
+          // ("I can <Verb> …"). The verb list mirrors the canonical command
+          // words used elsewhere in the worksheet; matched case-insensitive
+          // and emitted in title case so the row reads cleanly. Any row
+          // that doesn't fit the pattern (legacy library content, AI
+          // freeform text) is rendered as-is.
+          const m = topic.match(/^(I can\s+)([A-Za-z][A-Za-z\s]{0,12}?)(\s+(?:[a-z]|the\b|that\b|when\b|using\b|to\b|in\b|of\b|with\b|about\b))/);
+          return (
+            <div key={ti} style={{ display: "grid", gridTemplateColumns: "1fr 80px 100px 80px", borderBottom: "1px solid #e5e7eb" }}>
+              <div style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight, padding: "7px 0" }}>
+                {m ? (
+                  <>
+                    {m[1]}
+                    <strong style={{ fontWeight: 700, color: "#1a2744" }}>{m[2]}</strong>
+                    {topic.slice(m[1].length + m[2].length)}
+                  </>
+                ) : (
+                  topic
+                )}
               </div>
-            ))}
-          </div>
-        ))}
+              {[0, 1, 2].map(ci => (
+                <div key={ci} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "7px 4px" }}>
+                  <div style={{ width: "18px", height: "18px", border: "1.5px solid #9ca3af", borderRadius: "2px" }} />
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
       {/* Part B: Written reflection prompts */}
       {reflectionPrompts.length > 0 && (
@@ -6989,7 +7052,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 ) : section.type === "self-assessment" ? (
                   <SelfAssessmentSection content={content} fmt={fmt} />
                 ) : section.type === "self-reflection" ? (
-                  <SelfReflectionSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                  <SelfReflectionSection
+                    content={content}
+                    fmt={fmt}
+                    overlayColor={overlayColor}
+                    topic={worksheet.metadata?.topic}
+                    subject={worksheet.metadata?.subject}
+                  />
                 ) : (section.type === "word-bank" || section.type === "wordbank") ? (
                   <WordBankSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : section.type === "sentence-starters" ? (
