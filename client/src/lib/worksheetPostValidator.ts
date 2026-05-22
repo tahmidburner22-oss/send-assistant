@@ -91,6 +91,14 @@ import { normaliseMathNotation } from "./notationHygieneNormaliser";
 // `qaScoreBuilder.ts` for the full deduction matrix.
 import { applyQaScore } from "./qaScoreBuilder";
 
+// PR-8 — audit item #74 — data-driven post-validator chain. The
+// canonical chain order + per-validator name lives in
+// `worksheetPostValidatorRegistry.ts`. `runWorksheetPostValidators`
+// (defined at the bottom of this file) delegates to `runRegistry` so
+// callers can disable individual validators per-tenant by name without
+// forking the chain.
+import { runRegistry } from "./worksheetPostValidatorRegistry";
+
 export interface PostValidatorSection {
   id?: string;
   type?: string;
@@ -156,6 +164,16 @@ export interface PostValidatorOptions {
    *  to be rebuilt deterministically. Falls back to ws.metadata.topic when
    *  not supplied. */
   topic?: string;
+  /** PR-8 — audit item #74. Optional per-validator enable / disable
+   *  overrides keyed by the registry name (kebab-case, e.g.
+   *  "command-word-fidelity"). Setting a key to `false` skips that
+   *  validator for this run. Unknown keys are reported back via a
+   *  `[Phase PR-8 — Validator registry]` warning so typos don't silently
+   *  disable nothing. Pure / additive — when the field is absent, the
+   *  full chain runs exactly as it did before this PR. See
+   *  `worksheetPostValidatorRegistry.ts:WORKSHEET_POST_VALIDATORS` for
+   *  the canonical name list. */
+  validatorOverrides?: Readonly<Record<string, boolean>>;
 }
 
 export interface PostValidatorResult {
@@ -718,7 +736,7 @@ export function extractMisconceptionLinks(
   };
 }
 
-function stripVisiblePlaceholdersAndAnswerLeakage(ws: PostValidatorWorksheet): PostValidatorResult {
+export function stripVisiblePlaceholdersAndAnswerLeakage(ws: PostValidatorWorksheet): PostValidatorResult {
   const warnings: string[] = [];
   const PLACEHOLDER_RE = /\[(?:specific|plausible|correct answer|incorrect option|continue|word\d+|point \d+|name of mistake|explanation|short|realistic|final answer|first step|second step|third step|key point|statement about|.*?placeholder.*?).*?\]/gi;
   const CORRECT_ANSWER_HINT_RE = /\s*(?:✓|✔|\(correct\)|correct answer|mark with\s*[✓✔])\s*$/i;
@@ -2055,105 +2073,32 @@ export function runWorksheetPostValidators(
   worksheet: PostValidatorWorksheet,
   opts: PostValidatorOptions = {},
 ): PostValidatorResult {
-  const allWarnings: string[] = [];
-  let current: PostValidatorWorksheet = worksheet;
+  // PR-8 — audit item #74. The 22-step validator chain is now a
+  // data-driven registry in `worksheetPostValidatorRegistry.ts`. This
+  // entry point delegates to that registry's `runRegistry` so the
+  // legacy callers see the same behaviour while new callers (per-tenant
+  // feature flags, eval-harness focus runs, regression-bisecting a
+  // flaky validator) can pass `opts.validatorOverrides` to disable
+  // individual validators by name without forking the chain.
+  const registryResult = runRegistry(
+    worksheet,
+    opts,
+    opts.validatorOverrides || {},
+  );
 
-  for (const fn of [
-    enforceSingleMcqCorrect,
-    dedupeWordBank,
-    (ws: PostValidatorWorksheet) => stripForeignDiagrams(ws, opts),
-    stripEmptyDiagramPlaceholders,
-    (ws: PostValidatorWorksheet) => enforceYearGroupLock(ws, opts),
-    (ws: PostValidatorWorksheet) => capWorkedExampleSteps(ws, opts),
-    stripLeakedGeneratorInstructions,
-    stripVisiblePlaceholdersAndAnswerLeakage,
-    (ws: PostValidatorWorksheet) => reinforceDyscalculiaMathsScaffolding(ws, opts),
-    // PR worksheet-gen-efficiency #7 — deterministic mark-scheme reconciler.
-    // Runs AFTER MCQ/word-bank fixes so we work against sanitised content,
-    // and BEFORE the misconception-link extractor so the mark scheme is
-    // settled before any teacher-facing diagnostics are emitted.
-    (ws: PostValidatorWorksheet) => reconcileMarkScheme(ws, opts),
-    // FEAT-PB7 — extract per-MCQ misconception linkage AFTER all other
-    // content rewrites so we work against the final, sanitised MCQ text.
-    extractMisconceptionLinks,
-    // Phase 1 — section-count contract enforcement (7-7-5 + 1).
-    // Counts question sections per group and warns when outside the
-    // SECTION_QUESTION_TARGETS[section].{min,max} window. No mutation —
-    // warnings only — so an off-by-one count never blocks a worksheet.
-    (ws: PostValidatorWorksheet) => enforceSectionQuestionCounts(ws, opts),
-    // Phase 1 — curriculum + GCSE spec lock. Fills missing specRef on
-    // every question section by best-matching against the awarding-body
-    // taxonomy. Never invents codes; warns when no taxonomy is bundled
-    // for the (board, subject, year) combination.
-    (ws: PostValidatorWorksheet) => enforceSpecAnchorPresence(ws, opts),
-    // Phase 2 — topic-specific Self-Reflection. Detects generic
-    // placeholder content ("I can ___", "apply what I have learned",
-    // <5 I-can statements, exit ticket without the topic noun) on the
-    // pupil-facing Self-Reflection section and rewrites it with
-    // deterministic builder output that names the actual topic. Pure /
-    // idempotent — never overwrites good topic-anchored content. Runs
-    // last so it sees the final post-validated section list (e.g. after
-    // any earlier passes have settled the section types and titles).
-    (ws: PostValidatorWorksheet) => enforceSelfReflectionTopicAnchor(ws, opts),
-    // Phase 3 — examiner-voice Revision Tips. Detects generic placeholder
-    // content (fewer than 5 tip-shaped lines, no command-word reference,
-    // no topic anchor, generic stems like "revise carefully", literal
-    // placeholders like `[Tip 1]` / `___`) on the pupil-facing
-    // Revision-Tips section and rewrites it with deterministic builder
-    // output that names "${opts.topic}" / metadata.topic, mirrors the
-    // worksheet's actual command words and mark tariffs, and surfaces a
-    // real misconception when the Common Mistakes section is populated.
-    // Pure / idempotent. Runs last so it sees the final post-validated
-    // section list — including any reconciled mark-scheme that the
-    // earlier reconcileMarkScheme pass has settled.
-    (ws: PostValidatorWorksheet) => enforceRevisionTipsPresence(ws, opts),
-    // Phase 5 — curriculum-authority invariants. Walks every pupil-
-    // facing section and (a) silently rewrites US-English drift to UK
-    // English, (b) warns on banned softener phrases ("Have a think
-    // about", "Make sure you revise", "Good luck", "Do your best"),
-    // (c) clamps fabricated assessment-objective codes (AO5+) to AO1
-    // and warns on the same fabrication in pupil-facing content,
-    // (d) warns on template-literal / placeholder leakage. Pure /
-    // idempotent. Runs LAST so any text written by earlier validators
-    // (e.g. deterministic Self-Reflection / Revision-Tips rewrites in
-    // Phases 2 / 3) is also normalised to UK English before the
-    // worksheet leaves the post-validator chain.
-    enforceCurriculumAuthorityInvariants,
-    // PR-2 — three new pure / idempotent validators added at the END of
-    // the chain so they audit the FINAL post-validated content (e.g.
-    // after Phase 5's UK English silent rewriter has settled). All three
-    // are warn-only — they never mutate sections.
-    //
-    //   * enforceCommandWordFidelity (audit #2): leading verbs of every
-    //     question stem must be on the named board's published list.
-    //   * enforceSiUnitNormalisation (audit #14): imperial unit usage
-    //     (mph, °F, ft, lbs, miles, etc.) outside unit-conversion topics.
-    //   * enforceReadingAgeBudget (audit #1): Flesch-Kincaid actual vs
-    //     declared expectedReadingAge per question, ±1.5-year tolerance.
-    (ws: PostValidatorWorksheet) => enforceCommandWordFidelity(ws, opts),
-    (ws: PostValidatorWorksheet) => enforceSiUnitNormalisation(ws, opts),
-    (ws: PostValidatorWorksheet) => enforceReadingAgeBudget(ws, opts),
-    // PR-3 — four new validators auditing the FINAL post-validated content
-    // (after Phase 5's UK English silent rewriter and PR-2's command-word /
-    // SI-unit / reading-age probes have settled).
-    //   * enforceMathsNotationHygiene (audit #13): silent rewrite of × / − / °.
-    //     Runs FIRST among the PR-3 group so the next three see clean notation.
-    //   * enforceDiagramDependencyIntegrity (audit #15): question stems
-    //     referencing "Diagram A / B / the figure / the graph" must have a
-    //     matching diagram section.
-    //   * enforceDistractorPedagogy (audit #4): MCQ wrong-answer distractors
-    //     must be substantive misconceptions, not typo decoys.
-    //   * enforceTier3VocabularyDeclared (audit #10): Tier 3 words used in
-    //     question stems must appear in the Word Bank / Key Vocabulary
-    //     section.
-    enforceMathsNotationHygiene,
-    enforceDiagramDependencyIntegrity,
-    enforceDistractorPedagogy,
-    enforceTier3VocabularyDeclared,
-  ]) {
-    const r = fn(current);
-    current = r.worksheet;
-    allWarnings.push(...r.warnings);
+  let current = registryResult.worksheet;
+  const allWarnings: string[] = [...registryResult.warnings];
+
+  // Surface caller-side typos in `validatorOverrides`. We don't fail
+  // the chain — unknown names just get a single warning (one per
+  // unknown name) so flag drift in tenant config is observable.
+  if (registryResult.unknownOverrides.length > 0) {
+    for (const name of registryResult.unknownOverrides) {
+      allWarnings.push(
+        `[Phase PR-8 — Validator registry] Unknown validatorOverrides key '${name}' was ignored; ` +
+          `see WORKSHEET_POST_VALIDATORS for the canonical name list.`,
+      );
+    }
   }
 
   if (allWarnings.length > 0) {

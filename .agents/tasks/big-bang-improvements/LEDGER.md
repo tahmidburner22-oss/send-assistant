@@ -89,7 +89,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 71 | Per-topic regeneration heat-map                                                       | PR-27  | not started |
 | 72 | Ban whole-file reads of ai.ts / Worksheets.tsx / WorksheetRenderer.tsx in CI tooling  | PR-21  | not started |
 | 73 | ai.ts second carve-up by prompt section                                               | PR-21  | not started |
-| 74 | Data-driven post-validator chain                                                      | PR-8   | not started |
+| 74 | Data-driven post-validator chain                                                      | PR-8   | shipped — PR pending |
 | 75 | Property-based tests on builders                                                      | PR-21  | not started |
 | 76 | Logging redaction for pupil names + IEP content                                       | PR-9   | not started |
 | 77 | Snapshot tests by (subject × year × send-need × ability tier) matrix                  | PR-21  | not started |
