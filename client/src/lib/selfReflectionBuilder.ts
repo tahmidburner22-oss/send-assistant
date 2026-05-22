@@ -395,33 +395,42 @@ export function buildSelfReflection(inputs: SelfReflectionInputs): SelfReflectio
   // ── Written prompts ─────────────────────────────────────────────────────
   // Two prompts. Both topic-anchored. Sentence-starter register is more
   // heavily scaffolded; emotional / older registers are tuned for tone.
+  // Tick-box-only registers (ASC / ADHD / dyslexia / dyscalculia / etc.)
+  // suppress written prompts entirely — the SEND adaptation rules in
+  // `sendPromptFragments.ts` explicitly require "tick-box 'I can …'
+  // statements, not open writing" for these profiles.
   const writtenPrompts: string[] =
-    register === "sentenceStarter"
-      ? [
-          `One thing I now understand about ${noun} is …`,
-          `One thing I still want to ask about ${noun} is …`,
-        ]
-      : register === "emotional"
+    register === "tickBoxOnly"
+      ? []
+      : register === "sentenceStarter"
         ? [
-            `One thing about ${noun} I felt confident about today was …`,
-            `One thing about ${noun} I would like more time on is …`,
+            `One thing I now understand about ${noun} is …`,
+            `One thing I still want to ask about ${noun} is …`,
           ]
-        : register === "older"
+        : register === "emotional"
           ? [
-              `The most useful thing I learned about ${noun} today is …`,
-              `One way I will use what I learned about ${noun} is …`,
+              `One thing about ${noun} I felt confident about today was …`,
+              `One thing about ${noun} I would like more time on is …`,
             ]
-          : [
-              `One thing I now understand about ${noun} that I did not before is …`,
-              `One question I still want to ask about ${noun} is …`,
-            ];
+          : register === "older"
+            ? [
+                `The most useful thing I learned about ${noun} today is …`,
+                `One way I will use what I learned about ${noun} is …`,
+              ]
+            : [
+                `One thing I now understand about ${noun} that I did not before is …`,
+                `One question I still want to ask about ${noun} is …`,
+              ];
 
   // ── Exit ticket ─────────────────────────────────────────────────────────
   // Always names the topic. Phrasing varies by register but the topic noun
-  // is non-negotiable.
+  // is non-negotiable. Tick-box-only registers get a tick-box-shaped
+  // confidence prompt instead of an open-writing exit ticket so the
+  // pupil-facing surface stays consistent with the SEND rule that bans
+  // open writing for those profiles.
   const exitTicket: string =
     register === "tickBoxOnly"
-      ? `Write ONE thing you learned today about ${noun} in a single sentence:`
+      ? `Tick how you feel about ${noun} today: ☐ I am confident  ☐ I am getting there  ☐ I need more help`
       : register === "emotional"
         ? `One thing I want to remember about ${noun} is:`
         : register === "older"
@@ -558,17 +567,22 @@ export function isGenericSelfReflection(content: string, topic: string): boolean
     return true;
   }
 
-  // Exit ticket: only check it if present; if it's there but topic-free,
-  // count the worksheet as generic.
+  // Exit ticket: required component. If the EXIT_TICKET: marker is missing
+  // AND no trailing exit-ticket-shaped line exists, the AI omitted the exit
+  // ticket entirely — flag the section as generic so the validator
+  // rebuilds it with a topic-anchored prompt. If the marker / line is
+  // present, validate it mentions the topic noun.
   const etMatch = text.match(/EXIT_TICKET:\s*([^\n]+)/i);
   if (etMatch) {
     if (!mentionsTopic(etMatch[1])) return true;
   } else {
-    // No exit ticket marker — check the trailing exit-ticket-shaped line.
     const trailing = text.split("\n").map(l => l.trim()).filter(Boolean).pop() || "";
-    if (/exit\s*ticket|one thing you learned|key point you will take/i.test(trailing) && !mentionsTopic(trailing)) {
+    const looksLikeExitTicket = /exit\s*ticket|one thing you learned|key point you will take|tick how you feel/i.test(trailing);
+    if (!looksLikeExitTicket) {
+      // No exit ticket at all — required component missing.
       return true;
     }
+    if (!mentionsTopic(trailing)) return true;
   }
 
   // Lastly: if the literal pad-to-3 fallback string survived through the

@@ -1355,6 +1355,47 @@ describe("Phase 2 / buildSelfReflection — topic-anchored output", () => {
     expect(out.exitTicket).toContain("GDPR");
   });
 
+  it("suppresses open-writing prompts for tick-box-only SEND profiles (ASC / ADHD / dyslexia / dyscalculia)", () => {
+    // Per the SEND adaptation rules in sendPromptFragments.ts, tick-box-
+    // only profiles must NOT receive open-writing prompts ("Reflection
+    // uses tick-box 'I can …' statements, not open writing"). Codex P1
+    // feedback on PR #75 — the builder used to fall through to the
+    // standard branch and emit 2 written prompts + an open-writing exit
+    // ticket for these profiles.
+    for (const sendKey of ["asc", "adhd", "dyslexia", "dyscalculia", "mld", "dyspraxia", "working-memory"]) {
+      const out = buildSelfReflection({
+        topic: "Adding fractions",
+        subject: "Mathematics",
+        sendKey,
+      });
+      // No open-writing prompts.
+      expect(out.writtenPrompts.length).toBe(0);
+      // Exit ticket is tick-box-shaped, not "Write ONE …".
+      expect(out.exitTicket).not.toMatch(/Write ONE/);
+      expect(out.exitTicket).toMatch(/tick|☐/i);
+      // Topic still anchored.
+      expect(out.exitTicket.toLowerCase()).toContain("adding fractions");
+      // Five I-can statements remain (rendered as tick-box rows).
+      expect(out.iCanStatements.length).toBe(5);
+      for (const s of out.iCanStatements) {
+        expect(s.toLowerCase()).toContain("adding fractions");
+      }
+    }
+  });
+
+  it("treats compound 'asc:asc-sensory' / 'asc-rigid' sub-profile keys as tick-box-only", () => {
+    // The compound keying mirrors how ai.ts:2810 derives sendKey from
+    // resolveSendSpec for autism sub-profiles.
+    const out = buildSelfReflection({
+      topic: "Photosynthesis",
+      subject: "Biology",
+      sendKey: "asc:asc-sensory",
+    });
+    expect(out.writtenPrompts.length).toBe(0);
+    expect(out.exitTicket).toMatch(/tick|☐/i);
+    expect(out.exitTicket.toLowerCase()).toContain("photosynthesis");
+  });
+
   it("is a pure function — identical inputs produce identical output", () => {
     const a = buildSelfReflection({ topic: "Photosynthesis", subject: "Biology" });
     const b = buildSelfReflection({ topic: "Photosynthesis", subject: "Biology" });
@@ -1441,6 +1482,32 @@ describe("Phase 2 / isGenericSelfReflection — generic-content detector", () =>
       "I can evaluate the benefits of IT for accessibility.\n" +
       "EXIT_TICKET: Write ONE thing you learned today about IT in a single sentence.";
     expect(isGenericSelfReflection(ok, "IT")).toBe(false);
+  });
+
+  it("flags content with no exit-ticket section as generic (Codex P2 follow-up on PR #75)", () => {
+    // Five topic-anchored I-can statements but no EXIT_TICKET: marker and
+    // no trailing exit-ticket-shaped line — the AI omitted the required
+    // exit-ticket prompt entirely. Must be flagged so the validator
+    // rebuilds it.
+    const noExitTicket =
+      "CONFIDENCE_TABLE:\n" +
+      "I can Calculate confidently when the question is about adding fractions.\n" +
+      "I can Solve the key ideas in adding fractions using the right vocabulary.\n" +
+      "I can Find a question about adding fractions with a worked answer.\n" +
+      "I can Show that what I have learned about adding fractions to a new problem.\n" +
+      "I can Determine my own answer about adding fractions and spot mistakes.";
+    expect(isGenericSelfReflection(noExitTicket, "Adding fractions")).toBe(true);
+  });
+
+  it("treats deterministic builder output for tick-box-only profiles as NOT generic", () => {
+    // The builder for tick-box-only profiles emits tick-box-shaped exit
+    // tickets ("Tick how you feel about <noun> today: ☐ …"). The
+    // generic-content detector must recognise this as a valid exit
+    // ticket, not flag it as missing.
+    const tickBoxContent = renderSelfReflectionAsMarkerBlock(
+      buildSelfReflection({ topic: "Adding fractions", subject: "Mathematics", sendKey: "asc" }),
+    );
+    expect(isGenericSelfReflection(tickBoxContent, "Adding fractions")).toBe(false);
   });
 });
 
