@@ -147,6 +147,24 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 - **PR-3 (#87), PR-6 (#90)** push + open / merge bookkeeping.
 
+## Related sibling PRs
+
+- **PR-3 (#87) — Diagram coupling + distractor pedagogy + Tier-3
+  vocab + notation hygiene** is currently open in parallel with this
+  PR-6 (#90). PR-3 stamps four new bucket-prefixed warning families
+  on `metadata.postValidatorWarnings`
+  (`[Phase 1 — Notation hygiene]`, `[Phase 1 — Diagram integrity]`,
+  `[Phase 1 — Distractor pedagogy]`, `[Phase 1 — Vocabulary tier]`)
+  which this PR's audit-trail panel surfaces in its
+  "Warnings rolled up by bucket" tab — once PR-3 lands, the new
+  buckets render automatically because the panel keys off the
+  `[Phase N — <label>]` prefix the validator chain already uses.
+  No file overlap with this PR (PR-3 is validator + tests; PR-6 is
+  renderer-side panel). Either PR can ship first. See
+  `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md` on
+  `big-bang/pr-3-diagram-distractor-vocab-notation` for PR-3's own
+  context.
+
 ## What is next
 
 **PR-7 — Server-prompt unification: port curriculumAuthorityPrompt to
