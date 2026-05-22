@@ -12,6 +12,16 @@ import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
 // build via esbuild.
 import { checkSvgLayout } from "../../client/src/lib/svgLayoutChecker.js";
 
+// PR-7 (audit item #39) — server-prompt unification.
+//
+// Single source of truth for the curriculum-authority manifesto
+// (preamble + 6-clause non-negotiables + KS-graded pedagogical register
+// note). Worksheet-content endpoints below prepend the manifesto to
+// their existing role-specific opening so server-side AI calls match
+// the client-side path. See `server/lib/curriculumAuthorityPromptServer.ts`
+// for the helper contract.
+import { buildServerWorksheetSystemPrompt } from "../lib/curriculumAuthorityPromptServer.js";
+
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
@@ -1965,14 +1975,17 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
       return "SEND: Add clear numbered section headings. Bold all key terms. Add extra white space between questions. Number all questions if not already numbered.";
     })();
 
-    const system = `You are an expert UK educational content specialist reformatting a worksheet for a student with ${sendNeed}.
+    const system = buildServerWorksheetSystemPrompt({
+      inputs: { yearGroup: yr, subject: req.body.subject || "" },
+      role: `You are an expert UK educational content specialist reformatting a worksheet for a student with ${sendNeed}.
 
 ABSOLUTE RULES:
 1. Every question, task, and instruction from the original MUST appear in the output word-for-word. Never paraphrase, simplify, or remove content.
 2. All mathematical symbols (×, ÷, √, ², π, ≤, ≥, ≠), fractions, equations, and numbers must be preserved exactly.
 3. The ONLY permitted changes are formatting/presentation changes specified in the SEND guidance below.
 4. Do NOT add word banks, hints, worked examples, sentence starters, or scaffolding unless specifically instructed in the SEND guidance.
-5. Return ONLY valid JSON — no markdown code fences, no text outside the JSON object.`;
+5. Return ONLY valid JSON — no markdown code fences, no text outside the JSON object.`,
+    });
 
     const user = `Reformat this worksheet for a student with ${sendNeed} in ${yr}.
 
@@ -2178,10 +2191,13 @@ PRIMARY SCHOOL VOCABULARY RULES (MANDATORY):
 - NEVER use: analyse, evaluate, assess, justify, synthesise, hypothesis, methodology, criterion, criteria, infer, deduce, extrapolate, correlate, quantify, magnitude.
 - Use encouraging, child-friendly language. Activities must be varied: circle, tick, draw, match, fill in.` : '';
 
-    const system = `You are an expert UK teacher creating a complete, print-ready worksheet based on provided lesson content.
+    const system = buildServerWorksheetSystemPrompt({
+      inputs: { subject, yearGroup, topic: topicHint.slice(0, 200), isSTEM },
+      role: `You are an expert UK teacher creating a complete, print-ready worksheet based on provided lesson content.
 You must generate a worksheet that directly tests and reinforces the content from the provided slides/document.
-Every question must be answerable from the provided content — do not invent new topics.${primaryVocabRules}
-Return ONLY valid JSON — no markdown, no explanation, no code blocks.`;
+Every question must be answerable from the provided content — do not invent new topics.${primaryVocabRules}`,
+      outputContract: `Return ONLY valid JSON — no markdown, no explanation, no code blocks.`,
+    });
 
     const user = `Create a complete ${phase} worksheet for ${yearGroup} ${subject} based on the following lesson content.
 
@@ -2340,7 +2356,11 @@ router.post("/differentiate-worksheet", requireAuth, async (req: Request, res: R
     return `=== ${s.title || `Section ${i + 1}`} ===\n${(s.content || "").slice(0, 300)}`;
   }).join("\n\n").slice(0, 3000);
 
-  const system = `You are an expert UK teacher differentiating a worksheet for ${yr} pupils. Transform the existing worksheet to ${tier} tier difficulty. Preserve the topic and structure — only adjust question difficulty. Return valid JSON only. CRITICAL: The "content" field of every section MUST be a plain text string (NOT an array, NOT an object, NOT nested JSON). Write all questions as numbered plain text lines separated by newlines within the string.`;
+  const system = buildServerWorksheetSystemPrompt({
+    inputs: { subject, topic, yearGroup: yr },
+    role: `You are an expert UK teacher differentiating a worksheet for ${yr} pupils. Transform the existing worksheet to ${tier} tier difficulty. Preserve the topic and structure — only adjust question difficulty.`,
+    outputContract: `Return valid JSON only. CRITICAL: The "content" field of every section MUST be a plain text string (NOT an array, NOT an object, NOT nested JSON). Write all questions as numbered plain text lines separated by newlines within the string.`,
+  });
 
   const user = `Transform this ${subject || ""} worksheet on "${topic || ""}" to ${tier.toUpperCase()} tier for ${yr}.
 
@@ -2667,7 +2687,9 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
     return `=== SECTION ${i + 1}: ${s.title || 'Section'} ===\n${s.content || ''}`;
   }).join('\n\n');
 
-  const system = `You are an expert SEND teacher specialising in creating scaffolded worksheets for UK schools.
+  const system = buildServerWorksheetSystemPrompt({
+    inputs: { subject, yearGroup: yr, topic },
+    role: `You are an expert SEND teacher specialising in creating scaffolded worksheets for UK schools.
 Your task is to TRANSFORM an existing worksheet by adding real SEND scaffolding — gap fills, sentence starters, word banks, hint boxes, answer frames — while keeping EVERY original question, task, and piece of content VERBATIM.
 
 CRITICAL RULES:
@@ -2677,7 +2699,8 @@ CRITICAL RULES:
 4. You MUST add real scaffolding: gap fills (___________), sentence starters, word banks, hint boxes, answer frames, step-by-step guides.
 5. The scaffolding should be WOVEN INTO the existing content — not just added as a separate section.
 6. Return a JSON array of sections matching the original structure, with scaffolding added to each section's content.
-7. Do NOT invent new questions — only add scaffolding to existing ones.`;
+7. Do NOT invent new questions — only add scaffolding to existing ones.`,
+  });
 
   const user = `Transform this worksheet with ${sendNeed} scaffolding for ${yr} pupils.
 
@@ -3048,7 +3071,11 @@ router.post("/batch-generate-worksheet", requireAuth, async (req: Request, res: 
     ? "Include a mark scheme / answer key for each tier."
     : "Do NOT include answers in the student-facing sections.";
 
-  const system = `You are an expert UK SEND teacher. Generate differentiated worksheets for 4 tiers simultaneously. Return ONLY valid JSON — no markdown, no code fences, no explanation.`;
+  const system = buildServerWorksheetSystemPrompt({
+    inputs: { subject, topic, yearGroup, examBoard },
+    role: `You are an expert UK SEND teacher. Generate differentiated worksheets for 4 tiers simultaneously.`,
+    outputContract: `Return ONLY valid JSON — no markdown, no code fences, no explanation.`,
+  });
 
   const user = `Generate 4 differentiated worksheets for the same topic, one per tier.
 Subject: ${subject} | Year Group: ${yearGroup} | Topic: ${topic}
@@ -3241,12 +3268,14 @@ GENERAL SEND SCAFFOLDING:
 - Keep the same topic and questions — only add scaffolding and simplify language`,
   };
 
-  const systemPrompt = `You are an expert SEND-specialist teacher adapting educational worksheets.
+  const systemPrompt = buildServerWorksheetSystemPrompt({
+    inputs: { subject, topic, yearGroup },
+    role: `You are an expert SEND-specialist teacher adapting educational worksheets.
 You will receive a worksheet as a JSON array of sections and must return an adapted version.
-Return ONLY a valid JSON array of the same sections, adapted according to the instructions.
 Do not add or remove sections. Do not change section IDs or types.
-Only modify the content, title, and label fields of each section.
-Do not include markdown code fences — return raw JSON only.`;
+Only modify the content, title, and label fields of each section.`,
+    outputContract: `Return ONLY a valid JSON array of the same sections, adapted according to the instructions. Do not include markdown code fences — return raw JSON only.`,
+  });
 
   const userPrompt = `Topic: ${topic || "Unknown"}
 Subject: ${subject || "Unknown"}
@@ -3340,11 +3369,13 @@ router.post("/adjust-reading-level", requireAuth, async (req: Request, res: Resp
     return res.json({ sections, provider: "none", targetYearGroup, targetAge });
   }
 
-  const system = `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level.
+  const system = buildServerWorksheetSystemPrompt({
+    inputs: { subject, topic, yearGroup: ygKey },
+    role: `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level.
 CRITICAL: Change ONLY the language complexity, vocabulary, and sentence structure.
-Do NOT change the academic content, questions, numbers, formulas, or difficulty of the tasks themselves.
-Return a valid JSON ARRAY only \u2014 no wrapper object, no markdown code blocks, no extra keys.
-Output MUST start with [ and end with ].`;
+Do NOT change the academic content, questions, numbers, formulas, or difficulty of the tasks themselves.`,
+    outputContract: `Return a valid JSON ARRAY only — no wrapper object, no markdown code blocks, no extra keys. Output MUST start with [ and end with ].`,
+  });
 
   const user = `Rewrite ALL instructions and text in this worksheet to match: ${guide}
 
@@ -3535,7 +3566,11 @@ router.post("/generate-retrieval", requireAuth, async (req: Request, res: Respon
   const sendNote = sendNeed && sendNeed !== 'none-selected'
     ? `The student has ${sendNeed}. Keep questions very short (max 10 words each). Use True/False or fill-in-blank formats. Add a sentence starter for any written answer.`
     : '';
-  const system = `You are an expert UK teacher. You respond with valid raw JSON only — no markdown, no code blocks, no asterisks.`;
+  const system = buildServerWorksheetSystemPrompt({
+    inputs: { subject, yearGroup: yr, topic: recallTopic },
+    role: `You are an expert UK teacher.`,
+    outputContract: `You respond with valid raw JSON only — no markdown, no code blocks, no asterisks.`,
+  });
   const user = `Generate exactly 3 short retrieval questions on the previous topic "${recallTopic}" for ${yr} ${subject || 'students'}.
 ${sendNote}
 Return EXACTLY this JSON (raw JSON only, no markdown fences):
@@ -3597,10 +3632,13 @@ router.post("/diagram-questions", requireAuth, async (req: Request, res: Respons
     ? `The student has a SEND need: ${sendNeed}. Adjust language and scaffolding accordingly — shorter sentences, clearer instructions, more structure.`
     : "";
 
-  const systemPrompt = `You are an expert ${subject || ""} teacher creating exam-quality worksheet questions based on a diagram.
+  const systemPrompt = buildServerWorksheetSystemPrompt({
+    inputs: { subject, topic, yearGroup },
+    role: `You are an expert ${subject || ""} teacher creating exam-quality worksheet questions based on a diagram.
 Generate questions that test a range of skills: recall, identification, explanation, application, analysis, and evaluation.
-All questions must be directly answerable from the diagram shown.
-Return ONLY a JSON object — no markdown, no prose, no code fences.`;
+All questions must be directly answerable from the diagram shown.`,
+    outputContract: `Return ONLY a JSON object — no markdown, no prose, no code fences.`,
+  });
 
   const userPrompt = `Diagram title: "${diagramTitle || topic}"
 Subject: ${subject || "Science"}

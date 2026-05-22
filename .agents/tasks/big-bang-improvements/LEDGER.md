@@ -14,18 +14,18 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 1  | Per-question reading-age enforcement                                                  | PR-2   | shipped — PR #86 |
 | 2  | Awarding-body command-word fidelity audit                                             | PR-2   | shipped — PR #86 |
 | 3  | Past-paper verbatim / fingerprint detection                                           | PR-15  | not started |
-| 4  | Distractor pedagogy audit on MCQs                                                     | PR-3   | shipped — PR #87 pending |
+| 4  | Distractor pedagogy audit on MCQs                                                     | PR-3   | shipped — PR #87 |
 | 5  | Synonym / equivalent-answer expansion in mark schemes                                 | PR-13  | not started |
 | 6  | Method-marks itemisation (M1 / M2 / A1) per multi-mark calc                           | PR-13  | not started |
 | 7  | Numerical answer plausibility / order-of-magnitude rail                               | PR-13  | not started |
 | 8  | Question-difficulty Bloom-monotonicity check                                          | PR-14  | not started |
 | 9  | Sciences "Working:" stub on calc questions                                            | PR-14  | not started |
-| 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | shipped — PR #87 pending |
+| 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | shipped — PR #87 |
 | 11 | Cross-curricular UK context whitelist                                                 | PR-2   | shipped — PR #86 |
 | 12 | Cultural-context bias audit (PD9)                                                     | PR-12  | not started |
-| 13 | Mathematical notation hygiene (× vs x, − vs -, ° vs o)                                | PR-3   | shipped — PR #87 pending |
+| 13 | Mathematical notation hygiene (× vs x, − vs -, ° vs o)                                | PR-3   | shipped — PR #87 |
 | 14 | SI unit normalisation (mph → km/h, lbs → kg, °F → °C, in/ft → cm/m)                   | PR-2   | shipped — PR #86 |
-| 15 | Diagram-question coupling check                                                       | PR-3   | shipped — PR #87 pending |
+| 15 | Diagram-question coupling check                                                       | PR-3   | shipped — PR #87 |
 | 16 | Common Mistakes for non-maths                                                         | PR-13  | not started |
 | 17 | Misconception bank backing (formal registry)                                          | PR-13  | not started |
 | 18 | Self-Reflection: command-word echo guarantee                                          | PR-2   | shipped — PR #86 |
@@ -54,7 +54,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 
 | #  | Item                                                                                  | PR     | Status      |
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 39 | Server-side prompt unification (port manifesto into server/routes/ai.ts)              | PR-7   | not started |
+| 39 | Server-side prompt unification (port manifesto into server/routes/ai.ts)              | PR-7   | shipped — PR #91 pending |
 | 40 | Prompt versioning + diff store                                                        | PR-11  | not started |
 | 41 | Structured-output retry with diagnostic-only re-prompt                                | PR-9   | not started |
 | 42 | Token budget transparency (PD13)                                                      | PR-9   | not started |
@@ -99,7 +99,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 
 | #  | Item                                                                                  | PR     | Status      |
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 79 | "Why this worksheet looks like this" teacher-facing audit panel                       | PR-6   | shipped — PR #90 pending |
+| 79 | "Why this worksheet looks like this" teacher-facing audit panel                       | PR-6   | shipped — PR #90 |
 | 80 | "Edit my worksheet" surface that learns                                               | PR-25  | not started |
 | 81 | Pupil-facing companion app (consumes companionShare / hint ladders)                   | PR-26  | not started |
 | 82 | Stack multiple SEND profiles per worksheet (sendNeed → sendNeeds[])                   | PR-16  | not started |

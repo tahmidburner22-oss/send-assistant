@@ -10,10 +10,10 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-22 (PR-6 in flight on branch
-`big-bang/pr-6-audit-trail-panel`, PR #90; PR-1 (#85), PR-2 (#86),
-PR-4 (#88) and PR-5 (#89) merged; PR-3 (#87) open with conflicts
-re-resolved against current main).
+Last updated: 2026-05-22 (PR-7 in flight on branch
+`big-bang/pr-7-server-prompt-unification`, PR #91; PR-1 (#85),
+PR-2 (#86), PR-3 (#87), PR-4 (#88), PR-5 (#89) and PR-6 (#90)
+merged).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -143,71 +143,112 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 2 source files (1 new) + 3 tracker docs. Net source
   diff: ~ +570 lines.
 
+- **PR-7 — Server-prompt unification: port curriculumAuthorityPrompt
+  to server/routes/ai.ts** (branch
+  `big-bang/pr-7-server-prompt-unification`, PR #91). Audit
+  item **#39**. Before PR-7 the client and server emitted entirely
+  different system prompts: the client's manifesto (Phase 5 +
+  PR-2 / PR-3 / PR-4 helpers) carried the curriculum-authority
+  preamble, the 6-clause non-negotiables block (UK English, SI units,
+  UK contexts, no past-paper verbatim, awarding-body command words,
+  no fabricated codes) and a KS-graded pedagogical-register note,
+  while server endpoints rolled their own one-liner stems
+  ("You are an expert UK teacher creating worksheet questions.").
+  Worksheets generated through server endpoints (e.g. uploads,
+  scaffolding, batch-tier generation, diagram-question generation)
+  therefore had no manifesto upstream — only the post-validator
+  chain caught the drift downstream.
+
+  What changed:
+  - `server/lib/curriculumAuthorityPromptServer.ts` (new) — thin
+    server-side shim that re-exports the named-section helpers
+    (`buildCurriculumAuthorityPreamble`, `buildNonNegotiablesBlock`,
+    `buildPedagogicalRegisterNote`, `applyUKEnglishSubstitutions`,
+    `isUKEnglishCompliant`, `classifyKeyStage`) plus the
+    `CurriculumAuthorityInputs` shape, so the client lib stays the
+    single source of truth and the server only ever consumes it.
+    Adds two high-level helpers:
+    `buildServerWorksheetSystemPrompt({ inputs, role, outputContract })`
+    (the prompt-construction surface every worksheet endpoint uses)
+    and `buildCurriculumAuthorityManifesto(inputs)` (manifesto-only,
+    for callers that own their own role + output contract). Also
+    exports a frozen `REQUIRED_MANIFESTO_HEADERS` list so the test
+    file stays in lockstep with future manifesto additions.
+  - `server/routes/ai.ts` — wired through the helper at every
+    worksheet-content endpoint:
+      * `/adapt-worksheet`         (SEND adaptation of an upload)
+      * `/worksheet-from-slides`   (whole worksheet from PDF/DOCX/PPTX)
+      * `/differentiate-worksheet` (foundation / higher tier change)
+      * `/scaffold-worksheet`      (SEND scaffolding pass)
+      * `/batch-generate-worksheet`(4-tier batch generation)
+      * `/differentiate-one-click` (higher / foundation / SEND)
+      * `/adjust-reading-level`    (reading-age rewrite)
+      * `/generate-retrieval`      (retrieval starters)
+      * `/diagram-questions`       (questions from a diagram)
+    Each callsite is now a single `buildServerWorksheetSystemPrompt({…})`
+    call that takes the existing role text + output contract verbatim
+    and prepends the manifesto. The non-worksheet endpoints (CV,
+    cover letter, personal statement, book questions / review,
+    braille, translate) are deliberately unchanged — they don't
+    generate pupil-facing worksheet content so the manifesto would
+    be off-topic.
+  - `server/tests/aiServerPrompt.test.ts` (new) — locks the helper
+    contract: every required manifesto header appears, all six
+    non-negotiable clauses are present, the GCSE-only
+    "the published <board> specification" clause is correctly
+    gated by key stage, the pedagogical register differs across
+    KS1 / KS2 / KS3 / GCSE / A-Level, sciences subjects pick up the
+    maths-only working-out-box reminder, the role text is preserved
+    verbatim, the output contract is optional, helper output is
+    pure / deterministic, and the preamble alone is UK-English
+    compliant.
+
+  Out of scope (deferred to later PRs as PHASE-PLAN already calls out):
+  - Per-tenant prompt feature flags (PR-22 SLA work).
+  - A/B traffic split (PR-20).
+  - The diagnostic-starter / generate / generate-stream / ensemble
+    endpoints, which let the caller supply systemPrompt directly —
+    those are router-level passthroughs, not worksheet generators.
+
+  Files touched: 3 (1 new shim + 1 source edit + 1 new test) +
+  3 tracker docs. Net source diff: ~ +250 lines (helper) + ~ +60
+  lines (9 endpoint edits) + ~ +280 lines (tests) = ~ +590 lines,
+  under the ≤ ~700 net source line budget.
+
 ## What is in flight
 
-- **PR-3 (#87), PR-6 (#90)** push + open / merge bookkeeping.
-
-## Related sibling PRs
-
-- **PR-3 (#87) — Diagram coupling + distractor pedagogy + Tier-3
-  vocab + notation hygiene** is currently open in parallel with this
-  PR-6 (#90). PR-3 stamps four new bucket-prefixed warning families
-  on `metadata.postValidatorWarnings`
-  (`[Phase 1 — Notation hygiene]`, `[Phase 1 — Diagram integrity]`,
-  `[Phase 1 — Distractor pedagogy]`, `[Phase 1 — Vocabulary tier]`)
-  which this PR's audit-trail panel surfaces in its
-  "Warnings rolled up by bucket" tab — once PR-3 lands, the new
-  buckets render automatically because the panel keys off the
-  `[Phase N — <label>]` prefix the validator chain already uses.
-  No file overlap with this PR (PR-3 is validator + tests; PR-6 is
-  renderer-side panel). Either PR can ship first. See
-  `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md` on
-  `big-bang/pr-3-diagram-distractor-vocab-notation` for PR-3's own
-  context.
-
-## Related sibling PRs
-
-- **PR-6 (#90) — Audit-trail panel** is currently open in parallel
-  with this PR-3 (#87). PR-6 surfaces the metadata fields the
-  PR-3 validators stamp (`postValidatorWarnings` rolled up by bucket
-  prefix, including the new `[Phase 1 — Notation hygiene]`,
-  `[Phase 1 — Diagram integrity]`, `[Phase 1 — Distractor pedagogy]`,
-  `[Phase 1 — Vocabulary tier]` buckets emitted by this PR's four
-  validators) into a single read-only "Why this looks like this"
-  teacher view. The two PRs do not touch overlapping files (PR-3 is
-  validator + tests; PR-6 is renderer-side panel) and can ship in
-  either order. See `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md`
-  on `big-bang/pr-6-audit-trail-panel` for PR-6's own context.
+- **PR-7 (#91)** push + open / merge bookkeeping.
 
 ## What is next
 
-**PR-7 — Server-prompt unification: port curriculumAuthorityPrompt to
-server/routes/ai.ts.**
+**PR-8 — Data-driven post-validator chain.**
 
-Audit item: #39.
+Audit item: #74.
 
 Files to touch:
-- `server/routes/ai.ts` — port the curriculum-authority prompt
-  sections + Phase 5 manifesto from
-  `client/src/lib/curriculumAuthorityPrompt.ts` so server-side AI
-  calls use the same system prompt as the client-side path. Today
-  server has its own legacy prompt; client and server have drifted.
-- `server/lib/curriculumAuthorityPromptServer.ts` (new) — thin
-  server-side shim that re-exports the named-section helpers from the
-  shared client lib. Avoids forking the prompt; client stays the
-  source of truth.
-- `server/tests/aiServerPrompt.test.ts` (new) — pure assertion that
-  the server-emitted system prompt contains every named section the
-  client manifesto declares.
+- `client/src/lib/worksheetPostValidator.ts` — refactor the giant
+  `for (const fn of [ … ])` block in `runWorksheetPostValidators` into
+  an ordered registry (array of `{ name, fn, enabled }` records) so
+  callers can disable individual validators per-tenant without
+  forking the chain. The chain itself stays a single function — only
+  the dispatch becomes data-driven.
+- `client/src/lib/worksheetPostValidatorRegistry.ts` (new) — single
+  source of truth for the validator order. Exports a frozen
+  `WORKSHEET_POST_VALIDATORS` array and a small `runRegistry(ws,
+  opts, overrides)` runner the post-validator can delegate to.
+- `server/tests/worksheetScrutiny.test.ts` — add a describe block
+  for the registry: order is preserved, disabling a validator
+  by name skips it, unknown names are reported as warnings, and
+  the runner stays idempotent.
 
-Out of scope for PR-7:
-- Per-tenant prompt feature flags (PR-22 SLA work).
-- A/B traffic split (PR-20).
+Out of scope for PR-8:
+- Per-validator config schemas (PR-22 SLA work).
+- The actual UI for toggling validators (PR-27 telemetry surface).
 
-Sizing budget: ≤ ~700 net lines, ≤ ~6 files. Sandbox is
-INTEGRATIONS_ONLY; never run `npm install`. Read narrow ranges of
-`server/routes/ai.ts` (1,000+ lines).
-Branch name: `big-bang/pr-7-server-prompt-unification`.
+Sizing budget: ≤ ~500 net lines, ≤ ~4 files. Read narrow ranges of
+`worksheetPostValidator.ts` only — the chain registration is
+~70 lines near the bottom of the file.
+Branch name: `big-bang/pr-8-data-driven-validator-chain`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 
