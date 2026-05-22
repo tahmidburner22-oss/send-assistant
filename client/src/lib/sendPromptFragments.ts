@@ -43,6 +43,16 @@ export interface SendAdaptationSpec {
   bullets: SendAdaptationBullet[];
   /** Sentence the LLM must echo in the worksheet prompt. One imperative line per bullet. */
   worksheetRules: string[];
+  /**
+   * Phase 4 — content-level adaptations. Imperatives that change the SUBSTANCE
+   * of the questions: concept progression, context choice, vocabulary, cognitive
+   * demand, misconception scaffolding. Distinct from `worksheetRules` which are
+   * mostly presentation pedagogy (layout, font, spacing, visible scaffolds).
+   * Both arrays are rendered to the AI as separate labelled blocks by
+   * `getSendNoteForWorksheet`. Curriculum rigour is unchanged — these rules
+   * adapt HOW concepts are approached, not the year-group level.
+   */
+  worksheetRulesContent: string[];
   /** Slide-shaped rules for the presentation generator. */
   presentationRules: string[];
 }
@@ -117,6 +127,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Label the challenge 'BONUS — only if you want to!'. Reflection ends with: 'How focused were you today? 1 / 2 / 3 / 4 / 5'.",
       "Worked example: maximum 5 numbered steps. Numbered bullet points only — no embedded instructions.",
     ],
+    worksheetRulesContent: [
+      "Pull each section's contexts from a high-novelty real-world domain (current cultural references, sport, gaming, music) — never abstract 'consider a number n'. Novelty is the engagement lever for ADHD, not just bolding.",
+      "Frontload Section A with one spaced-recall question on a previously-taught skill the pupil already mastered, before the new-skill questions begin. The pupil starts with a confident win, which sustains attention into the harder items.",
+      "Each consecutive question must change at least one cognitive demand from the previous one (the operation, the representation, OR the context). Never test the same micro-skill in the same way twice in a row — habituation kills attention.",
+      "When stretch is used, embed it as the surface dressing on a familiar skill rather than a new method on top — ADHD pupils can carry the new context but lose focus across two new things at once.",
+    ],
     presentationRules: [
       "Every activity / check slide shows a visible '[ ] Done' checkbox next to each instruction so the pupil can track progress.",
       "Every content slide: maximum 3 bullets. Every bullet maximum 8 words.",
@@ -149,6 +165,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Use generous line spacing (equivalent to 1.5x) and leave clear vertical white space between every question.",
       "Include a Word Bank at the top of each section (4–6 terms + plain-English definitions).",
       "Reflection uses tick-box 'I can …' statements, not open writing.",
+    ],
+    worksheetRulesContent: [
+      "Introduce every new key term with a phoneme breakdown alongside the definition (e.g. 'photosynthesis = pho-to-syn-the-sis') so the pupil can decode the word before reasoning about it.",
+      "Present every new concept first via a labelled diagram or worked image, THEN in text. On a first encounter with a topic the visual is the primary route to meaning; the text is the second route.",
+      "Use high-frequency everyday vocabulary in question stems. Reserve technical vocabulary for the specific subject term being assessed and gloss it inline on first use. Never use a polysyllabic everyday word where a short one will do.",
+      "Avoid homophone-rich question stems where possible (e.g. 'their/there/they're', 'too/two/to', 'effect/affect') — when the topic forces them, gloss the relevant homophone inline at first use.",
     ],
     presentationRules: [
       "Every slide: sentences max 12 words. Bullets max 8 words.",
@@ -183,6 +205,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Use small whole numbers (1–20) in Section A. No timed pressure language.",
       "Reflection uses a tick-box 'Great / OK / Struggling' scale.",
     ],
+    worksheetRulesContent: [
+      "Introduce every new method with small whole numbers (≤ 12) in the first practice question before scaling to the full year-group range. Section A is small numbers; Section B is the year-group range; the challenge may use the full range.",
+      "Every concept follows Concrete → Pictorial → Abstract within Section A: Q1 uses real objects or counters, Q2 uses a diagram, Q3 uses the symbolic form. The pupil meets the same idea three times before symbolic-only practice.",
+      "Add an explicit estimation step ('Roughly, what answer do you expect?') before exact calculation in every multi-mark question. Externalises the number-sense check the dyscalculic pupil cannot perform internally.",
+      "Avoid mid-question changes of representation — never start a question with a fraction and finish it with a decimal unless the topic IS the conversion. Pick one representation per question and stay in it.",
+    ],
     presentationRules: [
       "Every calculation slide shows steps with blanks: 'Step 1: ___ Step 2: ___'.",
       "Include a 'Key Facts' slide near the start with times-tables / number bonds / formulas the pupil can refer back to.",
@@ -214,6 +242,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Contexts must be neutral and factual. No social scenarios, no emotions.",
       "Reflection is a tick-box checklist: '[ ] I completed Section A   [ ] I completed Section B   [ ] I tried the Challenge'. Plus ONE exit question: 'Write one thing you learned today.'",
       "Use identical layout across every section — predictable is the goal.",
+    ],
+    worksheetRulesContent: [
+      "Every question must be fully decodable from its own text. Never require inference of an unspoken context (no 'Sarah is upset because…' or 'the team decides…'). The pupil should not need to guess what is meant.",
+      "Use a single predictable problem schema across the whole worksheet: every question follows the same template ([command verb] + [object] + [literal context]). The pupil transfers the worked example to every item without re-parsing the structure.",
+      "Pre-teach every subject term in the Word Bank with one fixed plain-English definition. Never use a synonym or alternative phrasing of the same concept across the worksheet — synonyms read as new concepts.",
+      "Use literal command words drawn from the awarding-body list (identify, list, calculate, define, label, match). Avoid command words that depend on inference (suggest, imply, interpret) unless paired with a literal restatement on the same line.",
     ],
     presentationRules: [
       "Every activity slide opens with a 'What you need to do:' box listing exact steps.",
@@ -253,6 +287,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Each section opens with ONE 'What you need to do:' box that lists the exact numbered steps.",
       "Reflection is a tick-box checklist ONLY. One exit question: 'Write one fact you learned today.'",
     ],
+    worksheetRulesContent: [
+      "Strip every question of social inference. Replace 'what does the character feel' / 'how does the team react' with 'identify which sentence shows X' or 'match each line to a feature'. The skill assessed is unchanged; the theory-of-mind step is removed.",
+      "Replace pronouns with explicit nouns in every question stem. Write 'Lady Macbeth says…' not 'she says…', 'the Prime Minister announced…' not 'he announced…'. The referent is never ambiguous.",
+      "Use literal command words only — identify, list, underline, circle, match, calculate, define. Avoid interpret, suggest, imply, infer, evaluate. Where the curriculum requires inference (e.g. English Lit AO2), keep the awarding-body wording but pair it with a literal restatement on the same line.",
+    ],
     presentationRules: [
       "All slide contexts are factual and literal — no social framing.",
       "Every idiom rewritten literally on the slide before it is shown.",
@@ -284,6 +323,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Insert a horizontal rule + 'Take a break here if you need to — come back when you are ready.' after every 3 questions.",
       "No checkboxes, no progress bars, no 'Questions completed: x/y' — remove any visible progress tracker.",
       "Reflection is a single invitation: 'If you would like to, write one thing you noticed today.' — not a tick-box.",
+    ],
+    worksheetRulesContent: [
+      "Frame the worksheet content as a series of choices, not a sequence. Each section opens with two equivalent practice questions on the same skill and the pupil picks one ('You might like to try Question 1A or 1B — both teach the same idea').",
+      "Choose real-world contexts that cast the pupil as the agent (collecting, building, exploring, designing). Avoid contexts that cast the pupil as a recipient of instruction (no 'the teacher asks', 'follow these rules', 'do as you are told').",
+      "Replace 'right answer' framing with 'your answer' framing — questions ask 'What did you find?' rather than 'What is the answer?'. The mark scheme is unchanged; the request language removes the perceived demand.",
     ],
     presentationRules: [
       "Replace 'must'/'need to' language with 'might like to' / 'have a go at' on every slide.",
@@ -318,6 +362,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Each section opens with ONE calm 'What you need to do:' box in neutral grey, not coloured.",
       "Reflection is a minimal tick-box checklist — no large emotional scale, no colour-coded confidence grid.",
     ],
+    worksheetRulesContent: [
+      "Use calm, neutral subject contexts only. No descriptions of busy, loud, crowded, or strong-smelling settings (avoid markets, festivals, fairgrounds, sports crowds). Pick still-life or single-actor contexts (a library, a workshop, a single tree, one cell under a microscope).",
+      "Strip sensory adjectives from question stems. Write 'the bell rings at 9am' not 'the bell rings loudly'; 'the box weighs 2kg' not 'the heavy box'. Keep numbers and nouns; drop the sensory texture words.",
+      "When the topic itself has a sensory dimension (Sound in physics, Taste / Smell in biology, Light in chemistry), introduce the concept with the measurable quantity first (decibels, ions detected, lux) and only mention the sensory experience as a secondary, optional context.",
+    ],
     presentationRules: [
       "Every slide uses a muted palette — no high-saturation brand colours.",
       "Generous padding on every slide; never fill edge-to-edge.",
@@ -350,6 +399,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Each section opens with ONE 'What you need to do' box whose steps match the worked example one-to-one.",
       "Reflection is a tick-box checklist only.",
     ],
+    worksheetRulesContent: [
+      "Lock the question schema for the whole worksheet to the structure of the worked example: same number of given values, same order of given values, same ask. Never invert the schema mid-worksheet (don't ask for the input given the output if the worked example asked for the output given the input).",
+      "Where multiple valid methods exist (e.g. column addition vs. partitioning), present BOTH in the worked example with an explicit note that any one of them is correct. Pre-empts the rigid-thinking pupil rejecting a peer's correct alternative as 'wrong'.",
+      "Number every step of every method to the SAME numbering depth across the whole worksheet (always 1, 2, 3 — never sometimes 1a, 1b, sometimes flat 1, 2, 3). Inconsistent depth reads as inconsistent rules.",
+      "Keep every question's mark tariff identical within a section (e.g. Section A is 2-mark questions throughout, Section B is 4-mark questions throughout). Tariff changes mid-section read as schema changes.",
+    ],
     presentationRules: [
       "Every practice slide mirrors the worked-example slide's layout exactly.",
       "Insert a worked-example slide immediately before every practice slide.",
@@ -379,6 +434,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Identical layout across every section — predictable is the goal.",
       "Where the pupil's interest (e.g. trains, a sport, computing) is known, use that as the real-world context.",
       "Reflection is a tick-box checklist.",
+    ],
+    worksheetRulesContent: [
+      "Anchor every section's contexts to one coherent real-world domain (one worksheet's word problems are all train timetables, another all space exploration, another all chess positions). Depth-over-breadth on a real-world domain leverages the special-interest strength.",
+      "Use academic register for question stems (demonstrate, justify, evaluate) BUT pair every command word with a short literal restatement on first use ('Justify means: explain why, using evidence'). Academic vocabulary stays at the year-group level; the gloss removes the inference barrier.",
+      "Pair every text question with a structured visual cue — diagram, table, flowchart — on the same line. Never present a new concept as text alone on a first encounter; the visual is co-equal to the text route to meaning.",
     ],
     presentationRules: [
       "Every activity slide opens with a 'What you need to do:' box listing exact steps.",
@@ -413,6 +473,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "No multi-step problems in Section A. Section B uses 2-step problems broken into (a) / (b) sub-parts.",
       "Challenge labelled as optional. Reflection uses tick-boxes with sentence starters.",
     ],
+    worksheetRulesContent: [
+      "Use KS2-band high-frequency vocabulary across all question stems regardless of the pupil's actual year group. Define every subject-specific term in the Help Box with a plain-English synonym alongside.",
+      "Q1 of every section is the model: a fully completed identical question. Q2 is the same structure with one missing value. Q3 is the same structure with two missing values. Section A escalates demand by REMOVING scaffolding, never by changing the question schema.",
+      "All word problems use everyday concrete contexts the pupil meets in daily life (shopping, cooking, school timetables, family). Never workplace contexts, never abstract finance, never unfamiliar institutional contexts (council tax, insurance, pension).",
+      "Never a multi-step problem in Section A. Section B uses two-step problems explicitly broken into (a) and (b) sub-parts so the pupil never has to plan a multi-step path on a blank page.",
+    ],
     presentationRules: [
       "Start the practice block with a fully-worked example slide — the first practice item IS a model answer.",
       "Every activity slide shows a hint, sentence starter, or partial answer for the pupil to complete.",
@@ -445,6 +511,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Every text question has a visual cue beside it (diagram, arrow, icon).",
       "Bold the key action words in every instruction.",
       "Reflection uses sentence starters: 'I can ___.', 'I need to practise ___.'",
+    ],
+    worksheetRulesContent: [
+      "Introduce every new concept with a labelled image FIRST and the text caption SECOND. The visual is the primary route to meaning for SLCN; the text is the second route.",
+      "Restrict every question stem to one main verb and one clause. No subordinate clauses, no relative pronouns ('who', 'which', 'that' embedded), no embedded 'if … then'. Pull conditionals into a separate sentence on its own line.",
+      "Pre-teach two key terms per section in the Word Bank: one with a plain-English synonym, one paired with a picture cue. Use the picture cue inline beside the term's first appearance in any question.",
+      "Favour matching, labelling, and multiple-choice formats for assessment of recall — preserves the curriculum demand while removing the language-production barrier.",
     ],
     presentationRules: [
       "First content slide is a Word Bank (max 8 terms, plain-English definitions).",
@@ -479,6 +551,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Place a 'Tip' box in each section. Insert 'Take a break here if you need to' midway through Section B.",
       "No timed-pressure language anywhere. Reflection uses 'I tried …', 'I found …' starters.",
     ],
+    worksheetRulesContent: [
+      "Open Section A with a low-stakes confidence-builder question on a previously-taught skill the pupil has already succeeded with. The full year-group curriculum demand applies from Section B onward; the warm-up does not lower the rigour, it lowers the threat.",
+      "Frame every question as exploration rather than test. 'Have a go at finding x' or 'See what you notice when…' replaces 'Calculate x' and 'Find the answer'. The academic content and command-word tariff are unchanged.",
+      "Embed the worked example with the words 'many pupils find this tricky at first — here's how' before the method. Normalises early difficulty so the pupil reads struggle as expected rather than as personal failure.",
+      "Avoid scenarios that prime threat in the question content (no exam-room scenarios, no 'in 30 seconds', no 'before time runs out'). Pick neutral domains — nature, design, everyday objects.",
+    ],
     presentationRules: [
       "First slide after the title is a 'How are you feeling?' emoji check-in (😀 🙂 😐 😟 😣).",
       "The last slide before the exit-ticket is a second 'How are you feeling now?' check-in.",
@@ -508,6 +586,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "The Challenge uses a tick / circle / label-the-diagram format — NEVER extended writing.",
       "Worked example steps are brief bullet points, not paragraphs.",
       "Minimise handwriting demands across the whole worksheet.",
+    ],
+    worksheetRulesContent: [
+      "Pre-draw any diagrams, axes, tables or grids the pupil would otherwise have to construct. The pupil annotates rather than draws. The cognitive content is preserved; the fine-motor demand is removed.",
+      "Frame extended-response demand as a sequence of short labelled fields ('Cause: ___', 'Effect: ___', 'Evidence: ___') rather than open prose. Assesses the same reasoning chain without the planning-on-blank-paper barrier.",
+      "Keep the number of distinct response actions per question to one. The pupil either ticks, or labels, or writes one short answer — never combine two motor demands inside a single question stem.",
     ],
     presentationRules: [
       "Every practice slide uses MCQ, matching, or circle-the-answer format.",
@@ -540,6 +623,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Worked example steps are all written in full text (no reliance on diagrams).",
       "Questions are numbered prominently.",
     ],
+    worksheetRulesContent: [
+      "Every question is fully answerable from text alone. Where a diagram is pedagogically essential to the topic, replicate its full information content in a structured prose description (or table) on the same line as the diagram — never a diagram-only question.",
+      "Avoid colour-dependent reasoning. Never write 'the red bar is taller than the blue bar' or 'shade the green region'. Use shape, size, label or pattern to encode any visual distinction; the pupil reaches the answer without colour discrimination.",
+      "Use cardinal directions or labelled coordinates rather than spatial deixis. Write 'the point at (3, 4)' not 'the point near the top-right'; 'in row 2, column 3' not 'in the middle box'. Spatial language refers to labels, not position-on-page.",
+    ],
     presentationRules: [
       "Minimum 24pt body font on every slide; titles 40pt+.",
       "High-contrast colour scheme only (dark text on light background or vice versa).",
@@ -571,6 +659,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "No reference to audio, listening, or 'what the teacher said'. All assessment is text-and-visual.",
       "Worked example written out in full — no reliance on verbal narration.",
     ],
+    worksheetRulesContent: [
+      "Replace any audio-mediated subject content with text. Where a topic depends on listening (music notation, language phonology, spoken conversation analysis), assess the equivalent reading-based skill with a transcript ('Read this transcript and identify…'). The curriculum coverage is preserved; the listening barrier is removed.",
+      "Define every subject term that a hearing pupil would normally pick up incidentally from the teacher's spoken explanation (idioms, colloquial subject terms, oral conventions). Make every gloss visible on the page — never implied by 'as you've heard before'.",
+      "Avoid questions that depend on rhyme, intonation, or prosody unless the topic IS phonology, in which case provide a phonemic notation key (IPA or simplified) and assess via written transcript matching rather than aural recall.",
+    ],
     presentationRules: [
       "Every slide is fully self-contained in text — no reliance on the teacher reading it aloud.",
       "Every subject term used on the slide is also defined on the slide (or on the key-terms slide).",
@@ -600,6 +693,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Short sentences. Simple grammar. Subject-verb-object where possible.",
       "Every text question has a visual support (diagram, arrow, icon) beside it.",
       "Bold key instruction words. Minimise writing demands.",
+    ],
+    worksheetRulesContent: [
+      "Use cognate-rich vocabulary where the topic permits (e.g. photosynthesis / fotosíntesis / photosynthèse, geometry / geometría / géométrie) and gloss in plain English in the Key Vocabulary box. Where no cognate exists, pre-teach the term with a picture cue and a single-word synonym.",
+      "Use everyday-context word problems — culturally neutral (shopping, cooking, time, distance, family). Avoid uniquely-British contexts (cricket, A-Level UCAS, council tax, Christmas trifle) unless the topic IS UK civics or UK culture.",
+      "Restrict question grammar to active voice, simple present or simple past, single clause. No phrasal verbs ('work out', 'come up with', 'figure out'), no idioms ('a piece of cake'), no UK-colloquial command words. Always write 'calculate' not 'work out'; 'find' not 'come up with'.",
+      "Where the topic forces an awarding-body command word that is itself an idiom in everyday English (e.g. 'account for'), gloss it inline on first use ('account for = explain why').",
     ],
     presentationRules: [
       "Place a 'Key Vocabulary' slide early in the deck with plain-English definitions.",
@@ -632,6 +731,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Use 'we' language throughout ('Let's look at …', 'We can see that …').",
       "No timed pressure. No mandatory language anywhere.",
     ],
+    worksheetRulesContent: [
+      "Replace every 'must' / 'need to' / 'should' in question stems with 'might like to' / 'have a go at' / 'see if you can'. Curriculum demand is unchanged; the demand-language that triggers avoidance is removed.",
+      "Offer a choice of equivalent contexts inside each question ('Option A: a recipe for biscuits / Option B: a workout plan — pick whichever interests you'). The pupil decides the surface; the underlying mathematics, science or analysis is the same on both options.",
+      "Frame the success criterion as the pupil's, not the marker's. Ask 'What did you find?' rather than 'What is the answer?'. The mark scheme is unchanged; the request language removes the perceived demand.",
+    ],
     presentationRules: [
       "Rename any 'Do this' slide to 'Explore — choose where to start'.",
       "Rename the challenge / extension slide to 'Secret Mission — if you choose to accept it'.",
@@ -663,6 +767,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Calm, supportive, non-judgmental tone. No 'quickly', 'in 5 minutes', 'hurry'.",
       "No loud or urgent language.",
     ],
+    worksheetRulesContent: [
+      "Cap any single response at ≤ 4 lines of writing. Where the curriculum requires extended reasoning, scaffold it as a sequence of short labelled fields rather than a continuous paragraph — sustained writing aggravates motor-tic load.",
+      "Avoid topics that require sustained quiet focus on a single static stimulus for several minutes (no 'look at this image and write everything you see'). Use turn-taking response formats (match, tick, label) instead — the pupil engages and disengages naturally between items.",
+      "Use neutral everyday contexts for word problems. Avoid stress-priming contexts (pressure of time, public performance, social judgment, exam-room scenarios) — stress is a known trigger for tic frequency.",
+    ],
     presentationRules: [
       "Practice slides use varied formats: tick / circle / fill-in / short answer. No long writing.",
       "Include 'Take a breath' slides every 3–4 practice slides.",
@@ -691,6 +800,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Place a 'Study Tips' box at the START of every section with 1–2 exam technique reminders.",
       "Each section header shows an estimated time: 'Section A (≈ 10 min) — Skills Practice'.",
       "Reflection asks 'What went well?' and 'What do I need to revise further?' — no traffic lights.",
+    ],
+    worksheetRulesContent: [
+      "Use real-world adult contexts for every word problem: workplace decisions, personal finance (budgeting, interest rates, mortgages), public-life numeracy (tax, energy bills, elections), media literacy. Never primary-school contexts (sweets, toys, fairground rides, teddy bears).",
+      "Reference the named GCSE / IGCSE / A-Level awarding-body in the worked example ('the AQA mark scheme awards 1 mark for stating the formula and 2 marks for substitution'). The pupil sees the question as exam-relevant rather than as remedial work — this is dignity-preserving and motivation-preserving.",
+      "Frame every misconception with the phrasing 'a common mistake at this level is…' rather than the primary-school 'be careful not to…'. Preserves dignity and signals the pupil is learning at the expected band.",
+      "Where the awarding body has a named assessment objective (AO1 / AO2 / AO3), tag at least one question per section to the relevant AO so the pupil sees how each item earns marks at the expected level.",
     ],
     presentationRules: [
       "Extended-response slides include an on-slide graphic organiser (table or frame) for the answer structure.",
@@ -723,6 +838,11 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "One instruction per line only — never combine two instructions in one sentence.",
       "Reflection uses a tick-box checklist — no open writing.",
     ],
+    worksheetRulesContent: [
+      "Carry forward — every question keeps visible the values from the previous question so the pupil never has to retain unspoken information across items. Repeat the relevant values in the new question stem rather than referring to 'as in question 2'.",
+      "Limit each question to ONE new fact, ONE recall, and ONE new operation. Never combine 'recall this formula AND substitute these values AND interpret the units' inside one stem — split into three sub-questions a / b / c on separate lines.",
+      "Write out every formula, definition, or fact the pupil needs in the question stem itself (or in the Memory Aid box on the same page). Never assume the pupil will retrieve it from a previous topic, a previous lesson, or earlier in the same worksheet.",
+    ],
     presentationRules: [
       "Every practice slide opens with a 'Memory Aid' box listing the key facts needed.",
       "Break every multi-step task into numbered sub-steps on the slide.",
@@ -753,6 +873,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Replace 'must', 'should', 'need to' with 'try to', 'have a go at', 'you might like to'.",
       "Insert a natural break point after every 3 questions: 'Take a breath here — come back when you are ready.'.",
       "Reflection uses a gentle emotional check-in: '[ ] Calm   [ ] OK   [ ] Need a break'.",
+    ],
+    worksheetRulesContent: [
+      "Open Section A with a low-stakes confidence-builder question on an already-taught skill the pupil has succeeded with. The full year-group curriculum demand applies from Q2 onward; the warm-up does not lower the rigour, it lowers the threat.",
+      "Use neutral, non-triggering subject contexts only. Avoid scenarios involving conflict, separation, bereavement, exclusion, behaviour-management, or judgment of others' behaviour. Replace with neutral domains (nature, design, sport without competition, everyday objects).",
+      "Frame errors as expected. Open every misconception line with 'many pupils think… — let's look at why that doesn't work' rather than 'be careful not to…'. Removes the failure-as-identity framing that worsens engagement for SEMH pupils.",
+      "Avoid primed-failure framings in question stems ('most pupils get this wrong', 'this is a tricky one'). Pick neutral or invitational framings — the curriculum demand is the same; the threat priming is removed.",
     ],
     presentationRules: [
       "Open the deck with an emotional check-in slide.",
@@ -830,7 +956,15 @@ export function getSendNoteForWorksheet(sendNeed: string | undefined | null): st
   const spec = resolveSendSpec(sendNeed);
   if (!spec) return "";
 
-  const rulesList = spec.worksheetRules
+  const presentationList = spec.worksheetRules
+    .map((rule, i) => `(${i + 1}) ${rule}`)
+    .join("\n");
+
+  // Phase 4 — content rules render as a second labelled block. Defensive
+  // optional access lets older specs that haven't been migrated still load
+  // (the Phase 4 PR migrates all 21, but this guards future extensions).
+  const contentRules = spec.worksheetRulesContent || [];
+  const contentList = contentRules
     .map((rule, i) => `(${i + 1}) ${rule}`)
     .join("\n");
 
@@ -838,15 +972,20 @@ export function getSendNoteForWorksheet(sendNeed: string | undefined | null): st
     .map(b => `- ${b.what}`)
     .join("\n");
 
-  return `THIS WORKSHEET IS ADAPTED FOR A STUDENT WITH ${spec.name.toUpperCase()}.
-Apply ALL of the following SEND rules throughout every section (these are non-negotiable):
+  const contentBlock = contentList
+    ? `\n\nCONTENT RULES — these change the SUBSTANCE of the questions (concept progression, context choice, vocabulary, cognitive demand, misconception scaffolding). Apply ALL of them on top of the presentation rules above:\n\n${contentList}`
+    : "";
 
-${rulesList}
+  return `THIS WORKSHEET IS ADAPTED FOR A STUDENT WITH ${spec.name.toUpperCase()}.
+
+PRESENTATION RULES — these change HOW the worksheet looks and is laid out. Apply ALL of them throughout every section (these are non-negotiable):
+
+${presentationList}${contentBlock}
 
 The 'What will change in your worksheet' summary shown to teachers lists exactly these adaptations:
 ${bulletsList}
 
-CRITICAL: SEND adaptations change HOW questions are presented — never the academic rigour. Curriculum content, mark allocations, and question difficulty stay at the correct level for the year group.`;
+CRITICAL: SEND adaptations change HOW questions are presented AND HOW concepts are approached. The year-group curriculum content, mark allocations, awarding-body command-word vocabulary and overall academic rigour stay at the correct level for the year group — never lower the curriculum demand. Use the presentation rules to remove access barriers; use the content rules to adapt the route through the concept; keep the destination unchanged.`;
 }
 
 /**
