@@ -460,14 +460,377 @@ const PROBES: Record<string, Probe[]> = {
       : ok("no audio / listening references"),
     () => skip("'worked example written in full' covered by core schema"),
   ],
+
+  // ── ASC — Social Communication profile ────────────────────────────────────
+  // 6 rules. The first two are too narrative to fingerprint without false
+  // positives; rules 3–6 have clear structural fingerprints.
+  "asc-social": [
+    () => skip("'no social scenarios' is too narrative — would false-flag legitimate human contexts"),
+    () => skip("'idioms rewritten literally' is too narrative to probe deterministically"),
+    (h) => /\b(key\s*vocabulary|word\s*bank|glossary)\b/i.test(h)
+      ? ok("Word Bank / Key Vocabulary present (defines subject terms)")
+      : miss("no Word Bank — subject terms not defined for the literal-processing pupil"),
+    (h) => /(?:^|\n)\s*(?:1\.|Step\s*1\s*:)\s+\S[\s\S]*?(?:\n)\s*(?:2\.|Step\s*2\s*:)/i.test(h)
+      ? ok("numbered step instructions present")
+      : miss("multi-step instructions not broken into numbered steps"),
+    (h) => /what\s+you\s+need\s+to\s+do/i.test(h)
+      ? ok("'What you need to do' box present")
+      : miss("no 'What you need to do' box opening section(s)"),
+    (_h, sections) => {
+      const ref = sections.find(s => /reflection/i.test(String(s.type || "") + String(s.title || "")));
+      if (!ref) return skip("no reflection section");
+      const c = String(ref.content || "");
+      const hasTickBox = /\[\s*\]/.test(c);
+      const hasExitQ = /(write\s+one|one\s+fact|one\s+thing\s+you\s+learned)/i.test(c);
+      return hasTickBox && hasExitQ
+        ? ok("tick-box reflection + single exit question")
+        : miss(`reflection ${hasTickBox ? "" : "missing tick-boxes; "}${hasExitQ ? "" : "missing single exit question"}`.trim());
+    },
+  ],
+
+  // ── ASC — Demand-Avoidant profile ─────────────────────────────────────────
+  // 7 rules. Several overlap with pda-odd; we re-probe here because the user
+  // can pick this profile directly without going via pda-odd.
+  "asc-demand-avoidant": [
+    // Rule 1 — anchor "you must" / "you need to" / "answer the following" to
+    // start-of-sentence so the legitimate "What you need to do:" box header
+    // doesn't false-trigger. We require the imperative to be followed by
+    // another word (to filter out the bare "What you need to do:" label).
+    (h) => /(^|[.!?\n])\s*(?:you\s+(?:must|need\s+to|should)|answer\s+the\s+following)\b\s+\w/i.test(h)
+      ? miss("'you must / need to / should / answer the following' present — should be 'you might like to'")
+      : ok("no demand-language imperatives in student-visible content"),
+    (h) => /what\s+you\s+need\s+to\s+do/i.test(h) && /(might\s+like\s+to|have\s+a\s+go\s+at)/i.test(h)
+      ? ok("'What you need to do' box phrased invitationally ('might like to' / 'have a go at')")
+      : miss("no 'What you need to do' box OR not phrased invitationally"),
+    (h) => /option\s*A\s*[:.]|option\s*B\s*[:.]/i.test(h)
+      ? ok("Option A / Option B choices present")
+      : miss("no 'Option A / Option B' choice within practice questions"),
+    (h) => /(explore\s*[—–-]\s*choose|investigate|secret\s*mission)/i.test(h)
+      ? ok("invitational section names present (Explore / Investigate / Secret Mission)")
+      : miss("Section A / B / Challenge not renamed to Explore / Investigate / Secret Mission"),
+    (h) => /take\s+a\s+break\s+here/i.test(h)
+      ? ok("'Take a break here' break-point present")
+      : miss("no 'Take a break here if you need to' break-point"),
+    (h) => /\[\s*\]/.test(h) || /Q?\d+\s*\/\s*\d+\s+(?:complete|done)/i.test(h)
+      ? miss("checkbox / progress tracker present — demand-avoidant pupils experience this as surveillance")
+      : ok("no checkboxes or progress trackers"),
+    (_h, sections) => {
+      const ref = sections.find(s => /reflection/i.test(String(s.type || "") + String(s.title || "")));
+      if (!ref) return skip("no reflection section");
+      return /(if\s+you\s+would\s+like|you\s+might\s+like\s+to\s+(?:write|note))/i.test(String(ref.content || ""))
+        ? ok("invitational reflection prompt")
+        : miss("reflection not framed invitationally");
+    },
+  ],
+
+  // ── ASC — Sensory-Dominant profile ────────────────────────────────────────
+  // 7 rules; palette / whitespace / layout-uniformity are CSS-rendered.
+  "asc-sensory": [
+    () => skip("muted / low-saturation palette is rendered via CSS overlay"),
+    () => skip("whitespace and spacing are rendered via CSS overlay"),
+    (h) => /[\u{1F300}-\u{1FAFF}]|[★☆✨🎉🎊🌟⭐]/u.test(h)
+      ? miss("decorative icons / emojis / stars detected — should be removed for sensory-dominant ASC")
+      : ok("no decorative icons / emojis / stars"),
+    () => skip("'identical layout across sections' is rendered via CSS"),
+    (_h, sections) => {
+      const diags = sections.filter(s => /diagram/i.test(String(s.type || "")));
+      if (diags.length === 0) return skip("no diagram sections to probe");
+      const allDescribed = diags.every(s =>
+        Boolean((s as any).altText) || String(s.content || "").trim().length >= 30,
+      );
+      return allDescribed
+        ? ok(`all ${diags.length} diagram(s) carry a text description alongside`)
+        : miss("at least one diagram has no text description alongside");
+    },
+    (h) => /what\s+you\s+need\s+to\s+do/i.test(h)
+      ? ok("'What you need to do' box present")
+      : miss("no 'What you need to do' box opening section(s)"),
+    (_h, sections) => {
+      const ref = sections.find(s => /reflection/i.test(String(s.type || "") + String(s.title || "")));
+      if (!ref) return skip("no reflection section");
+      return /\[\s*\]/.test(String(ref.content || ""))
+        ? ok("minimal tick-box reflection")
+        : miss("reflection not minimal tick-box format");
+    },
+  ],
+
+  // ── ASC — Rigid-Thinking / Routine profile ────────────────────────────────
+  // 7 rules. Identical-verb rule is fingerprinted by counting unique
+  // sentence-initial command verbs across question stems.
+  "asc-rigid": [
+    () => skip("fixed question count is enforced by Phase 1 section-count validator"),
+    (_h, sections) => {
+      const examples = sections.filter(s =>
+        /worked.example|^example/i.test(String(s.title || "") + String(s.type || "")),
+      );
+      return examples.length >= 2
+        ? ok(`${examples.length} worked-example sections (one per practice section)`)
+        : miss(`only ${examples.length} worked-example section(s) — rigid-thinking pupils need a fresh worked example before each practice section`);
+    },
+    (_h, sections) => {
+      // Collect the leading imperative verb of each numbered question line.
+      const verbs = new Set<string>();
+      for (const s of sections) {
+        if (s.teacherOnly) continue;
+        const lines = String(s.content || "").split("\n");
+        for (const ln of lines) {
+          const m = ln.match(/^\s*(?:\[\s*[xX]?\s*\]\s+)?(?:Q?\d+[.)])\s+(?:\*\*)?([A-Za-z][A-Za-z\s]{2,15}?)(?:\*\*)?\b/);
+          if (m) {
+            const verb = m[1].trim().toLowerCase().split(/\s+/)[0];
+            if (verb.length >= 3) verbs.add(verb);
+          }
+        }
+      }
+      if (verbs.size === 0) return skip("no leading imperative verbs detected on numbered questions");
+      // Rigid-thinking pupils benefit from ≤ 2 distinct lead verbs across the sheet.
+      return verbs.size <= 2
+        ? ok(`${verbs.size} distinct lead verb(s): ${Array.from(verbs).join(", ")}`)
+        : miss(`${verbs.size} distinct lead verbs (${Array.from(verbs).join(", ")}) — rigid-thinking pupils need ONE consistent verb`);
+    },
+    () => skip("'identical question structure' overlaps with the lead-verb probe and is hard to fingerprint independently"),
+    (h) => /\boptional\b/i.test(h)
+      ? ok("'Optional' label present (bonus items separated)")
+      : miss("no 'Optional' labelled section — bonus items must be visibly separated"),
+    (h) => /what\s+you\s+need\s+to\s+do/i.test(h)
+      ? ok("'What you need to do' box present")
+      : miss("no 'What you need to do' box opening section(s)"),
+    (_h, sections) => {
+      const ref = sections.find(s => /reflection/i.test(String(s.type || "") + String(s.title || "")));
+      if (!ref) return skip("no reflection section");
+      return /\[\s*\]/.test(String(ref.content || ""))
+        ? ok("tick-box reflection present")
+        : miss("reflection not tick-box format");
+    },
+  ],
+
+  // ── Asperger Syndrome ─────────────────────────────────────────────────────
+  // 6 rules; rules 2-5 are too narrative to fingerprint reliably.
+  asperger: [
+    (h) => /what\s+you\s+need\s+to\s+do/i.test(h)
+      ? ok("'What you need to do' box present")
+      : miss("no 'What you need to do' box opening section(s)"),
+    () => skip("'direct, literal language; no idioms' is too narrative to probe deterministically"),
+    () => skip("'one word per concept' requires a synonym graph; too narrative for a regex probe"),
+    () => skip("'identical layout across every section' is rendered via CSS"),
+    () => skip("'interest-based context' depends on per-pupil profile not visible in worksheet content"),
+    (_h, sections) => {
+      const ref = sections.find(s => /reflection/i.test(String(s.type || "") + String(s.title || "")));
+      if (!ref) return skip("no reflection section");
+      return /\[\s*\]/.test(String(ref.content || ""))
+        ? ok("tick-box reflection present")
+        : miss("reflection not tick-box format");
+    },
+  ],
+
+  // ── Moderate Learning Difficulties (MLD) ──────────────────────────────────
+  mld: [
+    (_h, sections) => {
+      // Q1 of Section A should contain a fully completed model answer inline.
+      const a = sections.find(s =>
+        /section\s*a|guided|recall/i.test(String(s.title || "")) ||
+        String(s.type || "").toLowerCase() === "recall",
+      );
+      if (!a) return skip("Section A not found");
+      const c = String(a.content || "");
+      // Look for "Q1" / "1." followed somewhere by an inline answer marker
+      // ("Answer:", "= ", "✓", or a "Model answer" header).
+      const hasQ1 = /(^|\n)\s*(?:Q?1[.)])\s+\S/.test(c);
+      const hasModel = /(model\s+answer|answer\s*[:=])/i.test(c.split(/\n\s*(?:Q?2[.)])/)[0] || c);
+      return hasQ1 && hasModel
+        ? ok("Q1 carries a model answer inline")
+        : miss(`Q1 of Section A ${hasQ1 ? "" : "missing; "}${hasModel ? "" : "no inline model answer"}`.trim());
+    },
+    (_h, sections) => {
+      const a = sections.find(s =>
+        /section\s*a|guided|recall/i.test(String(s.title || "")) ||
+        String(s.type || "").toLowerCase() === "recall",
+      );
+      if (!a) return skip("Section A not found");
+      const c = String(a.content || "");
+      return /(hint\s*:|sentence\s*starter|_{2,})/i.test(c)
+        ? ok("hints / sentence starters / partial answers in Section A")
+        : miss("Section A questions have no hints, sentence starters, or partial answers");
+    },
+    (_h, sections) => {
+      const idx = sections.findIndex(s =>
+        /section\s*b|main\s*practice|understanding/i.test(String(s.title || "")) ||
+        String(s.type || "").toLowerCase() === "understanding",
+      );
+      if (idx < 0) return skip("Section B not found");
+      const before = sections[idx - 1];
+      const cur = sections[idx];
+      const haystack = `${String(before?.title || "")} ${String(before?.content || "")} ${String(cur?.content || "")}`;
+      return /help\s*box/i.test(haystack)
+        ? ok("Help Box near top of Section B")
+        : miss("no Help Box at the top of Section B");
+    },
+    () => skip("'KS2 reading level throughout' covered by Phase 5 reading-age check"),
+    () => skip("'Concrete → Pictorial → Abstract progression' is too narrative to probe deterministically"),
+    (_h, sections) => {
+      const a = sections.find(s =>
+        /section\s*a|guided|recall/i.test(String(s.title || "")) ||
+        String(s.type || "").toLowerCase() === "recall",
+      );
+      if (!a) return skip("Section A not found");
+      const c = String(a.content || "");
+      // No multi-step in Section A: warn if we see "Step 1: ... Step 2:" or "(a) ... (b)".
+      const hasSteps = /step\s*1\s*:.*step\s*2\s*:/is.test(c);
+      const hasSubparts = /\(a\)\s*\S[\s\S]*?\(b\)\s*\S/i.test(c);
+      return hasSteps || hasSubparts
+        ? miss("Section A contains multi-step / sub-part questions — should be single-step only")
+        : ok("Section A questions are single-step");
+    },
+    (h) => /OPTIONAL\s*(?:BONUS|CHALLENGE)|only\s+if\s+you\s+want/i.test(h)
+      ? ok("Challenge labelled OPTIONAL")
+      : miss("Challenge not labelled OPTIONAL — should be optional for MLD pupils"),
+  ],
+
+  // ── Dyspraxia / DCD ───────────────────────────────────────────────────────
+  dyspraxia: [
+    (_h, sections) => {
+      const a = sections.find(s =>
+        /section\s*a|guided|recall/i.test(String(s.title || "")) ||
+        String(s.type || "").toLowerCase() === "recall",
+      );
+      if (!a) return skip("Section A not found");
+      const aSections = sections.filter(s => {
+        const t = String(s.type || "").toLowerCase();
+        return ["q-mcq", "q-matching", "q-true-false", "q-label-diagram"].includes(t);
+      });
+      return aSections.length >= 3
+        ? ok(`${aSections.length} reduced-handwriting questions (MCQ / matching / T-F / labelling)`)
+        : miss(`only ${aSections.length} reduced-handwriting question type(s) — Section A needs ≥ 3`);
+    },
+    () => skip("answer-box size is rendered via CSS overlay"),
+    (_h, sections) => {
+      const types = new Set(sections.map(s => String(s.type || "").toLowerCase()));
+      const have = ["q-data-table", "q-gap-fill", "table_complete"].filter(t => types.has(t));
+      return have.length >= 1
+        ? ok(`structured-frame format(s) present: ${have.join(", ")}`)
+        : miss("no table / fill-in-the-blank / structured-frame question in Section B");
+    },
+    (_h, sections) => {
+      const ch = sections.find(s =>
+        /challenge|secret\s*mission|bonus/i.test(String(s.title || "")) ||
+        String(s.type || "").toLowerCase() === "challenge" ||
+        String(s.type || "").toLowerCase() === "q-challenge",
+      );
+      if (!ch) return skip("no challenge section");
+      const t = String(ch.type || "").toLowerCase();
+      const reducedTypes = ["q-mcq", "q-matching", "q-true-false", "q-label-diagram", "q-gap-fill"];
+      if (reducedTypes.includes(t)) return ok(`challenge uses reduced-writing type "${t}"`);
+      // Fall back to content heuristic — extended writing prompt detected?
+      return /\bextended\s+(?:answer|response)|\bessay|\bdiscuss in detail/i.test(String(ch.content || ""))
+        ? miss("challenge uses extended-writing format — should be tick / circle / label")
+        : ok("challenge appears not to require extended writing");
+    },
+    (_h, sections) => {
+      const ex = sections.find(s => /worked.example|^example/i.test(String(s.title || "")));
+      if (!ex) return skip("no worked example");
+      const lines = String(ex.content || "").split("\n").filter(l => l.trim().length > 0);
+      // Treat lines > 30 words as paragraphs.
+      const paras = lines.filter(l => l.trim().split(/\s+/).length > 30).length;
+      return paras === 0
+        ? ok("worked example uses brief bullet steps (no paragraph runs)")
+        : miss(`${paras} paragraph-length step(s) detected — should be brief bullets`);
+    },
+    () => skip("'minimise handwriting demands' overlaps with rules 1-4"),
+  ],
+
+  // ── Tourette's Syndrome ───────────────────────────────────────────────────
+  tourettes: [
+    (_h, sections) => {
+      const types = new Set(sections.map(s => String(s.type || "").toLowerCase()));
+      const have = ["q-mcq", "q-matching", "q-true-false", "q-gap-fill", "q-label-diagram"].filter(t =>
+        types.has(t),
+      );
+      return have.length >= 3
+        ? ok(`${have.length} varied response formats present: ${have.join(", ")}`)
+        : miss(`only ${have.length} varied formats — need ≥ 3 (MCQ / match / T-F / fill / label)`);
+    },
+    (h) => /take\s+a\s+breath|take\s+a\s+break/i.test(h)
+      ? ok("'Take a breath / break' break-point(s) present")
+      : miss("no 'Take a breath here if you need to' break-points"),
+    (_h, sections) => {
+      const a = sections.find(s =>
+        /section\s*a/i.test(String(s.title || "")) ||
+        String(s.type || "").toLowerCase() === "recall",
+      );
+      if (!a) return skip("Section A not found");
+      const qCount = countQuestionLines(String(a.content || ""));
+      return qCount <= 4 && qCount > 0
+        ? ok(`Section A has ${qCount} question(s) (≤ 4)`)
+        : miss(`Section A has ${qCount} questions — cap is 4`);
+    },
+    (h) => /\b(quickly|in\s+\d+\s*(?:min|sec|seconds|minutes)|hurry|fast\s+as\s+you\s+can)\b/i.test(h)
+      ? miss("urgency / time-pressure language detected (quickly / in N minutes / hurry)")
+      : ok("no urgency / time-pressure language"),
+    () => skip("'no loud or urgent language' overlaps with the time-pressure probe"),
+  ],
+
+  // ── Older Learners (KS3 / KS4 / KS5) ──────────────────────────────────────
+  "older-learners": [
+    () => skip("'graphic organiser table' is hard to detect without parsing markdown tables"),
+    (h) => /(cornell|key\s*terms[\s\S]{0,80}summary)/i.test(h)
+      ? ok("Cornell-style note section present")
+      : miss("no Cornell-style 'Key terms / Summary' section"),
+    () => skip("'age-appropriate academic language' overlaps with Phase 5 reading-age check"),
+    (h) => /study\s*tips?\b/i.test(h)
+      ? ok("'Study Tips' box present")
+      : miss("no 'Study Tips' box opening sections"),
+    (_h, sections) => {
+      const sectionTitles = sections.map(s => String(s.title || ""));
+      const withTime = sectionTitles.filter(t => /\b(\d+\s*(?:min|minute)|≈\s*\d+)/i.test(t));
+      return withTime.length >= 2
+        ? ok(`${withTime.length} section(s) carry an estimated time`)
+        : miss("section headers don't show estimated time (e.g. 'Section A (≈ 10 min)')");
+    },
+    (_h, sections) => {
+      const ref = sections.find(s => /reflection/i.test(String(s.type || "") + String(s.title || "")));
+      if (!ref) return skip("no reflection section");
+      const c = String(ref.content || "");
+      return /(what\s+went\s+well|what\s+do\s+I\s+need\s+to\s+revise)/i.test(c)
+        ? ok("'What went well? / What do I need to revise?' reflection present")
+        : miss("reflection doesn't ask 'What went well?' / 'What do I need to revise further?'");
+    },
+  ],
+
+  // ── SEMH (Social, Emotional and Mental Health) ────────────────────────────
+  // The SEMH profile shares much pedagogy with `anxiety`; we re-probe here so
+  // the audit works when the user (or `resolveSendSpec`) returns the SEMH id
+  // directly. NOTE: the resolver currently masks SEMH behind `anxiety` for
+  // most input shapes — see SESSION-HANDOFF for the resolver-fix follow-up.
+  semh: [
+    (h) => /\[\s*\]\s*(?:Calm|OK|Need\s+a\s+break)/i.test(h)
+      ? ok("emotional check-in tick-boxes present (Calm / OK / Need a break)")
+      : miss("no emotional check-in tick-boxes (Calm / OK / Need a break)"),
+    (h) => /warm[\s-]?up\s*[—–-]\s*no\s+pressure|OPTIONAL\s*BONUS/i.test(h)
+      ? ok("Warm-Up / OPTIONAL BONUS framing present")
+      : miss("Section A not 'Warm-Up — no pressure!' or challenge not 'OPTIONAL BONUS'"),
+    () => skip("'positive priming statement at section start' is hard to fingerprint reliably"),
+    (h) => /(^|[.!?\n])\s*(?:you\s+(?:must|need\s+to|should)|you\s+have\s+to)\b\s+\w/i.test(h)
+      ? miss("'you must / should / need to / have to' demand-language detected — should be 'try to' / 'have a go at'")
+      : ok("no 'you must / should / need to' demand-language"),
+    (h) => /take\s+a\s+breath|take\s+a\s+break/i.test(h)
+      ? ok("'Take a breath / break' break-point present")
+      : miss("no 'Take a breath / break' mid-section break-point"),
+    (_h, sections) => {
+      const ref = sections.find(s => /reflection/i.test(String(s.type || "") + String(s.title || "")));
+      if (!ref) return skip("no reflection section");
+      return /\[\s*\]\s*(?:Calm|OK|Need\s+a\s+break)/i.test(String(ref.content || ""))
+        ? ok("reflection includes Calm / OK / Need-a-break check-in")
+        : miss("reflection lacks emotional check-in tick-boxes");
+    },
+  ],
 };
 
-// Profiles whose all rules are too narrative to fingerprint reliably
-// — we still emit a `not-checked` report so the UI can show the SEND name.
-const NOT_PROBED_PROFILES = new Set([
-  "asperger", "asc-social", "asc-demand-avoidant", "asc-sensory", "asc-rigid",
-  "mld", "dyspraxia", "tourettes", "older-learners", "semh",
-]);
+// All 21 SEND profiles in `sendPromptFragments.ts:SEND_ADAPTATION_SPECS` now
+// have at least one deterministic probe in `PROBES` above. The set below is
+// retained (empty) as the contract surface for any future profile that
+// genuinely cannot be probed deterministically — when that happens, add the
+// id here and the audit will surface a `not-checked` line per rule with the
+// "narrative rule" reason rather than the "no probe registered" reason.
+const NOT_PROBED_PROFILES = new Set<string>([]);
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
