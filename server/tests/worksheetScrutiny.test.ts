@@ -2102,3 +2102,376 @@ describe("Phase 3 / enforceRevisionTipsPresence — validator behaviour", () => 
     expect(r.worksheet.sections![0].content).toBe("internal teacher notes");
   });
 });
+
+
+// ─── Phase 5 — Curriculum-authority preamble + UK English validator ─────────
+
+import {
+  buildCurriculumAuthorityPreamble,
+  buildNonNegotiablesBlock,
+  buildPedagogicalRegisterNote,
+  classifyKeyStage,
+  UK_ENGLISH_SUBSTITUTIONS,
+  BANNED_SOFTENERS,
+  FABRICATED_AO_CODE_RE,
+  PLACEHOLDER_LEAKAGE_RE,
+  isUKEnglishCompliant,
+  applyUKEnglishSubstitutions,
+  findBannedSofteners,
+  findFabricatedAoCodes,
+  findPlaceholderLeakage,
+} from "../../client/src/lib/curriculumAuthorityPrompt";
+
+import {
+  enforceCurriculumAuthorityInvariants,
+} from "../../client/src/lib/worksheetPostValidator";
+
+describe("Phase 5 — classifyKeyStage", () => {
+  it("maps year group strings to the canonical key-stage label", () => {
+    expect(classifyKeyStage("Year 1")).toBe("KS1");
+    expect(classifyKeyStage("Year 2")).toBe("KS1");
+    expect(classifyKeyStage("Year 3")).toBe("KS2");
+    expect(classifyKeyStage("Year 6")).toBe("KS2");
+    expect(classifyKeyStage("Year 7")).toBe("KS3");
+    expect(classifyKeyStage("Year 9")).toBe("KS3");
+    expect(classifyKeyStage("Year 10")).toBe("GCSE");
+    expect(classifyKeyStage("Year 11")).toBe("GCSE");
+    expect(classifyKeyStage("Year 12")).toBe("A-Level");
+    expect(classifyKeyStage("Year 13")).toBe("A-Level");
+  });
+  it("falls back to KS3 (the median classroom) for unknown / missing input", () => {
+    expect(classifyKeyStage(undefined)).toBe("KS3");
+    expect(classifyKeyStage("")).toBe("KS3");
+    expect(classifyKeyStage("Reception")).toBe("KS3");
+  });
+});
+
+describe("Phase 5 — buildCurriculumAuthorityPreamble", () => {
+  it("is deterministic — same input yields the same string", () => {
+    const a = buildCurriculumAuthorityPreamble({
+      subject: "Mathematics", yearGroup: "Year 10", examBoard: "AQA",
+      topic: "Adding fractions", isSTEM: true,
+    });
+    const b = buildCurriculumAuthorityPreamble({
+      subject: "Mathematics", yearGroup: "Year 10", examBoard: "AQA",
+      topic: "Adding fractions", isSTEM: true,
+    });
+    expect(a).toBe(b);
+  });
+  it("opens with CURRICULUM AUTHORITY and binds the (board × year × topic) tuple at GCSE", () => {
+    const p = buildCurriculumAuthorityPreamble({
+      subject: "Mathematics", yearGroup: "Year 10", examBoard: "AQA",
+      topic: "Adding fractions",
+    });
+    expect(p).toMatch(/CURRICULUM AUTHORITY/);
+    expect(p).toMatch(/UK National Curriculum/);
+    expect(p).toMatch(/gov\.uk/);
+    expect(p).toMatch(/AQA/);
+    expect(p).toMatch(/Year 10/);
+    expect(p).toMatch(/Adding fractions/);
+    expect(p).toMatch(/AO1.*AO4/);
+    expect(p).toMatch(/valid raw JSON/);
+    expect(p).toMatch(/head of department/);
+  });
+  it("normalises the awarding-body label to its canonical UK form", () => {
+    const edx = buildCurriculumAuthorityPreamble({
+      subject: "Mathematics", yearGroup: "Year 10", examBoard: "edexcel",
+      topic: "Quadratic equations",
+    });
+    expect(edx).toMatch(/Pearson Edexcel/);
+    const wjec = buildCurriculumAuthorityPreamble({
+      subject: "Geography", yearGroup: "Year 11", examBoard: "wjec",
+      topic: "Coastal landscapes",
+    });
+    expect(wjec).toMatch(/WJEC/);
+  });
+  it("KS3 scaffolds with school scheme-of-work language and no awarding body", () => {
+    const ks3 = buildCurriculumAuthorityPreamble({
+      subject: "Science", yearGroup: "Year 8", topic: "Electricity",
+    });
+    expect(ks3).toMatch(/KS3 scheme of work/);
+    expect(ks3).not.toMatch(/AQA|Pearson Edexcel|OCR/);
+  });
+  it("KS1 / KS2 uses class-teacher language and no awarding body", () => {
+    const ks2 = buildCurriculumAuthorityPreamble({
+      subject: "Mathematics", yearGroup: "Year 5", topic: "Fractions",
+    });
+    expect(ks2).toMatch(/Key Stage 2/);
+    expect(ks2).toMatch(/class teacher/);
+    expect(ks2).not.toMatch(/AQA|Pearson Edexcel|OCR/);
+  });
+  it("never includes US-LLM defaults in its own preamble text", () => {
+    const p = buildCurriculumAuthorityPreamble({
+      subject: "Mathematics", yearGroup: "Year 10", examBoard: "AQA",
+      topic: "Adding fractions",
+    });
+    expect(isUKEnglishCompliant(p)).toBe(true);
+  });
+});
+
+describe("Phase 5 — buildNonNegotiablesBlock", () => {
+  it("is static — same call always yields the same string", () => {
+    expect(buildNonNegotiablesBlock()).toBe(buildNonNegotiablesBlock());
+  });
+  it("names all six non-negotiable clauses with their canonical headers", () => {
+    const block = buildNonNegotiablesBlock();
+    expect(block).toMatch(/NON-NEGOTIABLES/);
+    expect(block).toMatch(/^1\. UK ENGLISH ONLY/m);
+    expect(block).toMatch(/^2\. SI UNITS ONLY/m);
+    expect(block).toMatch(/^3\. UK CONTEXTS ONLY/m);
+    expect(block).toMatch(/^4\. NO COPYRIGHTED PAST-PAPER TEXT VERBATIM/m);
+    expect(block).toMatch(/^5\. AWARDING-BODY COMMAND WORDS ONLY/m);
+    expect(block).toMatch(/^6\. NO FABRICATED CODES/m);
+  });
+  it("names the canonical UK spelling forms verbatim so the prompt teaches by example", () => {
+    const block = buildNonNegotiablesBlock();
+    expect(block).toMatch(/colour/);
+    expect(block).toMatch(/metre/);
+    expect(block).toMatch(/aluminium/);
+    expect(block).toMatch(/maths/);
+    expect(block).toMatch(/AO1/);
+  });
+});
+
+describe("Phase 5 — buildPedagogicalRegisterNote", () => {
+  it("scales by key stage — KS2 is friendly, GCSE is examiner voice, A-Level is academic", () => {
+    const ks2 = buildPedagogicalRegisterNote({ yearGroup: "Year 5" });
+    const gcse = buildPedagogicalRegisterNote({ yearGroup: "Year 11" });
+    const aLevel = buildPedagogicalRegisterNote({ yearGroup: "Year 13" });
+    expect(ks2).toMatch(/KS2/);
+    expect(gcse).toMatch(/examiner voice/i);
+    expect(aLevel).toMatch(/A-Level/);
+    expect(ks2).not.toBe(gcse);
+    expect(gcse).not.toBe(aLevel);
+  });
+  it("appends a sciences-only line on science subjects reminding the model not to use the maths dot-grid box", () => {
+    const sci = buildPedagogicalRegisterNote({
+      subject: "Biology", yearGroup: "Year 10",
+    });
+    expect(sci).toMatch(/SI units/);
+    expect(sci).toMatch(/maths-only/);
+    const maths = buildPedagogicalRegisterNote({
+      subject: "Mathematics", yearGroup: "Year 10",
+    });
+    expect(maths).not.toMatch(/maths-only/);
+  });
+});
+
+describe("Phase 5 — UK_ENGLISH_SUBSTITUTIONS + applyUKEnglishSubstitutions", () => {
+  it("rewrites every common US drift to UK English in pupil-facing content", () => {
+    const cases: Array<[string, string]> = [
+      ["The color of the solution", "The colour of the solution"],
+      ["A 100 meter sprint", "A 100 metre sprint"],
+      ["100 kilometers per hour", "100 kilometres per hour"],
+      ["aluminum oxide", "aluminium oxide"],
+      ["Solve this math problem", "Solve this maths problem"],
+      ["Organize the data", "Organise the data"],
+      ["Their behavior changed", "Their behaviour changed"],
+      ["Visit the theater", "Visit the theatre"],
+      ["At the center of the circle", "At the centre of the circle"],
+      ["The gray rock", "The grey rock"],
+      ["A traveler in Europe", "A traveller in Europe"],
+      ["Defense of the realm", "Defence of the realm"],
+      ["Their favorite book", "Their favourite book"],
+      ["In honor of", "In honour of"],
+      ["A friendly neighbor", "A friendly neighbour"],
+    ];
+    for (const [input, expected] of cases) {
+      expect(applyUKEnglishSubstitutions(input).rewritten).toBe(expected);
+    }
+  });
+  it("preserves case (lower / Title / UPPER) when rewriting", () => {
+    expect(applyUKEnglishSubstitutions("color").rewritten).toBe("colour");
+    expect(applyUKEnglishSubstitutions("Color").rewritten).toBe("Colour");
+    expect(applyUKEnglishSubstitutions("COLOR").rewritten).toBe("COLOUR");
+  });
+  it("never touches Greek-root or instrument-name words containing -meter / math-* / etc.", () => {
+    // Compound length-units rewrite (kilometer → kilometre) but Greek-root
+    // words like parameter / diameter / perimeter and instrument-name words
+    // like voltmeter / thermometer / barometer / ammeter are NEVER rewritten
+    // because the regex word-boundaries forbid mid-word matches.
+    const survivors = [
+      "parameter", "diameter", "perimeter",
+      "voltmeter", "thermometer", "barometer", "ammeter", "speedometer",
+      "mathematics", "mathematician", "mathematical",
+      "aftermath",
+    ];
+    for (const word of survivors) {
+      const input = `The ${word} matters here.`;
+      expect(applyUKEnglishSubstitutions(input).rewritten).toBe(input);
+    }
+  });
+  it("is idempotent — running twice produces the same result with zero new substitutions on the second pass", () => {
+    const input = "The color of the 100 meter aluminum bar — math problem.";
+    const first = applyUKEnglishSubstitutions(input);
+    expect(first.substitutions.length).toBeGreaterThan(0);
+    const second = applyUKEnglishSubstitutions(first.rewritten);
+    expect(second.rewritten).toBe(first.rewritten);
+    expect(second.substitutions).toEqual([]);
+  });
+  it("emits one substitutions[] entry per fix so the validator can warn per drift", () => {
+    const r = applyUKEnglishSubstitutions("color and color and color");
+    expect(r.substitutions.length).toBe(3);
+    for (const s of r.substitutions) {
+      expect(s.label).toBe("color→colour");
+      expect(s.from).toBe("color");
+      expect(s.to).toBe("colour");
+    }
+  });
+  it("isUKEnglishCompliant agrees with applyUKEnglishSubstitutions's no-op detection", () => {
+    expect(isUKEnglishCompliant("Calculate the area in metres squared.")).toBe(true);
+    expect(isUKEnglishCompliant("")).toBe(true);
+    expect(isUKEnglishCompliant(null)).toBe(true);
+    expect(isUKEnglishCompliant("Calculate the area in meters squared.")).toBe(false);
+    expect(isUKEnglishCompliant("aluminum")).toBe(false);
+  });
+});
+
+describe("Phase 5 — findBannedSofteners", () => {
+  it("flags every banned softener phrase in pupil-facing content", () => {
+    expect(findBannedSofteners("Have a think about photosynthesis.")).toHaveLength(1);
+    expect(findBannedSofteners("Talk about your answer with a partner.")).toHaveLength(1);
+    expect(findBannedSofteners("Make sure you revise this topic.")).toHaveLength(1);
+    expect(findBannedSofteners("Make sure you study this topic.")).toHaveLength(1);
+    expect(findBannedSofteners("Good luck on the exam!")).toHaveLength(1);
+    expect(findBannedSofteners("Do your best.")).toHaveLength(1);
+    expect(findBannedSofteners("Try your best.")).toHaveLength(1);
+    expect(findBannedSofteners("Give it a go.")).toHaveLength(1);
+    expect(findBannedSofteners("Study hard for the test.")).toHaveLength(1);
+  });
+  it("does not flag legitimate command-word stems", () => {
+    expect(findBannedSofteners("Calculate the rate of photosynthesis.")).toHaveLength(0);
+    expect(findBannedSofteners("Explain why the metal reacts.")).toHaveLength(0);
+    expect(findBannedSofteners("Describe the function of the chloroplast.")).toHaveLength(0);
+  });
+});
+
+describe("Phase 5 — findFabricatedAoCodes", () => {
+  it("flags AO5 and higher (UK boards use AO1–AO4 only)", () => {
+    expect(findFabricatedAoCodes("This question is AO5.")).toEqual(["AO5"]);
+    expect(findFabricatedAoCodes("AO6 / AO7")).toEqual(["AO6", "AO7"]);
+    expect(findFabricatedAoCodes("AO12")).toEqual(["AO12"]);
+  });
+  it("does not flag AO1 / AO2 / AO3 / AO4", () => {
+    expect(findFabricatedAoCodes("AO1, AO2, AO3, AO4")).toEqual([]);
+    expect(findFabricatedAoCodes("Mix of AO1 and AO3.")).toEqual([]);
+  });
+});
+
+describe("Phase 5 — findPlaceholderLeakage", () => {
+  it("flags template-literal leakage and bracket placeholders", () => {
+    expect(findPlaceholderLeakage("State the formula for ${topic}.").length)
+      .toBeGreaterThan(0);
+    expect(findPlaceholderLeakage("Define [topic] in your own words.").length)
+      .toBeGreaterThan(0);
+    expect(findPlaceholderLeakage("[N marks]").length).toBeGreaterThan(0);
+  });
+  it("does not flag legitimate question text", () => {
+    expect(findPlaceholderLeakage("Calculate 3 + 4. [2 marks]")).toEqual([]);
+    expect(findPlaceholderLeakage("Define photosynthesis.")).toEqual([]);
+  });
+});
+
+describe("Phase 5 — enforceCurriculumAuthorityInvariants", () => {
+  it("is a no-op on a clean worksheet — no warnings, identical worksheet ref", () => {
+    const ws = {
+      sections: [
+        { type: "q-short", title: "Q1", content: "Calculate 3 + 4. [2 marks]" },
+        { type: "q-short", title: "Q2", content: "Explain photosynthesis." },
+      ],
+    };
+    const r = enforceCurriculumAuthorityInvariants(ws);
+    expect(r.warnings).toEqual([]);
+    expect(r.worksheet).toBe(ws); // reference equality — true idempotency
+  });
+  it("silently rewrites US drift in pupil-facing content and warns once per drift", () => {
+    const ws = {
+      sections: [
+        { type: "q-short", title: "Color question", content: "What color is the 100 meter mark?" },
+      ],
+    };
+    const r = enforceCurriculumAuthorityInvariants(ws);
+    expect(r.worksheet.sections![0].title).toBe("Colour question");
+    expect(r.worksheet.sections![0].content).toBe("What colour is the 100 metre mark?");
+    expect(r.warnings.length).toBe(3); // title color + content colour + content metre
+    for (const w of r.warnings) expect(w).toMatch(/Phase 5 — UK English/);
+  });
+  it("skips teacherOnly sections (teacher-facing register has its own rules)", () => {
+    const ws = {
+      sections: [
+        { type: "teacher-key", teacherOnly: true, content: "The teacher should color in the diagram for the pupil." },
+      ],
+    };
+    const r = enforceCurriculumAuthorityInvariants(ws);
+    expect(r.warnings).toEqual([]);
+    expect(r.worksheet.sections![0].content).toMatch(/color/);
+  });
+  it("warns on banned softeners but does NOT silently rewrite", () => {
+    const ws = {
+      sections: [
+        { type: "q-short", title: "Q1", content: "Have a think about your answer." },
+      ],
+    };
+    const r = enforceCurriculumAuthorityInvariants(ws);
+    expect(r.worksheet.sections![0].content).toBe("Have a think about your answer.");
+    expect(r.warnings.some((w) => /Banned softener/.test(w))).toBe(true);
+  });
+  it("clamps fabricated AO codes in the structured field to AO1 and warns", () => {
+    const ws = {
+      sections: [
+        { type: "q-extended", title: "Q1", content: "Explain.", ao: "AO5" },
+      ],
+    };
+    const r = enforceCurriculumAuthorityInvariants(ws);
+    expect((r.worksheet.sections![0] as { ao?: string }).ao).toBe("AO1");
+    expect(r.warnings.some((w) => /Fabricated AO code "AO5"/.test(w))).toBe(true);
+  });
+  it("preserves valid AO codes (AO1–AO4) in the structured field", () => {
+    const ws = {
+      sections: [
+        { type: "q-short", title: "Q1", content: "State.", ao: "AO1" },
+        { type: "q-extended", title: "Q2", content: "Evaluate.", ao: "AO3" },
+      ],
+    };
+    const r = enforceCurriculumAuthorityInvariants(ws);
+    expect((r.worksheet.sections![0] as { ao?: string }).ao).toBe("AO1");
+    expect((r.worksheet.sections![1] as { ao?: string }).ao).toBe("AO3");
+    expect(r.warnings.filter((w) => /Fabricated AO/.test(w))).toEqual([]);
+  });
+  it("warns on placeholder leakage in pupil-facing content", () => {
+    const ws = {
+      sections: [
+        { type: "q-short", title: "Q1", content: "Define ${topic} in your own words." },
+        { type: "q-short", title: "Q2", content: "List three properties of [topic]. [N marks]" },
+      ],
+    };
+    const r = enforceCurriculumAuthorityInvariants(ws);
+    const leakageWarnings = r.warnings.filter((w) => /Placeholder leakage/.test(w));
+    expect(leakageWarnings.length).toBeGreaterThanOrEqual(3);
+  });
+  it("is idempotent — second run produces zero new warnings and identical sections", () => {
+    const ws = {
+      sections: [
+        { type: "q-short", title: "Q1", content: "What color is the meter mark?" },
+      ],
+    };
+    const r1 = enforceCurriculumAuthorityInvariants(ws);
+    const r2 = enforceCurriculumAuthorityInvariants(r1.worksheet);
+    expect(r2.warnings).toEqual([]);
+    expect(r2.worksheet.sections![0].content).toBe(r1.worksheet.sections![0].content);
+  });
+  it("integrates with runWorksheetPostValidators — Phase 5 warnings appear in the chain output", () => {
+    const ws: PostValidatorWorksheet = {
+      title: "Adding fractions worksheet",
+      metadata: { subject: "Mathematics", yearGroup: "Year 10", topic: "Adding fractions" },
+      sections: [
+        { type: "q-short", title: "Q1", content: "Calculate the color of 100 meters." },
+      ],
+    };
+    const r = runWorksheetPostValidators(ws, {
+      subject: "Mathematics", yearGroup: "Year 10", topic: "Adding fractions",
+    });
+    expect(r.warnings.some((w) => /Phase 5 — UK English/.test(w))).toBe(true);
+    expect(r.worksheet.sections![0].content).toBe("Calculate the colour of 100 metres.");
+  });
+});
