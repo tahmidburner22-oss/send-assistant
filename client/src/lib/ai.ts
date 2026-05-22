@@ -1292,17 +1292,33 @@ MANDATORY RULES — violating any rule is wrong:
   const variantA = SECTION_A_VARIANTS[variantIndex];
   const variantB = SECTION_B_VARIANTS[variantIndex];
 
-  const sectionAPrompt = `Section A must contain exactly 3 blocks separated by a blank line:
+  // Phase 1 — Curriculum structure: Section 1 = 6-8 questions, Section 2 = 6-8 questions, Section 3 = 5 exam-style questions
+  // The sectionAPrompt now requests 6-8 questions using varied formats.
+  const sec1TargetCount = params.difficulty === "foundation" || params.difficulty === "basic" ? 6
+    : params.difficulty === "higher" || params.difficulty === "stretch" ? 8 : 7;
+  const sec2TargetCount = sec1TargetCount;
+  const sec3TargetCount = 5; // always 5 for secondary
+
+  const sectionAPrompt = `SECTION 1 — RECALL (${sec1TargetCount} questions, Q1–Q${sec1TargetCount}):
+Generate exactly ${sec1TargetCount} recall questions. Use at least 3 DIFFERENT question formats (True/False, MCQ, Gap Fill, Matching, Ordering, Short Answer). No two adjacent questions may use the same format. Formats:
 BLOCK 1 — ${blockInstructions[variantA[0]]}
 BLOCK 2 — ${blockInstructions[variantA[1]]}
-BLOCK 3 — ${blockInstructions[variantA[2]]}`;
+BLOCK 3 — ${blockInstructions[variantA[2]]}
+BLOCKS 4–${sec1TargetCount} — continue with varied formats (Short Answer, Matching, Ordering, True/False) testing different aspects of recall. Each question must be on a SEPARATE question with its OWN answer space. Mark allocation MUST be shown for each question.`;
 
-    const sectionBPrompt =
-    yearNum >= 9 ? `SECTION 3 — EXAM STYLE QUESTIONS: For this year group, this section MUST be strictly 'Exam Style Questions'. Provide 3 multi-step exam-style questions (labeled Q7, Q8, Q9) that mirror actual GCSE/A-Level papers. Every question MUST include a realistic mark allocation (e.g. [4 marks]) and use exam-style phrasing like 'Calculate...', 'Show that...', 'Solve...'. Questions must require evaluation or multi-step reasoning. Do NOT use simple recall questions here.` :
-    `Section B must contain exactly 3 blocks separated by a blank line:
+  const sectionBPrompt =
+    yearNum >= 9 ? `SECTION 2 — UNDERSTANDING (${sec2TargetCount} questions, Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}):
+Generate exactly ${sec2TargetCount} understanding questions. These must be HARDER than Section 1 and test deeper comprehension, application of concepts, and explanation. Use varied formats (Short Answer, Structured Response, Stimulus/Data Response, Table). Each question must have its OWN answer space with lines appropriate to the mark allocation. Mark allocation MUST be shown for each question.
+Q${sec1TargetCount + 1} — ${blockInstructions[variantB[0]]}
+Q${sec1TargetCount + 2} — ${blockInstructions[variantB[1]]}
+Q${sec1TargetCount + 3} — ${blockInstructions[variantB[2]]}
+Q${sec1TargetCount + 4}–Q${sec1TargetCount + sec2TargetCount} — continue with harder understanding questions using Short Answer or Structured Response format. Each must require genuine subject knowledge and explanation.` :
+    `SECTION 2 — UNDERSTANDING (${sec2TargetCount} questions):
+Generate exactly ${sec2TargetCount} understanding questions using varied formats.
 BLOCK 1 — ${blockInstructions[variantB[0]]}
 BLOCK 2 — ${blockInstructions[variantB[1]]}
-BLOCK 3 — ${blockInstructions[variantB[2]]}`;
+BLOCK 3 — ${blockInstructions[variantB[2]]}
+BLOCKS 4–${sec2TargetCount} — continue with harder understanding questions.`;
   const examStylePrompt = `\nCRITICAL: You MUST include "Diagram A" and "Diagram B" in your response.
 For Diagram A: Use the marker [[DIAGRAM:{"type":"labeled","title":"Diagram A — ${params.topic}","labels":[{"text":"Label 1","x":20,"y":30},{"text":"Label 2","x":80,"y":30}]}]].
 For Diagram B: Use the marker [[DIAGRAM:{"type":"labeled","title":"Diagram B — ${params.topic}","labels":[{"text":"Label 1","x":20,"y":30},{"text":"Label 2","x":80,"y":30}]}]].
@@ -1356,7 +1372,21 @@ TONE: Warm, encouraging, child-friendly. Use 'you', 'let's', 'have a go', 'well 
 FORMAT: Activity-based, NOT a secondary school handout. Lots of variety: circle, tick, draw, match, fill in. Short instructions only.
 
 Respond with valid JSON only — no markdown, no code blocks, no HTML tags inside content strings. Use plain text only.`
-    : `You are an expert GCSE/curriculum worksheet designer creating a complete, print-ready, professionally structured student worksheet AND matching teacher answer key.
+    : `You are an expert GCSE/curriculum worksheet designer with deep knowledge of the UK National Curriculum, AQA, Edexcel, OCR, and WJEC specifications. You create complete, print-ready, professionally structured student worksheets AND matching teacher answer keys.
+
+⚠️ CURRICULUM AUTHORITY MANDATE (Phase 5 — non-negotiable):
+Every piece of content you generate MUST be anchored to the UK curriculum and exam-board specification for the given subject, topic, and year group. This means:
+- All factual claims must be accurate according to the AQA/Edexcel/OCR specification for this topic
+- Key vocabulary must match the exact terminology used in the specification (e.g. for AQA Biology: 'aerobic respiration', 'anaerobic respiration', 'ATP', 'mitochondria' — not informal synonyms)
+- Mark schemes must follow the style of the specified exam board (AQA: method marks M1/A1; Edexcel: B marks for accuracy; OCR: point-based)
+- Questions must reflect the actual style, difficulty, and command words used in past papers for this specification
+- Do NOT generate content that contradicts the specification or uses out-of-date terminology
+- The worked example MUST show a method that would score full marks on the actual exam
+- Common mistakes listed MUST be genuine misconceptions identified in examiner reports for this topic
+- For science: use the correct chemical equations, formulae, and units as specified by the exam board
+- For maths: use the correct notation and methods as specified in the GCSE maths specification
+- For English/Humanities: use the correct critical terminology and assessment objectives (AO1, AO2, AO3, AO4)
+Content that does not meet this standard will be rejected. Generate content as if you are writing an official revision resource for the exam board.
 ${(() => {
   const diagramA = getDiagramForTopic(params.subject, params.topic);
   const diagramB = getDiagramForTopic(params.subject, "comparison or secondary process for " + params.topic);
@@ -1370,12 +1400,12 @@ SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
 
 PRINTED PAGE LAYOUT (MANDATORY ORDER — every worksheet INCLUDING MATHS must follow this exactly):
   Page 1 (may span 1–2 pages if content is long): Learning Objective → ${params.recallTopic ? 'Retrieval → ' : ''}Key Vocabulary → Common Mistakes → Worked Example
-  Section 1 — Recall (Q1, Q2, Q3) — starts on its own fresh page
+  Section 1 — Recall (Q1–Q${sec1TargetCount}, ${sec1TargetCount} questions) — starts on its own fresh page
   DIAGRAM A (full-page reference spread, own page)
-  Section 2 — Understanding (Q4, Q5, Q6) — starts on its own fresh page
+  Section 2 — Understanding (Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}, ${sec2TargetCount} questions) — starts on its own fresh page
   DIAGRAM B (full-page visual reference spread, own page — may be skipped if topic has no second visual)
-  Section 3 — Application & Analysis (Q7, Q8, Q9) + Challenge Question — starts on its own fresh page
-  Self Reflection + Exit Ticket — starts on its own fresh page
+  Section 3 — ${yearNum >= 9 ? 'EXAM STYLE QUESTIONS' : 'Application & Analysis'} (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}, ${sec3TargetCount} questions) + Challenge Question — starts on its own fresh page
+  Self Reflection + Exit Ticket + Revision Tips — starts on its own fresh page
   Teacher Copy — Answer Key (teacher view only) — starts on its own fresh page
 
 Emit sections IN THIS ORDER so printing matches the page layout. The intro block (LO, Retrieval if requested, Key Vocab, Common Mistakes, Worked Example) flows naturally — if it fits on one page it stays on one page; if it overflows it spans to a second page before Section 1 starts. Page breaks are CSS-driven: every Section divider, Diagram A, Diagram B, Self-Reflection, and Teacher-Key block starts a new printed page.
@@ -1388,7 +1418,7 @@ DIAGRAM B — VISUAL REFERENCE (place BETWEEN Section 2 and Section 3):
 Every worksheet SHOULD include a second diagram called "Diagram B" as its own full-page spread between Section 2 (Q6) and Section 3 (Q7). This is a VISUAL REFERENCE ONLY — it contains NO questions. If the topic has no genuinely valuable second diagram (e.g. pure algebra topics), emit a diagram-b section with content "[skipped — topic does not require a second visual]" so it can be dropped. Use format:
   {"type":"diagram-b","title":"Diagram B — [brief title]","content":"Diagram B — Visual Reference.\n[[DIAGRAM:...]]","altText":"..."}
 
-⚠️ CRITICAL: Diagram A and Diagram B are VISUAL AIDS ONLY. They MUST NOT contain any questions, sub-questions, or tasks. All questions come ONLY from Section 1 (Q1–Q3), Section 2 (Q4–Q6), and Section 3 (Q7–Q9). No extra questions should exist anywhere else in the worksheet.
+⚠️ CRITICAL: Diagram A and Diagram B are VISUAL AIDS ONLY. They MUST NOT contain any questions, sub-questions, or tasks. All questions come ONLY from Section 1 (Q1–Q${sec1TargetCount}), Section 2 (Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}), and Section 3 (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}). No extra questions should exist anywhere else in the worksheet.
 
 ⚠️ Diagram A MUST appear in EVERY worksheet. Diagram B should appear unless the topic genuinely has no second visual. NEITHER diagram should contain questions — questions come only from Sections 1, 2, and 3.
 
@@ -1426,8 +1456,16 @@ NEVER use generic placeholders like "Label 1" or "Step 1" — use real topic-spe
 For DIAGRAM A: the diagram must be FULLY LABELLED (every part has a real term shown).
 For DIAGRAM B: the diagram must be FULLY LABELLED — it is a visual reference only with NO questions attached.
 
-SECTION 3 — APPLICATION & ANALYSIS (Q7–Q9):
-${sectionBPrompt}${examStylePrompt}
+SECTION 3 — ${yearNum >= 9 ? 'EXAM STYLE QUESTIONS' : 'APPLICATION & ANALYSIS'} (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}, ${sec3TargetCount} questions):
+${yearNum >= 9 ? `These MUST be genuine exam-style questions that look and feel like questions from a real ${params.examBoard || 'AQA/Edexcel'} GCSE paper. Requirements:
+- Each question is SEPARATE with its own number, mark allocation in [X marks] format, and its own working-out lines
+- Use exam command words: Calculate, Show that, Explain, Evaluate, Compare, Justify, Describe, Suggest
+- Questions must escalate in difficulty: Q${sec1TargetCount + sec2TargetCount + 1} = 3-4 marks (structured), Q${sec1TargetCount + sec2TargetCount + 2} = 4-5 marks (multi-step), Q${sec1TargetCount + sec2TargetCount + 3} = 5-6 marks (extended), Q${sec1TargetCount + sec2TargetCount + 4} = 4-5 marks (evaluate/compare), Q${sec1TargetCount + sec2TargetCount + 5} = 6 marks (synoptic/multi-concept)
+- Every question must have sub-parts (a), (b), (c) where appropriate
+- Working-out lines MUST be provided under each question (more lines = more marks)
+- Questions MUST test knowledge that appears in the ${params.examBoard || 'AQA'} specification for ${params.topic}
+- Do NOT repeat question formats from Section 1 or Section 2
+` : sectionBPrompt}${examStylePrompt}
 
 CHALLENGE QUESTION [${isSTEM ? '8' : '12'} marks]: ${isMaths ? 'Present a challenging multi-step real-world maths problem on ' + '"' + params.topic + '"' + '. ALL parts must be numerical/calculation-based — NO written explanations or prose. (a) Set up the problem and identify the method [1 mark] (b) Perform 2–3 linked calculations showing ALL working [5 marks] (c) Give the final answer with correct units/form and check it [2 marks]. Mark scheme: method marks + accuracy marks only.' : isSTEM ? 'Present a multi-part real-world scenario requiring: (a) Choose and justify an approach/method/circuit/process (b) Perform at least 2–3 linked calculations showing all working (c) Explain what happens under a changed condition. Award: up to 3m for explanation + up to 5m for calculations.' : 'Present a short quotation from the text (3–8 words, with Act/scene reference). Instruction: "Starting with this extract, write about how [author] presents [concept/character/theme]." List what the answer must include. Award: Band 4 (10–12m) / Band 3 (7–9m) / Band 2 (4–6m) / Band 1 (1–3m). Describe each band in one sentence.'}
 
@@ -1457,7 +1495,7 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
 - PAGE LAYOUT (Page 1 intro → Section 1 → Diagram A → Section 2 → Diagram B → Section 3+Challenge → Reflection → Teacher Key) MUST be preserved under every SEND overlay.
 - MATHS under SEND: calculation-based rule still applies. SEND may add a method-step scaffold, a worked-example bridge, or a key-facts box — but questions must still be calculations, not prose.
 - SEND does NOT reduce the total mark count. Every question keeps its original marks.
-- NEVER merge or remove questions to simplify the sheet — Section 1 = 3 questions, Section 2 = 3 questions, Section 3 = 3 questions + Challenge. SEND adaptations add support AROUND each question, they never remove questions.
+- NEVER merge or remove questions to simplify the sheet — Section 1 = ${sec1TargetCount} questions, Section 2 = ${sec2TargetCount} questions, Section 3 = ${sec3TargetCount} questions + Challenge. SEND adaptations add support AROUND each question, they never remove questions.
 Topic: "${params.topic}" | Year: ${params.yearGroup} (${phase})
 
 QUALITY STANDARDS — every question must meet professional UK teacher standards:
