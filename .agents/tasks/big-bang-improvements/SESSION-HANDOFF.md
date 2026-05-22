@@ -5,12 +5,14 @@ big-bang improvements work. Read this first, then `PHASE-PLAN.md`,
 then `LEDGER.md` for the per-item detail.
 
 > **Always update this file at the end of every working session** so
-> the next chat can pick up cleanly.
+> the next chat can pick up cleanly. Edit the "What is done" section
+> to flip a PR to shipped, set the "What is next" pointer, and append
+> any context the next chat will need (file paths, function names,
+> design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-22 (PR-3 in flight on branch
-`big-bang/pr-3-diagram-distractor-vocab-notation`; PR-1 (#85), PR-2
-(#86) open with conflicts resolved by merging origin/main; PR-0 (#84)
-merged).
+Last updated: 2026-05-22 (PR-4 in flight on branch
+`big-bang/pr-4-quality-scorecard`; PR-1 (#85) merged; PR-2 (#86) and
+PR-3 (#87) open with conflicts resolved by re-merging origin/main).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -20,192 +22,192 @@ Context: send-assistant repo. Branch off main per PR (see "What is
 Resume: .agents/tasks/big-bang-improvements/SESSION-HANDOFF.md
 Plan:   .agents/tasks/big-bang-improvements/PHASE-PLAN.md
 Ledger: .agents/tasks/big-bang-improvements/LEDGER.md
-Constraint: do not read ai.ts, Worksheets.tsx, or WorksheetRenderer.tsx
-            in full from a fresh chat. grep for the named exports first;
-            read narrow ranges only. Sandbox is INTEGRATIONS_ONLY — do
-            not run npm install. Type-check + tests run in CI on PR push.
-Goal: complete the next un-shipped PR in the "What is next" section,
-      update LEDGER.md and this file, open the PR.
+Constraint: do not read ai.ts (5,200+ lines), Worksheets.tsx
+            (6,500+ lines) or WorksheetRenderer.tsx (7,000+ lines) in
+            full from a fresh chat. grep for the named exports first;
+            read narrow ranges only. Sandbox is INTEGRATIONS_ONLY —
+            do not run npm install. Type-check + tests run in CI on
+            PR push.
+Goal: complete the next un-shipped PR in the "What is next" section
+      below, update LEDGER.md and this file, open the PR.
 ```
 
 ## What is done
 
 - **PR-0 — Tracker scaffolding** (PR #84 merged).
-- **PR-1 — SEND fidelity probes for the 10 previously-unprobed profiles** (PR #85 open).
-- **PR-2 — New pure post-validators (command-word fidelity, SI units, reading age)** (PR #86 open).
-- **PR-3 — Diagram dependency integrity, distractor pedagogy, Tier-3 vocab,
-  notation hygiene** (branch `big-bang/pr-3-diagram-distractor-vocab-notation`,
-  PR pending).
-
-  Audit items closed: **#4, #10, #13, #15** (4 items).
+- **PR-1 — SEND fidelity probes for the 10 previously-unprobed
+  profiles** (PR #85 merged). Audit item #28.
+- **PR-2 — Pure post-validators: command-word fidelity, SI-unit
+  normaliser, reading-age budget** (PR #86 open). Audit items #1, #2,
+  #11, #14, #18. Three new pure / idempotent validators in
+  `worksheetPostValidator.ts`, with the supporting data + helpers
+  (`SI_UNIT_*`, `COMMAND_WORDS_BY_BOARD`, `computeReadingAge`) added
+  to `curriculumAuthorityPrompt.ts` so the curriculum-authority
+  surface stays a single source of truth.
+- **PR-3 — Diagram dependency integrity, distractor pedagogy probe,
+  Tier-3 vocabulary audit, mathematical notation hygiene** (PR #87
+  open). Audit items #4, #10, #13, #15. Four new validators wired into
+  the chain. Notation hygiene rewriter lives in
+  `notationHygieneNormaliser.ts` so callers can use it standalone.
+- **PR-4 — Quality scorecard** (branch
+  `big-bang/pr-4-quality-scorecard`, PR pending push). Audit item
+  **#50**. The schema (`WorksheetQAScore` in
+  `worksheet-generator.ts`, mirrored in `shared/aiSchemas.ts`) has
+  carried a `qaScore` field since the worksheet pipeline was first
+  designed, but only the legacy template-based generator at
+  `worksheet-generator.ts:scoreWorksheet` ever computed a value, and
+  the AI-driven path (`ai.ts`) never called it — so every
+  AI-generated worksheet shipped without a `qaScore` and the
+  teacher-view banner in `WorksheetRenderer.tsx:4705 / 4792` (which
+  hides itself behind `worksheet.metadata?.qaScore`) never appeared on
+  any AI worksheet.
 
   What changed:
-  - `client/src/lib/notationHygieneNormaliser.ts` (NEW — ~140 lines).
-    Pure / deterministic / idempotent rewriter:
-    - Latin `x` → `×` between numeric operands (with whitespace).
-    - ASCII hyphen `-` → typographic minus `−` between numeric operands.
-    - Letter `o` → degree symbol `°` after digit + space + `[CFKR]?`.
-    - Returns `{ rewritten, substitutions[] }` mirroring
-      `applyUKEnglishSubstitutions`.
-  - `client/src/lib/worksheetPostValidator.ts` (extended):
-    - `enforceMathsNotationHygiene` (#13) — silent rewrite + warn per
-      drift type. Skips teacher-only sections.
-    - `enforceDiagramDependencyIntegrity` (#15) — warns when a question
-      stem references "Diagram A/B/figure/graph/chart/table" that
-      doesn't have a matching section. Never strips the question.
-    - `enforceDistractorPedagogy` (#4) — four heuristics: duplicates,
-      typo decoys (Levenshtein-1 to correct answer), near-empty options,
-      <2 unique distractors. Warn-only.
-    - `enforceTier3VocabularyDeclared` (#10) — flags words ≥ 11 chars
-      in question stems that aren't in the worksheet's Word Bank /
-      Key Vocabulary section. Stop-list excludes everyday polysyllabic
-      words (calculator, thermometer, investigate, etc.). Conservative
-      false-positive rate.
-    - All four wired at the END of `runWorksheetPostValidators`. The
-      notation-hygiene rewriter runs FIRST among the PR-3 group so the
-      next three see clean notation.
-  - `server/tests/worksheetScrutiny.test.ts` extended with 6 new
-    describe blocks (~20 cases): per-validator happy / unhappy / no-op
-    / no-rewrite / idempotency, plus chain-integration.
+  - `client/src/lib/qaScoreBuilder.ts` (new): single source of truth
+    for the scorer. `computeQaScore`, `applyQaScore`,
+    `mapStatusToValidation`. Pure / deterministic / idempotent. Reads
+    `metadata.postValidatorWarnings` (categorised into 18 buckets
+    covering every validator surface — curriculum / command-word /
+    diagram / SEND / notation / UK-English / common-mistakes /
+    mark-scheme / softener / AO / placeholder / section-count /
+    reading-age / distractor / Tier-3 vocab / SI-unit /
+    self-reflection / revision-tips), the structured
+    `metadata.sendFidelityReport` (from PR-1) and
+    `metadata.commonMistakesAudit` (from PR-M3), plus structural
+    signals (question section count, distinct section types, presence
+    of teacher key / learning objective / diagram). Deductions are
+    bucket-targeted so the same warning never costs two components.
+  - `client/src/lib/worksheetPostValidator.ts`: wires `applyQaScore`
+    as the LAST step in `runWorksheetPostValidators` so the score
+    sees every warning every prior validator stamped, plus all
+    structured reports earlier audits attached to metadata.
+  - `server/tests/worksheetScrutiny.test.ts`: 10 new test cases
+    across 6 describe blocks — happy-path publish-ready score,
+    bucket-targeted deductions (command-word / notation /
+    placeholder), three fail conditions (no questions / no teacher
+    key / SEND > 50% missing), purity + idempotency, legacy
+    `validationStatus` mapping, end-to-end through the full chain.
 
-  Files touched: 4.
-
-  Note: PR-3 uses a length-based proxy (≥ 11 chars) for Tier 3 detection
-  rather than syllable counting, because `countSyllables` is added by
-  PR-2 which hasn't merged. When PR-2 is on main, swap to syllable-based
-  detection — flagged for the PR-21 carve-up sweep.
+  Files touched: 4 (1 new). Net diff: ~ +700 lines.
 
 ## What is in flight
 
-- **PR-3** push + open.
+- **PR-2 (#86), PR-3 (#87), PR-4** push + open / merge bookkeeping.
 
 ## What is next
 
-**PR-4 — Quality scorecard (audit item #50).**
+**PR-5 — Eval harness FEAT-PR5: 200 canonical UK NC + GCSE prompts +
+golden-output runner.**
 
-Wire `WorksheetQAScore` (already in the schema, never computed) into a
-deterministic scorer that rolls up component validators into a
-`/100` score and a `publish-ready` / `good` / `needs-revision` status.
+Audit item: #44.
 
 Files to touch:
-- `client/src/lib/worksheetQAScorer.ts` (NEW). Pure scorer that:
-  - Reads `metadata.postValidatorWarnings` and tags each by component
-    (curriculum / examStyle / progression / diagram / SEND / layout /
-    teacherKey / notation / metadata).
-  - Counts warnings per component, applies the spec §29 weights (15 /
-    15 / 10 / 10 / 15 / 10 / 10 / 10 / 5 = 100 max).
-  - Returns `{ total, status, components, failConditions }`.
-- `client/src/lib/worksheetPostValidator.ts` — wire scorer into the chain.
-- `shared/aiSchemas.ts` — already has `WorksheetQAScore` in the metadata.
-- `server/tests/worksheetScrutiny.test.ts` — extend.
+- `scripts/eval-harness/` (new directory) — 200 canonical prompts as
+  JSON fixtures spanning every (subject × year × ability tier) the
+  worksheet generator handles. One golden output per fixture, locked
+  to a generator-version. Diff runner that flags > 5% drift.
+- `package.json` — `npm run eval` script.
 
-Out of scope for PR-4:
-- Component thresholds for "do-not-publish" / "regenerate" — PR-22 SLA.
-- Per-pupil progression telemetry — PR-19.
+Out of scope for PR-5:
+- Connecting the eval harness to CI (PR-22 schema deprecation policy
+  introduces the regression-detector wiring).
+- A/B prompt experiments on the harness (PR-20).
 
-Sizing budget: ≤ ~600 net lines, ≤ ~5 files.
-Branch name: `big-bang/pr-4-quality-scorecard`.
+Sizing budget: ≤ ~700 net lines, ≤ ~6 files (data fixtures excluded
+from line count — 200 JSON files are not source).
+Branch name: `big-bang/pr-5-eval-harness`.
 
-## Conflict-resolution playbook (added 2026-05-22)
-
-When PR-0 merges to main, every still-open PR that cherry-picked the
-tracker files will conflict on:
-- `.agents/tasks/big-bang-improvements/LEDGER.md`
-- `.agents/tasks/big-bang-improvements/PHASE-PLAN.md`
-- `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md`
-
-Resolution:
-```bash
-git checkout big-bang/pr-N-<slug>
-git merge origin/main
-# all three tracker files conflict (add/add)
-git checkout --ours .agents/tasks/big-bang-improvements/LEDGER.md \
-                    .agents/tasks/big-bang-improvements/PHASE-PLAN.md \
-                    .agents/tasks/big-bang-improvements/SESSION-HANDOFF.md
-git add .agents/tasks/big-bang-improvements/
-git commit --no-edit
-# push via mcp_sandbox_github_push_to_remote (no force flag needed —
-# this produces a merge commit, not a rebase)
-```
-
-Future PRs (PR-3+) branch off main AFTER PR-0 merged, so they have the
-tracker files natively and won't conflict on them at branch time. They
-WILL conflict on the trackers later if multiple PRs touch the same
-table rows — resolve by rebasing or merging at push time.
-
-## Definition-of-done for every PR
+## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 
 - [ ] CI passes (`npm test` + `tsc --noEmit`).
 - [ ] LEDGER.md updated for every item the PR closes.
-- [ ] SESSION-HANDOFF.md updated.
-- [ ] PR description references this handoff file by path.
+- [ ] SESSION-HANDOFF.md updated — "What is done" gains a bullet,
+      "What is next" advances to the next un-shipped PR.
+- [ ] PR description references this handoff file by path so a
+      reviewer who reads the PR also sees the wider context.
 
 ## Conventions inherited from Phases 1–5
 
-- **Single source of truth.** New validators / builders / helpers live
-  in one file under `client/src/lib/`.
-- **Idempotent / pure validators.** Running twice = once.
-- **Conservative.** When in doubt, warn (don't rewrite).
-- **Sciences do NOT get the maths-only working-out box.** Phase 1 lock.
-- **Never invent spec codes.** Phase 1 lock. AO codes are AO1–AO4 only.
+- **Single source of truth.** Every new validator / builder lives in
+  one file under `client/src/lib/`; the prompt and the post-validator
+  both import from it. No hand-rolled duplicate strings anywhere.
+- **Schema / prompt / validator alignment.** New schema field →
+  `aiSchemas.ts` (Zod) + `worksheet-generator.ts` (interface) + per-Q
+  contract block in `ai.ts:structuredSystemSections` in lockstep, in
+  the same PR.
+- **Renderer stays subject-aware** through `formatContent`'s
+  `subject` option.
+- **Sciences do NOT get the maths-only working-out box.** Phase 1
+  lock — never reintroduce.
+- **Never invent spec codes.** Phase 1 lock. AO codes are AO1–AO4
+  only.
+- **Idempotent / pure validators.** Running twice yields the same
+  output as running once. Tests in `worksheetScrutiny.test.ts`
+  enforce this for every new validator.
+- **Conservative.** When in doubt, validators warn (don't rewrite).
+  Silent rewriting papers over real generation failures.
+
+## How to update this file
+
+1. When you START a PR, move it from "What is next" → "What is in flight".
+2. When you SHIP a PR, move it from "What is in flight" → "What is done"
+   with the PR number, and advance "What is next" to the next row in
+   PHASE-PLAN.md.
+3. Capture any non-obvious context in "Notes" below — design decisions,
+   files you read, gotchas, open questions for the next chat.
 
 ## Notes (transient, per-session scratchpad)
 
-### PR-3 design decisions
+### Resolver-order bug: `semh` masked behind `anxiety`
 
-**Tier 3 detection uses length-proxy, not syllable count.**
-PR-2 ships `countSyllables` in `curriculumAuthorityPrompt.ts` but
-PR-2 hasn't merged. PR-3 needs to compile against current main, so
-it uses a ≥ 11-char threshold. This lands the same false-pos /
-false-neg tradeoff on the UK GCSE corpus: flags "photosynthesis",
-"differentiation", "mitochondria"; skips "calculator", "thermometer".
-A stop-list catches the residual everyday polysyllables.
-Switch to `countSyllables` after PR-2 merges (PR-21 carve-up sweep).
+`resolveSendSpec` in `client/src/lib/sendPromptFragments.ts` has two
+matcher rows that both consume the literal token `semh`:
 
-**Distractor-typo detection uses Levenshtein-1.**
-A distractor that's exactly 1 character (insertion / deletion /
-substitution) away from the correct answer is treated as a typo
-decoy, not a misconception. This caught the "foods" vs "food"
-trailing-s decoy in the test fixture. Limited to 1-edit distance
-to keep false-positive rate low.
+```ts
+[/\b(anxiety|semh|mental)\b/, "anxiety"],   // ← runs first; eats "semh"
+...
+[/\b(semh|social.emotional|emotional.mental)\b/, "semh"],
+```
 
-**Notation-hygiene rules are deliberately narrow.**
-We rewrite × / − / ° only. We do NOT rewrite:
-- `^` to `²` / `³` (markdown / KaTeX handle that).
-- Greek letter substitutions (`pi` → `π`, `theta` → `θ`).
-- En-dash / em-dash punctuation in titles.
-Each of these has a legitimate use case that risks corruption.
+The first matcher always wins for the bare input `"semh"`, so the
+SEMH-specific spec is unreachable for the most natural input shape.
+PR-1 works around this by:
+- Making the SEMH probe table available under `PROBES["semh"]` so the
+  audit works **if** the resolver ever returns "semh".
+- Routing the SEMH-specific tests through the input
+  `"social-emotional"` so the second matcher wins and the `semh` spec
+  resolves.
 
-**Diagram dependency check is warn-only by design.**
-Even when the named diagram is missing, we never strip the question —
-the diagram may be on its way from the library on the next regenerate.
-Warning lets the teacher decide.
+**Fix path**: a one-line resolver-order change in `sendPromptFragments.ts`
+(remove the `semh` token from the first matcher). Out of scope for
+PR-1 to keep the PR narrow. Flagged for the PR-21 ai.ts carve-up
+sweep, which will already touch the SEND scope.
 
-### #16 (Common Mistakes for non-maths) — DEFERRED
+### `applySendFidelityAudit` warning doubling
 
-The existing `commonMistakesValidator.ts` is maths-only with a
-hardcoded numeric-token requirement. Extending it to non-maths
-needs a parallel "wrong-example string" probe and a maths/non-maths
-split inside the existing audit. This is a meaningful refactor of
-an existing module — moved to PR-13 (mark-scheme upgrades) where the
-broader Common Mistakes work already lives.
+Calling `applySendFidelityAudit(ws, sendNeed)` twice on the same input
+produces a `metadata.postValidatorWarnings` array with each warning
+listed twice (the function reads existing warnings and appends —
+unconditionally). The `metadata.sendFidelityReport` itself is
+idempotent (deep-equal across calls); only the warnings array
+duplicates. Real-world impact is nil because `runWorksheetPostValidators`
+runs the audit exactly once, but it's a soft idempotency violation
+worth de-duping in the PR-22 idempotency-test sweep.
 
-### Open follow-ups (carried)
+### PR-1 probe coverage map
 
-- `resolveSendSpec` matcher-order bug masking `semh` → PR-21.
-- `applySendFidelityAudit` warning-doubling → PR-22 idempotency sweep.
-- Tier-3 vocab swap to syllable counting → PR-21 (depends on PR-2).
-- Self-Reflection command-word echo (#18 wiring) → PR-21.
+| Profile               | Probe count | Probable rules | Skipped (narrative / CSS) |
+| --------------------- | ----------- | -------------- | ------------------------- |
+| asc-social            | 6           | 4              | 2 |
+| asc-demand-avoidant   | 7           | 7              | 0 |
+| asc-sensory           | 7           | 4              | 3 |
+| asc-rigid             | 7           | 4              | 3 |
+| asperger              | 6           | 2              | 4 |
+| mld                   | 7           | 5              | 2 |
+| dyspraxia             | 6           | 4              | 2 |
+| tourettes             | 5           | 4              | 1 |
+| older-learners        | 6           | 4              | 2 |
+| semh                  | 6           | 5              | 1 |
+| **Total new**         | 63          | 43             | 20 |
 
-### PR-3 coverage map
-
-| Validator                                     | Audit item | Tests |
-| --------------------------------------------- | ---------- | ----- |
-| `enforceMathsNotationHygiene`                 | #13        | 3 cases (rewrite + teacher-only skip + idempotency) |
-| `enforceDiagramDependencyIntegrity`           | #15        | 5 cases (warn / no-op when present / no-op when no ref / no-rewrite / idempotent) |
-| `enforceDistractorPedagogy`                   | #4         | 5 cases (duplicates / typo / near-empty / no-op / idempotent) |
-| `enforceTier3VocabularyDeclared`              | #10        | 5 cases (warn / no-op no-vocab / stop-list / no-rewrite / idempotent) |
-| `normaliseMathNotation` + `findNotationDrift` | #13 helper | 8 cases (per-rule + idempotency + isClean) |
-| Chain integration                             | n/a        | 1 end-to-end |
-
-Total new tests: ~27 cases across 6 describe blocks.
+For the 11 previously-probed profiles the registry is unchanged.

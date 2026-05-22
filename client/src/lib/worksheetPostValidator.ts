@@ -77,6 +77,14 @@ import {
 // warning per drift fixed.
 import { normaliseMathNotation } from "./notationHygieneNormaliser";
 
+// PR-4 — audit item #50 — Quality scorecard. Pure / idempotent. Wired
+// as the LAST step in `runWorksheetPostValidators` so the score reflects
+// every warning every prior validator stamped, plus all reports the
+// audits attached to metadata (sendFidelityReport, commonMistakesAudit,
+// specPointAuditReport, etc.). Single source of truth — see
+// `qaScoreBuilder.ts` for the full deduction matrix.
+import { applyQaScore } from "./qaScoreBuilder";
+
 export interface PostValidatorSection {
   id?: string;
   type?: string;
@@ -1936,6 +1944,16 @@ export function runWorksheetPostValidators(
       },
     };
   }
+
+  // PR-4 — audit item #50. Quality scorecard. Pure / idempotent. Stamps
+  // `metadata.qaScore` (a `WorksheetQAScore`) and `metadata.validationStatus`
+  // (legacy "pass" | "warn" | "fail" derived from the scorecard's richer
+  // status). Runs LAST so it sees every warning above and any report
+  // earlier validators / audits attached to metadata. The teacher-view
+  // banner in `WorksheetRenderer.tsx` (lines 4705 / 4792) already renders
+  // this — wiring it here makes the banner appear on every AI-generated
+  // worksheet, not just legacy template-built ones.
+  current = applyQaScore(current);
 
   return { worksheet: current, warnings: allWarnings };
 }
