@@ -80,7 +80,7 @@ PRs are ordered so that:
 
 | PR     | Title                                                                                              | Audit items                                  | Status      |
 | ------ | -------------------------------------------------------------------------------------------------- | -------------------------------------------- | ----------- |
-| PR-1   | Phase 4 follow-up: SEND fidelity probes for the 12 missing profiles                                | #28                                          | not started |
+| PR-1   | Phase 4 follow-up: SEND fidelity probes for the 12 missing profiles                                | #28                                          | shipped — PR #85 |
 | PR-2   | New pure post-validators — command-word fidelity, SI-unit normaliser, reading-age budget           | #1 #2 #14                                    | not started |
 | PR-3   | Diagram dependency integrity, distractor pedagogy probe, Tier-3 vocabulary audit, notation hygiene | #4 #10 #13 #15                               | not started |
 | PR-4   | Quality scorecard — wire WorksheetQAScore (already in schema, never computed)                      | #50                                          | not started |
