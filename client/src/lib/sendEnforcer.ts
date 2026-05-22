@@ -117,6 +117,19 @@ function enforceAdhdLine(line: string): string {
   // tables, diagram markers, and "Answer:" hints.
   if (/^(\s*\|)|(^\s*\[\[DIAGRAM:)|(^\s*Answer\s*:)/i.test(out)) return out;
 
+  // Skip MCQ option lines. The MCQSection renderer parses lines like
+  // "A. positive", "B  negative", "C) lithium", "D - 4" as options.
+  // Prefixing them with "[ ]" (or bolding "Calculate" inside an option)
+  // breaks the parser and changes MCQ formatting whenever an ADHD or
+  // other SEND adaptation is applied. Per teacher steering, MCQs must
+  // render identically across all SEND profiles. Only the question
+  // STEM gets the checkbox; the four options are left exactly as the
+  // LLM produced them.
+  if (/^\s*[A-Fa-f][.\s)\-]{1,2}\s*\S/.test(out)) return out;
+
+  // Skip "WORD BANK:" / "TRUE / FALSE" / "CORRECT:" labels.
+  if (/^\s*(WORD\s*BANK|CORRECT|TRUE\s*\/\s*FALSE)\s*[:\-]/i.test(out)) return out;
+
   // 1. Prepend '[ ] ' if not already present.
   //    Match checkbox variants: '[ ]', '[x]', '☐', '□', '- [ ]'.
   const hasCheckbox = /^\s*(?:-\s*)?(?:\[\s*[xX]?\s*\]|☐|□)\s+/.test(out);

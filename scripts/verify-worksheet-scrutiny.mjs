@@ -229,8 +229,8 @@ console.log("\nai.ts post-validator wiring:");
     "Mixed-number worked-example rule present");
   assertTrue(/YEAR-GROUP LOCK/.test(src),
     "Year-group lock rule present");
-  assertTrue(/SELF REFLECTION \(SLIM/.test(src),
-    "Slim reflection rule present in top-level prompt");
+  assertTrue(/SELF REFLECTION \+ EXIT TICKET \+ REVISION TIPS/.test(src),
+    "Self-Reflection + Exit Ticket + Revision Tips block present in top-level prompt");
 }
 
 // ── 5. send-data.ts autism sub-profiles ──────────────────────────────────

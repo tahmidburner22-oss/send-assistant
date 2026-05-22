@@ -1469,7 +1469,28 @@ ${yearNum >= 9 ? `These MUST be genuine exam-style questions that look and feel 
 
 CHALLENGE QUESTION [${isSTEM ? '8' : '12'} marks]: ${isMaths ? 'Present a challenging multi-step real-world maths problem on ' + '"' + params.topic + '"' + '. ALL parts must be numerical/calculation-based — NO written explanations or prose. (a) Set up the problem and identify the method [1 mark] (b) Perform 2–3 linked calculations showing ALL working [5 marks] (c) Give the final answer with correct units/form and check it [2 marks]. Mark scheme: method marks + accuracy marks only.' : isSTEM ? 'Present a multi-part real-world scenario requiring: (a) Choose and justify an approach/method/circuit/process (b) Perform at least 2–3 linked calculations showing all working (c) Explain what happens under a changed condition. Award: up to 3m for explanation + up to 5m for calculations.' : 'Present a short quotation from the text (3–8 words, with Act/scene reference). Instruction: "Starting with this extract, write about how [author] presents [concept/character/theme]." List what the answer must include. Award: Band 4 (10–12m) / Band 3 (7–9m) / Band 2 (4–6m) / Band 1 (1–3m). Describe each band in one sentence.'}
 
-SELF REFLECTION (SLIM — pupil-facing only): Output exactly ONE exit question on its own line: 'Exit Ticket: Write one thing you learned today about ${params.topic} in a single sentence.' Do NOT emit a confidence grid, tick-box column, or multi-prompt reflection block on the pupil-facing page — those belong in the Teacher Copy below. The pupil sees one sentence only so the reflection does not overwhelm the page.
+SELF REFLECTION + EXIT TICKET + REVISION TIPS (MANDATORY — every worksheet must end with these three blocks, in this order, on the pupil-facing page):
+
+1. SELF REFLECTION — emit a section with type "self-reflection" containing:
+   SUBTITLE: Review your understanding before moving on.
+   CONFIDENCE_TABLE:
+   [5 specific skills/concepts from ${params.topic}, one per line]
+   WRITTEN_PROMPTS:
+   One concept I feel confident about is ...
+   One area I still need to practise is ...
+   A question I still want to ask my teacher is ...
+   EXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence.
+
+2. REVISION TIPS — emit a separate section with type "revision-tips" containing five examiner-voice tips in this exact order, each prefixed with its category label in UPPERCASE:
+   SUBTITLE: Examiner tips for tackling ${params.topic}.
+   TIPS:
+   1. COMMAND WORD: [what the dominant command word on this worksheet actually wants]
+   2. WATCH OUT: [one named misconception that pupils make on this topic]
+   3. METHOD: [one method habit that loses marks on this topic; for maths: show every step; for sciences: include units before rounding; for humanities: anchor to a date or source; for English: embed the quote then analyse a single word]
+   4. MARK SCHEME: [how marks are awarded for the section's tariff]
+   5. TIME: [time budget — roughly one minute per mark]
+
+The Self-Reflection's confidence grid, written prompts and exit ticket all appear on the pupil-facing page (NOT teacher-only) and they sit on their own page break before the Teacher Copy below. Do not bury reflection inside the teacher copy — the pupil must see all three blocks.
 
 TEACHER COPY — ANSWER KEY: Provide answers for EVERY question. ${isMaths ? `MATHS MARK SCHEME FORMAT (MANDATORY):
 For every maths question, break the mark scheme down as:
@@ -1860,8 +1881,8 @@ DIAGRAM SUBJECT-LOCK (CRITICAL — this is the bug the teacher flagged):
 - Every diagram emitted on a science worksheet MUST be from the science domain. ALLOWED diagram types for science: labeled (cell/organ/apparatus), circuit (electricity topics ONLY), flow (process/sequence), cycle (water/rock/nitrogen/life), bar/axes/number-line (data), pyramid (ecological/energy), venn (classification), timeline (history of science where topic genuinely warrants it).
 - FORBIDDEN diagram types on a science worksheet: anything that belongs to a different subject. In particular, do NOT emit "computer-architecture", "big-o-notation", "binary-representation", or any other computing / algorithm / programming diagram on a biology / chemistry / physics / combined-science sheet. If a topic does not have a relevant second diagram, emit Diagram B with content "[skipped — topic does not require a second visual]".
 
-REFLECTION — SINGLE EXIT QUESTION ONLY:
-- Pupil-facing reflection is exactly one question: "Write one thing you learned today about ${params.topic} in a single sentence." No confidence grid, no multi-prompt reflection, no exit ticket box in addition to the question. A confidence column is kept on the TEACHER COPY only.` : "";
+REFLECTION + EXIT TICKET + REVISION TIPS — MANDATORY:
+- Every science worksheet must end with a Self-Reflection block (5 confidence rows + 3 written prompts + EXIT_TICKET line), a separate Revision Tips block (5 examiner-voice tips: command-word, watch-out, method, mark-scheme, time), and these two must appear on the pupil-facing page (NOT teacher-only). Sciences method-tip = "include units before rounding"; for combined-science calculation topics, also remind pupils to convert to SI units before substituting.` : "";
 
   const mathsNote = isMaths
     ? `MATHS — SPECIFICATION-ALIGNED CALCULATION PRACTICE (MANDATORY):
