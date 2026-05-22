@@ -139,6 +139,17 @@ import {
   renderSelfReflectionAsMarkerBlock,
 } from './selfReflectionBuilder';
 
+// Phase 3 — Revision Tips. Single source of truth for the examiner-
+// voice 5-tip panel. Imported here so:
+//   (1) the structured-path emit can push deterministic builder output
+//       as a worked example for the AI to match;
+//   (2) the validator chain (via worksheetPostValidator) sees the same
+//       canonical strings as the prompt and the renderer.
+import {
+  buildRevisionTips,
+  renderRevisionTipsAsMarkerBlock,
+} from './revisionTipsBuilder';
+
 // ─── Phase 4 — Misconception bank ──────────────────────────────────────────
 // UK-curriculum misconception library. Injected into the worksheet system
 // prompt so questions diagnose common pupil errors, not just test recall.
@@ -2284,7 +2295,7 @@ ABSOLUTE RULES:
     const secs = params.selectedSections ?? [
       'learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes',
       'worked-example', 'true-false', 'mcq', 'word-bank-gap-fill', 'match',
-      'section-a', 'questions', 'section-b', 'section-c', 'self-reflection'
+      'section-a', 'questions', 'section-b', 'section-c', 'revision-tips', 'self-reflection'
     ];
     const wantLO = secs.includes('learning-objective');
     const wantRetrieval = secs.includes('retrieval') && !!params.recallTopic;
@@ -2303,6 +2314,10 @@ ABSOLUTE RULES:
     const wantSectionA = secs.includes('section-a');
     const wantSectionC = secs.includes('section-c');
     const wantSelfReflection = secs.includes('self-reflection');
+    // Phase 3 — Examiner-voice Revision Tips panel. Mirrors
+    // wantSelfReflection: opt-in via the section toggle, default ON
+    // for secondary worksheets.
+    const wantRevisionTips = secs.includes('revision-tips');
 
     // Retrieve spec-aligned example questions for this topic (if available)
     const specExamples = getSpecQuestions(params.subject, params.topic);
@@ -2320,6 +2335,7 @@ KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
 - SECTION C (Core Practice): 6 exam-style questions escalating from 1 to 6 marks. Use command words: explain, calculate, evaluate, compare, analyse, justify. Include at least one multi-step calculation and one extended response.
 - CHALLENGE: A synoptic or higher-order question linking the topic to a wider concept. Must require genuine analysis or evaluation.
 - SELF REFLECTION: 5 specific, topic-relevant "I can …" statements for the confidence table — NEVER generic. Every statement must (a) name "${params.topic}" or its core noun phrase, and (b) start with "I can " followed by a real command word (Calculate, Solve, Describe, Explain, Analyse, Compare, Evaluate, Identify, etc. — pick verbs that match the question types in this worksheet). NEVER emit "I can ___", "I can apply what I have learned", or any placeholder. Written prompts must mention the topic explicitly. Exit ticket sentence must contain the topic name.
+- REVISION TIPS: Output EXACTLY 5 examiner-voice tips, one per line, numbered 1–5, in this fixed category order: (1) COMMAND WORD, (2) WATCH OUT, (3) METHOD, (4) MARK SCHEME, (5) TIME. Each line MUST follow the format "N. LABEL: <tip text>" — e.g. "1. COMMAND WORD: When the question says 'Calculate …', the examiner wants you to …". UK English. UK awarding-body command words. Second person, imperative, terse — no padding. Tip 1 MUST quote one of the actual command words used on the questions in this worksheet. Tip 2 MUST name a real misconception about "${params.topic}" — pull it from the Common Mistakes section if present, otherwise pick the most likely error pupils make at ${params.yearGroup}. Tip 4 MUST mention how marks are awarded for the longest question on this worksheet (method marks vs accuracy marks, level descriptors, mark per technique-plus-effect, …). Tip 5 MUST give a time budget anchored to the worksheet total marks (≈ 1 minute per mark). NEVER emit generic filler ("revise carefully", "study hard", "make sure you understand", "good luck"). NEVER use placeholders ("[Tip 1]", "...", "___").
 - TEACHER KEY: Complete model answers for EVERY question with mark allocations. For extended answers, list marking points explicitly.
 - DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources from the diagram library — they are already provided as images. Do NOT generate text-based diagram descriptions. Do NOT include any questions about diagrams. All questions come ONLY from Section A (True/False, MCQ, Gap Fill), Section B (Foundation Questions), and Section C (Core Practice + Challenge).
 ` : '';
@@ -2819,7 +2835,27 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
         structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "${challengeContent.replace(/"/g, '\\"')}"}`);
       }
     }
-        // 12. Self Reflection — SEND-specific format
+        // 12. Revision Tips — examiner-voice 5-tip panel (Phase 3).
+    // Deterministic, topic-anchored. Pushed BEFORE the Self-Reflection
+    // section so the printed page order is: questions → tips → reflect.
+    // The structured-path emit pushes a worked example built from the
+    // single source of truth (`revisionTipsBuilder.ts`); the AI is asked
+    // to either match that structure or its output is replaced by
+    // `enforceRevisionTipsPresence` in the post-validator chain.
+    if (wantRevisionTips) {
+      const sendKeyTips = hasSend ? (params.sendNeed || "").toLowerCase().replace(/[\s_]/g, "-") : "";
+      const tips = buildRevisionTips({
+        topic: params.topic,
+        subject: params.subject,
+        year: params.yearGroup,
+        examBoard: params.examBoard,
+        sendKey: sendKeyTips,
+      });
+      const tipsContent = renderRevisionTipsAsMarkerBlock(tips);
+      structuredSections.push(`{"title": "Examiner Tips", "type": "revision-tips", "teacherOnly": false, "content": "${tipsContent.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"}`);
+    }
+
+        // 13. Self Reflection — SEND-specific format
     // Phase 2 — Topic-specific Self-Reflection. The SEND register-tuned
     // content for this section is now produced by selfReflectionBuilder
     // (single source of truth). The builder mirrors the same five SEND

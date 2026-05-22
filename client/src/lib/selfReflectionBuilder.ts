@@ -85,7 +85,17 @@ export interface SelfReflectionOutput {
 
 // ─── Subject classification ────────────────────────────────────────────────
 
-function classifySubject(subject: string | undefined): "maths" | "science" | "englishLit" | "englishLang" | "humanities" | "creative" | "general" {
+/**
+ * Subject family classifier shared with `revisionTipsBuilder.ts`. Exported
+ * so every Phase 2+ surface that wants subject-aware behaviour (command-
+ * word defaults, method tips, mark-scheme phrasing) routes through one
+ * canonical mapping rather than re-implementing the same `s.includes(…)`
+ * ladder. Returns a discriminated union, not a free string, so callers
+ * can be exhaustive in their per-family switches.
+ */
+export type SubjectFamily = "maths" | "science" | "englishLit" | "englishLang" | "humanities" | "creative" | "general";
+
+export function classifySubject(subject: string | undefined): SubjectFamily {
   const s = (subject || "").toLowerCase();
   if (s.includes("math")) return "maths";
   if (s.includes("biology") || s.includes("chemistry") || s.includes("physics") || s.includes("science")) return "science";
@@ -106,7 +116,7 @@ function classifySubject(subject: string | undefined): "maths" | "science" | "en
 // analysis → evaluation) so the first 5 words form a natural confidence
 // ramp.
 
-const COMMAND_WORD_DEFAULTS: Record<ReturnType<typeof classifySubject>, string[]> = {
+const COMMAND_WORD_DEFAULTS: Record<SubjectFamily, string[]> = {
   maths:        ["Calculate", "Solve", "Find",      "Show that",    "Determine"],
   science:      ["Describe",  "Explain", "Calculate", "Compare",     "Evaluate"],
   englishLit:   ["Identify",  "Describe", "Explain",  "Analyse",    "Evaluate"],
@@ -334,9 +344,15 @@ export function extractTopicNounPhrase(topic: string): string {
 // matches the rest of the pupil-facing surface. Anything outside these
 // five branches falls back to "standard".
 
-type SendRegister = "tickBoxOnly" | "sentenceStarter" | "emotional" | "older" | "standard";
+/**
+ * SEND register tag shared with `revisionTipsBuilder.ts`. Exported so the
+ * Revision-Tips surface tunes its register the same way the Self-
+ * Reflection surface does — pupils with the same SEND profile see a
+ * consistent reading-age and tone across both panels.
+ */
+export type SendRegister = "tickBoxOnly" | "sentenceStarter" | "emotional" | "older" | "standard";
 
-function classifySendRegister(sendKey: string | undefined): SendRegister {
+export function classifySendRegister(sendKey: string | undefined): SendRegister {
   const k = (sendKey || "").toLowerCase().replace(/[\s_]/g, "-");
   if (!k) return "standard";
   const tickBoxIds = [

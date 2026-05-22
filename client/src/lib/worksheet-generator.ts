@@ -50,7 +50,12 @@ export interface WorksheetSection {
     // Legacy types (kept for renderer compatibility)
     | "objective" | "example" | "guided" | "independent" | "answers"
     | "adaptations" | "review" | "teacher-notes" | "mark-scheme"
-    | "extension" | "prior-knowledge" | "misconceptions" | "self-reflection" | "diagnostic";
+    | "extension" | "prior-knowledge" | "misconceptions" | "self-reflection" | "diagnostic"
+    // ── Phase 3 — Revision Tips ───────────────────────────────────────
+    // Deterministic, examiner-voice 5-tip panel. Renders immediately
+    // before self-reflection. Single source of truth for the content
+    // is `client/src/lib/revisionTipsBuilder.ts`.
+    | "revision-tips";
   content: string;
   teacherOnly?: boolean;
   studentVisible?: boolean;    // spec §10.2 — explicit student visibility flag
