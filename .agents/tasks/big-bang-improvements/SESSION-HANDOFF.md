@@ -11,9 +11,9 @@ then `LEDGER.md` for the per-item detail.
 > design decisions, open questions). Keep it ~200 lines or under.
 
 Last updated: 2026-05-22 (PR-7 in flight on branch
-`big-bang/pr-7-server-prompt-unification`; PR-1 (#85), PR-2 (#86),
-PR-4 (#88) and PR-5 (#89) merged; PR-3 (#87) and PR-6 (#90) open
-with conflicts re-resolved against current main).
+`big-bang/pr-7-server-prompt-unification`, PR #91; PR-1 (#85),
+PR-2 (#86), PR-4 (#88) and PR-5 (#89) merged; PR-3 (#87) and PR-6
+(#90) open with conflicts re-resolved against current main).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -158,7 +158,7 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 - **PR-7 — Server-prompt unification: port curriculumAuthorityPrompt
   to server/routes/ai.ts** (branch
-  `big-bang/pr-7-server-prompt-unification`, PR pending push). Audit
+  `big-bang/pr-7-server-prompt-unification`, PR #91). Audit
   item **#39**. Before PR-7 the client and server emitted entirely
   different system prompts: the client's manifesto (Phase 5 +
   PR-2 / PR-3 / PR-4 helpers) carried the curriculum-authority
@@ -230,7 +230,7 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is in flight
 
-- **PR-3 (#87), PR-6 (#90), PR-7** push + open / merge bookkeeping.
+- **PR-3 (#87), PR-6 (#90), PR-7 (#91)** push + open / merge bookkeeping.
 
 ## What is next
 
