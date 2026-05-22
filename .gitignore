@@ -23,3 +23,7 @@ wget-log
 test_output.txt
 test-render.mjs
 *.log
+
+
+# Worksheet eval harness — generated report (closes audit item #44)
+server/tests/worksheet-eval/eval-report.json

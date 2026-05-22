@@ -1,0 +1,26 @@
+{
+  "id": "science-y9-biology-respiration",
+  "title": "Year 9 Biology — Aerobic respiration",
+  "bucket": "science",
+  "params": {
+    "subject": "Biology",
+    "topic": "Aerobic respiration",
+    "yearGroup": "Year 9",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    12,
+    16
+  ],
+  "estimatedTokens": 4000
+}

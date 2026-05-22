@@ -1,0 +1,27 @@
+{
+  "id": "send-dyslexia-y7-maths",
+  "title": "Year 7 Mathematics (dyslexia) — Adding fractions",
+  "bucket": "send",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Adding fractions",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "sendNeed": "dyslexia",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "send-fidelity-floor"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}
