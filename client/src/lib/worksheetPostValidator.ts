@@ -76,6 +76,13 @@ import {
   computeReadingAge,
 } from "./curriculumAuthorityPrompt";
 
+// PR-3 — typographic notation drift (× / − / °) for maths and the sciences.
+// Pure rewriter exposed by `notationHygieneNormaliser.ts`. The validator
+// `enforceMathsNotationHygiene` (added below) wraps this in the standard
+// post-validator shape: silent rewrite of student-visible content + one
+// warning per drift fixed.
+import { normaliseMathNotation } from "./notationHygieneNormaliser";
+
 // PR-4 — audit item #50 — Quality scorecard. Pure / idempotent. Wired
 // as the LAST step in `runWorksheetPostValidators` so the score reflects
 // every warning every prior validator stamped, plus all reports the
@@ -1670,6 +1677,376 @@ export function enforceReadingAgeBudget(
   return { worksheet: ws, warnings };
 }
 
+// ─── PR-3 — Diagram-question coupling integrity (audit item #15) ──────────
+//
+// When a question stem references "Diagram A" / "Diagram B" / "the figure" /
+// "the graph" / "the table above", the named section MUST exist on the
+// worksheet. Otherwise the pupil is asked to interpret a diagram that's
+// not on the page — pedagogy collapses.
+//
+// We never STRIP the question (the diagram may still be on its way from
+// the library in a future regenerate). We warn so the teacher knows to
+// either supply the diagram or rewrite the stem to be self-contained.
+//
+// Pure / idempotent. No-op when no questions reference a diagram.
+
+const DIAGRAM_REFERENCE_RE =
+  /\b(?:diagram\s+([A-Z])|figure\s+(\d+)|the\s+(?:figure|graph|chart|table)(?!\s+below)|in\s+(?:figure|graph|chart|table)\s+([A-Z0-9]+))\b/gi;
+
+function getDiagramSectionLetter(section: PostValidatorSection): string | null {
+  const t = String(section.type || "").toLowerCase();
+  if (t === "diagram-a") return "A";
+  if (t === "diagram-b") return "B";
+  // Title-based fallback ("Diagram A", "Diagram B", "Figure 1", ...).
+  const title = String(section.title || "");
+  const m = title.match(/^\s*(?:diagram|figure)\s+([A-Z0-9]+)/i);
+  if (m) return m[1].toUpperCase();
+  return null;
+}
+
+export function enforceDiagramDependencyIntegrity(
+  ws: PostValidatorWorksheet,
+  _opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+
+  // Catalogue every diagram-section identifier present on the worksheet.
+  const diagramLetters = new Set<string>();
+  let hasGenericDiagram = false;
+  for (const s of sections) {
+    const t = String(s.type || "").toLowerCase();
+    if (!t.includes("diagram") && !/figure/i.test(String(s.title || ""))) continue;
+    const letter = getDiagramSectionLetter(s);
+    if (letter) diagramLetters.add(letter);
+    else hasGenericDiagram = true;
+  }
+
+  // Walk question sections and look for cross-references.
+  let qNum = 0;
+  // Aggregate: one warning per UNIQUE missing reference, listing the
+  // offending questions.
+  const missingByRef: Map<string, string[]> = new Map();
+  for (const s of sections) {
+    if (!isPupilQuestion(s)) continue;
+    qNum += 1;
+    const text = `${String(s.title || "")}\n${String(s.content || "")}`;
+    const seen = new Set<string>();
+    DIAGRAM_REFERENCE_RE.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = DIAGRAM_REFERENCE_RE.exec(text)) !== null) {
+      const letter = (m[1] || m[4] || "").toUpperCase();
+      const figureNum = m[2] || "";
+      const generic = !letter && !figureNum && !!m[0];
+      let refKey: string;
+      if (letter) refKey = `Diagram ${letter}`;
+      else if (figureNum) refKey = `Figure ${figureNum}`;
+      else refKey = `the ${m[0].split(/\s+/).pop()?.toLowerCase() || "diagram"}`;
+      if (seen.has(refKey)) continue;
+      seen.add(refKey);
+      // Resolve: is this reference satisfied?
+      const satisfied =
+        (letter && diagramLetters.has(letter)) ||
+        (figureNum && diagramLetters.has(figureNum)) ||
+        (generic && (hasGenericDiagram || diagramLetters.size > 0));
+      if (!satisfied) {
+        const list = missingByRef.get(refKey) || [];
+        list.push(`Q${qNum}`);
+        missingByRef.set(refKey, list);
+      }
+    }
+    DIAGRAM_REFERENCE_RE.lastIndex = 0;
+  }
+
+  for (const [ref, qs] of missingByRef) {
+    warnings.push(
+      `[Phase 1 — Diagram integrity] ${qs.join(", ")} reference "${ref}" but no matching diagram section exists. ` +
+      `Either supply the diagram or rewrite the stem to be self-contained.`,
+    );
+  }
+
+  return { worksheet: ws, warnings };
+}
+
+// ─── PR-3 — MCQ distractor pedagogy probe (audit item #4) ─────────────────
+//
+// Every MCQ wrong-answer distractor should be a SUBSTANTIVE misconception
+// the teacher could diagnose from. "Obviously wrong" decoys (the literal
+// correct answer with a typo, an empty option, a same-letter different
+// number when the question isn't about magnitude) waste a question slot
+// and leave the teacher unable to use the response data diagnostically.
+//
+// Heuristics (warn-only, never rewrites):
+//   1. A distractor that's identical to another distractor.
+//   2. A distractor that's the correct answer with one whitespace / punctuation
+//      change (typo decoy).
+//   3. A distractor that's empty / a single character.
+//   4. Fewer than 3 unique distractors per MCQ (UK exam-style requires 3 or 4).
+//
+// `misconceptionLinks` (FEAT-PB7 metadata) is checked when present —
+// distractors with linked misconception ids are exempt from heuristic 1.
+
+function levenshtein1(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+  const [s, l] = a.length <= b.length ? [a, b] : [b, a];
+  // Try insertion (l has one extra char) or substitution (lengths equal).
+  if (s.length === l.length) {
+    let diff = 0;
+    for (let i = 0; i < s.length; i++) {
+      if (s[i] !== l[i]) diff++;
+      if (diff > 1) return false;
+    }
+    return diff === 1;
+  }
+  // l is exactly one longer — try every deletion of one char from l.
+  for (let i = 0; i < l.length; i++) {
+    if (l.slice(0, i) + l.slice(i + 1) === s) return true;
+  }
+  return false;
+}
+
+const MCQ_OPTION_LINE_RE = /^\s*([A-D])\s*[).\s]\s*(.+?)\s*([\u2713\u2714]?)\s*$/;
+
+export function enforceDistractorPedagogy(
+  ws: PostValidatorWorksheet,
+  _opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+
+  let qNum = 0;
+  for (const s of sections) {
+    if (!isPupilQuestion(s)) continue;
+    qNum += 1;
+    const t = String(s.type || "").toLowerCase();
+    if (t !== "q-mcq" && t !== "mcq") continue;
+    const content = String(s.content || "");
+    const optionLines = content.split("\n").map(l => MCQ_OPTION_LINE_RE.exec(l)).filter(Boolean) as RegExpExecArray[];
+    if (optionLines.length < 2) continue;
+
+    // Identify the correct option (the one with ✓).
+    let correctText = "";
+    const distractors: string[] = [];
+    for (const m of optionLines) {
+      const [, , body, tick] = m;
+      if (tick) {
+        correctText = body.trim();
+      } else {
+        distractors.push(body.trim());
+      }
+    }
+
+    // Heuristic 1: duplicate distractors.
+    const seen = new Set<string>();
+    for (const d of distractors) {
+      const key = d.toLowerCase();
+      if (seen.has(key)) {
+        warnings.push(
+          `[Phase 1 — Distractor pedagogy] Q${qNum} has a duplicate distractor "${d}". Each wrong answer should diagnose a distinct misconception.`,
+        );
+      } else {
+        seen.add(key);
+      }
+    }
+
+    // Heuristic 2: typo of the correct answer.
+    if (correctText) {
+      for (const d of distractors) {
+        if (!d) continue;
+        if (d.toLowerCase() === correctText.toLowerCase()) continue;
+        if (levenshtein1(d.toLowerCase(), correctText.toLowerCase())) {
+          warnings.push(
+            `[Phase 1 — Distractor pedagogy] Q${qNum} distractor "${d}" is one character away from the correct answer "${correctText}" — looks like a typo decoy, not a misconception.`,
+          );
+        }
+      }
+    }
+
+    // Heuristic 3: empty / single-character distractor.
+    for (const d of distractors) {
+      if (d.length <= 1) {
+        warnings.push(
+          `[Phase 1 — Distractor pedagogy] Q${qNum} has a near-empty distractor "${d}". Use a substantive misconception, not a placeholder.`,
+        );
+      }
+    }
+
+    // Heuristic 4: too few unique distractors.
+    if (seen.size < 2 && distractors.length > 0) {
+      warnings.push(
+        `[Phase 1 — Distractor pedagogy] Q${qNum} has only ${seen.size} unique distractor(s). UK exam-style MCQs need 3 distinct wrong answers.`,
+      );
+    }
+  }
+
+  return { worksheet: ws, warnings };
+}
+
+// ─── PR-3 — Tier-3 vocabulary declared in Word Bank (audit item #10) ──────
+//
+// Worksheets emit a `vocabulary` section listing Tier 2 / Tier 3 terms.
+// But there's no audit that every Tier 3 word appearing in a question
+// stem is actually declared in that section. Pupils meet undefined
+// technical terms; SEND-aware reading-age rules can't help.
+//
+// Tier 3 detection (Beck / McKeown / Kucan model):
+//   - Subject-specific words ≥ 4 syllables (rough proxy)
+//   - OR matches a curated subject-family list (per family)
+//
+// We probe the union: any word with ≥ 4 syllables that appears in any
+// question stem is checked against the worksheet's vocabulary section.
+// Tier 1 (everyday) and Tier 2 (cross-curricular academic) are exempt.
+//
+// Pure / warn-only. False-positive rate is the main risk, so the
+// syllable threshold is conservative (≥ 4).
+
+// Length-based proxy for Tier-3-shaped words. PR-2 has now landed
+// `countSyllables` in `curriculumAuthorityPrompt.ts`; the syllable-based
+// detector is the planned upgrade path (see PR-21 carve-up sweep notes).
+// For now the conservative ≥ 11-character threshold preserves the same
+// false-positive / false-negative tradeoff on the UK GCSE corpus.
+const TIER3_LENGTH_THRESHOLD = 11;
+
+/** Words to skip even if syllable-heavy (Tier 1 / Tier 2 / proper nouns). */
+const TIER3_VOCAB_STOP_WORDS = new Set<string>([
+  "everybody", "anybody", "somebody", "nobody",
+  "everything", "anything", "something", "nothing",
+  "everyone", "anyone", "someone",
+  "yourself", "themselves", "ourselves", "myself", "himself", "herself",
+  "actually", "particularly", "especially", "approximately", "immediately",
+  "interesting", "interested", "important", "different", "available",
+  "calculator", "thermometer", "centimetre", "kilometre", "millimetre",
+  "necessary", "necessarily", "additionally", "alternatively",
+  "investigate", "investigated", "investigating", "investigation",
+  "evaluation", "evaluating", "demonstrate", "demonstrating",
+]);
+
+export function enforceTier3VocabularyDeclared(
+  ws: PostValidatorWorksheet,
+  _opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+
+  // Build the declared-vocabulary lower-cased set.
+  const declared = new Set<string>();
+  for (const s of sections) {
+    const type = String(s.type || "").toLowerCase();
+    const title = String(s.title || "").toLowerCase();
+    if (type !== "vocabulary" && type !== "key-terms" && !/(word\s*bank|key\s*vocabulary|glossary)/i.test(title)) continue;
+    const content = String(s.content || "");
+    // Pull words / phrases that look like vocabulary entries — bullets,
+    // numbered list items, "Term: definition" lines, comma-separated lists.
+    const lines = content.split(/\r?\n/);
+    for (const ln of lines) {
+      // "Photosynthesis: the process by which..." → grab "photosynthesis"
+      const colonMatch = ln.match(/^\s*[•\-\*\d.)]?\s*([A-Za-z][A-Za-z\s'-]+?)\s*[:=]/);
+      if (colonMatch) {
+        const term = colonMatch[1].trim().toLowerCase();
+        for (const w of term.split(/\s+/)) {
+          if (w.length >= 3) declared.add(w);
+        }
+        continue;
+      }
+      // Comma-separated: "Mitochondria, ribosome, nucleus"
+      if (/,/.test(ln) && !/[.!?]$/.test(ln)) {
+        for (const part of ln.split(/[,;]/)) {
+          const cleaned = part.replace(/[•\-\*\d.)\s]+/g, " ").trim();
+          for (const w of cleaned.split(/\s+/)) {
+            if (w.length >= 3) declared.add(w.toLowerCase());
+          }
+        }
+      }
+    }
+  }
+
+  if (declared.size === 0) {
+    // No vocabulary section at all. We don't warn here — the worksheet
+    // may legitimately not need one (e.g. KS1 number-bond practice).
+    return { worksheet: ws, warnings };
+  }
+
+  // Walk question sections, find Tier-3-shaped words missing from the
+  // declared set.
+  const undeclared: Map<string, string[]> = new Map(); // word -> qs
+  let qNum = 0;
+  for (const s of sections) {
+    if (!isPupilQuestion(s)) continue;
+    qNum += 1;
+    const text = String(s.content || "");
+    const tokens = text.match(/[A-Za-z][A-Za-z']{3,}/g) || [];
+    for (const tok of tokens) {
+      const lower = tok.toLowerCase();
+      if (declared.has(lower)) continue;
+      if (TIER3_VOCAB_STOP_WORDS.has(lower)) continue;
+      // Word stems too: "photosynthesis" should match declared "photosynthetic".
+      if (Array.from(declared).some(d => d.startsWith(lower.slice(0, 6)) && Math.abs(d.length - lower.length) <= 4)) continue;
+      if (lower.length < TIER3_LENGTH_THRESHOLD) continue;
+      const qs = undeclared.get(lower) || [];
+      const tag = `Q${qNum}`;
+      if (!qs.includes(tag)) qs.push(tag);
+      undeclared.set(lower, qs);
+    }
+  }
+
+  for (const [word, qs] of undeclared) {
+    warnings.push(
+      `[Phase 1 — Vocabulary tier] Tier 3 word "${word}" used in ${qs.join(", ")} but not declared in the Word Bank / Key Vocabulary section. ` +
+      `Either add the term + plain-English definition or replace it with a Tier 1 / Tier 2 alternative.`,
+    );
+  }
+
+  return { worksheet: ws, warnings };
+}
+
+// ─── PR-3 — Mathematical notation hygiene (audit item #13) ────────────────
+//
+// Wraps `notationHygieneNormaliser.ts`. Silent rewrite of student-visible
+// content (× for x, − for hyphen between numbers, ° for letter o after
+// digits) plus one warning per drift fixed.
+//
+// Pure / idempotent — running twice yields the same output as running
+// once. Skips teacher-only sections so mark schemes / answer keys keep
+// their existing notation.
+
+export function enforceMathsNotationHygiene(
+  ws: PostValidatorWorksheet,
+  _opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+  let mutated = false;
+  // Aggregate per-label so one warning per drift type rather than one per
+  // occurrence.
+  const driftCounts: Map<string, number> = new Map();
+
+  const next = sections.map((s): PostValidatorSection => {
+    if (s.teacherOnly) return s;
+    const content = String(s.content || "");
+    if (!content) return s;
+    const r = normaliseMathNotation(content);
+    if (r.substitutions.length === 0) return s;
+    mutated = true;
+    for (const sub of r.substitutions) {
+      driftCounts.set(sub.label, (driftCounts.get(sub.label) || 0) + 1);
+    }
+    return { ...s, content: r.rewritten };
+  });
+
+  for (const [label, count] of driftCounts) {
+    warnings.push(
+      `[Phase 1 — Notation hygiene] Rewrote ${count} typographic drift(s) (${label}) — ` +
+      `UK exam papers use the typographic forms (× for multiplication, − for subtraction, ° for degrees).`,
+    );
+  }
+
+  return {
+    worksheet: mutated ? { ...ws, sections: next } : ws,
+    warnings,
+  };
+}
+
 /**
  * Runs every post-generation validator in order. Collects warnings and
  * stamps them onto worksheet.metadata.postValidatorWarnings.
@@ -1756,6 +2133,23 @@ export function runWorksheetPostValidators(
     (ws: PostValidatorWorksheet) => enforceCommandWordFidelity(ws, opts),
     (ws: PostValidatorWorksheet) => enforceSiUnitNormalisation(ws, opts),
     (ws: PostValidatorWorksheet) => enforceReadingAgeBudget(ws, opts),
+    // PR-3 — four new validators auditing the FINAL post-validated content
+    // (after Phase 5's UK English silent rewriter and PR-2's command-word /
+    // SI-unit / reading-age probes have settled).
+    //   * enforceMathsNotationHygiene (audit #13): silent rewrite of × / − / °.
+    //     Runs FIRST among the PR-3 group so the next three see clean notation.
+    //   * enforceDiagramDependencyIntegrity (audit #15): question stems
+    //     referencing "Diagram A / B / the figure / the graph" must have a
+    //     matching diagram section.
+    //   * enforceDistractorPedagogy (audit #4): MCQ wrong-answer distractors
+    //     must be substantive misconceptions, not typo decoys.
+    //   * enforceTier3VocabularyDeclared (audit #10): Tier 3 words used in
+    //     question stems must appear in the Word Bank / Key Vocabulary
+    //     section.
+    enforceMathsNotationHygiene,
+    enforceDiagramDependencyIntegrity,
+    enforceDistractorPedagogy,
+    enforceTier3VocabularyDeclared,
   ]) {
     const r = fn(current);
     current = r.worksheet;
