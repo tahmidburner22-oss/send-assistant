@@ -127,6 +127,18 @@ import {
   type ExamBoard as TaxonomyExamBoard,
 } from './specPointTaxonomy';
 
+// Phase 2 — Topic-specific Self-Reflection. Single source of truth for
+// the "How Did I Do?" / "Self Reflection" content surface. Used in two
+// places below: (1) the SEND-aware structured-path fallback that emits
+// the section's content as part of the JSON template the AI fills in,
+// and (2) — via worksheetPostValidator's enforceSelfReflectionTopicAnchor
+// — to deterministically replace the section content when the AI emits
+// generic placeholder text instead of topic-anchored statements.
+import {
+  buildSelfReflection,
+  renderSelfReflectionAsMarkerBlock,
+} from './selfReflectionBuilder';
+
 // ─── Phase 4 — Misconception bank ──────────────────────────────────────────
 // UK-curriculum misconception library. Injected into the worksheet system
 // prompt so questions diagnose common pupil errors, not just test recall.
@@ -2307,7 +2319,7 @@ KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
 - SECTION B (Foundation Questions): 4 scaffolded questions escalating from 1 to 3 marks. Use command words: state, identify, describe, calculate.
 - SECTION C (Core Practice): 6 exam-style questions escalating from 1 to 6 marks. Use command words: explain, calculate, evaluate, compare, analyse, justify. Include at least one multi-step calculation and one extended response.
 - CHALLENGE: A synoptic or higher-order question linking the topic to a wider concept. Must require genuine analysis or evaluation.
-- SELF REFLECTION: 5 specific, topic-relevant skills for the confidence table (not generic). Written prompts must be meaningful and specific to the topic.
+- SELF REFLECTION: 5 specific, topic-relevant "I can …" statements for the confidence table — NEVER generic. Every statement must (a) name "${params.topic}" or its core noun phrase, and (b) start with "I can " followed by a real command word (Calculate, Solve, Describe, Explain, Analyse, Compare, Evaluate, Identify, etc. — pick verbs that match the question types in this worksheet). NEVER emit "I can ___", "I can apply what I have learned", or any placeholder. Written prompts must mention the topic explicitly. Exit ticket sentence must contain the topic name.
 - TEACHER KEY: Complete model answers for EVERY question with mark allocations. For extended answers, list marking points explicitly.
 - DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources from the diagram library — they are already provided as images. Do NOT generate text-based diagram descriptions. Do NOT include any questions about diagrams. All questions come ONLY from Section A (True/False, MCQ, Gap Fill), Section B (Foundation Questions), and Section C (Core Practice + Challenge).
 ` : '';
@@ -2808,46 +2820,26 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
       }
     }
         // 12. Self Reflection — SEND-specific format
-    // Teacher feedback: the pupil-facing reflection was too long (5-row grid +
-    // 3 written prompts + exit ticket). Slim it to ONE exit question on the
-    // pupil page. The confidence grid and written prompts move to the teacher
-    // copy (see Teacher Key section below).
+    // Phase 2 — Topic-specific Self-Reflection. The SEND register-tuned
+    // content for this section is now produced by selfReflectionBuilder
+    // (single source of truth). The builder mirrors the same five SEND
+    // branches that used to live as inline string literals here
+    // (tick-box / sentence-starter / emotional check-in / older-learner /
+    // standard) and always emits topic-anchored content — every "I can"
+    // statement and the exit ticket name the actual topic. The previous
+    // sentence-starter branch emitted the literal placeholder
+    // `WRITTEN_PROMPTS:\nI can ___.\n` which left an unfilled blank on
+    // the pupil page; that bug is fixed at source by the builder.
     if (wantSelfReflection) {
       const sendKey = hasSend ? (params.sendNeed || "").toLowerCase().replace(/[\s_]/g, "-") : "";
-      // SEND needs that require tick-box only (no open writing)
-      const isTickBoxOnly = [
-        "asc", "autism", "asperger",
-        "asc-social", "asc-demand-avoidant", "asc-sensory", "asc-rigid",
-        "adhd", "dyslexia", "dyscalculia", "mld", "dyspraxia", "working-memory",
-      ].some(id => sendKey === id || sendKey.startsWith(id + ":"));
-      // SEND needs that require sentence-starter format
-      const isSentenceStarter = ["slcn", "eal", "esl"].includes(sendKey);
-      // SEND needs that require emotional check-in format
-      const isEmotionalCheckin = ["semh", "anxiety", "mental-health", "pda", "pda-odd", "odd", "social-emotional"].includes(sendKey);
-      // SEND needs that require older-learner format
-      const isOlderLearner = ["older-learners", "adult"].includes(sendKey);
-
-      let selfReflectionContent: string;
-      if (isTickBoxOnly) {
-        // Tick-box + single exit question (ASC family, ADHD, Dyslexia, Dyscalculia, MLD, Dyspraxia, Working Memory)
-        // Keep the completion checklist because ASC/ADHD pupils find it grounding,
-        // but drop the 5-row confidence table from the pupil page — that stays teacher-only.
-        selfReflectionContent = `SUBTITLE: How did you get on?\nCOMPLETION_CHECKLIST:\n[ ] I completed Section 1\n[ ] I completed Section 2\n[ ] I completed Section 3\n[ ] I tried the Challenge\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in a single sentence:`;
-      } else if (isSentenceStarter) {
-        // Sentence-starter format (SLCN, EAL) — one sentence-starter + exit question
-        selfReflectionContent = `SUBTITLE: Review your understanding.\nWRITTEN_PROMPTS:\nI can ___.\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in a single sentence:`;
-      } else if (isEmotionalCheckin) {
-        // Emotional check-in + exit question (SEMH, Anxiety, PDA) — the check-in
-        // is kept because it's primary support, not reflection bloat.
-        selfReflectionContent = `SUBTITLE: How are you feeling?\nCHECK_IN: [ ] Calm   [ ] OK   [ ] Need a break\nEXIT_TICKET: One thing I want to remember about ${params.topic} is:`;
-      } else if (isOlderLearner) {
-        // Older learner / adult — single reflective exit question
-        selfReflectionContent = `SUBTITLE: Review your learning.\nEXIT_TICKET: Write ONE key point you will take away from today's lesson on ${params.topic}:`;
-      } else {
-        // Standard — single exit question, matches teacher feedback
-        selfReflectionContent = `SUBTITLE: Exit Ticket.\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in a single sentence:`;
-      }
-      structuredSections.push(`{"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "${selfReflectionContent.replace(/"/g, '\\"')}"}`);
+      const reflection = buildSelfReflection({
+        topic: params.topic,
+        subject: params.subject,
+        year: params.yearGroup,
+        sendKey,
+      });
+      const selfReflectionContent = renderSelfReflectionAsMarkerBlock(reflection);
+      structuredSections.push(`{"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "${selfReflectionContent.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"}`);
     }
 
     // Always add Teacher Key (teacher only)
@@ -3054,6 +3046,10 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         // Phase 1 — needed by enforceSpecAnchorPresence to resolve the
         // matching awarding-body taxonomy.
         examBoard: params.examBoard,
+        // Phase 2 — needed by enforceSelfReflectionTopicAnchor so the
+        // builder can anchor reflection statements to the actual topic
+        // and the generic-content detector can verify topic mentions.
+        topic: params.topic,
       });
       // Carry through the original shape — the post-validator preserves every
       // field, it only rewrites content in-place.
@@ -3837,6 +3833,9 @@ Return EXACTLY this JSON (raw JSON only):
       sendNeed: params.sendNeed,
       // Phase 1 — needed by enforceSpecAnchorPresence on the legacy path.
       examBoard: params.examBoard,
+      // Phase 2 — needed by enforceSelfReflectionTopicAnchor on the
+      // legacy path. Same rationale as the structured-path callsite.
+      topic: params.topic,
     },
   );
   const legacyEnforced = enforceSendAdaptations(legacyPostValidated.worksheet, params.sendNeed, { preserveStems: preserveStemsForSend });

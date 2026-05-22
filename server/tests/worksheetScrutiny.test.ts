@@ -37,6 +37,7 @@ import {
   runWorksheetPostValidators,
   enforceSectionQuestionCounts,
   enforceSpecAnchorPresence,
+  enforceSelfReflectionTopicAnchor,
   type PostValidatorWorksheet,
 } from "../../client/src/lib/worksheetPostValidator";
 
@@ -57,6 +58,17 @@ import {
 
 import { applyOverlays } from "../lib/overlayEngine";
 import { parseNaturalLanguageInput } from "../../client/src/lib/ai";
+
+// Phase 2 — Topic-specific Self-Reflection builder. Imported here for the
+// Phase 2 test suites at the bottom of this file. Pure / deterministic so
+// every assertion is repeatable.
+import {
+  buildSelfReflection,
+  renderSelfReflectionAsMarkerBlock,
+  isGenericSelfReflection,
+  extractTopicNounPhrase,
+  pickCommandWords,
+} from "../../client/src/lib/selfReflectionBuilder";
 
 // ─── SEND / autism sub-profiles ──────────────────────────────────────────────
 
@@ -1137,5 +1149,449 @@ describe("Phase 1 / enforceSpecAnchorPresence — curriculum + GCSE spec lock", 
       examBoard: "aqa",
     });
     expect((r.worksheet.sections![0] as any).specRef).toBeUndefined();
+  });
+});
+
+
+// ─── Phase 2 — Topic-specific Self-Reflection ────────────────────────────────
+// These tests lock in the deterministic floor for the worksheet
+// "How Did I Do?" / Self Reflection content surface. Before Phase 2 the AI
+// could emit (and the renderer would happily ship) generic placeholder
+// content like `I can ___.` and `I can apply what I have learned today`
+// — pedagogical noise. The builder + post-validator now guarantee that
+// every pupil-facing reflection block is anchored to the actual topic.
+
+describe("Phase 2 / extractTopicNounPhrase", () => {
+  it("strips generic article-prefixes that read awkwardly inside 'about X'", () => {
+    expect(extractTopicNounPhrase("An Introduction to Photosynthesis")).toBe("photosynthesis");
+    expect(extractTopicNounPhrase("Introduction to Bioenergetics")).toBe("bioenergetics");
+    expect(extractTopicNounPhrase("The Heart")).toBe("the heart");
+    expect(extractTopicNounPhrase("A Christmas Carol Stave 1")).toBe("christmas carol stave 1");
+  });
+
+  it("preserves proper-noun-led topics so they remain titlecased on the page", () => {
+    expect(extractTopicNounPhrase("Macbeth Act 1 Scene 5")).toBe("Macbeth Act 1 Scene 5");
+    expect(extractTopicNounPhrase("Newton's Laws")).toBe("Newton's Laws");
+    expect(extractTopicNounPhrase("Romeo and Juliet")).toBe("Romeo and Juliet");
+  });
+
+  it("preserves all-caps acronyms (GDPR, NHS, BBC, GCSE) so the page does not say 'I can describe gdpr'", () => {
+    expect(extractTopicNounPhrase("GDPR")).toBe("GDPR");
+    expect(extractTopicNounPhrase("NHS")).toBe("NHS");
+    expect(extractTopicNounPhrase("BBC")).toBe("BBC");
+    expect(extractTopicNounPhrase("GCSE")).toBe("GCSE");
+    expect(extractTopicNounPhrase("KS3")).toBe("KS3");
+  });
+
+  it("lower-cases multi-word common-noun topics so they read inside a sentence", () => {
+    expect(extractTopicNounPhrase("Adding Fractions")).toBe("adding fractions");
+    expect(extractTopicNounPhrase("Quadratic Equations")).toBe("quadratic equations");
+  });
+
+  it("lower-cases single-word common-noun topics that are not whitelisted proper nouns", () => {
+    // Fix for the over-greedy startsWithProperNoun heuristic flagged in
+    // PR #75 — these are common-noun curriculum titles that previously
+    // leaked title case into mid-sentence templates.
+    expect(extractTopicNounPhrase("Photosynthesis")).toBe("photosynthesis");
+    expect(extractTopicNounPhrase("Respiration")).toBe("respiration");
+    expect(extractTopicNounPhrase("Mitosis")).toBe("mitosis");
+    expect(extractTopicNounPhrase("Bioenergetics")).toBe("bioenergetics");
+    expect(extractTopicNounPhrase("Trigonometry")).toBe("trigonometry");
+  });
+
+  it("preserves apostrophe-led possessive proper nouns even when not whitelisted", () => {
+    // Structural cue: any Title-Case first word ending in apostrophe-s is
+    // treated as a proper noun ("Murphy's Law", "O'Brien's Castle").
+    expect(extractTopicNounPhrase("Murphy's Law")).toBe("Murphy's Law");
+    expect(extractTopicNounPhrase("Pythagoras' Theorem")).toBe("Pythagoras' Theorem");
+  });
+
+  it("preserves Act / Scene / Chapter references even when the head word isn't whitelisted", () => {
+    // Structural cue: literary or historical works with a numbered Act /
+    // Scene / Chapter / Volume / Part keep their casing.
+    expect(extractTopicNounPhrase("Animal Farm Chapter 4")).toBe("Animal Farm Chapter 4");
+    expect(extractTopicNounPhrase("The Tempest Act 2 Scene 1")).toBe("The Tempest Act 2 Scene 1");
+  });
+
+  it("returns a usable value for empty / whitespace topics", () => {
+    expect(extractTopicNounPhrase("")).toBe("");
+    expect(extractTopicNounPhrase("   ")).toBe("");
+  });
+});
+
+describe("Phase 2 / pickCommandWords", () => {
+  it("echoes the verbs from the worksheet's own questions when supplied", () => {
+    const out = pickCommandWords("Mathematics", ["Calculate", "Solve", "Show that"], 5);
+    expect(out.slice(0, 3)).toEqual(["Calculate", "Solve", "Show that"]);
+    expect(out.length).toBe(5);
+  });
+
+  it("dedupes case-insensitively when the AI emits the same verb mixed casing", () => {
+    const out = pickCommandWords("Mathematics", ["calculate", "CALCULATE", "Solve"], 5);
+    expect(out[0]).toBe("Calculate");
+    expect(out.filter(w => w === "Calculate").length).toBe(1);
+  });
+
+  it("pads from the per-subject default table when the worksheet's own list is short", () => {
+    const out = pickCommandWords("Biology", ["Describe"], 5);
+    expect(out[0]).toBe("Describe");
+    // Padded from the science default table (Describe / Explain / Calculate
+    // / Compare / Evaluate). Describe is already taken so the remaining 4
+    // come from the rest of the table.
+    expect(out.length).toBe(5);
+    expect(out).toContain("Explain");
+    expect(out).toContain("Compare");
+  });
+
+  it("falls back to a per-subject default when the question bank field is empty", () => {
+    expect(pickCommandWords("Mathematics", [], 5)).toEqual(["Calculate", "Solve", "Find", "Show that", "Determine"]);
+    expect(pickCommandWords("Biology", undefined, 5)).toEqual(["Describe", "Explain", "Calculate", "Compare", "Evaluate"]);
+    expect(pickCommandWords("English Literature", [], 5)).toEqual(["Identify", "Describe", "Explain", "Analyse", "Evaluate"]);
+    expect(pickCommandWords("History", [], 5)).toEqual(["Describe", "Explain", "Compare", "Analyse", "Evaluate"]);
+  });
+});
+
+describe("Phase 2 / buildSelfReflection — topic-anchored output", () => {
+  it("produces 5 I-can statements + 2 written prompts + a topic-anchored exit ticket for Year 9 Mathematics 'Adding fractions'", () => {
+    const out = buildSelfReflection({
+      topic: "Adding fractions",
+      subject: "Mathematics",
+      year: "Year 9",
+      commandWordsUsed: ["Calculate", "Solve"],
+    });
+    expect(out.iCanStatements.length).toBe(5);
+    expect(out.writtenPrompts.length).toBe(2);
+    expect(out.exitTicket).toMatch(/adding fractions/i);
+    // Every I-can statement must mention the topic noun.
+    for (const s of out.iCanStatements) {
+      expect(s.toLowerCase()).toContain("adding fractions");
+      expect(s.startsWith("I can")).toBe(true);
+    }
+    // Maths verbs from the supplied list should win the leading slots.
+    expect(out.iCanStatements[0]).toMatch(/^I can Calculate/);
+    expect(out.iCanStatements[1]).toMatch(/^I can Solve/);
+  });
+
+  it("produces topic-anchored output for Year 11 English Literature 'Macbeth Act 1 Scene 5'", () => {
+    const out = buildSelfReflection({
+      topic: "Macbeth Act 1 Scene 5",
+      subject: "English Literature",
+      year: "Year 11",
+    });
+    expect(out.iCanStatements.length).toBe(5);
+    for (const s of out.iCanStatements) {
+      expect(s).toContain("Macbeth Act 1 Scene 5");
+    }
+    expect(out.exitTicket).toContain("Macbeth Act 1 Scene 5");
+    // English Lit defaults: Identify / Describe / Explain / Analyse / Evaluate.
+    expect(out.iCanStatements[0]).toMatch(/^I can Identify/);
+    expect(out.iCanStatements[3]).toMatch(/^I can Analyse/);
+  });
+
+  it("produces topic-anchored output for Year 11 Biology 'Bioenergetics'", () => {
+    const out = buildSelfReflection({
+      topic: "Bioenergetics",
+      subject: "Biology",
+      year: "Year 11",
+    });
+    expect(out.iCanStatements.length).toBe(5);
+    for (const s of out.iCanStatements) {
+      expect(s.toLowerCase()).toContain("bioenergetics");
+    }
+    // Science defaults: Describe / Explain / Calculate / Compare / Evaluate.
+    expect(out.iCanStatements[0]).toMatch(/^I can Describe/);
+    expect(out.iCanStatements[1]).toMatch(/^I can Explain/);
+  });
+
+  it("produces topic-anchored output for KS3 History 'The Norman Conquest'", () => {
+    const out = buildSelfReflection({
+      topic: "The Norman Conquest",
+      subject: "History",
+      year: "Year 8",
+    });
+    expect(out.iCanStatements.length).toBe(5);
+    // Topic noun phrase strips the leading "The" and lower-cases.
+    for (const s of out.iCanStatements) {
+      expect(s.toLowerCase()).toContain("norman conquest");
+    }
+    expect(out.exitTicket.toLowerCase()).toContain("norman conquest");
+  });
+
+  it("uses the sentence-starter SEND register for SLCN / EAL pupils", () => {
+    const out = buildSelfReflection({
+      topic: "Photosynthesis",
+      subject: "Biology",
+      sendKey: "eal",
+    });
+    expect(out.iCanStatements.length).toBe(5);
+    // Sentence-starter register uses simpler frames than the standard
+    // command-word frames — the lead frame is "I can talk about …".
+    expect(out.iCanStatements[0]).toMatch(/^I can talk about photosynthesis/);
+    // Every statement still names the topic noun phrase.
+    for (const s of out.iCanStatements) {
+      expect(s.toLowerCase()).toContain("photosynthesis");
+    }
+  });
+
+  it("uses the emotional check-in SEND register for SEMH / Anxiety / PDA pupils", () => {
+    const out = buildSelfReflection({
+      topic: "Quadratic Equations",
+      subject: "Mathematics",
+      sendKey: "semh",
+    });
+    expect(out.subtitle).toBe("How are you feeling?");
+    expect(out.exitTicket).toContain("quadratic equations");
+    expect(out.writtenPrompts[0]).toMatch(/felt confident/i);
+  });
+
+  it("uses the older-learner register for adult / older-learners pupils", () => {
+    const out = buildSelfReflection({
+      topic: "GDPR",
+      subject: "Citizenship",
+      sendKey: "older-learners",
+    });
+    expect(out.subtitle).toBe("Review your learning.");
+    expect(out.exitTicket).toMatch(/key point/i);
+    expect(out.exitTicket).toContain("GDPR");
+  });
+
+  it("is a pure function — identical inputs produce identical output", () => {
+    const a = buildSelfReflection({ topic: "Photosynthesis", subject: "Biology" });
+    const b = buildSelfReflection({ topic: "Photosynthesis", subject: "Biology" });
+    expect(a).toEqual(b);
+  });
+});
+
+describe("Phase 2 / isGenericSelfReflection — generic-content detector", () => {
+  const goodContent = renderSelfReflectionAsMarkerBlock(
+    buildSelfReflection({ topic: "Adding fractions", subject: "Mathematics" }),
+  );
+
+  it("treats deterministic builder output as NOT generic", () => {
+    expect(isGenericSelfReflection(goodContent, "Adding fractions")).toBe(false);
+  });
+
+  it("flags the literal `I can ___` placeholder as generic", () => {
+    const bad = "SUBTITLE: Review.\nWRITTEN_PROMPTS:\nI can ___.\nEXIT_TICKET: Write ONE thing you learned today about Adding fractions:";
+    expect(isGenericSelfReflection(bad, "Adding fractions")).toBe(true);
+  });
+
+  it("flags the long-standing 'apply what I have learned' fallback as generic", () => {
+    const bad = "I can apply what I have learned today";
+    expect(isGenericSelfReflection(bad, "Adding fractions")).toBe(true);
+  });
+
+  it("flags reflection blocks with fewer than 5 I-can statements as generic", () => {
+    const bad = "CONFIDENCE_TABLE:\nI can Calculate adding fractions.\nI can Solve adding fractions.\nEXIT_TICKET: Write one thing you learned today about Adding fractions:";
+    expect(isGenericSelfReflection(bad, "Adding fractions")).toBe(true);
+  });
+
+  it("flags an exit ticket that does not mention the topic noun as generic", () => {
+    const bad = "CONFIDENCE_TABLE:\nI can Calculate adding fractions.\nI can Solve adding fractions.\nI can Find adding fractions.\nI can Show that adding fractions.\nI can Determine adding fractions.\nEXIT_TICKET: Write one thing you learned today.";
+    expect(isGenericSelfReflection(bad, "Adding fractions")).toBe(true);
+  });
+
+  it("treats a ≥5-statement, topic-anchored block with a topic-named exit ticket as NOT generic", () => {
+    const ok =
+      "CONFIDENCE_TABLE:\n" +
+      "I can Calculate confidently when the question is about quadratic equations.\n" +
+      "I can Solve the key ideas in quadratic equations using the right vocabulary.\n" +
+      "I can Find a question about quadratic equations with a worked answer.\n" +
+      "I can Show that what I have learned about quadratic equations to a new problem.\n" +
+      "I can Determine my own answer about quadratic equations and spot mistakes.\n" +
+      "EXIT_TICKET: Write ONE thing you learned today about quadratic equations.";
+    expect(isGenericSelfReflection(ok, "Quadratic Equations")).toBe(false);
+  });
+
+  it("returns true for empty content (so the validator builds something)", () => {
+    expect(isGenericSelfReflection("", "Adding fractions")).toBe(true);
+    expect(isGenericSelfReflection("   ", "Adding fractions")).toBe(true);
+  });
+
+  it("does not falsely anchor short topic acronyms against incidental substrings", () => {
+    // Fix for the substring-anchor false positive flagged in PR #75:
+    // topic="IT" used to substring-match "write" / "explain", and
+    // topic="AI" used to substring-match "explain" / "fail" / "wait",
+    // letting generic placeholder content sneak through as "topic-
+    // anchored". Word-boundary matching for short needles closes that.
+    const generic =
+      "CONFIDENCE_TABLE:\n" +
+      "I can write something interesting.\n" +
+      "I can explain my thinking clearly.\n" +
+      "I can find a good example.\n" +
+      "I can show that I have understood.\n" +
+      "I can determine my next step.\n" +
+      "EXIT_TICKET: Write ONE thing you learned today.";
+    expect(isGenericSelfReflection(generic, "IT")).toBe(true);
+    expect(isGenericSelfReflection(generic, "AI")).toBe(true);
+    expect(isGenericSelfReflection(generic, "UK")).toBe(true);
+  });
+
+  it("still anchors correctly when the short acronym is genuinely present as a word", () => {
+    // The fix should not over-correct: when "IT" / "AI" appear as actual
+    // standalone tokens (which is how the topic word would appear in a
+    // genuine reflection statement), the validator should still treat
+    // the content as topic-anchored.
+    const ok =
+      "CONFIDENCE_TABLE:\n" +
+      "I can describe how IT is used in classrooms.\n" +
+      "I can explain the role of IT in modern teaching.\n" +
+      "I can identify IT systems used in primary schools.\n" +
+      "I can compare different IT tools for SEND learners.\n" +
+      "I can evaluate the benefits of IT for accessibility.\n" +
+      "EXIT_TICKET: Write ONE thing you learned today about IT in a single sentence.";
+    expect(isGenericSelfReflection(ok, "IT")).toBe(false);
+  });
+});
+
+describe("Phase 2 / enforceSelfReflectionTopicAnchor", () => {
+  /** Helper — the exact generic placeholder shape the AI used to emit on the
+   *  SEND sentence-starter branch in ai.ts:2810 before Phase 2 fixed it. */
+  const genericContent = "SUBTITLE: Review your understanding.\nWRITTEN_PROMPTS:\nI can ___.\nEXIT_TICKET: Write ONE thing you learned today about Adding fractions in a single sentence:";
+
+  /** Helper — a realistic, topic-anchored content shape (the kind a
+   *  well-behaved AI would emit). Five I-can statements all naming the
+   *  topic, two written prompts, and a topic-named exit ticket. */
+  const goodAiContent =
+    "SUBTITLE: Review your understanding.\n" +
+    "CONFIDENCE_TABLE:\n" +
+    "I can Calculate the sum of two fractions with the same denominator about adding fractions.\n" +
+    "I can Solve a missing-numerator problem about adding fractions.\n" +
+    "I can Find a common denominator before performing adding fractions.\n" +
+    "I can Show that two fractions are equal in a problem about adding fractions.\n" +
+    "I can Determine a final simplified result when adding fractions.\n" +
+    "WRITTEN_PROMPTS:\n" +
+    "One thing I now understand about adding fractions is …\n" +
+    "One question I still want to ask about adding fractions is …\n" +
+    "EXIT_TICKET: Write ONE thing you learned today about adding fractions in a single sentence:";
+
+  it("rewrites a generic Self-Reflection section to topic-anchored builder output", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "self-reflection", title: "Self Reflection", teacherOnly: false, content: genericContent },
+      ],
+    };
+    const r = enforceSelfReflectionTopicAnchor(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 9",
+      topic: "Adding fractions",
+    });
+    expect(r.warnings.length).toBeGreaterThan(0);
+    expect(r.warnings[0]).toMatch(/generic|not topic-anchored/i);
+    const replaced = r.worksheet.sections![0].content || "";
+    expect(replaced).not.toMatch(/I can _{2,}/);
+    expect(replaced.toLowerCase()).toContain("adding fractions");
+    // After the rewrite the section is no longer generic.
+    expect(isGenericSelfReflection(replaced, "Adding fractions")).toBe(false);
+  });
+
+  it("is a no-op when the AI emitted good topic-anchored content", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "self-reflection", title: "Self Reflection", teacherOnly: false, content: goodAiContent },
+      ],
+    };
+    const r = enforceSelfReflectionTopicAnchor(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 9",
+      topic: "Adding fractions",
+    });
+    expect(r.warnings.length).toBe(0);
+    expect(r.worksheet.sections![0].content).toBe(goodAiContent);
+  });
+
+  it("never overwrites good non-generic content even when topic varies in case / inflection", () => {
+    // Good content uses 'adding fractions' lower-case; topic is 'ADDING FRACTIONS'.
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "ADDING FRACTIONS", yearGroup: "Year 9" },
+      sections: [
+        { type: "self-reflection", title: "Self Reflection", teacherOnly: false, content: goodAiContent },
+      ],
+    };
+    const r = enforceSelfReflectionTopicAnchor(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 9",
+      topic: "ADDING FRACTIONS",
+    });
+    expect(r.warnings.length).toBe(0);
+    expect(r.worksheet.sections![0].content).toBe(goodAiContent);
+  });
+
+  it("is idempotent — running twice produces the same worksheet", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "self-reflection", title: "Self Reflection", teacherOnly: false, content: genericContent },
+      ],
+    };
+    const r1 = enforceSelfReflectionTopicAnchor(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 9",
+      topic: "Adding fractions",
+    });
+    const r2 = enforceSelfReflectionTopicAnchor(r1.worksheet, {
+      subject: "Mathematics",
+      yearGroup: "Year 9",
+      topic: "Adding fractions",
+    });
+    // Second pass adds no warnings (the rewrite is already topic-anchored).
+    expect(r2.warnings.length).toBe(0);
+    expect(r2.worksheet.sections![0].content).toBe(r1.worksheet.sections![0].content);
+  });
+
+  it("is a no-op when the worksheet has no Self-Reflection section", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions" },
+      sections: [
+        { type: "q-short-answer", title: "Q1", content: "Calculate 1/2 + 1/3.", teacherOnly: false },
+      ],
+    };
+    const r = enforceSelfReflectionTopicAnchor(ws, { topic: "Adding fractions" });
+    expect(r.warnings.length).toBe(0);
+    expect(r.worksheet).toEqual(ws);
+  });
+
+  it("warns and skips when no topic is supplied (so the bug is visible)", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics" },
+      sections: [
+        { type: "self-reflection", title: "Self Reflection", teacherOnly: false, content: genericContent },
+      ],
+    };
+    const r = enforceSelfReflectionTopicAnchor(ws, {});
+    expect(r.warnings.join(" ")).toMatch(/no topic supplied/i);
+    // Content untouched — we never rebuild without a topic to anchor to.
+    expect(r.worksheet.sections![0].content).toBe(genericContent);
+  });
+
+  it("ignores teacher-only Self-Reflection sections (only fixes the pupil view)", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions" },
+      sections: [
+        { type: "self-reflection", title: "Self Reflection (Teacher Copy)", teacherOnly: true, content: genericContent },
+      ],
+    };
+    const r = enforceSelfReflectionTopicAnchor(ws, { topic: "Adding fractions" });
+    expect(r.warnings.length).toBe(0);
+    expect(r.worksheet.sections![0].content).toBe(genericContent);
+  });
+
+  it("uses the SEND register inferred from opts.sendNeed when rewriting", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions" },
+      sections: [
+        { type: "self-reflection", title: "Self Reflection", teacherOnly: false, content: genericContent },
+      ],
+    };
+    const r = enforceSelfReflectionTopicAnchor(ws, {
+      subject: "Mathematics",
+      topic: "Adding fractions",
+      sendNeed: "EAL",
+    });
+    const replaced = r.worksheet.sections![0].content || "";
+    // Sentence-starter register's lead frame.
+    expect(replaced).toMatch(/I can talk about adding fractions/);
   });
 });

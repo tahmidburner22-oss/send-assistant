@@ -42,6 +42,11 @@ import {
   matchSpecPoint,
   type ExamBoard as TaxonomyExamBoard,
 } from "./specPointTaxonomy";
+import {
+  buildSelfReflection,
+  renderSelfReflectionAsMarkerBlock,
+  isGenericSelfReflection,
+} from "./selfReflectionBuilder";
 
 export interface PostValidatorSection {
   id?: string;
@@ -100,6 +105,14 @@ export interface PostValidatorOptions {
    *  specRef strings. Empty / unknown boards trigger the cross-board union
    *  fallback. */
   examBoard?: string;
+  /** Phase 2 — Topic exactly as submitted to the generator (e.g. "Adding
+   *  fractions", "Macbeth Act 1 Scene 5"). Used by
+   *  enforceSelfReflectionTopicAnchor to (a) detect when the AI emitted
+   *  generic placeholder reflection content that doesn't name the topic,
+   *  and (b) pass into selfReflectionBuilder when the section content has
+   *  to be rebuilt deterministically. Falls back to ws.metadata.topic when
+   *  not supplied. */
+  topic?: string;
 }
 
 export interface PostValidatorResult {
@@ -935,6 +948,94 @@ export function enforceSpecAnchorPresence(
 }
 
 /**
+ * Phase 2 — Topic-specific Self-Reflection enforcement.
+ *
+ * Walks the worksheet looking for the pupil-facing Self-Reflection section
+ * (type "self-reflection", not teacher-only). When found, runs
+ * `isGenericSelfReflection` on its content. If the content reads as
+ * generic placeholder text (literal `I can ___`, the `apply what I have
+ * learned today` fallback, fewer than 5 `I can …` statements, or an
+ * exit-ticket sentence that doesn't mention the topic), it rewrites the
+ * content with a deterministic topic-anchored block from
+ * `selfReflectionBuilder` and stamps a warning.
+ *
+ * Behaviours:
+ *   1. If no Self-Reflection section exists, no-op (no warning).
+ *   2. If `topic` is unknown (neither `opts.topic` nor `ws.metadata.topic`
+ *      is set), no-op with a single worksheet-level warning so the bug is
+ *      visible — we don't rebuild reflection content without a topic to
+ *      anchor it to.
+ *   3. If the existing content passes `isGenericSelfReflection` (i.e. it
+ *      already names the topic across ≥5 `I can …` statements), no-op.
+ *   4. Otherwise, replace the section's `content` with the builder output
+ *      and append a warning. The replacement preserves the renderer's
+ *      marker-block format (SUBTITLE / CONFIDENCE_TABLE / WRITTEN_PROMPTS
+ *      / EXIT_TICKET) so `SelfReflectionSection` keeps rendering it the
+ *      same way.
+ *
+ * Pure / idempotent — running the validator twice on the same worksheet
+ * yields the same result (a rewrite from the builder always passes
+ * `isGenericSelfReflection`, so the second pass becomes a no-op).
+ *
+ * The builder is fed `topic / subject / year / sendKey` so its output
+ * matches the SEND register the rest of the worksheet uses.
+ */
+export function enforceSelfReflectionTopicAnchor(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+
+  // 1. Find the pupil-facing Self-Reflection section. There is normally
+  //    exactly one. The teacher copy of the reflection (if any) is marked
+  //    teacherOnly and skipped here — Phase 2 only fixes the pupil view.
+  const idx = sections.findIndex(
+    s => String(s.type || "").toLowerCase() === "self-reflection" && !s.teacherOnly,
+  );
+  if (idx < 0) {
+    return { worksheet: ws, warnings };
+  }
+  const section = sections[idx];
+
+  // 2. Resolve topic. Required for any meaningful rewrite — the whole
+  //    point of this validator is the topic anchor.
+  const topic = (opts.topic || String(ws.metadata?.topic || "")).trim();
+  if (!topic) {
+    warnings.push(
+      `Self-Reflection topic-anchor enforcement skipped: no topic supplied (neither opts.topic nor metadata.topic).`,
+    );
+    return { worksheet: ws, warnings };
+  }
+
+  // 3. Already topic-anchored? No-op.
+  const content = typeof section.content === "string" ? section.content : "";
+  if (!isGenericSelfReflection(content, topic)) {
+    return { worksheet: ws, warnings };
+  }
+
+  // 4. Rewrite via the deterministic builder. SEND register inferred from
+  //    opts.sendNeed (mirrors the keying ai.ts uses internally so the
+  //    rewrite matches the rest of the pupil-facing surface).
+  const sendKey = (opts.sendNeed || "").toLowerCase().replace(/[\s_]/g, "-");
+  const built = buildSelfReflection({
+    topic,
+    subject: opts.subject || String(ws.metadata?.subject || ""),
+    year: opts.yearGroup || String(ws.metadata?.yearGroup || ""),
+    sendKey,
+  });
+  const rebuilt = renderSelfReflectionAsMarkerBlock(built);
+
+  warnings.push(
+    `Self-Reflection content was generic / not topic-anchored (no I-can statements naming "${topic}", or contained "I can ___" / "apply what I have learned" placeholder). Replaced with deterministic builder output (5 I-can statements + 2 written prompts + exit ticket, all naming the topic).`,
+  );
+
+  const newSections = sections.slice();
+  newSections[idx] = { ...section, content: rebuilt };
+  return { worksheet: { ...ws, sections: newSections }, warnings };
+}
+
+/**
  * Runs every post-generation validator in order. Collects warnings and
  * stamps them onto worksheet.metadata.postValidatorWarnings.
  */
@@ -973,6 +1074,15 @@ export function runWorksheetPostValidators(
     // taxonomy. Never invents codes; warns when no taxonomy is bundled
     // for the (board, subject, year) combination.
     (ws: PostValidatorWorksheet) => enforceSpecAnchorPresence(ws, opts),
+    // Phase 2 — topic-specific Self-Reflection. Detects generic
+    // placeholder content ("I can ___", "apply what I have learned",
+    // <5 I-can statements, exit ticket without the topic noun) on the
+    // pupil-facing Self-Reflection section and rewrites it with
+    // deterministic builder output that names the actual topic. Pure /
+    // idempotent — never overwrites good topic-anchored content. Runs
+    // last so it sees the final post-validated section list (e.g. after
+    // any earlier passes have settled the section types and titles).
+    (ws: PostValidatorWorksheet) => enforceSelfReflectionTopicAnchor(ws, opts),
   ]) {
     const r = fn(current);
     current = r.worksheet;
