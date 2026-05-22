@@ -10,10 +10,10 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-22 (PR-5 in flight on branch
-`big-bang/pr-5-eval-harness`; PR-1 (#85) and PR-4 (#88) merged; PR-2
-(#86) and PR-3 (#87) open with conflicts re-resolved against current
-main).
+Last updated: 2026-05-22 (PR-6 in flight on branch
+`big-bang/pr-6-audit-trail-panel`, PR #90; PR-1 (#85), PR-2 (#86),
+PR-4 (#88) and PR-5 (#89) merged; PR-3 (#87) open with conflicts
+re-resolved against current main).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -92,62 +92,78 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 4 (1 new). Net diff: ~ +700 lines.
 
 - **PR-5 — Eval harness FEAT-PR5: canonical UK NC + GCSE prompts +
-  golden-output runner** (branch `big-bang/pr-5-eval-harness`, PR
-  pending push). Audit item **#44**. Closes
+  golden-output runner** (PR #89). Audit item **#44**. Closes
   [`.agents/tasks/phase-a-class-aware/features/FEAT-PR5.json`](../phase-a-class-aware/features/FEAT-PR5.json).
-  Builds the regression baseline that lets PR-13 / PR-14 / PR-20
-  (mark-scheme + Bloom + per-subject prompts) land confidently — every
-  PR can run `npm run eval:worksheets` locally and CI runs it nightly.
+  50 fixtures (10 maths / 10 English / 10 science / 10 humanities / 10
+  SEND), 7 rule predicates over post-validator output + structured
+  metadata, mock + live generator (live dynamic-imports
+  `aiGenerateWorksheet` and shims `localStorage`), cost guard via
+  `EVAL_BUDGET_USD`, nightly cron + workflow_dispatch in
+  `.github/workflows/worksheet-eval.yml`. Does NOT block PRs — gate
+  lands in PR-22.
+
+- **PR-6 — Audit-trail panel: "Why this looks like this" teacher
+  view** (branch `big-bang/pr-6-audit-trail-panel`, PR #90).
+  Audit item **#79**. Single consolidated read-only panel that
+  surfaces the audit metadata the chain already stamps —
+  `metadata.qaScore` (PR-4), `metadata.coverageMap` (FEAT-PC10),
+  `metadata.aoHistogram` (Pillar A validator),
+  `metadata.sendFidelityReport` (PR-1 / FEAT-PB6),
+  `metadata.misconceptionLinks` (FEAT-PB7),
+  `metadata.postValidatorWarnings` (rolled up by bucket prefix).
 
   What changed:
-  - `server/tests/worksheet-eval/runner.ts` (new) — iterates fixtures,
-    threads each output through `runWorksheetPostValidators`, scores
-    against rule names, writes `eval-report.json` plus a markdown
-    summary to stdout / `$GITHUB_STEP_SUMMARY`. Cost guard via
-    `EVAL_BUDGET_USD`; bail-on-fail via `--bail` / `EVAL_BAIL_ON_FAIL`.
-  - `server/tests/worksheet-eval/rules.ts` (new) — pure rule predicates
-    over the post-validated worksheet. 7 built-ins:
-    `mcq-single-correct`, `word-bank-deduped`, `no-foreign-diagrams`,
-    `reading-age-in-range`, `spec-ref-present`, `send-fidelity-floor`,
-    `qa-score-floor`. Adding a rule is a single function in this file.
-  - `server/tests/worksheet-eval/generators.ts` (new) — `mockGenerator`
-    (deterministic, $0, default in CI / sandbox) and `liveGenerator`
-    (dynamic-imports `aiGenerateWorksheet`, shims `localStorage` so the
-    browser-coupled module runs under Node, picks the first non-empty
-    `EVAL_*_KEY` env var). Switch via `EVAL_MODE=mock|live`.
-  - `server/tests/worksheet-eval/summariser.ts` (new) — markdown
-    summary with per-rule + per-bucket roll-ups. Failures capped at 20
-    rows so a noisy run doesn't blow out the GH job summary.
-  - `server/tests/worksheet-eval/types.ts` (new) — `EvalFixture`,
-    `EvalReport`, `EvalReportRow` contracts. Fields are additive so
-    older readers keep parsing newer reports.
-  - `server/tests/worksheet-eval/fixtures/*.json` — 50 fixtures spanning
-    10 maths (Y3–Y11) / 10 English / 10 science / 10 humanities / 10
-    SEND-specific (dyslexia / dyscalculia / autism / ADHD / EAL).
-    Generated from `scripts/_gen-eval-fixtures.mjs` (re-runnable, not
-    invoked by CI). Underscored-prefix files are skipped by the
-    runner so this script could live alongside fixtures if needed.
-  - `package.json` — adds `eval:worksheets` script.
-  - `.github/workflows/worksheet-eval.yml` — nightly cron + workflow
-    dispatch. Defaults to mock; live mode + budget configurable per run.
-    Bail-on-fail only on manual runs (cron must not fail loudly).
-  - `docs/eval-harness.md` — usage, rule catalogue, fixture template,
-    cost-guard contract, report shape, architecture.
-  - `.gitignore` — eval-report.json.
+  - `client/src/components/AuditTrailPanel.tsx` (new) — self-contained
+    component using a native `<details>` for collapse so it works
+    without React state and is keyboard-accessible without extra
+    ARIA. Default-collapsed, print-hidden via the existing
+    `ws-no-print-on-student` class. Skips its own subsections
+    gracefully when the metadata field they consume is absent — older
+    worksheets keep rendering with blank tabs rather than erroring.
+  - `client/src/components/WorksheetRenderer.tsx` — single-line wire-in
+    below the FEAT-PC10 coverage card so all teacher-only audit
+    surfaces sit together. Plus a pre-existing-bug fix: the QA-score
+    badges at lines 4725 + 4810 read `qaScore.overallScore`, a field
+    that was never stamped (canonical is `qaScore.total`); both
+    badges were rendering `undefined%`. Now read `total ??
+    overallScore ?? "—"` so the badge works for the first time on
+    AI-generated worksheets.
 
-  Out of scope (deferred to later PRs as the spec calls out):
-  - PR-blocking CI gate — lands in PR-22 once a baseline has settled.
-  - Diff-against-yesterday runner / >5% drift detector — also PR-22.
-  - A/B prompt experiment framework — PR-20.
+  Out of scope (deferred):
+  - Removing the per-feature teacher cards (FEAT-PB6 SEND fidelity
+    card, FEAT-PC10 coverage card, FEAT-PB3 re-teach badge). These
+    keep their place for at-a-glance reading; the audit-trail panel
+    is additive — a one-stop deeper-dive a teacher can hand to a HoD
+    or TA.
+  - The Class-Pack visual diff (#31, folded into PR-6 in PHASE-PLAN)
+    — only the panel scaffold ships in this PR; the diff visual is a
+    follow-up note.
+  - Per-tenant feature flags (PR-22).
 
-  Files touched: 8 source files + 1 workflow + 1 docs + 50 JSON
-  fixtures (excluded from line budget per phase plan). Net source
-  diff: ~ +750 lines, well under the ≤ ~700 net source line budget
-  once the fixtures are subtracted.
+  Files touched: 2 source files (1 new) + 3 tracker docs. Net source
+  diff: ~ +570 lines.
 
 ## What is in flight
 
-- **PR-2 (#86), PR-3 (#87), PR-5** push + open / merge bookkeeping.
+- **PR-3 (#87), PR-6 (#90)** push + open / merge bookkeeping.
+
+## Related sibling PRs
+
+- **PR-3 (#87) — Diagram coupling + distractor pedagogy + Tier-3
+  vocab + notation hygiene** is currently open in parallel with this
+  PR-6 (#90). PR-3 stamps four new bucket-prefixed warning families
+  on `metadata.postValidatorWarnings`
+  (`[Phase 1 — Notation hygiene]`, `[Phase 1 — Diagram integrity]`,
+  `[Phase 1 — Distractor pedagogy]`, `[Phase 1 — Vocabulary tier]`)
+  which this PR's audit-trail panel surfaces in its
+  "Warnings rolled up by bucket" tab — once PR-3 lands, the new
+  buckets render automatically because the panel keys off the
+  `[Phase N — <label>]` prefix the validator chain already uses.
+  No file overlap with this PR (PR-3 is validator + tests; PR-6 is
+  renderer-side panel). Either PR can ship first. See
+  `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md` on
+  `big-bang/pr-3-diagram-distractor-vocab-notation` for PR-3's own
+  context.
 
 ## Related sibling PRs
 
@@ -165,38 +181,33 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is next
 
-**PR-6 — Audit-trail panel: surface coverageMap / aoHistogram /
-fidelityReport in one teacher-facing view.**
+**PR-7 — Server-prompt unification: port curriculumAuthorityPrompt to
+server/routes/ai.ts.**
 
-Audit items: #79 (also #22 UI half + #31 Class Pack visual diff —
-folded in per the PHASE-PLAN dedupe table).
+Audit item: #39.
 
 Files to touch:
-- `client/src/components/worksheet/AuditTrailPanel.tsx` (new) — single
-  read-only teacher-view panel that reads only metadata fields the
-  generator + post-validator chain already stamp (no new fields). Tabs
-  for: Curriculum (specRef coverage from `metadata.coverageMap`), AO
-  histogram (`metadata.aoHistogram`), SEND fidelity (PR-1's
-  `metadata.sendFidelityReport`), QA score breakdown (PR-4's
-  `metadata.qaScore`), and post-validator warnings rolled up by bucket.
-- `client/src/components/worksheet/AuditTrailPanel.css` (or Tailwind
-  inline) — print-hidden so the panel never bleeds into pupil
-  printables.
-- Wire-in point in `WorksheetRenderer.tsx` — collapsed by default,
-  toggle from a small "Why this looks like this" link near the QA
-  score banner that PR-4 already wired in. ≤ 5 net lines in the
-  renderer; the panel itself owns the heavy lifting.
+- `server/routes/ai.ts` — port the curriculum-authority prompt
+  sections + Phase 5 manifesto from
+  `client/src/lib/curriculumAuthorityPrompt.ts` so server-side AI
+  calls use the same system prompt as the client-side path. Today
+  server has its own legacy prompt; client and server have drifted.
+- `server/lib/curriculumAuthorityPromptServer.ts` (new) — thin
+  server-side shim that re-exports the named-section helpers from the
+  shared client lib. Avoids forking the prompt; client stays the
+  source of truth.
+- `server/tests/aiServerPrompt.test.ts` (new) — pure assertion that
+  the server-emitted system prompt contains every named section the
+  client manifesto declares.
 
-Out of scope for PR-6:
-- New telemetry endpoints (PR-27).
-- Read/write surfaces ("Edit my worksheet that learns") — PR-25.
-- Class-Pack visual diff full implementation — only the panel
-  scaffold ships in PR-6; the diff visual is a follow-up note.
+Out of scope for PR-7:
+- Per-tenant prompt feature flags (PR-22 SLA work).
+- A/B traffic split (PR-20).
 
 Sizing budget: ≤ ~700 net lines, ≤ ~6 files. Sandbox is
-INTEGRATIONS_ONLY — read narrow ranges of WorksheetRenderer.tsx
-(7,000+ lines); never read the file in full.
-Branch name: `big-bang/pr-6-audit-trail-panel`.
+INTEGRATIONS_ONLY; never run `npm install`. Read narrow ranges of
+`server/routes/ai.ts` (1,000+ lines).
+Branch name: `big-bang/pr-7-server-prompt-unification`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 
