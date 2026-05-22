@@ -11,8 +11,8 @@ Last bulk-updated: 2026-05-22 (initial seed).
 
 | #  | Item                                                                                  | PR     | Status      |
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 1  | Per-question reading-age enforcement                                                  | PR-2   | not started |
-| 2  | Awarding-body command-word fidelity audit                                             | PR-2   | not started |
+| 1  | Per-question reading-age enforcement                                                  | PR-2   | shipped — PR pending |
+| 2  | Awarding-body command-word fidelity audit                                             | PR-2   | shipped — PR pending |
 | 3  | Past-paper verbatim / fingerprint detection                                           | PR-15  | not started |
 | 4  | Distractor pedagogy audit on MCQs                                                     | PR-3   | not started |
 | 5  | Synonym / equivalent-answer expansion in mark schemes                                 | PR-13  | not started |
@@ -21,14 +21,14 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 8  | Question-difficulty Bloom-monotonicity check                                          | PR-14  | not started |
 | 9  | Sciences "Working:" stub on calc questions                                            | PR-14  | not started |
 | 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | not started |
-| 11 | Cross-curricular UK context whitelist                                                 | PR-2   | not started |
+| 11 | Cross-curricular UK context whitelist                                                 | PR-2   | shipped — PR pending |
 | 12 | Cultural-context bias audit (PD9)                                                     | PR-12  | not started |
 | 13 | Mathematical notation hygiene (× vs x, − vs -, ° vs o)                                | PR-3   | not started |
-| 14 | SI unit normalisation (mph → km/h, lbs → kg, °F → °C, in/ft → cm/m)                   | PR-2   | not started |
+| 14 | SI unit normalisation (mph → km/h, lbs → kg, °F → °C, in/ft → cm/m)                   | PR-2   | shipped — PR pending |
 | 15 | Diagram-question coupling check                                                       | PR-3   | not started |
 | 16 | Common Mistakes for non-maths                                                         | PR-3   | not started |
 | 17 | Misconception bank backing (formal registry)                                          | PR-13  | not started |
-| 18 | Self-Reflection: command-word echo guarantee                                          | PR-2   | not started |
+| 18 | Self-Reflection: command-word echo guarantee                                          | PR-2   | shipped — PR pending |
 | 19 | Revision-Tips: time-budget reconcile with estimatedTime                               | PR-13  | not started |
 | 20 | Knowledge organiser auto-extract per topic (PD10)                                     | PR-10  | not started |
 | 21 | Anchor-poster + Now/Next/Then card outputs (PD11)                                     | PR-10  | not started |
@@ -38,7 +38,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 25 | Continuous accessibility audit (Lighthouse + axe-core in CI)                          | PR-18  | not started |
 | 26 | Plain-English / Crystal Mark check on every section                                   | PR-18  | not started |
 | 27 | Dyslexia-friendly typography pre-flight                                               | PR-18  | not started |
-| 28 | Phase 4 follow-up: SEND fidelity probes for the 12 missing profiles                   | PR-1   | not started |
+| 28 | Phase 4 follow-up: SEND fidelity probes for the 12 missing profiles                   | PR-1   | shipped — PR #85 |
 | 29 | Per-pupil profile linkage (Pupil Passport → worksheet)                                | PR-16  | not started |
 | 30 | Reading-age memory per pupil                                                          | PR-16  | not started |
 | 31 | Class Pack visual diff                                                                | PR-6   | not started |
