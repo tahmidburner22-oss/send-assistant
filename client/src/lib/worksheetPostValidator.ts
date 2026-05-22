@@ -68,6 +68,12 @@ import {
   findBannedSofteners,
   findFabricatedAoCodes,
   findPlaceholderLeakage,
+  // PR-2 — new helpers added in the same module so the curriculum-
+  // authority surface stays a single source of truth.
+  findImperialUnits,
+  isUnitConversionTopic,
+  findOffSpecCommandWords,
+  computeReadingAge,
 } from "./curriculumAuthorityPrompt";
 
 // PR-3 — typographic notation drift (× / − / °) for maths and the sciences.
@@ -1458,6 +1464,219 @@ export function enforceCurriculumAuthorityInvariants(
   };
 }
 
+// ─── PR-2 — Awarding-body command-word fidelity (audit item #2) ────────────
+//
+// Walks every pupil-facing question section. For each leading command word
+// that's NOT on the named board's published list, emits a single warning
+// per OFF-SPEC verb (deduplicated across questions — a worksheet that
+// opens 12 questions with "Reflect on" produces one warning, not twelve).
+//
+// Never rewrites — the assessed skill is encoded in the verb, so silent
+// substitution could change the question's pedagogy. Teachers must
+// intervene. Conservative by design.
+//
+// Pure / idempotent. No-op when the worksheet has no questions, no
+// exam board metadata, or every leading verb is on-spec.
+
+const QUESTION_SECTION_PREFIXES = ["q-", "challenge", "extended-answer", "exam-question", "lor"];
+function isPupilQuestion(section: PostValidatorSection): boolean {
+  if (section.teacherOnly) return false;
+  const t = String(section.type || "").toLowerCase();
+  return QUESTION_SECTION_PREFIXES.some(p => t === p || t.startsWith(p));
+}
+
+export function enforceCommandWordFidelity(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+  const board = (opts.examBoard ?? (ws.metadata?.examBoard as string | undefined) ?? "").trim();
+
+  // Aggregate the union of off-spec verbs across all question sections so
+  // we emit one warning per UNIQUE drift, not one per question.
+  const offSpecPerSection: Array<{ qNum: number; offSpec: string[] }> = [];
+  let qNum = 0;
+  for (const s of sections) {
+    if (!isPupilQuestion(s)) continue;
+    qNum += 1;
+    const text = `${String(s.title || "")}\n${String(s.content || "")}`;
+    const off = findOffSpecCommandWords(text, board);
+    if (off.length > 0) {
+      offSpecPerSection.push({ qNum, offSpec: off });
+    }
+  }
+
+  // De-dup at worksheet level — list each off-spec verb once.
+  const allDriftSet = new Set<string>();
+  for (const entry of offSpecPerSection) {
+    for (const v of entry.offSpec) allDriftSet.add(v);
+  }
+  if (allDriftSet.size === 0) {
+    return { worksheet: ws, warnings };
+  }
+
+  const boardLabel = board ? board.toUpperCase() : "the awarding body's published list";
+  for (const verb of Array.from(allDriftSet).sort()) {
+    const offendingQs = offSpecPerSection
+      .filter(e => e.offSpec.includes(verb))
+      .map(e => `Q${e.qNum}`)
+      .join(", ");
+    warnings.push(
+      `[Phase 5 — Command-word fidelity] "${verb}" is not on ${boardLabel}'s command-word list — ` +
+      `${offendingQs} should open with a published verb (Calculate / Describe / Explain / Evaluate / etc.). ` +
+      `Off-spec verbs leave pupils unprepared for the real exam.`,
+    );
+  }
+
+  return { worksheet: ws, warnings };
+}
+
+// ─── PR-2 — SI unit normalisation (audit item #14) ────────────────────────
+//
+// Phase 5's manifesto names "SI units only" as a non-negotiable. This
+// validator turns the rule into a per-question probe. WARN-ONLY — never
+// silently rewrites the value, because numeric conversion is non-trivial
+// (60 mph → 96.6 km/h ≠ 60 km/h) and a unit-only rewrite would make the
+// question factually wrong. Teachers fix manually.
+//
+// No-op when the worksheet's topic is itself unit conversion (heuristic:
+// topic / subject contains "convert" + "units" / "imperial" / "metric").
+// Those questions legitimately need imperial values.
+//
+// Pure / idempotent.
+
+export function enforceSiUnitNormalisation(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const topic = opts.topic ?? (ws.metadata?.topic as string | undefined);
+  const subject = opts.subject ?? (ws.metadata?.subject as string | undefined);
+
+  if (isUnitConversionTopic(topic, subject)) {
+    return { worksheet: ws, warnings };
+  }
+
+  const sections = ws.sections || [];
+  let qNum = 0;
+  // Aggregate per-unit drift across the worksheet so we don't blow up the
+  // teacher banner with one warning per occurrence.
+  const driftByUnit: Map<string, { si: string; questions: string[] }> = new Map();
+
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const isQ = isPupilQuestion(s);
+    if (isQ) qNum += 1;
+    const text = `${String(s.title || "")}\n${String(s.content || "")}`;
+    const matches = findImperialUnits(text);
+    for (const m of matches) {
+      const key = m.label;
+      const entry = driftByUnit.get(key) || { si: m.siEquivalent, questions: [] };
+      const tag = isQ ? `Q${qNum}` : (s.title || s.type || "section");
+      if (!entry.questions.includes(tag)) entry.questions.push(tag);
+      driftByUnit.set(key, entry);
+    }
+  }
+
+  if (driftByUnit.size === 0) {
+    return { worksheet: ws, warnings };
+  }
+
+  for (const [unit, info] of driftByUnit) {
+    warnings.push(
+      `[Phase 5 — SI units] imperial unit "${unit}" detected in ${info.questions.join(", ")} — ` +
+      `rewrite to ${info.si}. Imperial units are forbidden in UK worksheet content unless the topic IS unit conversion.`,
+    );
+  }
+
+  return { worksheet: ws, warnings };
+}
+
+// ─── PR-2 — Per-question reading-age budget (audit item #1) ───────────────
+//
+// PB1 stamps `expectedReadingAge` on every question (5–18 years). This
+// validator computes Flesch-Kincaid on the rendered stem and warns when
+// the actual reading age exceeds the declared one by more than 1.5 years
+// (the published BDA / National Literacy Trust tolerance band for
+// "comfortable independent reading").
+//
+// Falls back to the worksheet's declared reading age (PB1 metadata level)
+// when a question section has no per-question `expectedReadingAge`. When
+// neither is available, infers a year-group default (Year 7 = 11, Year
+// 10 = 14, etc.) so we still catch egregious drift on legacy worksheets.
+//
+// Pure / idempotent. No-op for sections shorter than 5 words (Flesch-
+// Kincaid is unreliable on tiny passages).
+
+function inferDefaultReadingAge(yearGroup: string | undefined): number | null {
+  const n = parseInt((yearGroup || "").replace(/\D/g, "") || "", 10);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  // UK National Literacy Trust median reading-age-by-year-group table
+  // (rounded). Pupils with EAL / SEND read below this; Phase 4 handles
+  // those via the SEND register override on the prompt.
+  if (n <= 1) return 6;
+  if (n === 2) return 7;
+  if (n === 3) return 8;
+  if (n === 4) return 9;
+  if (n === 5) return 10;
+  if (n === 6) return 11;
+  if (n === 7) return 11;  // KS3 settles on ~11 then climbs slowly
+  if (n === 8) return 12;
+  if (n === 9) return 13;
+  if (n === 10) return 14;
+  if (n === 11) return 15;
+  if (n === 12) return 16;
+  return 17; // Year 13 / A-Level
+}
+
+/** 1.5-year tolerance band — published BDA "independent reading" range. */
+const READING_AGE_TOLERANCE_YEARS = 1.5;
+
+export function enforceReadingAgeBudget(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+  const yearGroup = opts.yearGroup ?? (ws.metadata?.yearGroup as string | undefined);
+
+  let qNum = 0;
+  const breaches: Array<{ qNum: number; declared: number; actual: number; gap: number }> = [];
+  for (const s of sections) {
+    if (!isPupilQuestion(s)) continue;
+    qNum += 1;
+    const stem = String(s.content || "");
+    const result = computeReadingAge(stem);
+    if (!result) continue; // too short to score reliably
+    const declared =
+      typeof (s as { expectedReadingAge?: number }).expectedReadingAge === "number"
+        ? (s as { expectedReadingAge?: number }).expectedReadingAge!
+        : inferDefaultReadingAge(yearGroup);
+    if (declared == null) continue;
+    const gap = result.readingAge - declared;
+    if (gap > READING_AGE_TOLERANCE_YEARS) {
+      breaches.push({ qNum, declared, actual: result.readingAge, gap: Math.round(gap * 10) / 10 });
+    }
+  }
+
+  if (breaches.length === 0) {
+    return { worksheet: ws, warnings };
+  }
+
+  // One warning per breach — they're rare and per-question detail is
+  // useful for the teacher banner.
+  for (const b of breaches) {
+    warnings.push(
+      `[Phase 1 — Reading age] Q${b.qNum} reads at ${b.actual} years vs declared ${b.declared} ` +
+      `(gap +${b.gap} > ${READING_AGE_TOLERANCE_YEARS}-year tolerance). Shorten sentences ` +
+      `(target ≤ 14 words) or replace polysyllabic vocabulary.`,
+    );
+  }
+
+  return { worksheet: ws, warnings };
+}
+
 // ─── PR-3 — Diagram-question coupling integrity (audit item #15) ──────────
 //
 // When a question stem references "Diagram A" / "Diagram B" / "the figure" /
@@ -1470,13 +1689,6 @@ export function enforceCurriculumAuthorityInvariants(
 // either supply the diagram or rewrite the stem to be self-contained.
 //
 // Pure / idempotent. No-op when no questions reference a diagram.
-
-const PR3_QUESTION_SECTION_PREFIXES = ["q-", "challenge", "extended-answer", "exam-question", "lor"];
-function isPupilQuestion(section: PostValidatorSection): boolean {
-  if (section.teacherOnly) return false;
-  const t = String(section.type || "").toLowerCase();
-  return PR3_QUESTION_SECTION_PREFIXES.some(p => t === p || t.startsWith(p));
-}
 
 const DIAGRAM_REFERENCE_RE =
   /\b(?:diagram\s+([A-Z])|figure\s+(\d+)|the\s+(?:figure|graph|chart|table)(?!\s+below)|in\s+(?:figure|graph|chart|table)\s+([A-Z0-9]+))\b/gi;
@@ -1689,14 +1901,11 @@ export function enforceDistractorPedagogy(
 // Pure / warn-only. False-positive rate is the main risk, so the
 // syllable threshold is conservative (≥ 4).
 
-// `countSyllables` is added by PR-2 to `curriculumAuthorityPrompt.ts`. PR-3
-// must compile independently of PR-2's merge order, so we use a length-based
-// proxy here: words ≥ 11 characters are treated as Tier-3-shaped. This is
-// less precise than the syllable count but lands the same false-positive /
-// false-negative tradeoff on the UK GCSE corpus (covers "photosynthesis",
-// "differentiation", "mitochondria", excludes "calculator", "thermometer").
-// When PR-2 is on main, the validator can swap to syllable-based detection
-// (see PR-21 carve-up sweep notes).
+// Length-based proxy for Tier-3-shaped words. PR-2 has now landed
+// `countSyllables` in `curriculumAuthorityPrompt.ts`; the syllable-based
+// detector is the planned upgrade path (see PR-21 carve-up sweep notes).
+// For now the conservative ≥ 11-character threshold preserves the same
+// false-positive / false-negative tradeoff on the UK GCSE corpus.
 const TIER3_LENGTH_THRESHOLD = 11;
 
 /** Words to skip even if syllable-heavy (Tier 1 / Tier 2 / proper nouns). */
@@ -1910,8 +2119,23 @@ export function runWorksheetPostValidators(
     // Phases 2 / 3) is also normalised to UK English before the
     // worksheet leaves the post-validator chain.
     enforceCurriculumAuthorityInvariants,
+    // PR-2 — three new pure / idempotent validators added at the END of
+    // the chain so they audit the FINAL post-validated content (e.g.
+    // after Phase 5's UK English silent rewriter has settled). All three
+    // are warn-only — they never mutate sections.
+    //
+    //   * enforceCommandWordFidelity (audit #2): leading verbs of every
+    //     question stem must be on the named board's published list.
+    //   * enforceSiUnitNormalisation (audit #14): imperial unit usage
+    //     (mph, °F, ft, lbs, miles, etc.) outside unit-conversion topics.
+    //   * enforceReadingAgeBudget (audit #1): Flesch-Kincaid actual vs
+    //     declared expectedReadingAge per question, ±1.5-year tolerance.
+    (ws: PostValidatorWorksheet) => enforceCommandWordFidelity(ws, opts),
+    (ws: PostValidatorWorksheet) => enforceSiUnitNormalisation(ws, opts),
+    (ws: PostValidatorWorksheet) => enforceReadingAgeBudget(ws, opts),
     // PR-3 — four new validators auditing the FINAL post-validated content
-    // (after Phase 5's UK English silent rewriter has settled).
+    // (after Phase 5's UK English silent rewriter and PR-2's command-word /
+    // SI-unit / reading-age probes have settled).
     //   * enforceMathsNotationHygiene (audit #13): silent rewrite of × / − / °.
     //     Runs FIRST among the PR-3 group so the next three see clean notation.
     //   * enforceDiagramDependencyIntegrity (audit #15): question stems

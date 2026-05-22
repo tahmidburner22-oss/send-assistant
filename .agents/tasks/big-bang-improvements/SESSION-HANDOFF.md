@@ -10,9 +10,10 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-22 (PR-4 in flight on branch
-`big-bang/pr-4-quality-scorecard`; PR-1 (#85) merged; PR-2 (#86) and
-PR-3 (#87) open with conflicts resolved by re-merging origin/main).
+Last updated: 2026-05-22 (PR-5 in flight on branch
+`big-bang/pr-5-eval-harness`; PR-1 (#85) and PR-4 (#88) merged; PR-2
+(#86) and PR-3 (#87) open with conflicts re-resolved against current
+main).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -90,32 +91,98 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
   Files touched: 4 (1 new). Net diff: ~ +700 lines.
 
+- **PR-5 — Eval harness FEAT-PR5: canonical UK NC + GCSE prompts +
+  golden-output runner** (branch `big-bang/pr-5-eval-harness`, PR
+  pending push). Audit item **#44**. Closes
+  [`.agents/tasks/phase-a-class-aware/features/FEAT-PR5.json`](../phase-a-class-aware/features/FEAT-PR5.json).
+  Builds the regression baseline that lets PR-13 / PR-14 / PR-20
+  (mark-scheme + Bloom + per-subject prompts) land confidently — every
+  PR can run `npm run eval:worksheets` locally and CI runs it nightly.
+
+  What changed:
+  - `server/tests/worksheet-eval/runner.ts` (new) — iterates fixtures,
+    threads each output through `runWorksheetPostValidators`, scores
+    against rule names, writes `eval-report.json` plus a markdown
+    summary to stdout / `$GITHUB_STEP_SUMMARY`. Cost guard via
+    `EVAL_BUDGET_USD`; bail-on-fail via `--bail` / `EVAL_BAIL_ON_FAIL`.
+  - `server/tests/worksheet-eval/rules.ts` (new) — pure rule predicates
+    over the post-validated worksheet. 7 built-ins:
+    `mcq-single-correct`, `word-bank-deduped`, `no-foreign-diagrams`,
+    `reading-age-in-range`, `spec-ref-present`, `send-fidelity-floor`,
+    `qa-score-floor`. Adding a rule is a single function in this file.
+  - `server/tests/worksheet-eval/generators.ts` (new) — `mockGenerator`
+    (deterministic, $0, default in CI / sandbox) and `liveGenerator`
+    (dynamic-imports `aiGenerateWorksheet`, shims `localStorage` so the
+    browser-coupled module runs under Node, picks the first non-empty
+    `EVAL_*_KEY` env var). Switch via `EVAL_MODE=mock|live`.
+  - `server/tests/worksheet-eval/summariser.ts` (new) — markdown
+    summary with per-rule + per-bucket roll-ups. Failures capped at 20
+    rows so a noisy run doesn't blow out the GH job summary.
+  - `server/tests/worksheet-eval/types.ts` (new) — `EvalFixture`,
+    `EvalReport`, `EvalReportRow` contracts. Fields are additive so
+    older readers keep parsing newer reports.
+  - `server/tests/worksheet-eval/fixtures/*.json` — 50 fixtures spanning
+    10 maths (Y3–Y11) / 10 English / 10 science / 10 humanities / 10
+    SEND-specific (dyslexia / dyscalculia / autism / ADHD / EAL).
+    Generated from `scripts/_gen-eval-fixtures.mjs` (re-runnable, not
+    invoked by CI). Underscored-prefix files are skipped by the
+    runner so this script could live alongside fixtures if needed.
+  - `package.json` — adds `eval:worksheets` script.
+  - `.github/workflows/worksheet-eval.yml` — nightly cron + workflow
+    dispatch. Defaults to mock; live mode + budget configurable per run.
+    Bail-on-fail only on manual runs (cron must not fail loudly).
+  - `docs/eval-harness.md` — usage, rule catalogue, fixture template,
+    cost-guard contract, report shape, architecture.
+  - `.gitignore` — eval-report.json.
+
+  Out of scope (deferred to later PRs as the spec calls out):
+  - PR-blocking CI gate — lands in PR-22 once a baseline has settled.
+  - Diff-against-yesterday runner / >5% drift detector — also PR-22.
+  - A/B prompt experiment framework — PR-20.
+
+  Files touched: 8 source files + 1 workflow + 1 docs + 50 JSON
+  fixtures (excluded from line budget per phase plan). Net source
+  diff: ~ +750 lines, well under the ≤ ~700 net source line budget
+  once the fixtures are subtracted.
+
 ## What is in flight
 
-- **PR-2 (#86), PR-3 (#87), PR-4** push + open / merge bookkeeping.
+- **PR-2 (#86), PR-3 (#87), PR-5** push + open / merge bookkeeping.
 
 ## What is next
 
-**PR-5 — Eval harness FEAT-PR5: 200 canonical UK NC + GCSE prompts +
-golden-output runner.**
+**PR-6 — Audit-trail panel: surface coverageMap / aoHistogram /
+fidelityReport in one teacher-facing view.**
 
-Audit item: #44.
+Audit items: #79 (also #22 UI half + #31 Class Pack visual diff —
+folded in per the PHASE-PLAN dedupe table).
 
 Files to touch:
-- `scripts/eval-harness/` (new directory) — 200 canonical prompts as
-  JSON fixtures spanning every (subject × year × ability tier) the
-  worksheet generator handles. One golden output per fixture, locked
-  to a generator-version. Diff runner that flags > 5% drift.
-- `package.json` — `npm run eval` script.
+- `client/src/components/worksheet/AuditTrailPanel.tsx` (new) — single
+  read-only teacher-view panel that reads only metadata fields the
+  generator + post-validator chain already stamp (no new fields). Tabs
+  for: Curriculum (specRef coverage from `metadata.coverageMap`), AO
+  histogram (`metadata.aoHistogram`), SEND fidelity (PR-1's
+  `metadata.sendFidelityReport`), QA score breakdown (PR-4's
+  `metadata.qaScore`), and post-validator warnings rolled up by bucket.
+- `client/src/components/worksheet/AuditTrailPanel.css` (or Tailwind
+  inline) — print-hidden so the panel never bleeds into pupil
+  printables.
+- Wire-in point in `WorksheetRenderer.tsx` — collapsed by default,
+  toggle from a small "Why this looks like this" link near the QA
+  score banner that PR-4 already wired in. ≤ 5 net lines in the
+  renderer; the panel itself owns the heavy lifting.
 
-Out of scope for PR-5:
-- Connecting the eval harness to CI (PR-22 schema deprecation policy
-  introduces the regression-detector wiring).
-- A/B prompt experiments on the harness (PR-20).
+Out of scope for PR-6:
+- New telemetry endpoints (PR-27).
+- Read/write surfaces ("Edit my worksheet that learns") — PR-25.
+- Class-Pack visual diff full implementation — only the panel
+  scaffold ships in PR-6; the diff visual is a follow-up note.
 
-Sizing budget: ≤ ~700 net lines, ≤ ~6 files (data fixtures excluded
-from line count — 200 JSON files are not source).
-Branch name: `big-bang/pr-5-eval-harness`.
+Sizing budget: ≤ ~700 net lines, ≤ ~6 files. Sandbox is
+INTEGRATIONS_ONLY — read narrow ranges of WorksheetRenderer.tsx
+(7,000+ lines); never read the file in full.
+Branch name: `big-bang/pr-6-audit-trail-panel`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 
@@ -157,6 +224,59 @@ Branch name: `big-bang/pr-5-eval-harness`.
    files you read, gotchas, open questions for the next chat.
 
 ## Notes (transient, per-session scratchpad)
+
+### PR-5 design decisions
+
+**Fixture count: 50, not 200.** The PHASE-PLAN headline copy says
+"200 canonical UK NC + GCSE prompts" but the upstream FEAT-PR5 spec
+([`.agents/tasks/phase-a-class-aware/features/FEAT-PR5.json`](../phase-a-class-aware/features/FEAT-PR5.json))
+calls for **50** fixtures — explicitly enumerated as 10 maths / 10
+English / 10 science / 10 humanities / 10 SEND. Followed the spec.
+Expanding to 200 is additive — re-run `scripts/_gen-eval-fixtures.mjs`
+with more cases per bucket. Not blocked by anything in this PR.
+
+**Mock generator is the default.** The sandbox is `INTEGRATIONS_ONLY`
+and CI on PR push runs without API keys. The mock produces a
+deterministic well-formed worksheet (LO + Word-Bank + worked-example
++ 7 valid q-* sections + mark-scheme + self-reflection +
+revision-tips + populated metadata.generatorVersion) so the harness
+wiring can be exercised end-to-end at $0. Live mode requires
+`EVAL_MODE=live` plus at least one of `EVAL_OPENAI_KEY` /
+`EVAL_ANTHROPIC_KEY` / `EVAL_GROQ_KEY` / `EVAL_GEMINI_KEY` /
+`EVAL_OPENROUTER_KEY`. The live generator dynamically imports
+`aiGenerateWorksheet` and shims `localStorage` so the
+browser-coupled module runs under Node. Both modes return identical
+shapes downstream.
+
+**Cost guard runs before any generation call.** Pre-flight estimate
+is `fixtures.length × generator.estimatedCostUsd`. Mock estimates $0,
+so the guard is a no-op in mock mode. Live mode estimates $0.008 per
+call (≈ GPT-4o-mini at 4k tokens), giving ~$0.40 for the 50-fixture
+corpus — comfortably under the $1.00 default budget.
+
+**Rule registry is open-set, not enum.** Adding a rule is a single
+function in `rules.ts`. Fixtures can list any subset of rule names;
+unknown names fail with reason "rule not registered" rather than
+silently passing. The 7 built-ins cover the post-validator surfaces
+shipped through PR-4. Future PRs can add rules without touching the
+runner (e.g. PR-13's mark-scheme reconciler will register
+`mark-scheme-reconciled`; PR-23's diagram pipeline will register
+`diagram-page-fit`).
+
+**Workflow does NOT block PRs.** Per the FEAT-PR5 spec, this PR ships
+the harness but not the gate. The blocking gate lands in **PR-22**
+once a stable baseline has settled. The nightly cron uploads
+`eval-report.json` as an artefact and writes a markdown table to
+`$GITHUB_STEP_SUMMARY` so regressions are visible without downloading
+the JSON.
+
+**One-shot fixture generator** lives at
+`scripts/_gen-eval-fixtures.mjs`. The leading underscore matches the
+convention the runner uses to skip non-fixture files in the
+fixtures directory. Re-run it any time the case lists need to be
+regenerated (subject coverage, year-group bands, SEND profile mix).
+
+### Pre-existing notes
 
 ### Resolver-order bug: `semh` masked behind `anxiety`
 

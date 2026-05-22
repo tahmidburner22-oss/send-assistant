@@ -1,0 +1,26 @@
+{
+  "id": "humanities-y7-history-romans",
+  "title": "Year 7 History — Roman invasion of Britain",
+  "bucket": "humanities",
+  "params": {
+    "subject": "History",
+    "topic": "Roman invasion of Britain",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}

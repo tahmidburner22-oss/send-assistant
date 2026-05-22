@@ -1,0 +1,89 @@
+# Worksheet eval harness — closes audit item #44 (FEAT-PR5).
+#
+# Runs nightly + on demand. Exercises the 50 canonical fixtures under
+# server/tests/worksheet-eval/fixtures/ and uploads
+# server/tests/worksheet-eval/eval-report.json as a build artefact.
+#
+# Mode: defaults to `mock` (free, deterministic, no API keys). Switch to
+# `live` via workflow_dispatch input when API keys are configured as
+# repo secrets.
+#
+# This workflow does NOT block PRs. The PR-blocking gate lands in PR-22
+# once a regression baseline has settled — see
+# .agents/tasks/big-bang-improvements/PHASE-PLAN.md.
+
+name: Worksheet eval
+
+on:
+  schedule:
+    # 03:00 UTC every day — quietest period for the team's timezone.
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Generator mode: mock (free) or live (requires API keys)."
+        type: choice
+        required: true
+        default: "mock"
+        options:
+          - mock
+          - live
+      budget_usd:
+        description: "Cost guard ceiling in USD (live mode only)."
+        required: false
+        default: "1.00"
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    name: Run worksheet eval (${{ github.event.inputs.mode || 'mock' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      EVAL_MODE: ${{ github.event.inputs.mode || 'mock' }}
+      EVAL_BUDGET_USD: ${{ github.event.inputs.budget_usd || '1.00' }}
+      # Live-mode keys (only consumed when EVAL_MODE=live). All optional —
+      # the live generator picks the first non-empty key.
+      EVAL_OPENAI_KEY: ${{ secrets.EVAL_OPENAI_KEY }}
+      EVAL_ANTHROPIC_KEY: ${{ secrets.EVAL_ANTHROPIC_KEY }}
+      EVAL_GROQ_KEY: ${{ secrets.EVAL_GROQ_KEY }}
+      EVAL_GEMINI_KEY: ${{ secrets.EVAL_GEMINI_KEY }}
+      EVAL_OPENROUTER_KEY: ${{ secrets.EVAL_OPENROUTER_KEY }}
+      EVAL_GENERATOR_VERSION: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run worksheet eval
+        run: npm run eval:worksheets
+
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report-${{ github.run_id }}
+          path: server/tests/worksheet-eval/eval-report.json
+          retention-days: 30
+
+      - name: Fail job on eval regression (manual live runs only)
+        # Nightly cron and mock runs MUST NOT fail loudly — only manual
+        # live-mode runs (where someone is watching and the report
+        # reflects real generator quality) bail on regression. The
+        # summariser already wrote the markdown table to
+        # $GITHUB_STEP_SUMMARY in the previous step.
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'live'
+        env:
+          EVAL_BAIL_ON_FAIL: "1"
+        run: npm run eval:worksheets
