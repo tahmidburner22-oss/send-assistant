@@ -1,5 +1,9 @@
 # Phase 4 — Session Handoff
 
+> **Status: SHIPPED.** Merged to `main` as PR #77 / commit `8d5a243` on
+> 2026-05-22. Nothing left in this branch — Phase 5 (Curriculum-authority
+> system prompt rewrite) picks up next on a fresh branch off `main`.
+
 This file is the **resume point** for any fresh chat picking up Phase 4.
 Read it first, then `PHASE-PLAN.md`, then proceed.
 
