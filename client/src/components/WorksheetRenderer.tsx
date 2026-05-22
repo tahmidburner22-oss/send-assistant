@@ -5897,8 +5897,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     {section.type === "q-true-false" ? "TRUE / FALSE" :
                      section.type === "q-mcq" ? "MULTIPLE CHOICE" :
                      section.type === "q-gap-fill" ? "GAP FILL" :
-                     section.type === "q-short-answer" ? "SHORT ANSWER" :
-                     section.type === "q-extended" ? "EXTENDED ANSWER" :
+                     section.type === "q-short-answer" ? "" :
+                     section.type === "q-extended" ? "" :
                      section.type === "q-data-table" ? "DATA TABLE" :
                      section.type === "q-label-diagram" ? "LABEL DIAGRAM" : ""}
                   </div>
