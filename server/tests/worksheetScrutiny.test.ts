@@ -2475,3 +2475,384 @@ describe("Phase 5 — enforceCurriculumAuthorityInvariants", () => {
     expect(r.worksheet.sections![0].content).toBe("Calculate the colour of 100 metres.");
   });
 });
+
+
+// ─── PR-1 — SEND fidelity probes for the 12 missing profiles ───────────────
+//
+// Phase 4 follow-up. Before this PR, `sendFidelityAudit.ts` registered
+// probes for 11 of the 21 SEND profiles in `sendPromptFragments.ts`. The
+// other 10 (`asperger`, `asc-social`, `asc-demand-avoidant`, `asc-sensory`,
+// `asc-rigid`, `mld`, `dyspraxia`, `tourettes`, `older-learners`, `semh`)
+// silently emitted `not-checked` for every rule, so a worksheet that
+// *claimed* to be SEND-adapted could ship with no enforced fidelity. This
+// PR adds at least one deterministic probe per worksheet rule across all
+// 10 profiles. Every probe must be:
+//
+//  - high-precision (a worksheet that follows the rule should never trip
+//    the probe — `not-checked` is preferable to a false `missing`),
+//  - pure (no side effects), and
+//  - idempotent (running twice yields the same report).
+
+import { runSendFidelityAudit, applySendFidelityAudit } from "../../client/src/lib/sendFidelityAudit";
+
+/**
+ * Convenience builder for a minimal worksheet shape the audit accepts.
+ * Tests below extend this with profile-specific section content.
+ */
+function makeSheet(sections: Array<{ type?: string; title?: string; content?: string; teacherOnly?: boolean }>) {
+  return {
+    title: "Test worksheet",
+    sections: sections.map((s) => ({ type: "q-short", title: "Q", content: "", teacherOnly: false, ...s })),
+  };
+}
+
+describe("Phase 4 follow-up — SEND fidelity audit covers all 21 profiles", () => {
+  it("registers a probe array for every spec id (no profile silently returns not-checked everywhere)", () => {
+    // Every profile id should resolve to a non-null fidelity report with at
+    // least one rule. This is the mechanical wiring guarantee: it does NOT
+    // assert that the resolved spec is the same as the input id (the
+    // resolver currently maps `semh` -> anxiety due to matcher order — see
+    // SESSION-HANDOFF), only that no profile produces a silent null result.
+    for (const spec of getAllSendSpecs()) {
+      const ws = makeSheet([{ content: "placeholder content" }]);
+      const report = runSendFidelityAudit(ws, spec.id);
+      expect(report, `no fidelity report for ${spec.id}`).not.toBeNull();
+      expect(report!.rules.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("every probed profile produces at least one applied OR missing verdict on a moderately-rich worksheet (no all-not-checked outcomes for the 11 newly-probed profiles)", () => {
+    const richContent = makeSheet([
+      { type: "vocabulary", title: "Key Vocabulary", content: "Word Bank: photosynthesis, mitochondria" },
+      { type: "worked-example", title: "Worked example", content: "Calculate 2+3 = 5" },
+      { type: "q-short", title: "Section A — Guided Practice", content: "What you need to do:\n1. Read.\n2. Answer.\nQ1. **Calculate** 4+5\nQ2. **Calculate** 6+7" },
+      { type: "q-mcq", title: "Q3", content: "A. yes\nB. no ✓" },
+      { type: "q-matching", title: "Q4", content: "match these" },
+      { type: "q-true-false", title: "Q5", content: "TRUE / FALSE" },
+      { type: "q-data-table", title: "Q6", content: "fill in the table" },
+      { type: "challenge", title: "OPTIONAL BONUS — only if you want to", content: "Take a breath here — come back when you are ready." },
+      { type: "reflection", title: "Reflection", content: "[ ] I learned a new fact today.\nWrite one fact you learned today: __________\n[ ] Calm   [ ] OK   [ ] Need a break" },
+    ]);
+    // 11 profiles that previously returned all-not-checked — now require at
+    // least one applied or missing verdict.
+    const previouslyUnprobedIds = [
+      "asperger", "asc-social", "asc-demand-avoidant", "asc-sensory", "asc-rigid",
+      "mld", "dyspraxia", "tourettes", "older-learners",
+      // semh is omitted because the resolver-order bug routes "semh" to anxiety
+      // (which is already probed). The semh-specific probe is exercised via
+      // the "social-emotional" sendNeed input in its dedicated describe block.
+    ];
+    for (const id of previouslyUnprobedIds) {
+      const report = runSendFidelityAudit(richContent, id)!;
+      const verdicts = report.rules.filter((r) => r.status !== "not-checked");
+      expect(verdicts.length, `${id} produced no applied/missing verdicts on a moderately-rich worksheet`).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("Phase 4 follow-up — asc-social fidelity probes", () => {
+  it("registers applied for happy-path content (Word Bank + numbered steps + 'What you need to do' + tick-box reflection with exit question)", () => {
+    const ws = makeSheet([
+      { type: "vocabulary", title: "Key Vocabulary", content: "Word Bank: photosynthesis = the process plants use to make food" },
+      { type: "q-short", title: "Section A — Guided Practice", content: "What you need to do:\n1. Read the question.\n2. Underline the key word.\n3. Write your answer." },
+      { type: "reflection", title: "Reflection", content: "[ ] I learned a new fact today.\nWrite one fact you learned today: __________" },
+    ]);
+    const report = runSendFidelityAudit(ws, "asc-social")!;
+    const applied = report.rules.filter((r) => r.status === "applied").map((r) => r.ruleIndex);
+    expect(applied).toContain(3); // Word Bank
+    expect(applied).toContain(4); // numbered steps
+    expect(applied).toContain(5); // What you need to do
+    expect(applied).toContain(6); // tick-box reflection + exit question
+  });
+
+  it("flags missing rule 5 ('What you need to do' box) when the section opens without it", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Section A", content: "1. Read the question." }]);
+    const report = runSendFidelityAudit(ws, "asc-social")!;
+    const r5 = report.rules.find((r) => r.ruleIndex === 5)!;
+    expect(r5.status).toBe("missing");
+  });
+});
+
+describe("Phase 4 follow-up — asc-demand-avoidant fidelity probes", () => {
+  it("flags 'you must' / 'you need to' demand-language as missing rule 1", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Section A", content: "You must answer all the questions." }]);
+    const report = runSendFidelityAudit(ws, "asc-demand-avoidant")!;
+    const r1 = report.rules.find((r) => r.ruleIndex === 1)!;
+    expect(r1.status).toBe("missing");
+  });
+
+  it("registers applied for invitational content (might like / Option A / Explore section / Take a break / no checkboxes / invitational reflection)", () => {
+    const ws = makeSheet([
+      { type: "q-short", title: "Explore — choose where to start", content: "What you need to do:\nYou might like to try:\nOption A: a fraction question\nOption B: a decimal question\nTake a break here if you need to — come back when ready." },
+      { type: "reflection", title: "Reflection", content: "If you would like to, write one thing you noticed today: __________" },
+    ]);
+    const report = runSendFidelityAudit(ws, "asc-demand-avoidant")!;
+    const applied = report.rules.filter((r) => r.status === "applied").map((r) => r.ruleIndex);
+    expect(applied).toContain(1); // no demand-language
+    expect(applied).toContain(2); // What you need to do + invitational
+    expect(applied).toContain(3); // Option A / Option B
+    expect(applied).toContain(4); // Explore renamed
+    expect(applied).toContain(5); // Take a break
+    expect(applied).toContain(6); // no checkboxes
+    expect(applied).toContain(7); // invitational reflection
+  });
+
+  it("flags rule 6 (no checkboxes) when a checkbox is present in student-visible content", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Explore — choose where to start", content: "[ ] try this question" }]);
+    const report = runSendFidelityAudit(ws, "asc-demand-avoidant")!;
+    const r6 = report.rules.find((r) => r.ruleIndex === 6)!;
+    expect(r6.status).toBe("missing");
+  });
+});
+
+describe("Phase 4 follow-up — asc-sensory fidelity probes", () => {
+  it("flags decorative emojis (🌟 / 🎉 / face emojis) as missing rule 3", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Section A", content: "🌟 Have a go at this question 🎉" }]);
+    const report = runSendFidelityAudit(ws, "asc-sensory")!;
+    const r3 = report.rules.find((r) => r.ruleIndex === 3)!;
+    expect(r3.status).toBe("missing");
+  });
+
+  it("does not false-flag MCQ ✓ tick markers (U+2713) as decorative", () => {
+    const ws = makeSheet([
+      { type: "q-mcq", title: "Q1", content: "A. positive\nB. negative ✓\nC. neutral\nD. zero" },
+      { type: "q-short", title: "Section A", content: "What you need to do:\nAnswer each question." },
+      { type: "reflection", title: "Reflection", content: "[ ] I learned something new today." },
+    ]);
+    const report = runSendFidelityAudit(ws, "asc-sensory")!;
+    const r3 = report.rules.find((r) => r.ruleIndex === 3)!;
+    expect(r3.status).toBe("applied");
+  });
+});
+
+describe("Phase 4 follow-up — asc-rigid fidelity probes", () => {
+  it("registers applied when a single lead verb is used across all questions", () => {
+    const ws = makeSheet([
+      { type: "worked-example", title: "Worked example A", content: "Calculate 2+3 = 5" },
+      { type: "q-short", title: "Section A", content: "What you need to do:\nUse the same method as the worked example.\n1. **Calculate** 4+5\n2. **Calculate** 6+7" },
+      { type: "worked-example", title: "Worked example B", content: "Calculate 10+1 = 11" },
+      { type: "q-short", title: "Section B", content: "3. **Calculate** 12+8\n4. **Calculate** 9+2" },
+      { type: "q-short", title: "Optional Challenge", content: "5. **Calculate** 100+250" },
+      { type: "reflection", title: "Reflection", content: "[ ] I followed the same steps every time." },
+    ]);
+    const report = runSendFidelityAudit(ws, "asc-rigid")!;
+    const r3 = report.rules.find((r) => r.ruleIndex === 3)!;
+    expect(r3.status).toBe("applied");
+    expect(r3.evidence).toMatch(/1 distinct lead verb/);
+  });
+
+  it("flags rule 3 when multiple distinct lead verbs are used", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Section A", content: "1. **Calculate** 2+3\n2. **Find** the value of x\n3. **Solve** for y" }]);
+    const report = runSendFidelityAudit(ws, "asc-rigid")!;
+    const r3 = report.rules.find((r) => r.ruleIndex === 3)!;
+    expect(r3.status).toBe("missing");
+    expect(r3.evidence).toMatch(/3 distinct lead verbs/);
+  });
+
+  it("flags rule 5 (no Optional label) when bonus items aren't visibly separated", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Section A", content: "1. **Calculate** something." }]);
+    const report = runSendFidelityAudit(ws, "asc-rigid")!;
+    const r5 = report.rules.find((r) => r.ruleIndex === 5)!;
+    expect(r5.status).toBe("missing");
+  });
+});
+
+describe("Phase 4 follow-up — asperger fidelity probes", () => {
+  it("registers applied for 'What you need to do' + tick-box reflection", () => {
+    const ws = makeSheet([
+      { type: "q-short", title: "Section A", content: "What you need to do:\n1. Read.\n2. Answer." },
+      { type: "reflection", title: "Reflection", content: "[ ] I completed the worksheet." },
+    ]);
+    const report = runSendFidelityAudit(ws, "asperger")!;
+    const applied = report.rules.filter((r) => r.status === "applied").map((r) => r.ruleIndex);
+    expect(applied).toContain(1);
+    expect(applied).toContain(6);
+  });
+
+  it("returns not-checked for narrative rules 2-5 (literal language / synonyms / layout / interest)", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Section A", content: "What you need to do:\n1. Read." }]);
+    const report = runSendFidelityAudit(ws, "asperger")!;
+    for (const idx of [2, 3, 4, 5]) {
+      const r = report.rules.find((rr) => rr.ruleIndex === idx)!;
+      expect(r.status).toBe("not-checked");
+      expect(r.evidence).toMatch(/narrative|hard to|too narrative|rendered via CSS|per-pupil profile/i);
+    }
+  });
+});
+
+describe("Phase 4 follow-up — mld fidelity probes", () => {
+  it("registers applied for Q1 model answer + hint scaffolds + Help Box + single-step + Optional challenge", () => {
+    const ws = makeSheet([
+      { type: "recall", title: "Section A — Guided Practice", content: "Q1. Calculate 2+3. Answer: 5\nHint: count up from 2.\nQ2. Calculate 4+5 = ___\nQ3. Sentence starter: 'The answer is ___'" },
+      { type: "understanding", title: "Section B — Main Practice", content: "Help Box:\n- Adding two numbers means combining them.\nQ4. Calculate 10+5." },
+      { type: "challenge", title: "OPTIONAL BONUS — only if you want to", content: "Calculate something harder." },
+    ]);
+    const report = runSendFidelityAudit(ws, "mld")!;
+    const applied = report.rules.filter((r) => r.status === "applied").map((r) => r.ruleIndex);
+    expect(applied).toContain(1); // Q1 model
+    expect(applied).toContain(2); // hints / starters
+    expect(applied).toContain(3); // Help Box near B
+    expect(applied).toContain(6); // single-step Section A
+    expect(applied).toContain(7); // Challenge optional
+  });
+
+  it("flags rule 6 when Section A has multi-step questions", () => {
+    const ws = makeSheet([
+      { type: "recall", title: "Section A", content: "Q1. (a) Calculate 2+3\n(b) Calculate 4+5" },
+    ]);
+    const report = runSendFidelityAudit(ws, "mld")!;
+    const r6 = report.rules.find((r) => r.ruleIndex === 6)!;
+    expect(r6.status).toBe("missing");
+  });
+});
+
+describe("Phase 4 follow-up — dyspraxia fidelity probes", () => {
+  it("registers applied when Section A uses ≥3 reduced-handwriting types and Challenge is reduced-writing", () => {
+    const ws = makeSheet([
+      { type: "recall", title: "Section A", content: "Q1." },
+      { type: "q-mcq", title: "Q1", content: "A. yes ✓\nB. no" },
+      { type: "q-matching", title: "Q2", content: "match these" },
+      { type: "q-true-false", title: "Q3", content: "TRUE / FALSE" },
+      { type: "q-data-table", title: "Q4 (Section B)", content: "fill in the table" },
+      { type: "q-mcq", title: "Challenge", content: "A. ✓\nB." },
+      { type: "worked-example", title: "Example", content: "- Step 1\n- Step 2\n- Step 3" },
+    ]);
+    const report = runSendFidelityAudit(ws, "dyspraxia")!;
+    const applied = report.rules.filter((r) => r.status === "applied").map((r) => r.ruleIndex);
+    expect(applied).toContain(1); // ≥3 reduced types
+    expect(applied).toContain(3); // structured frame
+    expect(applied).toContain(4); // challenge reduced-writing
+    expect(applied).toContain(5); // worked example brief bullets
+  });
+
+  it("flags rule 4 when Challenge demands extended writing", () => {
+    const ws = makeSheet([
+      { type: "challenge", title: "Challenge", content: "Discuss in detail the consequences of climate change in an extended response." },
+    ]);
+    const report = runSendFidelityAudit(ws, "dyspraxia")!;
+    const r4 = report.rules.find((r) => r.ruleIndex === 4)!;
+    expect(r4.status).toBe("missing");
+  });
+});
+
+describe("Phase 4 follow-up — tourettes fidelity probes", () => {
+  it("registers applied for varied formats + Take a breath markers + ≤4 in Section A + no urgency", () => {
+    const ws = makeSheet([
+      { type: "recall", title: "Section A", content: "Q1. Match.\nQ2. Tick.\nQ3. Fill in.\nQ4. Short answer." },
+      { type: "q-mcq", title: "Q5", content: "A.\nB.\nC.\nD." },
+      { type: "q-matching", title: "Q6", content: "match" },
+      { type: "q-true-false", title: "Q7", content: "TRUE / FALSE" },
+      { type: "q-short", title: "Section B", content: "Take a breath here if you need to." },
+    ]);
+    const report = runSendFidelityAudit(ws, "tourettes")!;
+    const applied = report.rules.filter((r) => r.status === "applied").map((r) => r.ruleIndex);
+    expect(applied).toContain(1); // varied formats
+    expect(applied).toContain(2); // take a breath
+    expect(applied).toContain(3); // Section A ≤4
+    expect(applied).toContain(4); // no urgency
+  });
+
+  it("flags rule 4 when urgency / time-pressure language is present", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Section A", content: "Quickly answer in 5 minutes — hurry!" }]);
+    const report = runSendFidelityAudit(ws, "tourettes")!;
+    const r4 = report.rules.find((r) => r.ruleIndex === 4)!;
+    expect(r4.status).toBe("missing");
+  });
+
+  it("flags rule 3 when Section A has more than 4 questions", () => {
+    const ws = makeSheet([
+      { type: "recall", title: "Section A", content: "Q1.\nQ2.\nQ3.\nQ4.\nQ5.\nQ6." },
+    ]);
+    const report = runSendFidelityAudit(ws, "tourettes")!;
+    const r3 = report.rules.find((r) => r.ruleIndex === 3)!;
+    expect(r3.status).toBe("missing");
+  });
+});
+
+describe("Phase 4 follow-up — older-learners fidelity probes", () => {
+  it("registers applied for Cornell + Study Tips + estimated times + What-went-well reflection", () => {
+    const ws = makeSheet([
+      { type: "q-short", title: "Section A (≈ 10 min) — Skills Practice", content: "Study Tips: read carefully.\nKey terms\nSummary\nCornell-style note." },
+      { type: "q-short", title: "Section B (≈ 15 min) — Application", content: "Q1." },
+      { type: "reflection", title: "Reflection", content: "What went well?\nWhat do I need to revise further?" },
+    ]);
+    const report = runSendFidelityAudit(ws, "older-learners")!;
+    const applied = report.rules.filter((r) => r.status === "applied").map((r) => r.ruleIndex);
+    expect(applied).toContain(2); // Cornell
+    expect(applied).toContain(4); // Study Tips
+    expect(applied).toContain(5); // estimated time
+    expect(applied).toContain(6); // What went well
+  });
+
+  it("flags rule 5 when section headers have no estimated time", () => {
+    const ws = makeSheet([
+      { type: "q-short", title: "Section A — Skills Practice", content: "Q1." },
+      { type: "q-short", title: "Section B — Application", content: "Q2." },
+    ]);
+    const report = runSendFidelityAudit(ws, "older-learners")!;
+    const r5 = report.rules.find((r) => r.ruleIndex === 5)!;
+    expect(r5.status).toBe("missing");
+  });
+});
+
+describe("Phase 4 follow-up — semh fidelity probes (resolver-direct)", () => {
+  // The resolver currently masks the SEMH spec id behind `anxiety` for the
+  // bare input "semh" (see `resolveSendSpec` matcher order in
+  // sendPromptFragments.ts: the `anxiety|semh|mental` regex appears
+  // BEFORE the `semh|social.emotional|emotional.mental` regex). The tests
+  // below pass "social-emotional" so the SEMH-specific regex wins and we
+  // actually exercise the new probe table. The resolver-order fix is
+  // tracked in SESSION-HANDOFF for a follow-up PR.
+  it("registers applied for emotional check-in + Warm-Up framing + take a breath + check-in reflection", () => {
+    const ws = makeSheet([
+      { type: "q-short", title: "Warm-Up — no pressure!", content: "[ ] Calm   [ ] OK   [ ] Need a break — let your teacher know\nLet's have a go at this together." },
+      { type: "q-short", title: "Section B", content: "Take a breath here — come back when you are ready." },
+      { type: "challenge", title: "OPTIONAL BONUS — only if you want to", content: "An extra question." },
+      { type: "reflection", title: "Reflection", content: "[ ] Calm   [ ] OK   [ ] Need a break" },
+    ]);
+    const report = runSendFidelityAudit(ws, "social-emotional")!;
+    expect(report.sendNeedId).toBe("semh");
+    const applied = report.rules.filter((r) => r.status === "applied").map((r) => r.ruleIndex);
+    expect(applied).toContain(1); // emotional check-in
+    expect(applied).toContain(2); // Warm-Up + OPTIONAL BONUS
+    expect(applied).toContain(4); // no must / should / need to
+    expect(applied).toContain(5); // take a breath
+    expect(applied).toContain(6); // reflection check-in
+  });
+
+  it("flags rule 4 when 'you must / should / need to' demand-language is present", () => {
+    const ws = makeSheet([{ type: "q-short", title: "Warm-Up — no pressure!", content: "You must answer all the questions." }]);
+    const report = runSendFidelityAudit(ws, "social-emotional")!;
+    expect(report.sendNeedId).toBe("semh");
+    const r4 = report.rules.find((r) => r.ruleIndex === 4)!;
+    expect(r4.status).toBe("missing");
+  });
+});
+
+describe("Phase 4 follow-up — applySendFidelityAudit is idempotent across all 21 profiles", () => {
+  it("running the audit twice on the same worksheet produces an identical report", () => {
+    for (const spec of getAllSendSpecs()) {
+      const ws = makeSheet([
+        { type: "q-short", title: "Section A", content: "What you need to do:\n1. Read.\n[ ] Calm" },
+        { type: "reflection", title: "Reflection", content: "[ ] I learned." },
+      ]);
+      const r1 = applySendFidelityAudit(ws, spec.id);
+      const r2 = applySendFidelityAudit(r1, spec.id);
+      expect(r2.metadata?.sendFidelityReport).toEqual(r1.metadata?.sendFidelityReport);
+    }
+  });
+});
+
+describe("Phase 4 follow-up — applySendFidelityAudit accumulates warnings into postValidatorWarnings", () => {
+  it("warnings stamped by the audit are appended to existing postValidatorWarnings", () => {
+    const ws = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Section A", content: "You must answer all questions." }],
+      metadata: { postValidatorWarnings: ["pre-existing warning"] },
+    };
+    const out = applySendFidelityAudit(ws, "asc-demand-avoidant");
+    const warnings = (out.metadata?.postValidatorWarnings as string[]) || [];
+    expect(warnings).toContain("pre-existing warning");
+    expect(warnings.some((w) => /SEND fidelity.*Demand-Avoidant.*rule 1/i.test(w))).toBe(true);
+  });
+});
