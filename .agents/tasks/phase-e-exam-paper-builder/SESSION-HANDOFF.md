@@ -5,8 +5,9 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — PR-A Step 4 (gap-fill wave 1) shipped on
-`feat/phase-e-exam-paper-builder`. Opening PR-A is next.
+Last updated: 2026-05-23 — PR-A merged plan: PR #107 open. PR-B
+Step 7 (assembly engine) shipped on `feat/phase-e-exam-paper-builder`.
+Tool UI is next.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -194,43 +195,94 @@ pastPaperQuestions.ts       2,203 lines
       `zero` to `belowTen`, which is what wave 1 sets up. Wave 2
       bumps them to ≥10.
 
+- **PR-A · Step 5 — Open the PR**. Opened as PR
+  [#107](https://github.com/tahmidburner22-oss/send-assistant/pull/107)
+  with title "Phase E PR-A: Exam Bank subtopic schema + back-tagger
+  + coverage audit + gap-fill wave 1". PR body links the phase
+  folder, lists per-subject coverage roll-up, and notes that PR-B
+  does not depend on the gap-fill being complete.
+
+- **PR-B · Step 7 — Assembly engine + unit tests**. In a single
+  commit:
+  - `client/src/lib/createExamPaperBuilder.ts` (new) — pure-function
+    `buildCreatedExamPaper(params): CreatedExamPaperResult`.
+    Algorithm: pulls candidate pool via `getCandidatePoolForTopics`
+    (PR-A surface) → splits into mark bands (warmup 1-3, core 4-6,
+    stretch 7+) → computes 30/50/20 budget for real-exam paperStyle
+    or 100% core for single-section → enforces per-topic floor (every
+    requested topic contributes ≥ 1 question or warns) → greedy
+    deterministic-shuffle knapsack within each band with AO +
+    command-word diversity tie-breaks → sorts ascending by marks
+    within sections → emits the same `ExamPaperWorksheet` shape as
+    `examPaperBuilder.ts` so it slots into the existing renderer +
+    PDF + Class-Pack pipeline. Determinism via djb2 + LCG seeded
+    from explicit `seed` or hashed params. Pure function — no I/O,
+    no LLM. Accepts `poolOverride` for testability so tests don't
+    depend on the live bank.
+  - `client/src/lib/__tests__/createExamPaperBuilder.test.ts` (new)
+    — 13 vitest cases covering: target accuracy ±2 marks, per-topic
+    floor enforcement, empty-topic warning, undersized-pool partial
+    + warning, deterministic by seed (same seed → same paper),
+    different seeds → different but valid papers, calculator
+    filtering, single-section paperStyle (core-dominant), AO/
+    command-word diversity tie-break, ExamPaperWorksheet shape
+    parity with examPaperBuilder.ts, mark-scheme section default
+    on, mark-scheme omitted when includeAnswers=false, empty pool,
+    invalid-input throws.
+
 ## What is in flight
 
-_Nothing yet. PR-A Step 5 (open the PR) starts at the next checkpoint._
+_Nothing yet. PR-B Step 8 (tool UI) starts at the next checkpoint._
 
 ## What is next
 
-**PR-A · Step 5 — Open the PR.**
+**PR-B · Step 8 — Tool UI + registry + route + hub card** (target:
+≤ 1 commit, ~600 LoC).
 
-Branch is `feat/phase-e-exam-paper-builder` (already pushed through
-Step 4). Open the PR with:
+Exact actions in order:
 
-- **Title:** `Phase E PR-A: Exam Bank subtopic schema + back-tagger + coverage audit + gap-fill wave 1`
-- **Body** must include:
-  1. Link to `.agents/tasks/phase-e-exam-paper-builder/`.
-  2. The four ledger fields from `docs/exam-bank-coverage.json`:
-     7,062 questions / 91 covered / 816 belowTen / 514 zero.
-  3. Per-subject roll-up table from this handoff.
-  4. Explicit note that closing the residual gap is a follow-up wave
-     tracked in `docs/exam-bank-coverage.json` — the regression CI
-     gate at `.github/workflows/exam-bank-coverage.yml` ensures no
-     subtopic count drops below the new baseline.
-  5. Note that PR-B (assembly engine) does NOT depend on this
-     gap-fill being complete.
-  6. Worked example for reviewers — run
-     `node scripts/exam-bank-coverage.mjs` locally to see the
-     report.
+1. Create `client/src/pages/tools/CreateExamPaper.tsx`. Form fields:
+   subject select (canonical ids), year-group select, tier select
+   (Higher / Foundation / N-A), multi-select topic chips driven by
+   `getTopicsForSubject(subject)` (then per-topic
+   `getSubtopicsForTopic(topic)` for fine-grained chips), per-chip
+   question-count badge driven by candidate-pool size, total-marks
+   number input, calculator toggle, include-mark-scheme toggle,
+   SEND-adapt select. Submit → call `buildCreatedExamPaper`,
+   render with the existing `WorksheetRenderer`, expose Print / PDF /
+   Save to Library / Send to Class Pack the same way Worksheets.tsx
+   does. Surface the warnings array if non-empty.
+2. Add the tool to `client/src/lib/tool-registry.ts` (around
+   line 51-410, in the `TOOLS` array — existing 32-tool list):
+   ```ts
+   {
+     id: "create-exam-paper",
+     label: "Create an Exam Paper",
+     path: "/tools/create-exam-paper",
+     hub: "revision",
+     icon: ScrollText, // or another suitable lucide-react icon
+     colour: "text-rose-700 bg-rose-50",
+     description: "Pick subject, topics, total marks — generate a real-style exam paper.",
+     sendTo: ["differentiate", "flash-cards", "audio-revision-hub"],
+     writeBack: true,
+   }
+   ```
+3. Wire the route in `client/src/App.tsx` — lazy-import per existing
+   pattern (search the file for `lazy(() => import(`).
+4. Add a Revision Hub card so the new tool surfaces in the hub.
+   Find the existing hub-cards file (search for `HUB_STORYBOARD` or
+   `revision-hub`).
+5. Verify imports compile (no new deps).
+6. Commit. Push.
+7. Update this handoff: move Step 8 to "What is done", set "What
+   is next" to PR-B Step 9 (open PR-B).
 
-After PR-A is opened (or merged), proceed to PR-B (Step 6 below).
+Subsequent steps after Step 8 lands:
 
-PR-B steps (after PR-A is open or merged):
-
-- **Step 6** — `client/src/lib/createExamPaperBuilder.ts` with the
-  knapsack assembly algorithm + unit tests. See FEAT-PE-B step 1.
-- **Step 7** — `client/src/pages/tools/CreateExamPaper.tsx` + tool
-  registry entry + App.tsx route + Revision Hub card. See FEAT-PE-B
-  step 2.
-- **Step 8** — Open PR-B. Update this handoff.
+- **Step 9** — Open PR-B. Title: `Phase E PR-B: Create an Exam Paper — assembly engine + tool surface`.
+  Body must reference the phase folder, link to PR-A (#107), and
+  include a worked example. Update this handoff to mark BOTH PRs
+  complete.
 
 ## Checkpoint protocol
 
