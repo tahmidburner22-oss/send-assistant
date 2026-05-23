@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { subjects as pastPaperSubjects, allYears as ppAllYears, allBoards as ppAllBoards } from "@/lib/pastPapers";
 import { Link } from "wouter";
+import RevisionSessionSection from "@/components/revision/RevisionSessionSection";
 
 // Comprehension questions generator (same as Stories page)
 function generateComprehensionQuestions(_content: string, genre: string): string[] {
@@ -762,7 +763,7 @@ Return EXACTLY this JSON:
     { id: "submissions", label: "Submit Work", icon: Upload, color: "text-teal-600" },
     { id: "stories", label: "Story Generator", icon: BookOpen, color: "text-pink-600" },
     { id: "past-papers", label: "Past Papers", icon: ScrollText, color: "text-indigo-600" },
-    { id: "revision-hub", label: "Revision Hub", icon: Headphones, color: "text-violet-600" },
+    { id: "revision", label: "Revision Session", icon: GraduationCap, color: "text-indigo-600" },
     { id: "quizblast", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
     { id: "newsletters", label: "Newsletters", icon: Newspaper, color: "text-rose-600" },
     { id: "send-screener", label: "SEND Screener", icon: ScanSearch, color: "text-cyan-600" },
@@ -1141,7 +1142,7 @@ Return EXACTLY this JSON:
                   { id: "submissions", label: "Submit Work", icon: Upload, color: "bg-teal-50 text-teal-700 border-teal-200" },
                   { id: "stories", label: "Story Generator", icon: BookOpen, color: "bg-pink-50 text-pink-700 border-pink-200" },
                   { id: "past-papers", label: "Past Papers", icon: ScrollText, color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-                  { id: "revision-hub", label: "Revision Hub", icon: Headphones, color: "bg-violet-50 text-violet-700 border-violet-200" },
+                  { id: "revision", label: "Revision Session", icon: GraduationCap, color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
                 ].map(action => {
                   const Icon = action.icon;
                   return (
@@ -1920,17 +1921,17 @@ Return EXACTLY this JSON:
             })()}
         </div>}
         {sec.id === "past-papers" && <div><PastPapersPanel /></div>}
-        {sec.id === "revision-hub" && (
-          <div className="p-4 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto">
-              <span className="text-2xl">🎧</span>
-            </div>
-            <p className="font-semibold text-foreground text-sm">Revision Hub</p>
-            <p className="text-xs text-muted-foreground">Upload any document to get an AI-narrated podcast, interactive quiz, and AI tutor — all in one place.</p>
-            <a href="/revision-hub" className="inline-flex items-center gap-2 bg-brand text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors">
-              Open Revision Hub →
-            </a>
-          </div>
+        {sec.id === "revision" && (
+          <RevisionSessionSection
+            child={{
+              id: child.id,
+              name: child.name,
+              yearGroup: child.yearGroup,
+              sendNeeds: child.sendNeeds || [],
+              preferredLanguage: child.preferredLanguage,
+              readingAgeOverride: child.readingAgeOverride,
+            }}
+          />
         )}
         {sec.id === "quizblast" && (
           <div className="p-4 text-center space-y-3">
