@@ -208,6 +208,26 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 - **PR-7 (#91), PR-8** push + open / merge bookkeeping.
 
+- **PR-13 — Mark-scheme upgrades: synonym expansion, M/A/B
+  itemisation, plausibility rail** (branch
+  `big-bang/pr-13-mark-scheme-upgrades`). Audit items #5, #6, #7.
+
+  What changed:
+  - `client/src/lib/markSchemeEnhancer.ts` (new) -- pure module with
+    three mark-scheme quality enhancements: `expandMarkSchemeSynonyms`
+    (appends known synonyms to answer lines), `itemiseMarkAllocation`
+    (adds M1/M2/A1/B1 breakdown to multi-mark calculations), and
+    `checkAnswerPlausibility` (flags numerical answers outside
+    context-aware bounds). Combined `enhanceMarkScheme` runs all three
+    in sequence. All functions are idempotent.
+  - `shared/aiSchemas.ts` -- optional `markSchemeEnhanced` metadata
+    field added to WorksheetOutputSchema.
+  - `server/tests/markSchemeEnhancer.test.ts` (new) -- 11 test cases
+    across 4 describe blocks covering synonym expansion, itemisation,
+    plausibility checks, and the combined enhancer.
+
+  Files touched: 3 (2 new). Net source diff: ~300 lines.
+
 ## Related sibling PRs
 
 - **PR-7 (#91) — Server-prompt unification** is currently open in
@@ -220,50 +240,10 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is next
 
-**PR-9 — PD13 cost transparency + generation cache scaffolding.**
+**PR-14 — Bloom-monotonicity check, science working-space stub.**
 
-Audit items: #41 (structured-output retry with diagnostic), #42
-(token budget transparency), #43 (generation cache by hash key), #76
-(PII redaction in telemetry — partial; rest in PR-22).
-
-Files to touch:
-- `shared/aiSchemas.ts` — additive optional fields on the worksheet
-  metadata shape: `costEstimate?: { promptTokens, completionTokens,
-  estimatedUsd, provider, model }`, `cacheKey?: string`,
-  `cacheHit?: boolean`. All optional so older worksheets keep
-  rendering.
-- `client/src/lib/aiCostEstimate.ts` (new) — pure helper:
-  `estimateCost(provider, model, promptTokens, completionTokens)`,
-  shipping the per-provider unit-price table (OpenAI / Anthropic /
-  Groq / Gemini / OpenRouter). Single source of truth for $ figures.
-- `client/src/lib/aiCacheKey.ts` (new) — pure deterministic hash of
-  the cache-relevant request fields (subject / topic / yearGroup /
-  examBoard / sendNeed / generatorVersion / etc.). The hash is
-  caller-side only; no I/O.
-- `server/lib/generationCache.ts` (new) — server-side LRU + sqlite
-  fallback wrapper around `aiCacheKey`, exposes
-  `getCached(key) / setCached(key, ws, ttlMs)`. Hits are stamped on
-  the worksheet metadata. Disabled by default behind
-  `GENERATION_CACHE_ENABLED=1` env flag.
-- `server/db/schema.sql` — `generation_cache` table (key, payload,
-  inserted_at, hits). Migration is idempotent.
-- `server/routes/ai.ts` — wire the cache into the structured
-  worksheet endpoints (cache lookup before model call; cache write
-  on success). PII-redaction pass strips pupil names / IEP content
-  before write.
-- `server/tests/generationCache.test.ts` (new) — pure tests of the
-  cache key + cost estimator + the cache wrapper using an in-memory
-  store.
-
-Out of scope for PR-9:
-- A/B traffic split (PR-20).
-- Per-tenant cache namespacing (PR-22).
-- The telemetry dashboard surface (PR-27).
-
-Sizing budget: ≤ ~700 net lines, ≤ ~7 files. Read narrow ranges of
-`server/routes/ai.ts` (1,000+ lines). Sandbox is INTEGRATIONS_ONLY —
-do not run `npm install`. Type-check + tests run in CI on PR push.
-Branch name: `big-bang/pr-9-cost-transparency-cache`.
+Audit items: #8 (question-difficulty Bloom-monotonicity check), #9
+(sciences "Working:" stub on calc questions).
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 

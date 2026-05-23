@@ -15,9 +15,9 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 2  | Awarding-body command-word fidelity audit                                             | PR-2   | shipped — PR #86 |
 | 3  | Past-paper verbatim / fingerprint detection                                           | PR-15  | not started |
 | 4  | Distractor pedagogy audit on MCQs                                                     | PR-3   | shipped — PR #87 pending |
-| 5  | Synonym / equivalent-answer expansion in mark schemes                                 | PR-13  | not started |
-| 6  | Method-marks itemisation (M1 / M2 / A1) per multi-mark calc                           | PR-13  | not started |
-| 7  | Numerical answer plausibility / order-of-magnitude rail                               | PR-13  | not started |
+| 5  | Synonym / equivalent-answer expansion in mark schemes                                 | PR-13  | shipped — PR-13 |
+| 6  | Method-marks itemisation (M1 / M2 / A1) per multi-mark calc                           | PR-13  | shipped — PR-13 |
+| 7  | Numerical answer plausibility / order-of-magnitude rail                               | PR-13  | shipped — PR-13 |
 | 8  | Question-difficulty Bloom-monotonicity check                                          | PR-14  | not started |
 | 9  | Sciences "Working:" stub on calc questions                                            | PR-14  | not started |
 | 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | shipped — PR #87 pending |
