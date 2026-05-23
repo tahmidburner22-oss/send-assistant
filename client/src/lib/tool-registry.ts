@@ -406,6 +406,17 @@ export const TOOLS: ToolEntry[] = [
     sendTo: ["pupil-passport", "behaviour-plan", "wellbeing-support"],
     writeBack: true,
   },
+  {
+    id: "create-exam-paper",
+    label: "Create an Exam Paper",
+    path: "/tools/create-exam-paper",
+    hub: "revision",
+    icon: ScrollText,
+    colour: "text-rose-700 bg-rose-50",
+    description: "Pick subject, topics and total marks — assemble a real-style mock exam paper from the question bank.",
+    sendTo: ["differentiate", "flash-cards", "audio-revision-hub"],
+    writeBack: true,
+  },
 ];
 
 const BY_ID = new globalThis.Map(TOOLS.map(t => [t.id, t]));

@@ -1,0 +1,65 @@
+{
+  "id": "FEAT-PE-A",
+  "type": "feat",
+  "title": "Exam Bank: subtopic schema + back-tagger + coverage audit + gap-fill wave 1",
+  "description": "Add an optional subtopic tag to every PastPaperQuestion (via direct field or a derived SUBTOPIC_TAGS map), tag every existing question by pure-keyword match against SUBTOPICS_MAP, ship a coverage audit that emits docs/exam-bank-coverage.json, add a CI guard that fails on regression, and author a focused first wave of hand-written gap-fill questions targeting zero-question subtopics in core GCSE subjects (Maths, Biology, Chemistry, Physics, English).",
+  "rationale": "Goal 1 of Phase E. The repo today has ~6,800 exam-style questions tagged only at topic level (e.g. topic: 'Algebra'), while the worksheet generator's subtopic dropdown reads from a 700-subtopic catalog (SUBTOPICS_MAP). Filtering by subtopic is currently impossible — every tool that wants subtopic granularity has to fall back to topic level and dilute results. This PR closes the schema gap, mechanically tags what's already there, measures the remaining gap, and starts closing it.",
+  "depends_on": [],
+  "constraints": [
+    "Schema additions are additive ONLY. New `subtopic?: string` is optional. Older bank entries that lack it must continue to load and render unchanged.",
+    "Existing bank entries are NEVER modified by this PR. Subtopic information is attached either by appending the field to NEW entries authored in step 4, or via the derived SUBTOPIC_TAGS map (keyed by question id) for legacy entries.",
+    "Sandbox is INTEGRATIONS_ONLY — no npm install. Scripts run as plain .mjs (no compile step), matching the existing scripts/*.mjs convention.",
+    "Type-check + tests run in CI on PR push. Author code so `npx tsc --noEmit` passes locally before each push.",
+    "Push to the remote branch after every step. Never accumulate > one step's work locally."
+  ],
+  "steps": [
+    "STEP 1 — Schema. Edit client/src/lib/pastPaperQuestions.ts: (a) line 100, append `subtopic?: string;` to the PastPaperQuestion interface with a one-line JSDoc; (b) line 1, add `import { SUBTOPIC_TAGS } from './subtopicTags';`. Create client/src/lib/subtopicTags.ts as a placeholder: `export const SUBTOPIC_TAGS: Readonly<Record<string, string>> = Object.freeze({});`. Extend getExamQuestions (line 1861) with an optional `subtopic?: string` param; resolve a question's effective subtopic as `q.subtopic ?? SUBTOPIC_TAGS[q.id] ?? null` and substring-match. Add new exports `getSubtopicsForTopic(topic): string[]` (reads SUBTOPICS_MAP) and `getCandidatePoolForTopics({ subject, topics, tier?, yearGroup? }): PastPaperQuestion[]` returning every question whose topic OR effective subtopic matches any item in the topics[] array. Verify with `npx tsc --noEmit`. Commit + push.",
+    "STEP 2 — Back-tagger. Write scripts/exam-bank-back-tagger.mjs: (a) parse each questionBank*.ts file as text using regex to extract id, topic, text, marks, subject (regex-only, no TS compile); (b) load SUBTOPICS_MAP via the same regex approach against subtopics-data.ts; (c) for each question, score each subtopic candidate in SUBTOPICS_MAP[q.topic] (or in SUBTOPICS_MAP for any topic when q.topic is missing) by (i) keyword matches in q.text against subtopic-name tokens minus stop words, weighted by token rarity, (ii) +0.3 boost when a subtopic name appears as a verbatim substring of q.text; (d) accept the highest-scoring subtopic if score ≥ 0.6 confidence; (e) emit client/src/lib/subtopicTags.ts as `export const SUBTOPIC_TAGS = Object.freeze({ 'maths-aqa-2023-p1h-q1': 'Standard form (writing in standard form)', ... });`. Print summary: total questions scanned, total tagged, percent. Verify `npx tsc --noEmit` still passes (the emitted file must compile). Commit subtopicTags.ts + the script. Push.",
+    "STEP 3 — Coverage audit. Write scripts/exam-bank-coverage.mjs: (a) load SUBTOPICS_MAP and SUBTOPIC_TAGS via regex from subtopicTags.ts (the back-tagger output) plus any `subtopic:` fields in bank files; (b) walk every (topic, subtopic) pair in SUBTOPICS_MAP; (c) count questions tagged to each subtopic; (d) emit docs/exam-bank-coverage.json with shape `{ generatedAt, totals: { questionsScanned, subtopicsTotal, subtopicsCovered, subtopicsBelowTen, subtopicsZero }, perSubject: { ... }, belowTen: [{ topic, subtopic, count, subject? }, ...], zero: [...] }`. Sort belowTen by count ascending then subject (so zero-question rows are first, ordered by subject for review). Add a baseline file docs/exam-bank-coverage.baseline.json (a copy of the first run) and a script-side check that fails with exit code 1 if any subtopic's count drops below its baseline value. Wire the check into a new GitHub Actions workflow file .github/workflows/exam-bank-coverage.yml that runs on PR push. Commit. Push.",
+    "STEP 4 — Gap-fill wave 1. Read docs/exam-bank-coverage.json. From the `zero` array, select the priority list: every zero-subtopic in the subjects {mathematics, biology, chemistry, physics, english}, capped at the first ~30-40 subtopics so the diff stays reviewable. For each selected subtopic, author 3-5 exam-style questions with full markScheme, hint, commandWord, marks, tier (where applicable), ao, subtopic field set, and stage/yearGroups appropriate to the subtopic. Append the new questions to the end of the matching subject's questionBank*.ts file (never edit existing entries). Re-run the back-tagger and coverage audit; commit the updated coverage.json. Aim for ~150 new questions in this wave — explicitly NOT trying to close the full gap. The audit JSON makes the residual gap a transparent task list for subsequent waves. Commit. Push.",
+    "STEP 5 — Open PR-A. Title: 'Phase E PR-A: Exam Bank subtopic schema, back-tagger, coverage audit, gap-fill wave 1'. Body must: (a) link to .agents/tasks/phase-e-exam-paper-builder/, (b) summarise the four ledger fields from docs/exam-bank-coverage.json (subtopicsTotal / subtopicsCovered / subtopicsBelowTen / subtopicsZero), (c) explicitly state that closing the residual gap is a follow-up wave tracked in the coverage JSON, (d) note that PR-B (assembly engine) does NOT depend on this gap-fill being complete."
+  ],
+  "files_to_touch": [
+    "client/src/lib/pastPaperQuestions.ts (schema + helpers — small targeted edits)",
+    "client/src/lib/subtopicTags.ts (new — placeholder, then back-tagger output)",
+    "scripts/exam-bank-back-tagger.mjs (new)",
+    "scripts/exam-bank-coverage.mjs (new)",
+    "docs/exam-bank-coverage.json (new — generated)",
+    "docs/exam-bank-coverage.baseline.json (new — frozen first-run snapshot)",
+    ".github/workflows/exam-bank-coverage.yml (new — CI guard)",
+    "client/src/lib/questionBankMaths.ts (append-only)",
+    "client/src/lib/questionBankBiology.ts (append-only)",
+    "client/src/lib/questionBankChemistry.ts (append-only)",
+    "client/src/lib/questionBankPhysics.ts (append-only)",
+    "client/src/lib/questionBankEnglish.ts (append-only)",
+    ".agents/tasks/phase-e-exam-paper-builder/SESSION-HANDOFF.md (updated each step)"
+  ],
+  "do_not_touch": [
+    "Existing question entries in any questionBank*.ts file. Edits are append-only.",
+    "examPaperBuilder.ts — that's PR-B's surface.",
+    "ai.ts, Worksheets.tsx, WorksheetRenderer.tsx — out of scope.",
+    "shared/aiSchemas.ts — schema lives on the client-side PastPaperQuestion interface only; AI worksheet schema doesn't need a subtopic field."
+  ],
+  "acceptance_criteria": [
+    "PastPaperQuestion has an optional subtopic field; existing questions still typecheck without it.",
+    "subtopicTags.ts compiles and exports a frozen object of id → subtopic strings.",
+    "scripts/exam-bank-back-tagger.mjs runs end-to-end and reports a tag rate ≥ 60% on first run.",
+    "scripts/exam-bank-coverage.mjs emits docs/exam-bank-coverage.json with all four totals fields populated.",
+    "CI workflow exam-bank-coverage.yml fails the build if any subtopic count regresses below its baseline.",
+    "First-wave gap-fill adds ≥ 100 hand-authored exam-style questions across the five core GCSE subjects, all with subtopic, markScheme, commandWord, ao, and tier fields populated.",
+    "PR description names docs/exam-bank-coverage.json so reviewers can see the residual gap.",
+    "`npx tsc --noEmit` passes."
+  ],
+  "verification": [
+    "node scripts/exam-bank-back-tagger.mjs",
+    "node scripts/exam-bank-coverage.mjs",
+    "npx tsc --noEmit",
+    "Manual: open docs/exam-bank-coverage.json and confirm belowTen / zero arrays are populated and sorted as specified."
+  ],
+  "size_estimate": {
+    "files_touched": 13,
+    "net_lines_changed": 4500,
+    "note": "Bulk of the diff is the generated SUBTOPIC_TAGS map (~6,800 entries × ~1 line each ≈ 7,000 lines, unavoidable for back-tagging) plus ~150 hand-authored questions. Schema + helper diff is < 200 lines. The auto-generated map is reviewer-skippable; reviewers focus on the back-tagger algorithm and the new questions."
+  },
+  "context_budget_for_fresh_chat": "MEDIUM. Read pastPaperQuestions.ts:58-100 (schema), :1855-1955 (helpers), :1-10 (imports), subtopics-data.ts:10-60 (shape only), and the SESSION-HANDOFF.md file pin-points table. Do NOT read pastPaperQuestions.ts in full or any questionBank*.ts in full."
+}
