@@ -256,6 +256,12 @@ export const WorksheetOutputSchema = z.object({
       ranAt: z.string().optional(),
       durationMs: z.number().min(0).optional(),
     }).optional(),
+    /** PR-16 — stacked SEND profiles (multiple needs per worksheet). */
+    sendNeeds: z.array(z.string().max(100)).max(5).optional(),
+    /** PR-16 — suggested reading age from combined SEND profile analysis. */
+    suggestedReadingAge: z.number().min(5).max(18).optional(),
+    /** PR-16 — trauma-informed safety score (0-100). */
+    traumaInformedScore: z.number().min(0).max(100).optional(),
     /** FEAT-PB3 — re-teach worksheet provenance (set when this worksheet was
      * generated from a misconception detected in a Scan & Mark batch on a
      * source worksheet). The renderer surfaces a header badge and footer

@@ -204,6 +204,32 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 2 source files (1 new) + 1 test file + 3 tracker
   docs. Net source diff: ~ +330 lines.
 
+- **PR-16 — Trauma-informed SEND profile, stacked SEND profiles,
+  reading-age memory per pupil** (branch
+  `big-bang/pr-16-stacked-send-profiles`). Audit items **#29, #30,
+  #32, #82**.
+
+  What changed:
+  - `client/src/lib/traumaInformedProfile.ts` (new) — pure module
+    exporting `TRAUMA_INFORMED_RULES` (8 evidence-based rules with
+    categories + adaptations) and `auditTraumaInformed(sections)` which
+    checks worksheet content for demand language, triggering themes,
+    and long instructions. Returns per-rule findings and a 0-100
+    safety score.
+  - `client/src/lib/stackedSendProfiles.ts` (new) — pure module
+    exporting `resolveStackedSendProfiles(sendNeeds)` which combines
+    multiple SEND profiles, de-duplicates adaptations, detects
+    interaction warnings between profile pairs (5 known interactions),
+    and suggests the lowest appropriate reading age from a per-profile
+    lookup table.
+  - `shared/aiSchemas.ts` — three new optional metadata fields:
+    `sendNeeds` (string[] max 5), `suggestedReadingAge` (5-18),
+    `traumaInformedScore` (0-100).
+  - `server/tests/stackedSendProfiles.test.ts` (new) — 10 test cases
+    covering both modules.
+
+  Files touched: 3 source files (2 new) + 1 test file + 2 tracker docs.
+
 ## What is in flight
 
 - **PR-7 (#91), PR-8** push + open / merge bookkeeping.
@@ -220,50 +246,11 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is next
 
-**PR-9 — PD13 cost transparency + generation cache scaffolding.**
+**PR-17 — Department library + HOD moderation.**
 
-Audit items: #41 (structured-output retry with diagnostic), #42
-(token budget transparency), #43 (generation cache by hash key), #76
-(PII redaction in telemetry — partial; rest in PR-22).
+Audit item: #67 (Department library + HOD moderation).
 
-Files to touch:
-- `shared/aiSchemas.ts` — additive optional fields on the worksheet
-  metadata shape: `costEstimate?: { promptTokens, completionTokens,
-  estimatedUsd, provider, model }`, `cacheKey?: string`,
-  `cacheHit?: boolean`. All optional so older worksheets keep
-  rendering.
-- `client/src/lib/aiCostEstimate.ts` (new) — pure helper:
-  `estimateCost(provider, model, promptTokens, completionTokens)`,
-  shipping the per-provider unit-price table (OpenAI / Anthropic /
-  Groq / Gemini / OpenRouter). Single source of truth for $ figures.
-- `client/src/lib/aiCacheKey.ts` (new) — pure deterministic hash of
-  the cache-relevant request fields (subject / topic / yearGroup /
-  examBoard / sendNeed / generatorVersion / etc.). The hash is
-  caller-side only; no I/O.
-- `server/lib/generationCache.ts` (new) — server-side LRU + sqlite
-  fallback wrapper around `aiCacheKey`, exposes
-  `getCached(key) / setCached(key, ws, ttlMs)`. Hits are stamped on
-  the worksheet metadata. Disabled by default behind
-  `GENERATION_CACHE_ENABLED=1` env flag.
-- `server/db/schema.sql` — `generation_cache` table (key, payload,
-  inserted_at, hits). Migration is idempotent.
-- `server/routes/ai.ts` — wire the cache into the structured
-  worksheet endpoints (cache lookup before model call; cache write
-  on success). PII-redaction pass strips pupil names / IEP content
-  before write.
-- `server/tests/generationCache.test.ts` (new) — pure tests of the
-  cache key + cost estimator + the cache wrapper using an in-memory
-  store.
-
-Out of scope for PR-9:
-- A/B traffic split (PR-20).
-- Per-tenant cache namespacing (PR-22).
-- The telemetry dashboard surface (PR-27).
-
-Sizing budget: ≤ ~700 net lines, ≤ ~7 files. Read narrow ranges of
-`server/routes/ai.ts` (1,000+ lines). Sandbox is INTEGRATIONS_ONLY —
-do not run `npm install`. Type-check + tests run in CI on PR push.
-Branch name: `big-bang/pr-9-cost-transparency-cache`.
+Branch name: `big-bang/pr-17-department-library`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 

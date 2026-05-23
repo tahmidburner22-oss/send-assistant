@@ -39,10 +39,10 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 26 | Plain-English / Crystal Mark check on every section                                   | PR-18  | not started |
 | 27 | Dyslexia-friendly typography pre-flight                                               | PR-18  | not started |
 | 28 | Phase 4 follow-up: SEND fidelity probes for the 12 missing profiles                   | PR-1   | shipped — PR #85 |
-| 29 | Per-pupil profile linkage (Pupil Passport → worksheet)                                | PR-16  | not started |
-| 30 | Reading-age memory per pupil                                                          | PR-16  | not started |
+| 29 | Per-pupil profile linkage (Pupil Passport → worksheet)                                | PR-16  | shipped — PR-16 |
+| 30 | Reading-age memory per pupil                                                          | PR-16  | shipped — PR-16 |
 | 31 | Class Pack visual diff                                                                | PR-6   | not started |
-| 32 | Trauma-informed register profile                                                      | PR-16  | not started |
+| 32 | Trauma-informed register profile                                                      | PR-16  | shipped — PR-16 |
 | 33 | Bilingual MFL revision shell                                                          | PR-25  | not started |
 | 34 | Per-pupil progression check (longitudinal Bloom ramp)                                 | PR-19  | not started |
 | 35 | Spec-point completeness over a Scheme of Work                                         | PR-19  | not started |
@@ -102,7 +102,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 79 | "Why this worksheet looks like this" teacher-facing audit panel                       | PR-6   | shipped — PR #90 pending |
 | 80 | "Edit my worksheet" surface that learns                                               | PR-25  | not started |
 | 81 | Pupil-facing companion app (consumes companionShare / hint ladders)                   | PR-26  | not started |
-| 82 | Stack multiple SEND profiles per worksheet (sendNeed → sendNeeds[])                   | PR-16  | not started |
+| 82 | Stack multiple SEND profiles per worksheet (sendNeed → sendNeeds[])                   | PR-16  | shipped — PR-16 |
 | 83 | Subject-vocabulary library audit                                                      | PR-19  | not started |
 | 84 | Spec-point taxonomy completeness audit                                                | PR-19  | not started |
 | 85 | Document the public LLM-output contract                                               | PR-22  | not started |
