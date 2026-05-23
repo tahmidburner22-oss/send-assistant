@@ -204,6 +204,20 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 2 source files (1 new) + 1 test file + 3 tracker
   docs. Net source diff: ~ +330 lines.
 
+- **PR-15 -- Past-paper verbatim fingerprint detection** (branch
+  `big-bang/pr-15-past-paper-fingerprint`). Audit item **#3**. Pure
+  n-gram fingerprinting module in
+  `client/src/lib/pastPaperFingerprint.ts` (new): matches worksheet
+  question sections against a built-in corpus of 25 distinctive UK
+  exam board phrasings. `detectPastPaperFingerprints` returns
+  per-section matches with similarity scores (0-1), high-risk count
+  (>0.8), and teacher-facing warnings. Schema additive:
+  `metadata.pastPaperFingerprint` (optional) in `shared/aiSchemas.ts`.
+  Tests in `server/tests/pastPaperFingerprint.test.ts`.
+
+  Files touched: 1 source file (new) + 1 schema + 1 test file + 2
+  tracker docs. Net source diff: ~250 lines.
+
 ## What is in flight
 
 - **PR-7 (#91), PR-8** push + open / merge bookkeeping.
@@ -220,7 +234,19 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is next
 
-**PR-9 — PD13 cost transparency + generation cache scaffolding.**
+**PR-16 -- Trauma-informed SEND profile + stacked SEND profiles.**
+
+Audit items: #29, #30, #32, #82 (Per-pupil profile linkage, reading-age
+memory per pupil, trauma-informed register profile, stack multiple SEND
+profiles per worksheet). See PHASE-PLAN.md for full scope.
+
+Previous PR-9 context retained below for reference when PR-9 ships.
+
+---
+
+### PR-9 context (retained for reference)
+
+**PR-9 -- PD13 cost transparency + generation cache scaffolding.**
 
 Audit items: #41 (structured-output retry with diagnostic), #42
 (token budget transparency), #43 (generation cache by hash key), #76
