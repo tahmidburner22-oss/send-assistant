@@ -362,6 +362,58 @@ export const WorksheetOutputSchema = z.object({
       })),
       findingCount: z.number().int().min(0),
     }).optional(),
+    // ── PR-19 to PR-27 (combined big-bang batch) ──────────────────────────
+    /** PR-25 (#36) — KS5 synoptic stem the builder generated. */
+    synopticStem: z.object({
+      stem: z.string().max(2000),
+      threadedTopics: z.tuple([z.string().max(200), z.string().max(200)]),
+      suggestedMarks: z.number().int().min(0).max(20),
+      level: z.enum(["double", "triple"]),
+    }).optional(),
+    /** PR-25 (#80) — captured edit-that-learns deltas. */
+    editLearnings: z.array(z.object({
+      kind: z.enum(["section-renamed", "section-content-swap", "section-reordered", "section-deleted", "section-added", "word-substitution"]),
+      sectionTitle: z.string().max(200),
+      substitutions: z.record(z.string(), z.string()).optional(),
+      confidence: z.number().min(0).max(1),
+      capturedAt: z.string(),
+    })).max(50).optional(),
+    /** PR-23 (#22) — diagram coverage gap report. */
+    diagramCoverage: z.object({
+      expected: z.number().int().min(0),
+      present: z.number().int().min(0),
+      missingSections: z.array(z.object({
+        index: z.number().int().min(0),
+        title: z.string().optional(),
+        reason: z.string().optional(),
+      })).optional(),
+      computedAt: z.string().optional(),
+    }).optional(),
+    /** PR-23 (#56) — diagram page-fit / complexity audit. */
+    diagramPageFit: z.object({
+      oversizedCount: z.number().int().min(0),
+      overComplexCount: z.number().int().min(0),
+      findings: z.array(z.object({
+        sectionIndex: z.number().int().min(0),
+        title: z.string(),
+        bucket: z.enum(["page-fit", "complexity"]),
+        message: z.string(),
+      })),
+    }).optional(),
+    /** PR-24 (#60) — print preset selected. */
+    printPreset: z.string().max(40).optional(),
+    /** PR-22 (#49) — per-severity warning counts. */
+    validatorSeverityRoll: z.object({
+      p0: z.number().int().min(0),
+      p1: z.number().int().min(0),
+      p2: z.number().int().min(0),
+    }).optional(),
+    /** PR-20 (#48) — citation-grounded factual audit. */
+    citationAudit: z.object({
+      totalClaims: z.number().int().min(0),
+      matchedCount: z.number().int().min(0),
+      unmatchedCount: z.number().int().min(0),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),

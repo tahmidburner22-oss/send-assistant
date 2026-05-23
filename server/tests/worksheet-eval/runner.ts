@@ -264,10 +264,90 @@ export async function main(): Promise<EvalReport> {
   console.log("\n" + md + "\n");
   await writeJobSummary(md);
 
+  // PR-22 — regression detector. Pass `--diff-against=<path>` (or
+  // EVAL_DIFF_AGAINST=<path>) to compare against a previous report
+  // and fail CI when failure rate per rule jumps >5% relative to
+  // yesterday's nightly artefact.
+  const diffPath = parseDiffAgainstFlag();
+  if (diffPath) {
+    try {
+      const prev = JSON.parse(await readFile(diffPath, "utf8")) as EvalReport;
+      const regressions = detectRegressions(prev, report, 0.05);
+      if (regressions.length > 0) {
+        console.error(
+          `[eval] regression detector: ${regressions.length} rule(s) regressed by >5% versus ${diffPath}:`,
+        );
+        for (const r of regressions) {
+          console.error(
+            `  - ${r.rule}: prev failure rate ${(r.prevRate * 100).toFixed(1)}% → now ${(r.nextRate * 100).toFixed(1)}% (Δ +${(r.delta * 100).toFixed(1)}%)`,
+          );
+        }
+        if (bailOnFail) process.exit(3);
+      } else {
+        console.log(`[eval] regression detector: OK against ${diffPath}.`);
+      }
+    } catch (e) {
+      console.warn(
+        `[eval] regression detector: could not read ${diffPath} (${e instanceof Error ? e.message : String(e)}). Skipping.`,
+      );
+    }
+  }
+
   if (bailOnFail && (summary.failed > 0 || summary.errored > 0)) {
     process.exit(1);
   }
   return report;
+}
+
+/** PR-22 — pull `--diff-against=<path>` from argv or
+ *  `EVAL_DIFF_AGAINST=<path>` from the environment. Returns undefined
+ *  when neither is set. */
+function parseDiffAgainstFlag(): string | undefined {
+  const env = process.env.EVAL_DIFF_AGAINST;
+  if (env) return env;
+  const arg = process.argv.find((a) => a.startsWith("--diff-against="));
+  if (arg) return arg.slice("--diff-against=".length);
+  return undefined;
+}
+
+export interface RegressionRow {
+  rule: string;
+  prevRate: number;
+  nextRate: number;
+  delta: number;
+}
+
+/**
+ * PR-22 — return the list of rules whose failure rate jumped by more
+ * than `threshold` between the two reports. A rule that is brand-new
+ * in `next` (i.e. not present in `prev`) is NOT flagged — adding a
+ * rule is a deliberate move, not a regression.
+ */
+export function detectRegressions(
+  prev: EvalReport,
+  next: EvalReport,
+  threshold: number,
+): RegressionRow[] {
+  const out: RegressionRow[] = [];
+  for (const [rule, n] of Object.entries(next.ruleStats || {})) {
+    const p = prev.ruleStats?.[rule];
+    if (!p) continue;
+    const prevTotal = (p.passed || 0) + (p.failed || 0);
+    const nextTotal = (n.passed || 0) + (n.failed || 0);
+    if (prevTotal === 0 || nextTotal === 0) continue;
+    const prevRate = p.failed / prevTotal;
+    const nextRate = n.failed / nextTotal;
+    const delta = nextRate - prevRate;
+    if (delta > threshold) {
+      out.push({
+        rule,
+        prevRate: Number(prevRate.toFixed(4)),
+        nextRate: Number(nextRate.toFixed(4)),
+        delta: Number(delta.toFixed(4)),
+      });
+    }
+  }
+  return out;
 }
 
 // Detect "I'm the entry point" without depending on Node's

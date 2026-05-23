@@ -10,10 +10,10 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-23 (PR-10 to PR-18 combined into a single PR
-on branch `big-bang/pr-10-to-pr-18-combined`; PR-9 (#94), PR-8 (#92),
-PR-7 (#91), PR-6 (#90), PR-5 (#89), PR-4 (#88), PR-3 (#87), PR-2
-(#86), PR-1 (#85) all merged).
+Last updated: 2026-05-23 (PR-19..27 combined into a single PR on
+branch `big-bang/pr-19-to-pr-27-combined`; PR #102 (PR-10..18 combined)
+merged; PR-9 (#94), PR-8 (#92), PR-7 (#91), PR-6 (#90), PR-5 (#89),
+PR-4 (#88), PR-3 (#87), PR-2 (#86), PR-1 (#85) all merged).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -232,89 +232,203 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
   Files touched: 7 source files (4 new) + tracker docs.
 
+- **PR-10..18 (combined)** — branch
+  `big-bang/pr-10-to-pr-18-combined`, **merged as PR #102**. Single
+  PR delivering nine validators / builders / helpers in one push:
+  knowledgeOrganiserBuilder (PR-10, #20 #21), worksheetVersionDiff
+  (PR-11, #66), biasSensitivityAudit (PR-12, #12), markSchemeUpgrades
+  (PR-13, #5 #6 #7), bloomProgressionAudit (PR-14, #8 #9),
+  pastPaperFingerprint (PR-15, #3), sendStackedProfiles (PR-16, #29
+  #30 #32 #82), departmentLibrary (PR-17, #67), accessibilityAudit
+  (PR-18, #23 #24 #25 #26 #27). Five validators registered via the
+  new `adapt()` pattern in `worksheetPostValidatorRegistry.ts`.
+  `shared/aiSchemas.ts` extended with the matching optional metadata
+  fields. Test coverage in `server/tests/bigBangPr10to18.test.ts`.
+
 ## What is in flight
 
-- **PR-10..18 (combined)** — branch
-  `big-bang/pr-10-to-pr-18-combined`. Single PR delivering nine
-  validators / builders / helpers in one push, per direct user request
-  ("Combine PR10-18 push them all/all changes as one PR instead").
+- **PR-19..27 (combined)** — branch
+  `big-bang/pr-19-to-pr-27-combined`. Single PR delivering nine work
+  units in one push, mirroring the PR #102 (PR-10..18 combined)
+  pattern. This batch closes 30+ audit items and unlocks the deferred
+  PR-28 work as the only remaining pre-launch ledger row.
 
-  What ships:
-  - `client/src/lib/knowledgeOrganiserBuilder.ts` (PR-10, #20 #21) —
-    pure builders for Knowledge Organiser, Anchor Poster, and Now /
-    Next / Then cards derived from worksheet sections. No extra LLM.
-  - `client/src/lib/worksheetVersionDiff.ts` (PR-11, #66) — pure
-    `captureVersion` / `diffVersions` / `appendVersion` for the
-    revision-history ledger. djb2-based section content hashes.
-  - `client/src/lib/biasSensitivityAudit.ts` (PR-12, #12) — bias
-    heuristics over name diversity, UK context, stigmatising
-    language, heteronormative framing, and class-loaded contexts.
-  - `client/src/lib/markSchemeUpgrades.ts` (PR-13, #5 #6 #7) —
-    synonym expansion warnings, fraction/decimal parity, M/A/B
-    itemisation check, numerical-magnitude plausibility rail.
-  - `client/src/lib/bloomProgressionAudit.ts` (PR-14, #8 #9) — Bloom
-    monotonicity check + science working-space stub.
-  - `client/src/lib/pastPaperFingerprint.ts` (PR-15, #3) — 5-token
-    shingle + djb2 fingerprint with a curated demo corpus. Production
-    deployments load the corpus from the DB (PR-23).
-  - `client/src/lib/sendStackedProfiles.ts` (PR-16, #29 #30 #32 #82) —
-    `TRAUMA_INFORMED_SEND_PROFILE`, `mergeSendProfiles` (de-duping
-    merge), and `rememberPupilReadingAge` / `lookupPupilReadingAge`.
-  - `client/src/lib/departmentLibrary.ts` (PR-17, #67) — pure
-    `ingestForLibrary`, `applyModeration` state machine, and
-    `filterLibrary` helpers.
-  - `client/src/lib/accessibilityAudit.ts` (PR-18, #23 #24 #25 #26
-    #27) — alt-text / tactile / plain-English / dyslexia heuristics.
+  Section A — Pure data audits (no LLM, additive only):
+  - `client/src/lib/spVocabularyLibraryAudit.ts` (#83) — corpus +
+    worksheet-slice audit of subject-vocabulary library coverage.
+  - `client/src/lib/specPointTaxonomyAudit.ts` (#35 #84) — corpus +
+    worksheet-slice audit of spec-point completeness.
+  - `client/src/lib/longitudinalBloomAudit.ts` (#34) — per-pupil
+    Bloom-ramp linear-regression slope detector.
+  - `client/src/lib/requiredPracticalCoverage.ts` (#37) — RP coverage
+    over a SoW. Loads the existing `REQUIRED_PRACTICAL_BANK`.
+  - `client/src/lib/pastPaperFrequencyAnchor.ts` (#38) — corpus
+    frequency ranker + worksheet advisory.
 
-  Wiring:
-  - All five new validators (bias, mark-scheme upgrades, Bloom
-    progression, past-paper fingerprint, accessibility) are
-    registered in `worksheetPostValidatorRegistry.ts` after the
-    PR-3 group. Each entry uses an `adapt()` helper that lifts the
-    new module's narrower local type into the canonical
-    `(PostValidatorWorksheet, PostValidatorOptions) => PostValidatorResult`
-    shape — narrow types are structural subsets of
-    `PostValidatorWorksheet` (same `sections` + `metadata` access
-    pattern) so the cast is sound.
-  - `shared/aiSchemas.ts` extended with optional metadata fields
-    for every new payload (`knowledgeOrganiser`, `anchorPoster`,
-    `nowNextThen`, `versionHistory`, `biasSensitivityReport`,
-    `markSchemeUpgrades`, `bloomProgressionReport`,
-    `pastPaperFingerprintMatches`, `sendNeeds`,
-    `accessibilityReport`) plus an optional `tactileDescription`
-    on every section. All additive — older worksheets keep
-    rendering.
+  Carry-overs (folded in from earlier rows):
+  - `client/src/lib/commonMistakesValidator.ts` (#16) — extended with
+    `auditCommonMistakesNonMaths`, `applyCommonMistakesNonMathsAudit`,
+    `applyCommonMistakesAuditUniversal`. Non-maths sheets now get a
+    looser substantive-block + placeholder-string audit instead of
+    no-opping.
+  - `client/src/lib/misconceptionBank.ts` (#17 — new file) — camelCase
+    indexed shim over the existing flat `misconception-bank.ts`.
+    Keys by (subject, key-stage); exposes `isKnownMisconceptionId`,
+    `lookupMisconceptionEntry`, `getMisconceptionRegistryView`, and
+    `MISCONCEPTION_ID_PATTERN` (kept in sync with PB7's link extractor).
+  - `client/src/lib/revisionTipsBuilder.ts` (#19) — appended
+    `parseEstimatedTimeMinutes` and `reconcileRevisionTipsTimeBudget`.
+    Drift threshold is ±50% of the marks-tariff budget.
+  - `client/src/lib/classPackVisualDiff.ts` + `components/ClassPackVisualDiff.tsx`
+    (#31) — pure logic split into the lib module, React renderer in
+    components/. The AuditTrailPanel scaffolded import now resolves.
 
-  Tests: `server/tests/bigBangPr10to18.test.ts` ships sanity coverage
+  Section B — Cross-cutting features:
+  - `client/src/lib/ks5SynopticBuilder.ts` (#36, PR-25) — KS5 synoptic
+    stem generator. Uses two earliest `priorTopics` (deterministic).
+  - `client/src/lib/mflRevisionShell.ts` (#33, PR-25) — five-section
+    canonical scaffold (translation L1↔L2, comprehension, vocab,
+    grammar drill).
+  - `client/src/lib/editThatLearns.ts` (#80, PR-25) — `captureEdits`
+    + `applyEditLearnings` for word-substitution + content-swap
+    patterns. Confidence threshold default 0.5.
+  - `client/src/pages/companion/[token].tsx` (#81, PR-26) —
+    pupil-facing companion-app surface, hydrates from
+    `metadata.companionShare` + `metadata.hintLadders`.
+  - `client/src/components/DiagramCoverageBadge.tsx` (#22) —
+    teacher-facing badge over `metadata.diagramCoverage`.
+
+  Section C — Engineering + SLA + telemetry:
+  - **PR-21:**
+    - `scripts/check-no-bigfile-reads.mjs` (#72) — CI guard banning
+      whole-file reads of ai.ts / Worksheets.tsx / WorksheetRenderer.tsx
+      from `.agents/tasks/**` and `docs/**`. Three banned-pattern
+      heuristics; exits 1 on any hit.
+    - `client/src/lib/promptSections/*` (#73) — second carve-up of
+      ai.ts. Seven named-export modules + `composePromptSections()`.
+      Wire-up in ai.ts is intentionally untouched (per the prompt:
+      expose the surface only; swap call sites in PR-30+).
+  - **PR-22:**
+    - `client/src/lib/validatorSeverity.ts` (#49) — frozen severity
+      table covering every registered name. `bucketWarningsBySeverity`,
+      `severityForWarning`. Defaults to `p2`.
+    - `server/tests/worksheet-eval/runner.ts` (#51) — extended with
+      `parseDiffAgainstFlag` + `detectRegressions`. `--diff-against=
+      <path>` (or `EVAL_DIFF_AGAINST=`) makes CI exit 3 when failure
+      rate per rule jumps >5% versus the supplied prior report.
+    - `scripts/check-schema-deprecations.mjs` (#53) — CI checker for
+      `@deprecated YYYY-MM-DD` JSDoc tags in `shared/aiSchemas.ts`.
+      Verifies the sunset hasn't passed AND the date is documented in
+      `docs/llm-output-contract.md`.
+    - `client/src/lib/renderTelemetry.ts` + `server/lib/telemetry.ts`
+      (#78) — pure crash-free aggregator + pino-shaped logger with PII
+      key redaction (pupilName, firstName, email, …).
+    - `docs/llm-output-contract.md` (#85) — public LLM-output
+      contract. Stability tiers, deprecation policy, every
+      metadata field documented.
+  - **PR-27:**
+    - `client/src/lib/telemetryAggregators.ts` (#42 #70 #71) —
+      `aggregateValidatorFirings`, `aggregateRegenerationHeatmap`,
+      `aggregateTokenCostRollup`. Pure / shape-stable.
+    - `client/src/pages/admin/telemetry.tsx` — purely-presentational
+      admin dashboard. Hydration container is a follow-up.
+
+  Section D — Pipeline hardening:
+  - **PR-23:**
+    - `client/src/lib/diagramRanker.ts` (#55) — score = subject weight
+      + keyword density + mark tariff. `pickTopRequestable(N)`.
+    - `client/src/lib/diagramPageFitAudit.ts` (#56) — A4 budget:
+      max 800 px tall × 1100 px wide × 12 labels. Stamps
+      `metadata.diagramPageFit`.
+    - `server/routes/ai.ts` (#54) — narrow surgical edit adding admin
+      gate to the AI-SVG fallback. Two new envs:
+      `MATHS_AI_SVG_ALLOWED_SCHOOL_IDS` (CSV), `MATHS_AI_SVG_ADMIN_ONLY`.
+      When neither is set, legacy "all maths" behaviour is preserved.
+    - `client/src/components/WorksheetRenderer.tsx` (#57) — narrow
+      `@media print` rule: `[data-diagram-section]:has(svg) img {
+      display: none !important; }`. Vector beats raster at print
+      time when both are present; raster-only sections still print.
+  - **PR-24:**
+    - `client/src/lib/printPresets.ts` (#60) — five canonical presets
+      (a4-portrait/landscape, a3-portrait, a5-landscape booklet,
+      leaflet-trifold) with bleed + stapling-edge + folding
+      instructions. `buildPageCss()` emits the @page rule.
+    - `scripts/audit-export-parity.mjs` (#58) — regex-based DOCX/PDF
+      drift detector. Exits 1 on any section-type drift.
+    - `#59` (print bleed / stapling) — encoded in the preset table
+      (`bleedMm`, `staplingEdgeMm` fields) ready for the renderer to
+      consume in a follow-up.
+
+  Section E — Higher-risk prompt eng (env-flagged dark):
+  - `client/src/lib/promptAbFramework.ts` (#45) — `pickVariant` +
+    `resolveExperiment`. Bucket by djb2 of `experimentId|seed`.
+    Behind `PROMPT_AB_ENABLED`.
+  - `client/src/lib/perSubjectPromptFamilies.ts` (#46) — frozen
+    per-subject `PROMPT_FAMILIES` map with header + directives +
+    forbidden-pattern lists. Behind `PROMPT_FAMILIES_ENABLED`.
+  - `client/src/lib/selfConsistencySampler.ts` (#47) —
+    `shouldSelfSample`, `recommendedSampleCount`,
+    `reconcileSelfConsistency` (Jaccard + ≥50% point-frequency
+    consensus). Behind `PROMPT_SELF_CONSISTENCY_ENABLED`.
+  - `client/src/lib/citationGroundedFactual.ts` (#48) —
+    `CITATION_CORPUS` demo + `validateFactualClaim`, `auditCitations`,
+    `enforceCitationGrounding` (registered in the registry; no-ops
+    when env flag off). Behind `PROMPT_CITATION_LAYER_ENABLED`.
+
+  Wiring + schemas:
+  - `worksheetPostValidatorRegistry.ts` — five new entries via the
+    same `adapt()` pattern PR #102 introduced:
+    `sp-vocabulary-library`, `spec-point-taxonomy`, `ks5-synoptic`,
+    `diagram-page-fit`, `citation-grounding`.
+  - `shared/aiSchemas.ts` — additive optional metadata fields:
+    `synopticStem`, `editLearnings[]`, `diagramCoverage`,
+    `diagramPageFit`, `printPreset`, `validatorSeverityRoll`,
+    `citationAudit`. All previous fields unchanged.
+
+  Tests: `server/tests/bigBangPr19to27.test.ts` ships sanity coverage
   per PR — one describe block per PR, locking the public API of each
-  module. Sandbox is INTEGRATIONS_ONLY; vitest runs in CI on PR push.
+  module + the registry wiring. Sandbox is INTEGRATIONS_ONLY; vitest
+  runs in CI on PR push.
 
   Out of scope (deliberately, to keep this combined PR shippable):
-  - Renderer surfaces for the new metadata (KO / anchor poster / NNT
-    cards) — UI work is a follow-up.
-  - Production past-paper corpus load — schema + algorithm ship; the
-    corpus stays seeded with a tiny demo until PR-23.
-  - Server endpoints for department library + version-history persist
-    — pure logic ships; DB + endpoint scaffolding is a follow-up.
-  - Per-tenant feature flags (PR-22).
+  - Renderer surfaces for the new metadata (synopticStem render block,
+    KO / anchor poster / NNT cards from PR-10..18). UI follow-up.
+  - Production subject-vocabulary corpus loader (the audit ships;
+    `server/lib/subjectVocabularyCorpus.ts` is a follow-up).
+  - Production past-paper question-frequency corpus (the audit ships;
+    inputs are still injected by the caller).
+  - Wiring `promptSections/*` into the actual `ai.ts` call sites
+    (carve-up surface ships; the swap is PR-30+).
+  - Wiring `validatorSeverity` into the QA scorecard's deductions
+    (severity table ships; QA score still uses the 18-bucket model).
+  - PR-28 deferred integrations (LMS push, MIS roster, email, share-
+    sheet, browser extension, weekly-summary email, Mon-email).
 
 ## Related sibling PRs
 
-- **PR-7 (#91) — Server-prompt unification** and **PR-8 (#92) —
-  Data-driven post-validator chain** are merged.
+- **PR #102** (PR-10..18 combined) merged.
+- **PR-7 (#91)**, **PR-8 (#92)**, **PR-9 (#94)** all merged.
 
 ## What is next
 
-**PR-19 — Catalogue / coverage audits.** Audit items #34, #35, #37,
-#38, #83, #84.
+**PR-28 — DEFERRED integrations** (audit items #61 #62 #63 #64 #65
+#68 #69). Explicitly deferred until external service credentials
+land. Out of scope for the big-bang umbrella; needs a separate
+distribution + product-engineering thread:
 
-Once the combined PR-10..18 lands, advance to PR-19: longitudinal
-Bloom ramp per pupil, spec-point completeness over a Scheme of Work,
-required-practical coverage tracker over a SoW, past-paper question
-frequency anchor, subject-vocabulary library audit, spec-point
-taxonomy completeness audit.
+- One-tap LMS push (Google Classroom, Microsoft Teams, Satchel One).
+- MIS roster import (Wonde, GroupCall).
+- Email-to-generate inbox.
+- iOS / Android share-sheet + 2-tap mobile generate.
+- Browser extension.
+- Streak / weekly summary email.
+- Monday-morning email.
 
-Branch name: `big-bang/pr-19-coverage-audits`.
+No further big-bang PRs are open after PR-19..27 lands. The
+launch-readiness checklist points at PR-28 once we have the
+credentials.
+
+Branch name when PR-28 starts: `big-bang/pr-28-deferred-integrations`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 

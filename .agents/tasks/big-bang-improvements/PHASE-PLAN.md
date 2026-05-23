@@ -98,15 +98,15 @@ PRs are ordered so that:
 | PR-16  | Trauma-informed SEND profile, stacked SEND profiles, reading-age memory per pupil                  | #29 #30 #32 #82                              | shipped — combined PR-10..18 |
 | PR-17  | Department library + HOD moderation (FEAT-PD12)                                                    | #67                                          | shipped — combined PR-10..18 |
 | PR-18  | Continuous accessibility audit, alt-text quality, tactile graphics, plain English, dyslexia type   | #23 #24 #25 #26 #27                          | shipped — combined PR-10..18 |
-| PR-19  | Catalogue / coverage audits — vocabulary library, spec-point taxonomy, longitudinal progression    | #34 #35 #37 #38 #83 #84                      | not started |
-| PR-20  | Higher-risk prompt eng — A/B framework, per-subject prompt families, self-consistency, citations   | #45 #46 #47 #48                              | not started |
-| PR-21  | Engineering quality nets — ai.ts second carve-up, CI guards, property tests, snapshot matrix       | #52 #72 #73 #75 #77                          | not started |
-| PR-22  | Quality SLA + docs — tiered warnings, schema deprecation, public LLM-output contract               | #49 #51 #53 #85                              | not started |
-| PR-23  | Diagram pipeline — admin-gated SVG fallback, requestability ranking, page-fit budget, vector-only  | #54 #55 #56 #57                              | not started |
-| PR-24  | Export hardening — DOCX/PDF parity, print-bleed/stapling, A3/A5/leaflet booklet presets            | #58 #59 #60                                  | not started |
-| PR-25  | Cross-cutting — KS5 synoptic generator, MFL revision shell, edit-capture-that-learns               | #33 #36 #80                                  | not started |
-| PR-26  | Pupil-facing companion app surface — consumes already-stamped companionShare / hint ladders        | #81                                          | not started |
-| PR-27  | Telemetry — validator firing dashboard, regeneration heat-map, token + cost dashboard              | #42 #70 #71                                  | not started |
+| PR-19  | Catalogue / coverage audits — vocabulary library, spec-point taxonomy, longitudinal progression    | #34 #35 #37 #38 #83 #84                      | shipped — PR pending (combined PR-19..27) |
+| PR-20  | Higher-risk prompt eng — A/B framework, per-subject prompt families, self-consistency, citations   | #45 #46 #47 #48                              | shipped — PR pending (combined PR-19..27) |
+| PR-21  | Engineering quality nets — ai.ts second carve-up, CI guards, property tests, snapshot matrix       | #52 #72 #73 #75 #77                          | shipped — PR pending (combined PR-19..27) |
+| PR-22  | Quality SLA + docs — tiered warnings, schema deprecation, public LLM-output contract               | #49 #51 #53 #85                              | shipped — PR pending (combined PR-19..27) |
+| PR-23  | Diagram pipeline — admin-gated SVG fallback, requestability ranking, page-fit budget, vector-only  | #54 #55 #56 #57                              | shipped — PR pending (combined PR-19..27) |
+| PR-24  | Export hardening — DOCX/PDF parity, print-bleed/stapling, A3/A5/leaflet booklet presets            | #58 #59 #60                                  | shipped — PR pending (combined PR-19..27) |
+| PR-25  | Cross-cutting — KS5 synoptic generator, MFL revision shell, edit-capture-that-learns               | #33 #36 #80                                  | shipped — PR pending (combined PR-19..27) |
+| PR-26  | Pupil-facing companion app surface — consumes already-stamped companionShare / hint ladders        | #81                                          | shipped — PR pending (combined PR-19..27) |
+| PR-27  | Telemetry — validator firing dashboard, regeneration heat-map, token + cost dashboard              | #42 #70 #71                                  | shipped — PR pending (combined PR-19..27) |
 | PR-28  | DEFERRED integrations — LMS push, MIS roster, email-to-generate, share-sheet, ext, Mon-email       | #61 #62 #63 #64 #65 #68 #69                  | deferred    |
 
 Items not assigned a PR above are duplicates, already shipped, or
