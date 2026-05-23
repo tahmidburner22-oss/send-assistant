@@ -7,6 +7,8 @@ import { requireAuth, requireAdmin, auditLog, tryAuthOptional } from "../middlew
 import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
 import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
+import { getCached, setCached, redactPii } from "../lib/generationCache.js";
+import { computeCacheKey } from "../../client/src/lib/aiCacheKey.js";
 // Reuse the dependency-free SVG layout audit from the client. The module is
 // pure (no DOM, no fetch, no React) so it bundles cleanly into the server
 // build via esbuild.
@@ -662,6 +664,22 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
     }
   }
 
+  // PR-9 — generation cache: check for cached response before calling LLM
+  const cacheFields = {
+    subject: req.body.subject || '',
+    topic: req.body.topic || '',
+    yearGroup: req.body.yearGroup || '',
+    examBoard: req.body.examBoard || '',
+    sendNeed: req.body.sendNeed || '',
+    generatorVersion: req.body.generatorVersion || '',
+    tier: req.body.tier || '',
+  };
+  const cacheKey = computeCacheKey(cacheFields);
+  const cached = getCached(cacheKey);
+  if (cached) {
+    return res.json({ content: cached, provider: "cache", cacheHit: true, cacheKey });
+  }
+
   try {
     // If user provided a specific key for a specific provider, try that first
     // Otherwise auto-fallback across all configured providers
@@ -706,6 +724,8 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
       const toolHint = (systemPrompt || "").slice(0, 80).replace(/\n/g, " ").trim();
       auditLog(req.user!.id, req.user!.schoolId, "ai.generate", "ai_filter_log", logId, { provider: result.provider, tool: toolHint || "unknown" }, req.ip);
     } catch (_) {}
+    // PR-9 — cache the successful response (PII-redacted)
+    try { setCached(cacheKey, redactPii({ content: result.content, provider: result.provider })); } catch (_e) {}
     res.json({ content: result.content, provider: result.provider, aiGenerated: true });
   } catch (err: any) {
     console.error("AI proxy error:", err);

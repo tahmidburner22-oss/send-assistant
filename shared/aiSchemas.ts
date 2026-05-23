@@ -270,6 +270,18 @@ export const WorksheetOutputSchema = z.object({
       questionIdx: z.number().int().min(0).optional(),
       generatedAt: z.string().optional(),
     }).optional(),
+    /** PR-9 — cost transparency: token usage + estimated USD cost. */
+    costEstimate: z.object({
+      promptTokens: z.number().int().min(0),
+      completionTokens: z.number().int().min(0),
+      estimatedUsd: z.number().min(0),
+      provider: z.string(),
+      model: z.string(),
+    }).optional(),
+    /** PR-9 — generation cache: deterministic hash key for this request. */
+    cacheKey: z.string().max(256).optional(),
+    /** PR-9 — generation cache: true when this response was served from cache. */
+    cacheHit: z.boolean().optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),
