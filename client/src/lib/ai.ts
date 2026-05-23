@@ -3807,6 +3807,27 @@ Return EXACTLY this JSON (raw JSON only):
     console.warn('[Diagrams] Enforcement check failed:', diagramEnforceErr);
   }
 
+  // ── Maths-only auxiliary deterministic SVGs ─────────────────────────────
+  // For maths topics, attach a simple inline SVG (bar model, number line,
+  // fraction bar) beside questions that match a known-safe pattern. These
+  // diagrams are programmatically generated from the question's own numbers
+  // — never AI-positioned — so they cannot overlap, drift, or mislabel.
+  // The diagram-library lookup above is left untouched: this only adds
+  // BESIDE-the-question helpers, never replaces a library Diagram A/B.
+  try {
+    const { applyMathsAuxiliaryDiagrams } = await import('./mathsAuxiliaryDiagrams');
+    const aux = applyMathsAuxiliaryDiagrams(
+      result.sections as any,
+      { subject: params.subject, topic: params.topic }
+    );
+    if (aux.appliedCount > 0) {
+      result.sections = aux.sections as any;
+      console.info(`[MathsAux] Attached deterministic SVGs to ${aux.appliedCount} maths question(s)`);
+    }
+  } catch (mathsAuxErr) {
+    console.warn('[MathsAux] Auxiliary diagram pass failed:', mathsAuxErr);
+  }
+
   // ── Post-generation quality gate ─────────────────────────────────────────
   // Run lightweight deterministic checks to catch obvious failures.
   // Does NOT make an extra AI call — pure string analysis.
@@ -5111,7 +5132,7 @@ Return JSON: {"title": "new title", "content": "full recontextualized story"}`;
 
 // ═══ §DIAG-SPEC · DiagramSpec types and helpers ═══════════════════════════
 export interface DiagramSpec {
-  type: "labeled" | "flow" | "cycle" | "bar" | "number-line" | "axes" | "circuit" | "venn" | "timeline" | "pyramid" | "fraction-bar";
+  type: "labeled" | "flow" | "cycle" | "bar" | "number-line" | "axes" | "circuit" | "venn" | "timeline" | "pyramid" | "fraction-bar" | "bar-model";
   /** For circuit diagrams: "series" | "parallel" | "series-ammeter" | "parallel-voltmeter" */
   layout?: string;
   title?: string;
@@ -5134,6 +5155,16 @@ export interface DiagramSpec {
   levels?: string[];
   // For fraction-bar diagrams
   numerator?: number; denominator?: number; fractionLabel?: string;
+  // ── For bar-model diagrams (maths-only) ─────────────────────────────────
+  // A bar model represents parts of a whole as adjacent equal-sized cells.
+  // Used for ratios, proportions, fractions of an amount, percentages,
+  // simple word problems. Deterministic — every cell is the same width.
+  /** Each part is one row of the bar model. Total cells = sum of part values. */
+  parts?: Array<{ label: string; value: number; color?: string }>;
+  /** Optional total caption to display below the bar (e.g. "Total: 60"). */
+  total?: string | number;
+  /** Optional unit-label shown inside the FIRST cell of each row (e.g. "5"). */
+  unitLabel?: string;
 }
 
 /**
@@ -5141,7 +5172,7 @@ export interface DiagramSpec {
  * Returns false if the spec is invalid so extractDiagramSpec can return null.
  */
 export function validateDiagramSpec(spec: DiagramSpec): boolean {
-  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes", "venn", "timeline", "pyramid", "fraction-bar"];
+  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes", "venn", "timeline", "pyramid", "fraction-bar", "bar-model"];
   if (!spec || !spec.type) return false;
   if (!validTypes.includes(spec.type)) return false;
 
@@ -5179,6 +5210,13 @@ export function validateDiagramSpec(spec: DiagramSpec): boolean {
     case "fraction-bar":
       if (!spec.denominator || spec.denominator < 1 || spec.denominator > 12) return false;
       if (spec.numerator === undefined || spec.numerator < 0) return false;
+      break;
+    case "bar-model":
+      if (!spec.parts || spec.parts.length < 1 || spec.parts.length > 6) return false;
+      if (spec.parts.some(p => !p || typeof p.value !== "number" || p.value < 1 || p.value > 24)) return false;
+      // Cap total cells so the bar fits one width — guarantees the layout
+      // never overflows or overlaps regardless of input.
+      if (spec.parts.reduce((s, p) => s + p.value, 0) > 30) return false;
       break;
   }
   return true;

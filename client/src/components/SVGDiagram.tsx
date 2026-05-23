@@ -7,7 +7,7 @@
  * Numbered callout dots are used for labelling questions.
  * Teacher view (showCallouts=true) reveals labels.
  *
- * Supports: circuit, labeled, flow, cycle, number-line, bar, axes, venn, timeline, pyramid, fraction-bar
+ * Supports: circuit, labeled, flow, cycle, number-line, bar, axes, venn, timeline, pyramid, fraction-bar, bar-model
  *
  * @copyright 2026 Adaptly Ltd. All rights reserved.
  */
@@ -903,6 +903,112 @@ export default function SVGDiagram({
         {/* Whole bar outline */}
         <rect x={barX} y={barY} width={barW} height={barH} rx="2"
           fill="none" stroke={accentColor} strokeWidth="2" />
+      </svg>
+    );
+  }
+
+  // ── BAR MODEL (maths-only) ────────────────────────────────────────────────
+  // Singapore-style bar model: each "part" is one row of equal-sized cells.
+  // Used for ratios, fractions of amounts, percentages, and simple word
+  // problems. Layout is fully deterministic — cells are equal-width and
+  // labels sit OUTSIDE the bar, so words can never overlap each other or
+  // the bar geometry. Two rows of two parts each maxes out around 60% of
+  // the canvas height, leaving room for the title and total caption.
+  if (spec.type === "bar-model") {
+    const parts = (spec.parts || []).filter(p => p && p.value > 0);
+    if (parts.length === 0) return null;
+    const totalCells = parts.reduce((sum, p) => sum + p.value, 0);
+    // Distinct, print-safe palette. Reuses the accent for the first part so
+    // the model harmonises with the rest of the worksheet.
+    const palette = [accentColor, "#dc2626", "#0891b2", "#16a34a", "#ca8a04", "#7c3aed"];
+
+    const titleH = spec.title ? 22 : 6;
+    const labelColW = 78; // space on the left for "Part A" labels
+    const valueColW = 56; // space on the right for the part total
+    const barX1 = pad + labelColW;
+    const barX2 = width - pad - valueColW;
+    const barW = Math.max(120, barX2 - barX1);
+    // Rows: one per part, plus a footer for the total caption.
+    const rowGap = 6;
+    const availH = height - titleH - 28; // 28 = total caption row at the bottom
+    const rowH = Math.max(28, Math.min(48, (availH - (parts.length - 1) * rowGap) / parts.length));
+    // All rows share the SAME cell width so equal cells across parts
+    // visually communicate "same unit" — the whole point of a bar model.
+    const cellW = barW / totalCells;
+    const labelFontSize = Math.max(8, Math.min(11, fontSize - 1));
+    const cellFontSize = Math.max(8, Math.min(11, fontSize - 2));
+
+    return (
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
+        {spec.title && (
+          <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+            fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
+        )}
+        {parts.map((part, pi) => {
+          const rowY = titleH + pi * (rowH + rowGap);
+          const rowW = part.value * cellW;
+          const fill = part.color || palette[pi % palette.length];
+          return (
+            <g key={pi}>
+              {/* Row label OUTSIDE the bar — never overlaps cells */}
+              <text x={barX1 - 8} y={rowY + rowH / 2} textAnchor="end"
+                dominantBaseline="middle"
+                fontSize={labelFontSize} fontFamily={fontFamily}
+                fill="#1f2937" fontWeight="600">
+                {part.label || `Part ${String.fromCharCode(65 + pi)}`}
+              </text>
+              {/* Bar cells — equal width, separated by white gaps */}
+              {Array.from({ length: part.value }, (_, ci) => {
+                const cx = barX1 + ci * cellW;
+                return (
+                  <rect key={ci}
+                    x={cx + 0.75} y={rowY}
+                    width={Math.max(2, cellW - 1.5)} height={rowH}
+                    rx="2"
+                    fill={fill}
+                    fillOpacity="0.85"
+                    stroke="#1f2937"
+                    strokeWidth="1.2" />
+                );
+              })}
+              {/* Outer outline so the whole bar reads as one block */}
+              <rect x={barX1} y={rowY} width={rowW} height={rowH} rx="2"
+                fill="none" stroke="#1f2937" strokeWidth="1.5" />
+              {/* Cell value caption below — only shown when the row has
+                  more than one cell, otherwise it duplicates the part label */}
+              {part.value > 1 && cellW > 18 && (
+                <text x={barX1 + rowW / 2} y={rowY + rowH / 2}
+                  textAnchor="middle" dominantBaseline="middle"
+                  fontSize={cellFontSize} fontFamily={fontFamily}
+                  fill="white" fontWeight="700"
+                  pointerEvents="none">
+                  {`${part.value} part${part.value === 1 ? "" : "s"}`}
+                </text>
+              )}
+              {/* Right-side numeric caption — never overlaps the bar */}
+              <text x={barX2 + 8} y={rowY + rowH / 2} textAnchor="start"
+                dominantBaseline="middle"
+                fontSize={labelFontSize} fontFamily={fontFamily}
+                fill="#1f2937" fontWeight="600">
+                {part.value}
+              </text>
+            </g>
+          );
+        })}
+        {/* Total caption — positioned in the dedicated footer band so it
+            cannot collide with the rows above it. */}
+        {spec.total !== undefined && spec.total !== "" && (
+          <text x={width / 2}
+            y={titleH + parts.length * (rowH + rowGap) + 14}
+            textAnchor="middle"
+            fontSize={fontSize}
+            fontFamily={fontFamily}
+            fill={accentColor}
+            fontWeight="700">
+            {`Total = ${spec.total}`}
+          </text>
+        )}
       </svg>
     );
   }
