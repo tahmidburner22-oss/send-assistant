@@ -5,8 +5,8 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — PR-A Step 1 (schema + helpers) shipped on
-`feat/phase-e-exam-paper-builder`. Back-tagger script is next.
+Last updated: 2026-05-23 — PR-A Step 2 (back-tagger) shipped on
+`feat/phase-e-exam-paper-builder`. Coverage audit is next.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -86,51 +86,99 @@ pastPaperQuestions.ts       2,203 lines
     `Object.freeze({})` of type `Readonly<Record<string, string>>`.
     The back-tagger script will overwrite this file in PR-A Step 2.
 
+- **PR-A · Step 2 — Back-tagger script + first run**. In a single
+  commit:
+  - `scripts/exam-bank-back-tagger.mjs` (new) — pure-Node script,
+    no dependencies. Reads every `questionBank*.ts` and
+    `pastPaperQuestions.ts`/`pastPaperQuestionsExpanded.ts` as plain
+    text. Algorithm:
+    - `indexBracePairs(content)` — string-aware forward walk that
+      records every `{`-`}` pair regardless of nesting (the only
+      reliable way to handle multi-line + single-line entry styles
+      uniformly — bank files mix both).
+    - `extractQuestions(content)` — finds every `id: "..."` match,
+      looks up the smallest enclosing brace pair, regex-extracts
+      `topic`, `subject`, `text`/`question`, `subtopic` fields.
+    - `extractSubtopicsMap(content)` — string-aware brace walk to
+      load `SUBTOPICS_MAP` from `subtopics-data.ts` as
+      `Record<topic, subtopic[]>` (178 topics, 907 subtopics).
+    - `buildIdfMap(subtopicsMap)` — IDF weights per stem, so
+      generic-named subtopics like "One more and one less" don't
+      over-tag (their tokens appear in many other subtopics → low
+      IDF → near-zero contribution).
+    - `scoreSubtopic(sub, qText, idfMap)` — IDF-weighted score over
+      tokens (whole-word stem match = 1.0, substring fallback = 0.4,
+      verbatim-substring boost = +0.5×totalIdf), normalised by
+      total IDF mass.
+    - `pickBestSubtopic(q, ...)` — prefers `SUBTOPICS_MAP[q.topic]`
+      candidates; falls back to fuzzy topic-name match, then to
+      every subtopic. Requires `bestScore ≥ threshold` AND
+      `bestScore - secondBest ≥ 0.08` (margin check kills near-tie
+      ambiguous tags).
+    - Default threshold: 0.35. CLI override: `--threshold=0.3`.
+    - Stem normalisation: simple suffix-strip (`fractions` →
+      `fraction`, `adding` → `add`, etc.) so plural/gerund subtopic
+      names match singular/imperative question text.
+  - `client/src/lib/subtopicTags.ts` (regenerated) — frozen
+    `Record<id, subtopic>` map of the back-tagger's output. Sorted
+    by id for stable diffs. **2,719 / 6,902 questions tagged
+    (39.4%)** with the default threshold. Conservative on purpose:
+    we'd rather have an accurate audit signal than a high tag rate
+    full of false positives — the audit + gap-fill close the rest.
+
 ## What is in flight
 
-_Nothing yet. PR-A Step 2 (back-tagger) starts at the next checkpoint._
+_Nothing yet. PR-A Step 3 (coverage audit) starts at the next checkpoint._
 
 ## What is next
 
-**PR-A · Step 2 — Back-tagger script** (target: ≤ 1 commit for the
-script + the regenerated `subtopicTags.ts`).
+**PR-A · Step 3 — Coverage audit script + CI guard** (target: ≤ 1
+commit for the script + first run + workflow).
 
 Exact actions in order:
 
-1. Create `scripts/exam-bank-back-tagger.mjs`. Pure-Node script (no
-   TS compile step — sandbox is `INTEGRATIONS_ONLY`). Algorithm:
-   - Read all `client/src/lib/questionBank*.ts` files plus
-     `client/src/lib/pastPaperQuestionsExpanded.ts` as plain text.
-   - Regex-extract `id: "..."`, `topic: "..."`, `text: "..."` /
-     `question: "..."`, `marks: <n>`, `subject: "..."` from each
-     question literal. Skip entries without an id.
-   - Read `client/src/lib/subtopics-data.ts` and regex-extract the
-     `SUBTOPICS_MAP` object as `Record<topic, subtopic[]>`.
-   - For each question, score each subtopic candidate in
-     `SUBTOPICS_MAP[q.topic]` (or every subtopic when `q.topic` is
-     missing) by:
-     - Tokenise the subtopic name into lowercase words minus stop
-       words (`a`, `the`, `of`, `and`, `to`, `in`, `for`, `with`,
-       `on`, `from`, `or`).
-     - For each token of length ≥ 3, +1.0 score if it appears as a
-       whole word in `q.text`, +0.4 if it appears as a substring.
-     - +0.3 boost if the full subtopic name (lowercased) appears as
-       a verbatim substring of `q.text`.
-     - Normalise by token count so longer subtopic names don't win
-       by default.
-   - Accept the highest-scoring subtopic if normalised score ≥ 0.6.
-     Otherwise leave the question untagged.
-2. Emit `client/src/lib/subtopicTags.ts` with the canonical header +
-   the `Object.freeze({...})` literal of `id → subtopic` pairs,
-   sorted by id for stable diffs.
-3. Print summary: total questions scanned, total tagged, percent
-   tagged, and the top 10 most-tagged subtopics + 10 untagged-topic
-   counts.
-4. Run `node scripts/exam-bank-back-tagger.mjs`. Inspect the output.
-5. Commit both the script and the regenerated `subtopicTags.ts`.
-   Push.
-6. Update this handoff: move Step 2 to "What is done", set "What
-   is next" to PR-A Step 3.
+1. Create `scripts/exam-bank-coverage.mjs`. Reuses the same brace
+   indexer + question extractor approach as the back-tagger (factor
+   the shared bits into a small lib if cleaner, otherwise duplicate
+   — sandbox has no module bundler for `.mjs`).
+   - Load `SUBTOPICS_MAP` and `SUBTOPIC_TAGS` (the back-tagger output).
+   - Walk every (topic, subtopic) pair in `SUBTOPICS_MAP`.
+   - For each subtopic, count questions where `q.subtopic === subtopic`
+     OR `SUBTOPIC_TAGS[q.id] === subtopic`.
+   - Emit `docs/exam-bank-coverage.json` with shape:
+     ```json
+     {
+       "generatedAt": "2026-05-23T...",
+       "threshold": 10,
+       "totals": {
+         "questionsScanned": 6902,
+         "subtopicsTotal": 907,
+         "subtopicsCovered": <n>,
+         "subtopicsBelowTen": <n>,
+         "subtopicsZero": <n>
+       },
+       "perSubject": { "mathematics": {...}, ... },
+       "belowTen": [{ "topic", "subtopic", "count", "subject" }, ...],
+       "zero":     [{ "topic", "subtopic" }, ...]
+     }
+     ```
+     `belowTen` sorted by count ascending then subject — so zero rows
+     come first, ordered by subject for review. `zero` is a separate
+     array for convenience (it's a strict subset of `belowTen`).
+   - Print summary to stdout.
+2. Run once. Copy the output to
+   `docs/exam-bank-coverage.baseline.json` — the regression-guard
+   reference.
+3. Add a `--check-against=<baseline.json>` CLI mode that exits 1 if
+   any subtopic count regresses below its baseline value. Print the
+   list of regressions.
+4. Add `.github/workflows/exam-bank-coverage.yml`:
+   - Trigger: PR push.
+   - Steps: checkout, install pnpm deps, `node scripts/exam-bank-back-tagger.mjs`,
+     `node scripts/exam-bank-coverage.mjs --check-against=docs/exam-bank-coverage.baseline.json`.
+5. Commit. Push.
+6. Update this handoff: move Step 3 to "What is done", set "What
+   is next" to PR-A Step 4 (gap-fill wave 1).
 
 ## Checkpoint protocol
 
