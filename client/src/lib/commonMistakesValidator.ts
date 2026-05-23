@@ -98,6 +98,154 @@ function isMathsSubject(subject: string | undefined): boolean {
 }
 
 /**
+ * #16 carry-over (PR-19 batch). The pre-PR-19 audit no-opped on every
+ * subject except maths, leaving non-maths Common Mistakes sections
+ * un-audited. This non-maths variant is intentionally weaker than the
+ * maths audit — non-maths subjects don't have the "two numbers in the
+ * wrong-working line" rail because the wrong-working content is prose
+ * (e.g. an English Lit pupil writes the wrong analytical claim, not
+ * the wrong sum). What it DOES enforce, conservatively:
+ *
+ *   - The section, when present, contains 2..4 distinct mistake blocks
+ *     (more than that is a sign the LLM is padding).
+ *   - Every block carries the four labels OR a single "Mistake N:"
+ *     header followed by ≥ 60 chars of body text. The looser rule
+ *     means non-maths sheets can ship with a streamlined "what +
+ *     why-wrong" structure when that fits the topic better.
+ *   - No block contains the verbatim placeholder string "[example]"
+ *     or "[insert example here]".
+ *
+ * Returns warnings only — never rewrites. The pure-/idempotent
+ * contract continues to hold.
+ */
+function isNonMathsAuditableSubject(subject: string | undefined): boolean {
+  if (!subject) return false;
+  if (isMathsSubject(subject)) return false;
+  return /english|science|biology|chemistry|physics|history|geography|religious|business|computer|french|spanish|german/i.test(
+    subject,
+  );
+}
+
+/** Audit a non-maths Common Mistakes section. Returns the per-block
+ *  reports + warnings. Pure / idempotent. */
+export function auditCommonMistakesNonMaths(
+  worksheet: AuditableWorksheet,
+  opts: CommonMistakesAuditOptions = {},
+): CommonMistakesAuditReport | undefined {
+  const subject = opts.subject ?? worksheet.metadata?.subject;
+  if (!isNonMathsAuditableSubject(subject)) return undefined;
+
+  const section = findCommonMistakesSection(worksheet.sections);
+  const warnings: string[] = [];
+
+  if (!section) {
+    return {
+      sectionFound: false,
+      blockCount: 0,
+      blocks: [],
+      allBlocksPass: true, // vacuously true
+      warnings,
+    };
+  }
+
+  const blocks = splitIntoMistakeBlocks(String(section.content || ""));
+  const reports: MistakeBlockReport[] = blocks.map((b, i) => {
+    const { hasFourParts, missing } = checkLabels(b);
+    const body = b.replace(/^MISTAKE\s*\d+\s*[:\-\u2013\u2014]?/i, "").trim();
+    // Non-maths definition of "block has substantive content": at
+    // least 60 characters AFTER the header line.
+    const hasSubstantive = body.length >= 60;
+    const placeholderHit = /\[\s*(example|insert\s+example\s+here|TBD|placeholder)\s*\]/i.test(b);
+    return {
+      blockNumber: i + 1,
+      hasFourParts: hasFourParts || hasSubstantive,
+      missingLabels: hasFourParts || hasSubstantive ? [] : missing,
+      // For non-maths we don't expect numbers — but we still surface
+      // a count of 0 so the report shape stays uniform with the maths
+      // variant.
+      wrongWorkingNumericTokenCount: 0,
+      hasNumbersInWrongWorking: !placeholderHit,
+      preview: b.replace(/\s+/g, " ").slice(0, 80),
+    };
+  });
+
+  if (reports.length === 0) {
+    warnings.push(
+      `[Common Mistakes] Section is present but no mistake blocks could be detected — expected blocks beginning "Mistake 1:" / "Mistake 2:".`,
+    );
+  } else if (reports.length < 2) {
+    warnings.push(
+      `[Common Mistakes] Only ${reports.length} block(s) detected — non-maths sheets should have at least 2 blocks.`,
+    );
+  } else if (reports.length > 4) {
+    warnings.push(
+      `[Common Mistakes] ${reports.length} blocks detected — sheets should have at most 4. The LLM may be padding.`,
+    );
+  }
+  for (const r of reports) {
+    if (!r.hasFourParts) {
+      warnings.push(
+        `[Common Mistakes] Block ${r.blockNumber} appears to lack substantive body text or labelled parts.`,
+      );
+    }
+    if (!r.hasNumbersInWrongWorking) {
+      // Re-purposed in non-maths variant to flag placeholder text.
+      warnings.push(
+        `[Common Mistakes] Block ${r.blockNumber} contains a placeholder string ("[example]" or similar). Replace with a real example.`,
+      );
+    }
+  }
+
+  return {
+    sectionFound: true,
+    blockCount: reports.length,
+    blocks: reports,
+    allBlocksPass: reports.every((r) => r.hasFourParts && r.hasNumbersInWrongWorking),
+    warnings,
+  };
+}
+
+/**
+ * Run the non-maths audit AND stamp the report onto metadata. Used by
+ * the post-validator chain when subject is non-maths. Mirrors the
+ * `applyCommonMistakesAudit` shape — same metadata key, same warning
+ * channel — so downstream consumers don't need to differentiate.
+ */
+export function applyCommonMistakesNonMathsAudit<W extends AuditableWorksheet>(
+  worksheet: W,
+  opts: CommonMistakesAuditOptions = {},
+): W {
+  const report = auditCommonMistakesNonMaths(worksheet, opts);
+  if (!report) return worksheet;
+  const existingWarnings = Array.isArray(worksheet.metadata?.postValidatorWarnings)
+    ? (worksheet.metadata!.postValidatorWarnings as string[])
+    : [];
+  return {
+    ...worksheet,
+    metadata: {
+      ...(worksheet.metadata || {}),
+      commonMistakesAudit: report,
+      postValidatorWarnings: [...existingWarnings, ...report.warnings],
+    },
+  } as W;
+}
+
+/**
+ * Unified entry-point — picks maths vs non-maths variant based on
+ * subject. Use this from new callers; the original
+ * `applyCommonMistakesAudit` is kept for backwards compatibility.
+ */
+export function applyCommonMistakesAuditUniversal<W extends AuditableWorksheet>(
+  worksheet: W,
+  opts: CommonMistakesAuditOptions = {},
+): W {
+  const subject = opts.subject ?? worksheet.metadata?.subject;
+  if (isMathsSubject(subject)) return applyCommonMistakesAudit(worksheet, opts);
+  if (isNonMathsAuditableSubject(subject)) return applyCommonMistakesNonMathsAudit(worksheet, opts);
+  return worksheet;
+}
+
+/**
  * Find the (first) common-mistakes section. Match by `type` first because the
  * generator stamps `"type": "common-mistakes"`; fall back to title regex for
  * any legacy or alternative shape.

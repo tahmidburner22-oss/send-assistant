@@ -1767,12 +1767,36 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   // Kill switch: set MATHS_AI_SVG_ENABLED=false to disable the AI SVG path
   // immediately without redeploying the rest of the stack. Default is
   // enabled. Non-maths subjects are unaffected regardless.
+  //
+  // PR-23 (audit item #54): admin-gate. The AI-SVG path is expensive and
+  // produces variable quality. Until we have field data on every school's
+  // tolerance, the path is gated behind both:
+  //   - the existing MATHS_AI_SVG_ENABLED env flag (kill switch), AND
+  //   - an explicit allow-list of school ids in
+  //     MATHS_AI_SVG_ALLOWED_SCHOOL_IDS (comma-separated, lowercased), OR
+  //     MATHS_AI_SVG_ADMIN_ONLY=true (admin-flagged users only).
+  // When MATHS_AI_SVG_ALLOWED_SCHOOL_IDS is empty AND MATHS_AI_SVG_ADMIN_ONLY
+  // is unset, we keep the legacy "all maths" behaviour for backwards
+  // compatibility — schools never lose a feature on a deploy.
   const aiSvgEnabled = (process.env.MATHS_AI_SVG_ENABLED ?? "true").toLowerCase() !== "false";
   const isMathsRequest =
     subjectLower === "maths" ||
     subjectLower === "math" ||
     subjectLower === "mathematics";
-  if (aiSvgEnabled && isMathsRequest) {
+  const allowedSchoolList = String(process.env.MATHS_AI_SVG_ALLOWED_SCHOOL_IDS || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const adminOnly = (process.env.MATHS_AI_SVG_ADMIN_ONLY || "").toLowerCase() === "true";
+  const reqUser = (req as any).user || {};
+  const reqSchoolId = String(reqUser.schoolId || "").toLowerCase();
+  const reqRole = String(reqUser.role || "").toLowerCase();
+  const passesAdminGate =
+    allowedSchoolList.length === 0 && !adminOnly
+      ? true
+      : (allowedSchoolList.length > 0 && allowedSchoolList.includes(reqSchoolId)) ||
+        (adminOnly && (reqRole === "admin" || reqRole === "superadmin"));
+  if (aiSvgEnabled && isMathsRequest && passesAdminGate) {
     const { system, user: baseUser } = buildDiagramPrompt(
       String(subject),
       String(topic),

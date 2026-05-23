@@ -81,6 +81,14 @@ import { enforceBloomProgression } from "./bloomProgressionAudit";
 import { enforcePastPaperFingerprint } from "./pastPaperFingerprint";
 import { enforceAccessibilityAudit } from "./accessibilityAudit";
 
+// PR-19 to PR-27 (combined) — additional validators behind the same
+// adapt() pattern. Every entry is pure / idempotent / warn-only.
+import { enforceSpVocabularyLibrary } from "./spVocabularyLibraryAudit";
+import { enforceSpecPointTaxonomy } from "./specPointTaxonomyAudit";
+import { enforceKs5Synoptic } from "./ks5SynopticBuilder";
+import { enforceDiagramPageFit } from "./diagramPageFitAudit";
+import { enforceCitationGrounding } from "./citationGroundedFactual";
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /**
@@ -266,6 +274,20 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     // PR-18 (#23 #24 #25 #26 #27) — Accessibility / alt-text / tactile
     // / plain-English / dyslexia typography composite audit.
     { name: "accessibility-audit", fn: adapt(enforceAccessibilityAudit) },
+    // ─── PR-19 to PR-27 (combined) ────────────────────────────────────
+    // PR-19 (#83) — Subject-vocabulary library audit (worksheet slice).
+    { name: "sp-vocabulary-library", fn: adapt(enforceSpVocabularyLibrary) },
+    // PR-19 (#35 #84) — Spec-point taxonomy completeness audit
+    // (worksheet slice; the corpus runner lives in scripts/).
+    { name: "spec-point-taxonomy", fn: adapt(enforceSpecPointTaxonomy) },
+    // PR-25 (#36) — KS5 synoptic stem detector (only fires on Y12+).
+    { name: "ks5-synoptic", fn: adapt(enforceKs5Synoptic) },
+    // PR-23 (#56) — Diagram page-fit + complexity budget audit.
+    { name: "diagram-page-fit", fn: adapt(enforceDiagramPageFit) },
+    // PR-20 (#48) — Citation-grounded factual layer. Ships dark
+    // behind PROMPT_CITATION_LAYER_ENABLED; the validator no-ops
+    // when the env flag is false.
+    { name: "citation-grounding", fn: adapt(enforceCitationGrounding) },
   ]);
 
 /**
