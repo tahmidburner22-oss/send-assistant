@@ -270,6 +270,10 @@ export const WorksheetOutputSchema = z.object({
       questionIdx: z.number().int().min(0).optional(),
       generatedAt: z.string().optional(),
     }).optional(),
+    /** PR-11 — version number for this worksheet (1-based, increments on each save). */
+    worksheetVersion: z.number().int().min(1).optional(),
+    /** PR-11 — trigger that created this version (manual-save | ai-edit | differentiate | reteach | revert). */
+    versionTrigger: z.enum(["manual-save", "ai-edit", "differentiate", "reteach", "revert"]).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),

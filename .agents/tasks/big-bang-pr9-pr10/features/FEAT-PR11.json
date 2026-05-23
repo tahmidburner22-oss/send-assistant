@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-PR11",
+  "type": "feat",
+  "description": "PR-11 — Versioning + diff history (PD7). Audit items #40 (prompt versioning + diff store), #66 (worksheet-level versioning + diff history). Branch: big-bang/pr-11-versioning-diff-history.",
+  "status": "in_progress",
+  "steps": [
+    "Create branch from main",
+    "server/db/schema.sql: add worksheet_versions table",
+    "client/src/lib/worksheetVersioning.ts: pure diff + version helpers",
+    "server/routes/data.ts: wire versioning into PUT /worksheets/:id",
+    "server/tests/generationCache.test.ts: append PR-11 tests",
+    "shared/aiSchemas.ts: add version metadata field",
+    "Update LEDGER.md and SESSION-HANDOFF.md"
+  ],
+  "acceptance_criteria": [
+    "worksheet_versions table DDL exists in schema.sql",
+    "worksheetVersioning.ts exports diffWorksheetSections and related helpers",
+    "PUT /worksheets/:id snapshots to versions before applying update",
+    "Tests pass",
+    "LEDGER items #40, #66 updated",
+    "SESSION-HANDOFF advanced"
+  ],
+  "verification": [
+    "pnpm run check (tsc --noEmit) — zero errors.",
+    "pnpm test — PR-11 tests pass."
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
