@@ -39,6 +39,12 @@ export default function RevisionHubSection() {
           blurb: "SEND-adapted question pack (extra time, dyslexia font, large print) auto-marked against the AO grid.",
           toolIds: ["past-papers"],
         },
+        {
+          n: "5",
+          title: "Build a mock exam paper",
+          blurb: "Pick subject, topics and total marks — the bank assembles a real-style mock paper with warm-up / core / stretch sections, balanced AOs, and a teacher mark scheme.",
+          toolIds: ["create-exam-paper"],
+        },
       ]}
       tip={{
         title: "Revision tip",

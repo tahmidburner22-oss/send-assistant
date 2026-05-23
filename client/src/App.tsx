@@ -68,6 +68,7 @@ const WellbeingSupport = lazy(() => import("./pages/tools/WellbeingSupport"));
 const RiskAssessment = lazy(() => import("./pages/tools/RiskAssessment"));
 const ParentNewsletter = lazy(() => import("./pages/tools/ParentNewsletter"));
 const PresentationMaker = lazy(() => import("./pages/tools/PresentationMaker"));
+const CreateExamPaper = lazy(() => import("./pages/tools/CreateExamPaper"));
 
 // Legal & Compliance
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -278,7 +279,9 @@ function ProtectedRoutes() {
             <Route path="/tools/vocabulary-builder" component={VocabularyBuilder} />
             <Route path="/tools/risk-assessment" component={RiskAssessment} />
 
-            {/* Presentation Maker */}
+            {/* Phase E PR-B — Create an Exam Paper. Pure-function assembly
+                from the question bank; no AI generation. */}
+            <Route path="/tools/create-exam-paper" component={CreateExamPaper} />
             <Route path="/tools/presentation-maker" component={PresentationMaker} />
 
             {/* Communication */}

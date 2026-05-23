@@ -5,8 +5,15 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — PR-A Step 4 (gap-fill wave 1) shipped on
-`feat/phase-e-exam-paper-builder`. Opening PR-A is next.
+Last updated: 2026-05-23 — Phase E COMPLETE. PR-A is **PR #109**
+(`feat/phase-e-pr-a-bank-coverage` → main); PR-B is **PR #108**
+(`feat/phase-e-pr-b-create-exam-paper` → `feat/phase-e-pr-a-bank-coverage`,
+stacked).
+
+> **Housekeeping:** PR #107 was opened earlier against the shared branch
+> `feat/phase-e-exam-paper-builder` and ended up containing both PR-A
+> and PR-B commits (continuous push during development). Close PR #107
+> in favour of PR #109 (PR-A) and PR #108 (PR-B).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -194,43 +201,114 @@ pastPaperQuestions.ts       2,203 lines
       `zero` to `belowTen`, which is what wave 1 sets up. Wave 2
       bumps them to ≥10.
 
+- **PR-A · Step 5 — Open the PR**. Opened as PR
+  [#107](https://github.com/tahmidburner22-oss/send-assistant/pull/107)
+  with title "Phase E PR-A: Exam Bank subtopic schema + back-tagger
+  + coverage audit + gap-fill wave 1". PR body links the phase
+  folder, lists per-subject coverage roll-up, and notes that PR-B
+  does not depend on the gap-fill being complete.
+
+- **PR-B · Step 7 — Assembly engine + unit tests**. In a single
+  commit:
+  - `client/src/lib/createExamPaperBuilder.ts` (new) — pure-function
+    `buildCreatedExamPaper(params): CreatedExamPaperResult`.
+    Algorithm: pulls candidate pool via `getCandidatePoolForTopics`
+    (PR-A surface) → splits into mark bands (warmup 1-3, core 4-6,
+    stretch 7+) → computes 30/50/20 budget for real-exam paperStyle
+    or 100% core for single-section → enforces per-topic floor (every
+    requested topic contributes ≥ 1 question or warns) → greedy
+    deterministic-shuffle knapsack within each band with AO +
+    command-word diversity tie-breaks → sorts ascending by marks
+    within sections → emits the same `ExamPaperWorksheet` shape as
+    `examPaperBuilder.ts` so it slots into the existing renderer +
+    PDF + Class-Pack pipeline. Determinism via djb2 + LCG seeded
+    from explicit `seed` or hashed params. Pure function — no I/O,
+    no LLM. Accepts `poolOverride` for testability so tests don't
+    depend on the live bank.
+  - `client/src/lib/__tests__/createExamPaperBuilder.test.ts` (new)
+    — 13 vitest cases covering: target accuracy ±2 marks, per-topic
+    floor enforcement, empty-topic warning, undersized-pool partial
+    + warning, deterministic by seed (same seed → same paper),
+    different seeds → different but valid papers, calculator
+    filtering, single-section paperStyle (core-dominant), AO/
+    command-word diversity tie-break, ExamPaperWorksheet shape
+    parity with examPaperBuilder.ts, mark-scheme section default
+    on, mark-scheme omitted when includeAnswers=false, empty pool,
+    invalid-input throws.
+
+- **PR-B · Step 8 — Tool UI + registry + route + hub card**. In a
+  single commit:
+  - `client/src/pages/tools/CreateExamPaper.tsx` (new) —
+    self-contained tool page. Form: subject (canonical-id select
+    over the 9 subjects with bank questions), year-group, tier,
+    multi-select topic chips driven by `getTopicsForSubject` with
+    fine-grained subtopic chips per group (using
+    `getSubtopicsForTopic` from PR-A) and per-chip question-count
+    badge driven by `getCandidatePoolForTopics`, total-marks input
+    with quick presets (40/60/80/100), calculator + paper-style +
+    include-answers toggles. Submit calls
+    `buildCreatedExamPaper`, renders sections inline with a Print /
+    Save-as-PDF button (via `window.print()`). Warnings array is
+    surfaced as an amber callout when present. Self-contained — no
+    AIToolPage dependency, no AI generation.
+  - `client/src/lib/tool-registry.ts` — appended a new
+    `ToolEntry`: id `create-exam-paper`, label "Create an Exam
+    Paper", path `/tools/create-exam-paper`, hub `revision`,
+    sendTo `[differentiate, flash-cards, audio-revision-hub]`,
+    icon `ScrollText`, colour `text-rose-700 bg-rose-50`,
+    writeBack `true`.
+  - `client/src/App.tsx` — added lazy import + Route line.
+  - `client/src/pages/hubs/RevisionHubSection.tsx` — added a 5th
+    storyboard step "Build a mock exam paper" pointing at the
+    new tool.
+
+- **PR-B · Step 9 — Open PR-B**. Opened as PR
+  [#108](https://github.com/tahmidburner22-oss/send-assistant/pull/108)
+  on branch `feat/phase-e-pr-b-create-exam-paper`, stacked on top
+  of PR-A's clean branch (`feat/phase-e-pr-a-bank-coverage`). PR
+  body links the phase folder, summarises the algorithm, and
+  includes a worked example.
+
+- **Branching cleanup**. Cut `feat/phase-e-pr-a-bank-coverage` from
+  HEAD `95140da` (PR-A's last commit) and `feat/phase-e-pr-b-create-exam-paper`
+  from `fb2b13e` (PR-B's last commit, on top of PR-A). Reopened the
+  PRs cleanly:
+  - **PR #109** = PR-A: `feat/phase-e-pr-a-bank-coverage` → `main`.
+  - **PR #108** = PR-B: `feat/phase-e-pr-b-create-exam-paper` → `feat/phase-e-pr-a-bank-coverage` (stacked).
+  - PR #107 (the original "everything-in-one-branch" PR) is left
+    behind — close it in favour of #109/#108.
+
 ## What is in flight
 
-_Nothing yet. PR-A Step 5 (open the PR) starts at the next checkpoint._
+_Nothing — Phase E is complete. Both PRs are open and awaiting review._
 
 ## What is next
 
-**PR-A · Step 5 — Open the PR.**
+_Phase E has no further steps in this session._ Subsequent sessions
+can pick up the follow-on waves below — each is a self-contained
+chunk that fits in one session.
 
-Branch is `feat/phase-e-exam-paper-builder` (already pushed through
-Step 4). Open the PR with:
+**Future waves** (any subsequent session can pick up):
 
-- **Title:** `Phase E PR-A: Exam Bank subtopic schema + back-tagger + coverage audit + gap-fill wave 1`
-- **Body** must include:
-  1. Link to `.agents/tasks/phase-e-exam-paper-builder/`.
-  2. The four ledger fields from `docs/exam-bank-coverage.json`:
-     7,062 questions / 91 covered / 816 belowTen / 514 zero.
-  3. Per-subject roll-up table from this handoff.
-  4. Explicit note that closing the residual gap is a follow-up wave
-     tracked in `docs/exam-bank-coverage.json` — the regression CI
-     gate at `.github/workflows/exam-bank-coverage.yml` ensures no
-     subtopic count drops below the new baseline.
-  5. Note that PR-B (assembly engine) does NOT depend on this
-     gap-fill being complete.
-  6. Worked example for reviewers — run
-     `node scripts/exam-bank-coverage.mjs` locally to see the
-     report.
-
-After PR-A is opened (or merged), proceed to PR-B (Step 6 below).
-
-PR-B steps (after PR-A is open or merged):
-
-- **Step 6** — `client/src/lib/createExamPaperBuilder.ts` with the
-  knapsack assembly algorithm + unit tests. See FEAT-PE-B step 1.
-- **Step 7** — `client/src/pages/tools/CreateExamPaper.tsx` + tool
-  registry entry + App.tsx route + Revision Hub card. See FEAT-PE-B
-  step 2.
-- **Step 8** — Open PR-B. Update this handoff.
+- **Wave 2 gap-fill** — bump every PR-A wave-1 subtopic from 5
+  questions to 10 questions (+5 each × 32 subtopics = +160
+  questions). Use `docs/exam-bank-coverage.json` `belowTen` array to
+  pick rows with `count` between 1 and 9 in the priority subjects.
+  Run the back-tagger + audit + `--update-baseline` after authoring;
+  the CI gate guards regressions.
+- **Wave 3+** — work through the remaining 514 zero-coverage
+  subtopics in non-core subjects (MFL, drama, music, sociology,
+  art, KS1/KS2 maths). The audit JSON makes this a transparent task
+  list.
+- **Class Pack / PDF integration for Create-an-Exam-Paper** — wire
+  the new tool into the Worksheets Save-to-Library +
+  Send-to-Class-Pack flow so generated papers persist and can be
+  assigned. The engine already emits the canonical
+  `ExamPaperWorksheet` shape, so this is one extra import away.
+- **Subtopic dropdown in the Worksheet Generator** — surface the new
+  `getSubtopicsForTopic` helper in the existing worksheet-generator
+  subtopic dropdown so worksheets can be filtered to subtopic
+  granularity instead of topic granularity.
 
 ## Checkpoint protocol
 
