@@ -8,7 +8,7 @@
  *   q.subtopic ?? SUBTOPIC_TAGS[q.id] ?? null
  *
  * Threshold used: 0.35
- * Generated: 2026-05-23T14:59:32.518Z
+ * Generated: 2026-05-23T15:05:53.786Z
  * Tagged: 2719 questions
  */
 export const SUBTOPIC_TAGS: Readonly<Record<string, string>> = Object.freeze({
