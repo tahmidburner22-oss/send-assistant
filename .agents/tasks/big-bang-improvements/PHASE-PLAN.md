@@ -88,16 +88,16 @@ PRs are ordered so that:
 | PR-6   | Audit-trail panel — surface coverageMap / aoHistogram / fidelityReport in one teacher-facing view  | #79                                          | shipped — PR #90 pending |
 | PR-7   | Server-prompt unification — port curriculumAuthorityPrompt to server/routes/ai.ts                  | #39                                          | not started |
 | PR-8   | Data-driven post-validator chain — array-of-fn registration, per-validator enable / disable        | #74                                          | shipped — PR pending |
-| PR-9   | PD13 cost transparency + generation cache scaffolding                                              | #42 #43                                      | not started |
-| PR-10  | Knowledge organiser (PD10) + Anchor poster + Now/Next/Then cards (PD11) — derived, no extra LLM    | #20 #21                                      | not started |
-| PR-11  | Versioning + diff history (PD7)                                                                    | #66                                          | not started |
-| PR-12  | Bias & sensitivity audit (PD9) — pure heuristics over names, contexts, settings                    | #12                                          | not started |
-| PR-13  | Mark-scheme upgrades — synonym expansion, M/A/B itemisation, plausibility/order-of-magnitude rail  | #5 #6 #7                                     | not started |
-| PR-14  | Bloom-monotonicity check, science working-space stub, question-difficulty progression validator    | #8 #9                                        | not started |
-| PR-15  | Past-paper verbatim fingerprint detection                                                          | #3                                           | not started |
-| PR-16  | Trauma-informed SEND profile, stacked SEND profiles, reading-age memory per pupil                  | #29 #30 #32 #82                              | not started |
-| PR-17  | Department library + HOD moderation (FEAT-PD12)                                                    | #67                                          | not started |
-| PR-18  | Continuous accessibility audit, alt-text quality, tactile graphics, plain English, dyslexia type   | #23 #24 #25 #26 #27                          | not started |
+| PR-9   | PD13 cost transparency + generation cache scaffolding                                              | #42 #43                                      | shipped — PR #94 |
+| PR-10  | Knowledge organiser (PD10) + Anchor poster + Now/Next/Then cards (PD11) — derived, no extra LLM    | #20 #21                                      | shipped — combined PR-10..18 |
+| PR-11  | Versioning + diff history (PD7)                                                                    | #66                                          | shipped — combined PR-10..18 |
+| PR-12  | Bias & sensitivity audit (PD9) — pure heuristics over names, contexts, settings                    | #12                                          | shipped — combined PR-10..18 |
+| PR-13  | Mark-scheme upgrades — synonym expansion, M/A/B itemisation, plausibility/order-of-magnitude rail  | #5 #6 #7                                     | shipped — combined PR-10..18 |
+| PR-14  | Bloom-monotonicity check, science working-space stub, question-difficulty progression validator    | #8 #9                                        | shipped — combined PR-10..18 |
+| PR-15  | Past-paper verbatim fingerprint detection                                                          | #3                                           | shipped — combined PR-10..18 |
+| PR-16  | Trauma-informed SEND profile, stacked SEND profiles, reading-age memory per pupil                  | #29 #30 #32 #82                              | shipped — combined PR-10..18 |
+| PR-17  | Department library + HOD moderation (FEAT-PD12)                                                    | #67                                          | shipped — combined PR-10..18 |
+| PR-18  | Continuous accessibility audit, alt-text quality, tactile graphics, plain English, dyslexia type   | #23 #24 #25 #26 #27                          | shipped — combined PR-10..18 |
 | PR-19  | Catalogue / coverage audits — vocabulary library, spec-point taxonomy, longitudinal progression    | #34 #35 #37 #38 #83 #84                      | not started |
 | PR-20  | Higher-risk prompt eng — A/B framework, per-subject prompt families, self-consistency, citations   | #45 #46 #47 #48                              | not started |
 | PR-21  | Engineering quality nets — ai.ts second carve-up, CI guards, property tests, snapshot matrix       | #52 #72 #73 #75 #77                          | not started |
