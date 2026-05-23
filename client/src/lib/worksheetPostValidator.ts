@@ -99,6 +99,16 @@ import { applyQaScore } from "./qaScoreBuilder";
 // forking the chain.
 import { runRegistry } from "./worksheetPostValidatorRegistry";
 
+// PR-10 to PR-18 (combined) — re-export new validators from focused
+// modules so `worksheetPostValidatorRegistry.ts` can pull them by
+// name. Each module is pure / idempotent / conservative and stamps
+// metadata + warnings via the standard `{ worksheet, warnings }` shape.
+export { enforceBiasSensitivity } from "./biasSensitivityAudit";
+export { enforceMarkSchemeUpgrades } from "./markSchemeUpgrades";
+export { enforceBloomProgression } from "./bloomProgressionAudit";
+export { enforcePastPaperFingerprint } from "./pastPaperFingerprint";
+export { enforceAccessibilityAudit } from "./accessibilityAudit";
+
 export interface PostValidatorSection {
   id?: string;
   type?: string;

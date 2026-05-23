@@ -10,10 +10,10 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-22 (PR-8 in flight on branch
-`big-bang/pr-8-data-driven-validator-chain`; PR-1 (#85), PR-2 (#86),
-PR-3 (#87), PR-4 (#88), PR-5 (#89) and PR-6 (#90) merged; PR-7 (#91)
-open in parallel).
+Last updated: 2026-05-23 (PR-10 to PR-18 combined into a single PR
+on branch `big-bang/pr-10-to-pr-18-combined`; PR-9 (#94), PR-8 (#92),
+PR-7 (#91), PR-6 (#90), PR-5 (#89), PR-4 (#88), PR-3 (#87), PR-2
+(#86), PR-1 (#85) all merged).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -234,7 +234,69 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is in flight
 
-(none)
+- **PR-10..18 (combined)** — branch
+  `big-bang/pr-10-to-pr-18-combined`. Single PR delivering nine
+  validators / builders / helpers in one push, per direct user request
+  ("Combine PR10-18 push them all/all changes as one PR instead").
+
+  What ships:
+  - `client/src/lib/knowledgeOrganiserBuilder.ts` (PR-10, #20 #21) —
+    pure builders for Knowledge Organiser, Anchor Poster, and Now /
+    Next / Then cards derived from worksheet sections. No extra LLM.
+  - `client/src/lib/worksheetVersionDiff.ts` (PR-11, #66) — pure
+    `captureVersion` / `diffVersions` / `appendVersion` for the
+    revision-history ledger. djb2-based section content hashes.
+  - `client/src/lib/biasSensitivityAudit.ts` (PR-12, #12) — bias
+    heuristics over name diversity, UK context, stigmatising
+    language, heteronormative framing, and class-loaded contexts.
+  - `client/src/lib/markSchemeUpgrades.ts` (PR-13, #5 #6 #7) —
+    synonym expansion warnings, fraction/decimal parity, M/A/B
+    itemisation check, numerical-magnitude plausibility rail.
+  - `client/src/lib/bloomProgressionAudit.ts` (PR-14, #8 #9) — Bloom
+    monotonicity check + science working-space stub.
+  - `client/src/lib/pastPaperFingerprint.ts` (PR-15, #3) — 5-token
+    shingle + djb2 fingerprint with a curated demo corpus. Production
+    deployments load the corpus from the DB (PR-23).
+  - `client/src/lib/sendStackedProfiles.ts` (PR-16, #29 #30 #32 #82) —
+    `TRAUMA_INFORMED_SEND_PROFILE`, `mergeSendProfiles` (de-duping
+    merge), and `rememberPupilReadingAge` / `lookupPupilReadingAge`.
+  - `client/src/lib/departmentLibrary.ts` (PR-17, #67) — pure
+    `ingestForLibrary`, `applyModeration` state machine, and
+    `filterLibrary` helpers.
+  - `client/src/lib/accessibilityAudit.ts` (PR-18, #23 #24 #25 #26
+    #27) — alt-text / tactile / plain-English / dyslexia heuristics.
+
+  Wiring:
+  - All five new validators (bias, mark-scheme upgrades, Bloom
+    progression, past-paper fingerprint, accessibility) are
+    registered in `worksheetPostValidatorRegistry.ts` after the
+    PR-3 group. Each entry uses an `adapt()` helper that lifts the
+    new module's narrower local type into the canonical
+    `(PostValidatorWorksheet, PostValidatorOptions) => PostValidatorResult`
+    shape — narrow types are structural subsets of
+    `PostValidatorWorksheet` (same `sections` + `metadata` access
+    pattern) so the cast is sound.
+  - `shared/aiSchemas.ts` extended with optional metadata fields
+    for every new payload (`knowledgeOrganiser`, `anchorPoster`,
+    `nowNextThen`, `versionHistory`, `biasSensitivityReport`,
+    `markSchemeUpgrades`, `bloomProgressionReport`,
+    `pastPaperFingerprintMatches`, `sendNeeds`,
+    `accessibilityReport`) plus an optional `tactileDescription`
+    on every section. All additive — older worksheets keep
+    rendering.
+
+  Tests: `server/tests/bigBangPr10to18.test.ts` ships sanity coverage
+  per PR — one describe block per PR, locking the public API of each
+  module. Sandbox is INTEGRATIONS_ONLY; vitest runs in CI on PR push.
+
+  Out of scope (deliberately, to keep this combined PR shippable):
+  - Renderer surfaces for the new metadata (KO / anchor poster / NNT
+    cards) — UI work is a follow-up.
+  - Production past-paper corpus load — schema + algorithm ship; the
+    corpus stays seeded with a tiny demo until PR-23.
+  - Server endpoints for department library + version-history persist
+    — pure logic ships; DB + endpoint scaffolding is a follow-up.
+  - Per-tenant feature flags (PR-22).
 
 ## Related sibling PRs
 
@@ -243,20 +305,16 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is next
 
-**PR-10 — Knowledge organiser + Anchor poster + Now/Next/Then cards.**
+**PR-19 — Catalogue / coverage audits.** Audit items #34, #35, #37,
+#38, #83, #84.
 
-Audit items: #20 (knowledge organiser auto-extract per topic), #21
-(anchor-poster + Now/Next/Then card outputs).
+Once the combined PR-10..18 lands, advance to PR-19: longitudinal
+Bloom ramp per pupil, spec-point completeness over a Scheme of Work,
+required-practical coverage tracker over a SoW, past-paper question
+frequency anchor, subject-vocabulary library audit, spec-point
+taxonomy completeness audit.
 
-Files to touch:
-- `shared/aiSchemas.ts` -- additive optional schemas for KO, anchor
-  poster, and NNT cards.
-- `client/src/lib/` -- pure helpers for KO extraction / layout.
-- `server/routes/ai.ts` -- new endpoints or wiring for the three
-  output types.
-- `server/tests/` -- vitest tests for the new generators.
-
-Branch name: `big-bang/pr-10-knowledge-organiser`.
+Branch name: `big-bang/pr-19-coverage-audits`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 
