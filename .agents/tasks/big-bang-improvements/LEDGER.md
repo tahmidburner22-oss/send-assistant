@@ -13,7 +13,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
 | 1  | Per-question reading-age enforcement                                                  | PR-2   | shipped — PR #86 |
 | 2  | Awarding-body command-word fidelity audit                                             | PR-2   | shipped — PR #86 |
-| 3  | Past-paper verbatim / fingerprint detection                                           | PR-15  | not started |
+| 3  | Past-paper verbatim / fingerprint detection                                           | PR-15  | shipped — PR-15 |
 | 4  | Distractor pedagogy audit on MCQs                                                     | PR-3   | shipped — PR #87 pending |
 | 5  | Synonym / equivalent-answer expansion in mark schemes                                 | PR-13  | not started |
 | 6  | Method-marks itemisation (M1 / M2 / A1) per multi-mark calc                           | PR-13  | not started |

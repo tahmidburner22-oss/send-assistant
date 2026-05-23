@@ -270,6 +270,11 @@ export const WorksheetOutputSchema = z.object({
       questionIdx: z.number().int().min(0).optional(),
       generatedAt: z.string().optional(),
     }).optional(),
+    /** PR-15 -- past-paper fingerprint detection result. */
+    pastPaperFingerprint: z.object({
+      matchCount: z.number().int().min(0),
+      highRiskCount: z.number().int().min(0),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),
