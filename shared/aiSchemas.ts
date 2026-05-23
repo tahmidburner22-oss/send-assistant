@@ -270,6 +270,12 @@ export const WorksheetOutputSchema = z.object({
       questionIdx: z.number().int().min(0).optional(),
       generatedAt: z.string().optional(),
     }).optional(),
+    /** PR-13 — mark-scheme enhancement report. */
+    markSchemeEnhanced: z.object({
+      synonymsExpanded: z.number().int().min(0),
+      questionsItemised: z.number().int().min(0),
+      plausibilityFlags: z.number().int().min(0),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),
