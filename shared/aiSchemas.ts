@@ -270,6 +270,26 @@ export const WorksheetOutputSchema = z.object({
       questionIdx: z.number().int().min(0).optional(),
       generatedAt: z.string().optional(),
     }).optional(),
+    /** PR-10 — Knowledge organiser derived from worksheet content. */
+    knowledgeOrganiser: z.object({
+      vocabulary: z.array(z.object({ term: z.string(), definition: z.string() })).max(12),
+      keyFacts: z.array(z.string()).max(8),
+      stickyQuestions: z.array(z.string()).max(5),
+      diagramHint: z.string().optional(),
+    }).optional(),
+    /** PR-10 — Anchor poster derived from worksheet content. */
+    anchorPoster: z.object({
+      titleBlock: z.string(),
+      conceptMap: z.array(z.string()).max(6),
+      vocabRing: z.array(z.string()).max(8),
+      visualSlots: z.array(z.string()).max(4),
+    }).optional(),
+    /** PR-10 — Now/Next/Then lesson flow card. */
+    nowNextThen: z.object({
+      now: z.object({ label: z.string(), minutes: z.number(), detail: z.string().optional() }),
+      next: z.object({ label: z.string(), minutes: z.number(), detail: z.string().optional() }),
+      then: z.object({ label: z.string(), minutes: z.number(), detail: z.string().optional() }),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),

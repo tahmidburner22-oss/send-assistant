@@ -1,0 +1,7 @@
+{
+  "task_id": "big-bang-pr9-pr10",
+  "task_description": "Implement PR-9 (cost transparency + generation cache scaffolding) and PR-10 (knowledge organiser + anchor poster + Now/Next/Then cards) for the big-bang improvements phase.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-PR9", "FEAT-PR10"],
+  "blocked_reason": null
+}

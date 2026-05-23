@@ -204,6 +204,19 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 2 source files (1 new) + 1 test file + 3 tracker
   docs. Net source diff: ~ +330 lines.
 
+- **PR-10 — Knowledge organiser (PD10) + Anchor poster + Now/Next/Then
+  cards (PD11)** (branch `big-bang/pr-10-knowledge-organiser-anchor-poster`).
+  Audit items **#20**, **#21**. Three pure builder modules extract a
+  Knowledge Organiser, Anchor Poster, and Now/Next/Then flow card from
+  already-generated worksheet content with no additional LLM calls.
+  Three matching React panel components (native `<details>` collapse,
+  print-hidden) render previews and offer popup-print buttons. Schema
+  gains three optional metadata fields (knowledgeOrganiser, anchorPoster,
+  nowNextThen). Tests in `server/tests/generationCache.test.ts`.
+
+  Files touched: 1 schema + 3 builders (new) + 3 components (new) +
+  1 test file (new) + 2 tracker docs. Net source diff: ~500 lines.
+
 ## What is in flight
 
 - **PR-7 (#91), PR-8** push + open / merge bookkeeping.
@@ -220,50 +233,12 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is next
 
-**PR-9 — PD13 cost transparency + generation cache scaffolding.**
+**PR-11 — Versioning + diff history (PD7).**
 
-Audit items: #41 (structured-output retry with diagnostic), #42
-(token budget transparency), #43 (generation cache by hash key), #76
-(PII redaction in telemetry — partial; rest in PR-22).
+Audit items: #40 (Prompt versioning + diff store), #66 (Worksheet-level
+versioning + diff history).
 
-Files to touch:
-- `shared/aiSchemas.ts` — additive optional fields on the worksheet
-  metadata shape: `costEstimate?: { promptTokens, completionTokens,
-  estimatedUsd, provider, model }`, `cacheKey?: string`,
-  `cacheHit?: boolean`. All optional so older worksheets keep
-  rendering.
-- `client/src/lib/aiCostEstimate.ts` (new) — pure helper:
-  `estimateCost(provider, model, promptTokens, completionTokens)`,
-  shipping the per-provider unit-price table (OpenAI / Anthropic /
-  Groq / Gemini / OpenRouter). Single source of truth for $ figures.
-- `client/src/lib/aiCacheKey.ts` (new) — pure deterministic hash of
-  the cache-relevant request fields (subject / topic / yearGroup /
-  examBoard / sendNeed / generatorVersion / etc.). The hash is
-  caller-side only; no I/O.
-- `server/lib/generationCache.ts` (new) — server-side LRU + sqlite
-  fallback wrapper around `aiCacheKey`, exposes
-  `getCached(key) / setCached(key, ws, ttlMs)`. Hits are stamped on
-  the worksheet metadata. Disabled by default behind
-  `GENERATION_CACHE_ENABLED=1` env flag.
-- `server/db/schema.sql` — `generation_cache` table (key, payload,
-  inserted_at, hits). Migration is idempotent.
-- `server/routes/ai.ts` — wire the cache into the structured
-  worksheet endpoints (cache lookup before model call; cache write
-  on success). PII-redaction pass strips pupil names / IEP content
-  before write.
-- `server/tests/generationCache.test.ts` (new) — pure tests of the
-  cache key + cost estimator + the cache wrapper using an in-memory
-  store.
-
-Out of scope for PR-9:
-- A/B traffic split (PR-20).
-- Per-tenant cache namespacing (PR-22).
-- The telemetry dashboard surface (PR-27).
-
-Sizing budget: ≤ ~700 net lines, ≤ ~7 files. Read narrow ranges of
-`server/routes/ai.ts` (1,000+ lines). Sandbox is INTEGRATIONS_ONLY —
-do not run `npm install`. Type-check + tests run in CI on PR push.
-Branch name: `big-bang/pr-9-cost-transparency-cache`.
+Branch name: `big-bang/pr-11-versioning-diff-history`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 

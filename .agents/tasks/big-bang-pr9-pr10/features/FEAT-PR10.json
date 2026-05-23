@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-PR10",
+  "type": "feat",
+  "description": "PR-10 — Knowledge organiser (PD10) + Anchor poster + Now/Next/Then cards (PD11). Audit items #20, #21. These are derived outputs built from already-stamped worksheet metadata (word bank, learning objective, key terms, revision tips) - no extra LLM calls. Branch: big-bang/pr-10-knowledge-organiser-anchor-poster.",
+  "status": "in_progress",
+  "steps": [
+    "BRANCH: Create branch big-bang/pr-10-knowledge-organiser-anchor-poster from main. Ensure PR-9 is committed first.",
+    "shared/aiSchemas.ts — inside WorksheetOutputSchema.metadata z.object(), after the new PR-9 fields, append: `knowledgeOrganiser: z.object({ vocabulary: z.array(z.object({ term: z.string(), definition: z.string() })).max(12), keyFacts: z.array(z.string()).max(8), stickyQuestions: z.array(z.string()).max(5), diagramHint: z.string().optional() }).optional()`, `anchorPoster: z.object({ titleBlock: z.string(), conceptMap: z.array(z.string()).max(6), vocabRing: z.array(z.string()).max(8), visualSlots: z.array(z.string()).max(4) }).optional()`, `nowNextThen: z.object({ now: z.object({ label: z.string(), minutes: z.number(), detail: z.string().optional() }), next: z.object({ label: z.string(), minutes: z.number(), detail: z.string().optional() }), then: z.object({ label: z.string(), minutes: z.number(), detail: z.string().optional() }) }).optional()`. All optional so older worksheets keep rendering.",
+    "client/src/lib/knowledgeOrganiserBuilder.ts (NEW) — pure module. Import the KnowledgeOrganiser interface shape from mtp-v2-enhancements.ts (reuse existing interface). Export `deriveKnowledgeOrganiserFromWorksheet(ws: { title?: string; sections?: Array<{ type?: string; title?: string; content?: string }>; metadata?: Record<string, unknown> }): KnowledgeOrganiser`. Extracts vocab from word-bank sections (split on newline, parse 'term - definition' or 'term: definition'), key facts from learning-objective + content sections (factual sentences), sticky questions from self-reflection section (reflective prompts), diagram hints from diagram section titles. Returns the same KnowledgeOrganiser shape as mtp-v2-enhancements. Also export `knowledgeOrganiserHtml(ko)` that wraps the existing helper from mtp-v2-enhancements. Pure, no I/O.",
+    "client/src/lib/anchorPosterBuilder.ts (NEW) — pure module. Export `interface AnchorPoster { titleBlock: string; conceptMap: string[]; vocabRing: string[]; visualSlots: string[] }`. Export `buildAnchorPoster(ws: { title?: string; sections?: Array<{ type?: string; title?: string; content?: string }>; metadata?: Record<string, unknown> }): AnchorPoster`. The titleBlock = worksheet title + topic. conceptMap = up to 6 key noun phrases from the learning-objective content split by semicolons/line breaks. vocabRing = up to 8 terms from the word-bank section (just the terms, no definitions). visualSlots = up to 4 diagram section titles. Export `anchorPosterHtml(poster: AnchorPoster): string` that returns printable A3-landscape HTML markup with title, concept boxes, and vocab ring. Pure, no I/O.",
+    "client/src/lib/nowNextThenBuilder.ts (NEW) — pure thin wrapper around lesson-bundle.ts:buildNowNextThen. Export `buildNowNextThenForWorksheet(ws: { metadata?: Record<string, unknown> }): NowNextThenStrip`. Reads metadata.subject and metadata.topic and delegates to the existing buildNowNextThen from lesson-bundle.ts. Also export `nowNextThenHtml(strip: NowNextThenStrip): string` that returns a simple A6-print-friendly HTML card with the three boxes. Pure, no I/O.",
+    "client/src/components/KnowledgeOrganiserPanel.tsx (NEW) — React component. Props: `{ worksheet: { title?; sections?; metadata? } }`. Calls deriveKnowledgeOrganiserFromWorksheet, renders a collapsible panel (using native <details> for accessibility, same pattern as AuditTrailPanel.tsx). Includes a 'Print KO' button that opens knowledgeOrganiserHtml in a popup window via the existing buildPopupHtml pattern. Default collapsed. Print-hidden via ws-no-print-on-student class.",
+    "client/src/components/AnchorPosterPanel.tsx (NEW) — React component. Props same shape. Calls buildAnchorPoster, renders a collapsible panel with poster preview and 'Print Poster' button using anchorPosterHtml in a popup.",
+    "client/src/components/NowNextThenCard.tsx (NEW) — React component. Props same shape. Calls buildNowNextThenForWorksheet, renders a collapsible panel with the three-tile flow and a 'Print Card' button.",
+    "server/tests/generationCache.test.ts — append a new describe block at the end for PR-10 tests: 'PR-10 / Knowledge Organiser + Anchor Poster + Now/Next/Then'. Tests: (A) deriveKnowledgeOrganiserFromWorksheet extracts vocab from word-bank section, (B) extracts sticky questions from self-reflection section, (C) returns empty arrays for a minimal worksheet, (D) buildAnchorPoster returns vocabRing from word-bank, (E) buildAnchorPoster returns conceptMap from learning-objective, (F) buildNowNextThenForWorksheet returns valid Now/Next/Then with expected minutes summing to 50. Import from the new builder modules.",
+    "LEDGER.md — flip items #20, #21 to `shipped — PR-10`.",
+    "SESSION-HANDOFF.md — flip PR-10 from 'What is next' to 'What is done' with a bullet. Advance 'What is next' to PR-11."
+  ],
+  "acceptance_criteria": [
+    "shared/aiSchemas.ts contains optional knowledgeOrganiser, anchorPoster, nowNextThen metadata fields.",
+    "client/src/lib/knowledgeOrganiserBuilder.ts exports deriveKnowledgeOrganiserFromWorksheet.",
+    "client/src/lib/anchorPosterBuilder.ts exports buildAnchorPoster and anchorPosterHtml.",
+    "client/src/lib/nowNextThenBuilder.ts exports buildNowNextThenForWorksheet and nowNextThenHtml.",
+    "client/src/components/KnowledgeOrganiserPanel.tsx, AnchorPosterPanel.tsx, NowNextThenCard.tsx exist.",
+    "Tests for all three builders pass.",
+    "LEDGER.md items #20, #21 updated.",
+    "SESSION-HANDOFF.md updated."
+  ],
+  "verification": [
+    "pnpm run check (tsc --noEmit) — zero errors.",
+    "pnpm test — the PR-10 describe block passes."
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

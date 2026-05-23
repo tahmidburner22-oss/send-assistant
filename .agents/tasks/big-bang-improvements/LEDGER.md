@@ -30,8 +30,8 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 17 | Misconception bank backing (formal registry)                                          | PR-13  | not started |
 | 18 | Self-Reflection: command-word echo guarantee                                          | PR-2   | shipped — PR #86 |
 | 19 | Revision-Tips: time-budget reconcile with estimatedTime                               | PR-13  | not started |
-| 20 | Knowledge organiser auto-extract per topic (PD10)                                     | PR-10  | not started |
-| 21 | Anchor-poster + Now/Next/Then card outputs (PD11)                                     | PR-10  | not started |
+| 20 | Knowledge organiser auto-extract per topic (PD10)                                     | PR-10  | shipped — PR-10 |
+| 21 | Anchor-poster + Now/Next/Then card outputs (PD11)                                     | PR-10  | shipped — PR-10 |
 | 22 | Diagram coverage gap teacher-facing badge (UI side)                                   | PR-6   | not started |
 | 23 | Alt-text quality probe (not just presence)                                            | PR-18  | not started |
 | 24 | Tactile-graphics export for VI pupils                                                 | PR-18  | not started |
