@@ -393,17 +393,12 @@ export function buildRevisionTips(inputs: RevisionTipsInputs): RevisionTipsOutpu
 
 /**
  * Render a `RevisionTipsOutput` as a marker-block string the renderer
- * (`RevisionTipsSection`) parses back into a list of cards.
- *
- * Format:
+ * parses back into a list of cards. Format:
  *   SUBTITLE: <subtitle>
  *   TIPS:
  *   1. COMMAND WORD: <text>
  *   2. WATCH OUT: <text>
  *   …
- *
- * The numbering is part of the format so an AI that emits the section
- * by hand still produces a structured payload the renderer can parse.
  */
 export function renderRevisionTipsAsMarkerBlock(out: RevisionTipsOutput): string {
   const lines: string[] = [];
@@ -499,4 +494,94 @@ export function isGenericRevisionTips(content: string, topic: string): boolean {
   if (!hasCommandWord) return true;
 
   return false;
+}
+
+
+
+// ─── PR-19 carry-over #19 — Time-budget reconcile ──────────────────────────
+//
+// `metadata.estimatedTime` is set on most worksheets as a free-text
+// string (e.g. "45 minutes", "35–45 mins", "1 hour"). The Revision-
+// Tips builder computes its own time recommendation from the per-Q
+// marks tariff (≈ 1 minute per mark). When the two drift wildly —
+// e.g. the worksheet ships with 50 marks of questions but the
+// metadata says "20 minutes" — pupils get either a frustration spike
+// or a coast. This helper surfaces the drift as a single warning so
+// the post-validator chain can stamp it on metadata.postValidatorWarnings.
+//
+// Pure / idempotent. Returns warnings only — never rewrites metadata.
+
+const TIME_RANGE_RE = /(\d+)\s*(?:[–\-—to]+\s*(\d+))?\s*(?:min|minute|mins|hour|hr|h\b|hours)/i;
+const HOUR_RE = /\bhour|\bhr|\bh\b/i;
+
+/**
+ * Parse a worksheet's `metadata.estimatedTime` string into a numeric
+ * minute range. Returns null when the string can't be parsed. Accepts
+ * "45 minutes", "35–45 mins", "1 hour", "1 to 2 hours", "20-30 mins".
+ */
+export function parseEstimatedTimeMinutes(raw: string | undefined): { min: number; max: number } | null {
+  if (!raw) return null;
+  const match = TIME_RANGE_RE.exec(raw);
+  if (!match) return null;
+  const lower = Number(match[1]);
+  const upper = match[2] ? Number(match[2]) : lower;
+  if (!Number.isFinite(lower) || !Number.isFinite(upper)) return null;
+  const isHours = HOUR_RE.test(raw);
+  const factor = isHours ? 60 : 1;
+  const lo = Math.min(lower, upper) * factor;
+  const hi = Math.max(lower, upper) * factor;
+  return { min: lo, max: hi };
+}
+
+export interface TimeBudgetReconcileInputs {
+  /** The worksheet's marks tariff (per Q). */
+  marksUsed?: number[];
+  /** The worksheet's `metadata.estimatedTime` string. */
+  estimatedTime?: string;
+  /** Allowed drift, expressed as a multiplier of the parsed minute. */
+  driftRatio?: number;
+}
+
+export interface TimeBudgetReconcileResult {
+  warnings: string[];
+  /** Computed budget from the marks tariff (minutes). */
+  computedMinutes: number;
+  /** Parsed minute range from the metadata string, or null. */
+  metadataRange: { min: number; max: number } | null;
+  /** True when the parsed metadata is outside the drift band. */
+  drifted: boolean;
+}
+
+/**
+ * Reconcile the builder's mark-tariff budget against the worksheet's
+ * `metadata.estimatedTime` string. Emits at most ONE warning when the
+ * parsed metadata sits outside the drift band (default ±50%).
+ *
+ * No-ops when the marks tariff is empty (the budget is unknowable) or
+ * the metadata string can't be parsed (the audit has nothing to compare
+ * against).
+ */
+export function reconcileRevisionTipsTimeBudget(
+  inputs: TimeBudgetReconcileInputs,
+): TimeBudgetReconcileResult {
+  const drift = inputs.driftRatio ?? 0.5;
+  const marks = (inputs.marksUsed || []).filter((m) => Number.isFinite(m) && m > 0);
+  const computed = Math.max(0, Math.round(marks.reduce((a, b) => a + b, 0) * 1.0));
+  const range = parseEstimatedTimeMinutes(inputs.estimatedTime);
+  if (!range || computed <= 0) {
+    return { warnings: [], computedMinutes: computed, metadataRange: range, drifted: false };
+  }
+  const lowerBand = Math.floor(computed * (1 - drift));
+  const upperBand = Math.ceil(computed * (1 + drift));
+  // Drifted = the entire metadata range sits outside the band on
+  // either side. A range that overlaps the band at all does not
+  // warn.
+  const drifted = range.max < lowerBand || range.min > upperBand;
+  const warnings: string[] = [];
+  if (drifted) {
+    warnings.push(
+      `[Phase PR-19 — Revision Tips time budget] Builder estimate ${computed} min (1 min per mark, ${marks.length} Qs) drifts from metadata.estimatedTime "${inputs.estimatedTime}".`,
+    );
+  }
+  return { warnings, computedMinutes: computed, metadataRange: range, drifted };
 }
