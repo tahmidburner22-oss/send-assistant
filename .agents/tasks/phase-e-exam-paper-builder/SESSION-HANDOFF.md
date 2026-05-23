@@ -5,8 +5,8 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — PR-A Step 3 (coverage audit + CI guard)
-shipped on `feat/phase-e-exam-paper-builder`. Gap-fill wave 1 is next.
+Last updated: 2026-05-23 — PR-A Step 4 (gap-fill wave 1) shipped on
+`feat/phase-e-exam-paper-builder`. Opening PR-A is next.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -160,47 +160,77 @@ pastPaperQuestions.ts       2,203 lines
     (deterministic) then the audit with regression check. Uploads
     the coverage JSON as a build artifact.
 
+- **PR-A · Step 4 — Gap-fill wave 1**. In a single commit, appended
+  160 hand-authored exam-style questions across 32 zero-coverage
+  subtopics in 5 core GCSE subjects, with full fields (id, board,
+  subject, year, series, paper, tier, marks, topic, **subtopic**
+  — the explicit field which the back-tagger picks up at score
+  Infinity, text, commandWord, answerLines, markScheme, hint, ao,
+  stage, yearGroups). Append-only — never edited an existing entry.
+  Plus one parser bug-fix:
+  - `scripts/_exam-bank-extract.mjs` — `indexBracePairs` now skips
+    `// line` and `/* block */` comments. Without this, an
+    apostrophe inside a comment (e.g. `// Ohm's Law`) opened a
+    string-quote state and broke parsing of the 25 questions
+    after that comment.
+  - `client/src/lib/questionBank{Maths,Biology,Chemistry,Physics,English}.ts` —
+    appended 40+40+25+30+25 = 160 questions before the closing
+    `];` of each array. Marker comment block at the top of each
+    insertion identifies them as Phase E gap-fill wave 1.
+  - `client/src/lib/subtopicTags.ts` — regenerated. Now
+    2,879 / 7,062 questions tagged (40.8%): 2,719 back-tagged from
+    text + 160 explicit-field (the new gap-fill).
+  - `docs/exam-bank-coverage.json` and
+    `docs/exam-bank-coverage.baseline.json` — regenerated.
+    Wave-1 effect:
+    - Total questions: 6,902 → 7,062 (+160).
+    - Zero subtopics: 548 → 514 (−34: every targeted subtopic
+      closed, plus 2 indirect via back-tagger seeing more text).
+    - Per-subject zero closures:
+      mathematics 162→153, biology 83→75, english-language 109→103,
+      **physics 6→0 (all closed)**, **chemistry 5→0 (all closed)**.
+    - Subtopics covered (≥10): unchanged at 91, because each
+      gap-filled subtopic only got 5 questions — they moved from
+      `zero` to `belowTen`, which is what wave 1 sets up. Wave 2
+      bumps them to ≥10.
+
 ## What is in flight
 
-_Nothing yet. PR-A Step 4 (gap-fill wave 1) starts at the next checkpoint._
+_Nothing yet. PR-A Step 5 (open the PR) starts at the next checkpoint._
 
 ## What is next
 
-**PR-A · Step 4 — Gap-fill wave 1** (target: 1 commit, ~150 new
-hand-authored questions, append-only).
+**PR-A · Step 5 — Open the PR.**
 
-Exact actions in order:
+Branch is `feat/phase-e-exam-paper-builder` (already pushed through
+Step 4). Open the PR with:
 
-1. Read `docs/exam-bank-coverage.json`. Pick the priority list:
-   from the `zero` array, select rows where `subject` is one of
-   `mathematics`, `biology`, `chemistry`, `physics`, `english-language`.
-   Cap at the first ~30 subtopics per subject so the diff stays
-   reviewable (overall ~150 questions for the first wave; subsequent
-   sessions grind down the rest).
-2. For each selected subtopic, author 3-5 exam-style questions with
-   full fields:
-   - `id` — unique, prefix `phaseE-` plus a short slug derived from
-     subtopic name + sequence number.
-   - `subject` — one of the canonical subject IDs.
-   - `topic` — must match the topic key from `SUBTOPICS_MAP`.
-   - `subtopic` — exact match for the `SUBTOPICS_MAP[topic]` entry
-     (this is the explicit field; takes precedence over
-     `SUBTOPIC_TAGS[q.id]`).
-   - `text`, `marks`, `commandWord`, `markScheme`, `hint`, `tier`
-     (Higher / Foundation), `ao` (AO1-AO4), `stage`, `yearGroups`.
-   - `board: "Adaptly"` for the new bank.
-3. Append to the matching subject's `questionBank*.ts` file, in
-   the array literal, just before the closing `];`. Never edit
-   existing entries.
-4. Run `node scripts/exam-bank-back-tagger.mjs` (it'll see the new
-   `subtopic` fields and tag them at score `Infinity`).
-5. Run `node scripts/exam-bank-coverage.mjs --update-baseline`
-   to refresh both `docs/exam-bank-coverage.json` and
-   `docs/exam-bank-coverage.baseline.json` (deliberate gap-fill —
-   the new floor is the new state).
-6. Commit. Push.
-7. Update this handoff: move Step 4 to "What is done", set "What
-   is next" to PR-A Step 5 (open the PR).
+- **Title:** `Phase E PR-A: Exam Bank subtopic schema + back-tagger + coverage audit + gap-fill wave 1`
+- **Body** must include:
+  1. Link to `.agents/tasks/phase-e-exam-paper-builder/`.
+  2. The four ledger fields from `docs/exam-bank-coverage.json`:
+     7,062 questions / 91 covered / 816 belowTen / 514 zero.
+  3. Per-subject roll-up table from this handoff.
+  4. Explicit note that closing the residual gap is a follow-up wave
+     tracked in `docs/exam-bank-coverage.json` — the regression CI
+     gate at `.github/workflows/exam-bank-coverage.yml` ensures no
+     subtopic count drops below the new baseline.
+  5. Note that PR-B (assembly engine) does NOT depend on this
+     gap-fill being complete.
+  6. Worked example for reviewers — run
+     `node scripts/exam-bank-coverage.mjs` locally to see the
+     report.
+
+After PR-A is opened (or merged), proceed to PR-B (Step 6 below).
+
+PR-B steps (after PR-A is open or merged):
+
+- **Step 6** — `client/src/lib/createExamPaperBuilder.ts` with the
+  knapsack assembly algorithm + unit tests. See FEAT-PE-B step 1.
+- **Step 7** — `client/src/pages/tools/CreateExamPaper.tsx` + tool
+  registry entry + App.tsx route + Revision Hub card. See FEAT-PE-B
+  step 2.
+- **Step 8** — Open PR-B. Update this handoff.
 
 ## Checkpoint protocol
 
