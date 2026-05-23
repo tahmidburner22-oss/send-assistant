@@ -256,6 +256,18 @@ export const WorksheetOutputSchema = z.object({
       ranAt: z.string().optional(),
       durationMs: z.number().min(0).optional(),
     }).optional(),
+    /** PR-12 — bias & sensitivity audit findings. */
+    biasAudit: z.object({
+      findings: z.array(z.object({
+        kind: z.enum(["name-distribution", "gendered-profession", "cultural-assumption", "socioeconomic-assumption", "religious-default"]),
+        severity: z.enum(["info", "warning", "flag"]),
+        sectionIndex: z.number().int().min(0).optional(),
+        evidence: z.string().max(300),
+        suggestion: z.string().max(300),
+      })).max(20),
+      auditedAt: z.string().optional(),
+      score: z.number().min(0).max(100).optional(),
+    }).optional(),
     /** FEAT-PB3 — re-teach worksheet provenance (set when this worksheet was
      * generated from a misconception detected in a Scan & Mark batch on a
      * source worksheet). The renderer surfaces a header badge and footer
