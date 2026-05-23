@@ -779,19 +779,38 @@ function buildSemhSupport(sections: WorksheetSection[]): WorksheetSection[] {
 // ── Visual Impairment ─────────────────────────────────────────────────────────
 function buildViSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
+  // Rotate through varied phrasings so the same boilerplate is not repeated
+  // verbatim under every question — that was making VI worksheets look
+  // mechanical and identical regardless of subject or task.
+  const accessVariants = [
+    "Every detail you need for this question is written out below — there is nothing you have to read off a diagram.",
+    "All information for this task is given in plain text — diagrams are optional and described in words.",
+    "This question is fully accessible by reading alone — no visual element is required to answer.",
+    "Numbers, units and key terms are spelled out — listen to a screen reader at any speed that works for you.",
+  ];
+  let viIdx = 0;
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    // Question-specific access note — neutral title "Access Note"
-    const hints: string[] = [
-      "All information needed to answer this question is written in the text.",
-      "Use large print or screen reader settings as needed.",
-    ];
+    const verb = extractCommandVerb(section);
+    const access = accessVariants[viIdx % accessVariants.length];
+    viIdx++;
+    const hints: string[] = [access];
     if (isCalculationSection(section)) {
-      hints.push("All numbers and formulas are written out in full — no visual diagram is needed.");
+      hints.push("All numbers and formulas are written out in full — copy them straight into your working.");
+    } else if (isMatchingSection(section)) {
+      hints.push("Match by writing the letter or number of your answer next to each item — you do not need to draw lines.");
+    } else if (isExtendedWritingSection(section)) {
+      hints.push("Plan your answer in a list first — you can use any layout that suits you, including bullet points.");
+    } else if (isGapFillSection(section)) {
+      hints.push("Each gap is read aloud as 'blank' by your screen reader — listen for the sentence either side to find the missing word.");
     } else {
-      hints.push("All diagrams are described in text — read the description carefully.");
+      hints.push("Any diagram referenced in this question is described in text below — read the description carefully.");
     }
+    if (verb) {
+      hints.push(`The command word here is '${verb.charAt(0).toUpperCase() + verb.slice(1)}' — make sure your answer matches what that asks for.`);
+    }
+    hints.push("Use large print, high contrast or a screen reader — whichever works best for you today.");
     result.push(buildSupportSection(section.id, "Access Note", hints));
   }
   return result;
@@ -800,19 +819,41 @@ function buildViSupport(sections: WorksheetSection[]): WorksheetSection[] {
 // ── Hearing Impairment ────────────────────────────────────────────────────────
 function buildHiSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
+  // Rotate through varied lead-in phrases so every "Written Instructions"
+  // box does not start with the same sentence — that was the main complaint
+  // about generic per-question instructions.
+  const leadInVariants = [
+    "Everything you need for this question is on the page — no spoken explanation is required.",
+    "All instructions for this task are written out below — you do not need to listen for anything.",
+    "This question is fully self-contained: read carefully and you have everything you need.",
+    "Read the question text below — every detail is in writing, including any spoken examples.",
+  ];
+  let hiIdx = 0;
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    // Question-specific written instruction note — neutral title "Written Instructions"
-    const hints: string[] = [
-      "All instructions are written in full — no verbal explanation is needed.",
-      "Every question is self-contained — all the information you need is on the page.",
-    ];
     const verb = extractCommandVerb(section);
+    const lead = leadInVariants[hiIdx % leadInVariants.length];
+    hiIdx++;
+    const hints: string[] = [lead];
+    // Section-specific extra clue — keep it short and concrete.
+    if (isMcqSection(section)) {
+      hints.push("Each option is written below the question — you can re-read them as many times as you need.");
+    } else if (isTrueFalseSection(section)) {
+      hints.push("Decide TRUE or FALSE based only on the statement you can read — there is no audio to compare with.");
+    } else if (isGapFillSection(section)) {
+      hints.push("The word bank contains every word you need — none have been spoken aloud only.");
+    } else if (isCalculationSection(section)) {
+      hints.push("All numbers, units and formulas are written out — you do not need to listen for any data.");
+    } else if (isExtendedWritingSection(section)) {
+      hints.push("Plan in writing first — drawing or signing your plan is fine, but written notes give the most marks.");
+    } else if (isMatchingSection(section)) {
+      hints.push("Both columns are fully written out — match by drawing a line or by writing the matching letter/number.");
+    }
     if (verb) {
       hints.push(`The key instruction for this question is: '${verb.charAt(0).toUpperCase() + verb.slice(1)}'.`);
     }
-    hints.push("Check the Key Vocabulary section for definitions of all key terms.");
+    hints.push("Check the Key Vocabulary section if you are unsure of any term — definitions are written, not spoken.");
     result.push(buildSupportSection(section.id, "Written Instructions", hints));
   }
   return result;

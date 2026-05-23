@@ -174,20 +174,142 @@ function getQuestionCount(worksheetLength?: string): number {
 
 /**
  * Build a SEND-friendly header for the exam paper.
+ *
+ * Instructions are derived from subject, topic, year group, calculator policy
+ * and the paper's question profile so the worksheet does not always show the
+ * same generic "Answer ALL questions. Show all working." line. Each subject
+ * has its own pedagogically-relevant instruction set, with optional topic
+ * cues for high-yield specifics (e.g. "Give your answer to 3 s.f." for
+ * calculation-heavy maths topics).
  */
-function buildExamHeader(params: ExamPaperWorksheetParams, board: string): string {
+function buildExamHeader(
+  params: ExamPaperWorksheetParams,
+  board: string,
+  questions?: PastPaperQuestion[]
+): string {
   const boardName = board && board !== "none" && board !== "Any" ? board : "Adaptly";
   const tierLabel = getTierLabel(params.subject, params.difficulty);
+  const subj = (params.subject || "").toLowerCase();
+  const topic = (params.topic || "").toLowerCase();
+  const yearGroupNum = parseYearGroupNumber(params.yearGroup);
+  const totalMarks = (questions || []).reduce((s, q) => s + (q.marks ?? 0), 0);
+  const questionCount = (questions || []).length;
+
+  // ── Subject-specific instructions (varied) ─────────────────────────────
+  const baseInstructions: string[] = [];
+  let calculatorLine = "";
+  let toolsLine = "";
+
+  if (/math|maths/.test(subj)) {
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push("Show every step of your working — method marks are awarded even if the final answer is wrong.");
+    // Calculator policy is paper-specific (P1 = non-calculator)
+    if (/non.?calc|paper\s*1|p1/.test(`${params.additionalInstructions || ""} ${params.examBoard || ""}`)) {
+      calculatorLine = "Calculators are NOT allowed.";
+    } else {
+      calculatorLine = "You may use a calculator.";
+    }
+    toolsLine = "You will need: a pen, a sharp pencil, an eraser and a ruler graduated in cm and mm. A protractor is needed for any geometry questions.";
+    if (/percentage|fraction|decimal|round|estimat/.test(topic)) {
+      baseInstructions.push("Where appropriate, give your final answer as a fraction in its simplest form, a decimal, or correct to 3 significant figures.");
+    } else if (/algebra|equation|solve|simultan|quadrat|inequalit|expression/.test(topic)) {
+      baseInstructions.push("Show every line of algebra clearly. Give exact answers (in surd or fraction form) unless the question asks for a decimal.");
+    } else if (/area|perimeter|volume|surface|circle|pythag|trig|angle|triangle|polygon|shape/.test(topic)) {
+      baseInstructions.push("Take π = 3.14 (or use the π key on your calculator) unless told otherwise. Diagrams are not drawn to scale.");
+    } else if (/probabilit|statistic|data|graph|histogram|frequenc|mean|median/.test(topic)) {
+      baseInstructions.push("Read each table and chart carefully before you answer. Give probabilities as fractions, decimals or percentages.");
+    }
+  } else if (/biology|chemistry|physics|combined.?science|triple.?science|^science/.test(subj)) {
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push("Write your answers using the correct scientific terms — examiners look for specific vocabulary from the specification.");
+    baseInstructions.push("In calculation questions, show your formula, your substitution and your final answer with the correct unit.");
+    calculatorLine = "You may use a calculator.";
+    if (/physics/.test(subj)) {
+      toolsLine = "You will need: a pen, a pencil, a ruler, a calculator and the equation sheet provided by your exam board.";
+    } else if (/chem/.test(subj)) {
+      toolsLine = "You will need: a pen, a pencil, a ruler, a calculator and a Periodic Table.";
+    } else {
+      toolsLine = "You will need: a pen, a pencil, a ruler and a calculator.";
+    }
+  } else if (/english.?lang/.test(subj)) {
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push("Read the source text(s) on the insert before you start.");
+    baseInstructions.push("Plan your longer responses before you write — examiners reward clear structure as well as content.");
+    baseInstructions.push("Spelling, punctuation and grammar are assessed in the extended response — proofread before you finish.");
+    toolsLine = "You will need: a pen and any source booklet provided.";
+  } else if (/english.?lit|literature/.test(subj)) {
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push("Quote directly from the text where you can — short, embedded quotations score more highly than long ones.");
+    baseInstructions.push("Always link your analysis back to the writer's intentions and the question's focus.");
+    toolsLine = "You will need: a pen. The texts and any source extracts will be provided in the booklet.";
+  } else if (/history/.test(subj)) {
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push("Use specific factual detail — names, dates, places and key terms from the period.");
+    baseInstructions.push("In source questions, refer to provenance (who wrote it, when, why) before drawing a conclusion.");
+    toolsLine = "You will need: a pen. The sources will be provided in the question paper.";
+  } else if (/geography/.test(subj)) {
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push("Use case-study evidence — named places, statistics and processes — to support every extended answer.");
+    baseInstructions.push("Read all maps, graphs and figures carefully before answering. Give compass bearings and grid references where asked.");
+    toolsLine = "You will need: a pen, a pencil, a ruler and a calculator.";
+  } else if (/computer.?science|computing/.test(subj)) {
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push("Code answers may be written in pseudocode unless a specific language is named.");
+    baseInstructions.push("Show all working for binary, hexadecimal and logic questions.");
+    toolsLine = "You will need: a pen, a pencil and a ruler. Calculators are not normally permitted in computer science papers — check the front of your paper.";
+  } else if (/religious|^re$|^rs$/.test(subj)) {
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push("Where the question asks for two religions, refer to BOTH. Use scripture or named beliefs to support each point.");
+    toolsLine = "You will need: a pen.";
+  } else {
+    // Fallback for less common subjects — still topic-aware, not generic.
+    baseInstructions.push("Answer all questions in the spaces provided.");
+    baseInstructions.push(params.topic
+      ? `Focus on ${params.topic} — every question on this paper relates to that topic.`
+      : "Read each question carefully before you start.");
+    baseInstructions.push("Plan extended responses before you write — clear structure scores marks.");
+    toolsLine = "You will need: a pen and a pencil.";
+  }
+
+  // ── Time / length / topic line ──────────────────────────────────────────
+  const timeLine = (() => {
+    const mins = parseInt(params.worksheetLength || "30", 10);
+    if (Number.isNaN(mins)) return "";
+    return `**Time allowed:** ${mins} minutes.`;
+  })();
+
+  const marksLine = totalMarks > 0
+    ? `**Total marks:** ${totalMarks}${questionCount ? ` across ${questionCount} questions` : ""}.`
+    : "";
+
+  const topicLine = params.topic
+    ? `**Focus:** ${params.topic}${yearGroupNum ? ` (${yearGroupNum <= 6 ? "KS2" : yearGroupNum <= 9 ? "KS3" : "GCSE"} level)` : ""}.`
+    : "";
+
   const sendNote = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
     ? `\n\n> **SEND Adaptation:** This paper has been formatted for students with ${params.sendNeed}. Font size, line spacing and layout have been adjusted for accessibility. Questions are verbatim from real exam papers.`
     : "";
 
-  return `**Exam Board:** ${boardName}${tierLabel}  
-**Year Group:** ${params.yearGroup}  
-**Subject:** ${params.subject}  
-**Instructions:** Answer ALL questions. Show all working. Write your answers in the spaces provided.${sendNote}
+  const lines: string[] = [
+    `**Exam Board:** ${boardName}${tierLabel}`,
+    `**Year Group:** ${params.yearGroup}`,
+    `**Subject:** ${params.subject}`,
+  ];
+  if (topicLine) lines.push(topicLine);
+  if (timeLine) lines.push(timeLine);
+  if (marksLine) lines.push(marksLine);
 
----`;
+  // Two columns of two spaces produces a markdown line break.
+  const headerBlock = lines.map(l => l + "  ").join("\n");
+
+  const instructionsBlock = [
+    "**Instructions:**",
+    ...baseInstructions.map(i => `- ${i}`),
+    calculatorLine ? `- ${calculatorLine}` : "",
+    toolsLine ? `- ${toolsLine}` : "",
+  ].filter(Boolean).join("\n");
+
+  return `${headerBlock}\n${instructionsBlock}${sendNote}\n\n---`;
 }
 
 /**
@@ -394,7 +516,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
   sections.push({
     title: "Instructions",
     type: "instructions",
-    content: buildExamHeader(params, boardLabel),
+    content: buildExamHeader(params, boardLabel, questions),
   });
 
   // 2. Information / formula box (subject-specific)

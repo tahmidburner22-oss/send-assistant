@@ -5539,9 +5539,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         // self-reflection, objective, vocabulary, and revision-tips are
         // ALWAYS shown to students (Phase 3 — examiner-voice tips panel)
         const isAlwaysStudentVisible = section.type === "self-reflection" || section.type === "objective" || section.type === "vocabulary" || section.type === "revision-tips";
-        if (!isTeacherView && !isAlwaysStudentVisible && (section.teacherOnly || section.type === "answers" || section.type === "mark-scheme" || section.type === "teacher-notes" || section.type === "teacher-note")) {
-          return null;
-        }
+        // ── Teacher-only flag ────────────────────────────────────────────────
+        // Previously we returned `null` here when the page was in student view
+        // and the section was teacher-only. That removed the section from the
+        // DOM entirely, so when the user opened the Print Preview / PDF
+        // dialog and toggled the export to "Teacher", there was nothing to
+        // un-hide — the toggle had no visible effect.
+        //
+        // We now ALWAYS render teacher-only sections, but mark them with the
+        // `ws-teacher-section` class plus an inline `display:none` style when
+        // the page-level view is student. The Print/PDF serialiser flips this
+        // for teacher exports (see serialiseElement in pdf-generator-v2.ts).
+        const isHiddenInStudentView =
+          !isTeacherView &&
+          !isAlwaysStudentVisible &&
+          (section.teacherOnly ||
+            section.type === "answers" ||
+            section.type === "mark-scheme" ||
+            section.type === "teacher-notes" ||
+            section.type === "teacher-note");
 
         // Key Vocabulary is shown for ALL subjects including Maths — mathematical terminology
         // is important for students to understand and use correctly.
@@ -5873,12 +5889,20 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               isDiagramB ? "ws-section-diagram-b" : "",
               // Only non-empty diagram sections receive ws-section-diagram; PDF pagination
               // uses that class to reserve a full page for a real diagram.
-              // Only heavy teacher sections (Key/Mark-Scheme) get the break-before: page CSS class
-              isHeavyTeacherSection ? "ws-teacher-section" : "",
-              isTeacherSection && !isHeavyTeacherSection ? "ws-teacher-section-light" : "",
+              // Teacher sections always get `ws-teacher-section` so the print/PDF
+              // serialiser can selectively show/hide them based on export mode —
+              // even when the page is currently displaying the student view.
+              (isHeavyTeacherSection || isHiddenInStudentView) ? "ws-teacher-section" : "",
+              isTeacherSection && !isHeavyTeacherSection && !isHiddenInStudentView ? "ws-teacher-section-light" : "",
             ].filter(Boolean).join(" ")}
+            data-teacher-only={isHiddenInStudentView ? "true" : undefined}
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
+              // Hide teacher-only sections on screen when the user is viewing the
+              // student version. The Print/PDF serialiser strips this inline
+              // display when exporting in teacher mode so toggling the export
+              // view actually changes what appears in the output.
+              display: isHiddenInStudentView ? "none" : (section.type === "diagram" ? "flex" : undefined),
               marginBottom: section.type === "diagram" ? "0" : "20px",
               // Diagram sections do NOT use negative margins — those caused overflow/cut-off.
               // The diagram image uses max-width: 100% and object-fit: contain to fit naturally.
@@ -5904,7 +5928,6 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               // beyond one print page, creating overflow that appeared as blank page.
               minHeight: section.type === "diagram" ? (hasDiagramContent ? "400px" : undefined) : undefined,
               height: undefined,
-              display: section.type === "diagram" ? "flex" : undefined,
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,
               alignItems: section.type === "diagram" ? "stretch" : undefined,
