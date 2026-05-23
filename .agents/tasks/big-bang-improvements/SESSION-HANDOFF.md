@@ -204,6 +204,17 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 2 source files (1 new) + 1 test file + 3 tracker
   docs. Net source diff: ~ +330 lines.
 
+- **PR-14 — Bloom-monotonicity check + science working-space stub**
+  (branch `big-bang/pr-14-bloom-monotonicity-working-space`). Audit
+  items **#8**, **#9**. Two pure validators in
+  `client/src/lib/bloomProgressionValidator.ts` (new):
+  `checkBloomMonotonicity` warns when questions drop more than one
+  Bloom level (allows one step back); `checkScienceWorkingSpace` warns
+  when science calculation questions lack a "Working:" stub. Schema
+  additive: `metadata.bloomProgression` (optional) in
+  `shared/aiSchemas.ts`. Tests in
+  `server/tests/bloomProgressionValidator.test.ts`.
+
 ## What is in flight
 
 - **PR-7 (#91), PR-8** push + open / merge bookkeeping.
@@ -219,6 +230,17 @@ Goal: complete the next un-shipped PR in the "What is next" section
   `big-bang/pr-7-server-prompt-unification` for PR-7's own context.
 
 ## What is next
+
+**PR-15 — Past-paper verbatim fingerprint detection.**
+
+Audit item: #3 (Past-paper verbatim / fingerprint detection).
+
+Previous "What is next" (PR-9) remains valid but PR-15 follows PR-14
+in the content-quality sequence. See PHASE-PLAN.md for full scope.
+
+---
+
+### Previous PR-9 context (retained for reference)
 
 **PR-9 — PD13 cost transparency + generation cache scaffolding.**
 

@@ -270,6 +270,11 @@ export const WorksheetOutputSchema = z.object({
       questionIdx: z.number().int().min(0).optional(),
       generatedAt: z.string().optional(),
     }).optional(),
+    /** PR-14 — Bloom progression analysis across questions. */
+    bloomProgression: z.object({
+      isMonotone: z.boolean(),
+      violationCount: z.number().int().min(0),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),
