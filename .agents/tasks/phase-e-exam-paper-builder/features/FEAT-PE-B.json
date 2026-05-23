@@ -1,0 +1,57 @@
+{
+  "id": "FEAT-PE-B",
+  "type": "feat",
+  "title": "Create an Exam Paper: assembly engine + tool surface",
+  "description": "Add a pure-function exam-paper assembly engine (knapsack-style packing against a target mark total with section-band budget, per-topic floor, AO/command-word tie-breaks, and deterministic optional seed) plus a new top-level tool 'Create an Exam Paper' that lets a teacher pick a subject, multi-select topics or subtopics, set a target mark total, and generate a real-looking paper drawing from the bank. Reuses the existing ExamPaperWorksheet renderer + pdf-generator-v2 + Class Pack pipeline — no new export plumbing.",
+  "rationale": "Goal 2 of Phase E. The repo's existing examPaperBuilder.ts has buildExamPaperWorksheet (one subject + one topic), buildHybridExamWorksheet (mixed past + AI), and buildSelectedQuestionsWorksheet (hand-picked questions). It does NOT have a 'pick subject + N topics + target marks → assemble paper' flow. Teachers need this to build mock papers per topic mix without hand-picking each question.",
+  "depends_on": ["FEAT-PE-A (PR-A)"],
+  "depends_on_note": "Strictly speaking the assembly engine works on whatever's in the bank today. PR-B will produce better papers once PR-A's gap-fill lands, but does not BLOCK on it.",
+  "constraints": [
+    "Assembly engine is a pure function. No I/O, no LLM calls, no localStorage, no globals beyond the imported question bank. Deterministic given the same (inputs, seed) pair.",
+    "Reuse the existing ExamPaperWorksheet output type from examPaperBuilder.ts — the new builder emits the SAME shape, so it slots straight into the existing renderer/PDF/Class-Pack pipeline.",
+    "UI reuses chip + multi-select primitives already in the repo. No new design system primitives.",
+    "Tool registry entry follows the existing 32-tool ToolEntry shape — id, label, path, hub: 'revision', icon, colour, description, sendTo.",
+    "Sandbox is INTEGRATIONS_ONLY — no npm install. Tests in server/tests/*.test.ts (vitest), runs in CI.",
+    "Push to the remote branch after every step."
+  ],
+  "steps": [
+    "STEP 1 — Engine. Create client/src/lib/createExamPaperBuilder.ts. Public API: `buildCreatedExamPaper(params: { subject; topics: string[]; totalMarks; tier?; yearGroup?; calculator?; sendNeed?; includeAnswers?; paperStyle?: 'real-exam' | 'single-section'; timingMinutes?; seed?: number }): ExamPaperWorksheet`. Algorithm: (1) pull candidate pool via getCandidatePoolForTopics from PR-A; (2) split pool into mark-buckets warm-up (1-3 marks), core (4-6 marks), stretch (7+ marks); (3) compute mark-shape budget — real-exam: 30/50/20 split of totalMarks across the three buckets, single-section: all in core; (4) enforce per-topic floor — every requested topic contributes ≥ 1 question or warn; (5) greedy knapsack within each bucket: shuffle deterministically by seed (djb2 hash), pick the minimum number of questions that hits the bucket's mark budget within ±2 marks, tie-break by AO diversity (Jaccard against AOs already picked) and command-word diversity; (6) sort selected questions ascending by marks within each section; (7) format via the existing formatQuestionForWorksheet. Fallbacks: if pool < target marks, return the partial paper plus a `warnings: string[]` field so the UI can surface the gap; if a requested topic has zero questions in the pool, warn before assembly. Write client/src/lib/__tests__/createExamPaperBuilder.test.ts with cases: target accuracy ±2 marks, per-topic floor enforced, undersized-pool fallback returns partial + warning, deterministic by seed (same seed → same paper), calculator filtering respected, AO diversity tie-break works, single-section paperStyle places everything in core. Verify `npx tsc --noEmit` and commit. Push.",
+    "STEP 2 — Tool surface. Create client/src/pages/tools/CreateExamPaper.tsx — page with form: subject select (driven by getDatabaseSummary().bySubject keys), year-group select, tier select (Higher/Foundation/N-A), multi-select topic chips grouped by parent topic (driven by getTopicsForSubject + getSubtopicsForTopic), per-chip question-count badge (driven by candidate-pool size), target-marks number input, calculator toggle, include-mark-scheme toggle, SEND-adapt select. Submit → call buildCreatedExamPaper, render with the existing WorksheetRenderer, expose Print / PDF / Save to Library / Send to Class Pack the same way Worksheets.tsx does. Add the tool to client/src/lib/tool-registry.ts: { id: 'create-exam-paper', label: 'Create an Exam Paper', path: '/tools/create-exam-paper', hub: 'revision', icon: ScrollText (or similar from lucide-react), colour: 'text-rose-700 bg-rose-50', description: 'Pick subject, topics, total marks — generate a real-style exam paper.', sendTo: ['differentiate', 'flash-cards', 'class-pack'] }. Wire the route in client/src/App.tsx (lazy-import per existing pattern). Add a hub card in the Revision Hub storyboard (search for the existing revision-hub card list in pages/landing or similar). Verify `npx tsc --noEmit` and commit. Push.",
+    "STEP 3 — Open PR-B. Title: 'Phase E PR-B: Create an Exam Paper — assembly engine + tool surface'. Body must: (a) link to .agents/tasks/phase-e-exam-paper-builder/, (b) state explicitly that the engine works on whatever's in the bank, so quality scales with PR-A's gap-fill waves, (c) include a short example showing the algorithm picking 80 marks across 3 topics from the live bank."
+  ],
+  "files_to_touch": [
+    "client/src/lib/createExamPaperBuilder.ts (new)",
+    "client/src/lib/__tests__/createExamPaperBuilder.test.ts (new)",
+    "client/src/pages/tools/CreateExamPaper.tsx (new)",
+    "client/src/lib/tool-registry.ts (one new entry)",
+    "client/src/App.tsx (one new route)",
+    "client/src/pages/landing/* OR equivalent hub-storyboard file (one new card)",
+    ".agents/tasks/phase-e-exam-paper-builder/SESSION-HANDOFF.md (updated)"
+  ],
+  "do_not_touch": [
+    "Existing examPaperBuilder.ts. The new builder lives in createExamPaperBuilder.ts and ONLY reuses the ExamPaperWorksheet output type — no edits to existing builders.",
+    "WorksheetRenderer.tsx — reuse via import only.",
+    "pdf-generator-v2.ts — reuse via existing tool wiring.",
+    "Bank files — read-only here."
+  ],
+  "acceptance_criteria": [
+    "buildCreatedExamPaper is a pure deterministic function — same (inputs, seed) → same output.",
+    "Generated paper hits target marks within ±2 marks for any pool size that supports it.",
+    "Every requested topic contributes ≥ 1 question, or the warnings array names the empty topic.",
+    "Undersized-pool case returns a partial paper + warnings (does NOT throw).",
+    "AO + command-word diversity tie-breaks are exercised in tests.",
+    "New tool entry appears in the Revision Hub.",
+    "`npx tsc --noEmit` and `npm test --run` pass.",
+    "PR description references the phase folder and includes a worked example."
+  ],
+  "verification": [
+    "npx tsc --noEmit",
+    "npm test --run -- createExamPaperBuilder",
+    "Manual: open the new tool route, generate a paper, confirm Print / PDF / Class Pack work."
+  ],
+  "size_estimate": {
+    "files_touched": 6,
+    "net_lines_changed": 1300
+  },
+  "context_budget_for_fresh_chat": "MEDIUM. Read examPaperBuilder.ts:123-200 (output type), :917-1065 (selected-questions reference), tool-registry.ts:30-60 (entry shape), and the SESSION-HANDOFF.md file pin-points table. Do NOT read WorksheetRenderer.tsx or Worksheets.tsx in full."
+}
