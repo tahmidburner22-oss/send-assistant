@@ -91,6 +91,9 @@ export const WorksheetSectionSchema = z.object({
   /** Phase 1 — 1-based question number within the worksheet (1..20 for a
    *  standard secondary sheet). Set by the AI; validated by the post-validator. */
   questionNumber: z.number().int().min(1).max(40).optional(),
+  /** PR-18 (#24) — tactile description for VI pupil export. Optional;
+   *  the accessibility audit warns when absent on diagram sections. */
+  tactileDescription: z.string().max(800).optional(),
 });
 
 export type WorksheetSection = z.infer<typeof WorksheetSectionSchema>;
@@ -282,6 +285,83 @@ export const WorksheetOutputSchema = z.object({
     cacheKey: z.string().max(256).optional(),
     /** PR-9 — generation cache: true when this response was served from cache. */
     cacheHit: z.boolean().optional(),
+    // ── PR-10 to PR-18 (combined big-bang batch) ───────────────────────────
+    /** PR-10 (#20) — derived knowledge organiser surface. */
+    knowledgeOrganiser: z.object({
+      topic: z.string(),
+      subject: z.string().optional(),
+      yearGroup: z.string().optional(),
+      sections: z.array(z.object({
+        heading: z.string(),
+        bullets: z.array(z.string().max(300)).max(20),
+      })).max(20),
+      generatedAt: z.string(),
+    }).optional(),
+    /** PR-10 (#21) — anchor poster (A3 print-ready). */
+    anchorPoster: z.object({
+      topic: z.string(),
+      bands: z.array(z.object({
+        label: z.string(),
+        bullets: z.array(z.string().max(300)).max(10),
+      })).max(10),
+      generatedAt: z.string(),
+    }).optional(),
+    /** PR-10 (#21) — Now / Next / Then sequencing cards. */
+    nowNextThen: z.object({
+      now: z.object({ title: z.string(), cue: z.string() }),
+      next: z.object({ title: z.string(), cue: z.string() }),
+      then: z.object({ title: z.string(), cue: z.string() }),
+      generatedAt: z.string(),
+    }).optional(),
+    /** PR-11 (#66) — versioning + diff history. */
+    versionHistory: z.array(z.object({
+      id: z.string(),
+      capturedAt: z.string(),
+      label: z.string().optional(),
+      source: z.enum(["ai", "manual", "regenerate", "import"]),
+      summary: z.object({
+        sectionCount: z.number().int().min(0),
+        totalMarks: z.number().int().min(0),
+        titleHash: z.string(),
+      }),
+    })).max(50).optional(),
+    /** PR-12 (#12) — bias & sensitivity audit report. */
+    biasSensitivityReport: z.object({
+      findings: z.array(z.object({
+        bucket: z.enum(["name-diversity", "uk-context", "stigmatising", "heteronormative", "class-loaded"]),
+        message: z.string(),
+      })),
+      nameStats: z.object({
+        angloCount: z.number().int().min(0),
+        nonAngloCount: z.number().int().min(0),
+        totalDistinct: z.number().int().min(0),
+      }),
+    }).optional(),
+    /** PR-13 (#5 #6 #7) — mark-scheme upgrade summary. */
+    markSchemeUpgrades: z.object({
+      warningCount: z.number().int().min(0),
+    }).optional(),
+    /** PR-14 (#8 #9) — Bloom progression report. */
+    bloomProgressionReport: z.object({
+      warningCount: z.number().int().min(0),
+      questionCount: z.number().int().min(0),
+    }).optional(),
+    /** PR-15 (#3) — past-paper fingerprint matches. */
+    pastPaperFingerprintMatches: z.array(z.object({
+      section: z.string(),
+      source: z.string(),
+      ratio: z.number().min(0).max(1),
+    })).optional(),
+    /** PR-16 (#82) — stacked SEND profile keys (e.g. ["adhd", "dyslexia"]). */
+    sendNeeds: z.array(z.string().max(60)).max(8).optional(),
+    /** PR-18 (#23 #24 #25 #26 #27) — accessibility audit report. */
+    accessibilityReport: z.object({
+      findings: z.array(z.object({
+        bucket: z.enum(["alt-text", "tactile", "wcag", "plain-english", "dyslexia"]),
+        message: z.string(),
+      })),
+      findingCount: z.number().int().min(0),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),

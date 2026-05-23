@@ -69,6 +69,18 @@ import {
 
 import { reconcileMarkScheme } from "./markSchemeReconciler";
 
+// PR-10 to PR-18 (combined) — new validators registered after the
+// existing chain. Each is pure / idempotent / warn-only and takes a
+// worksheet structurally compatible with `PostValidatorWorksheet`.
+// We cast through `unknown` because the new modules keep their own
+// narrower input/output types so they can be unit-tested in isolation
+// without depending on this module's full type surface.
+import { enforceBiasSensitivity } from "./biasSensitivityAudit";
+import { enforceMarkSchemeUpgrades } from "./markSchemeUpgrades";
+import { enforceBloomProgression } from "./bloomProgressionAudit";
+import { enforcePastPaperFingerprint } from "./pastPaperFingerprint";
+import { enforceAccessibilityAudit } from "./accessibilityAudit";
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /**
@@ -123,6 +135,27 @@ export interface RunRegistryResult {
 // module, the registry's own validator references resolve at the
 // moment `runRegistry` actually walks the array, by which time the
 // other module's named exports are fully initialised.
+
+/**
+ * PR-10..18 — Lifts a validator with a narrower local input/output
+ * type into the canonical `(PostValidatorWorksheet, PostValidatorOptions)
+ * => PostValidatorResult` shape the registry expects. The new modules
+ * keep their own narrower types so they can be unit-tested in isolation
+ * without depending on this module's full type surface; the cast is
+ * sound because every narrow type is a structural subset of
+ * `PostValidatorWorksheet` (same `sections` + `metadata` access pattern).
+ */
+function adapt<T extends { sections?: unknown; metadata?: unknown }>(
+  fn: (ws: T) => { worksheet: T; warnings: string[] },
+): ValidatorFn {
+  return (ws, _opts) => {
+    const r = fn(ws as unknown as T);
+    return {
+      worksheet: r.worksheet as unknown as PostValidatorWorksheet,
+      warnings: r.warnings,
+    };
+  };
+}
 
 // ─── Registry ────────────────────────────────────────────────────────────────
 //
@@ -218,6 +251,21 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
       name: "tier3-vocabulary-declared",
       fn: (ws, _opts) => enforceTier3VocabularyDeclared(ws),
     },
+    // PR-10 to PR-18 (combined) — new validators added at the END of
+    // the chain so they audit FINAL post-validated content. All are
+    // warn-only; none mutate pupil-facing content.
+    // PR-12 (audit #12) — Bias & sensitivity heuristics.
+    { name: "bias-sensitivity", fn: adapt(enforceBiasSensitivity) },
+    // PR-13 (#5 #6 #7) — Mark-scheme synonyms / method marks /
+    // plausibility rail.
+    { name: "mark-scheme-upgrades", fn: adapt(enforceMarkSchemeUpgrades) },
+    // PR-14 (#8 #9) — Bloom monotonicity + science working-space stub.
+    { name: "bloom-progression", fn: adapt(enforceBloomProgression) },
+    // PR-15 (#3) — Past-paper verbatim fingerprint detection.
+    { name: "past-paper-fingerprint", fn: adapt(enforcePastPaperFingerprint) },
+    // PR-18 (#23 #24 #25 #26 #27) — Accessibility / alt-text / tactile
+    // / plain-English / dyslexia typography composite audit.
+    { name: "accessibility-audit", fn: adapt(enforceAccessibilityAudit) },
   ]);
 
 /**
