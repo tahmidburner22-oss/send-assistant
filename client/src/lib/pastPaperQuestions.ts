@@ -6,6 +6,8 @@ import chemistryQuestionsBank from "./questionBankChemistry";
 import physicsQuestionsBank from "./questionBankPhysics";
 import englishQuestionsBank from "./questionBankEnglish";
 import allOtherSubjectQuestionsBank from "./questionBankOtherSubjects";
+import { SUBTOPICS_MAP } from "./subtopics-data";
+import { SUBTOPIC_TAGS } from "./subtopicTags";
 
 /**
  * Past Paper Question Database
@@ -94,6 +96,15 @@ export interface PastPaperQuestion {
   levelDescriptor?: string;
   /** Per-AO mark breakdown for the question (sums to .marks). */
   markBreakdown?: MarkBreakdownEntry[];
+  /**
+   * Phase E — fine-grained subtopic tag.
+   * When present, MUST match a value in `SUBTOPICS_MAP[topic]` from
+   * `subtopics-data.ts`. Optional so older bank entries that pre-date
+   * Phase E continue to load and render unchanged. Where absent, the
+   * effective subtopic is resolved via `SUBTOPIC_TAGS[q.id]` from the
+   * back-tagger output.
+   */
+  subtopic?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1863,16 +1874,23 @@ export function getExamQuestions(options: {
   board?: string;
   tier?: "Higher" | "Foundation";
   topic?: string;
+  /**
+   * Phase E — optional fine-grained subtopic filter.
+   * Matches against `q.subtopic` (when present) OR `SUBTOPIC_TAGS[q.id]`
+   * (the back-tagger's derived map). Substring + case-insensitive.
+   */
+  subtopic?: string;
   yearMin?: number;
   yearMax?: number;
   limit?: number;
   yearGroup?: number; // school year (1-11) for age-appropriate filtering
 }): PastPaperQuestion[] {
-  const { subject, board, tier, topic, yearMin = 2010, yearMax = 2025, limit = 25, yearGroup } = options;
+  const { subject, board, tier, topic, subtopic, yearMin = 2010, yearMax = 2025, limit = 25, yearGroup } = options;
 
   // Resolve topic aliases for smarter matching
   const topicAliases = topic ? resolveTopicAliases(topic) : null;
   const topicLower = topic ? topic.toLowerCase() : null;
+  const subtopicLower = subtopic ? subtopic.toLowerCase() : null;
 
   const matchesTopic = (q: PastPaperQuestion): boolean => {
     if (!topicLower) return true;
@@ -1889,11 +1907,23 @@ export function getExamQuestions(options: {
     return false;
   };
 
+  // Phase E — optional subtopic filter. Resolves the question's effective
+  // subtopic via q.subtopic ?? SUBTOPIC_TAGS[q.id] ?? null and substring-
+  // matches case-insensitively. When no subtopic is requested, this is a
+  // no-op and topic-level matching takes over.
+  const matchesSubtopic = (q: PastPaperQuestion): boolean => {
+    if (!subtopicLower) return true;
+    const effective = (q.subtopic ?? (q.id ? SUBTOPIC_TAGS[q.id] : undefined) ?? "").toLowerCase();
+    if (!effective) return false;
+    return effective.includes(subtopicLower) || subtopicLower.includes(effective);
+  };
+
   let filtered = allPastPaperQuestions.filter(q => {
     if (q.subject !== subject) return false;
     if (board && board !== "none" && board !== "Any" && q.board !== board) return false;
     if (tier && q.tier && q.tier !== tier) return false;
     if (!matchesTopic(q)) return false;
+    if (!matchesSubtopic(q)) return false;
     if (q.year !== undefined && (q.year < yearMin || q.year > yearMax)) return false;
 
     // Year-group-appropriate filtering — STRICTLY enforced
@@ -1942,6 +1972,86 @@ export function getTopicsForSubject(subject: string, board?: string): string[] {
      .forEach(q => { if (q.topic) topics.add(q.topic); });
   return Array.from(topics).sort();
 }
+
+/**
+ * Phase E — Get the canonical list of subtopics for a topic.
+ * Reads SUBTOPICS_MAP from subtopics-data.ts. Returns [] if the topic
+ * has no entry. Case-insensitive lookup against SUBTOPICS_MAP keys so
+ * caller doesn't have to match capitalisation exactly.
+ */
+export function getSubtopicsForTopic(topic: string): string[] {
+  if (!topic) return [];
+  const direct = SUBTOPICS_MAP[topic];
+  if (direct) return [...direct];
+  const lower = topic.toLowerCase();
+  for (const [key, value] of Object.entries(SUBTOPICS_MAP)) {
+    if (key.toLowerCase() === lower) return [...value];
+  }
+  return [];
+}
+
+/**
+ * Phase E — Build the candidate question pool for an exam-paper assembly
+ * call (PR-B). Returns every question whose `topic` OR effective subtopic
+ * (q.subtopic ?? SUBTOPIC_TAGS[q.id]) matches ANY entry in `topics[]`.
+ * The `topics[]` array can mix broad topic names and fine subtopic names —
+ * a UI like Create-an-Exam-Paper picks chips at either granularity.
+ *
+ * Filters tier and yearGroup using the same rules as getExamQuestions,
+ * but does NOT shuffle or limit — the caller (assembly engine) decides
+ * how to sample, and shuffling here would break determinism for seeded
+ * paper assembly.
+ */
+export function getCandidatePoolForTopics(opts: {
+  subject: string;
+  topics: string[];
+  tier?: "Higher" | "Foundation";
+  yearGroup?: number;
+  board?: string;
+}): PastPaperQuestion[] {
+  const { subject, topics, tier, yearGroup, board } = opts;
+  if (!topics || topics.length === 0) return [];
+  const requested = topics.map(t => t.toLowerCase()).filter(Boolean);
+
+  const matchesAnyRequested = (q: PastPaperQuestion): boolean => {
+    const qTopic = (q.topic || "").toLowerCase();
+    const qSubtopic = (q.subtopic ?? (q.id ? SUBTOPIC_TAGS[q.id] : undefined) ?? "").toLowerCase();
+    for (const r of requested) {
+      if (qTopic && (qTopic.includes(r) || r.includes(qTopic))) return true;
+      if (qSubtopic && (qSubtopic.includes(r) || r.includes(qSubtopic))) return true;
+    }
+    return false;
+  };
+
+  return allPastPaperQuestions.filter(q => {
+    if (q.subject !== subject) return false;
+    if (board && board !== "none" && board !== "Any" && q.board !== board) return false;
+    if (tier && q.tier && q.tier !== tier) return false;
+    if (!matchesAnyRequested(q)) return false;
+
+    // Year-group-appropriate filtering — same rules as getExamQuestions.
+    if (yearGroup) {
+      if (yearGroup <= 2) {
+        if (q.stage && q.stage !== "ks1") return false;
+      } else if (yearGroup <= 6) {
+        if (q.stage && q.stage !== "ks2" && q.stage !== "ks1") return false;
+      } else if (yearGroup === 7) {
+        if (q.stage && q.stage !== "ks3" && q.stage !== "11plus" && q.stage !== "ks2") return false;
+        if ((q.stage as string) === "gcse" && q.tier === "Higher") return false;
+      } else if (yearGroup <= 9) {
+        if (q.stage && q.stage !== "ks3" && q.stage !== "gcse") return false;
+        if (q.tier && q.tier === "Higher") return false;
+      } else if (yearGroup <= 11) {
+        if (q.stage && q.stage !== "gcse" && q.stage !== "ks3") return false;
+      } else {
+        if (q.stage === "ks1" || q.stage === "ks2") return false;
+      }
+    }
+
+    return true;
+  });
+}
+
 /**
  * Get all unique boards available for a given subject.
  */
