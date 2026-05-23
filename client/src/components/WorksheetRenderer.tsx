@@ -4579,6 +4579,26 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       {a11yProfileCss && (
         <style>{a11yProfileCss}</style>
       )}
+      {/* PR-23 (audit item #57) — Vector-only printing. At print time the
+          renderer hides raster diagram sources (img[src$=".png|.jpg|.jpeg|.gif"]
+          and base64 image data) inside `[data-diagram-section]` containers,
+          so any inline <svg> sibling becomes the canonical print output.
+          When a section has BOTH a raster fallback AND an SVG, only the
+          SVG prints. When a section has only a raster, the renderer still
+          prints it (we never strip a diagram outright). The rule is
+          additive — screen rendering is unchanged. */}
+      <style>{`
+        @media print {
+          [data-diagram-section] svg { print-color-adjust: exact; }
+          [data-diagram-section]:has(svg) img {
+            display: none !important;
+          }
+          [data-diagram-section] img[src^="data:image/png"],
+          [data-diagram-section] img[src^="data:image/jpeg"] {
+            image-rendering: -webkit-optimize-contrast;
+          }
+        }
+      `}</style>
       {/* Colour overlay — sits above all section backgrounds, covers all text boxes */}
       {hasOverlay && (
         <div
