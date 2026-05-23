@@ -22,7 +22,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 9  | Sciences "Working:" stub on calc questions                                            | PR-14  | not started |
 | 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | shipped — PR #87 pending |
 | 11 | Cross-curricular UK context whitelist                                                 | PR-2   | shipped — PR #86 |
-| 12 | Cultural-context bias audit (PD9)                                                     | PR-12  | not started |
+| 12 | Cultural-context bias audit (PD9)                                                     | PR-12  | shipped — PR-12 |
 | 13 | Mathematical notation hygiene (× vs x, − vs -, ° vs o)                                | PR-3   | shipped — PR #87 pending |
 | 14 | SI unit normalisation (mph → km/h, lbs → kg, °F → °C, in/ft → cm/m)                   | PR-2   | shipped — PR #86 |
 | 15 | Diagram-question coupling check                                                       | PR-3   | shipped — PR #87 pending |
