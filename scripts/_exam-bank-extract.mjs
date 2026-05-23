@@ -49,19 +49,38 @@ export function unescapeString(s) {
 /**
  * Walk content forward with string-aware brace tracking. Returns every
  * `{`-`}` pair as `{ start, end }` (end is exclusive). Sorted by start.
+ *
+ * Skips `//` line comments and `/* ... *\/` block comments so an
+ * apostrophe inside a comment (e.g. `// Ohm's Law`) doesn't trip the
+ * single-quote string detector.
  */
 export function indexBracePairs(content) {
   const stack = [];
   const pairs = [];
   let inString = false;
   let stringChar = null;
+  let inLineComment = false;
+  let inBlockComment = false;
   for (let i = 0; i < content.length; i++) {
     const ch = content[i];
     const prev = i > 0 ? content[i - 1] : "";
+    const next = i + 1 < content.length ? content[i + 1] : "";
+
+    if (inLineComment) {
+      if (ch === "\n") inLineComment = false;
+      continue;
+    }
+    if (inBlockComment) {
+      if (ch === "*" && next === "/") { inBlockComment = false; i++; }
+      continue;
+    }
     if (inString) {
       if (ch === stringChar && prev !== "\\") inString = false;
       continue;
     }
+    // Outside string + outside comment.
+    if (ch === "/" && next === "/") { inLineComment = true; i++; continue; }
+    if (ch === "/" && next === "*") { inBlockComment = true; i++; continue; }
     if (ch === '"' || ch === "'" || ch === "`") {
       inString = true; stringChar = ch; continue;
     }
