@@ -1,15 +1,30 @@
 /**
  * LessonPhase — "Listen & Learn".
  *
- * Generates a SEND-aware short lesson script via callAI on mount, renders it
- * as a card with key terms + worked example, and provides a Web-Speech
- * read-aloud control with a current-paragraph highlight (basic karaoke).
+ * A proper ten-minute lesson on the topic. Renders, in order:
+ *   1. Lesson objective (what they'll be able to do by the end)
+ *   2. Why it matters (one short pupil-friendly relevance paragraph)
+ *   3. The teaching paragraphs (5–7 short, age-tailored chunks) with a
+ *      simple sentence-level "karaoke" highlight when read aloud
+ *   4. Key terms (4–6 cards)
+ *   5. Worked examples (2–3, fully laid out with steps + final answer)
+ *   6. A "common mistake" warning box
+ *   7. Recap bullets
  *
- * The NotesPad sits below on narrow screens and beside on wide screens.
+ * The NotesPad sits beside the lesson on wide screens and below on narrow.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, Loader2, Pause, Play } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronRight,
+  ListChecks,
+  Loader2,
+  Pause,
+  Play,
+  Sparkles,
+  Target,
+} from "lucide-react";
 import PhaseHero from "../PhaseHero";
 import NotesPad from "../NotesPad";
 import { generateLessonScript, type LessonScript } from "@/lib/revision-content";
@@ -27,11 +42,11 @@ export default function LessonPhase({
 }: PhaseComponentProps) {
   const [script, setScript] = useState<LessonScript | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeIndex, setActiveIndex] = useState<number>(-1); // index of currently-spoken paragraph
+  /** Index into script.paragraphs that's currently being read aloud. */
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
   const [speaking, setSpeaking] = useState(false);
   const cancelTimerRef = useRef<number | null>(null);
 
-  // Build the input once per session.
   const input = useMemo(
     () => ({
       subjectId: plan.subject,
@@ -52,7 +67,9 @@ export default function LessonPhase({
     setError(null);
     generateLessonScript(input)
       .then((s) => { if (!cancelled) setScript(s); })
-      .catch(() => { if (!cancelled) setError("We couldn't load the lesson. The other phases will still work."); });
+      .catch(() => {
+        if (!cancelled) setError("We couldn't load the lesson. The other phases will still work.");
+      });
     return () => { cancelled = true; };
   }, [input]);
 
@@ -64,22 +81,25 @@ export default function LessonPhase({
 
   const ttsAvailable = speechSupported();
 
+  /** Speak paragraph at idx; when done, chain to idx+1. */
   const speakParagraph = (idx: number) => {
     if (!script) return;
     const para = script.paragraphs[idx];
-    if (!para) return;
+    if (!para) {
+      setSpeaking(false);
+      setActiveIndex(-1);
+      return;
+    }
     stopSpeaking();
     setActiveIndex(idx);
     setSpeaking(true);
     speakText(para, { rate: 0.9, lang: "en-GB" });
-    // Approximate end-of-speech via length-based timer, then auto-advance.
     if (cancelTimerRef.current) window.clearTimeout(cancelTimerRef.current);
     const ms = Math.min(para.length * 70, 30_000) + 600;
     cancelTimerRef.current = window.setTimeout(() => {
       const next = idx + 1;
-      if (next < script.paragraphs.length) {
-        speakParagraph(next);
-      } else {
+      if (next < script.paragraphs.length) speakParagraph(next);
+      else {
         setSpeaking(false);
         setActiveIndex(-1);
       }
@@ -104,12 +124,12 @@ export default function LessonPhase({
         kind="lesson"
         tone="indigo"
         title={script?.title || `Listen & Learn: ${plan.topic}`}
-        instruction="Listen to the lesson and jot down what you notice on the right."
+        instruction="Read each section. Use the play button to listen along, and jot what you notice on the right."
         speakable={`Listen and learn. Today's topic: ${plan.topic}.`}
         fontFamily={fontFamily}
       />
 
-      {/* Audio bar */}
+      {/* Audio bar — controls reading the teaching paragraphs aloud. */}
       {ttsAvailable && (
         <div className="rounded-2xl border border-indigo-200 bg-indigo-50/60 px-3 py-2 flex items-center gap-2">
           <button
@@ -125,54 +145,73 @@ export default function LessonPhase({
             <div className="text-[11px] font-semibold text-indigo-900 truncate">
               {speaking
                 ? `Reading paragraph ${activeIndex + 1} of ${script?.paragraphs.length ?? 0}…`
-                : "Tap play to listen along"}
+                : "Tap play to read the lesson aloud"}
             </div>
             <div className="text-[10px] text-indigo-700/80">
-              British English voice · slows for SEND
+              British English voice · slowed for SEND learners
             </div>
           </div>
         </div>
       )}
 
       <div className="grid gap-3 md:grid-cols-[1fr,260px]">
-        {/* Lesson body */}
+        {/* ── Lesson body ─────────────────────────────────────────────── */}
         <motion.div
           key={script ? "script" : error ? "err" : "loading"}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-border/50 bg-white p-4 space-y-3 shadow-sm"
+          className="space-y-3"
         >
           {!script && !error && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
-              <Loader2 className="w-4 h-4 animate-spin" />
+            <div className="rounded-2xl border border-border/50 bg-white p-6 flex flex-col items-center gap-2 text-sm text-muted-foreground shadow-sm">
+              <Loader2 className="w-5 h-5 animate-spin" />
               Building your lesson…
+              <span className="text-[11px] text-muted-foreground/80">
+                This usually takes a few seconds.
+              </span>
             </div>
           )}
           {error && (
-            <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
               {error}
             </p>
           )}
+
           {script && (
             <>
-              <div className="space-y-2.5">
-                {script.paragraphs.map((p, i) => (
-                  <p
-                    key={i}
-                    className={`leading-relaxed transition-colors ${
-                      activeIndex === i
-                        ? "bg-indigo-50 text-indigo-900 px-2 py-1 -mx-2 rounded"
-                        : "text-foreground"
-                    }`}
-                    style={{ fontSize, fontFamily }}
-                  >
-                    {p}
-                  </p>
-                ))}
+              {/* 1. Objective */}
+              <ObjectiveCard objective={script.objective} fontFamily={fontFamily} />
+
+              {/* 2. Why it matters */}
+              {script.whyItMatters && (
+                <WhyCard text={script.whyItMatters} fontSize={fontSize} fontFamily={fontFamily} />
+              )}
+
+              {/* 3. Teaching paragraphs */}
+              <div className="rounded-2xl border border-border/50 bg-white p-4 space-y-3 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
+                  The lesson
+                </p>
+                <div className="space-y-2.5">
+                  {script.paragraphs.map((p, i) => (
+                    <p
+                      key={i}
+                      className={`leading-relaxed transition-colors rounded ${
+                        activeIndex === i
+                          ? "bg-indigo-50 text-indigo-900 px-2 py-1 -mx-2"
+                          : "text-foreground"
+                      }`}
+                      style={{ fontSize, fontFamily }}
+                    >
+                      {p}
+                    </p>
+                  ))}
+                </div>
               </div>
 
+              {/* 4. Key terms */}
               {script.keyTerms.length > 0 && (
-                <div className="pt-3 border-t border-border/40 space-y-2">
+                <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-2">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700">
                     Key words
                   </p>
@@ -180,7 +219,7 @@ export default function LessonPhase({
                     {script.keyTerms.map((k, i) => (
                       <li
                         key={i}
-                        className="rounded-lg border border-indigo-100 bg-indigo-50/60 px-2.5 py-1.5"
+                        className="rounded-lg border border-indigo-100 bg-white px-2.5 py-1.5"
                       >
                         <span className="text-[12px] font-semibold text-indigo-900">{k.term}</span>
                         <span className="block text-[11px] text-indigo-800/80 leading-snug">
@@ -192,21 +231,38 @@ export default function LessonPhase({
                 </div>
               )}
 
-              {script.workedExample && (
-                <details className="pt-2 border-t border-border/40">
-                  <summary className="cursor-pointer text-[11px] font-bold uppercase tracking-wider text-indigo-700 hover:text-indigo-900 transition-colors">
-                    See a worked example
-                  </summary>
-                  <div className="mt-2 whitespace-pre-line rounded-lg bg-muted/40 px-3 py-2 text-[13px] leading-relaxed text-foreground">
-                    {script.workedExample}
-                  </div>
-                </details>
+              {/* 5. Worked examples */}
+              {script.workedExamples.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 px-1">
+                    Worked examples
+                  </p>
+                  {script.workedExamples.map((ex, i) => (
+                    <WorkedExampleCard
+                      key={i}
+                      index={i}
+                      example={ex}
+                      fontSize={fontSize}
+                      fontFamily={fontFamily}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* 6. Common mistake */}
+              {script.commonMistake && (
+                <CommonMistakeCard text={script.commonMistake} fontFamily={fontFamily} />
+              )}
+
+              {/* 7. Recap */}
+              {script.recap.length > 0 && (
+                <RecapCard items={script.recap} fontSize={fontSize} fontFamily={fontFamily} />
               )}
             </>
           )}
         </motion.div>
 
-        {/* Notes pad */}
+        {/* ── Notes pad sidebar ───────────────────────────────────────── */}
         <NotesPad
           sessionId={sessionId}
           fontSize={fontSize}
@@ -226,6 +282,179 @@ export default function LessonPhase({
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+    </div>
+  );
+}
+
+// ─── Section sub-components ─────────────────────────────────────────────────
+
+function ObjectiveCard({
+  objective,
+  fontFamily,
+}: {
+  objective: string;
+  fontFamily: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 flex items-start gap-3 shadow-sm">
+      <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center ring-4 ring-white shadow-sm">
+        <Target className="w-4 h-4 text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+          Today's goal
+        </p>
+        <p className="text-sm font-medium text-emerald-900 leading-relaxed mt-0.5" style={{ fontFamily }}>
+          {objective}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function WhyCard({
+  text,
+  fontSize,
+  fontFamily,
+}: {
+  text: string;
+  fontSize: number;
+  fontFamily: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-indigo-100 bg-white p-4 flex items-start gap-3 shadow-sm">
+      <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center">
+        <Sparkles className="w-4 h-4 text-indigo-600" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-700">
+          Why it matters
+        </p>
+        <p
+          className="text-foreground leading-relaxed mt-0.5"
+          style={{ fontSize, fontFamily }}
+        >
+          {text}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function WorkedExampleCard({
+  example,
+  index,
+  fontSize,
+  fontFamily,
+}: {
+  example: { scenario: string; steps: string[]; finalAnswer: string };
+  index: number;
+  fontSize: number;
+  fontFamily: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-violet-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-4 py-2 bg-gradient-to-r from-violet-50 to-fuchsia-50 border-b border-violet-100 flex items-center justify-between">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-violet-800">
+          Worked example {index + 1}
+        </span>
+      </div>
+      <div className="p-4 space-y-3">
+        <p
+          className="font-semibold text-foreground leading-relaxed"
+          style={{ fontSize: fontSize + 1, fontFamily }}
+        >
+          {example.scenario}
+        </p>
+        <ol className="space-y-2 list-none">
+          {example.steps.map((step, i) => (
+            <li
+              key={i}
+              className="flex gap-2.5 rounded-xl px-3 py-2 bg-muted/30"
+            >
+              <span className="flex-shrink-0 w-6 h-6 rounded-md bg-white border border-violet-200 flex items-center justify-center text-[11px] font-bold text-violet-700">
+                {i + 1}
+              </span>
+              <span
+                className="flex-1 leading-relaxed text-foreground"
+                style={{ fontSize, fontFamily }}
+              >
+                {step}
+              </span>
+            </li>
+          ))}
+        </ol>
+        {example.finalAnswer && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+              Final answer
+            </span>
+            <p
+              className="font-semibold text-emerald-900 mt-0.5 leading-relaxed"
+              style={{ fontSize, fontFamily }}
+            >
+              {example.finalAnswer}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CommonMistakeCard({
+  text,
+  fontFamily,
+}: {
+  text: string;
+  fontFamily: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+      <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center">
+        <AlertTriangle className="w-4 h-4 text-amber-700" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-800">
+          Watch out for
+        </p>
+        <p className="text-sm text-amber-900 leading-relaxed mt-0.5" style={{ fontFamily }}>
+          {text}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function RecapCard({
+  items,
+  fontSize,
+  fontFamily,
+}: {
+  items: string[];
+  fontSize: number;
+  fontFamily: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-4 shadow-sm">
+      <div className="flex items-center gap-2 mb-2">
+        <ListChecks className="w-4 h-4 text-indigo-700" />
+        <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-800">
+          Quick recap
+        </p>
+      </div>
+      <ul className="space-y-1.5">
+        {items.map((line, i) => (
+          <li
+            key={i}
+            className="flex gap-2 text-foreground leading-relaxed"
+            style={{ fontSize, fontFamily }}
+          >
+            <span className="flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-600" />
+            <span>{line}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
