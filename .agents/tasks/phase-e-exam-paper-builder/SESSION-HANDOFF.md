@@ -5,8 +5,8 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — initial scaffolding only. No code changes
-shipped yet on `feat/phase-e-exam-paper-builder`.
+Last updated: 2026-05-23 — PR-A Step 1 (schema + helpers) shipped on
+`feat/phase-e-exam-paper-builder`. Back-tagger script is next.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -58,71 +58,79 @@ pastPaperQuestions.ts       2,203 lines
 
 ## What is done
 
-- **Phase E scaffolding** (this commit). Created the phase folder
+- **Phase E scaffolding** (commit `37f5351`). Created the phase folder
   with `RESUME.md`, `PHASE-PLAN.md`, this handoff file, and the two
   per-PR specs (`FEAT-PE-A.json`, `FEAT-PE-B.json`). Branch
   `feat/phase-e-exam-paper-builder` cut from `main` and pushed so
   any subsequent session can resume even if this one ends.
 
+- **PR-A · Step 1 — Schema + helpers**. In a single commit:
+  - `client/src/lib/pastPaperQuestions.ts`:
+    - Added `subtopic?: string` to the `PastPaperQuestion` interface
+      (after `markBreakdown`) with a JSDoc explaining the lookup
+      contract (`q.subtopic ?? SUBTOPIC_TAGS[q.id] ?? null`).
+    - Added imports for `SUBTOPICS_MAP` (from `subtopics-data.ts`)
+      and `SUBTOPIC_TAGS` (from the new `subtopicTags.ts`).
+    - Extended `getExamQuestions` with an optional `subtopic?: string`
+      param and a `matchesSubtopic` predicate that resolves the
+      effective subtopic via the lookup chain and substring-matches
+      case-insensitively.
+    - Added `getSubtopicsForTopic(topic): string[]` (reads
+      `SUBTOPICS_MAP`, case-insensitive key lookup as a fallback).
+    - Added `getCandidatePoolForTopics({ subject, topics[], tier?, yearGroup?, board? }): PastPaperQuestion[]` —
+      returns every question whose `topic` OR effective subtopic
+      matches any entry in `topics[]`. Reuses the same year-group
+      filtering rules as `getExamQuestions` but does NOT shuffle or
+      limit (assembly engine in PR-B owns sampling + determinism).
+  - `client/src/lib/subtopicTags.ts` (new) — placeholder
+    `Object.freeze({})` of type `Readonly<Record<string, string>>`.
+    The back-tagger script will overwrite this file in PR-A Step 2.
+
 ## What is in flight
 
-_Nothing yet. PR-A starts at the next checkpoint._
+_Nothing yet. PR-A Step 2 (back-tagger) starts at the next checkpoint._
 
 ## What is next
 
-**PR-A · Step 1 — Schema additions** (target: ≤ 1 commit, ≤ 80 lines).
+**PR-A · Step 2 — Back-tagger script** (target: ≤ 1 commit for the
+script + the regenerated `subtopicTags.ts`).
 
 Exact actions in order:
 
-1. Edit `client/src/lib/pastPaperQuestions.ts` line 100 (end of
-   `PastPaperQuestion` interface): add `  subtopic?: string;` plus a
-   one-line JSDoc explaining it must match a value in
-   `SUBTOPICS_MAP[topic]` when present.
-2. Create `client/src/lib/subtopicTags.ts` — placeholder shape
-   `export const SUBTOPIC_TAGS: Readonly<Record<string, string>> = Object.freeze({});`.
-   The back-tagger script will overwrite this file later.
-3. Edit `client/src/lib/pastPaperQuestions.ts` line 1 (top imports):
-   add `import { SUBTOPIC_TAGS } from "./subtopicTags";`.
-4. Extend `getExamQuestions` (line 1861): add optional `subtopic?: string`
-   to the options type. Inside `filtered = ...filter(q => …)`, after
-   the `matchesTopic` check, add a `matchesSubtopic` check that
-   prefers `q.subtopic` when present, falls back to
-   `SUBTOPIC_TAGS[q.id]`, and substring-matches against the requested
-   subtopic.
-5. After `getTopicsForSubject` (line 1955), add two new exports:
-   `getSubtopicsForTopic(topic: string): string[]` (reads
-   `SUBTOPICS_MAP`) and `getCandidatePoolForTopics(opts: { subject; topics: string[]; tier?; yearGroup? }): PastPaperQuestion[]`
-   that returns every question whose `topic` OR (`subtopic` |
-   `SUBTOPIC_TAGS[q.id]`) matches any item in the user's `topics[]`
-   list.
-6. Run `npx tsc --noEmit` to verify. Commit + push.
-7. Update this handoff: move PR-A Step 1 from "What is next" to
-   "What is done", set "What is next" to PR-A Step 2 (back-tagger
-   script).
-
-After Step 1 lands, "What is next" becomes:
-
-> **PR-A · Step 2 — Back-tagger.** Write `scripts/exam-bank-back-tagger.mjs`.
-> See `features/FEAT-PE-A.json` step 2 for the algorithm spec.
-
-Subsequent steps for PR-A:
-
-- **Step 3** — Coverage audit (`scripts/exam-bank-coverage.mjs` →
-  `docs/exam-bank-coverage.json`). Adds CI guard against regression.
-- **Step 4** — Gap-fill wave 1: append questions for the highest-
-  priority zero-question subtopics in core GCSE subjects. Re-run
-  audit. Update coverage JSON.
-- **Step 5** — Open PR-A. PR description must reference this folder
-  and link to `docs/exam-bank-coverage.json` so the residual gap is
-  visible to reviewers.
-
-PR-B steps (after PR-A is open or merged):
-
-- **Step 6** — `client/src/lib/createExamPaperBuilder.ts` with the
-  knapsack assembly algorithm + unit tests. See FEAT-PE-B step 1.
-- **Step 7** — `client/src/pages/tools/CreateExamPaper.tsx` + tool
-  registry entry + App.tsx route + Revision Hub card.
-- **Step 8** — Open PR-B. Update this handoff.
+1. Create `scripts/exam-bank-back-tagger.mjs`. Pure-Node script (no
+   TS compile step — sandbox is `INTEGRATIONS_ONLY`). Algorithm:
+   - Read all `client/src/lib/questionBank*.ts` files plus
+     `client/src/lib/pastPaperQuestionsExpanded.ts` as plain text.
+   - Regex-extract `id: "..."`, `topic: "..."`, `text: "..."` /
+     `question: "..."`, `marks: <n>`, `subject: "..."` from each
+     question literal. Skip entries without an id.
+   - Read `client/src/lib/subtopics-data.ts` and regex-extract the
+     `SUBTOPICS_MAP` object as `Record<topic, subtopic[]>`.
+   - For each question, score each subtopic candidate in
+     `SUBTOPICS_MAP[q.topic]` (or every subtopic when `q.topic` is
+     missing) by:
+     - Tokenise the subtopic name into lowercase words minus stop
+       words (`a`, `the`, `of`, `and`, `to`, `in`, `for`, `with`,
+       `on`, `from`, `or`).
+     - For each token of length ≥ 3, +1.0 score if it appears as a
+       whole word in `q.text`, +0.4 if it appears as a substring.
+     - +0.3 boost if the full subtopic name (lowercased) appears as
+       a verbatim substring of `q.text`.
+     - Normalise by token count so longer subtopic names don't win
+       by default.
+   - Accept the highest-scoring subtopic if normalised score ≥ 0.6.
+     Otherwise leave the question untagged.
+2. Emit `client/src/lib/subtopicTags.ts` with the canonical header +
+   the `Object.freeze({...})` literal of `id → subtopic` pairs,
+   sorted by id for stable diffs.
+3. Print summary: total questions scanned, total tagged, percent
+   tagged, and the top 10 most-tagged subtopics + 10 untagged-topic
+   counts.
+4. Run `node scripts/exam-bank-back-tagger.mjs`. Inspect the output.
+5. Commit both the script and the regenerated `subtopicTags.ts`.
+   Push.
+6. Update this handoff: move Step 2 to "What is done", set "What
+   is next" to PR-A Step 3.
 
 ## Checkpoint protocol
 
