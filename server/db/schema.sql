@@ -546,3 +546,17 @@ CREATE TABLE IF NOT EXISTS platform_stats (
   value INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- ── Worksheet Versions (PR-11 — versioning + diff history) ───────────────────
+CREATE TABLE IF NOT EXISTS worksheet_versions (
+  id TEXT PRIMARY KEY,
+  worksheet_id TEXT NOT NULL REFERENCES worksheets(id) ON DELETE CASCADE,
+  version_number INTEGER NOT NULL DEFAULT 1,
+  trigger TEXT NOT NULL DEFAULT 'manual-save',
+  content TEXT,
+  teacher_content TEXT,
+  sections_json TEXT,
+  metadata_json TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_ws_versions_worksheet ON worksheet_versions(worksheet_id, version_number);

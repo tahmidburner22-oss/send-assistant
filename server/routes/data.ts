@@ -108,6 +108,33 @@ router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
 
 router.put("/worksheets/:id", requireAuth, async (req: Request, res: Response) => {
   const { title, subtitle, rating, ratingLabel, overlay, content, teacherContent, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey } = req.body;
+
+  // PR-11 — snapshot current state to versions before applying update
+  try {
+    const current = await db.prepare("SELECT content, teacher_content, metadata_json FROM worksheets WHERE id=? AND created_by=?").get(req.params.id, req.user!.id) as any;
+    if (current) {
+      const currentSections = await db.prepare("SELECT title, type, content FROM worksheet_sections WHERE worksheet_id=? ORDER BY section_index").all(req.params.id) as any[];
+      const versionCount = await db.prepare("SELECT COUNT(*) as c FROM worksheet_versions WHERE worksheet_id=?").get(req.params.id) as any;
+      const nextV = (versionCount?.c || 0) + 1;
+      const trigger = req.body.versionTrigger || "manual-save";
+      await db.prepare(`INSERT INTO worksheet_versions (id, worksheet_id, version_number, trigger, content, teacher_content, sections_json, metadata_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
+        uuidv4(), req.params.id, nextV, trigger,
+        current.content || null,
+        current.teacher_content || null,
+        JSON.stringify(currentSections || []),
+        current.metadata_json || null
+      );
+      // Enforce cap: keep only the newest MAX_VERSIONS versions
+      if (nextV > 20) {
+        await db.prepare(`DELETE FROM worksheet_versions WHERE worksheet_id=? AND id NOT IN (SELECT id FROM worksheet_versions WHERE worksheet_id=? ORDER BY version_number DESC LIMIT 20)`).run(req.params.id, req.params.id);
+      }
+    }
+  } catch (vErr) {
+    console.warn("[PUT /worksheets/:id] version snapshot failed:", vErr);
+    // Non-blocking — don't fail the update if versioning fails
+  }
+
   // Use COALESCE for all fields so partial updates (e.g. rating-only) don't wipe other fields
   await db.prepare("UPDATE worksheets SET title=COALESCE(?, title), subtitle=COALESCE(?, subtitle), rating=COALESCE(?, rating), rating_label=COALESCE(?, rating_label), overlay=COALESCE(?, overlay), content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content), metadata_json=COALESCE(?, metadata_json), source_library_id=COALESCE(?, source_library_id), source_canonical_topic_key=COALESCE(?, source_canonical_topic_key) WHERE id=? AND created_by=?")
     .run(title ?? null, subtitle ?? null, rating ?? null, ratingLabel ?? null, overlay ?? null, content ?? null, teacherContent ?? null, metadata ? JSON.stringify(metadata) : null, sourceLibraryId ?? null, sourceCanonicalTopicKey ?? null, req.params.id, req.user!.id);
@@ -122,6 +149,27 @@ router.put("/worksheets/:id", requireAuth, async (req: Request, res: Response) =
     }
   }
   res.json({ message: "Updated" });
+});
+
+// PR-11 — Get version history for a worksheet
+router.get("/worksheets/:id/versions", requireAuth, async (req: Request, res: Response) => {
+  const versions = await db.prepare(
+    "SELECT id, version_number, trigger, created_at FROM worksheet_versions WHERE worksheet_id=? ORDER BY version_number DESC LIMIT 20"
+  ).all(req.params.id) as any[];
+  res.json(versions || []);
+});
+
+// PR-11 — Get a specific version's full content
+router.get("/worksheets/:id/versions/:versionId", requireAuth, async (req: Request, res: Response) => {
+  const version = await db.prepare(
+    "SELECT * FROM worksheet_versions WHERE id=? AND worksheet_id=?"
+  ).get(req.params.versionId, req.params.id) as any;
+  if (!version) return res.status(404).json({ error: "Version not found" });
+  res.json({
+    ...version,
+    sections: JSON.parse(version.sections_json || "[]"),
+    metadata: JSON.parse(version.metadata_json || "null"),
+  });
 });
 
 router.delete("/worksheets/:id", requireAuth, async (req: Request, res: Response) => {

@@ -208,6 +208,16 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 - **PR-7 (#91), PR-8** push + open / merge bookkeeping.
 
+- **PR-11 — Versioning + diff history (PD7)** (branch
+  `big-bang/pr-11-versioning-diff-history`). Audit items **#40**, **#66**.
+  Added `worksheet_versions` table in `server/db/schema.sql`,
+  `client/src/lib/worksheetVersioning.ts` pure diff helpers,
+  server-side version snapshot in PUT `/worksheets/:id` (non-blocking
+  try/catch), two new GET endpoints for version history and detail,
+  optional `worksheetVersion` + `versionTrigger` metadata fields in
+  `shared/aiSchemas.ts`, and tests in
+  `server/tests/generationCache.test.ts`.
+
 ## Related sibling PRs
 
 - **PR-7 (#91) — Server-prompt unification** is currently open in
@@ -220,7 +230,9 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is next
 
-**PR-9 — PD13 cost transparency + generation cache scaffolding.**
+**PR-12 — Bias & sensitivity audit.**
+
+Audit item: #12 (Cultural-context bias audit PD9).
 
 Audit items: #41 (structured-output retry with diagnostic), #42
 (token budget transparency), #43 (generation cache by hash key), #76

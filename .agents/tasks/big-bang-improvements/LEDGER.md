@@ -55,7 +55,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | #  | Item                                                                                  | PR     | Status      |
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
 | 39 | Server-side prompt unification (port manifesto into server/routes/ai.ts)              | PR-7   | not started |
-| 40 | Prompt versioning + diff store                                                        | PR-11  | not started |
+| 40 | Prompt versioning + diff store                                                        | PR-11  | shipped — PR-11 |
 | 41 | Structured-output retry with diagnostic-only re-prompt                                | PR-9   | not started |
 | 42 | Token budget transparency (PD13)                                                      | PR-9   | not started |
 | 43 | Generation cache by hash key (PD13)                                                   | PR-9   | not started |
@@ -81,7 +81,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 63 | Email-to-generate (PD1)                                                               | PR-28  | deferred    |
 | 64 | iOS / Android share-sheet (PD2) + 2-tap mobile generate from staffroom (PD3)          | PR-28  | deferred    |
 | 65 | Browser extension (PD6)                                                               | PR-28  | deferred    |
-| 66 | Worksheet-level versioning + diff history (PD7)                                       | PR-11  | not started |
+| 66 | Worksheet-level versioning + diff history (PD7)                                       | PR-11  | shipped — PR-11 |
 | 67 | Department library + HOD moderation (PD12)                                            | PR-17  | not started |
 | 68 | Streak / weekly summary email (PD5)                                                   | PR-28  | deferred    |
 | 69 | Monday-morning email (PD4)                                                            | PR-28  | deferred    |
