@@ -204,66 +204,59 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 2 source files (1 new) + 1 test file + 3 tracker
   docs. Net source diff: ~ +330 lines.
 
+- **PR-9 — PD13 cost transparency + generation cache scaffolding**
+  (branch `big-bang/pr-9-cost-transparency-cache`). Audit items #41
+  (structured-output retry with diagnostic), #42 (token budget
+  transparency), #43 (generation cache by hash key), #76 (PII
+  redaction in telemetry - partial).
+
+  What changed:
+  - `shared/aiSchemas.ts` -- three new optional metadata fields:
+    `costEstimate`, `cacheKey`, `cacheHit`. All optional so older
+    worksheets keep rendering.
+  - `client/src/lib/aiCostEstimate.ts` (new) -- pure helper with
+    `PROVIDER_PRICE_TABLE` (10 providers) and `estimateCost()`.
+  - `client/src/lib/aiCacheKey.ts` (new) -- pure deterministic
+    djb2 hash builder. Exports `computeCacheKey`,
+    `buildCacheInput`, `hashCacheInput`, `CACHE_RELEVANT_FIELDS`.
+  - `server/lib/generationCache.ts` (new) -- in-memory LRU cache
+    (Map, max 200 entries). Exports `getCached`, `setCached`,
+    `redactPii`, `cacheStats`, `CACHE_ENABLED`. Disabled by
+    default behind `GENERATION_CACHE_ENABLED=1`.
+  - `server/db/schema.sql` -- `generation_cache` DDL (for future
+    persistent tier).
+  - `server/routes/ai.ts` -- wired cache into `/generate` endpoint
+    (lookup before LLM call, write on success with PII redaction).
+  - `server/tests/generationCache.test.ts` (new) -- vitest suite
+    covering cache key, cost estimator, and LRU wrapper.
+
+  Files touched: 7 source files (4 new) + tracker docs.
+
 ## What is in flight
 
-- **PR-7 (#91), PR-8** push + open / merge bookkeeping.
+(none)
 
 ## Related sibling PRs
 
-- **PR-7 (#91) — Server-prompt unification** is currently open in
-  parallel with this PR-8. The two PRs do not touch overlapping files
-  (PR-7 is `server/lib/` + `server/routes/ai.ts` + `server/tests/`;
-  PR-8 is `client/src/lib/` + `server/tests/worksheetScrutiny.test.ts`)
-  and can ship in either order. See
-  `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md` on
-  `big-bang/pr-7-server-prompt-unification` for PR-7's own context.
+- **PR-7 (#91) — Server-prompt unification** and **PR-8 (#92) —
+  Data-driven post-validator chain** are merged.
 
 ## What is next
 
-**PR-9 — PD13 cost transparency + generation cache scaffolding.**
+**PR-10 — Knowledge organiser + Anchor poster + Now/Next/Then cards.**
 
-Audit items: #41 (structured-output retry with diagnostic), #42
-(token budget transparency), #43 (generation cache by hash key), #76
-(PII redaction in telemetry — partial; rest in PR-22).
+Audit items: #20 (knowledge organiser auto-extract per topic), #21
+(anchor-poster + Now/Next/Then card outputs).
 
 Files to touch:
-- `shared/aiSchemas.ts` — additive optional fields on the worksheet
-  metadata shape: `costEstimate?: { promptTokens, completionTokens,
-  estimatedUsd, provider, model }`, `cacheKey?: string`,
-  `cacheHit?: boolean`. All optional so older worksheets keep
-  rendering.
-- `client/src/lib/aiCostEstimate.ts` (new) — pure helper:
-  `estimateCost(provider, model, promptTokens, completionTokens)`,
-  shipping the per-provider unit-price table (OpenAI / Anthropic /
-  Groq / Gemini / OpenRouter). Single source of truth for $ figures.
-- `client/src/lib/aiCacheKey.ts` (new) — pure deterministic hash of
-  the cache-relevant request fields (subject / topic / yearGroup /
-  examBoard / sendNeed / generatorVersion / etc.). The hash is
-  caller-side only; no I/O.
-- `server/lib/generationCache.ts` (new) — server-side LRU + sqlite
-  fallback wrapper around `aiCacheKey`, exposes
-  `getCached(key) / setCached(key, ws, ttlMs)`. Hits are stamped on
-  the worksheet metadata. Disabled by default behind
-  `GENERATION_CACHE_ENABLED=1` env flag.
-- `server/db/schema.sql` — `generation_cache` table (key, payload,
-  inserted_at, hits). Migration is idempotent.
-- `server/routes/ai.ts` — wire the cache into the structured
-  worksheet endpoints (cache lookup before model call; cache write
-  on success). PII-redaction pass strips pupil names / IEP content
-  before write.
-- `server/tests/generationCache.test.ts` (new) — pure tests of the
-  cache key + cost estimator + the cache wrapper using an in-memory
-  store.
+- `shared/aiSchemas.ts` -- additive optional schemas for KO, anchor
+  poster, and NNT cards.
+- `client/src/lib/` -- pure helpers for KO extraction / layout.
+- `server/routes/ai.ts` -- new endpoints or wiring for the three
+  output types.
+- `server/tests/` -- vitest tests for the new generators.
 
-Out of scope for PR-9:
-- A/B traffic split (PR-20).
-- Per-tenant cache namespacing (PR-22).
-- The telemetry dashboard surface (PR-27).
-
-Sizing budget: ≤ ~700 net lines, ≤ ~7 files. Read narrow ranges of
-`server/routes/ai.ts` (1,000+ lines). Sandbox is INTEGRATIONS_ONLY —
-do not run `npm install`. Type-check + tests run in CI on PR push.
-Branch name: `big-bang/pr-9-cost-transparency-cache`.
+Branch name: `big-bang/pr-10-knowledge-organiser`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 

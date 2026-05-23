@@ -546,3 +546,12 @@ CREATE TABLE IF NOT EXISTS platform_stats (
   value INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- ── Generation Cache (PR-9 — generation cache by hash key) ───────────────────
+CREATE TABLE IF NOT EXISTS generation_cache (
+  key TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  inserted_at TEXT NOT NULL DEFAULT (datetime('now')),
+  hits INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_gen_cache_inserted ON generation_cache(inserted_at);
