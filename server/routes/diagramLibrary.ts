@@ -145,7 +145,10 @@ router.get("/search", requireAuth, async (req: any, res) => {
       if (topicRaw) {
         const topicWords = topicRaw.split(/\s+/).filter(w => w.length > 3);
         const matchedWords = topicWords.filter(tw => searchable.includes(tw));
-        score += Math.min(matchedWords.length * 4, 12);
+        // Bumped from *4 capped at 12 to *8 capped at 24 so partial topic-word
+        // matches contribute enough to clear the threshold for maths searches
+        // where the library row's topic phrasing rarely matches verbatim.
+        score += Math.min(matchedWords.length * 8, 24);
       }
       if (e.curated) score += 8;
 
@@ -158,7 +161,16 @@ router.get("/search", requireAuth, async (req: any, res) => {
 
     scored.sort((a, b) => b.score - a.score);
     let best = scored[0];
-    if (!best || best.score < (topicRaw ? 75 : 25)) {
+    // Threshold lowered for maths-family searches: maths library entries
+    // rarely share a canonical topic key with the worksheet topic phrasing
+    // (e.g. "Adding fractions" vs library "Fractions"), so the previous
+    // single threshold of 75 was effectively excluding maths from the
+    // diagram pipeline. The passesGate hard checks (subject + year + topic
+    // relevance) still apply, so this only widens acceptance.
+    const requestedFamily = subjectRaw ? subjectFamily(subjectRaw) : "";
+    const isMathsSearch = requestedFamily === "maths";
+    const primaryThreshold = topicRaw ? (isMathsSearch ? 60 : 75) : 25;
+    if (!best || best.score < primaryThreshold) {
       // No confident match in primary — try backup folder if available
       if (backupTypeFilter) {
         const backupEntries = await fetchByTypes([backupTypeFilter]);
@@ -184,14 +196,17 @@ router.get("/search", requireAuth, async (req: any, res) => {
             if (subtopicMatch) score += 15;
             if (yearGroupMatch) score += 8; else score -= 10;
             if (topicRaw && eTitle.includes(topicRaw)) score += 10;
-            if (topicRaw) { const tw = topicRaw.split(/\s+/).filter(w => w.length > 3); score += Math.min(tw.filter(w => searchable.includes(w)).length * 4, 12); }
+            // Bumped from *4 capped at 12 to *8 capped at 24 to mirror the
+            // primary scorer — partial topic-word matches are the typical
+            // case for maths topics and need more weight to clear the gate.
+            if (topicRaw) { const tw = topicRaw.split(/\s+/).filter(w => w.length > 3); score += Math.min(tw.filter(w => searchable.includes(w)).length * 8, 24); }
             if (e.curated) score += 8;
             const passesGate = familyOk && subjectMatch && yearGroupMatch && (!topicRaw || canonicalMatch || exactTopicMatch || subtopicMatch);
             return { entry: e, score, passesGate, reasons: { canonicalMatch, exactTopicMatch, subtopicMatch, subjectMatch, yearGroupMatch, familyOk } };
           }).filter(s => s.passesGate);
           backupScored.sort((a, b) => b.score - a.score);
           const backupBest = backupScored[0];
-          if (backupBest && backupBest.score >= (topicRaw ? 75 : 25)) {
+          if (backupBest && backupBest.score >= primaryThreshold) {
             console.log(`[DiagramLibrary] Using BACKUP match for "${topicRaw}" (${subjectRaw}) slot=${slot || "any"}: "${backupBest.entry.title}" score=${backupBest.score}`);
             return res.json({ entry: backupBest.entry, confidence: backupBest.score, reasons: backupBest.reasons, isBackup: true });
           }
