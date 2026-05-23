@@ -5,9 +5,9 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — PR-A merged plan: PR #107 open. PR-B
-Step 7 (assembly engine) shipped on `feat/phase-e-exam-paper-builder`.
-Tool UI is next.
+Last updated: 2026-05-23 — PR-B Step 8 (tool UI + registry + route +
+hub card) shipped on `feat/phase-e-exam-paper-builder`. Opening PR-B
+is the final step.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -230,59 +230,87 @@ pastPaperQuestions.ts       2,203 lines
     on, mark-scheme omitted when includeAnswers=false, empty pool,
     invalid-input throws.
 
+- **PR-B · Step 8 — Tool UI + registry + route + hub card**. In a
+  single commit:
+  - `client/src/pages/tools/CreateExamPaper.tsx` (new) —
+    self-contained tool page. Form: subject (canonical-id select
+    over the 9 subjects with bank questions), year-group, tier,
+    multi-select topic chips driven by `getTopicsForSubject` with
+    fine-grained subtopic chips per group (using
+    `getSubtopicsForTopic` from PR-A) and per-chip question-count
+    badge driven by `getCandidatePoolForTopics`, total-marks input
+    with quick presets (40/60/80/100), calculator + paper-style +
+    include-answers toggles. Submit calls
+    `buildCreatedExamPaper`, renders sections inline with a Print /
+    Save-as-PDF button (via `window.print()`). Warnings array is
+    surfaced as an amber callout when present. Self-contained — no
+    AIToolPage dependency, no AI generation.
+  - `client/src/lib/tool-registry.ts` — appended a new
+    `ToolEntry`: id `create-exam-paper`, label "Create an Exam
+    Paper", path `/tools/create-exam-paper`, hub `revision`,
+    sendTo `[differentiate, flash-cards, audio-revision-hub]`,
+    icon `ScrollText`, colour `text-rose-700 bg-rose-50`,
+    writeBack `true`.
+  - `client/src/App.tsx` — added lazy import + Route line.
+  - `client/src/pages/hubs/RevisionHubSection.tsx` — added a 5th
+    storyboard step "Build a mock exam paper" pointing at the
+    new tool.
+
 ## What is in flight
 
-_Nothing yet. PR-B Step 8 (tool UI) starts at the next checkpoint._
+_Nothing yet. PR-B Step 9 (open the PR) starts at the next checkpoint._
 
 ## What is next
 
-**PR-B · Step 8 — Tool UI + registry + route + hub card** (target:
-≤ 1 commit, ~600 LoC).
+**PR-B · Step 9 — Open PR-B.**
 
-Exact actions in order:
+Branch is `feat/phase-e-exam-paper-builder` (already pushed through
+Step 8). Both PR-A (#107) and PR-B share the branch — when PR-A
+merges, PR-B continues on the same branch with PR-A's commits
+already in.
 
-1. Create `client/src/pages/tools/CreateExamPaper.tsx`. Form fields:
-   subject select (canonical ids), year-group select, tier select
-   (Higher / Foundation / N-A), multi-select topic chips driven by
-   `getTopicsForSubject(subject)` (then per-topic
-   `getSubtopicsForTopic(topic)` for fine-grained chips), per-chip
-   question-count badge driven by candidate-pool size, total-marks
-   number input, calculator toggle, include-mark-scheme toggle,
-   SEND-adapt select. Submit → call `buildCreatedExamPaper`,
-   render with the existing `WorksheetRenderer`, expose Print / PDF /
-   Save to Library / Send to Class Pack the same way Worksheets.tsx
-   does. Surface the warnings array if non-empty.
-2. Add the tool to `client/src/lib/tool-registry.ts` (around
-   line 51-410, in the `TOOLS` array — existing 32-tool list):
-   ```ts
-   {
-     id: "create-exam-paper",
-     label: "Create an Exam Paper",
-     path: "/tools/create-exam-paper",
-     hub: "revision",
-     icon: ScrollText, // or another suitable lucide-react icon
-     colour: "text-rose-700 bg-rose-50",
-     description: "Pick subject, topics, total marks — generate a real-style exam paper.",
-     sendTo: ["differentiate", "flash-cards", "audio-revision-hub"],
-     writeBack: true,
-   }
-   ```
-3. Wire the route in `client/src/App.tsx` — lazy-import per existing
-   pattern (search the file for `lazy(() => import(`).
-4. Add a Revision Hub card so the new tool surfaces in the hub.
-   Find the existing hub-cards file (search for `HUB_STORYBOARD` or
-   `revision-hub`).
-5. Verify imports compile (no new deps).
-6. Commit. Push.
-7. Update this handoff: move Step 8 to "What is done", set "What
-   is next" to PR-B Step 9 (open PR-B).
+> **Branching note for the reviewer:** PR-B's commits sit on top of
+> PR-A's on the same branch. This means PR-B's diff against `main`
+> will include PR-A's changes too. Reviewers should look at the
+> commit history for the PR-B-specific changes — commits prefixed
+> `phase-e PR-B step ...`.
 
-Subsequent steps after Step 8 lands:
+Open PR-B with:
 
-- **Step 9** — Open PR-B. Title: `Phase E PR-B: Create an Exam Paper — assembly engine + tool surface`.
-  Body must reference the phase folder, link to PR-A (#107), and
-  include a worked example. Update this handoff to mark BOTH PRs
-  complete.
+- **Title:** `Phase E PR-B: Create an Exam Paper — assembly engine + tool surface`
+- **Body** must include:
+  1. Link to `.agents/tasks/phase-e-exam-paper-builder/`.
+  2. Link back to PR-A (#107) and note that the diff includes
+     PR-A's changes since both PRs share the branch.
+  3. Brief description of the assembly algorithm (knapsack + bands +
+     per-topic floor + AO/command-word diversity).
+  4. Links to the new files: `createExamPaperBuilder.ts`,
+     `__tests__/createExamPaperBuilder.test.ts`, `CreateExamPaper.tsx`.
+  5. Worked example — show the result of generating an 80-mark
+     mathematics paper across 3 topics (Number, Algebra, Geometry).
+  6. Note that the tool reuses the existing `ExamPaperWorksheet`
+     output type, so plugging into Class Pack / pdf-generator-v2 is
+     a follow-up integration (deliberately out of scope for this PR
+     to keep the diff reviewable).
+
+After PR-B is opened, this phase is complete. Update this handoff
+to mark BOTH PRs complete.
+
+Future waves (subsequent sessions can pick up):
+
+- **Wave 2 gap-fill** — bump every PR-A wave-1 subtopic from 5
+  questions to 10 questions (+5 each × 32 subtopics = +160
+  questions). Use `docs/exam-bank-coverage.json` `belowTen` array to
+  pick rows with `count` between 1 and 9 in the priority subjects.
+- **Wave 3+** — work through the remaining 514 zero-coverage
+  subtopics in non-core subjects (MFL, drama, music, sociology,
+  art, KS1/KS2 maths). The audit JSON makes this a transparent task
+  list; the CI gate ensures no regression.
+- **Class Pack / PDF integration** — wire the new tool into the
+  Worksheets Save-to-Library + Send-to-Class-Pack flow so generated
+  papers persist and can be assigned. The engine already emits the
+  canonical `ExamPaperWorksheet` shape, so this is one extra import
+  away.
 
 ## Checkpoint protocol
 
