@@ -5,9 +5,15 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — PR-B Step 8 (tool UI + registry + route +
-hub card) shipped on `feat/phase-e-exam-paper-builder`. Opening PR-B
-is the final step.
+Last updated: 2026-05-23 — Phase E COMPLETE. PR-A is **PR #109**
+(`feat/phase-e-pr-a-bank-coverage` → main); PR-B is **PR #108**
+(`feat/phase-e-pr-b-create-exam-paper` → `feat/phase-e-pr-a-bank-coverage`,
+stacked).
+
+> **Housekeeping:** PR #107 was opened earlier against the shared branch
+> `feat/phase-e-exam-paper-builder` and ended up containing both PR-A
+> and PR-B commits (continuous push during development). Close PR #107
+> in favour of PR #109 (PR-A) and PR #108 (PR-B).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -256,61 +262,53 @@ pastPaperQuestions.ts       2,203 lines
     storyboard step "Build a mock exam paper" pointing at the
     new tool.
 
+- **PR-B · Step 9 — Open PR-B**. Opened as PR
+  [#108](https://github.com/tahmidburner22-oss/send-assistant/pull/108)
+  on branch `feat/phase-e-pr-b-create-exam-paper`, stacked on top
+  of PR-A's clean branch (`feat/phase-e-pr-a-bank-coverage`). PR
+  body links the phase folder, summarises the algorithm, and
+  includes a worked example.
+
+- **Branching cleanup**. Cut `feat/phase-e-pr-a-bank-coverage` from
+  HEAD `95140da` (PR-A's last commit) and `feat/phase-e-pr-b-create-exam-paper`
+  from `fb2b13e` (PR-B's last commit, on top of PR-A). Reopened the
+  PRs cleanly:
+  - **PR #109** = PR-A: `feat/phase-e-pr-a-bank-coverage` → `main`.
+  - **PR #108** = PR-B: `feat/phase-e-pr-b-create-exam-paper` → `feat/phase-e-pr-a-bank-coverage` (stacked).
+  - PR #107 (the original "everything-in-one-branch" PR) is left
+    behind — close it in favour of #109/#108.
+
 ## What is in flight
 
-_Nothing yet. PR-B Step 9 (open the PR) starts at the next checkpoint._
+_Nothing — Phase E is complete. Both PRs are open and awaiting review._
 
 ## What is next
 
-**PR-B · Step 9 — Open PR-B.**
+_Phase E has no further steps in this session._ Subsequent sessions
+can pick up the follow-on waves below — each is a self-contained
+chunk that fits in one session.
 
-Branch is `feat/phase-e-exam-paper-builder` (already pushed through
-Step 8). Both PR-A (#107) and PR-B share the branch — when PR-A
-merges, PR-B continues on the same branch with PR-A's commits
-already in.
-
-> **Branching note for the reviewer:** PR-B's commits sit on top of
-> PR-A's on the same branch. This means PR-B's diff against `main`
-> will include PR-A's changes too. Reviewers should look at the
-> commit history for the PR-B-specific changes — commits prefixed
-> `phase-e PR-B step ...`.
-
-Open PR-B with:
-
-- **Title:** `Phase E PR-B: Create an Exam Paper — assembly engine + tool surface`
-- **Body** must include:
-  1. Link to `.agents/tasks/phase-e-exam-paper-builder/`.
-  2. Link back to PR-A (#107) and note that the diff includes
-     PR-A's changes since both PRs share the branch.
-  3. Brief description of the assembly algorithm (knapsack + bands +
-     per-topic floor + AO/command-word diversity).
-  4. Links to the new files: `createExamPaperBuilder.ts`,
-     `__tests__/createExamPaperBuilder.test.ts`, `CreateExamPaper.tsx`.
-  5. Worked example — show the result of generating an 80-mark
-     mathematics paper across 3 topics (Number, Algebra, Geometry).
-  6. Note that the tool reuses the existing `ExamPaperWorksheet`
-     output type, so plugging into Class Pack / pdf-generator-v2 is
-     a follow-up integration (deliberately out of scope for this PR
-     to keep the diff reviewable).
-
-After PR-B is opened, this phase is complete. Update this handoff
-to mark BOTH PRs complete.
-
-Future waves (subsequent sessions can pick up):
+**Future waves** (any subsequent session can pick up):
 
 - **Wave 2 gap-fill** — bump every PR-A wave-1 subtopic from 5
   questions to 10 questions (+5 each × 32 subtopics = +160
   questions). Use `docs/exam-bank-coverage.json` `belowTen` array to
   pick rows with `count` between 1 and 9 in the priority subjects.
+  Run the back-tagger + audit + `--update-baseline` after authoring;
+  the CI gate guards regressions.
 - **Wave 3+** — work through the remaining 514 zero-coverage
   subtopics in non-core subjects (MFL, drama, music, sociology,
   art, KS1/KS2 maths). The audit JSON makes this a transparent task
-  list; the CI gate ensures no regression.
-- **Class Pack / PDF integration** — wire the new tool into the
-  Worksheets Save-to-Library + Send-to-Class-Pack flow so generated
-  papers persist and can be assigned. The engine already emits the
-  canonical `ExamPaperWorksheet` shape, so this is one extra import
-  away.
+  list.
+- **Class Pack / PDF integration for Create-an-Exam-Paper** — wire
+  the new tool into the Worksheets Save-to-Library +
+  Send-to-Class-Pack flow so generated papers persist and can be
+  assigned. The engine already emits the canonical
+  `ExamPaperWorksheet` shape, so this is one extra import away.
+- **Subtopic dropdown in the Worksheet Generator** — surface the new
+  `getSubtopicsForTopic` helper in the existing worksheet-generator
+  subtopic dropdown so worksheets can be filtered to subtopic
+  granularity instead of topic granularity.
 
 ## Checkpoint protocol
 
