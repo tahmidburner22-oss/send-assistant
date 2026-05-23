@@ -424,10 +424,23 @@ export function serialiseElement(element: HTMLElement, viewMode: "teacher" | "st
   // Clone the element so we can modify it without affecting the live DOM
   const clone = element.cloneNode(true) as HTMLElement;
 
-  // For student view: remove teacher-only sections from the clone
+  // For student view: remove teacher-only sections from the clone.
+  // For teacher view: the WorksheetRenderer hides teacher-only sections on
+  // screen via inline `display:none` when the page-level view is "student".
+  // Strip that inline display value so they become visible in the captured
+  // HTML — this is what makes the Print Preview / PDF teacher toggle actually
+  // change the exported document.
   if (viewMode === "student") {
     clone.querySelectorAll(".ws-teacher-section").forEach((el) => {
       el.parentNode?.removeChild(el);
+    });
+  } else {
+    clone.querySelectorAll<HTMLElement>(".ws-teacher-section, [data-teacher-only=\"true\"]").forEach((el) => {
+      // Only override the section-level display:none we set in the renderer.
+      // We do not blindly clear `display` because some inner divs use `display:flex`.
+      const inlineDisplay = (el.style.display || "").toLowerCase();
+      if (inlineDisplay === "none") el.style.display = "";
+      el.removeAttribute("data-teacher-only");
     });
   }
 

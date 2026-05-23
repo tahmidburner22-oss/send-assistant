@@ -2945,23 +2945,45 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             page-break-before: avoid !important;
             break-before: avoid !important;
           }
+          /* Diagram pages: container fills the page, but the actual image keeps
+             its natural aspect ratio. Forcing width:100% AND height:A4_H on the
+             image (and every descendant div) caused html2canvas to stretch the
+             diagram off the page in the captured PDF. We now constrain only the
+             *maximum* dimensions and let width/height auto-resolve so 'object-fit:
+             contain' can do its job correctly. */
           .ws-section-diagram {
-            margin:0!important;
-            width:100%!important; max-width:100%!important;
-            height:${A4_H}px!important;
-            min-height:${A4_H}px!important;
-            overflow:hidden!important;
-            box-sizing:border-box!important;
-            display:flex!important; flex-direction:column!important;
-            align-items:stretch!important; justify-content:flex-start!important;
-            padding:0!important; }
-          .ws-section-diagram img, .ws-section-diagram svg,
+            margin: 0 !important;
+            width: 100% !important; max-width: 100% !important;
+            height: ${A4_H}px !important;
+            min-height: ${A4_H}px !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            display: flex !important; flex-direction: column !important;
+            align-items: center !important; justify-content: center !important;
+            padding: 0 !important; }
           .ws-section-diagram > div,
-          .ws-section-diagram > div > div, .ws-section-diagram > div > img {
-            max-width:100%!important; width:100%!important;
-            height:${A4_H}px!important;
-            max-height:${A4_H}px!important;
-            object-fit:contain!important; display:block!important; flex:1!important; }
+          .ws-section-diagram > div > div {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            width: auto !important;
+            height: auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            flex: 0 1 auto !important; }
+          .ws-section-diagram img,
+          .ws-section-diagram svg,
+          .ws-section-diagram > div > img {
+            max-width: 100% !important;
+            max-height: ${A4_H - 24}px !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            display: block !important;
+            margin: 0 auto !important;
+            flex: 0 1 auto !important; }
           .ws-header { border-radius:4px!important; margin-bottom:10px!important; overflow:hidden!important;
             -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
           table { width:100%; border-collapse:collapse; margin:8px 0; }
@@ -3242,7 +3264,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           }
           .ws-section { margin-bottom: 10px !important; border-radius: 4px !important;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          /* Diagram sections: fill the full A4 page height */
+          /* Diagram sections: container reserves a full A4 page; the image inside
+             keeps its natural aspect ratio. We only cap the maximum dimensions —
+             previously forcing width/height: 100% / A4_H on every descendant
+             made wide diagrams overflow horizontally in the PDF capture. */
           .ws-section-diagram {
             margin: 0 !important;
             width: 100% !important;
@@ -3253,22 +3278,34 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
-            align-items: stretch !important;
-            justify-content: flex-start !important;
+            align-items: center !important;
+            justify-content: center !important;
             padding: 0 !important;
+          }
+          .ws-section-diagram > div,
+          .ws-section-diagram > div > div {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            width: auto !important;
+            height: auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            flex: 0 1 auto !important;
           }
           .ws-section-diagram img,
           .ws-section-diagram svg,
-          .ws-section-diagram > div,
-          .ws-section-diagram > div > div,
           .ws-section-diagram > div > img {
             max-width: 100% !important;
-            width: 100% !important;
-            height: ${A4_H}px !important;
-            max-height: ${A4_H}px !important;
+            max-height: ${A4_H - 24}px !important;
+            width: auto !important;
+            height: auto !important;
             object-fit: contain !important;
             display: block !important;
-            flex: 1 !important;
+            margin: 0 auto !important;
+            flex: 0 1 auto !important;
           }
           .ws-header { border-radius: 4px !important;
             margin-bottom: 10px !important; overflow: hidden !important;

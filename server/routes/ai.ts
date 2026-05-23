@@ -1659,16 +1659,32 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     const topicWords = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
     const topicPat = topicWords.length > 0 ? `%${topicWords[0]}%` : `%${topicLower}%`;
     const brokenFilter = `image_url NOT LIKE '[FAILED]%' AND image_url IS NOT NULL AND image_url != ''`;
+    // ── Topic LIKE construction ────────────────────────────────────────────
+    // Previously the filter only used the FIRST significant topic word, e.g.
+    // "Solving linear equations" -> "%solving%" — which excluded library rows
+    // titled "Linear equations — Diagram A". This was the main reason maths
+    // topics never returned a diagram even when one existed. We now build an
+    // OR across every meaningful topic word (>=4 letters) and also probe the
+    // tags column, so the post-query relevance scorer has a real candidate
+    // pool to choose from. This change widens the pre-filter only — the
+    // scorer further down still enforces hard relevance gates.
+    const topicWordPatterns: string[] = topicWords.length > 0
+      ? topicWords.map((w: string) => `%${w}%`)
+      : [`%${topicLower}%`];
+    const topicConditionParts = topicWordPatterns.map((_, idx) =>
+      `(LOWER(topic) LIKE $${idx + 3} OR LOWER(title) LIKE $${idx + 3} OR LOWER(COALESCE(tags, '')) LIKE $${idx + 3})`
+    );
+    const topicCondition = topicConditionParts.join(" OR ");
     let targetedRows = await dbQuery(
       `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated, diagram_type
        FROM diagram_library
        WHERE diagram_type = $1
          AND (LOWER(subject) LIKE $2 OR LOWER(title) LIKE $2)
-         AND (LOWER(topic) LIKE $3 OR LOWER(title) LIKE $3)
+         AND (${topicCondition})
          AND ${brokenFilter}
        ORDER BY curated DESC, subject ASC, title ASC
        LIMIT 80`,
-      [diagramTypeFilter, subjectPat, topicPat]
+      [diagramTypeFilter, subjectPat, ...topicWordPatterns]
     );
     // Do not fall back to subject-only at DB level. Subject-only matches are the
     // main source of irrelevant diagrams; the post-query scorer below can only
@@ -1681,17 +1697,23 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
         : diagramSlot === 'REVISION'
           ? `(LOWER(title) LIKE '%revision map%' OR LOWER(title) LIKE '%revision mat%' OR LOWER(title) LIKE '%revision sheet%')`
           : `(LOWER(title) NOT LIKE '%diagram b%' AND LOWER(title) NOT LIKE '%revision map%' AND LOWER(title) NOT LIKE '%revision mat%')`;
+      // Same OR-based topic filter for the legacy fallback path so the
+      // pre-migration code path benefits from the broadened maths matching.
+      const fbTopicConditionParts = topicWordPatterns.map((_, idx) =>
+        `(LOWER(topic) LIKE $${idx + 2} OR LOWER(title) LIKE $${idx + 2} OR LOWER(COALESCE(tags, '')) LIKE $${idx + 2})`
+      );
+      const fbTopicCondition = fbTopicConditionParts.join(" OR ");
       targetedRows = await dbQuery(
         `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated,
                 COALESCE(diagram_type, 'diagram_a') as diagram_type
          FROM diagram_library
          WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
-           AND (LOWER(topic) LIKE $2 OR LOWER(title) LIKE $2)
+           AND (${fbTopicCondition})
            AND ${titleTypeCondition}
            AND ${brokenFilter}
          ORDER BY curated DESC, subject ASC, title ASC
          LIMIT 80`,
-        [subjectPat, topicPat]
+        [subjectPat, ...topicWordPatterns]
       );
     }
     // Slot-level subject-only fallbacks removed: a missing topic-specific B/A
@@ -1706,6 +1728,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
         return v;
       };
       const requestedTopicKey = canonicalTopicKey(topicLower);
+      const isMathsRequest = subjectFamily(subjectLower) === "maths";
       // Score each entry for relevance with hard topic gates.
       const scored = entries.map((e) => {
         const eSubject = (e.subject || "").toLowerCase().trim();
@@ -1729,17 +1752,28 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
         if (subjectMatch) score += 25;
         if (yearGroupMatch) score += 12;
         if (canonicalMatch) score += 80;
-        score += Math.min(matchedWords.length * 6, 18);
+        // Bumped from *6 capped at 18 to *10 capped at 32 so partial-match
+        // entries (the typical case for maths topics, e.g. library row
+        // "Linear equations" matching worksheet topic "Solving linear
+        // equations") can clear the acceptance threshold without needing
+        // a perfect canonical-key match.
+        score += Math.min(matchedWords.length * 10, 32);
         if (e.curated) score += 8;
         if (!passesGate) score = -100;
         return { entry: e, score, passesGate };
       }).filter(s => s.passesGate);
 
       scored.sort((a, b) => b.score - a.score);
-      // Use the top-scoring entry only when confidence is strong enough.
-      const best = scored.find(s => s.score >= 90);
+      // Threshold lowered for maths-family searches: maths library entries
+      // rarely share a canonical topic key with the worksheet topic phrasing
+      // (e.g. "Adding fractions" vs library "Fractions"), so requiring score
+      // >= 90 was effectively excluding maths from the diagram pipeline. We
+      // still require the passesGate hard checks (subject + year + topic
+      // relevance) so this only widens *acceptance*, not *eligibility*.
+      const acceptanceThreshold = isMathsRequest ? 60 : 90;
+      const best = scored.find(s => s.score >= acceptanceThreshold);
       if (best) {
-        console.log(`[Diagram] Admin library match for "${topic}" (${subject}) slot=${diagramSlot} type=${diagramTypeFilter}: "${best.entry.title}" score=${best.score}`);
+        console.log(`[Diagram] Admin library match for "${topic}" (${subject}) slot=${diagramSlot} type=${diagramTypeFilter}: "${best.entry.title}" score=${best.score} threshold=${acceptanceThreshold}`);
         return res.json(buildImageResponse({
           imageUrl: best.entry.image_url,
           caption: `${best.entry.title} — ${subject} (${yr})`,
