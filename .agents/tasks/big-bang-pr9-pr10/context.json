@@ -1,0 +1,28 @@
+{
+  "project_type": "Full-stack TypeScript monorepo: Express server + Vite/React client + shared Zod schemas. Educational SEND worksheet generator.",
+  "language": "TypeScript (ESM modules throughout)",
+  "build_system": "pnpm + Vite (client) + esbuild (server). Scripts: `pnpm run check` (tsc --noEmit), `pnpm test` (vitest run).",
+  "test_framework": "Vitest. Server tests in server/tests/worksheetScrutiny.test.ts (4150 lines, appended per PR). New cache tests go in server/tests/generationCache.test.ts. Includes server/ and client/src/ via vitest.config.ts.",
+  "build_command": "pnpm run check",
+  "test_command": "pnpm test",
+  "verification_instructions": "Sandbox is INTEGRATIONS_ONLY — do not run `npm install` or `pnpm install`. Type-check runs in CI on PR push via `tsc --noEmit`. Tests run via `vitest run`. No local execution is needed — correctness is confirmed by CI.",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "Do not run any install commands. The sandbox is INTEGRATIONS_ONLY.",
+  "environment_constraints": "INTEGRATIONS_ONLY — no npm/pnpm install, no Docker daemon, no external network. All new dependencies must already be in package.json. No better-sqlite3 in production dependencies (DB layer is PostgreSQL via pg). The generationCache LRU must use only in-process Map for the in-memory tier; the sqlite3 fallback in schema.sql is DDL only (CREATE TABLE IF NOT EXISTS). Server routes use PostgreSQL (server/db/index.ts exports `query` async fn and a `db` compatibility object).",
+  "contribution_requirements": "Every new schema field is optional so older worksheets keep rendering. Pure functions only in client/src/lib/. Side-effecting code lives in server/. No full reads of ai.ts (4376 lines), Worksheets.tsx, or WorksheetRenderer.tsx — grep named exports then read narrow ranges only. Sizing budget: ≤ ~700 net lines per PR, ≤ ~7-8 files.",
+  "key_patterns": "shared/aiSchemas.ts has WorksheetOutputSchema.metadata (z.object, all optional fields). New metadata fields appended inside that z.object. client/src/lib/ has pure helpers (qaScoreBuilder.ts, worksheetPostValidator.ts, worksheetPostValidatorRegistry.ts). server/tests/worksheetScrutiny.test.ts is appended per PR with new describe blocks. PostValidatorWorksheet interface has metadata as Record<string, unknown> with typed sub-fields. generatorVersion is in metadata at client/src/lib/qaScoreBuilder.ts:82. callWithFallback at server/routes/ai.ts:434 is the main LLM call point used by all structured endpoints.",
+  "relevant_files": [
+    "shared/aiSchemas.ts",
+    "client/src/lib/worksheetPostValidator.ts",
+    "client/src/lib/worksheetPostValidatorRegistry.ts",
+    "client/src/lib/qaScoreBuilder.ts",
+    "server/routes/ai.ts",
+    "server/db/schema.sql",
+    "server/db/index.ts",
+    "server/tests/worksheetScrutiny.test.ts",
+    "server/tests/generationCache.test.ts",
+    ".agents/tasks/big-bang-improvements/SESSION-HANDOFF.md",
+    ".agents/tasks/big-bang-improvements/LEDGER.md"
+  ],
+  "directory_structure": "shared/ — Zod schemas + types (shared by client+server). client/src/lib/ — pure helpers, builders, validators. client/src/components/ — React UI. server/routes/ai.ts — all AI proxy endpoints (4376 lines). server/lib/ — server-side helpers. server/db/index.ts — PostgreSQL layer (query fn, db compat object). server/db/schema.sql — DDL. server/tests/ — vitest test files."
+}
