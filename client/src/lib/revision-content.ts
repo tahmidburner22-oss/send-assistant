@@ -17,14 +17,37 @@ import {
   getCategoriesBySubject,
   type QuizQuestion,
 } from "@/lib/quiz-bank";
+import {
+  allPastPaperQuestions,
+  type PastPaperQuestion,
+} from "@/lib/pastPaperQuestions";
+import type { RevisionSessionPlan } from "@/lib/revision-session-store";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
+export interface WorkedExample {
+  scenario: string;
+  steps: string[];
+  finalAnswer: string;
+}
+
 export interface LessonScript {
+  /** Topic title for the lesson card. */
   title: string;
+  /** Concrete "by the end of this lesson, you will be able to..." sentence. */
+  objective: string;
+  /** Short paragraph on why this topic is worth learning, in pupil-friendly terms. */
+  whyItMatters: string;
+  /** 5–7 short, age-appropriate teaching paragraphs that build the concept. */
   paragraphs: string[];
+  /** 4–6 key terms, each with a one-sentence definition. */
   keyTerms: Array<{ term: string; definition: string }>;
-  workedExample: string;
+  /** 2–3 fully worked examples showing the method step-by-step. */
+  workedExamples: WorkedExample[];
+  /** A single common-mistake / pitfall sentence (or two). */
+  commonMistake: string;
+  /** 3–5 short bullets summarising what the pupil should now remember. */
+  recap: string[];
 }
 
 export interface StretchQuestion {
@@ -39,16 +62,15 @@ export interface StretchQuestion {
   isNumerical: boolean;
 }
 
-export interface WorkedExample {
-  scenario: string;
-  steps: string[];
-  finalAnswer: string;
-}
-
 export interface FlashCardSeed {
   front: string;
   back: string;
   hint?: string;
+}
+
+export interface MaterialItem {
+  icon: string;
+  label: string;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -106,6 +128,15 @@ function sendStyleNote(sendNeeds?: string[]): string {
   return notes.join(" ");
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 // ─── Lesson script ──────────────────────────────────────────────────────────
 
 const LESSON_FALLBACK = (input: ContentInput): LessonScript => {
@@ -116,14 +147,34 @@ const LESSON_FALLBACK = (input: ContentInput): LessonScript => {
   }));
   return {
     title: input.topic,
+    objective: `By the end of this lesson, you'll be able to explain what ${input.topic} means in ${input.subjectLabel} and use it on a question.`,
+    whyItMatters:
+      `${input.topic} comes up a lot in ${input.subjectLabel}. ` +
+      `Once you understand the basics, lots of other topics get easier — that's why we revise it carefully.`,
     paragraphs: [
       `Today's topic is ${input.topic}. Let's learn what it means and why it matters in ${input.subjectLabel}.`,
       `Take your time with each paragraph. If something doesn't make sense, you can pause and read it again.`,
-      `When you're ready, write down two things you learned in your notes.`,
+      `When you're ready, write down two things you noticed in your notes on the right.`,
     ],
     keyTerms,
-    workedExample:
-      "We weren't able to load a worked example right now — the quiz that follows will still help you practise.",
+    workedExamples: [
+      {
+        scenario: `A worked example for ${input.topic}.`,
+        steps: [
+          "We weren't able to load a worked example right now.",
+          "Try the questions in the next phase to test what you know.",
+          "If you're stuck, ask an adult to walk through one with you.",
+        ],
+        finalAnswer: "",
+      },
+    ],
+    commonMistake:
+      "A common mistake is rushing the first step. Read each question twice before you start writing.",
+    recap: [
+      `${input.topic} is something you'll see again across ${input.subjectLabel}.`,
+      "Always start with what the question is asking.",
+      "Show your steps — they help you and your teacher spot mistakes.",
+    ],
   };
 };
 
@@ -131,8 +182,8 @@ export async function generateLessonScript(input: ContentInput): Promise<LessonS
   const readingAge = input.readingAgeOverride ?? readingAgeFromYearGroup(input.yearGroup);
   const sys =
     "You are a UK SEND-aware home-revision tutor. " +
-    "You write a short, friendly lesson script for ONE topic, aimed at a single child. " +
-    "You always reply with VALID JSON matching the schema given.";
+    "You write rich, structured ten-minute lessons for ONE topic, aimed at a single child. " +
+    "You always reply with VALID JSON matching the schema given. No markdown, no commentary outside the JSON.";
   const usr =
     `Subject: ${input.subjectLabel}\n` +
     `Topic: ${input.topic}\n` +
@@ -140,35 +191,107 @@ export async function generateLessonScript(input: ContentInput): Promise<LessonS
     `Reading age target: ${readingAge}\n` +
     `Difficulty tier: ${input.difficulty}\n\n` +
     `Style guidance: ${sendStyleNote(input.sendNeeds)}\n\n` +
+    `Aim for ROUGHLY 10 MINUTES of reading time (about 1500–2000 words total across all fields).\n\n` +
     `Return JSON of shape:\n` +
     `{\n` +
-    `  "title": string,\n` +
-    `  "paragraphs": string[],          // 3–5 short paragraphs explaining the topic\n` +
-    `  "keyTerms": Array<{ "term": string, "definition": string }>,  // exactly 4 items\n` +
-    `  "workedExample": string          // ONE complete worked example, with steps shown on separate lines using "\\n"\n` +
+    `  "title": string,                                     // short topic title\n` +
+    `  "objective": string,                                 // ONE sentence: "By the end of this lesson you'll be able to..."\n` +
+    `  "whyItMatters": string,                              // ONE paragraph (40–80 words) on real-world / curriculum relevance\n` +
+    `  "paragraphs": string[],                              // EXACTLY 5–7 teaching paragraphs that BUILD the concept from simple to complex; each 50–90 words\n` +
+    `  "keyTerms": Array<{ "term": string, "definition": string }>,  // EXACTLY 4–6 items, each definition ≤ 20 words\n` +
+    `  "workedExamples": Array<{                            // EXACTLY 2 OR 3 fully-worked examples\n` +
+    `    "scenario": string,                                // the question being worked, written as a short prompt\n` +
+    `    "steps": string[],                                 // 4–7 steps, each step is ONE sentence with a clear action\n` +
+    `    "finalAnswer": string                              // the final answer in plain text (e.g. "x = 5", "The mean is 12.4 kg")\n` +
+    `  }>,\n` +
+    `  "commonMistake": string,                             // ONE or TWO sentences naming a common pupil mistake on this topic\n` +
+    `  "recap": string[]                                    // EXACTLY 3–5 bullet sentences summarising the lesson\n` +
     `}\n\n` +
     `Hard rules:\n` +
-    `  • Every paragraph ≤ 60 words.\n` +
-    `  • No markdown, no headings, no bullet symbols inside string values.\n` +
+    `  • Plain English suited to age ${readingAge}. No idioms.\n` +
+    `  • Every paragraph stands alone — no "as we said before".\n` +
+    `  • Use concrete numbers and small examples in the teaching paragraphs.\n` +
+    `  • Worked example steps must each begin with a verb (Write, Multiply, Substitute, Read off, Check, etc.).\n` +
     `  • Do NOT include any text outside the JSON object.\n`;
 
   try {
-    const { text } = await callAI(sys, usr, 1400, { responseFormat: "json_object" });
+    const { text } = await callAI(sys, usr, 3500, { responseFormat: "json_object" });
     const parsed = parseWithFixes(text);
     if (!parsed || typeof parsed !== "object") return LESSON_FALLBACK(input);
+
+    const title =
+      typeof parsed.title === "string" && parsed.title.trim() ? parsed.title.trim() : input.topic;
+
+    const paragraphs = Array.isArray(parsed.paragraphs)
+      ? parsed.paragraphs
+          .filter((p: unknown): p is string => typeof p === "string" && p.trim().length > 0)
+          .slice(0, 8)
+      : [];
+
+    const keyTerms = Array.isArray(parsed.keyTerms)
+      ? parsed.keyTerms
+          .filter(
+            (k: any): k is { term: string; definition: string } =>
+              k && typeof k.term === "string" && typeof k.definition === "string",
+          )
+          .slice(0, 6)
+      : [];
+
+    const workedExamples: WorkedExample[] = Array.isArray(parsed.workedExamples)
+      ? parsed.workedExamples
+          .filter(
+            (e: any) =>
+              e &&
+              typeof e.scenario === "string" &&
+              Array.isArray(e.steps) &&
+              e.steps.every((s: unknown) => typeof s === "string"),
+          )
+          .map((e: any): WorkedExample => ({
+            scenario: e.scenario,
+            steps: e.steps.slice(0, 8),
+            finalAnswer: typeof e.finalAnswer === "string" ? e.finalAnswer : "",
+          }))
+          .slice(0, 4)
+      : [];
+
+    const recap = Array.isArray(parsed.recap)
+      ? parsed.recap
+          .filter((r: unknown): r is string => typeof r === "string" && r.trim().length > 0)
+          .slice(0, 6)
+      : [];
+
     const out: LessonScript = {
-      title: typeof parsed.title === "string" && parsed.title.trim() ? parsed.title : input.topic,
-      paragraphs: Array.isArray(parsed.paragraphs)
-        ? parsed.paragraphs.filter((p: unknown) => typeof p === "string" && p.trim().length > 0).slice(0, 6)
-        : [],
-      keyTerms: Array.isArray(parsed.keyTerms)
-        ? parsed.keyTerms
-            .filter((k: any) => k && typeof k.term === "string" && typeof k.definition === "string")
-            .slice(0, 6)
-        : [],
-      workedExample: typeof parsed.workedExample === "string" ? parsed.workedExample : "",
+      title,
+      objective:
+        typeof parsed.objective === "string" && parsed.objective.trim()
+          ? parsed.objective.trim()
+          : `By the end of this lesson, you'll understand ${input.topic} and be able to use it on a question.`,
+      whyItMatters:
+        typeof parsed.whyItMatters === "string" && parsed.whyItMatters.trim()
+          ? parsed.whyItMatters.trim()
+          : `${input.topic} is a key idea in ${input.subjectLabel} that comes up a lot.`,
+      paragraphs,
+      keyTerms,
+      workedExamples,
+      commonMistake:
+        typeof parsed.commonMistake === "string" && parsed.commonMistake.trim()
+          ? parsed.commonMistake.trim()
+          : "A common mistake is rushing — read the question twice before you start.",
+      recap,
     };
-    if (out.paragraphs.length < 2) return LESSON_FALLBACK(input);
+
+    // Defensive: if AI output is too thin, fall back so the lesson never feels empty.
+    if (out.paragraphs.length < 3 || out.workedExamples.length < 1) {
+      const fb = LESSON_FALLBACK(input);
+      return {
+        ...fb,
+        ...out,
+        paragraphs: out.paragraphs.length >= 3 ? out.paragraphs : fb.paragraphs,
+        workedExamples:
+          out.workedExamples.length >= 1 ? out.workedExamples : fb.workedExamples,
+        recap: out.recap.length >= 3 ? out.recap : fb.recap,
+      };
+    }
     return out;
   } catch {
     return LESSON_FALLBACK(input);
@@ -176,15 +299,6 @@ export async function generateLessonScript(input: ContentInput): Promise<LessonS
 }
 
 // ─── Quiz questions (bank-first, AI fallback) ──────────────────────────────
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 /**
  * Subject id → display name used in the quiz bank.
@@ -319,9 +433,13 @@ const STRETCH_FALLBACK = (input: ContentInput): StretchQuestion[] => [
   },
 ];
 
+/**
+ * Build 5–7 exam-style questions that, together, fill ~20 minutes of work.
+ * Defaults to 6 if no count is supplied.
+ */
 export async function generateStretchQuestions(
   input: ContentInput,
-  count = 3,
+  count = 6,
 ): Promise<StretchQuestion[]> {
   const sys =
     "You are a UK exam tutor. You write exam-style questions for ONE topic, " +
@@ -332,6 +450,9 @@ export async function generateStretchQuestions(
     `Year group: ${input.yearGroup}\n` +
     `Difficulty tier: ${input.difficulty}\n` +
     `Style: ${sendStyleNote(input.sendNeeds)}\n\n` +
+    `These ${count} questions together should fill about 20 minutes of working time. ` +
+    `Mix shorter (2–3 marks) and longer (4–6 marks) questions, escalating from easier to harder. ` +
+    `Avoid duplication of method.\n\n` +
     `Return JSON: { "questions": Array<{\n` +
     `  "question": string,           // the prompt the pupil answers\n` +
     `  "expectedAnswer": string,     // the model answer in 1–2 sentences\n` +
@@ -340,11 +461,10 @@ export async function generateStretchQuestions(
     `  "workedSolution": string,     // full step-by-step solution\n` +
     `  "isNumerical": boolean        // true ONLY if the expected answer is purely numerical\n` +
     `}> }\n\n` +
-    `Make exactly ${count} questions, escalating from easier to harder. ` +
-    `For ${input.subjectLabel}, mix recall and application. Plain English only.`;
+    `Make exactly ${count} questions. Plain English only.`;
 
   try {
-    const { text } = await callAI(sys, usr, 1800, { responseFormat: "json_object" });
+    const { text } = await callAI(sys, usr, 3000, { responseFormat: "json_object" });
     const parsed = parseWithFixes(text);
     if (parsed && Array.isArray(parsed.questions)) {
       const cleaned = parsed.questions
@@ -419,6 +539,154 @@ export async function generateWorkedExamples(
       finalAnswer: "",
     },
   ];
+}
+
+// ─── Past-paper picker (real questions from the bundled bank) ──────────────
+
+export type PastPaperMatch = "exact" | "broad" | "subject" | "none";
+
+export interface PastPaperPickResult {
+  questions: PastPaperQuestion[];
+  matchKind: PastPaperMatch;
+}
+
+/** Tier resolution from session difficulty. */
+function tierForDifficulty(d: ContentInput["difficulty"]): "Higher" | "Foundation" | null {
+  if (d === "higher") return "Higher";
+  if (d === "foundation") return "Foundation";
+  return null; // "mixed" — accept both
+}
+
+/** Words from the plan topic that we'll search for in past-paper topic strings. */
+function topicSearchWords(planTopic: string): string[] {
+  return planTopic
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length >= 4); // skip "and", "the", short stop-ish words
+}
+
+/**
+ * Pick `count` past-paper questions matching the session as closely as
+ * possible. Falls back from exact-topic → broad-keyword → subject-only.
+ *
+ * The rendered questions are real exam-style items pulled straight from the
+ * project's curated bank, so they have hints, mark schemes, command words,
+ * sub-parts and proper marks.
+ */
+export function pickPastPaperQuestions(
+  input: ContentInput,
+  count = 6,
+): PastPaperPickResult {
+  const subj = input.subjectId.toLowerCase();
+  const subjectMatches = allPastPaperQuestions.filter(
+    (q) => (q.subject || "").toLowerCase() === subj,
+  );
+  if (subjectMatches.length === 0) return { questions: [], matchKind: "none" };
+
+  // Tier filter — but be permissive; if filtering kills everything, drop it.
+  const tier = tierForDifficulty(input.difficulty);
+  let pool = subjectMatches;
+  if (tier) {
+    const filtered = subjectMatches.filter((q) => !q.tier || q.tier === tier);
+    if (filtered.length >= 3) pool = filtered;
+  }
+
+  const planTopicLower = input.topic.toLowerCase();
+  const planWords = topicSearchWords(input.topic);
+
+  const exact = pool.filter(
+    (q) => (q.topic || "").toLowerCase() === planTopicLower,
+  );
+  const broad =
+    planWords.length === 0
+      ? []
+      : pool.filter((q) => {
+          if (exact.includes(q)) return false;
+          const qt = (q.topic || "").toLowerCase();
+          return planWords.some((w) => qt.includes(w));
+        });
+
+  if (exact.length + broad.length >= count) {
+    const merged = [...shuffle(exact), ...shuffle(broad)].slice(0, count);
+    return {
+      questions: merged,
+      matchKind: exact.length > 0 ? "exact" : "broad",
+    };
+  }
+
+  // Pad with same-subject items so we always have a paper-sized set.
+  const remaining = pool.filter(
+    (q) => !exact.includes(q) && !broad.includes(q),
+  );
+  const merged = [
+    ...shuffle(exact),
+    ...shuffle(broad),
+    ...shuffle(remaining),
+  ].slice(0, count);
+  return {
+    questions: merged,
+    matchKind:
+      exact.length > 0 ? "exact" : broad.length > 0 ? "broad" : "subject",
+  };
+}
+
+// ─── Materials / "what you'll need" helper ─────────────────────────────────
+
+/**
+ * Produce a small pupil-friendly checklist of materials to have to hand
+ * before starting a session. Used by the warm-up phase.
+ */
+export function materialsForSession(plan: RevisionSessionPlan): MaterialItem[] {
+  const subj = plan.subject.toLowerCase();
+  const topic = plan.topic.toLowerCase();
+  const items: MaterialItem[] = [
+    { icon: "✏️", label: "A pen or pencil" },
+    { icon: "📒", label: "A notebook for your lesson notes" },
+  ];
+
+  // Calculator for maths and the sciences (parents can ignore if their
+  // session is a non-calculator one — the message is a nudge, not a wall).
+  const numericalSubjects = new Set([
+    "mathematics",
+    "maths",
+    "science",
+    "biology",
+    "chemistry",
+    "physics",
+    "computing",
+    "computer-science",
+    "business",
+  ]);
+  if (numericalSubjects.has(subj)) {
+    items.push({ icon: "🧮", label: "A calculator (some questions are easier with one)" });
+  }
+
+  // Geometry-flavoured topics → ruler.
+  if (
+    topic.includes("geometry") ||
+    topic.includes("triangle") ||
+    topic.includes("circle") ||
+    topic.includes("trig") ||
+    topic.includes("graph") ||
+    topic.includes("vector") ||
+    topic.includes("shape") ||
+    topic.includes("area") ||
+    topic.includes("volume") ||
+    topic.includes("loci") ||
+    topic.includes("transformation") ||
+    topic.includes("angle")
+  ) {
+    items.push({ icon: "📐", label: "A ruler (some questions need careful measuring)" });
+  }
+
+  // Headphones for the lesson audio.
+  items.push({ icon: "🎧", label: "Headphones if you have them — for the lesson audio" });
+
+  // Quiet space.
+  items.push({ icon: "🤫", label: "Somewhere quiet to focus for an hour" });
+
+  return items;
 }
 
 // ─── Flashcard seed deck ───────────────────────────────────────────────────
