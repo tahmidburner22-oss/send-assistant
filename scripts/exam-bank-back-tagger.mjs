@@ -17,30 +17,21 @@
  * So this script's job is to fill SUBTOPIC_TAGS for legacy questions
  * that lack an explicit `subtopic:` field.
  *
- * Confidence threshold: 0.6 normalised score. Tunable via CLI:
+ * Confidence threshold: 0.35 normalised score. Tunable via CLI:
  *   node scripts/exam-bank-back-tagger.mjs --threshold=0.5
+ *
+ * Shares brace-indexing + question extraction with exam-bank-coverage.mjs
+ * via scripts/_exam-bank-extract.mjs.
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+import {
+  REPO_ROOT,
+  loadAllQuestions,
+  loadSubtopicsMap,
+} from "./_exam-bank-extract.mjs";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(__dirname, "..");
-
-const BANK_FILES = [
-  "client/src/lib/questionBankMaths.ts",
-  "client/src/lib/questionBankBiology.ts",
-  "client/src/lib/questionBankChemistry.ts",
-  "client/src/lib/questionBankPhysics.ts",
-  "client/src/lib/questionBankEnglish.ts",
-  "client/src/lib/questionBankOtherSubjects.ts",
-  "client/src/lib/questionBankExpanded.ts",
-  "client/src/lib/pastPaperQuestionsExpanded.ts",
-  "client/src/lib/pastPaperQuestions.ts",
-];
-
-const SUBTOPICS_FILE = "client/src/lib/subtopics-data.ts";
 const OUTPUT_FILE = "client/src/lib/subtopicTags.ts";
 
 // CLI flags
@@ -55,166 +46,6 @@ const STOP_WORDS = new Set([
   "or", "as", "at", "by", "is", "be", "this", "that", "these", "those",
   "it", "its", "are", "was", "were", "into", "onto", "out", "up", "down",
 ]);
-
-// ── Subtopic-name extraction ────────────────────────────────────────────────
-
-/**
- * Extract SUBTOPICS_MAP from subtopics-data.ts as Record<topic, subtopic[]>.
- * Pure-text approach: find the SUBTOPICS_MAP literal, walk it brace-aware
- * (skipping string contents), then regex out each `"key": [ "v", "v", ... ]`
- * entry.
- */
-function extractSubtopicsMap(content) {
-  const idx = content.indexOf("SUBTOPICS_MAP");
-  if (idx < 0) throw new Error("SUBTOPICS_MAP not found in subtopics-data.ts");
-  const startBrace = content.indexOf("{", idx);
-  if (startBrace < 0) throw new Error("Opening brace for SUBTOPICS_MAP not found");
-
-  // Walk forward, skipping string contents, to find the matching close brace.
-  let depth = 0;
-  let inString = false;
-  let stringChar = null;
-  let endBrace = -1;
-  for (let i = startBrace; i < content.length; i++) {
-    const ch = content[i];
-    const prev = i > 0 ? content[i - 1] : "";
-    if (inString) {
-      if (ch === stringChar && prev !== "\\") inString = false;
-      continue;
-    }
-    if (ch === '"' || ch === "'" || ch === "`") {
-      inString = true; stringChar = ch; continue;
-    }
-    if (ch === "{") depth++;
-    else if (ch === "}") {
-      depth--;
-      if (depth === 0) { endBrace = i; break; }
-    }
-  }
-  if (endBrace < 0) throw new Error("Unbalanced SUBTOPICS_MAP literal");
-  const block = content.slice(startBrace + 1, endBrace);
-
-  const map = {};
-  const entryRe = /"((?:[^"\\]|\\.)*?)":\s*\[([\s\S]*?)\]/g;
-  let m;
-  while ((m = entryRe.exec(block)) !== null) {
-    const topic = unescapeString(m[1]);
-    const arr = m[2];
-    const subRe = /"((?:[^"\\]|\\.)*?)"/g;
-    const subs = [];
-    let sm;
-    while ((sm = subRe.exec(arr)) !== null) subs.push(unescapeString(sm[1]));
-    if (subs.length > 0) map[topic] = subs;
-  }
-  return map;
-}
-
-function unescapeString(s) {
-  return s
-    .replace(/\\"/g, '"')
-    .replace(/\\'/g, "'")
-    .replace(/\\\\/g, "\\")
-    .replace(/\\n/g, "\n")
-    .replace(/\\t/g, "\t");
-}
-
-// ── Question-entry extraction ───────────────────────────────────────────────
-
-/**
- * Walk the file forward once with string-aware brace tracking, recording
- * every `{`-`}` pair regardless of nesting. Returns an array of
- * `{ start, end }` objects (end is exclusive — points just past `}`).
- *
- * This is the canonical pre-index used by extractQuestions: walking
- * backwards from an `id:` match cannot reliably track string state, so
- * we instead pre-build the brace index forward and look up the smallest
- * enclosing pair for each `id:` occurrence.
- */
-function indexBracePairs(content) {
-  const stack = [];
-  const pairs = [];
-  let inString = false;
-  let stringChar = null;
-  for (let i = 0; i < content.length; i++) {
-    const ch = content[i];
-    const prev = i > 0 ? content[i - 1] : "";
-    if (inString) {
-      if (ch === stringChar && prev !== "\\") inString = false;
-      continue;
-    }
-    if (ch === '"' || ch === "'" || ch === "`") {
-      inString = true; stringChar = ch; continue;
-    }
-    if (ch === "{") stack.push(i);
-    else if (ch === "}") {
-      const start = stack.pop();
-      if (start !== undefined) pairs.push({ start, end: i + 1 });
-    }
-  }
-  // Sort by start position for deterministic lookup.
-  pairs.sort((a, b) => a.start - b.start);
-  return pairs;
-}
-
-/**
- * For a given character position `pos`, return the smallest brace pair
- * that contains it. Linear scan — fine because there are typically a
- * few thousand pairs per file.
- */
-function smallestContainingPair(pairs, pos) {
-  let best = null;
-  for (const p of pairs) {
-    if (p.start <= pos && pos < p.end) {
-      if (!best || (p.end - p.start) < (best.end - best.start)) best = p;
-    }
-  }
-  return best;
-}
-
-/**
- * Find every `id:` field, look up the smallest enclosing brace pair,
- * extract topic/subject/text/subtopic/question fields. Handles BOTH
- * formatting styles in the repo:
- *   - Multi-line: `  {\n    id: "...",\n    ...\n  }`
- *   - Single-line: `{ id:"...", topic:"...", text:"..." }`
- */
-function extractQuestions(content, sourceFile) {
-  const out = [];
-  const pairs = indexBracePairs(content);
-
-  const idRe = /\bid\s*:\s*"((?:[^"\\]|\\.)*?)"/g;
-  const seenStarts = new Set();
-  let m;
-  while ((m = idRe.exec(content)) !== null) {
-    const id = unescapeString(m[1]);
-    const enclosing = smallestContainingPair(pairs, m.index);
-    if (!enclosing) continue;
-    if (seenStarts.has(enclosing.start)) continue;
-    seenStarts.add(enclosing.start);
-
-    const entryText = content.slice(enclosing.start, enclosing.end);
-    out.push({
-      id,
-      sourceFile,
-      topic: matchStringField(entryText, "topic"),
-      subject: matchStringField(entryText, "subject"),
-      text: matchStringField(entryText, "text") ?? matchStringField(entryText, "question") ?? "",
-      explicitSubtopic: matchStringField(entryText, "subtopic"),
-    });
-  }
-  return out;
-}
-
-function matchStringField(entryText, fieldName) {
-  const re = new RegExp(
-    `(?:^|[\\s,{(])${fieldName}:\\s*"((?:[^"\\\\]|\\\\.)*)"`,
-    "s",
-  );
-  const m = entryText.match(re);
-  return m ? unescapeString(m[1]) : null;
-}
-
-// ── Scoring ─────────────────────────────────────────────────────────────────
 
 function tokenize(s) {
   return (s || "")
@@ -386,26 +217,14 @@ function emitSubtopicTags(tags) {
 function main() {
   console.log(`[back-tagger] threshold = ${CONFIDENCE_THRESHOLD}`);
 
-  const subtopicsContent = readFileSync(join(REPO_ROOT, SUBTOPICS_FILE), "utf8");
-  const subtopicsMap = extractSubtopicsMap(subtopicsContent);
+  const subtopicsMap = loadSubtopicsMap();
   const totalSubtopics = Object.values(subtopicsMap).reduce((n, arr) => n + arr.length, 0);
   console.log(`[back-tagger] loaded SUBTOPICS_MAP: ${Object.keys(subtopicsMap).length} topics, ${totalSubtopics} subtopics`);
 
   const idfMap = buildIdfMap(subtopicsMap);
   console.log(`[back-tagger] built IDF over ${idfMap.size} unique stems`);
 
-  const allQuestions = [];
-  for (const f of BANK_FILES) {
-    const content = readFileSync(join(REPO_ROOT, f), "utf8");
-    const qs = extractQuestions(content, f);
-    console.log(`[back-tagger] ${f.padEnd(50)} -> ${qs.length} questions`);
-    allQuestions.push(...qs);
-  }
-
-  // Dedupe by id, keeping first occurrence (the canonical bank file's entry).
-  const byId = new Map();
-  for (const q of allQuestions) if (!byId.has(q.id)) byId.set(q.id, q);
-  const unique = Array.from(byId.values());
+  const unique = loadAllQuestions();
   console.log(`[back-tagger] total unique questions: ${unique.length}`);
 
   const tags = {};

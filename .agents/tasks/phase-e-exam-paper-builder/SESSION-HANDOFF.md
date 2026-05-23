@@ -5,8 +5,8 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — PR-A Step 2 (back-tagger) shipped on
-`feat/phase-e-exam-paper-builder`. Coverage audit is next.
+Last updated: 2026-05-23 — PR-A Step 3 (coverage audit + CI guard)
+shipped on `feat/phase-e-exam-paper-builder`. Gap-fill wave 1 is next.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -126,59 +126,81 @@ pastPaperQuestions.ts       2,203 lines
     we'd rather have an accurate audit signal than a high tag rate
     full of false positives — the audit + gap-fill close the rest.
 
+- **PR-A · Step 3 — Coverage audit + CI guard**. In a single commit:
+  - `scripts/_exam-bank-extract.mjs` (new) — shared lib used by both
+    the back-tagger and the audit. Exports `loadAllQuestions`,
+    `loadSubtopicsMap`, `loadSubtopicTags`, `buildTopicToSubjectMap`,
+    `SECTION_TO_SUBJECT`, `refineScienceSubject`. The leading
+    underscore matches the `_gen-eval-fixtures.mjs` convention for
+    non-invokable support scripts.
+  - `scripts/exam-bank-back-tagger.mjs` — refactored to import from
+    `_exam-bank-extract.mjs`. Behaviour-preserving (same 2,719 tags).
+  - `scripts/exam-bank-coverage.mjs` (new) — walks every (topic,
+    subtopic) pair in `SUBTOPICS_MAP`, counts questions where
+    `q.subtopic === subtopic` OR `SUBTOPIC_TAGS[q.id] === subtopic`,
+    emits `docs/exam-bank-coverage.json`. Two-tier subject inference
+    (bank-derived first, then section-comment-derived) so subtopics
+    in MFL / DRAMA / SOCIOLOGY etc. still get a subject. Broad SCIENCE
+    section uses keyword matching to split into bio/chem/phys.
+  - CLI flags: `--check-against=<baseline.json>` exits 1 on
+    regression (CI gate); `--update-baseline` overwrites the baseline
+    after a deliberate gap-fill wave.
+  - `docs/exam-bank-coverage.json` (generated) +
+    `docs/exam-bank-coverage.baseline.json` (frozen first run) both
+    committed. First-run totals: 91/907 covered, 816 belowTen,
+    548 zero. Per-subject roll-up shows core GCSE subjects
+    (mathematics 13/203/162, biology 19/142/83, physics 14/23/6,
+    chemistry 11/21/5, english-language 9/159/109,
+    english-literature 0/15/10, geography 4/34/13, history 8/31/17,
+    computer-science 9/22/6) plus section-derived rows for subjects
+    with no bank questions yet (religious-studies, mfl, business,
+    psychology, economics).
+  - `.github/workflows/exam-bank-coverage.yml` (new) — runs on PR
+    push when relevant files change. Re-runs the back-tagger
+    (deterministic) then the audit with regression check. Uploads
+    the coverage JSON as a build artifact.
+
 ## What is in flight
 
-_Nothing yet. PR-A Step 3 (coverage audit) starts at the next checkpoint._
+_Nothing yet. PR-A Step 4 (gap-fill wave 1) starts at the next checkpoint._
 
 ## What is next
 
-**PR-A · Step 3 — Coverage audit script + CI guard** (target: ≤ 1
-commit for the script + first run + workflow).
+**PR-A · Step 4 — Gap-fill wave 1** (target: 1 commit, ~150 new
+hand-authored questions, append-only).
 
 Exact actions in order:
 
-1. Create `scripts/exam-bank-coverage.mjs`. Reuses the same brace
-   indexer + question extractor approach as the back-tagger (factor
-   the shared bits into a small lib if cleaner, otherwise duplicate
-   — sandbox has no module bundler for `.mjs`).
-   - Load `SUBTOPICS_MAP` and `SUBTOPIC_TAGS` (the back-tagger output).
-   - Walk every (topic, subtopic) pair in `SUBTOPICS_MAP`.
-   - For each subtopic, count questions where `q.subtopic === subtopic`
-     OR `SUBTOPIC_TAGS[q.id] === subtopic`.
-   - Emit `docs/exam-bank-coverage.json` with shape:
-     ```json
-     {
-       "generatedAt": "2026-05-23T...",
-       "threshold": 10,
-       "totals": {
-         "questionsScanned": 6902,
-         "subtopicsTotal": 907,
-         "subtopicsCovered": <n>,
-         "subtopicsBelowTen": <n>,
-         "subtopicsZero": <n>
-       },
-       "perSubject": { "mathematics": {...}, ... },
-       "belowTen": [{ "topic", "subtopic", "count", "subject" }, ...],
-       "zero":     [{ "topic", "subtopic" }, ...]
-     }
-     ```
-     `belowTen` sorted by count ascending then subject — so zero rows
-     come first, ordered by subject for review. `zero` is a separate
-     array for convenience (it's a strict subset of `belowTen`).
-   - Print summary to stdout.
-2. Run once. Copy the output to
-   `docs/exam-bank-coverage.baseline.json` — the regression-guard
-   reference.
-3. Add a `--check-against=<baseline.json>` CLI mode that exits 1 if
-   any subtopic count regresses below its baseline value. Print the
-   list of regressions.
-4. Add `.github/workflows/exam-bank-coverage.yml`:
-   - Trigger: PR push.
-   - Steps: checkout, install pnpm deps, `node scripts/exam-bank-back-tagger.mjs`,
-     `node scripts/exam-bank-coverage.mjs --check-against=docs/exam-bank-coverage.baseline.json`.
-5. Commit. Push.
-6. Update this handoff: move Step 3 to "What is done", set "What
-   is next" to PR-A Step 4 (gap-fill wave 1).
+1. Read `docs/exam-bank-coverage.json`. Pick the priority list:
+   from the `zero` array, select rows where `subject` is one of
+   `mathematics`, `biology`, `chemistry`, `physics`, `english-language`.
+   Cap at the first ~30 subtopics per subject so the diff stays
+   reviewable (overall ~150 questions for the first wave; subsequent
+   sessions grind down the rest).
+2. For each selected subtopic, author 3-5 exam-style questions with
+   full fields:
+   - `id` — unique, prefix `phaseE-` plus a short slug derived from
+     subtopic name + sequence number.
+   - `subject` — one of the canonical subject IDs.
+   - `topic` — must match the topic key from `SUBTOPICS_MAP`.
+   - `subtopic` — exact match for the `SUBTOPICS_MAP[topic]` entry
+     (this is the explicit field; takes precedence over
+     `SUBTOPIC_TAGS[q.id]`).
+   - `text`, `marks`, `commandWord`, `markScheme`, `hint`, `tier`
+     (Higher / Foundation), `ao` (AO1-AO4), `stage`, `yearGroups`.
+   - `board: "Adaptly"` for the new bank.
+3. Append to the matching subject's `questionBank*.ts` file, in
+   the array literal, just before the closing `];`. Never edit
+   existing entries.
+4. Run `node scripts/exam-bank-back-tagger.mjs` (it'll see the new
+   `subtopic` fields and tag them at score `Infinity`).
+5. Run `node scripts/exam-bank-coverage.mjs --update-baseline`
+   to refresh both `docs/exam-bank-coverage.json` and
+   `docs/exam-bank-coverage.baseline.json` (deliberate gap-fill —
+   the new floor is the new state).
+6. Commit. Push.
+7. Update this handoff: move Step 4 to "What is done", set "What
+   is next" to PR-A Step 5 (open the PR).
 
 ## Checkpoint protocol
 

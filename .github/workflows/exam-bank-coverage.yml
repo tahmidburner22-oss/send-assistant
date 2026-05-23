@@ -1,0 +1,57 @@
+# Exam Bank coverage guard — Phase E PR-A.
+#
+# Runs on every PR. Re-runs the back-tagger to regenerate
+# subtopicTags.ts deterministically, then runs the coverage audit and
+# fails if any subtopic count regressed below the baseline floor in
+# docs/exam-bank-coverage.baseline.json.
+#
+# Why regenerate the tags in CI: subtopicTags.ts is a derived file. If
+# the bank or the back-tagger changes, the tags must update too. Running
+# the back-tagger here makes the CI signal authoritative and stops a
+# stale subtopicTags.ts from masking regressions.
+#
+# Pure-Node — no install required (the scripts have no deps).
+
+name: Exam bank coverage
+
+on:
+  pull_request:
+    paths:
+      - "client/src/lib/questionBank*.ts"
+      - "client/src/lib/pastPaperQuestions.ts"
+      - "client/src/lib/pastPaperQuestionsExpanded.ts"
+      - "client/src/lib/subtopics-data.ts"
+      - "client/src/lib/subtopicTags.ts"
+      - "scripts/exam-bank-back-tagger.mjs"
+      - "scripts/exam-bank-coverage.mjs"
+      - "scripts/_exam-bank-extract.mjs"
+      - "docs/exam-bank-coverage.baseline.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    name: Audit exam-bank coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Regenerate subtopicTags.ts
+        run: node scripts/exam-bank-back-tagger.mjs
+      - name: Run coverage audit + regression check
+        run: |
+          node scripts/exam-bank-coverage.mjs \
+            --check-against=docs/exam-bank-coverage.baseline.json
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exam-bank-coverage
+          path: docs/exam-bank-coverage.json
+          retention-days: 30
