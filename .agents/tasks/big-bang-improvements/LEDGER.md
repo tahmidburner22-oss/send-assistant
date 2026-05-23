@@ -18,8 +18,8 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 5  | Synonym / equivalent-answer expansion in mark schemes                                 | PR-13  | not started |
 | 6  | Method-marks itemisation (M1 / M2 / A1) per multi-mark calc                           | PR-13  | not started |
 | 7  | Numerical answer plausibility / order-of-magnitude rail                               | PR-13  | not started |
-| 8  | Question-difficulty Bloom-monotonicity check                                          | PR-14  | not started |
-| 9  | Sciences "Working:" stub on calc questions                                            | PR-14  | not started |
+| 8  | Question-difficulty Bloom-monotonicity check                                          | PR-14  | shipped — PR-14 |
+| 9  | Sciences "Working:" stub on calc questions                                            | PR-14  | shipped — PR-14 |
 | 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | shipped — PR #87 pending |
 | 11 | Cross-curricular UK context whitelist                                                 | PR-2   | shipped — PR #86 |
 | 12 | Cultural-context bias audit (PD9)                                                     | PR-12  | not started |
