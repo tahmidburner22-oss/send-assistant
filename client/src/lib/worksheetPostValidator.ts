@@ -2076,6 +2076,101 @@ export function enforceMathsNotationHygiene(
 }
 
 /**
+ * Phase F · FEAT-PF1 — tier-AO histogram check.
+ *
+ * When the worksheet metadata carries a tier ("foundation" | "higher"),
+ * the AO distribution emitted by the LLM (already stamped on
+ * metadata.aoHistogram by pillarAValidator.assertAoPresent) is compared
+ * against the curriculum bank's tier target:
+ *
+ *   Foundation  AO1 ≈ 60%, AO2 ≈ 30%, AO3 ≈ 10%
+ *   Higher      AO1 ≈ 40%, AO2 ≈ 40%, AO3 ≈ 20%
+ *
+ * If any AO is more than ±15 percentage points off target, a p1 warning
+ * is stamped onto metadata.postValidatorWarnings (and the per-AO drift
+ * is recorded on metadata.tierAoHistogramReport for the audit-trail
+ * panel). The check is skipped when tier or aoHistogram is missing.
+ */
+export function enforceTierAoHistogram(
+  ws: PostValidatorWorksheet,
+  _opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const meta = (ws.metadata || {}) as Record<string, unknown>;
+  const tier = (meta.tier ?? meta.difficulty) as string | undefined;
+  const histogram = meta.aoHistogram as
+    | Partial<Record<"AO1" | "AO2" | "AO3" | "AO4", number>>
+    | undefined;
+
+  if (!tier || (tier !== "foundation" && tier !== "higher") || !histogram) {
+    return { worksheet: ws, warnings };
+  }
+
+  const targets =
+    tier === "foundation"
+      ? { AO1: 0.6, AO2: 0.3, AO3: 0.1 }
+      : { AO1: 0.4, AO2: 0.4, AO3: 0.2 };
+
+  const total =
+    (histogram.AO1 || 0) +
+    (histogram.AO2 || 0) +
+    (histogram.AO3 || 0) +
+    (histogram.AO4 || 0);
+  if (total === 0) return { worksheet: ws, warnings };
+
+  const actual = {
+    AO1: (histogram.AO1 || 0) / total,
+    AO2: (histogram.AO2 || 0) / total,
+    AO3: (histogram.AO3 || 0) / total,
+  };
+  const drift = {
+    AO1: actual.AO1 - targets.AO1,
+    AO2: actual.AO2 - targets.AO2,
+    AO3: actual.AO3 - targets.AO3,
+  };
+  const tolerance = 0.15;
+  const offTarget = (Object.keys(drift) as Array<keyof typeof drift>).filter(
+    (k) => Math.abs(drift[k]) > tolerance,
+  );
+
+  const report = {
+    tier,
+    target: targets,
+    actual,
+    drift,
+    questionCount: total,
+    offTarget,
+  };
+  const updatedMeta = {
+    ...(ws.metadata || {}),
+    tierAoHistogramReport: report,
+  };
+
+  if (offTarget.length > 0) {
+    const driftSummary = offTarget
+      .map(
+        (k) =>
+          `${k} actual ${Math.round(actual[k] * 100)}% vs target ${Math.round(
+            targets[k as "AO1" | "AO2" | "AO3"] * 100,
+          )}% (${drift[k] > 0 ? "+" : ""}${Math.round(drift[k] * 100)}pp)`,
+      )
+      .join("; ");
+    warnings.push(
+      `[Phase F — Tier AO histogram | p1] ${tier.toUpperCase()} tier worksheet has AO distribution off target: ${driftSummary}. Targets: AO1 ${Math.round(
+        targets.AO1 * 100,
+      )}% / AO2 ${Math.round(targets.AO2 * 100)}% / AO3 ${Math.round(
+        targets.AO3 * 100,
+      )}%.`,
+    );
+  }
+
+  return {
+    worksheet: { ...ws, metadata: updatedMeta },
+    warnings,
+  };
+}
+
+/**
  * Runs every post-generation validator in order. Collects warnings and
  * stamps them onto worksheet.metadata.postValidatorWarnings.
  */
