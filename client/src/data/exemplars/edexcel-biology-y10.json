@@ -1,0 +1,78 @@
+{
+  "board": "edexcel",
+  "subject": "Biology",
+  "yearGroup": "Year 10",
+  "source": "Paraphrased exemplars in the style of Edexcel GCSE (9-1) Biology 1BI0 Papers 1 and 2 (2018 onwards). Stems are author-original; mark allocations follow Edexcel mark scheme conventions.",
+  "exemplars": [
+    {
+      "specRef": "1.1",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 2,
+      "stem": "State the function of the mitochondria in an animal cell, and the function of the cell membrane.",
+      "markScheme": "1 mark: mitochondria — site of (aerobic) respiration / where energy is released. 1 mark: cell membrane — controls movement of substances in and out of the cell.",
+      "commandVerb": "State",
+      "source": "Edexcel 1BI0 Paper 1F style — cell organelle function"
+    },
+    {
+      "specRef": "1.5",
+      "tier": "both",
+      "ao": "AO3",
+      "marks": 6,
+      "stem": "A student investigated the effect of pH on the activity of amylase. Outline a method the student could use to find the pH at which amylase works fastest, including how they would measure rate, and identify two control variables.",
+      "markScheme": "Method (4 marks): mix amylase with starch at chosen pH (using buffers); take samples at intervals; test with iodine for absence of starch; record time taken for iodine to stop turning blue-black. Control variables (2 marks): two of — temperature; concentration of amylase; concentration of starch; volume of buffer.",
+      "commandVerb": "Outline",
+      "source": "Edexcel 1BI0 Core Practical style — enzyme pH investigation"
+    },
+    {
+      "specRef": "1.6",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A 5 cm cube of potato has a mass of 5.0 g before being placed in distilled water. After 1 hour the cube has a mass of 5.4 g. Calculate the percentage change in mass and explain why the mass changed.",
+      "markScheme": "M1 for percentage change calc (0.4/5.0 × 100). A1 for +8%. 1 mark: water moved into the cells by osmosis (down water potential gradient).",
+      "commandVerb": "Calculate and explain",
+      "source": "Edexcel 1BI0 Paper 1 style — osmosis percentage change"
+    },
+    {
+      "specRef": "2.3",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "Describe how an impulse passes from one neurone to another at a synapse.",
+      "markScheme": "1 mark: impulse arrives at end of pre-synaptic neurone. 1 mark: triggers release of neurotransmitter into the synaptic gap. 1 mark: neurotransmitter diffuses across the gap. 1 mark: binds to receptors on post-synaptic neurone, triggering a new impulse.",
+      "commandVerb": "Describe",
+      "source": "Edexcel 1BI0 Paper 1H style — synaptic transmission (HT mechanism)"
+    },
+    {
+      "specRef": "3.3",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "A father is heterozygous for the cystic fibrosis allele (Ff) and a mother is heterozygous (Ff). Cystic fibrosis is caused by a recessive allele (f). Use a Punnett square to determine the probability that any one child will have cystic fibrosis.",
+      "markScheme": "M1 for Punnett square with parental gametes F, f and F, f. M1 for offspring FF, Ff, Ff, ff. M1 for identifying ff as cystic fibrosis. A1 for 1/4 (or 25%).",
+      "commandVerb": "Determine",
+      "source": "Edexcel 1BI0 Paper 2 style — monohybrid cross"
+    },
+    {
+      "specRef": "4.1",
+      "tier": "both",
+      "ao": "AO3",
+      "marks": 4,
+      "stem": "Explain how natural selection can lead to a population of bacteria becoming resistant to an antibiotic over many generations.",
+      "markScheme": "1 mark: variation in the bacterial population caused by random mutation. 1 mark: some bacteria, by chance, are resistant to the antibiotic. 1 mark: when antibiotic is used, non-resistant bacteria are killed; resistant ones survive. 1 mark: resistant bacteria reproduce, passing on resistance allele, so population becomes more resistant.",
+      "commandVerb": "Explain",
+      "source": "Edexcel 1BI0 Paper 2 style — natural selection in bacteria"
+    },
+    {
+      "specRef": "5.4",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Describe how a vaccination protects a person against a particular bacterial disease.",
+      "markScheme": "1 mark: vaccine contains weakened/dead pathogen or antigen. 1 mark: stimulates white blood cells to produce specific antibodies. 1 mark: memory cells remain so that on second exposure antibodies are produced quickly and the person doesn't become ill.",
+      "commandVerb": "Describe",
+      "source": "Edexcel 1BI0 Paper 2 style — vaccination mechanism"
+    }
+  ]
+}

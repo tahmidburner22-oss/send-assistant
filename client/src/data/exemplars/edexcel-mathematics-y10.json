@@ -1,0 +1,98 @@
+{
+  "board": "edexcel",
+  "subject": "Mathematics",
+  "yearGroup": "Year 10",
+  "source": "Paraphrased exemplars in the style of Edexcel GCSE (9-1) Mathematics 1MA1 Papers 1, 2 and 3 (2017 onwards). Stems are author-original; mark allocations and command verbs match published mark schemes.",
+  "exemplars": [
+    {
+      "specRef": "N1",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 2,
+      "stem": "Write 0.000482 in standard form.",
+      "markScheme": "M1 for correct power of 10 (-4). A1 for 4.82 × 10^{-4}.",
+      "commandVerb": "Write",
+      "source": "Edexcel 1MA1 Paper 1F style — standard form conversion"
+    },
+    {
+      "specRef": "A6",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 2,
+      "stem": "Solve 4(x − 3) = 2x + 5.",
+      "markScheme": "M1 for expanding bracket to 4x − 12. M1 for correct rearranging. A1 for x = 8.5 or 17/2.",
+      "commandVerb": "Solve",
+      "source": "Edexcel 1MA1 Paper 1F style — linear equation with brackets"
+    },
+    {
+      "specRef": "A10",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Solve x² − 7x + 12 = 0 by factorising. Show all steps.",
+      "markScheme": "M1 for finding two numbers that multiply to give 12 and add to −7. M1 for (x − 3)(x − 4) = 0. A1 for x = 3 and x = 4.",
+      "commandVerb": "Solve",
+      "source": "Edexcel 1MA1 Paper 1H style — factorising quadratic"
+    },
+    {
+      "specRef": "A11",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "Solve the simultaneous equations 3x + 2y = 16 and x − y = 2 algebraically.",
+      "markScheme": "M1 for valid method (substitution or elimination). M1 for solving for one variable. A1 for x = 4. A1 for y = 2.",
+      "commandVerb": "Solve",
+      "source": "Edexcel 1MA1 Paper 2H style — linear simultaneous equations"
+    },
+    {
+      "specRef": "R3",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "y is directly proportional to x. When x = 6, y = 21. Find the value of y when x = 14.",
+      "markScheme": "M1 for setting up y = kx. M1 for k = 3.5. A1 for y = 49.",
+      "commandVerb": "Find",
+      "source": "Edexcel 1MA1 Paper 2F style — direct proportion with constant"
+    },
+    {
+      "specRef": "R5",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "An investment of £4500 earns 2.4% compound interest per year. Calculate the value of the investment after 3 years. Give your answer to the nearest penny.",
+      "markScheme": "M1 for use of multiplier 1.024. M1 for 4500 × 1.024³. A1 for £4831.74.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1MA1 Paper 1F style — compound interest"
+    },
+    {
+      "specRef": "G3",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 5,
+      "stem": "ABCD is a square. AB = 12 cm. The midpoint of CD is M. Calculate the length of AM, leaving your answer in surd form.",
+      "markScheme": "M1 for identifying right-angled triangle. M1 for AM² = 12² + 6². M1 for AM² = 180. M1 for √180 = 6√5. A1 for AM = 6√5 cm.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1MA1 Paper 1H style — Pythagoras with surd answer"
+    },
+    {
+      "specRef": "G6",
+      "tier": "higher",
+      "ao": "AO3",
+      "marks": 4,
+      "stem": "A cone has volume 480 cm³. A larger cone, similar to the first, has linear dimensions twice as large. Calculate the volume of the larger cone.",
+      "markScheme": "M1 for recognising volume scale factor = (linear scale factor)³. M1 for 2³ = 8. M1 for 480 × 8. A1 for 3840 cm³.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1MA1 Paper 3H style — similarity with volume scale factor"
+    },
+    {
+      "specRef": "P3",
+      "tier": "higher",
+      "ao": "AO3",
+      "marks": 4,
+      "stem": "There are 30 students in a class. 18 study French and 14 study Spanish. 6 study both languages. A student is chosen at random. Calculate the probability that the student studies neither French nor Spanish.",
+      "markScheme": "M1 for Venn diagram or set reasoning. M1 for 18 + 14 − 6 = 26 studying at least one. M1 for 30 − 26 = 4. A1 for 4/30 = 2/15.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1MA1 Paper 3H style — Venn diagram probability"
+    }
+  ]
+}
