@@ -11,8 +11,7 @@
 Repo: `tahmidburner22-oss/send-assistant`
 
 ## Open PR
-**PR URL is appended to this file once `github_create_pull_request` returns.**
-See the bottom of this document.
+**https://github.com/tahmidburner22-oss/send-assistant/pull/110**
 
 ## Current status snapshot
 
@@ -215,5 +214,5 @@ one line in `specPointTaxonomy.ts`'s register list plus the JSON file.
 
 ---
 
-_PR URL appears below once opened:_
+_PR opened: **https://github.com/tahmidburner22-oss/send-assistant/pull/110**_
 
