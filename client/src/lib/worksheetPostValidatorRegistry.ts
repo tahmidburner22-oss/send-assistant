@@ -59,6 +59,7 @@ import {
   enforceSiUnitNormalisation,
   enforceReadingAgeBudget,
   enforceMathsNotationHygiene,
+  enforceTierAoHistogram,
   enforceDiagramDependencyIntegrity,
   enforceDistractorPedagogy,
   enforceTier3VocabularyDeclared,
@@ -288,6 +289,12 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     // behind PROMPT_CITATION_LAYER_ENABLED; the validator no-ops
     // when the env flag is false.
     { name: "citation-grounding", fn: adapt(enforceCitationGrounding) },
+    // ─── Phase F · FEAT-PF1 ───────────────────────────────────────────
+    // Tier-AO histogram check. Compares metadata.aoHistogram against
+    // the curriculum bank's tier target (Foundation: AO1≈60/AO2≈30/AO3≈10;
+    // Higher: AO1≈40/AO2≈40/AO3≈20). p1 warning when off-target by more
+    // than ±15pp on any AO. No-ops when tier or aoHistogram is missing.
+    { name: "tier-ao-histogram", fn: (ws, _opts) => enforceTierAoHistogram(ws) },
   ]);
 
 /**
