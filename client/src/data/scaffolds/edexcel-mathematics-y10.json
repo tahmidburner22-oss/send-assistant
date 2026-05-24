@@ -1,0 +1,86 @@
+{
+  "board": "edexcel",
+  "subject": "Mathematics",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume Edexcel Y10 maths spec points (1MA1).",
+  "rows": [
+    {
+      "specRef": "A6",
+      "sentenceFrames": [
+        "First, I will expand the bracket: ______ × ______ + ______ × ______.",
+        "Then, I will collect the x-terms on one side: ______.",
+        "Finally, I will divide both sides by ______ to get x = ______."
+      ],
+      "wordBank": [
+        { "term": "equation", "definition": "a statement that two expressions are equal, with an equals sign" },
+        { "term": "expand", "definition": "multiply out a bracket" },
+        { "term": "rearrange", "definition": "move terms across the equals sign by doing the opposite operation" },
+        { "term": "isolate", "definition": "get the unknown letter on its own on one side" }
+      ],
+      "stepLadder": [
+        "Expand any brackets first.",
+        "Move all the x-terms to one side using +/−.",
+        "Move all the numbers to the other side using +/−.",
+        "Divide both sides by the coefficient of x.",
+        "Check by substituting your answer back into the original equation."
+      ],
+      "commonPitfalls": [
+        "Forgetting to apply the same operation to both sides.",
+        "Sign errors when moving a negative term across the equals sign.",
+        "Dividing only one side by the coefficient at the end."
+      ],
+      "visualAidHint": "Drawing balance scales with the equation either side reminds pupils that whatever you do to one side you must do to the other."
+    },
+    {
+      "specRef": "A10",
+      "sentenceFrames": [
+        "I'm looking for two numbers that multiply to ______ and add to ______.",
+        "Those numbers are ______ and ______.",
+        "So x² + bx + c factorises as (x + ______)(x + ______).",
+        "Setting each bracket equal to zero, x = ______ or x = ______."
+      ],
+      "wordBank": [
+        { "term": "factorise", "definition": "rewrite as a product of two brackets" },
+        { "term": "quadratic equation", "definition": "an equation of the form ax² + bx + c = 0" },
+        { "term": "root / solution", "definition": "a value of x that makes the equation equal zero" }
+      ],
+      "stepLadder": [
+        "Make sure the equation equals zero (move all terms to one side if needed).",
+        "Identify b (the coefficient of x) and c (the constant term).",
+        "Find two numbers that multiply to give c and add to give b.",
+        "Write the factors as (x + p)(x + q) = 0.",
+        "Set each bracket equal to zero and solve for x.",
+        "Check both solutions by substituting back into the original equation."
+      ],
+      "commonPitfalls": [
+        "Forgetting to set the equation to zero before factorising.",
+        "Sign errors when c is negative (one of the factors must be negative)."
+      ],
+      "visualAidHint": "A factor pair table for c, with the sum of each pair, makes the search systematic."
+    },
+    {
+      "specRef": "R5",
+      "sentenceFrames": [
+        "The multiplier for ______ % per year is 1 + ______ /100 = ______.",
+        "After ______ years, the value is ______ × ______ ^ ______.",
+        "The investment is worth £______ to the nearest penny."
+      ],
+      "wordBank": [
+        { "term": "compound interest", "definition": "interest earned on the original amount AND on previously earned interest" },
+        { "term": "multiplier", "definition": "the number you multiply by each year (e.g. 1.024 for 2.4%)" },
+        { "term": "principal", "definition": "the starting amount of money" }
+      ],
+      "stepLadder": [
+        "Convert the percentage rate to a decimal (e.g. 2.4% → 0.024).",
+        "Add 1 to get the multiplier (e.g. 1.024).",
+        "Raise the multiplier to the power of the number of years.",
+        "Multiply by the starting amount.",
+        "Round to the nearest penny."
+      ],
+      "commonPitfalls": [
+        "Using simple interest by mistake (multiplying the interest by the number of years).",
+        "Forgetting to round to 2 decimal places for money."
+      ]
+    }
+  ]
+}

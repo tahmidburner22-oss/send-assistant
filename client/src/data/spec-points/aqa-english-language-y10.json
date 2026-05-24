@@ -1,0 +1,32 @@
+{
+  "board": "aqa",
+  "subject": "English Language",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE 8700",
+  "source": "AQA GCSE English Language 8700 specification (2015 onwards). The course is a single tier; spec points map to Assessment Objectives (AO1–AO6) and the two papers (Paper 1: Explorations in creative reading and writing; Paper 2: Writers' viewpoints and perspectives). 'tier' is set to 'both' throughout because there is no Foundation/Higher split; pupils sit the same papers.",
+  "specPoints": [
+    { "specRef": "P1-AO1a", "specTitle": "Paper 1 reading — identify and interpret explicit information and ideas in a 20th-century literature fiction text", "ao": "AO1", "tier": "both" },
+    { "specRef": "P1-AO1b", "specTitle": "Paper 1 reading — select and synthesise evidence from the text to support understanding", "ao": "AO1", "tier": "both" },
+    { "specRef": "P1-AO2",  "specTitle": "Paper 1 reading — explain, comment on and analyse how writers use language and structure to achieve effects (e.g. word choice, sentence structure, imagery, narrative perspective)", "ao": "AO2", "tier": "both" },
+    { "specRef": "P1-AO4",  "specTitle": "Paper 1 reading — evaluate texts critically and support this with appropriate textual references; the 8-mark evaluation question on the writer's methods", "ao": "AO3", "tier": "both" },
+    { "specRef": "P1-AO5",  "specTitle": "Paper 1 writing — communicate clearly, effectively and imaginatively in descriptive or narrative writing in response to a visual or written stimulus (24 marks for content and organisation)", "ao": "AO3", "tier": "both" },
+    { "specRef": "P1-AO6",  "specTitle": "Paper 1 writing — use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling, punctuation and grammar (16 marks for technical accuracy)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "P2-AO1",  "specTitle": "Paper 2 reading — identify and interpret information across two non-fiction texts (one 19th-century, one 20th/21st-century) and synthesise findings", "ao": "AO1", "tier": "both" },
+    { "specRef": "P2-AO2",  "specTitle": "Paper 2 reading — analyse how the writer uses language to convey opinions, attitudes or arguments (12-mark question)", "ao": "AO2", "tier": "both" },
+    { "specRef": "P2-AO3",  "specTitle": "Paper 2 reading — compare writers' ideas and perspectives, and how these are conveyed across the two texts (16-mark comparison question)", "ao": "AO3", "tier": "both" },
+    { "specRef": "P2-AO5",  "specTitle": "Paper 2 writing — produce a transactional/persuasive piece (letter, article, speech, leaflet, etc.) on a given viewpoint topic (24 marks for content and organisation)", "ao": "AO3", "tier": "both" },
+    { "specRef": "P2-AO6",  "specTitle": "Paper 2 writing — accurate Standard English; varied vocabulary and sentence structures for impact (16 marks for technical accuracy)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "TECH1", "specTitle": "Language techniques: simile, metaphor, personification, onomatopoeia, alliteration, sibilance, hyperbole, juxtaposition, oxymoron — identification and analysis of effect", "ao": "AO2", "tier": "both" },
+    { "specRef": "TECH2", "specTitle": "Structural techniques: in medias res, flashback, foreshadowing, cyclical structure, withholding information, shifts in time/perspective/focus — identification and analysis of effect", "ao": "AO2", "tier": "both" },
+    { "specRef": "TECH3", "specTitle": "Sentence forms: simple, compound, complex; minor sentences; varying sentence length for effect", "ao": "AO2", "tier": "both" },
+    { "specRef": "TECH4", "specTitle": "Persuasive devices in non-fiction: direct address, rhetorical questions, anecdotes, statistics, expert opinions, emotive language, triplets/listing, repetition", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "WRITE1", "specTitle": "Writing — planning a response: structuring across an introduction, development paragraphs and a satisfying ending; varying paragraph length for impact", "ao": "AO3", "tier": "both" },
+    { "specRef": "WRITE2", "specTitle": "Writing — building a sustained voice and register matched to form, audience and purpose", "ao": "AO3", "tier": "both" },
+    { "specRef": "WRITE3", "specTitle": "Writing — vocabulary precision: using ambitious word choices accurately and avoiding repetition", "ao": "AO2", "tier": "both" },
+    { "specRef": "WRITE4", "specTitle": "Writing — accurate punctuation: full stops, commas, semicolons, colons, dashes, brackets, apostrophes, speech marks; demarcating sentences accurately", "ao": "AO2", "tier": "both" },
+    { "specRef": "WRITE5", "specTitle": "Writing — accurate spelling of complex/ambitious words and consistent tense", "ao": "AO2", "tier": "both" }
+  ]
+}

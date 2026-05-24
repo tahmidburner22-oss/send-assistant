@@ -1,0 +1,78 @@
+{
+  "board": "edexcel",
+  "subject": "Chemistry",
+  "yearGroup": "Year 10",
+  "source": "Paraphrased exemplars in the style of Edexcel GCSE (9-1) Chemistry 1CH0 Papers 1 and 2 (2018 onwards). Stems are author-original; mark allocations follow Edexcel mark scheme conventions.",
+  "exemplars": [
+    {
+      "specRef": "1.2",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 2,
+      "stem": "An atom of magnesium has 12 protons and 12 neutrons. State its mass number and atomic number.",
+      "markScheme": "1 mark: atomic number 12. 1 mark: mass number 24.",
+      "commandVerb": "State",
+      "source": "Edexcel 1CH0 Paper 1F style — atomic structure recall"
+    },
+    {
+      "specRef": "1.6",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "Chlorine displaces bromine from a solution of potassium bromide. Write the balanced symbol equation for this reaction and explain why this displacement happens.",
+      "markScheme": "M1 for correct formulae of reactants and products. M1 for balanced equation: Cl₂ + 2KBr → 2KCl + Br₂. 1 mark: chlorine is more reactive than bromine. 1 mark: chlorine takes the place of bromine in the compound.",
+      "commandVerb": "Write and explain",
+      "source": "Edexcel 1CH0 Paper 1 style — halogen displacement"
+    },
+    {
+      "specRef": "1.7",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Explain why solid sodium chloride does not conduct electricity, but molten sodium chloride does.",
+      "markScheme": "1 mark: in solid, ions are held in fixed positions in the lattice. 1 mark: ions cannot move to carry charge. 1 mark: when molten, ions are free to move and can carry charge.",
+      "commandVerb": "Explain",
+      "source": "Edexcel 1CH0 Paper 1 style — ionic compound conductivity"
+    },
+    {
+      "specRef": "2.2",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A student wants to obtain pure sodium chloride from a mixture of sand and salty water. Describe a method they could use.",
+      "markScheme": "1 mark: filter the mixture to remove the sand. 1 mark: evaporate the water (or boil/heat the filtrate). 1 mark: leave the salt to crystallise / evaporate to dryness.",
+      "commandVerb": "Describe",
+      "source": "Edexcel 1CH0 Paper 1F style — separation technique selection"
+    },
+    {
+      "specRef": "3.1",
+      "tier": "both",
+      "ao": "AO1",
+      "marks": 2,
+      "stem": "Write the word equation for the reaction between hydrochloric acid and sodium hydroxide solution.",
+      "markScheme": "1 mark: reactants — hydrochloric acid + sodium hydroxide. 1 mark: products — sodium chloride + water.",
+      "commandVerb": "Write",
+      "source": "Edexcel 1CH0 Paper 1 style — neutralisation equation"
+    },
+    {
+      "specRef": "3.4",
+      "tier": "higher",
+      "ao": "AO3",
+      "marks": 4,
+      "stem": "Predict the products formed at the cathode and the anode during the electrolysis of dilute sulfuric acid using inert electrodes. Give the half-equation at the cathode.",
+      "markScheme": "1 mark: hydrogen at cathode. 1 mark: oxygen at anode. 1 mark: cathode half-equation: 2H⁺ + 2e⁻ → H₂. 1 mark: oxygen produced because OH⁻ ions are discharged in preference to sulfate ions.",
+      "commandVerb": "Predict",
+      "source": "Edexcel 1CH0 Paper 1H style — electrolysis half-equation (HT only)"
+    },
+    {
+      "specRef": "4.2",
+      "tier": "higher",
+      "ao": "AO3",
+      "marks": 4,
+      "stem": "In the Haber process, the formation of ammonia is exothermic and reversible. Predict and explain the effect of increasing temperature on the equilibrium yield of ammonia.",
+      "markScheme": "1 mark: predict — yield decreases. 1 mark: forward reaction is exothermic. 1 mark: increasing temperature shifts equilibrium in the endothermic (reverse) direction. 1 mark: by Le Chatelier's principle, this opposes the change.",
+      "commandVerb": "Predict and explain",
+      "source": "Edexcel 1CH0 Paper 2H style — Le Chatelier reasoning (HT only)"
+    }
+  ]
+}

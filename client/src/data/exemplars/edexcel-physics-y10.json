@@ -1,0 +1,88 @@
+{
+  "board": "edexcel",
+  "subject": "Physics",
+  "yearGroup": "Year 10",
+  "source": "Paraphrased exemplars in the style of Edexcel GCSE (9-1) Physics 1PH0 Papers 1 and 2 (2018 onwards). Stems are author-original; mark allocations follow Edexcel mark scheme conventions.",
+  "exemplars": [
+    {
+      "specRef": "2.1",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 2,
+      "stem": "A car travels 240 m in 16 s. Calculate the average speed of the car.",
+      "markScheme": "M1 for v = s/t. A1 for 15 m/s.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1PH0 Paper 1F style — average speed"
+    },
+    {
+      "specRef": "2.4",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A force of 24 N acts on a trolley of mass 6 kg. Calculate the acceleration of the trolley, ignoring friction.",
+      "markScheme": "M1 for F = ma rearranged to a = F/m. M1 for 24/6. A1 for 4 m/s².",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1PH0 Core Practical style — Newton's second law"
+    },
+    {
+      "specRef": "2.6",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "A trolley of mass 0.80 kg moves at 3.0 m/s and collides with a stationary trolley of mass 1.20 kg. After the collision the two trolleys move together. Calculate the speed of the combined trolleys after the collision.",
+      "markScheme": "M1 for momentum before = 0.80 × 3.0 = 2.4 kg m/s. M1 for momentum after = (0.80 + 1.20) × v. M1 for 2.4 = 2.0 v. A1 for 1.2 m/s.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1PH0 Paper 2H style — momentum conservation (HT reasoning)"
+    },
+    {
+      "specRef": "3.2",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A weightlifter raises a 60 kg mass through a vertical height of 2.0 m in 1.5 s. Calculate the work done against gravity, taking g = 10 N/kg.",
+      "markScheme": "M1 for weight = mg = 60 × 10 = 600 N. M1 for W = Fd = 600 × 2.0. A1 for 1200 J.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1PH0 Paper 1 style — work done"
+    },
+    {
+      "specRef": "4.1",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A wave on the surface of water has a frequency of 5 Hz and a wavelength of 0.40 m. Calculate the speed of the wave.",
+      "markScheme": "M1 for v = fλ. M1 for 5 × 0.40. A1 for 2.0 m/s.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1PH0 Core Practical style — wave equation"
+    },
+    {
+      "specRef": "5.1",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 3,
+      "stem": "State one use and one danger of microwaves and one use and one danger of ultraviolet radiation from the electromagnetic spectrum.",
+      "markScheme": "1 mark: microwaves — use (e.g. communications, cooking) and danger (heating internal tissues). 1 mark: UV — use (e.g. tanning, fluorescent tubes, vitamin D) and danger (skin cancer, eye damage). Reward any 3 valid points across both bands.",
+      "commandVerb": "State",
+      "source": "Edexcel 1PH0 Paper 2F style — EM spectrum uses and dangers"
+    },
+    {
+      "specRef": "6.3",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A radioactive sample has an initial count rate of 640 counts per minute. After 8 days the count rate is 80 counts per minute. Calculate the half-life of the sample.",
+      "markScheme": "M1 for 640 → 320 → 160 → 80 = 3 half-lives. M1 for 8 days / 3 half-lives. A1 for 8/3 ≈ 2.67 days.",
+      "commandVerb": "Calculate",
+      "source": "Edexcel 1PH0 Paper 2 style — half-life from count rate"
+    },
+    {
+      "specRef": "7.3",
+      "tier": "higher",
+      "ao": "AO3",
+      "marks": 4,
+      "stem": "Explain how observations of light from distant galaxies provide evidence for the Big Bang theory of the universe.",
+      "markScheme": "1 mark: light from distant galaxies is shifted towards the red end of the spectrum. 1 mark: this red shift is greater for galaxies further away. 1 mark: this shows the galaxies are moving away from us / universe is expanding. 1 mark: an expanding universe is consistent with the Big Bang origin (everything started from a single point and expanded outwards).",
+      "commandVerb": "Explain",
+      "source": "Edexcel 1PH0 Paper 2H style — red shift evidence (HT reasoning)"
+    }
+  ]
+}

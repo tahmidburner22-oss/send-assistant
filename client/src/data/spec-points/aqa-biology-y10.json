@@ -1,0 +1,53 @@
+{
+  "board": "aqa",
+  "subject": "Biology",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE 8461",
+  "source": "AQA GCSE Biology 8461 specification (2016 onwards) — Y10 covered topic codes B1–B4 (Cell biology, Organisation, Infection and response, Bioenergetics) plus Required Practicals 1–6.",
+  "specPoints": [
+    { "specRef": "B1.1.1", "specTitle": "Cell structure: prokaryotic and eukaryotic cells; sub-cellular structures of plant and animal cells and their functions", "ao": "AO1", "tier": "both" },
+    { "specRef": "B1.1.2", "specTitle": "Animal and plant cells: differences and shared features; specialised cell types and how their structure relates to function", "ao": "AO1", "tier": "both" },
+    { "specRef": "B1.1.3", "specTitle": "Cell specialisation: sperm cells, nerve cells, muscle cells, root hair cells, xylem and phloem cells", "ao": "AO1", "tier": "both" },
+    { "specRef": "B1.1.4", "specTitle": "Cell differentiation; the role of stem cells in animals and plants", "ao": "AO1", "tier": "both" },
+    { "specRef": "B1.1.5", "specTitle": "Microscopy: light vs electron microscopes; magnification, resolution and the calculation of magnification (image size = actual size × magnification)", "ao": "AO2", "tier": "both" },
+    { "specRef": "B1.1.6", "specTitle": "Culturing microorganisms: aseptic technique and uncontaminated cultures (HT only — calculation of bacterial population growth using exponential)", "ao": "AO3", "tier": "both" },
+    { "specRef": "B1.2.1", "specTitle": "Chromosomes, the cell cycle, mitosis and the production of new cells for growth and repair", "ao": "AO1", "tier": "both" },
+    { "specRef": "B1.2.2", "specTitle": "Stem cells: embryonic vs adult stem cells; therapeutic uses, ethical issues, therapeutic cloning and meristem tissue in plants", "ao": "AO1", "tier": "both" },
+    { "specRef": "B1.3.1", "specTitle": "Diffusion: factors affecting rate; surface area to volume ratio and adaptations for efficient exchange", "ao": "AO2", "tier": "both" },
+    { "specRef": "B1.3.2", "specTitle": "Osmosis: movement of water across partially permeable membranes; required practical investigating osmosis in plant tissue", "ao": "AO2", "tier": "both" },
+    { "specRef": "B1.3.3", "specTitle": "Active transport: against a concentration gradient using energy from respiration; root hair uptake and absorption from the gut", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "B2.1.1", "specTitle": "Principles of organisation: cells form tissues, tissues form organs, organs form organ systems", "ao": "AO1", "tier": "both" },
+    { "specRef": "B2.2.1", "specTitle": "The human digestive system: organs, role of digestive enzymes (amylase, protease, lipase) and bile", "ao": "AO1", "tier": "both" },
+    { "specRef": "B2.2.2", "specTitle": "Enzymes: lock-and-key model; effect of temperature, pH and substrate concentration on enzyme activity (calculation of rate)", "ao": "AO2", "tier": "both" },
+    { "specRef": "B2.2.3", "specTitle": "Food tests: Benedict's, iodine, biuret and ethanol emulsion tests for sugars, starch, protein and lipids", "ao": "AO3", "tier": "both" },
+    { "specRef": "B2.2.4", "specTitle": "The heart and blood vessels: structure of the heart, double circulation, structure of arteries, veins and capillaries", "ao": "AO1", "tier": "both" },
+    { "specRef": "B2.2.5", "specTitle": "Blood: plasma, red blood cells, white blood cells and platelets; functions of each component", "ao": "AO1", "tier": "both" },
+    { "specRef": "B2.2.6", "specTitle": "Coronary heart disease and treatment of CVD: stents, statins, artificial valves and donor hearts", "ao": "AO1", "tier": "both" },
+    { "specRef": "B2.2.7", "specTitle": "The lungs and breathing: alveoli structure, ventilation and gas exchange", "ao": "AO1", "tier": "both" },
+    { "specRef": "B2.3.1", "specTitle": "Plant tissues, organs and systems: epidermal, palisade mesophyll, spongy mesophyll, xylem, phloem, meristem", "ao": "AO1", "tier": "both" },
+    { "specRef": "B2.3.2", "specTitle": "Transpiration and translocation; factors affecting rate of transpiration; required practical investigating water uptake", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "B3.1.1", "specTitle": "Communicable diseases: viral, bacterial, fungal and protist diseases (measles, HIV, TMV, salmonella, gonorrhoea, rose black spot, malaria)", "ao": "AO1", "tier": "both" },
+    { "specRef": "B3.1.2", "specTitle": "Human defence systems: skin, mucus, ciliated cells, stomach acid; role of white blood cells in phagocytosis, antibody and antitoxin production", "ao": "AO1", "tier": "both" },
+    { "specRef": "B3.1.3", "specTitle": "Vaccination: how vaccines work; herd immunity; the use of antibiotics, painkillers and the development of antibiotic-resistant bacteria", "ao": "AO2", "tier": "both" },
+    { "specRef": "B3.1.4", "specTitle": "Discovery and development of drugs: digitalis, aspirin, penicillin; the stages of preclinical and clinical testing", "ao": "AO1", "tier": "both" },
+    { "specRef": "B3.1.5", "specTitle": "Monoclonal antibodies: production from hybridoma cells; uses in pregnancy tests, diagnosis and targeted cancer treatment (HT only — full mechanism)", "ao": "AO2", "tier": "higher" },
+
+    { "specRef": "B4.1.1", "specTitle": "Photosynthesis: word and balanced symbol equations; the chloroplast as the site of photosynthesis", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.1.2", "specTitle": "Factors affecting the rate of photosynthesis: light intensity, carbon dioxide concentration, temperature, chlorophyll level; required practical investigating light intensity using pondweed", "ao": "AO2", "tier": "both" },
+    { "specRef": "B4.1.3", "specTitle": "Inverse square law and light intensity (HT only — apply to photosynthesis rate)", "ao": "AO3", "tier": "higher" },
+    { "specRef": "B4.1.4", "specTitle": "Uses of glucose from photosynthesis: respiration, conversion to insoluble starch, production of fat or oil, production of cellulose and amino acids", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.2.1", "specTitle": "Aerobic respiration: word and balanced symbol equations; sites in the cell (mitochondria); use of energy from respiration", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.2.2", "specTitle": "Anaerobic respiration in muscle cells (lactic acid) and in plant and yeast cells (ethanol and CO₂); fermentation in the food and drink industry", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.2.3", "specTitle": "Response to exercise: increased breathing rate, breath volume and heart rate; oxygen debt and the metabolism of lactic acid (HT only — full oxygen debt repayment mechanism)", "ao": "AO2", "tier": "both" },
+    { "specRef": "B4.2.4", "specTitle": "Metabolism: the sum of all reactions in the body; key metabolic conversions (glucose → starch/cellulose; glucose + nitrate → amino acids; lipid → glycerol + fatty acids)", "ao": "AO1", "tier": "both" },
+
+    { "specRef": "B-RP1", "specTitle": "Required Practical 1: Use of a light microscope to observe, draw and label biological specimens including animal and plant cells", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP2", "specTitle": "Required Practical 2: Investigate the effect of antiseptics or antibiotics on bacterial growth using agar plates and aseptic technique", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP3", "specTitle": "Required Practical 3: Use qualitative reagents (Benedict's, iodine, biuret) to test for sugars, starch and protein in food samples", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP4", "specTitle": "Required Practical 4: Investigate the effect of pH on the rate of reaction of amylase enzyme using iodine test for starch", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP5", "specTitle": "Required Practical 5: Investigate osmosis in plant tissue (e.g. potato) using different concentrations of sugar/salt solutions", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP6", "specTitle": "Required Practical 6: Investigate the effect of light intensity on the rate of photosynthesis using an aquatic organism (pondweed)", "ao": "AO3", "tier": "both" }
+  ]
+}

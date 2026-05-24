@@ -1,0 +1,63 @@
+{
+  "board": "aqa",
+  "subject": "English",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume AQA Y10 English Language spec points (8700). Sentence frames support the AO2 language analysis question, the AO3 cross-text comparison, and the AO5/AO6 writing tasks.",
+  "rows": [
+    {
+      "specRef": "P1-AO2",
+      "sentenceFrames": [
+        "The writer uses the [language feature: e.g. metaphor / verb / adjective] '______' which suggests ______.",
+        "This creates an effect of ______ for the reader, because ______.",
+        "The writer also uses [structural feature: e.g. short sentence / shift in time] which emphasises ______."
+      ],
+      "wordBank": [
+        { "term": "metaphor", "definition": "a comparison saying one thing is another (e.g. 'the city was a furnace')" },
+        { "term": "simile", "definition": "a comparison using 'like' or 'as'" },
+        { "term": "personification", "definition": "giving human qualities to a non-human thing" },
+        { "term": "connotation", "definition": "the feelings or ideas a word brings to mind beyond its literal meaning" },
+        { "term": "imagery", "definition": "language that creates a picture in the reader's mind" }
+      ],
+      "stepLadder": [
+        "Quote the writer's specific word, phrase or feature.",
+        "Name the technique (e.g. metaphor, verb choice, sentence form).",
+        "Explain what the technique suggests or implies.",
+        "Identify the effect on the reader and why.",
+        "Move to a second piece of evidence and repeat (build a paragraph of analysis)."
+      ],
+      "commonPitfalls": [
+        "Spotting techniques without explaining their effect.",
+        "Naming a technique that isn't actually present.",
+        "Quoting whole sentences when a single word or phrase would be sharper."
+      ],
+      "visualAidHint": "PEEZ paragraph (Point, Evidence, Explain, Zoom-in) keeps every paragraph tight."
+    },
+    {
+      "specRef": "P2-AO3",
+      "sentenceFrames": [
+        "Both writers express the view that ______. Source A makes this clear when ______; similarly, Source B uses ______ to ______.",
+        "However, Source A's tone is more ______, whereas Source B is more ______.",
+        "This difference suggests that ______, because ______."
+      ],
+      "wordBank": [
+        { "term": "perspective", "definition": "the writer's particular way of looking at the topic" },
+        { "term": "tone", "definition": "the attitude conveyed by the writer's choice of words" },
+        { "term": "register", "definition": "the level of formality of the language used" },
+        { "term": "synthesise", "definition": "combine ideas from two or more sources into a single point" }
+      ],
+      "stepLadder": [
+        "Identify a clear point of similarity between the writers' views.",
+        "Quote evidence from each source.",
+        "Comment on the methods each writer uses to convey that view.",
+        "Identify a clear point of difference.",
+        "Quote evidence from each source for the difference.",
+        "Comment on why the difference might exist (context / audience / purpose)."
+      ],
+      "commonPitfalls": [
+        "Discussing each source separately without comparing.",
+        "Comparing topics rather than perspectives.",
+        "Using vague evaluative words (e.g. 'good', 'nice') instead of specific tone words."
+      ]
+    }
+  ]
+}

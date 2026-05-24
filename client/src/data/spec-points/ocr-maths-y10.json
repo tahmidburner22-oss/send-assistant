@@ -1,0 +1,53 @@
+{
+  "board": "ocr",
+  "subject": "Mathematics",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE J560",
+  "source": "OCR GCSE (9-1) Mathematics J560 specification (2015 onwards) — Y10 spec points across Number, Algebra, Ratio/Proportion, Geometry/Measures, Probability and Statistics. OCR uses content reference codes; this file uses subject-letter prefixed codes that match the OCR content tables.",
+  "specPoints": [
+    { "specRef": "1.01", "specTitle": "Order positive and negative integers, decimals and fractions; use symbols =, ≠, <, >, ≤, ≥", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.02", "specTitle": "Apply the four operations to integers, decimals and simple fractions including mixed numbers", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.03", "specTitle": "Recognise and use relationships between operations, including inverse operations", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.04", "specTitle": "Use the concepts and vocabulary of prime numbers, factors, multiples, common factors, common multiples, HCF, LCM and prime factorisation", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.05", "specTitle": "Apply systematic listing strategies including counting principles (HT only)", "ao": "AO2", "tier": "higher" },
+    { "specRef": "1.06", "specTitle": "Use positive integer powers and associated real roots; recognise powers of 2, 3, 4 and 5", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.07", "specTitle": "Calculate exactly with fractions, surds and multiples of pi; simplify surd expressions involving squares (HT only for simplification of surds)", "ao": "AO2", "tier": "both" },
+    { "specRef": "1.08", "specTitle": "Calculate with and interpret numbers in standard form A x 10^n", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.09", "specTitle": "Round numbers and measures to an appropriate degree of accuracy; use inequality notation to specify simple error intervals due to truncation or rounding", "ao": "AO2", "tier": "both" },
+    { "specRef": "1.10", "specTitle": "Apply and interpret limits of accuracy when rounding or truncating, including upper and lower bounds (HT for compound calculations)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "2.01", "specTitle": "Use and interpret algebraic notation, including ab as a × b, a^2 = a × a, coefficients written as fractions and brackets", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.02", "specTitle": "Substitute numerical values into formulae and expressions, including scientific formulae", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.03", "specTitle": "Simplify and manipulate algebraic expressions by collecting like terms, multiplying a single term over a bracket, factorising into a single bracket and expanding products of two binomials", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.04", "specTitle": "Factorise quadratic expressions of the form x^2 + bx + c, including the difference of two squares; factorise quadratic expressions of the form ax^2 + bx + c (HT only)", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.05", "specTitle": "Simplify and manipulate algebraic fractions including factorising and cancelling (HT only)", "ao": "AO2", "tier": "higher" },
+    { "specRef": "2.06", "specTitle": "Understand and use standard mathematical formulae; rearrange formulae to change the subject", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.07", "specTitle": "Solve linear equations in one unknown algebraically; including those with the unknown on both sides of the equation", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.08", "specTitle": "Solve quadratic equations algebraically by factorising; by completing the square (HT) and by using the quadratic formula (HT)", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.09", "specTitle": "Solve two simultaneous linear equations in two variables algebraically; solve simultaneous equations where one is linear and one is quadratic (HT)", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.10", "specTitle": "Generate terms of a sequence from a term-to-term or position-to-term rule; deduce expressions for the nth term of linear and quadratic sequences (HT for quadratic)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "3.01", "specTitle": "Plot and identify points on a coordinate grid in all four quadrants", "ao": "AO1", "tier": "both" },
+    { "specRef": "3.02", "specTitle": "Plot and interpret graphs of linear functions; identify gradient and y-intercept; find equations of straight lines through given points or parallel/perpendicular to a given line (HT for perpendicular)", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.03", "specTitle": "Recognise, sketch and interpret graphs of quadratic, simple cubic, reciprocal y = a/x and exponential functions; recognise the shape of trigonometric functions y = sin x, y = cos x and y = tan x (HT for trigonometric)", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.04", "specTitle": "Plot and interpret real-life graphs including distance-time and speed-time graphs; estimate gradients and areas under graphs (HT for non-linear gradients)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "4.01", "specTitle": "Use ratio notation; divide a given quantity into two or more parts in a given ratio; reduce ratios to simplest form", "ao": "AO1", "tier": "both" },
+    { "specRef": "4.02", "specTitle": "Solve problems involving direct proportion and inverse proportion, including using algebra (HT for inverse proportion expressed as y = k/x)", "ao": "AO2", "tier": "both" },
+    { "specRef": "4.03", "specTitle": "Solve problems involving percentages, percentage change, simple interest, compound interest, growth and decay; including reverse percentages", "ao": "AO2", "tier": "both" },
+    { "specRef": "4.04", "specTitle": "Calculate with compound measures: speed, density and rates of pay; convert between related compound units", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "5.01", "specTitle": "Apply angle facts at a point, on a line, in triangles and in any polygon; deduce and use angle sums of polygons", "ao": "AO1", "tier": "both" },
+    { "specRef": "5.02", "specTitle": "Identify, describe and construct congruent and similar shapes by rotation, reflection, translation and enlargement (including fractional and negative scale factors — HT for negative)", "ao": "AO2", "tier": "both" },
+    { "specRef": "5.03", "specTitle": "Apply Pythagoras' theorem and trigonometry in right-angled triangles; apply trigonometry in 2D and 3D shapes (HT for 3D)", "ao": "AO2", "tier": "both" },
+    { "specRef": "5.04", "specTitle": "Calculate perimeters of 2D shapes including parts of circles; calculate areas of triangles, parallelograms, trapezia, circles, sectors and composite shapes", "ao": "AO2", "tier": "both" },
+    { "specRef": "5.05", "specTitle": "Calculate surface areas and volumes of cuboids, prisms, cylinders, cones, spheres and pyramids", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "6.01", "specTitle": "Use the basic vocabulary of probability; use the 0-1 probability scale; calculate experimental and theoretical probabilities", "ao": "AO1", "tier": "both" },
+    { "specRef": "6.02", "specTitle": "Calculate the probability of independent and mutually exclusive combined events using tree diagrams, Venn diagrams and two-way tables; calculate conditional probabilities (HT only)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "7.01", "specTitle": "Construct and interpret bar charts, pie charts, pictograms, frequency tables, line graphs and scatter graphs", "ao": "AO2", "tier": "both" },
+    { "specRef": "7.02", "specTitle": "Calculate and interpret mean, median, mode, modal class, range, quartiles and inter-quartile range; compare distributions", "ao": "AO2", "tier": "both" },
+    { "specRef": "7.03", "specTitle": "Construct and interpret histograms with equal and unequal class widths and cumulative frequency diagrams (HT for unequal class widths)", "ao": "AO2", "tier": "both" }
+  ]
+}

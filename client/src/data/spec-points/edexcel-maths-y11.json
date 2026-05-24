@@ -1,0 +1,50 @@
+{
+  "board": "edexcel",
+  "subject": "Mathematics",
+  "yearGroup": "Year 11",
+  "qualification": "GCSE 1MA1",
+  "source": "Edexcel (Pearson) GCSE (9-1) Mathematics 1MA1 specification (2015 onwards) — Y11 spec points across Algebra, Ratio/Proportion, Geometry, Probability and Statistics. Codes follow Edexcel reference numbering.",
+  "specPoints": [
+    { "specRef": "A7",  "specTitle": "Manipulate algebraic expressions including expanding products of two or more binomials and factorising quadratic expressions of the form ax^2 + bx + c (HT for ax^2 with a > 1)", "ao": "AO2", "tier": "both" },
+    { "specRef": "A8",  "specTitle": "Simplify and manipulate algebraic fractions (HT only)", "ao": "AO2", "tier": "higher" },
+    { "specRef": "A9",  "specTitle": "Solve linear equations in one unknown, including with the unknown on both sides", "ao": "AO1", "tier": "both" },
+    { "specRef": "A10", "specTitle": "Solve quadratic equations algebraically by factorising, completing the square (HT) and using the quadratic formula (HT)", "ao": "AO2", "tier": "both" },
+    { "specRef": "A11", "specTitle": "Solve two simultaneous equations in two variables algebraically and graphically; including one linear, one quadratic (HT)", "ao": "AO2", "tier": "both" },
+    { "specRef": "A12", "specTitle": "Solve linear inequalities; represent the solution set on a number line and using set notation; solve quadratic inequalities (HT)", "ao": "AO2", "tier": "both" },
+    { "specRef": "A13", "specTitle": "Plot and interpret straight-line graphs; identify gradient and intercept; identify parallel lines and perpendicular lines (HT for perpendicular)", "ao": "AO2", "tier": "both" },
+    { "specRef": "A14", "specTitle": "Recognise, sketch and interpret graphs of linear, quadratic, simple cubic, reciprocal y = a/x, exponential a^x (HT) and trigonometric functions (HT)", "ao": "AO2", "tier": "both" },
+    { "specRef": "A15", "specTitle": "Sketch translations and reflections of given functions (HT only)", "ao": "AO3", "tier": "higher" },
+    { "specRef": "A16", "specTitle": "Plot and interpret graphs in real contexts including distance-time, velocity-time and financial contexts; estimate gradients and areas under non-linear graphs (HT)", "ao": "AO3", "tier": "both" },
+    { "specRef": "A17", "specTitle": "Generate terms of arithmetic sequences and geometric sequences; deduce nth term expressions for linear and quadratic sequences (HT for quadratic)", "ao": "AO2", "tier": "both" },
+    { "specRef": "A18", "specTitle": "Find approximate solutions to equations numerically using iteration (HT only)", "ao": "AO3", "tier": "higher" },
+
+    { "specRef": "R1", "specTitle": "Use ratio notation; reduce a ratio to simplest form; divide a quantity into a given ratio", "ao": "AO1", "tier": "both" },
+    { "specRef": "R2", "specTitle": "Express the division of a quantity in a given ratio as a fraction or percentage of the whole", "ao": "AO2", "tier": "both" },
+    { "specRef": "R3", "specTitle": "Solve problems involving direct and inverse proportion, including graphical and algebraic representations", "ao": "AO2", "tier": "both" },
+    { "specRef": "R4", "specTitle": "Calculate compound measures, including pressure, density and rates of flow", "ao": "AO2", "tier": "both" },
+    { "specRef": "R5", "specTitle": "Solve percentage problems including percentage change, percentage profit/loss, simple interest, compound interest, repeated percentage change and reverse percentages", "ao": "AO2", "tier": "both" },
+    { "specRef": "R6", "specTitle": "Set up, solve and interpret growth and decay problems including compound interest", "ao": "AO3", "tier": "both" },
+    { "specRef": "R7", "specTitle": "Convert between related compound units (speed, rates of pay, prices, density, pressure)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "G1",  "specTitle": "Apply the properties of angles at a point, on a straight line, in a triangle and in any polygon", "ao": "AO1", "tier": "both" },
+    { "specRef": "G2",  "specTitle": "Apply the standard congruence conditions and similarity relationships, including length, area and volume scale factors", "ao": "AO2", "tier": "both" },
+    { "specRef": "G3",  "specTitle": "Apply Pythagoras' theorem and trigonometric ratios in 2D triangles; apply Pythagoras and trigonometry in 3D problems (HT for 3D)", "ao": "AO2", "tier": "both" },
+    { "specRef": "G4",  "specTitle": "Use the sine rule and cosine rule and the formula area = ½ab sin C (HT only)", "ao": "AO3", "tier": "higher" },
+    { "specRef": "G5",  "specTitle": "Identify, describe and construct congruent and similar shapes by rotation, reflection, translation and enlargement (including fractional and negative scale factors — HT for negative)", "ao": "AO2", "tier": "both" },
+    { "specRef": "G6",  "specTitle": "Calculate perimeters and areas of polygons, circles and composite shapes; calculate arc lengths, sector areas and angles", "ao": "AO2", "tier": "both" },
+    { "specRef": "G7",  "specTitle": "Calculate surface areas and volumes of prisms, cylinders, pyramids, cones and spheres", "ao": "AO2", "tier": "both" },
+    { "specRef": "G8",  "specTitle": "Apply circle theorems including angle at centre, angle in semicircle, angles in same segment, alternate segment theorem (HT only)", "ao": "AO3", "tier": "higher" },
+    { "specRef": "G9",  "specTitle": "Apply addition, subtraction and scalar multiplication of vectors; use vectors in geometric arguments and proofs (HT for proofs)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "P1", "specTitle": "Record, describe and analyse the frequency of outcomes of simple probability experiments", "ao": "AO2", "tier": "both" },
+    { "specRef": "P2", "specTitle": "Apply ideas of randomness, fairness and equally likely events", "ao": "AO1", "tier": "both" },
+    { "specRef": "P3", "specTitle": "Calculate probabilities of independent and dependent combined events using tree diagrams and Venn diagrams (HT for dependent and conditional)", "ao": "AO2", "tier": "both" },
+    { "specRef": "P4", "specTitle": "Calculate and interpret conditional probabilities (HT only)", "ao": "AO3", "tier": "higher" },
+
+    { "specRef": "S1", "specTitle": "Construct and interpret tables, charts and diagrams: bar charts, pie charts, pictograms, frequency tables, frequency polygons, time series", "ao": "AO2", "tier": "both" },
+    { "specRef": "S2", "specTitle": "Interpret, analyse and compare distributions through measures of central tendency, spread, and graphical representation including box plots and cumulative frequency", "ao": "AO2", "tier": "both" },
+    { "specRef": "S3", "specTitle": "Construct and interpret histograms with equal and unequal class widths (HT for unequal)", "ao": "AO3", "tier": "both" },
+    { "specRef": "S4", "specTitle": "Use scatter graphs to identify correlation and lines of best fit; interpolate and extrapolate apparent trends with awareness of limits", "ao": "AO2", "tier": "both" },
+    { "specRef": "S5", "specTitle": "Apply statistics to describe a population, including sampling techniques and bias awareness (HT only for stratified sampling)", "ao": "AO3", "tier": "both" }
+  ]
+}
