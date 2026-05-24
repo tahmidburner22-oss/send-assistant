@@ -13,6 +13,22 @@ import { computeCacheKey } from "../../client/src/lib/aiCacheKey.js";
 // pure (no DOM, no fetch, no React) so it bundles cleanly into the server
 // build via esbuild.
 import { checkSvgLayout } from "../../client/src/lib/svgLayoutChecker.js";
+// Phase F · FEAT-PF1 — curriculum bank: spec-points + paraphrased
+// exemplars + topic-aware scaffolds, tier-filtered. Used by the
+// /differentiate-worksheet and /scaffold-worksheet endpoints below to
+// upgrade them from string-shuffle / regex-class hints to genuinely
+// tier-aware and topic-aware pipelines.
+import {
+  buildExemplarPromptBlock,
+  buildScaffoldPromptBlock,
+  filterByTier,
+  lookupBySpecRef,
+  lookupByTopic,
+  targetAoHistogramForTier,
+  type Tier as BankTier,
+  type CurriculumEntry,
+} from "../../client/src/lib/curriculumBank.js";
+import type { ExamBoard as BankExamBoard } from "../../client/src/lib/specPointTaxonomy.js";
 
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -2377,12 +2393,89 @@ Return this exact JSON structure:
   }
 });
 
+// ── Phase F · curriculum-bank helpers (shared by differentiate + scaffold) ─
+// Pure helper: scan a worksheet's sections for any stamped specRef anchors
+// (FEAT-PB1 questionProvenance writes these at generation time). Sections
+// can carry a top-level `specRef`, a `metadata.specRef`, or — when the
+// section content holds an array of question objects — a per-question
+// `specRef` field. We dedupe and return in encounter order.
+function extractSourceSpecRefs(sections: any[]): string[] {
+  if (!Array.isArray(sections)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const s of sections) {
+    if (!s || typeof s !== "object") continue;
+    const candidates: any[] = [
+      s.specRef,
+      s.specRefRaw,
+      s.metadata?.specRef,
+      s.metadata?.specRefRaw,
+    ];
+    if (Array.isArray(s.content)) {
+      for (const item of s.content) {
+        if (item && typeof item === "object") {
+          candidates.push(item.specRef, item.specRefRaw);
+        }
+      }
+    }
+    for (const cand of candidates) {
+      if (typeof cand !== "string") continue;
+      const norm = cand.trim();
+      if (!norm) continue;
+      if (seen.has(norm)) continue;
+      seen.add(norm);
+      out.push(norm);
+    }
+  }
+  return out;
+}
+
+// Resolve curriculum bank entries for a (board, subject, yearGroup, topic)
+// query, preferring source-stamped specRefs when present and falling back
+// to topic-substring matching. Returns an empty array when the bank has no
+// data for this combo (callers degrade gracefully).
+function resolveBankEntries(
+  board: string | undefined | null,
+  subject: string | undefined | null,
+  yearGroup: string | undefined | null,
+  topic: string | undefined | null,
+  sourceSpecRefs: string[],
+  tier: BankTier,
+): CurriculumEntry[] {
+  if (!board || !subject || !yearGroup) return [];
+  const b = board.toLowerCase() as BankExamBoard;
+  const entries: CurriculumEntry[] = [];
+
+  // Prefer source-stamped specRefs.
+  for (const ref of sourceSpecRefs.slice(0, 8)) {
+    const e = lookupBySpecRef(b, subject, yearGroup, ref);
+    if (e) entries.push(e);
+  }
+
+  // If nothing matched, fall back to topic-string lookup.
+  if (entries.length === 0 && topic) {
+    entries.push(...lookupByTopic(b, subject, yearGroup, topic, { limit: 6 }));
+  }
+
+  return filterByTier(entries, tier);
+}
+
+// Format the AO histogram targets as a single prompt-friendly line.
+function formatAoTargetLine(tier: BankTier): string {
+  const t = targetAoHistogramForTier(tier);
+  return `AO TARGET DISTRIBUTION for ${tier.toUpperCase()} tier — AO1 ≈ ${Math.round(
+    t.AO1 * 100,
+  )}%, AO2 ≈ ${Math.round(t.AO2 * 100)}%, AO3 ≈ ${Math.round(
+    t.AO3 * 100,
+  )}%. Aim for this distribution across the differentiated questions.`;
+}
+
 // ── Differentiate Existing Worksheet (Foundation / Higher) ─────────────────
 // POST /api/ai/differentiate-worksheet
 // Takes existing worksheet sections and transforms them to a different difficulty tier.
 // Much faster than regenerating from scratch — only adjusts question difficulty.
 router.post("/differentiate-worksheet", requireAuth, async (req: Request, res: Response) => {
-  const { sections, tier, subject, topic, yearGroup, title } = req.body;
+  const { sections, tier, subject, topic, yearGroup, title, examBoard } = req.body;
   if (!sections || !Array.isArray(sections) || sections.length === 0) {
     return res.status(400).json({ error: "sections array is required" });
   }
@@ -2392,22 +2485,61 @@ router.post("/differentiate-worksheet", requireAuth, async (req: Request, res: R
   const schoolId = req.user?.schoolId ?? undefined;
   const yr = yearGroup || "Year 9";
 
+  // Phase F · FEAT-PF1 — curriculum bank lookup. Pull tier-filtered exemplars
+  // and AO targets from the spec-aligned bank so the LLM is shown a Higher /
+  // Foundation question style on the SAME spec subset, not asked to "make
+  // these existing questions harder/easier".
+  const sourceSpecRefs = extractSourceSpecRefs(sections);
+  const bankTier: BankTier = tier === "foundation" ? "foundation" : "higher";
+  const bankEntries = resolveBankEntries(
+    examBoard,
+    subject,
+    yearGroup,
+    topic,
+    sourceSpecRefs,
+    bankTier,
+  );
+  const exemplarBlock = buildExemplarPromptBlock(bankEntries, {
+    tier: bankTier,
+    maxPerSpecRef: 2,
+    maxTotal: 8,
+  });
+  const aoTargetLine = formatAoTargetLine(bankTier);
+  // Tier-restricted spec list — the awarding-body's content for the chosen tier.
+  const tierSpecList = bankEntries
+    .map((e) => `${e.specPoint.specRef} ${e.specPoint.specTitle} (${e.specPoint.ao || "AO?"})`)
+    .slice(0, 8)
+    .join("\n");
+
   const tierRules = tier === "foundation"
     ? `FOUNDATION TIER RULES:
-- Simplify all questions to single-skill, grade 1-5 level
-- Add hints or sentence starters to every Section A question
-- Use whole numbers and simple values only
-- Break multi-step questions into sub-parts (a)(b)
-- Keep language simple and direct
-- Add a Word Bank with 4-6 key terms
-- Challenge = straightforward application, not proof`
+- Generate questions drawn ONLY from the FOUNDATION-or-both spec subset listed below.
+- Do NOT introduce content tagged Higher-only (e.g. AQA C1.3.4 transition metals, B4.1.3 inverse-square photosynthesis, A19/A20 advanced algebra) — that would be off-tier.
+- Use whole numbers, simple values and single-step problems where possible.
+- Add hints, sentence starters or sub-parts (a)(b) on every question that requires extended reasoning.
+- Skew the AO distribution to AO1 (recall + simple application).
+- Word-bank vocabulary kept to ≤ 6 plain-English terms.`
     : `HIGHER TIER RULES:
-- Increase all questions to multi-step, grade 5-9 level
-- Section A starts at grade 5 — no trivial recall
-- Section B must include reasoning/proof/'show that' questions
-- Use precise subject language and notation
-- Include algebraic/symbolic manipulation
-- Challenge = grade 8-9 proof or multi-concept problem`;
+- Generate questions drawn from the HIGHER-or-both spec subset listed below — including the Higher-only points (these are content the Foundation tier deliberately excludes).
+- Section A starts at grade-5 demand — no trivial recall.
+- Section B and Section C must include multi-step reasoning, "show that", "evaluate" or "prove" questions.
+- Use precise mark-scheme language and notation (surds, algebraic generalisation, exact form).
+- Skew the AO distribution towards AO2 and AO3 (analysis + evaluation).
+- Challenge question is grade 8–9 demand: proof, multi-concept synthesis, or unfamiliar context.`;
+
+  const tierContextBlock = bankEntries.length > 0
+    ? `
+
+CURRICULUM-BANK CONTEXT for this differentiation (use this — it is the
+awarding-body's actual ${bankTier} tier content, not a generic prompt):
+
+${aoTargetLine}
+
+${bankTier.toUpperCase()}-tier spec subset to draw from:
+${tierSpecList}
+${exemplarBlock ? `\n${exemplarBlock}` : ""}
+`
+    : "";
 
   // Only send non-teacher sections to keep prompt short — strip word banks and worked examples
   // to reduce token count; we only need the question sections to adjust difficulty
@@ -2418,13 +2550,13 @@ router.post("/differentiate-worksheet", requireAuth, async (req: Request, res: R
     return `=== ${s.title || `Section ${i + 1}`} ===\n${(s.content || "").slice(0, 300)}`;
   }).join("\n\n").slice(0, 3000);
 
-  const system = `You are an expert UK teacher differentiating a worksheet for ${yr} pupils. Transform the existing worksheet to ${tier} tier difficulty. Preserve the topic and structure — only adjust question difficulty. Return valid JSON only. CRITICAL: The "content" field of every section MUST be a plain text string (NOT an array, NOT an object, NOT nested JSON). Write all questions as numbered plain text lines separated by newlines within the string.`;
+  const system = `You are an expert UK teacher differentiating a worksheet for ${yr} pupils. Transform the existing worksheet to ${tier} tier difficulty by drawing on the curriculum-bank context below — not by rewording the existing questions. The original worksheet is reference; the spec subset and exemplars are the source. Return valid JSON only. CRITICAL: The "content" field of every section MUST be a plain text string (NOT an array, NOT an object, NOT nested JSON). Write all questions as numbered plain text lines separated by newlines within the string.`;
 
   const user = `Transform this ${subject || ""} worksheet on "${topic || ""}" to ${tier.toUpperCase()} tier for ${yr}.
 
 ${tierRules}
-
-EXISTING WORKSHEET (adjust difficulty of each section):
+${tierContextBlock}
+EXISTING WORKSHEET (reference only — do NOT simply reword these questions; generate genuinely tier-appropriate replacements drawn from the spec subset above):
 ${existingContent}
 
 Return a JSON object:
@@ -2433,7 +2565,8 @@ Return a JSON object:
     {"title": "original section title", "type": "guided", "content": "1. Question one\n2. Question two\n3. Question three", "teacherOnly": false}
   ],
   "tierApplied": "${tier}",
-  "changesNote": "brief summary of changes made"
+  "specRefsUsed": ["list of spec-refs from the curriculum bank that the new questions cover"],
+  "changesNote": "brief summary of the tier-level differences (e.g. which Higher-only spec points were added, or which Higher-only content was excluded)"
 }
 IMPORTANT: The "content" value MUST be a plain text string with questions written as numbered lines. Do NOT use arrays or nested objects for content.`;
 
@@ -2490,7 +2623,21 @@ IMPORTANT: The "content" value MUST be a plain text string with questions writte
           return String(c);
         })(),
       }));
-      res.json({ differentiated: parsed, provider });
+      res.json({
+        differentiated: parsed,
+        provider,
+        // Phase F · FEAT-PF1 — surface bank context so the client / audit
+        // panel can show which spec-refs and AO targets the LLM was given.
+        bankContext: {
+          tier: bankTier,
+          specRefsShown: bankEntries.map((e) => e.specPoint.specRef),
+          aoTarget: targetAoHistogramForTier(bankTier),
+          exemplarsShown: bankEntries.reduce(
+            (n, e) => n + e.exemplars.length,
+            0,
+          ),
+        },
+      });
     } else {
       res.status(500).json({ error: "AI returned invalid structure — please try again" });
     }
@@ -2505,7 +2652,7 @@ IMPORTANT: The "content" value MUST be a plain text string with questions writte
 // Takes existing worksheet sections and transforms them with real SEND scaffolding:
 // gap fills, sentence starters, word banks, hint boxes — while preserving all content.
 router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Response) => {
-  const { sections, sendNeed, subject, topic, yearGroup, title } = req.body;
+  const { sections, sendNeed, subject, topic, yearGroup, title, examBoard } = req.body;
   if (!sections || !Array.isArray(sections) || sections.length === 0) {
     return res.status(400).json({ error: "sections array is required" });
   }
@@ -2514,7 +2661,43 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
   const yr = yearGroup || "Year 9";
   const sn = (sendNeed || "").toLowerCase();
 
+  // Phase F · FEAT-PF1 — curriculum bank lookup. Pull topic-aware scaffold
+  // rows so the scaffolded version uses the topic's actual word bank,
+  // sentence frames and step ladder rather than regex-class hints. Tier is
+  // 'both' here because scaffolding is a SEND-support concern, not a
+  // tier-of-paper concern.
+  const sourceSpecRefs = extractSourceSpecRefs(sections);
+  const scaffoldBankEntries = resolveBankEntries(
+    examBoard,
+    subject,
+    yearGroup,
+    topic,
+    sourceSpecRefs,
+    "both",
+  );
+  const bankScaffoldBlock = buildScaffoldPromptBlock(
+    scaffoldBankEntries,
+    sendNeed,
+  );
+
   const buildLocalScaffold = (inputSections: any[], sendNeedLower: string) => {
+    // Phase F · FEAT-PF1 — when curriculum bank has scaffold rows for this
+    // topic, harvest the topic's actual word bank + sentence frames so the
+    // local fallback is no longer regex-class hints. Falls back to the
+    // legacy behaviour when no bank rows are available.
+    const bankWordBankPairs: Array<{ term: string; definition: string }> = [];
+    const bankSentenceFrames: string[] = [];
+    const bankStepLadder: string[] = [];
+    const bankPitfalls: string[] = [];
+    for (const e of scaffoldBankEntries) {
+      if (!e.scaffold) continue;
+      bankWordBankPairs.push(...e.scaffold.wordBank);
+      bankSentenceFrames.push(...e.scaffold.sentenceFrames);
+      bankStepLadder.push(...e.scaffold.stepLadder);
+      if (e.scaffold.commonPitfalls) bankPitfalls.push(...e.scaffold.commonPitfalls);
+    }
+    const haveBankScaffold = bankWordBankPairs.length > 0 || bankSentenceFrames.length > 0;
+
     const extractTerms = (content: string): string[] => {
       const matches = (content || "").match(/\b[A-Za-z][A-Za-z\-]{3,}\b/g) || [];
       const seen = new Set<string>();
@@ -2575,7 +2758,41 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
       ].join("\n");
     };
 
+    // Phase F · FEAT-PF1 — when the bank has a step ladder for this topic,
+    // surface it as a topic-specific "Steps to follow" block before the
+    // SEND-need header. Bank-first; legacy header stays as fallback.
+    const buildTopicHeader = () => {
+      if (bankStepLadder.length === 0) return "";
+      const lines: string[] = ["Steps for this topic:"];
+      bankStepLadder.slice(0, 6).forEach((step, i) => {
+        lines.push(`${i + 1}. ${step}`);
+      });
+      lines.push("");
+      return lines.join("\n");
+    };
+
+    // Bank pitfall cycling — each scaffolded question line gets a different
+    // topic-specific hint when the bank has pitfalls for the topic.
+    let pitfallCursor = 0;
+    const nextBankPitfall = () => {
+      if (bankPitfalls.length === 0) return "";
+      const p = bankPitfalls[pitfallCursor % bankPitfalls.length];
+      pitfallCursor += 1;
+      return `Hint (common pitfall): ${p}`;
+    };
+
+    // Bank sentence-frame cycling — same idea for written answers.
+    let frameCursor = 0;
+    const nextBankFrame = () => {
+      if (bankSentenceFrames.length === 0) return "";
+      const f = bankSentenceFrames[frameCursor % bankSentenceFrames.length];
+      frameCursor += 1;
+      return `Sentence starter: ${f}`;
+    };
+
     const buildHint = (line: string) => {
+      const fromBank = nextBankPitfall();
+      if (fromBank) return fromBank;
       if (/\d|=|\+|-|×|÷|\//.test(line)) return "Hint: Show one step at a time.";
       if (/explain|describe|why|how/i.test(line)) return "Hint: Use because in your answer.";
       if (/compare|difference|similar/i.test(line)) return "Hint: Write one point for each side.";
@@ -2583,6 +2800,8 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
     };
 
     const buildSentenceStarter = (line: string) => {
+      const fromBank = nextBankFrame();
+      if (fromBank) return fromBank;
       if (/what type/i.test(line)) return "Sentence starter: This is a ______ angle because ______.";
       if (/explain|why/i.test(line)) return "Sentence starter: This happens because ______.";
       if (/describe/i.test(line)) return "Sentence starter: I can describe this as ______.";
@@ -2604,14 +2823,39 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
       const original = String(content || "").replace(/\r/g, "").trim();
       const lines = original.split("\n");
       const transformed = lines.map(scaffoldQuestionLine).join("\n").replace(/\n{3,}/g, "\n\n").trim();
-      return `${buildHeader()}${transformed}`.trim();
+      // Topic header (from bank) lands above the SEND-need header so pupils
+      // see "Steps for this topic" first, then their per-need help box.
+      const topicHeader = buildTopicHeader();
+      return `${topicHeader}${buildHeader()}${transformed}`.trim();
     };
 
     const allText = inputSections.map((s: any) => `${s.title || ""} ${s.content || ""}`).join(" \n ");
-    const terms = extractTerms(allText);
-    const wordBank = terms.length
-      ? terms.map((t) => `${t} | key term used in this worksheet`).join("\n")
-      : "keyword | important word in the question\nmethod | the steps you use\nevidence | information that supports your answer\nanswer | what you write in response";
+    // Phase F · FEAT-PF1 — when the bank has word-bank pairs for this
+    // topic, use those (with proper definitions) instead of regex-extracted
+    // tokens that have generic "key term used in this worksheet"
+    // placeholders. Falls back to the legacy behaviour when no bank rows
+    // are available.
+    let wordBank: string;
+    if (bankWordBankPairs.length > 0) {
+      // Dedupe by lower-cased term so multiple bank rows don't double up.
+      const seenWb = new Set<string>();
+      const unique: Array<{ term: string; definition: string }> = [];
+      for (const pair of bankWordBankPairs) {
+        const k = pair.term.toLowerCase();
+        if (seenWb.has(k)) continue;
+        seenWb.add(k);
+        unique.push(pair);
+      }
+      wordBank = unique
+        .slice(0, 8)
+        .map((p) => `${p.term} | ${p.definition}`)
+        .join("\n");
+    } else {
+      const terms = extractTerms(allText);
+      wordBank = terms.length
+        ? terms.map((t) => `${t} | key term used in this worksheet`).join("\n")
+        : "keyword | important word in the question\nmethod | the steps you use\nevidence | information that supports your answer\nanswer | what you write in response";
+    }
 
     const scaffoldedSections = inputSections.map((section: any, index: number) => {
       const title = section.title || `Section ${index + 1}`;
@@ -2760,7 +3004,7 @@ CRITICAL RULES:
   const user = `Transform this worksheet with ${sendNeed} scaffolding for ${yr} pupils.
 
 ${scaffoldingRules}
-
+${bankScaffoldBlock ? `\n${bankScaffoldBlock}\n` : ""}
 ORIGINAL WORKSHEET CONTENT (preserve every question verbatim, add scaffolding):
 ${existingContent.slice(0, 8000)}
 
