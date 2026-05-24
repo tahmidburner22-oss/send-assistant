@@ -1,0 +1,98 @@
+{
+  "board": "aqa",
+  "subject": "Chemistry",
+  "yearGroup": "Year 10",
+  "source": "Paraphrased exemplars in the style of AQA GCSE Chemistry 8462 Papers 1 and 2 (2018 onwards). Stems are author-original; mark allocations follow published mark scheme conventions.",
+  "exemplars": [
+    {
+      "specRef": "C1.2.1",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 3,
+      "stem": "Describe the structure of a carbon-12 atom. Refer to the number and location of protons, neutrons and electrons.",
+      "markScheme": "1 mark: 6 protons and 6 neutrons in nucleus. 1 mark: 6 electrons. 1 mark: electrons in shells around the nucleus.",
+      "commandVerb": "Describe",
+      "source": "AQA 8462 Paper 1F style — atom structure recall"
+    },
+    {
+      "specRef": "C1.3.2",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Lithium reacts with water to produce lithium hydroxide and hydrogen. Describe what you would see when a piece of lithium is added to water.",
+      "markScheme": "1 mark: lithium floats on the water. 1 mark: bubbles/fizzing observed (hydrogen produced). 1 mark: lithium moves on the surface / gradually disappears.",
+      "commandVerb": "Describe",
+      "source": "AQA 8462 Paper 1F style — Group 1 reaction observation"
+    },
+    {
+      "specRef": "C1.3.4",
+      "tier": "higher",
+      "ao": "AO1",
+      "marks": 4,
+      "stem": "Compare the typical properties of transition metals with those of Group 1 metals.",
+      "markScheme": "Any 4 of: transition metals have higher melting points; harder; denser; less reactive; form coloured compounds; can be used as catalysts.",
+      "commandVerb": "Compare",
+      "source": "AQA 8462 Paper 1H style — transition metals (HT only)"
+    },
+    {
+      "specRef": "C2.1.3",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Draw a dot-and-cross diagram to show the bonding in a methane (CH₄) molecule. Show only the outer electrons.",
+      "markScheme": "1 mark: 4 hydrogen atoms each sharing one electron with carbon. 1 mark: 4 shared pairs shown clearly. 1 mark: dots and crosses used to show electrons from different atoms.",
+      "commandVerb": "Draw",
+      "source": "AQA 8462 Paper 1 style — covalent bonding diagram"
+    },
+    {
+      "specRef": "C2.2.4",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "Diamond and graphite are both made from carbon atoms. Explain why graphite can conduct electricity but diamond cannot.",
+      "markScheme": "1 mark: each carbon in graphite forms 3 covalent bonds, leaving one delocalised electron. 1 mark: delocalised electrons can move through the structure. 1 mark: in diamond, each carbon forms 4 covalent bonds. 1 mark: no delocalised electrons available to carry charge.",
+      "commandVerb": "Explain",
+      "source": "AQA 8462 Paper 1 style — graphite vs diamond conductivity"
+    },
+    {
+      "specRef": "C3.1.2",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "Magnesium reacts with hydrochloric acid: Mg + 2HCl → MgCl₂ + H₂. Calculate the mass of magnesium chloride produced when 4.8 g of magnesium reacts completely. Relative atomic masses: Mg = 24, Cl = 35.5.",
+      "markScheme": "M1 for moles of Mg = 4.8 / 24 = 0.2. M1 for moles of MgCl₂ = 0.2 (1:1 ratio). M1 for Mr of MgCl₂ = 24 + 71 = 95. A1 for mass = 0.2 × 95 = 19 g.",
+      "commandVerb": "Calculate",
+      "source": "AQA 8462 Paper 1H style — moles calculation (HT only)"
+    },
+    {
+      "specRef": "C4.2.1",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "A student adds dilute sulfuric acid to copper(II) oxide and warms the mixture until no more reacts. Describe how the student could obtain a pure, dry sample of copper(II) sulfate crystals from the resulting mixture.",
+      "markScheme": "1 mark: filter to remove excess copper(II) oxide. 1 mark: heat the filtrate to evaporate some water (concentrate the solution). 1 mark: leave to cool and crystallise. 1 mark: pat crystals dry between filter paper.",
+      "commandVerb": "Describe",
+      "source": "AQA 8462 Required Practical 1 style — soluble salt preparation"
+    },
+    {
+      "specRef": "C5.1.2",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Sketch and label a reaction profile for an exothermic reaction. Label the reactants, products and activation energy.",
+      "markScheme": "1 mark: products lower than reactants. 1 mark: activation energy shown as height of hump above reactants. 1 mark: all three labels (reactants, products, Ea) correctly placed.",
+      "commandVerb": "Sketch",
+      "source": "AQA 8462 Paper 1 style — exothermic reaction profile"
+    },
+    {
+      "specRef": "C5.1.3",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "Use the bond energies given to calculate the energy change for the reaction H₂ + Cl₂ → 2HCl. Bond energies (kJ/mol): H–H = 436; Cl–Cl = 243; H–Cl = 432.",
+      "markScheme": "M1 for energy in (bonds broken) = 436 + 243 = 679 kJ/mol. M1 for energy out (bonds formed) = 2 × 432 = 864 kJ/mol. M1 for ΔE = 679 − 864 = −185 kJ/mol. A1 for stating reaction is exothermic.",
+      "commandVerb": "Calculate",
+      "source": "AQA 8462 Paper 1H style — bond energy calculation (HT only)"
+    }
+  ]
+}

@@ -442,11 +442,29 @@ export function _resetRegistriesForTests(): void {
 
 // ─── Module-level data registration ────────────────────────────────────────
 //
-// As tasks 5 and 7 of Phase F land, JSON files are imported here and
-// passed to registerExemplars / registerScaffolds. The file currently
-// has no imports — the registries start empty until those commits
-// land. Every consumer (lookupBySpecRef, lookupByTopic, prompt
-// builders) handles an empty registry gracefully and returns the
-// spec-point alone, so this module is safe to ship from commit #1.
+// Phase F · FEAT-PF1 — paraphrased exemplar bank seed across the highest-
+// volume GCSE subjects. Adding a new exemplar dataset is one import + one
+// registerExemplars call below. Adding a new scaffold dataset is one import
+// + one registerScaffolds call.
 
-// (Data registrations land in subsequent commits — see Phase F PR.)
+import aqaMathsY10Exemplars from "@/data/exemplars/aqa-mathematics-y10.json";
+import edexcelMathsY10Exemplars from "@/data/exemplars/edexcel-mathematics-y10.json";
+import aqaBiologyY10Exemplars from "@/data/exemplars/aqa-biology-y10.json";
+import aqaChemistryY10Exemplars from "@/data/exemplars/aqa-chemistry-y10.json";
+import aqaPhysicsY10Exemplars from "@/data/exemplars/aqa-physics-y10.json";
+import edexcelBiologyY10Exemplars from "@/data/exemplars/edexcel-biology-y10.json";
+import edexcelChemistryY10Exemplars from "@/data/exemplars/edexcel-chemistry-y10.json";
+import edexcelPhysicsY10Exemplars from "@/data/exemplars/edexcel-physics-y10.json";
+import aqaEnglishY10Exemplars from "@/data/exemplars/aqa-english-y10.json";
+
+registerExemplars(aqaMathsY10Exemplars as ExemplarDataset);
+registerExemplars(edexcelMathsY10Exemplars as ExemplarDataset);
+registerExemplars(aqaBiologyY10Exemplars as ExemplarDataset);
+registerExemplars(aqaChemistryY10Exemplars as ExemplarDataset);
+registerExemplars(aqaPhysicsY10Exemplars as ExemplarDataset);
+registerExemplars(edexcelBiologyY10Exemplars as ExemplarDataset);
+registerExemplars(edexcelChemistryY10Exemplars as ExemplarDataset);
+registerExemplars(edexcelPhysicsY10Exemplars as ExemplarDataset);
+registerExemplars(aqaEnglishY10Exemplars as ExemplarDataset);
+
+// (Scaffold dataset registrations land in the next commit.)
