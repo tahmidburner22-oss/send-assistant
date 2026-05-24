@@ -1,0 +1,86 @@
+{
+  "board": "aqa",
+  "subject": "Mathematics",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume AQA Y10 maths spec points. Each row provides sentence frames, a word bank, a step ladder and common pitfalls drawn from teaching practice on AQA 8300.",
+  "rows": [
+    {
+      "specRef": "A4",
+      "sentenceFrames": [
+        "First, I will expand the bracket by multiplying ______ by each term inside.",
+        "Then, I will collect the like terms ______ together.",
+        "My simplified expression is ______."
+      ],
+      "wordBank": [
+        { "term": "expand", "definition": "multiply each term inside the bracket by the term outside" },
+        { "term": "like terms", "definition": "terms with exactly the same letters and powers" },
+        { "term": "simplify", "definition": "make the expression as short as possible by collecting like terms" },
+        { "term": "coefficient", "definition": "the number in front of a letter, e.g. 3 in 3x" }
+      ],
+      "stepLadder": [
+        "Multiply each term inside the first bracket by the number outside.",
+        "Multiply each term inside the second bracket by its number, watching the sign carefully.",
+        "Write all the terms in one row.",
+        "Group like terms together (x with x, numbers with numbers).",
+        "Add or subtract the like terms to write the final answer."
+      ],
+      "commonPitfalls": [
+        "Forgetting to multiply the second term in the bracket (only multiplying the first).",
+        "Sign error when expanding a bracket with a minus in front (e.g. -2(x − 4) often becomes -2x − 8 instead of -2x + 8)."
+      ],
+      "visualAidHint": "A grid (area model) showing each multiplication helps pupils who lose track of which terms have been multiplied."
+    },
+    {
+      "specRef": "R10",
+      "sentenceFrames": [
+        "The sale price represents ______ % of the original price.",
+        "So 1% of the original price is ______ ÷ ______.",
+        "The original price is 100 × ______ = ______."
+      ],
+      "wordBank": [
+        { "term": "original price", "definition": "the price before any change (always 100%)" },
+        { "term": "reverse percentage", "definition": "finding the original amount when you know the new amount and the percentage change" },
+        { "term": "multiplier", "definition": "a decimal that does the percentage change in one step (e.g. 0.65 for −35%)" }
+      ],
+      "stepLadder": [
+        "Decide what 100% represents (always the original amount).",
+        "Work out what percentage of the original you have been given.",
+        "Find 1% by dividing.",
+        "Multiply 1% by 100 to get the original amount.",
+        "Check: apply the percentage change to your answer and see if you get back to the given price."
+      ],
+      "commonPitfalls": [
+        "Treating the sale price as 100% — this gives the wrong answer.",
+        "Adding the percentage change instead of subtracting it (or vice versa)."
+      ],
+      "visualAidHint": "A bar model showing 100% across the top and 65% across the bottom helps pupils see the proportion."
+    },
+    {
+      "specRef": "G11",
+      "sentenceFrames": [
+        "I have a right-angled triangle with sides ______, ______ and the hypotenuse ______.",
+        "I will use Pythagoras' theorem: a² + b² = c², where c is the hypotenuse.",
+        "Substituting: ______ ² + ______ ² = ______ ².",
+        "The unknown side is ______ cm."
+      ],
+      "wordBank": [
+        { "term": "hypotenuse", "definition": "the longest side of a right-angled triangle, opposite the right angle" },
+        { "term": "right angle", "definition": "an angle of exactly 90°" },
+        { "term": "Pythagoras' theorem", "definition": "a² + b² = c² for the sides of a right-angled triangle" }
+      ],
+      "stepLadder": [
+        "Identify the right angle and label the sides a, b, c (with c as the hypotenuse).",
+        "Decide whether you are finding the hypotenuse or one of the shorter sides.",
+        "Write Pythagoras' theorem in the right form (c² = a² + b² for hypotenuse, a² = c² − b² for shorter side).",
+        "Substitute the known values and calculate.",
+        "Take the square root to get the answer in cm."
+      ],
+      "commonPitfalls": [
+        "Mixing up which side is the hypotenuse (it must be opposite the right angle).",
+        "Forgetting the square root at the end.",
+        "Using the wrong rearrangement when finding a shorter side (subtracting instead of adding)."
+      ],
+      "visualAidHint": "Always sketch the triangle and label the right angle and the hypotenuse before calculating."
+    }
+  ]
+}

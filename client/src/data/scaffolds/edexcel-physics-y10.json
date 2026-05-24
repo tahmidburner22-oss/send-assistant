@@ -1,0 +1,57 @@
+{
+  "board": "edexcel",
+  "subject": "Physics",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume Edexcel Y10 physics spec points (1PH0).",
+  "rows": [
+    {
+      "specRef": "2.4",
+      "sentenceFrames": [
+        "I will use Newton's second law: F = m × a.",
+        "Rearranging for acceleration: a = ______ ÷ ______.",
+        "a = ______ ÷ ______ = ______ m/s²."
+      ],
+      "wordBank": [
+        { "term": "force", "definition": "a push or pull, measured in newtons (N)" },
+        { "term": "mass", "definition": "the amount of matter in an object, measured in kilograms (kg)" },
+        { "term": "acceleration", "definition": "rate of change of velocity, measured in m/s²" },
+        { "term": "Newton's second law", "definition": "F = ma — the resultant force on an object equals mass times acceleration" }
+      ],
+      "stepLadder": [
+        "Write F = ma.",
+        "Identify the resultant force and the mass from the question.",
+        "Rearrange to a = F/m if acceleration is the unknown.",
+        "Substitute numbers and calculate.",
+        "Give the answer with the unit m/s²."
+      ],
+      "commonPitfalls": [
+        "Using weight instead of mass (or vice versa).",
+        "Forgetting to subtract opposing forces to get the resultant force."
+      ]
+    },
+    {
+      "specRef": "4.1",
+      "sentenceFrames": [
+        "Wave equation: speed = frequency × wavelength.",
+        "v = ______ × ______",
+        "v = ______ m/s."
+      ],
+      "wordBank": [
+        { "term": "frequency (f)", "definition": "the number of complete waves per second, measured in hertz (Hz)" },
+        { "term": "wavelength (λ)", "definition": "the distance between two adjacent peaks of a wave, measured in metres" },
+        { "term": "wave speed (v)", "definition": "how fast the wave travels, measured in m/s" }
+      ],
+      "stepLadder": [
+        "Write the wave equation v = fλ.",
+        "Identify the frequency in Hz and the wavelength in m.",
+        "Multiply to find the wave speed.",
+        "Give the answer with the unit m/s.",
+        "Sense-check: visible waves on water are typically less than 1 m/s; light is much faster."
+      ],
+      "commonPitfalls": [
+        "Mixing units — converting cm to m is a common slip.",
+        "Confusing frequency and period (period = 1/frequency)."
+      ]
+    }
+  ]
+}

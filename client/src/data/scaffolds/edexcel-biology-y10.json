@@ -1,0 +1,61 @@
+{
+  "board": "edexcel",
+  "subject": "Biology",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume Edexcel Y10 biology spec points (1BI0).",
+  "rows": [
+    {
+      "specRef": "1.6",
+      "sentenceFrames": [
+        "The mass of the potato cube changed from ______ g to ______ g.",
+        "Percentage change = (change ÷ original) × 100 = ______ %.",
+        "Water moved ______ the cells by osmosis, because the surrounding solution had a ______ water concentration."
+      ],
+      "wordBank": [
+        { "term": "osmosis", "definition": "movement of water across a partially permeable membrane down its concentration gradient" },
+        { "term": "percentage change", "definition": "(change in value ÷ original value) × 100" },
+        { "term": "concentration gradient", "definition": "the difference in concentration between two regions" }
+      ],
+      "stepLadder": [
+        "Calculate the change in mass (final − initial).",
+        "Divide by the original mass and multiply by 100 for percentage change.",
+        "Decide the sign (positive = water in, negative = water out).",
+        "Explain the direction of water movement using the term 'water concentration'.",
+        "Use 'osmosis' and 'partially permeable membrane' in the explanation."
+      ],
+      "commonPitfalls": [
+        "Dividing by the final mass instead of the original.",
+        "Forgetting the sign of the percentage change."
+      ]
+    },
+    {
+      "specRef": "3.3",
+      "sentenceFrames": [
+        "Father's genotype is ______. Mother's genotype is ______.",
+        "Father's gametes: ______. Mother's gametes: ______.",
+        "Offspring possibilities: ______, ______, ______, ______.",
+        "Probability of cystic fibrosis is ______ out of 4 = ______ %."
+      ],
+      "wordBank": [
+        { "term": "genotype", "definition": "the set of alleles a person has (e.g. Ff)" },
+        { "term": "phenotype", "definition": "the observable trait, e.g. 'has cystic fibrosis'" },
+        { "term": "homozygous", "definition": "two identical alleles (e.g. FF or ff)" },
+        { "term": "heterozygous", "definition": "two different alleles (e.g. Ff)" },
+        { "term": "recessive allele", "definition": "an allele that only produces its trait when homozygous (ff)" }
+      ],
+      "stepLadder": [
+        "Decide what each capital and lower-case letter stands for.",
+        "Write each parent's genotype.",
+        "Split each parent's genotype into two possible gametes.",
+        "Combine each father gamete with each mother gamete into a 2 × 2 Punnett square.",
+        "Read off the offspring genotypes and count which ones show the disorder.",
+        "State the probability as a fraction and as a percentage."
+      ],
+      "commonPitfalls": [
+        "Mixing up dominant and recessive alleles.",
+        "Reading the Punnett square as 1 in 3 (forgetting the four cells).",
+        "Confusing genotype (Ff) with phenotype (no cystic fibrosis)."
+      ]
+    }
+  ]
+}

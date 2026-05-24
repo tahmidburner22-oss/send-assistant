@@ -468,3 +468,22 @@ registerExemplars(edexcelPhysicsY10Exemplars as ExemplarDataset);
 registerExemplars(aqaEnglishY10Exemplars as ExemplarDataset);
 
 // (Scaffold dataset registrations land in the next commit.)
+import aqaMathsY10Scaffolds from "@/data/scaffolds/aqa-mathematics-y10.json";
+import edexcelMathsY10Scaffolds from "@/data/scaffolds/edexcel-mathematics-y10.json";
+import aqaBiologyY10Scaffolds from "@/data/scaffolds/aqa-biology-y10.json";
+import aqaChemistryY10Scaffolds from "@/data/scaffolds/aqa-chemistry-y10.json";
+import aqaPhysicsY10Scaffolds from "@/data/scaffolds/aqa-physics-y10.json";
+import edexcelBiologyY10Scaffolds from "@/data/scaffolds/edexcel-biology-y10.json";
+import edexcelChemistryY10Scaffolds from "@/data/scaffolds/edexcel-chemistry-y10.json";
+import edexcelPhysicsY10Scaffolds from "@/data/scaffolds/edexcel-physics-y10.json";
+import aqaEnglishY10Scaffolds from "@/data/scaffolds/aqa-english-y10.json";
+
+registerScaffolds(aqaMathsY10Scaffolds as ScaffoldDataset);
+registerScaffolds(edexcelMathsY10Scaffolds as ScaffoldDataset);
+registerScaffolds(aqaBiologyY10Scaffolds as ScaffoldDataset);
+registerScaffolds(aqaChemistryY10Scaffolds as ScaffoldDataset);
+registerScaffolds(aqaPhysicsY10Scaffolds as ScaffoldDataset);
+registerScaffolds(edexcelBiologyY10Scaffolds as ScaffoldDataset);
+registerScaffolds(edexcelChemistryY10Scaffolds as ScaffoldDataset);
+registerScaffolds(edexcelPhysicsY10Scaffolds as ScaffoldDataset);
+registerScaffolds(aqaEnglishY10Scaffolds as ScaffoldDataset);
