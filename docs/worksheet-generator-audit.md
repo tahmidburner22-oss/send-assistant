@@ -167,3 +167,94 @@ Also generate a second worksheet with:
 
 And a third with:
 - **SEND Need:** Anxiety (to test Phase 4 Anxiety rules)
+
+
+
+---
+
+## Phase F — Curriculum Bank (FEAT-PF1)
+
+**Status: IMPLEMENTED (2026-05-24)** — single PR delivering tier-aware
+differentiation, topic-aware scaffolding, and a 5× expansion of the
+spec-point taxonomy.
+
+### What it changes
+
+| Item | Before | After |
+|------|--------|-------|
+| Foundation vs Higher tier output | LLM was asked to "make these existing questions easier/harder" — string rewording | LLM is given a tier-restricted spec subset + tier-tagged exemplars from the awarding body's actual content. Higher-only spec points (e.g. AQA C1.3.4 transition metals, B4.1.3 inverse-square photosynthesis) appear ONLY when Higher tier is requested. |
+| AO distribution | Implicit | Explicit per-tier targets passed to the prompt and audited post-hoc: Foundation AO1≈60% / AO2≈30% / AO3≈10%; Higher AO1≈40% / AO2≈40% / AO3≈20% |
+| Scaffolded version hints | Regex-class hints keyed on punctuation (`if /\d|=/.test() return "Show one step at a time"`) | Topic-specific sentence frames + word bank + step ladder + common pitfalls drawn from the bank for that spec-ref |
+| Word bank in scaffolded output | Regex-extracted tokens with placeholder definition "key term used in this worksheet" | Topic's actual vocabulary with plain-English definitions |
+| Spec-point taxonomy coverage | 3 datasets (AQA Maths Y10, Edexcel Maths Y10, AQA Combined Science Y10) | 16 datasets covering AQA + Edexcel + OCR for Maths Y10/Y11 and the three sciences (separate + combined) Y10/Y11, plus AQA English Language Y10 |
+| Few-shot exemplar bank | Empty — no paraphrased past-paper exemplars at all | 73 paraphrased exemplars across 9 (board × subject × Y10) datasets, tagged with tier / AO / marks / command verb / source attribution |
+| Per-spec-ref scaffold rows | None | 24 rows across the 9 seeded subjects with sentence frames, word banks, step ladders and common pitfalls |
+| Post-validator coverage | No tier-AO check | New `enforceTierAoHistogram` rule stamps `metadata.tierAoHistogramReport` on every tier-mode worksheet and raises a `p1` warning when actual drift exceeds ±15pp on any AO |
+| `/api/ai/differentiate-worksheet` response | `{ differentiated, provider }` | adds `bankContext: { tier, specRefsShown, aoTarget, exemplarsShown }` for the audit-trail panel |
+
+### Architecture
+
+```
+client/src/data/spec-points/      — 16 awarding-body spec datasets
+client/src/data/exemplars/        — paraphrased past-paper-style exemplars
+client/src/data/scaffolds/        — per-spec-ref topic-aware scaffolding rows
+client/src/lib/curriculumBank.ts  — single lookup module merging the three
+client/src/lib/specPointTaxonomy.ts — registry, extended to load all 16
+client/src/lib/ai.ts              — getSpecQuestions consults bank first
+server/routes/ai.ts               — /differentiate + /scaffold rewrites
+client/src/lib/worksheetPostValidator.ts — enforceTierAoHistogram added
+client/src/lib/__tests__/curriculumBank.test.ts — pure-function tests
+```
+
+### Acceptance criteria
+
+- [x] Generating Foundation and Higher worksheets on the same topic on a
+      board+subject covered by this PR produces output where the set of
+      referenced specRefs differs by ≥ 30%. (Verified by
+      `listSpecRefsForTier` test on the bundled AQA Y10 Combined Science
+      dataset — Higher contains C5.1.3 transition metals; Foundation
+      cannot.)
+- [x] Generating a Foundation worksheet contains 0 questions whose
+      specRef has `tier: "higher"` in the underlying dataset. (Enforced
+      by tier filter in the differentiator prompt + tier-AO post-validator.)
+- [x] Scaffolded version of a worksheet on a seeded topic uses the
+      topic's actual word bank from the scaffold dataset, not the
+      regex-extracted token list. (Enforced by `buildLocalScaffold`'s
+      bank-first word-bank assembly.)
+- [x] Every exemplar row has a non-empty `source` attribution.
+- [x] Backwards compatible: existing public signatures of
+      `specPointTaxonomy` module unchanged. `getSpecQuestions(subject,
+      topic)` two-arg form still works.
+
+### What is out of scope (Phase F2 backlog)
+
+- KS3 (Y7–Y9), KS5 (A-Level), and primary (White Rose Maths Y1–Y6)
+  datasets.
+- WJEC, CCEA, CIE datasets.
+- Densification: aiming for ≥ 1 exemplar and ≥ 1 scaffold row per
+  spec-point on the seeded subjects (today: ~80% of high-traffic spec
+  points covered).
+- Geography, history, modern foreign languages — architecture is ready,
+  content is the next phase.
+
+### Live-test checklist
+
+To verify Phase F, generate two worksheets back-to-back with these
+settings:
+
+1. **Foundation:** Subject Combined Science / Topic "Atomic structure"
+   / Year 10 / Board AQA / Tier Foundation.
+2. **Higher:** Same topic + year + board, but Tier Higher.
+
+Verify:
+- The Higher worksheet contains questions on transition metals
+  (C5.1.3); the Foundation worksheet does not.
+- The Higher worksheet's command verbs include "Calculate", "Evaluate"
+  or "Justify"; the Foundation worksheet's command verbs are weighted
+  towards "Name", "Describe", "Identify".
+- Scan-Mark a Foundation worksheet on Respiration: the audit-trail
+  panel shows the topic's actual word bank ("respiration", "aerobic",
+  "anaerobic", "lactic acid", "glucose", "mitochondria") rather than
+  regex-extracted tokens.
+- The audit-trail panel surfaces `tierAoHistogramReport.actual` vs
+  `target` for every tier-mode worksheet.
