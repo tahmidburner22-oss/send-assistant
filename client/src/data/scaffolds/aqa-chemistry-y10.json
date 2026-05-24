@@ -1,0 +1,91 @@
+{
+  "board": "aqa",
+  "subject": "Chemistry",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume AQA Y10 chemistry spec points (8462).",
+  "rows": [
+    {
+      "specRef": "C1.2.1",
+      "sentenceFrames": [
+        "An atom of ______ has ______ protons in its nucleus.",
+        "It also has ______ neutrons.",
+        "Around the nucleus, there are ______ electrons in shells."
+      ],
+      "wordBank": [
+        { "term": "proton", "definition": "a positive particle in the nucleus, relative mass 1" },
+        { "term": "neutron", "definition": "a neutral particle in the nucleus, relative mass 1" },
+        { "term": "electron", "definition": "a negative particle in shells around the nucleus, relative mass ≈ 0" },
+        { "term": "atomic number", "definition": "the number of protons in the nucleus" },
+        { "term": "mass number", "definition": "the total number of protons + neutrons" }
+      ],
+      "stepLadder": [
+        "Find the atomic number — this is the number of protons (and electrons in a neutral atom).",
+        "Find the mass number — this is protons + neutrons.",
+        "Calculate the number of neutrons (mass number − atomic number).",
+        "Describe the location of each particle (nucleus or shells).",
+        "Use the words proton, neutron and electron correctly."
+      ],
+      "commonPitfalls": [
+        "Saying electrons are in the nucleus (they are not).",
+        "Confusing atomic number and mass number.",
+        "Forgetting that neutrons have neutral charge."
+      ],
+      "visualAidHint": "A simple diagram with the nucleus labelled and shells around it (drawn as concentric circles) anchors the location of each particle."
+    },
+    {
+      "specRef": "C2.2.4",
+      "sentenceFrames": [
+        "In graphite, each carbon atom forms ______ covalent bonds, leaving ______ electron(s) free.",
+        "These free electrons are ______, so they can carry charge.",
+        "In diamond, each carbon atom forms ______ covalent bonds, leaving ______ electron(s) free.",
+        "Diamond cannot conduct electricity because ______."
+      ],
+      "wordBank": [
+        { "term": "covalent bond", "definition": "a shared pair of electrons between two non-metal atoms" },
+        { "term": "delocalised electron", "definition": "an electron not held in a fixed position; free to move" },
+        { "term": "giant covalent structure", "definition": "a 3D network of atoms held together by covalent bonds" },
+        { "term": "allotrope", "definition": "different forms of the same element (diamond and graphite are allotropes of carbon)" }
+      ],
+      "stepLadder": [
+        "State the number of covalent bonds each carbon forms in graphite (3).",
+        "Explain that this leaves a delocalised electron.",
+        "Explain that delocalised electrons can move and carry charge.",
+        "Compare with diamond (4 bonds, no delocalised electrons).",
+        "Conclude with which conducts and why."
+      ],
+      "commonPitfalls": [
+        "Confusing 'free' electrons with 'lots of' electrons — both have the same total electrons, but only graphite has delocalised ones.",
+        "Saying graphite has ions (it doesn't — only delocalised electrons)."
+      ],
+      "visualAidHint": "Side-by-side structure diagrams of diamond and graphite labelled with number of bonds per atom."
+    },
+    {
+      "specRef": "C4.2.1",
+      "sentenceFrames": [
+        "Step 1: I added ______ to the dilute acid.",
+        "Step 2: I filtered the mixture to remove ______.",
+        "Step 3: I evaporated some of the water from the ______.",
+        "Step 4: I left the solution to ______, then patted the crystals dry."
+      ],
+      "wordBank": [
+        { "term": "filtration", "definition": "separating an insoluble solid from a liquid" },
+        { "term": "filtrate", "definition": "the liquid that passes through the filter paper" },
+        { "term": "residue", "definition": "the solid that stays on the filter paper" },
+        { "term": "crystallisation", "definition": "forming crystals from a solution by evaporation" },
+        { "term": "soluble salt", "definition": "a salt that dissolves in water (e.g. copper sulfate)" }
+      ],
+      "stepLadder": [
+        "Add excess metal oxide / carbonate to the warm acid until no more reacts.",
+        "Filter to remove the excess solid.",
+        "Heat the filtrate to evaporate some of the water (concentrate the solution).",
+        "Leave the concentrated solution to cool slowly so crystals form.",
+        "Pat the crystals dry between filter paper and label them."
+      ],
+      "commonPitfalls": [
+        "Forgetting to use excess of the oxide/carbonate (otherwise unreacted acid remains).",
+        "Evaporating to dryness — this destroys the water of crystallisation.",
+        "Confusing filtrate (liquid through) with residue (solid left on paper)."
+      ]
+    }
+  ]
+}

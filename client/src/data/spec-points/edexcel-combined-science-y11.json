@@ -1,0 +1,54 @@
+{
+  "board": "edexcel",
+  "subject": "Combined Science",
+  "yearGroup": "Year 11",
+  "qualification": "GCSE 1SC0",
+  "source": "Edexcel (Pearson) GCSE (9-1) Combined Science 1SC0 specification (2016 onwards) — Y11 covered topics across Biology Topics 6–9, Chemistry Topics 5–9 and Physics Topics 8–15 with HT-only items flagged.",
+  "specPoints": [
+    { "specRef": "CB6.1", "specTitle": "Biology — plant structures and transport: xylem, phloem, transpiration and translocation; factors affecting transpiration rate", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB6.2", "specTitle": "Biology — photosynthesis: word and balanced symbol equations; factors affecting rate; uses of glucose", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CB7.1", "specTitle": "Biology — homeostasis: maintenance of body temperature, blood glucose, water and nitrogen balance", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB7.2", "specTitle": "Biology — control of blood glucose by insulin and glucagon (HT only — full glucagon mechanism); Type 1 vs Type 2 diabetes", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB7.3", "specTitle": "Biology — endocrine system: glands and key hormones; menstrual cycle hormones; methods of contraception", "ao": "AO1", "tier": "both" },
+
+    { "specRef": "CB8.1", "specTitle": "Biology — gas exchange: alveoli, respiration link; circulatory system: heart, blood vessels, blood components", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB8.2", "specTitle": "Biology — coronary heart disease and treatments (stents, statins); lifestyle factors and risk", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CB9.1", "specTitle": "Biology — ecosystems and material cycles: biotic/abiotic factors, food webs, energy transfer; carbon and water cycles", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB9.2", "specTitle": "Biology — biodiversity, eutrophication, decomposition; required practical investigating decomposition rate", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CC5.1", "specTitle": "Chemistry — quantitative chemistry: relative formula mass, conservation of mass, reacting masses (HT only — moles, concentrations and limiting reactants)", "ao": "AO2", "tier": "both" },
+    { "specRef": "CC5.2", "specTitle": "Chemistry — concentrations of solutions in g/dm³ and mol/dm³ (HT for mol/dm³); titration calculations (HT only)", "ao": "AO3", "tier": "higher" },
+    { "specRef": "CC5.3", "specTitle": "Chemistry — percentage yield, atom economy and reasoning about industrial processes", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CC6.1", "specTitle": "Chemistry — Group 1, Group 7 and Group 0 trends; displacement reactions; transition metals overview", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CC7.1", "specTitle": "Chemistry — rates of reaction: collision theory; effect of concentration, temperature, surface area, catalysts", "ao": "AO2", "tier": "both" },
+    { "specRef": "CC7.2", "specTitle": "Chemistry — energy changes: exothermic and endothermic reactions; reaction profiles; bond energy calculations (HT only)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CC8.1", "specTitle": "Chemistry — fuels: combustion of hydrocarbons; cracking; environmental impact of fuels", "ao": "AO2", "tier": "both" },
+    { "specRef": "CC8.2", "specTitle": "Chemistry — Earth's atmosphere over time; greenhouse gases and global warming; human contributions and mitigation", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CC9.1", "specTitle": "Chemistry — separate chemistry: identifying ions by precipitation and flame tests; testing for hydrogen, oxygen, carbon dioxide and chlorine gases", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CP8.1", "specTitle": "Physics — energy resources and transfers; efficiency; renewable vs non-renewable resources", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CP9.1", "specTitle": "Physics — forces and elasticity: Hooke's law F = ke; elastic energy ½ke²; limit of proportionality; required practical with springs", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP9.2", "specTitle": "Physics — vector and scalar quantities; resultant forces and equilibrium", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CP10.1", "specTitle": "Physics — current, potential difference and resistance; series and parallel circuits; Ohm's law and I-V characteristics", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP10.2", "specTitle": "Physics — mains electricity: ac vs dc; UK supply; structure of three-core cables; energy transfer P = VI = I²R", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP10.3", "specTitle": "Physics — National Grid: step-up and step-down transformers; high-voltage transmission to reduce energy losses (HT only — quantitative reasoning)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CP11.1", "specTitle": "Physics — static electricity: charging by friction; attraction/repulsion of charges; electric fields (HT only — field-line representation)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CP12.1", "specTitle": "Physics — magnetism: permanent and induced magnets; magnetic field patterns; the Earth's magnetic field", "ao": "AO1", "tier": "both" },
+    { "specRef": "CP12.2", "specTitle": "Physics — motor effect: force on a current-carrying conductor in a magnetic field; Fleming's left-hand rule; force F = BIL (HT only)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CP14.1", "specTitle": "Physics — particle model of matter: density of materials; changes of state; specific heat capacity ΔE = mcΔθ; specific latent heat E = mL", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP14.2", "specTitle": "Physics — particle motion in gases: temperature and pressure; gas pressure-volume relationship pV = constant (HT only)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CP15.1", "specTitle": "Physics — forces and matter: deformation, elastic vs inelastic; relationship between force and extension", "ao": "AO2", "tier": "both" }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "board": "edexcel",
+  "subject": "Chemistry",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE 1CH0",
+  "source": "Edexcel (Pearson) GCSE (9-1) Chemistry 1CH0 specification (2016 onwards) — Y10 covered topics 1–5 (Key concepts; States of matter and mixtures; Chemical changes; Extracting metals and equilibria; Separate chemistry 1).",
+  "specPoints": [
+    { "specRef": "1.1",  "specTitle": "Atoms, elements and compounds; relative atomic mass; chemical symbols; word and balanced symbol equations", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.2",  "specTitle": "Atomic structure: protons, neutrons, electrons; mass number, atomic number, isotopes; Bohr model", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.3",  "specTitle": "Development of the model of the atom: Dalton, plum-pudding, Rutherford alpha-scattering, Bohr, neutron discovery", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.4",  "specTitle": "Electronic configuration in shells (e.g. 2,8,8); link to position in the periodic table", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.5",  "specTitle": "Periodic table: arrangement by atomic number; metals vs non-metals; trends in groups and periods", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.6",  "specTitle": "Group 1, Group 7 and Group 0: physical and chemical properties; trends in reactivity; displacement reactions of halogens", "ao": "AO2", "tier": "both" },
+    { "specRef": "1.7",  "specTitle": "Ionic bonding: formation of ions; dot-and-cross diagrams; properties of ionic compounds", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.8",  "specTitle": "Covalent bonding: simple molecules and giant covalent structures; properties explained", "ao": "AO2", "tier": "both" },
+    { "specRef": "1.9",  "specTitle": "Metallic bonding: structure of metal lattice; explanation of conductivity, malleability, melting point", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "2.1", "specTitle": "States of matter: particle theory; changes of state; conservation of mass; physical vs chemical changes", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.2", "specTitle": "Pure substances and mixtures; methods of separation: filtration, crystallisation, distillation, fractional distillation, paper chromatography", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.3", "specTitle": "Drinking water: production from sea water and waste water; uses of distillation and filtration; testing for purity", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "3.1", "specTitle": "Acids, alkalis and pH: pH scale; indicators; reactions of acids with metals, bases, carbonates; neutralisation", "ao": "AO1", "tier": "both" },
+    { "specRef": "3.2", "specTitle": "Salts: solubility rules; preparation of soluble and insoluble salts (HT only — quantitative methods)", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.3", "specTitle": "Reactivity series: reactions of metals with water, oxygen, acids; displacement reactions; oxidation and reduction in terms of electron transfer (HT only — full half-equations)", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.4", "specTitle": "Electrolysis: molten ionic compounds and aqueous solutions; products at electrodes; half-equations (HT only)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "4.1", "specTitle": "Extraction of metals: reduction with carbon; electrolysis for reactive metals; extraction of aluminium from bauxite", "ao": "AO2", "tier": "both" },
+    { "specRef": "4.2", "specTitle": "Reversible reactions and dynamic equilibrium; effect of changing conditions on the position of equilibrium (HT only — Le Chatelier reasoning)", "ao": "AO3", "tier": "both" },
+    { "specRef": "4.3", "specTitle": "Industrial production of fertilisers (Haber process for ammonia): conditions, equilibrium considerations and economic compromises", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "5.1", "specTitle": "Quantitative chemistry: relative formula mass; conservation of mass; reacting masses; calculations involving moles (HT only — moles, concentrations)", "ao": "AO2", "tier": "both" },
+    { "specRef": "5.2", "specTitle": "Concentrations of solutions in g/dm³ and mol/dm³ (HT for mol/dm³); titration calculations (HT only)", "ao": "AO3", "tier": "higher" },
+    { "specRef": "5.3", "specTitle": "Percentage yield and atom economy; calculations and reasoning about industrial processes", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CPAC1", "specTitle": "Core Practical: Investigate the change in pH on adding powdered calcium hydroxide or calcium oxide to a fixed volume of dilute hydrochloric acid", "ao": "AO3", "tier": "both" },
+    { "specRef": "CPAC2", "specTitle": "Core Practical: Investigate the preparation of pure, dry hydrated copper(II) sulfate crystals starting from copper(II) oxide", "ao": "AO3", "tier": "both" },
+    { "specRef": "CPAC3", "specTitle": "Core Practical: Investigate the electrolysis of copper(II) sulfate solution with inert and copper electrodes", "ao": "AO3", "tier": "both" },
+    { "specRef": "CPAC4", "specTitle": "Core Practical: Investigate the temperature change accompanying displacement, dissolving and neutralisation reactions", "ao": "AO3", "tier": "both" }
+  ]
+}

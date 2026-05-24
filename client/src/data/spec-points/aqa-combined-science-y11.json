@@ -1,0 +1,53 @@
+{
+  "board": "aqa",
+  "subject": "Combined Science",
+  "yearGroup": "Year 11",
+  "qualification": "GCSE 8464 Trilogy",
+  "source": "AQA GCSE Combined Science: Trilogy 8464 specification (2016 onwards) — Y11 covered topics across Biology B5–B7, Chemistry C6–C10, Physics P7–P8 with HT-only items flagged. Y10 content lives in aqa-combined-science-y10.json.",
+  "specPoints": [
+    { "specRef": "B5.1.1", "specTitle": "Homeostasis: maintenance of internal conditions; control of body temperature, water balance and blood glucose", "ao": "AO1", "tier": "both" },
+    { "specRef": "B5.1.2", "specTitle": "Human nervous system: structure and function of CNS; receptors, sensory neurones, relay neurones, motor neurones; synapses", "ao": "AO2", "tier": "both" },
+    { "specRef": "B5.1.3", "specTitle": "The endocrine system: glands and hormones; the pituitary as the 'master gland'; comparison of nervous and hormonal control", "ao": "AO1", "tier": "both" },
+    { "specRef": "B5.1.4", "specTitle": "Control of blood glucose: insulin, glucagon (HT only) and Type 1 vs Type 2 diabetes", "ao": "AO2", "tier": "both" },
+    { "specRef": "B5.1.5", "specTitle": "Hormones in human reproduction: menstrual cycle, contraception (hormonal and barrier), use of hormones to treat infertility (HT only — IVF detail)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "B6.1.1", "specTitle": "Sexual and asexual reproduction; meiosis vs mitosis; advantages of each in different contexts", "ao": "AO1", "tier": "both" },
+    { "specRef": "B6.1.2", "specTitle": "DNA structure as a polymer; the genome; genes coding for proteins; genetic code (HT only — protein synthesis from mRNA)", "ao": "AO2", "tier": "both" },
+    { "specRef": "B6.2.1", "specTitle": "Inheritance: dominant and recessive alleles; genotype, phenotype, homozygous, heterozygous; Punnett square crosses", "ao": "AO2", "tier": "both" },
+    { "specRef": "B6.2.2", "specTitle": "Inherited disorders: cystic fibrosis (recessive), polydactyly (dominant); ethical considerations of embryo screening", "ao": "AO2", "tier": "both" },
+    { "specRef": "B6.3.1", "specTitle": "Variation and evolution: causes of variation; evolution by natural selection; speciation (HT only — full mechanism)", "ao": "AO3", "tier": "both" },
+    { "specRef": "B6.3.2", "specTitle": "Selective breeding and genetic engineering; ethical and economic implications", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "B7.1.1", "specTitle": "Ecosystems: biotic and abiotic factors; competition; interdependence; food chains and trophic levels", "ao": "AO1", "tier": "both" },
+    { "specRef": "B7.1.2", "specTitle": "Predator-prey cycles and population control", "ao": "AO2", "tier": "both" },
+    { "specRef": "B7.2.1", "specTitle": "Biodiversity: importance and threats from pollution, deforestation, peat destruction, global warming", "ao": "AO2", "tier": "both" },
+    { "specRef": "B7.2.2", "specTitle": "Carbon and water cycles; decomposers and decay (required practical investigating effect of temperature on rate of decay)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "C6.1.1", "specTitle": "Rates of reaction: factors affecting rate (concentration, temperature, surface area, catalysts); calculation of mean rate from a graph", "ao": "AO2", "tier": "both" },
+    { "specRef": "C6.1.2", "specTitle": "Collision theory: explanation of how factors above affect rate; Maxwell-Boltzmann distribution at different temperatures (HT only)", "ao": "AO3", "tier": "both" },
+    { "specRef": "C6.1.3", "specTitle": "Reversible reactions and dynamic equilibrium; effect of changing conditions on equilibrium position (HT only — Le Chatelier reasoning)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "C7.1.1", "specTitle": "Crude oil, hydrocarbons and alkanes; the homologous series of alkanes; properties and uses of fractions from fractional distillation", "ao": "AO1", "tier": "both" },
+    { "specRef": "C7.1.2", "specTitle": "Cracking and alkenes (HT only — full reasoning for thermal vs catalytic cracking)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "C8.1.1", "specTitle": "Pure substances vs mixtures; chromatography (paper) and Rf values; tests for hydrogen, oxygen, carbon dioxide and chlorine gases", "ao": "AO2", "tier": "both" },
+    { "specRef": "C8.1.2", "specTitle": "Tests for ions: flame tests for cations; precipitation reactions for anions (carbonate, halide, sulfate)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "C9.1.1", "specTitle": "Composition and evolution of the Earth's atmosphere over geological time", "ao": "AO1", "tier": "both" },
+    { "specRef": "C9.1.2", "specTitle": "Greenhouse gases and global climate change; human contributions and mitigation; effects of atmospheric pollutants from fuels", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "C10.1.1", "specTitle": "Earth's resources: finite vs renewable; potable water; treatment of waste water; life-cycle assessment of materials", "ao": "AO2", "tier": "both" },
+    { "specRef": "C10.1.2", "specTitle": "Recycling, reuse and ways to extract metals using less energy (e.g. phytomining and bioleaching) (HT only — full process detail)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "P7.1.1", "specTitle": "Forces and elasticity: Hooke's law F = ke; elastic potential energy stored in a spring (½ke²); required practical with springs", "ao": "AO2", "tier": "both" },
+    { "specRef": "P7.1.2", "specTitle": "Forces in equilibrium and resultant forces; vector diagrams; scalar vs vector quantities", "ao": "AO2", "tier": "both" },
+    { "specRef": "P7.1.3", "specTitle": "Newton's laws of motion: F = ma applied to acceleration calculations; resultant forces in real contexts (HT only — full inertial mass derivation)", "ao": "AO2", "tier": "both" },
+    { "specRef": "P7.1.4", "specTitle": "Stopping distances; thinking and braking distances; factors affecting each", "ao": "AO2", "tier": "both" },
+    { "specRef": "P7.1.5", "specTitle": "Momentum: p = mv; conservation of momentum in collisions (HT only — full quantitative collision problems)", "ao": "AO3", "tier": "higher" },
+
+    { "specRef": "P8.1.1", "specTitle": "Wave properties: amplitude, wavelength, frequency, period; wave equation v = fλ; required practical to measure speed of waves on a string", "ao": "AO2", "tier": "both" },
+    { "specRef": "P8.1.2", "specTitle": "Reflection, refraction and absorption at boundaries; ray diagrams for refraction (HT only)", "ao": "AO2", "tier": "both" },
+    { "specRef": "P8.1.3", "specTitle": "Electromagnetic spectrum: order, properties, uses, dangers; required practical investigating absorption of infrared", "ao": "AO2", "tier": "both" },
+    { "specRef": "P8.1.4", "specTitle": "Production of EM waves and the link between wavelength and energy (HT only — quantitative reasoning)", "ao": "AO3", "tier": "both" }
+  ]
+}

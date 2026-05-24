@@ -1,0 +1,108 @@
+{
+  "board": "aqa",
+  "subject": "Mathematics",
+  "yearGroup": "Year 10",
+  "source": "Paraphrased exemplars in the style of AQA GCSE Mathematics 8300 Papers 1, 2 and 3 (2017 onwards). Stems are author-original; mark allocations and command verbs match published mark schemes. No verbatim past-paper text is reproduced.",
+  "exemplars": [
+    {
+      "specRef": "N1",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 1,
+      "stem": "Place these values in order, smallest first: 0.6, 3/5, 65%, 0.605.",
+      "markScheme": "1 mark for correct order: 3/5 = 0.6, then 0.605, then 65% = 0.65. Accept any equivalent fractions or decimals that show working.",
+      "commandVerb": "Order",
+      "source": "AQA 8300 Paper 1F style — number ordering with mixed forms"
+    },
+    {
+      "specRef": "N7",
+      "tier": "higher",
+      "ao": "AO1",
+      "marks": 2,
+      "stem": "Work out the value of (4^3 × 4^{-5}) ÷ 4^{-1}. Give your answer as a power of 4.",
+      "markScheme": "M1 for combining indices using laws (a^m × a^n = a^{m+n}). A1 for 4^{-1}.",
+      "commandVerb": "Work out",
+      "source": "AQA 8300 Paper 1H style — laws of indices in single calculation"
+    },
+    {
+      "specRef": "N8",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Simplify √48 + √27, giving your answer in the form a√3 where a is an integer.",
+      "markScheme": "M1 for √48 = 4√3 or √27 = 3√3. M1 for adding like surds. A1 for 7√3.",
+      "commandVerb": "Simplify",
+      "source": "AQA 8300 Paper 1H style — surd manipulation"
+    },
+    {
+      "specRef": "A4",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 2,
+      "stem": "Expand and simplify 3(2x + 1) − 2(x − 4).",
+      "markScheme": "M1 for correct expansion (6x + 3 − 2x + 8). A1 for 4x + 11.",
+      "commandVerb": "Expand and simplify",
+      "source": "AQA 8300 Paper 1F style — expanding two single brackets"
+    },
+    {
+      "specRef": "A4",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Show that (2x + 3)(x − 5) − (x − 1)(x + 4) simplifies to x² − 10x − 11.",
+      "markScheme": "M1 for expanding either bracket pair correctly. M1 for both expansions correct. A1 for collecting like terms to reach the target.",
+      "commandVerb": "Show that",
+      "source": "AQA 8300 Paper 1H style — algebraic proof / show that"
+    },
+    {
+      "specRef": "R10",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A coat is reduced by 35% in a sale. Its sale price is £58.50. Calculate the original price of the coat.",
+      "markScheme": "M1 for recognising 65% = £58.50. M1 for 1% method or equivalent. A1 for £90.",
+      "commandVerb": "Calculate",
+      "source": "AQA 8300 Paper 2F style — reverse percentage problem"
+    },
+    {
+      "specRef": "G11",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A right-angled triangle has a hypotenuse of length 13 cm and one shorter side of length 5 cm. Calculate the length of the third side.",
+      "markScheme": "M1 for using a² + b² = c² with the correct values. M1 for 13² − 5² = 144. A1 for 12 cm (with cm).",
+      "commandVerb": "Calculate",
+      "source": "AQA 8300 Paper 2F style — Pythagoras' theorem"
+    },
+    {
+      "specRef": "G12",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "In triangle ABC, AB = 8 cm, BC = 10 cm and angle ABC = 72°. Calculate the length of AC. Give your answer to 1 decimal place.",
+      "markScheme": "M1 for selecting cosine rule. M1 for substitution AC² = 8² + 10² − 2 × 8 × 10 × cos 72°. M1 for AC² ≈ 114.555… A1 for 10.7 cm.",
+      "commandVerb": "Calculate",
+      "source": "AQA 8300 Paper 3H style — cosine rule application"
+    },
+    {
+      "specRef": "S4",
+      "tier": "foundation",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Twelve students recorded their heights, in cm: 152, 148, 161, 155, 158, 149, 162, 154, 157, 150, 159, 156. Find the median height and the range.",
+      "markScheme": "M1 for ordering the data set. A1 for median 155.5 cm. A1 for range 14 cm.",
+      "commandVerb": "Find",
+      "source": "AQA 8300 Paper 2F style — median and range"
+    },
+    {
+      "specRef": "P4",
+      "tier": "higher",
+      "ao": "AO3",
+      "marks": 4,
+      "stem": "A bag contains 5 red and 3 blue counters. Two counters are taken at random without replacement. Calculate the probability that exactly one counter is red. Show your method clearly.",
+      "markScheme": "M1 for tree diagram or product probabilities. M1 for P(R then B) = 5/8 × 3/7. M1 for P(B then R) = 3/8 × 5/7. A1 for 30/56 = 15/28.",
+      "commandVerb": "Calculate",
+      "source": "AQA 8300 Paper 3H style — dependent events on tree diagram"
+    }
+  ]
+}

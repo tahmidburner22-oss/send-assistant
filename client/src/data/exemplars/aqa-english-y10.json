@@ -1,0 +1,68 @@
+{
+  "board": "aqa",
+  "subject": "English",
+  "yearGroup": "Year 10",
+  "source": "Paraphrased exemplars in the style of AQA GCSE English Language 8700 Papers 1 and 2 (2017 onwards). Stems are author-original; mark allocations follow published mark scheme conventions. AQA English Language is single-tier; tier is set to 'both' throughout.",
+  "exemplars": [
+    {
+      "specRef": "P1-AO1a",
+      "tier": "both",
+      "ao": "AO1",
+      "marks": 4,
+      "stem": "Read the source provided. List four things from this part of the source about the narrator's first arrival at the boarding school.",
+      "markScheme": "1 mark for each of 4 valid points lifted/paraphrased from the relevant section. Points must be explicit and from the focused lines specified.",
+      "commandVerb": "List",
+      "source": "AQA 8700 Paper 1 Question 1 style — explicit information retrieval (4 marks)"
+    },
+    {
+      "specRef": "P1-AO2",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 8,
+      "stem": "Look in detail at lines 12–24 of the source. How does the writer use language here to convey the narrator's growing fear? You could include the writer's choice of words and phrases, language features and techniques, and sentence forms.",
+      "markScheme": "Level 4 (7–8): perceptive/detailed analysis; judicious range of subject terminology used precisely. Level 3 (5–6): clear/relevant explanation; range of terminology used accurately. Level 2 (3–4): some understanding; some terminology, not always appropriate. Level 1 (1–2): simple comments; little/no terminology.",
+      "commandVerb": "Analyse",
+      "source": "AQA 8700 Paper 1 Question 2 style — language analysis (8 marks)"
+    },
+    {
+      "specRef": "P1-AO4",
+      "tier": "both",
+      "ao": "AO3",
+      "marks": 20,
+      "stem": "Focus this part of your answer on the second half of the source, from line 31 to the end. A student said: 'In this part of the source, the writer makes me feel sympathy for the main character.' To what extent do you agree? In your response, you could consider the writer's methods, the structure of this section, and the writer's use of language.",
+      "markScheme": "Level 4 (16–20): perceptive evaluation, convincing textual support. Level 3 (11–15): clear and relevant evaluation with apt textual references. Level 2 (6–10): some evaluation with general references. Level 1 (1–5): simple agreement/disagreement, limited textual support.",
+      "commandVerb": "Evaluate",
+      "source": "AQA 8700 Paper 1 Question 4 style — critical evaluation (20 marks)"
+    },
+    {
+      "specRef": "P1-AO5",
+      "tier": "both",
+      "ao": "AO3",
+      "marks": 24,
+      "stem": "Either: Write a description suggested by this picture. Or: Write the opening part of a story about a character who returns to a place after many years away. (24 marks for content and organisation. 16 further marks are awarded for technical accuracy.)",
+      "markScheme": "Content/organisation Level 4 (19–24): compelling, convincing communication; varied/effective vocabulary and sentence structures. Effective use of structural features; tone matches purpose, audience, form.",
+      "commandVerb": "Write",
+      "source": "AQA 8700 Paper 1 Question 5 style — descriptive/narrative writing"
+    },
+    {
+      "specRef": "P2-AO3",
+      "tier": "both",
+      "ao": "AO3",
+      "marks": 16,
+      "stem": "For this question, you need to refer to the whole of Source A together with Source B. Compare how the two writers convey their different attitudes to family life. In your answer, you could compare their different attitudes, compare the methods they use, and support your ideas with references to both texts.",
+      "markScheme": "Level 4 (13–16): perceptive comparison, ideas and perspectives; analyses how methods used to convey them; judicious textual detail from both. Level 3 (9–12): clear comparison and explanation. Level 2 (5–8): some comparison/general comparison. Level 1 (1–4): simple comparison; limited textual reference.",
+      "commandVerb": "Compare",
+      "source": "AQA 8700 Paper 2 Question 4 style — synoptic comparison (16 marks)"
+    },
+    {
+      "specRef": "P2-AO5",
+      "tier": "both",
+      "ao": "AO3",
+      "marks": 24,
+      "stem": "'Mobile phones do more harm than good in the lives of teenagers.' Write a speech to be delivered to your school's senior leadership team in which you argue your point of view on this statement. (24 marks for content and organisation; 16 further marks for technical accuracy.)",
+      "markScheme": "Content/organisation Level 4 (19–24): compelling argument; sustained tone and register matched to audience and form; varied rhetorical devices. Convincing structure with effective opening, development and conclusion.",
+      "commandVerb": "Write",
+      "source": "AQA 8700 Paper 2 Question 5 style — transactional/persuasive writing"
+    }
+  ]
+}

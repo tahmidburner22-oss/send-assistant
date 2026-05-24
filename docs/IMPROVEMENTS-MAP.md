@@ -15,10 +15,10 @@ in the same commit.
 
 | Status         | Count |
 | -------------- | ----- |
-| Shipped        | 17    |
+| Shipped        | 18    |
 | Re-applied (PR-2 recovery) | 1 |
 | Specced (ready for fresh-chat execution) | 13 |
-| Total improvements | 20 |
+| Total improvements | 21 |
 
 The "Specced" count is higher than the improvement count because larger
 improvements (#7 LMS/MIS/LTI; #10 accessibility; #12 habit hooks) are
@@ -88,6 +88,7 @@ Every spec ties back to one of these three shifts.
 | 18 | Department library with HOD moderation     | D · PD12 | [`phase-d-quality-and-habit/features/FEAT-PD12.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD12.json) | Specced     |
 | 19 | Generation cost transparency + caching     | D · PD13 | [`phase-d-quality-and-habit/features/FEAT-PD13.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD13.json) | Specced     |
 | 20 | Eval harness (200 canonical UK NC + GCSE prompts) | A · PR-5 | [`phase-a-class-aware/features/FEAT-PR5.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR5.json) | Specced     |
+| 21 | Curriculum bank — tier-aware differentiator + topic-aware scaffolder + spec-point expansion (3 → 16 datasets) + paraphrased exemplar bank | F · PF1 | [`phase-f-curriculum-bank/features/FEAT-PF1.json`](../.agents/tasks/phase-f-curriculum-bank/features/FEAT-PF1.json) | **Shipped — Phase F** |
 
 ---
 
@@ -99,6 +100,7 @@ Every spec ties back to one of these three shifts.
 | B     | "We close the loop"                               | 4 / 4                 | [`.agents/tasks/phase-b-close-the-loop/`](../.agents/tasks/phase-b-close-the-loop/)                 |
 | C     | "We fit your school"                              | 5 / 7                 | [`.agents/tasks/phase-c-fit-your-school/`](../.agents/tasks/phase-c-fit-your-school/)               |
 | D     | Quality bets + habit hooks                        | 0 / 12                | [`.agents/tasks/phase-d-quality-and-habit/`](../.agents/tasks/phase-d-quality-and-habit/)           |
+| F     | Curriculum bank — tier-aware diff + topic scaffolder | 1 / 1              | [`.agents/tasks/phase-f-curriculum-bank/`](../.agents/tasks/phase-f-curriculum-bank/)               |
 
 ---
 

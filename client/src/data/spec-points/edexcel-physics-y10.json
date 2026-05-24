@@ -1,0 +1,43 @@
+{
+  "board": "edexcel",
+  "subject": "Physics",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE 1PH0",
+  "source": "Edexcel (Pearson) GCSE (9-1) Physics 1PH0 specification (2016 onwards) — Y10 covered topics 1–7 (Key concepts; Motion and forces; Conservation of energy; Waves; Light and the EM spectrum; Radioactivity; Astronomy).",
+  "specPoints": [
+    { "specRef": "1.1", "specTitle": "Use of SI base units and derived units; orders of magnitude and standard form", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.2", "specTitle": "Significant figures, precision and accuracy; uncertainty in measurements", "ao": "AO1", "tier": "both" },
+
+    { "specRef": "2.1", "specTitle": "Distance, displacement, speed, velocity; calculations using v = s/t and average speed", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.2", "specTitle": "Acceleration: a = (v – u)/t; equations of motion and v² = u² + 2as (HT only for v² = u² + 2as)", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.3", "specTitle": "Distance-time and velocity-time graphs: gradient interpretation; area under graph as displacement (HT for non-uniform acceleration)", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.4", "specTitle": "Newton's laws of motion: 1st (inertia), 2nd (F = ma), 3rd (action-reaction); applied to everyday situations", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.5", "specTitle": "Stopping distance: thinking distance + braking distance; factors affecting each", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.6", "specTitle": "Momentum: p = mv; conservation of momentum in collisions (HT only — derivation of force as rate of change of momentum)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "3.1", "specTitle": "Energy stores and transfers; conservation of energy; closed systems", "ao": "AO1", "tier": "both" },
+    { "specRef": "3.2", "specTitle": "Calculations: KE = ½mv², GPE = mgh, work done W = Fd, power P = E/t and P = Fv (HT only for P = Fv)", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.3", "specTitle": "Efficiency = useful output / total input; ways of reducing wasted energy transfers", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.4", "specTitle": "Energy resources: renewable and non-renewable; advantages and limitations of each", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "4.1", "specTitle": "Wave properties: amplitude, wavelength, frequency, period; wave equation v = fλ; transverse vs longitudinal waves", "ao": "AO2", "tier": "both" },
+    { "specRef": "4.2", "specTitle": "Reflection, refraction and absorption of waves at boundaries between materials", "ao": "AO2", "tier": "both" },
+    { "specRef": "4.3", "specTitle": "Sound waves: longitudinal nature; range of human hearing; ultrasound applications", "ao": "AO1", "tier": "both" },
+
+    { "specRef": "5.1", "specTitle": "Electromagnetic spectrum: radio, microwave, infrared, visible, ultraviolet, X-ray, gamma; uses and dangers of each", "ao": "AO1", "tier": "both" },
+    { "specRef": "5.2", "specTitle": "Production and detection of EM waves; refraction by lenses (HT only — drawing ray diagrams for converging and diverging lenses)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "6.1", "specTitle": "Atomic structure: nucleus, protons, neutrons, electrons; isotopes; nuclide notation", "ao": "AO1", "tier": "both" },
+    { "specRef": "6.2", "specTitle": "Radioactive decay: alpha, beta-minus, beta-plus (HT only), gamma; nuclear equations and properties", "ao": "AO2", "tier": "both" },
+    { "specRef": "6.3", "specTitle": "Half-life: definition, calculations including using a graph; activity and count rate", "ao": "AO2", "tier": "both" },
+    { "specRef": "6.4", "specTitle": "Hazards of ionising radiation: irradiation vs contamination; medical and industrial uses; precautions", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "7.1", "specTitle": "Solar system: Sun, planets, dwarf planets, moons; structure of the universe; orbits as ellipses", "ao": "AO1", "tier": "both" },
+    { "specRef": "7.2", "specTitle": "Life cycle of stars: nebula → main sequence → red giant or supergiant → white dwarf, neutron star or black hole; element formation", "ao": "AO1", "tier": "both" },
+    { "specRef": "7.3", "specTitle": "Red shift and the expanding universe; evidence for the Big Bang theory (HT only — quantitative red-shift reasoning)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CPAC1", "specTitle": "Core Practical: Investigate the relationship between force, mass and acceleration using a trolley and light gates", "ao": "AO3", "tier": "both" },
+    { "specRef": "CPAC2", "specTitle": "Core Practical: Investigate how the extension of a spring depends on the force applied (Hooke's law); identify limit of proportionality", "ao": "AO3", "tier": "both" },
+    { "specRef": "CPAC3", "specTitle": "Core Practical: Investigate the wave properties (frequency, wavelength, speed) of a wave in a ripple tank or on a stretched string", "ao": "AO3", "tier": "both" }
+  ]
+}

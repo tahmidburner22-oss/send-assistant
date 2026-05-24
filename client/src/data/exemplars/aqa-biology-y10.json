@@ -1,0 +1,88 @@
+{
+  "board": "aqa",
+  "subject": "Biology",
+  "yearGroup": "Year 10",
+  "source": "Paraphrased exemplars in the style of AQA GCSE Biology 8461 Papers 1 and 2 (2018 onwards). Stems are author-original; mark allocations follow AQA mark scheme conventions for biology. Required-practical references (RP-) match the AQA published required-practical list.",
+  "exemplars": [
+    {
+      "specRef": "B1.1.1",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 2,
+      "stem": "Name two sub-cellular structures found in plant cells but not in animal cells.",
+      "markScheme": "1 mark each for any two of: chloroplast; cell wall (cellulose); permanent vacuole.",
+      "commandVerb": "Name",
+      "source": "AQA 8461 Paper 1F style — animal vs plant cell recall"
+    },
+    {
+      "specRef": "B1.3.2",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "A potato cylinder is placed in a strong sugar solution. After 30 minutes, the cylinder feels limp and its mass has decreased. Explain these observations using the term osmosis.",
+      "markScheme": "1 mark: water leaves cells / cells lose water. 1 mark: water moves down a water potential gradient (or from high to low water concentration). 1 mark: through a partially permeable membrane.",
+      "commandVerb": "Explain",
+      "source": "AQA 8461 Paper 1 style — osmosis explanation"
+    },
+    {
+      "specRef": "B2.2.2",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "Describe how temperature affects the rate of an enzyme-controlled reaction. Refer to the lock-and-key model in your answer.",
+      "markScheme": "1 mark: as temperature rises, rate increases. 1 mark: because enzyme and substrate collide more / have more kinetic energy. 1 mark: above the optimum, the active site changes shape / denatures. 1 mark: substrate no longer fits the active site / reaction stops.",
+      "commandVerb": "Describe",
+      "source": "AQA 8461 Paper 1 style — enzyme temperature curve"
+    },
+    {
+      "specRef": "B3.1.3",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Explain how vaccination protects a person from becoming ill with a viral disease.",
+      "markScheme": "1 mark: vaccine contains dead/inactive form of pathogen. 1 mark: stimulates white blood cells to produce specific antibodies. 1 mark: on second exposure, antibodies are produced quickly so person does not become ill.",
+      "commandVerb": "Explain",
+      "source": "AQA 8461 Paper 1 style — immune response after vaccination"
+    },
+    {
+      "specRef": "B3.1.5",
+      "tier": "higher",
+      "ao": "AO2",
+      "marks": 4,
+      "stem": "Describe how monoclonal antibodies are produced from hybridoma cells, and outline one medical use.",
+      "markScheme": "Production (3 marks): inject mouse with antigen → mouse produces lymphocytes; lymphocytes fused with tumour cells to form hybridoma; hybridomas divide to produce identical antibodies. Use (1 mark): one example such as pregnancy testing, treating cancer, diagnosis.",
+      "commandVerb": "Describe",
+      "source": "AQA 8461 Paper 1H style — monoclonal antibody production (HT only)"
+    },
+    {
+      "specRef": "B4.1.1",
+      "tier": "foundation",
+      "ao": "AO1",
+      "marks": 2,
+      "stem": "Write the word equation for photosynthesis.",
+      "markScheme": "1 mark: carbon dioxide + water on left; glucose + oxygen on right. 1 mark: arrow with light/chlorophyll labelled.",
+      "commandVerb": "Write",
+      "source": "AQA 8461 Paper 1F style — photosynthesis equation recall"
+    },
+    {
+      "specRef": "B4.1.2",
+      "tier": "both",
+      "ao": "AO3",
+      "marks": 6,
+      "stem": "A student investigated the effect of light intensity on the rate of photosynthesis using pondweed in a beaker of sodium hydrogen carbonate solution, with a lamp at varying distances. Describe a method the student could use, including how they would measure the rate, and identify two control variables.",
+      "markScheme": "Method (4 marks): measure distance from lamp to beaker; count bubbles released per minute (or measure volume of oxygen collected); repeat at each distance; allow plant to acclimatise. Control variables (2 marks): two of — temperature; carbon dioxide concentration; same piece of pondweed; same beaker volume.",
+      "commandVerb": "Describe",
+      "source": "AQA 8461 Required Practical 6 style — photosynthesis investigation"
+    },
+    {
+      "specRef": "B4.2.2",
+      "tier": "both",
+      "ao": "AO2",
+      "marks": 3,
+      "stem": "Compare aerobic and anaerobic respiration in human muscle cells. Refer to the products and the relative amount of energy released in each.",
+      "markScheme": "1 mark: aerobic produces carbon dioxide and water; anaerobic produces lactic acid. 1 mark: aerobic releases more energy than anaerobic. 1 mark: aerobic uses oxygen; anaerobic does not.",
+      "commandVerb": "Compare",
+      "source": "AQA 8461 Paper 1 style — aerobic vs anaerobic comparison"
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "board": "aqa",
+  "subject": "Biology",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume AQA Y10 biology spec points (8461). Sentence frames, word banks and step ladders are drawn from teaching practice on respiration, photosynthesis, osmosis and the immune system.",
+  "rows": [
+    {
+      "specRef": "B1.3.2",
+      "sentenceFrames": [
+        "Water moves from a ______ water concentration to a ______ water concentration.",
+        "This happens through the ______ membrane.",
+        "Because the cell is in a ______ solution, water moves ______ the cell."
+      ],
+      "wordBank": [
+        { "term": "osmosis", "definition": "the movement of water across a partially permeable membrane, from a region of high water concentration to a region of low water concentration" },
+        { "term": "partially permeable membrane", "definition": "a membrane that lets some particles through but not others" },
+        { "term": "concentration gradient", "definition": "the difference in concentration between two regions" },
+        { "term": "turgid", "definition": "swollen and firm because the cell has gained water" },
+        { "term": "flaccid", "definition": "limp because the cell has lost water" }
+      ],
+      "stepLadder": [
+        "Identify the water concentration inside and outside the cell.",
+        "Decide which way water will move (high to low water concentration).",
+        "Use the term 'partially permeable membrane' in your answer.",
+        "Describe what happens to the cell (gain or lose water; turgid or flaccid).",
+        "Use 'osmosis' as the named process."
+      ],
+      "commonPitfalls": [
+        "Saying 'water moves to the higher concentration' — this confuses solute and water concentration.",
+        "Calling it diffusion instead of osmosis.",
+        "Missing the membrane phrase 'partially permeable'."
+      ],
+      "visualAidHint": "An arrow diagram with a partially permeable membrane down the middle, water arrows on both sides, makes direction explicit."
+    },
+    {
+      "specRef": "B2.2.2",
+      "sentenceFrames": [
+        "As temperature increases, the rate of reaction ______.",
+        "This is because enzyme and substrate molecules ______.",
+        "Above the optimum temperature, the active site ______.",
+        "The substrate no longer fits the active site, so the reaction ______."
+      ],
+      "wordBank": [
+        { "term": "enzyme", "definition": "a biological catalyst that speeds up a reaction" },
+        { "term": "substrate", "definition": "the molecule that an enzyme acts on" },
+        { "term": "active site", "definition": "the part of the enzyme where the substrate binds" },
+        { "term": "denatured", "definition": "the active site has changed shape so the substrate no longer fits" },
+        { "term": "optimum", "definition": "the temperature or pH at which the enzyme works fastest" }
+      ],
+      "stepLadder": [
+        "Describe what happens to rate as temperature rises towards the optimum.",
+        "Explain why (kinetic energy / collisions).",
+        "Describe what happens at the optimum (rate is fastest).",
+        "Describe what happens above the optimum (rate falls).",
+        "Explain why using the lock-and-key model (active site changes shape, substrate no longer fits)."
+      ],
+      "commonPitfalls": [
+        "Saying enzymes are 'killed' at high temperature — they are denatured, not killed.",
+        "Forgetting to mention the active site changing shape.",
+        "Describing only the increase, not the fall above the optimum."
+      ],
+      "visualAidHint": "A rate-vs-temperature graph with the optimum labelled lets pupils anchor their description to the curve."
+    },
+    {
+      "specRef": "B3.1.3",
+      "sentenceFrames": [
+        "The vaccine contains a ______ form of the pathogen.",
+        "The white blood cells produce ______ in response.",
+        "When the person meets the real pathogen, the antibodies are produced ______ and in ______ amounts.",
+        "This means the person ______."
+      ],
+      "wordBank": [
+        { "term": "vaccine", "definition": "a dead or weakened form of a pathogen used to trigger an immune response" },
+        { "term": "antibody", "definition": "a protein produced by white blood cells that locks onto a specific antigen" },
+        { "term": "antigen", "definition": "a molecule on the surface of a pathogen that triggers an immune response" },
+        { "term": "memory cell", "definition": "a long-lived white blood cell that remembers how to make a specific antibody" },
+        { "term": "pathogen", "definition": "an organism that causes disease" }
+      ],
+      "stepLadder": [
+        "State what the vaccine contains.",
+        "Describe what the white blood cells do in response.",
+        "Explain that memory cells are formed.",
+        "Describe what happens on second exposure to the real pathogen.",
+        "Conclude that the person does not become ill."
+      ],
+      "commonPitfalls": [
+        "Saying the vaccine 'kills' the disease — vaccines prevent illness, they don't kill anything.",
+        "Confusing antibodies with antibiotics.",
+        "Forgetting memory cells, which are why vaccines give long-term protection."
+      ]
+    },
+    {
+      "specRef": "B4.2.2",
+      "sentenceFrames": [
+        "Aerobic respiration uses ______ to break down ______.",
+        "It produces ______ and ______, plus a lot of energy.",
+        "Anaerobic respiration in muscle cells produces ______, with much less energy.",
+        "Anaerobic respiration in plants and yeast produces ______ and ______."
+      ],
+      "wordBank": [
+        { "term": "aerobic respiration", "definition": "respiration with oxygen, producing carbon dioxide and water" },
+        { "term": "anaerobic respiration", "definition": "respiration without oxygen, producing lactic acid (in muscle) or ethanol + CO₂ (in plants and yeast)" },
+        { "term": "glucose", "definition": "the sugar broken down during respiration" },
+        { "term": "lactic acid", "definition": "the product of anaerobic respiration in muscle cells" },
+        { "term": "fermentation", "definition": "anaerobic respiration in yeast, used in brewing and bread-making" }
+      ],
+      "stepLadder": [
+        "Write the word equation for aerobic respiration.",
+        "Write the word equation for anaerobic respiration in muscle cells.",
+        "Write the word equation for anaerobic respiration in yeast/plants.",
+        "Compare the products of each.",
+        "Compare the relative amount of energy released."
+      ],
+      "commonPitfalls": [
+        "Confusing the products of muscle anaerobic respiration with those of yeast.",
+        "Saying anaerobic respiration produces 'no energy' — it produces less, not none.",
+        "Forgetting the word 'aerobic' in the question equation."
+      ],
+      "visualAidHint": "A two-column comparison table (aerobic vs anaerobic) with rows for reactants, products and energy yield helps structure the answer."
+    }
+  ]
+}

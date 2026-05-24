@@ -1,0 +1,70 @@
+{
+  "id": "FEAT-PF1",
+  "phase": "F",
+  "title": "Curriculum Bank — tier-aware differentiator + topic-aware scaffolder + spec-point expansion",
+  "status": "in-flight",
+  "owner": "kiro",
+  "branch": "feat/phase-f-curriculum-bank",
+  "summary": "Replace string-shuffle differentiation and regex-class scaffolding with curriculum-bank-backed pipelines. Foundation vs Higher differ at the spec-point level (use the existing tier field). Scaffolded versions pull per-spec-ref sentence frames + word banks + step ladders. Spec-point taxonomy expands from 3 datasets to 16 covering AQA + Edexcel + OCR for the top GCSE subjects across Y10 and Y11.",
+  "motivation": "Today /api/ai/differentiate-worksheet rewords existing questions with no spec-ref or tier-subset awareness, and /api/ai/scaffold-worksheet's deterministic fallback emits regex-class hints keyed on punctuation rather than topic. Curriculum coverage is 3 datasets versus the ~120 needed for UK secondary. The user wants the three differentiated outputs (Foundation / Higher / Scaffolded) to be genuinely different, and questions to match what is actually taught in real GCSE classrooms.",
+  "scope": {
+    "in": [
+      "client/src/lib/curriculumBank.ts (new loader module)",
+      "client/src/data/spec-points/ — add 13 new datasets",
+      "client/src/data/exemplars/ — new directory with paraphrased exemplar bank seeds",
+      "client/src/data/scaffolds/ — new directory with per-spec-ref scaffolding seeds",
+      "client/src/lib/specPointTaxonomy.ts — register new datasets",
+      "client/src/lib/ai.ts — getSpecQuestions() consults bank with tier filter",
+      "server/routes/ai.ts — rewrite /differentiate-worksheet (tier+spec aware) and /scaffold-worksheet (topic-aware)",
+      "client/src/lib/worksheetPostValidator.ts — add tierAoHistogram check",
+      "Unit tests for new module + smoke for endpoints",
+      "docs/IMPROVEMENTS-MAP.md + docs/worksheet-generator-audit.md updates"
+    ],
+    "out": [
+      "KS3 (Y7–Y9) datasets — Phase F2",
+      "KS5 / A-Level datasets — Phase F2",
+      "Primary (White Rose Maths Y1–Y6, DfE NC) — Phase F2",
+      "WJEC, CCEA datasets — Phase F2",
+      "Geography, history, MFL — Phase F2 (architecture ready)",
+      "Full-coverage exemplars (>1 per spec point) — Phase F2 densification"
+    ]
+  },
+  "datasets_to_ship": [
+    { "board": "aqa",     "subject": "Mathematics",       "yearGroup": "Year 11", "qualification": "GCSE 8300" },
+    { "board": "edexcel", "subject": "Mathematics",       "yearGroup": "Year 11", "qualification": "GCSE 1MA1" },
+    { "board": "ocr",     "subject": "Mathematics",       "yearGroup": "Year 10", "qualification": "GCSE J560" },
+    { "board": "aqa",     "subject": "Biology",           "yearGroup": "Year 10", "qualification": "GCSE 8461" },
+    { "board": "aqa",     "subject": "Chemistry",         "yearGroup": "Year 10", "qualification": "GCSE 8462" },
+    { "board": "aqa",     "subject": "Physics",           "yearGroup": "Year 10", "qualification": "GCSE 8463" },
+    { "board": "edexcel", "subject": "Biology",           "yearGroup": "Year 10", "qualification": "GCSE 1BI0" },
+    { "board": "edexcel", "subject": "Chemistry",         "yearGroup": "Year 10", "qualification": "GCSE 1CH0" },
+    { "board": "edexcel", "subject": "Physics",           "yearGroup": "Year 10", "qualification": "GCSE 1PH0" },
+    { "board": "edexcel", "subject": "Combined Science",  "yearGroup": "Year 10", "qualification": "GCSE 1SC0" },
+    { "board": "aqa",     "subject": "Combined Science",  "yearGroup": "Year 11", "qualification": "GCSE 8464 Trilogy" },
+    { "board": "edexcel", "subject": "Combined Science",  "yearGroup": "Year 11", "qualification": "GCSE 1SC0" },
+    { "board": "aqa",     "subject": "English Language",  "yearGroup": "Year 10", "qualification": "GCSE 8700" }
+  ],
+  "acceptance_criteria": [
+    "Generating Foundation and Higher worksheets on the same topic on a board+subject covered by this PR produces output where the set of referenced specRefs differs by >= 30 percent.",
+    "Generating a Foundation worksheet on AQA Y10 Combined Science contains 0 questions whose specRef has tier=\"higher\" in the underlying dataset.",
+    "Scaffolded version of a worksheet on a seeded topic uses the topic's actual word bank from the scaffold dataset, not the regex-extracted token list.",
+    "Every exemplar row has a non-empty source attribution.",
+    "Backwards compatible: existing public signatures of specPointTaxonomy module unchanged.",
+    "npm test passes; npm run check passes; npm run eval:worksheets passes with no fixture regressions."
+  ],
+  "risk_register": [
+    { "risk": "PR is large (~16 new JSON files, 4 modified TS files, 2 new TS files, 2 modified docs)", "mitigation": "Sequenced commits each compile green; SESSION-HANDOFF.md updated after every commit so a context-limit interruption is recoverable." },
+    { "risk": "Dataset accuracy drift vs awarding-body specs", "mitigation": "Each JSON file includes a 'source' field citing the specification document. Spec content is derived from public AQA/Edexcel/OCR specifications which are stable across years." },
+    { "risk": "Past-paper exemplars copyright", "mitigation": "All exemplars are paraphrased, never verbatim. Each exemplar carries a 'source' field describing the paper it imitates without reproducing the wording." },
+    { "risk": "Existing eval-harness fixtures regress", "mitigation": "The bank lookup is additive; getSpecQuestions still falls back to the existing topic banks when no bank entry exists. Run npm run eval:worksheets before push." }
+  ],
+  "rollout": {
+    "feature_flag": "Defaults on. The new bank-aware path is layered over the existing prompt path so a runtime regression can be reverted by a single conditional.",
+    "monitoring": "metadata.specRefsUsed and metadata.tierTargetMet are stamped by the post-validator and surfaced in the audit-trail panel."
+  },
+  "related": [
+    "FEAT-PB1 — questionProvenance (provides specRef stamps consumed by Phase F)",
+    "FEAT-PC4 — Curriculum Coverage (consumes the expanded taxonomy)",
+    "FEAT-PD10 — Knowledge Organiser per topic (Phase F unlocks the per-topic data this needs)"
+  ]
+}
