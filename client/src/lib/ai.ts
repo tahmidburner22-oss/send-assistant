@@ -47,6 +47,16 @@
 import { expandedMathTopics } from './mathTopicsExpanded';
 import { allTopics as worksheetAllTopics } from './worksheet-generator';
 
+// Phase F · FEAT-PF1 — curriculum bank: paraphrased exemplars + topic-aware
+// scaffolds, tier-filtered. Wraps over specPointTaxonomy so the same lookup
+// surface returns spec point + exemplars + scaffold for a given (board,
+// subject, yearGroup, specRef-or-topic).
+import {
+  buildExemplarPromptBlock,
+  filterByTier,
+  lookupByTopic,
+} from './curriculumBank';
+
 // ─── Shared SEND + subject prompt fragments ─────────────────────────────────
 // These two modules own the per-SEND-need adaptation rules and the
 // per-subject palette / slide-structure rules that are used by BOTH the
@@ -866,11 +876,55 @@ export interface AIWorksheetResult {
 
 // ═══ §SPEC · spec-aligned question injection helper ═══════════════════════
 /**
- * Returns a block of real specification-aligned example questions for the given
- * subject + topic, formatted for injection into the AI system prompt as few-shot
- * quality benchmarks. Falls back to an empty string if no data is available.
+ * Returns a block of real specification-aligned example questions for the
+ * given subject + topic, formatted for injection into the AI system prompt
+ * as few-shot quality benchmarks.
+ *
+ * Phase F · FEAT-PF1 — extended to consult the curriculum bank first
+ * (`client/src/lib/curriculumBank.ts`), which holds paraphrased exemplars
+ * tagged with tier, AO, marks and command verb. When the caller supplies
+ * `yearGroup` and `examBoard`, the bank can return tier-filtered exemplars
+ * matching the awarding body actually being used. The legacy topic-bank
+ * paths (`expandedMathTopics`, `worksheetAllTopics`) are still consulted
+ * for additional worked-example and vocabulary content; both blocks are
+ * concatenated when both exist. The function is fully backwards
+ * compatible — callers passing only (subject, topic) get the legacy
+ * behaviour unchanged.
  */
-function getSpecQuestions(subject: string, topic: string): string {
+function getSpecQuestions(
+  subject: string,
+  topic: string,
+  yearGroup?: string,
+  examBoard?: string,
+  difficulty?: string,
+): string {
+  // ── Phase F · curriculum bank lookup (preferred path) ─────────────────
+  const tier: "foundation" | "higher" | "both" =
+    difficulty === "foundation"
+      ? "foundation"
+      : difficulty === "higher"
+      ? "higher"
+      : "both";
+  let bankBlock = "";
+  if (yearGroup && examBoard) {
+    try {
+      const board = examBoard.toLowerCase() as TaxonomyExamBoard;
+      const entries = lookupByTopic(board, subject, yearGroup, topic, {
+        limit: 6,
+      });
+      const filtered = filterByTier(entries, tier);
+      bankBlock = buildExemplarPromptBlock(filtered, {
+        tier,
+        maxPerSpecRef: 2,
+        maxTotal: 8,
+      });
+    } catch (_) {
+      // Bank lookup is best-effort; never block worksheet generation.
+      bankBlock = "";
+    }
+  }
+
+  // ── Legacy topic banks (worked-example + vocabulary content) ──────────
   const subjectKey = subject.toLowerCase().replace(/[^a-z]/g, '');
   // Normalise topic to a lookup key: lowercase, spaces→hyphens, strip apostrophes
   const topicKey = topic.toLowerCase().replace(/'/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -885,7 +939,10 @@ function getSpecQuestions(subject: string, topic: string): string {
     const subjectBank = worksheetAllTopics[subjectKey] || worksheetAllTopics['mathematics'];
     if (subjectBank) topicData = subjectBank[topicKey] || null;
   }
-  if (!topicData) return '';
+  if (!topicData) {
+    // Bank-only path — return whatever we got from curriculumBank.
+    return bankBlock;
+  }
 
   const lines: string[] = [];
   lines.push('=== SPECIFICATION-ALIGNED EXAMPLE QUESTIONS (use these as your quality benchmark) ===');
@@ -932,7 +989,14 @@ function getSpecQuestions(subject: string, topic: string): string {
   lines.push('=== END OF SPECIFICATION EXAMPLES ===');
   lines.push('INSTRUCTION: Generate questions of EQUAL or HIGHER quality than the examples above.');
   lines.push('Match the exact style: numbered, mark-allocated, exam-board language, no trivial questions.');
-  return lines.join('\n');
+
+  const legacyBlock = lines.join('\n');
+  // Concatenate both blocks when both exist so the LLM sees the bank's
+  // tier-tagged exemplars AND the topic-bank's richer worked examples.
+  if (bankBlock && legacyBlock) {
+    return `${bankBlock}\n\n${legacyBlock}`;
+  }
+  return bankBlock || legacyBlock;
 }
 
 // ═══ §GENERATE · aiGenerateWorksheet — MAIN WORKSHEET ENTRY POINT ═════════
@@ -2394,8 +2458,18 @@ ABSOLUTE RULES:
     // for secondary worksheets.
     const wantRevisionTips = secs.includes('revision-tips');
 
-    // Retrieve spec-aligned example questions for this topic (if available)
-    const specExamples = getSpecQuestions(params.subject, params.topic);
+    // Retrieve spec-aligned example questions for this topic (if available).
+    // Phase F · FEAT-PF1 — pass yearGroup + examBoard + difficulty so the
+    // curriculum bank can return tier-filtered exemplars from the awarding
+    // body actually being used. Falls back to legacy topic banks when no
+    // bank entry exists.
+    const specExamples = getSpecQuestions(
+      params.subject,
+      params.topic,
+      params.yearGroup,
+      params.examBoard,
+      params.difficulty,
+    );
 
     const ksGcseNote = (yearNum >= 7 && yearNum <= 11) ? `
 KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
