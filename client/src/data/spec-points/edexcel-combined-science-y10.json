@@ -1,0 +1,43 @@
+{
+  "board": "edexcel",
+  "subject": "Combined Science",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE 1SC0",
+  "source": "Edexcel (Pearson) GCSE (9-1) Combined Science 1SC0 specification (2016 onwards) — Y10 covered subset across Biology Topics 1–5, Chemistry Topics 1–4 and Physics Topics 1–7, with HT-only items flagged.",
+  "specPoints": [
+    { "specRef": "CB1.1", "specTitle": "Biology — animal and plant cell structure; sub-cellular structures and their functions", "ao": "AO1", "tier": "both" },
+    { "specRef": "CB1.2", "specTitle": "Biology — eukaryotic vs prokaryotic cells; bacterial structure including plasmids", "ao": "AO1", "tier": "both" },
+    { "specRef": "CB1.3", "specTitle": "Biology — diffusion, osmosis and active transport; surface area to volume ratio", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB1.4", "specTitle": "Biology — enzymes as catalysts; effect of temperature, pH, substrate concentration on rate of reaction", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB2.1", "specTitle": "Biology — mitosis and the cell cycle; cell differentiation and stem cells", "ao": "AO1", "tier": "both" },
+    { "specRef": "CB2.2", "specTitle": "Biology — the nervous system, neurones and reflex arc; synaptic transmission (HT only — chemical synapse mechanism)", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB3.1", "specTitle": "Biology — sexual and asexual reproduction; meiosis; DNA structure", "ao": "AO1", "tier": "both" },
+    { "specRef": "CB3.2", "specTitle": "Biology — genotype/phenotype/alleles; Punnett squares for monohybrid inheritance", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB4.1", "specTitle": "Biology — natural selection and evolution; antibiotic resistance as evidence", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB5.1", "specTitle": "Biology — communicable diseases (TB, cholera, malaria, HIV); body's defences and white blood cells", "ao": "AO2", "tier": "both" },
+    { "specRef": "CB5.2", "specTitle": "Biology — vaccination, antibiotics, antiviral drugs; antibiotic resistance and herd immunity", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "CC1.1", "specTitle": "Chemistry — atoms, elements, compounds; mass number, atomic number, isotopes; Bohr model", "ao": "AO1", "tier": "both" },
+    { "specRef": "CC1.2", "specTitle": "Chemistry — periodic table; Group 1, Group 7 and Group 0 trends and reactions", "ao": "AO2", "tier": "both" },
+    { "specRef": "CC1.3", "specTitle": "Chemistry — ionic, covalent and metallic bonding; properties linked to structure", "ao": "AO2", "tier": "both" },
+    { "specRef": "CC2.1", "specTitle": "Chemistry — states of matter; pure substances and mixtures; separation techniques", "ao": "AO2", "tier": "both" },
+    { "specRef": "CC3.1", "specTitle": "Chemistry — acids, alkalis, pH; reactions of acids; neutralisation", "ao": "AO1", "tier": "both" },
+    { "specRef": "CC3.2", "specTitle": "Chemistry — reactivity series; displacement; oxidation/reduction in terms of electrons (HT only)", "ao": "AO2", "tier": "both" },
+    { "specRef": "CC4.1", "specTitle": "Chemistry — extraction of metals: reduction with carbon and electrolysis (e.g. aluminium from bauxite)", "ao": "AO2", "tier": "both" },
+    { "specRef": "CC4.2", "specTitle": "Chemistry — reversible reactions and dynamic equilibrium (HT only — Le Chatelier reasoning)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "CP2.1", "specTitle": "Physics — distance, displacement, speed, velocity, acceleration; equations of motion (HT for v² = u² + 2as)", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP2.2", "specTitle": "Physics — Newton's three laws of motion; F = ma applied to everyday contexts", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP2.3", "specTitle": "Physics — stopping distance: thinking + braking; factors affecting each", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP2.4", "specTitle": "Physics — momentum and conservation of momentum in collisions (HT only — force as rate of change of momentum)", "ao": "AO3", "tier": "both" },
+    { "specRef": "CP3.1", "specTitle": "Physics — energy stores, transfers, conservation; KE, GPE, work done, power", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP3.2", "specTitle": "Physics — efficiency; ways of reducing wasted energy", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP3.3", "specTitle": "Physics — renewable and non-renewable energy resources; advantages and limitations", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP4.1", "specTitle": "Physics — waves: wavelength, frequency, period, amplitude, v = fλ; transverse vs longitudinal", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP4.2", "specTitle": "Physics — reflection, refraction and absorption of waves at boundaries", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP5.1", "specTitle": "Physics — electromagnetic spectrum and uses/dangers of each region", "ao": "AO1", "tier": "both" },
+    { "specRef": "CP6.1", "specTitle": "Physics — radioactive decay (alpha, beta, gamma); nuclear equations; half-life calculations", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP6.2", "specTitle": "Physics — irradiation vs contamination; medical and industrial uses of radioactivity; precautions", "ao": "AO2", "tier": "both" },
+    { "specRef": "CP7.1", "specTitle": "Physics — solar system, life cycle of stars; red shift and Big Bang theory (HT only — quantitative red-shift reasoning)", "ao": "AO3", "tier": "both" }
+  ]
+}

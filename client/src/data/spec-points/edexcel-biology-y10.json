@@ -1,0 +1,44 @@
+{
+  "board": "edexcel",
+  "subject": "Biology",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE 1BI0",
+  "source": "Edexcel (Pearson) GCSE (9-1) Biology 1BI0 specification (2016 onwards) — Y10 covered topics 1–5 (Key concepts; Cells and control; Genetics; Natural selection and genetic modification; Health, disease and development of medicines).",
+  "specPoints": [
+    { "specRef": "1.1",  "specTitle": "Animal and plant cell structure: nucleus, mitochondria, ribosomes, cell membrane, cytoplasm, cell wall, vacuole, chloroplasts; function of each", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.2",  "specTitle": "Eukaryotic vs prokaryotic cells; bacterial cell structure including plasmids and absence of a true nucleus", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.3",  "specTitle": "Specialised cells: sperm, egg, ciliated, root hair; how structure relates to function", "ao": "AO1", "tier": "both" },
+    { "specRef": "1.4",  "specTitle": "Microscopy: light vs electron microscopes; magnification calculations; using SI units (mm, μm, nm)", "ao": "AO2", "tier": "both" },
+    { "specRef": "1.5",  "specTitle": "Enzymes as biological catalysts: lock-and-key model; effect of temperature, pH, substrate concentration on rate (calculation of rate)", "ao": "AO2", "tier": "both" },
+    { "specRef": "1.6",  "specTitle": "Diffusion, osmosis and active transport; calculations of percentage change in mass (osmosis required practical)", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "2.1", "specTitle": "Mitosis: stages of the cell cycle; growth and asexual reproduction", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.2", "specTitle": "Cell differentiation and stem cells: embryonic and adult; ethical issues; meristems in plants", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.3", "specTitle": "The nervous system: structure of neurones (sensory, relay, motor); reflex arc; synapses (HT only — chemical transmission detail)", "ao": "AO2", "tier": "both" },
+    { "specRef": "2.4", "specTitle": "The brain: cerebrum, cerebellum, medulla; investigation of brain function by case studies and scanning techniques", "ao": "AO1", "tier": "both" },
+    { "specRef": "2.5", "specTitle": "The eye: structure and function of cornea, iris, lens, retina, optic nerve; common defects (long-sightedness, short-sightedness, cataracts, colour-blindness)", "ao": "AO1", "tier": "both" },
+
+    { "specRef": "3.1", "specTitle": "Sexual and asexual reproduction: meiosis vs mitosis; advantages and disadvantages of each", "ao": "AO1", "tier": "both" },
+    { "specRef": "3.2", "specTitle": "DNA: structure as a double helix of nucleotides; the genome; genes and proteins; genetic code (codon → amino acid) (HT only — protein synthesis from mRNA)", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.3", "specTitle": "Genetic inheritance: genotype, phenotype, alleles, dominant, recessive, homozygous, heterozygous; Punnett squares for monohybrid crosses", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.4", "specTitle": "Inherited disorders: cystic fibrosis (recessive), polydactyly (dominant); ethical implications of genetic testing", "ao": "AO2", "tier": "both" },
+    { "specRef": "3.5", "specTitle": "Variation: genetic and environmental causes; mutations and continuous vs discontinuous variation", "ao": "AO1", "tier": "both" },
+
+    { "specRef": "4.1", "specTitle": "Evolution by natural selection: Darwin's theory; evidence including fossils and antibiotic resistance in bacteria", "ao": "AO2", "tier": "both" },
+    { "specRef": "4.2", "specTitle": "Classification: Linnaean system (kingdom → species); the three-domain system; binomial nomenclature", "ao": "AO1", "tier": "both" },
+    { "specRef": "4.3", "specTitle": "Selective breeding and genetic engineering: examples (high-yield crops, disease resistance); ethical concerns", "ao": "AO2", "tier": "both" },
+    { "specRef": "4.4", "specTitle": "Genetic modification techniques (HT only — describe steps including restriction enzymes and ligase, plasmid vectors)", "ao": "AO3", "tier": "higher" },
+
+    { "specRef": "5.1", "specTitle": "Health and disease: definitions; communicable vs non-communicable; risk factors and lifestyle effects", "ao": "AO1", "tier": "both" },
+    { "specRef": "5.2", "specTitle": "Pathogens: bacteria, viruses, fungi, protists; named diseases (TB, cholera, malaria, HIV, chalara ash dieback)", "ao": "AO1", "tier": "both" },
+    { "specRef": "5.3", "specTitle": "Body's defences: physical and chemical barriers; immune response by white blood cells; phagocytosis and antibody production", "ao": "AO2", "tier": "both" },
+    { "specRef": "5.4", "specTitle": "Vaccination, antibiotics and antiviral drugs; herd immunity; the development of antibiotic resistance", "ao": "AO2", "tier": "both" },
+    { "specRef": "5.5", "specTitle": "Drug development: stages of preclinical and clinical testing; placebo and double-blind trials", "ao": "AO2", "tier": "both" },
+    { "specRef": "5.6", "specTitle": "Monoclonal antibodies (HT only — production from hybridoma cells; uses in pregnancy testing, diagnosis and treatment)", "ao": "AO3", "tier": "higher" },
+
+    { "specRef": "CPAC1", "specTitle": "Core Practical: Investigate biological specimens using microscopes including magnification calculations and labelled scientific drawings", "ao": "AO3", "tier": "both" },
+    { "specRef": "CPAC2", "specTitle": "Core Practical: Investigate the effect of pH on enzyme activity (e.g. amylase) using iodine indicator", "ao": "AO3", "tier": "both" },
+    { "specRef": "CPAC3", "specTitle": "Core Practical: Investigate osmosis in plant tissue using a range of sucrose or salt solutions", "ao": "AO3", "tier": "both" },
+    { "specRef": "CPAC4", "specTitle": "Core Practical: Investigate the effect of antiseptics or antibiotics on bacterial growth using aseptic technique", "ao": "AO3", "tier": "both" }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "board": "aqa",
+  "subject": "Chemistry",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE 8462",
+  "source": "AQA GCSE Chemistry 8462 specification (2016 onwards) — Y10 covered topic codes C1–C5 (Atomic structure and the periodic table; Bonding, structure and properties of matter; Quantitative chemistry; Chemical changes; Energy changes) plus Required Practicals 1–4.",
+  "specPoints": [
+    { "specRef": "C1.1.1", "specTitle": "Atoms, elements and compounds: definitions, chemical symbols and the use of word and balanced symbol equations", "ao": "AO1", "tier": "both" },
+    { "specRef": "C1.1.2", "specTitle": "Mixtures: methods of separation including filtration, crystallisation, simple distillation, fractional distillation and chromatography", "ao": "AO2", "tier": "both" },
+    { "specRef": "C1.2.1", "specTitle": "The atom: nucleus (protons and neutrons), electrons in shells; relative charges, masses and the radius of the atom (~10⁻¹⁰ m)", "ao": "AO1", "tier": "both" },
+    { "specRef": "C1.2.2", "specTitle": "Atomic number, mass number and isotopes; calculate the relative atomic mass of an element from isotope abundances (HT only)", "ao": "AO2", "tier": "both" },
+    { "specRef": "C1.2.3", "specTitle": "Electronic structure: arrangement of electrons in shells (e.g. 2,8,8); link to position in the periodic table", "ao": "AO1", "tier": "both" },
+    { "specRef": "C1.2.4", "specTitle": "Development of the model of the atom: Dalton, plum-pudding, Rutherford, Bohr, discovery of neutrons", "ao": "AO1", "tier": "both" },
+    { "specRef": "C1.3.1", "specTitle": "The periodic table: arranged by atomic number; Mendeleev's contribution; metals and non-metals; Group 0 noble gases", "ao": "AO1", "tier": "both" },
+    { "specRef": "C1.3.2", "specTitle": "Group 1 alkali metals: properties and reactions with water; trends in reactivity down the group", "ao": "AO1", "tier": "both" },
+    { "specRef": "C1.3.3", "specTitle": "Group 7 halogens: physical properties; displacement reactions; trends in reactivity down the group", "ao": "AO2", "tier": "both" },
+    { "specRef": "C1.3.4", "specTitle": "Transition metals: typical properties compared with Group 1 — higher melting points, harder, denser, less reactive, form coloured compounds, used as catalysts (HT only — full comparison)", "ao": "AO1", "tier": "higher" },
+
+    { "specRef": "C2.1.1", "specTitle": "Chemical bonds — ionic, covalent, metallic; formation of ions by gain or loss of electrons; charges on simple ions", "ao": "AO1", "tier": "both" },
+    { "specRef": "C2.1.2", "specTitle": "Ionic bonding: formation of ionic compounds between metals and non-metals; representation as dot-and-cross diagrams", "ao": "AO1", "tier": "both" },
+    { "specRef": "C2.1.3", "specTitle": "Covalent bonding: formation of single, double and triple bonds; dot-and-cross diagrams for simple molecules (H₂, Cl₂, O₂, N₂, HCl, H₂O, NH₃, CH₄)", "ao": "AO1", "tier": "both" },
+    { "specRef": "C2.1.4", "specTitle": "Metallic bonding: structure of giant metallic lattices; explanation of conductivity, malleability and high melting points", "ao": "AO2", "tier": "both" },
+    { "specRef": "C2.2.1", "specTitle": "Properties of ionic compounds: high melting and boiling points; conduction of electricity when molten or in solution", "ao": "AO2", "tier": "both" },
+    { "specRef": "C2.2.2", "specTitle": "Properties of small molecules and giant covalent structures (diamond, graphite, silicon dioxide); link structure to properties", "ao": "AO2", "tier": "both" },
+    { "specRef": "C2.2.3", "specTitle": "Polymers: long-chain molecules; properties relating to chain length and intermolecular forces", "ao": "AO1", "tier": "both" },
+    { "specRef": "C2.2.4", "specTitle": "Carbon allotropes: diamond, graphite, graphene, fullerenes (including C₆₀ buckminsterfullerene) and carbon nanotubes; uses linked to structure", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "C3.1.1", "specTitle": "Conservation of mass and balanced symbol equations; mass changes when a reactant or product is a gas; relative formula mass", "ao": "AO2", "tier": "both" },
+    { "specRef": "C3.1.2", "specTitle": "Moles: Avogadro's constant (6.02 × 10²³); calculate moles from mass; calculate masses of reactants and products from balanced equations (HT only)", "ao": "AO2", "tier": "higher" },
+    { "specRef": "C3.1.3", "specTitle": "Limiting reactants and uncertainty (HT only — calculate using moles)", "ao": "AO3", "tier": "higher" },
+    { "specRef": "C3.1.4", "specTitle": "Concentration of solutions: g/dm³ and mol/dm³ (HT for mol/dm³); calculate concentration in solutions", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "C4.1.1", "specTitle": "Reactivity series of metals: reactions with water, oxygen and dilute acids; placement of carbon and hydrogen", "ao": "AO1", "tier": "both" },
+    { "specRef": "C4.1.2", "specTitle": "Extraction of metals: reduction with carbon for metals less reactive than carbon; electrolysis of more reactive metals", "ao": "AO2", "tier": "both" },
+    { "specRef": "C4.1.3", "specTitle": "Oxidation and reduction: defined in terms of oxygen; oxidation and reduction in terms of electron transfer (HT only)", "ao": "AO2", "tier": "both" },
+    { "specRef": "C4.2.1", "specTitle": "Reactions of acids: with metals (acid + metal → salt + hydrogen); with metal oxides, hydroxides and carbonates; neutralisation", "ao": "AO1", "tier": "both" },
+    { "specRef": "C4.2.2", "specTitle": "The pH scale and indicators; strong vs weak acids and the relationship between pH and hydrogen ion concentration (HT only — pH change of factor 10)", "ao": "AO2", "tier": "both" },
+    { "specRef": "C4.2.3", "specTitle": "Required practical: preparation of a pure, dry sample of a soluble salt from an insoluble oxide or carbonate (e.g. copper sulfate)", "ao": "AO3", "tier": "both" },
+    { "specRef": "C4.3.1", "specTitle": "Electrolysis of molten ionic compounds: positive ions to cathode, negative ions to anode; products explained", "ao": "AO2", "tier": "both" },
+    { "specRef": "C4.3.2", "specTitle": "Electrolysis of aqueous solutions: prediction of products considering reactivity series; half-equations at electrodes (HT only — half-equations)", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "C5.1.1", "specTitle": "Energy changes in reactions: exothermic and endothermic reactions and their everyday uses (hand warmers, sports injury packs)", "ao": "AO1", "tier": "both" },
+    { "specRef": "C5.1.2", "specTitle": "Reaction profiles: activation energy; profiles for exothermic and endothermic reactions", "ao": "AO2", "tier": "both" },
+    { "specRef": "C5.1.3", "specTitle": "Bond energies: calculate the overall energy change for a reaction using bond energies (HT only)", "ao": "AO2", "tier": "higher" },
+
+    { "specRef": "C-RP1", "specTitle": "Required Practical 1: Make a pure, dry sample of a soluble salt from an insoluble oxide or carbonate", "ao": "AO3", "tier": "both" },
+    { "specRef": "C-RP2", "specTitle": "Required Practical 2: Determine the reacting volumes of solutions of a strong acid and a strong alkali by titration", "ao": "AO3", "tier": "both" },
+    { "specRef": "C-RP3", "specTitle": "Required Practical 3: Investigate the variables that affect temperature changes in reacting solutions (e.g. acid + alkali, displacement reactions)", "ao": "AO3", "tier": "both" },
+    { "specRef": "C-RP4", "specTitle": "Required Practical 4: Investigate the electrolysis of aqueous solutions using inert electrodes", "ao": "AO3", "tier": "both" }
+  ]
+}
