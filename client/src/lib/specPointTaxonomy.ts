@@ -19,9 +19,26 @@
  * line in REGISTRY plus the matching JSON file under data/spec-points.
  */
 
+// ─── Bundled datasets ──────────────────────────────────────────────────────
+// Phase F · FEAT-PF1 expanded coverage from 3 → 16 datasets covering AQA +
+// Edexcel + OCR for the highest-volume GCSE subjects across Y10 and Y11.
+// Adding a new dataset is one line in REGISTRY plus the matching JSON file.
 import aqaMathsY10 from "@/data/spec-points/aqa-maths-y10.json";
+import aqaMathsY11 from "@/data/spec-points/aqa-maths-y11.json";
 import edexcelMathsY10 from "@/data/spec-points/edexcel-maths-y10.json";
+import edexcelMathsY11 from "@/data/spec-points/edexcel-maths-y11.json";
+import ocrMathsY10 from "@/data/spec-points/ocr-maths-y10.json";
+import aqaBiologyY10 from "@/data/spec-points/aqa-biology-y10.json";
+import aqaChemistryY10 from "@/data/spec-points/aqa-chemistry-y10.json";
+import aqaPhysicsY10 from "@/data/spec-points/aqa-physics-y10.json";
+import edexcelBiologyY10 from "@/data/spec-points/edexcel-biology-y10.json";
+import edexcelChemistryY10 from "@/data/spec-points/edexcel-chemistry-y10.json";
+import edexcelPhysicsY10 from "@/data/spec-points/edexcel-physics-y10.json";
 import aqaCombinedScienceY10 from "@/data/spec-points/aqa-combined-science-y10.json";
+import aqaCombinedScienceY11 from "@/data/spec-points/aqa-combined-science-y11.json";
+import edexcelCombinedScienceY10 from "@/data/spec-points/edexcel-combined-science-y10.json";
+import edexcelCombinedScienceY11 from "@/data/spec-points/edexcel-combined-science-y11.json";
+import aqaEnglishLanguageY10 from "@/data/spec-points/aqa-english-language-y10.json";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -74,8 +91,21 @@ function register(dataset: SpecPointDataset) {
 }
 
 register(aqaMathsY10 as SpecPointDataset);
+register(aqaMathsY11 as SpecPointDataset);
 register(edexcelMathsY10 as SpecPointDataset);
+register(edexcelMathsY11 as SpecPointDataset);
+register(ocrMathsY10 as SpecPointDataset);
+register(aqaBiologyY10 as SpecPointDataset);
+register(aqaChemistryY10 as SpecPointDataset);
+register(aqaPhysicsY10 as SpecPointDataset);
+register(edexcelBiologyY10 as SpecPointDataset);
+register(edexcelChemistryY10 as SpecPointDataset);
+register(edexcelPhysicsY10 as SpecPointDataset);
 register(aqaCombinedScienceY10 as SpecPointDataset);
+register(aqaCombinedScienceY11 as SpecPointDataset);
+register(edexcelCombinedScienceY10 as SpecPointDataset);
+register(edexcelCombinedScienceY11 as SpecPointDataset);
+register(aqaEnglishLanguageY10 as SpecPointDataset);
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
