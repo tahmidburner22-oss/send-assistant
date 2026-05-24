@@ -1,0 +1,59 @@
+{
+  "board": "edexcel",
+  "subject": "Chemistry",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume Edexcel Y10 chemistry spec points (1CH0).",
+  "rows": [
+    {
+      "specRef": "1.7",
+      "sentenceFrames": [
+        "In a solid ionic compound, the ions are held in a fixed ______.",
+        "The ions cannot ______, so the solid does not conduct electricity.",
+        "When molten or dissolved, the ions are free to ______.",
+        "This means the compound can ______."
+      ],
+      "wordBank": [
+        { "term": "ionic compound", "definition": "a compound made of positive and negative ions held by electrostatic forces" },
+        { "term": "lattice", "definition": "a regular 3D arrangement of ions" },
+        { "term": "molten", "definition": "melted into a liquid by heating" },
+        { "term": "dissolved", "definition": "broken up by water so the ions can move freely in solution" }
+      ],
+      "stepLadder": [
+        "Describe the arrangement of ions in the solid (held in a lattice).",
+        "Explain why ions cannot move in the solid.",
+        "Describe what happens when the compound is melted or dissolved.",
+        "Explain that ions can now move and carry charge.",
+        "Conclude with whether the compound conducts in each state."
+      ],
+      "commonPitfalls": [
+        "Confusing ions and electrons (ionic compounds carry charge through ions, not delocalised electrons).",
+        "Saying solids 'have no electrons' — they do, but the ions are not free to move."
+      ]
+    },
+    {
+      "specRef": "3.1",
+      "sentenceFrames": [
+        "Acid + alkali → ______ + ______.",
+        "The acid in the question is ______. The alkali is ______.",
+        "Therefore the products are ______ and ______."
+      ],
+      "wordBank": [
+        { "term": "acid", "definition": "a substance that produces H⁺ ions in solution" },
+        { "term": "alkali", "definition": "a soluble base that produces OH⁻ ions in solution" },
+        { "term": "neutralisation", "definition": "the reaction between an acid and a base/alkali to produce a salt and water" },
+        { "term": "salt", "definition": "the ionic compound formed when an acid reacts with a base" }
+      ],
+      "stepLadder": [
+        "Recall the general word equation: acid + alkali → salt + water.",
+        "Identify the acid (e.g. hydrochloric → chloride salt; sulfuric → sulfate salt; nitric → nitrate salt).",
+        "Identify the metal in the alkali (the salt's first part).",
+        "Combine to write the salt name.",
+        "Add 'water' as the second product."
+      ],
+      "commonPitfalls": [
+        "Forgetting that the metal name comes from the alkali, not the acid.",
+        "Forgetting water as the second product."
+      ]
+    }
+  ]
+}

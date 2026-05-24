@@ -1,0 +1,90 @@
+{
+  "board": "aqa",
+  "subject": "Physics",
+  "yearGroup": "Year 10",
+  "source": "Phase F · FEAT-PF1 — author-original scaffold rows for the highest-volume AQA Y10 physics spec points (8463).",
+  "rows": [
+    {
+      "specRef": "P1.1.3",
+      "sentenceFrames": [
+        "I will use the equation KE = ½ × m × v².",
+        "Mass m = ______ kg. Velocity v = ______ m/s.",
+        "KE = 0.5 × ______ × ______ ²",
+        "KE = ______ J."
+      ],
+      "wordBank": [
+        { "term": "kinetic energy", "definition": "the energy an object has because it is moving" },
+        { "term": "mass", "definition": "the amount of matter in an object, measured in kilograms" },
+        { "term": "velocity", "definition": "speed in a stated direction, measured in metres per second" },
+        { "term": "joule (J)", "definition": "the SI unit of energy" }
+      ],
+      "stepLadder": [
+        "Write down the equation KE = ½mv².",
+        "Identify the mass and the velocity from the question.",
+        "Make sure both are in SI units (kg and m/s).",
+        "Substitute numbers into the equation, keeping the velocity squared bracketed.",
+        "Calculate and write the answer with the unit (joules).",
+        "Sense-check: KE doubles if mass doubles, but quadruples if velocity doubles."
+      ],
+      "commonPitfalls": [
+        "Forgetting to square the velocity.",
+        "Forgetting the ½ at the start.",
+        "Mixing units (e.g. mass in grams, expecting an answer in joules)."
+      ],
+      "visualAidHint": "Always write the equation first, then substitute. Boxes around each substituted value reduce arithmetic mistakes."
+    },
+    {
+      "specRef": "P2.1.2",
+      "sentenceFrames": [
+        "I will use Ohm's law: V = I × R.",
+        "Rearranging for the unknown: ______ = ______ ÷ ______.",
+        "Substituting: ______ = ______ ÷ ______.",
+        "The answer is ______ Ω."
+      ],
+      "wordBank": [
+        { "term": "potential difference (V)", "definition": "the energy transferred per unit charge, measured in volts" },
+        { "term": "current (I)", "definition": "the rate of flow of charge, measured in amps" },
+        { "term": "resistance (R)", "definition": "the opposition to current flow, measured in ohms (Ω)" },
+        { "term": "ohmic conductor", "definition": "a component whose resistance stays constant; current is proportional to potential difference" }
+      ],
+      "stepLadder": [
+        "Write Ohm's law V = IR.",
+        "Identify which of V, I, R you are asked to find.",
+        "Rearrange the equation for that quantity (R = V/I or I = V/R).",
+        "Substitute the known values.",
+        "Calculate and give the answer with the correct unit."
+      ],
+      "commonPitfalls": [
+        "Mixing up which letter stands for which quantity.",
+        "Wrong rearrangement (e.g. R = I × V instead of R = V/I).",
+        "Forgetting the unit in the answer (V, A or Ω)."
+      ],
+      "visualAidHint": "An Ohm's law triangle (V on top, I and R on bottom) reminds pupils which quantity to divide or multiply."
+    },
+    {
+      "specRef": "P3.1.1",
+      "sentenceFrames": [
+        "Volume of the cuboid = ______ × ______ × ______ = ______ cm³.",
+        "Density = mass ÷ volume = ______ ÷ ______.",
+        "Density = ______ g/cm³."
+      ],
+      "wordBank": [
+        { "term": "density", "definition": "mass per unit volume; ρ = m/V" },
+        { "term": "mass", "definition": "the amount of matter in an object, measured in g or kg" },
+        { "term": "volume", "definition": "the space an object takes up, measured in cm³ or m³" }
+      ],
+      "stepLadder": [
+        "Calculate the volume of the cuboid (length × width × height).",
+        "Make sure the units of mass and volume match (g & cm³ or kg & m³).",
+        "Apply density = mass ÷ volume.",
+        "Give the answer with the correct unit (g/cm³ or kg/m³).",
+        "Compare with water (1 g/cm³) to sense-check."
+      ],
+      "commonPitfalls": [
+        "Mixing units (g with m³).",
+        "Multiplying instead of dividing.",
+        "Forgetting the unit on the answer."
+      ]
+    }
+  ]
+}
