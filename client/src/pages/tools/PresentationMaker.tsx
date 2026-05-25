@@ -2,7 +2,7 @@
  * PresentationMaker — AI-powered lesson slide generator
  * Professional-quality output: structured slides, professional themes, PPTX export
  */
-import { useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,9 @@ import {
   Pencil, Zap, Edit3, Calculator, GraduationCap, Sliders,
   Printer, Mail, Save, Maximize2, X, ChevronUp, ChevronDown,
   Trash2, MoreVertical,
+  // Phase 3 imports (timer, reveal, presenter view, accessibility)
+  Volume2, VolumeX, Pause, Play, Clock, Send, Type as TypeIcon,
+  Sun, Moon, ZoomIn, History as HistoryIcon, EyeOff,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -30,8 +33,15 @@ import { useLocation } from "wouter";
 
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import PresentationMakerEnhancementsPanel from "@/components/PresentationMakerEnhancementsPanel";
+import SlidePollQR from "@/components/SlidePollQR";
+import { persistHandoff } from "@/components/SendToMenu";
 import { resolvePresentationTemplate } from "@/lib/presentation-templates";
-import { buildSubjectPromptFragments } from "@/lib/subject-profiles";
+import { buildSubjectPromptFragments, getSubjectProfile } from "@/lib/subject-profiles";
+import { formatMisconceptionsForPrompt } from "@/lib/misconception-bank";
+import { lookupByTopic, type CurriculumEntry } from "@/lib/curriculumBank";
+import { runAllValidators, type ValidationFinding } from "@/lib/presentation-validators";
+import { recordTelemetry } from "@/lib/presentation-telemetry";
+import { readSchoolIdentity, writeSchoolIdentity, fileToDataUrl, type SchoolIdentity } from "@/lib/school-identity";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
@@ -57,12 +67,18 @@ const SlideTypeEnum = z.enum([
   "brain-break","checkin","method-steps","help-box","word-bank","take-a-break",
   // Primary-school types (already supported by the renderer)
   "story-time","draw-it","sort-it","match-it","fill-the-gap","spot-the-mistake","number-talk",
+  // ── Phase 1: section divider (item 6) ───────────────────────────────
+  "section-divider",
+  // ── Phase 2: classroom-action slide types (items 28–33) ─────────────
+  "cold-call","live-model","do-now","choose-your-task","stuck-help","homework",
 ]);
 
 const SlideContentSchema = z.object({
   type: SlideTypeEnum,
   title: z.string().min(1).max(200),
   subtitle: z.string().max(300).optional(),
+  /** Title-slide layout variant — used only when type === "title". */
+  titleVariant: z.enum(["centered","split-image","asymmetric","module-divider"]).optional(),
   bullets: z.array(z.string().min(1).max(500)).max(10).optional(),
   body: z.string().max(2000).optional(),
   terms: z.array(z.object({ term: z.string().min(1), definition: z.string().min(1) })).max(20).optional(),
@@ -79,13 +95,70 @@ const SlideContentSchema = z.object({
   diagramDescription: z.string().max(500).optional(),
   diagramLabels: z.array(z.string().min(1)).max(20).optional(),
   image_prompt: z.string().max(500).optional(),
-  layout: z.enum(["full","two-col","image-right","image-left","centered","bullet-list","hero-number","definition","process","quote-block"]).optional(),
+  layout: z.enum(["full","two-col","image-right","image-left","centered","bullet-list","hero-number","definition","process","quote-block",
+    // ── Phase 1: 7 new layouts ────────────────────────────────────────
+    "split-stat","comparison-table","timeline-horizontal","card-grid","before-after","quote-portrait","diagram-callouts",
+  ]).optional(),
   bulletsRight: z.array(z.string().min(1).max(500)).max(6).optional(),
   headline: z.string().max(200).optional(),
   quote: z.string().max(600).optional(),
   attribution: z.string().max(200).optional(),
   accent: z.string().max(50).optional(),
   speakerNotes: z.string().max(2000).optional(),
+
+  // ── Phase 1 layout-specific fields (all optional, used when layout matches) ──
+  /** comparison-table rows: each row is {label, left, right}. */
+  compareRows: z.array(z.object({
+    label: z.string().max(80).optional(),
+    left: z.string().min(1).max(240),
+    right: z.string().min(1).max(240),
+  })).max(8).optional(),
+  /** comparison-table headers ["A","B"] — defaults to ["Before","After"]. */
+  compareHeaders: z.tuple([z.string().max(60), z.string().max(60)]).optional(),
+  /** timeline-horizontal events. */
+  timelineEvents: z.array(z.object({
+    date: z.string().min(1).max(40),
+    title: z.string().min(1).max(80),
+    description: z.string().max(160).optional(),
+  })).max(8).optional(),
+  /** card-grid items (rendered as a 2×3 grid). */
+  cards: z.array(z.object({
+    title: z.string().min(1).max(80),
+    body: z.string().min(1).max(220),
+    icon: z.string().max(40).optional(),
+  })).max(6).optional(),
+  /** before-after two-block compare — populates a contrasting pair. */
+  beforeAfter: z.object({
+    before: z.string().min(1).max(500),
+    after: z.string().min(1).max(500),
+    beforeLabel: z.string().max(40).optional(),
+    afterLabel: z.string().max(40).optional(),
+  }).optional(),
+  /** diagram-callouts: positioned labels around a central diagram. */
+  diagramCallouts: z.array(z.object({
+    label: z.string().min(1).max(80),
+    position: z.enum(["top-left","top","top-right","right","bottom-right","bottom","bottom-left","left"]),
+    description: z.string().max(160).optional(),
+  })).max(8).optional(),
+
+  // ── Phase 2 classroom-action slide-type fields ─────────────────────────────
+  /** cold-call: the prompt teacher reads + an optional cue for the named pupil. */
+  coldCallCue: z.string().max(300).optional(),
+  namedPupilHint: z.string().max(120).optional(),
+  /** live-model: explicit I-do / We-do / You-do progression. */
+  liveModel: z.object({
+    iDo: z.string().min(1).max(500),
+    weDo: z.string().min(1).max(500),
+    youDo: z.string().min(1).max(500),
+  }).optional(),
+  /** stuck-help: escalating hint ladder + final answer (revealed last). */
+  hintLadder: z.array(z.string().min(1).max(240)).max(5).optional(),
+  finalAnswer: z.string().max(500).optional(),
+  /** homework: brief, link, due date, estimated minutes. */
+  homeworkBrief: z.string().max(500).optional(),
+  homeworkDueDate: z.string().max(40).optional(),
+  homeworkMinutes: z.number().int().min(1).max(180).optional(),
+  homeworkLink: z.string().max(400).optional(),
 
   // ── Teacher-framework content fields ───────────────────────────────────────
   /** Timing chip shown top-right. "5" becomes "⏱ 5 min". */
@@ -174,6 +247,7 @@ export interface SlideContent {
   type: SlideType;
   title: string;
   subtitle?: string;
+  titleVariant?: "centered" | "split-image" | "asymmetric" | "module-divider";
   bullets?: string[];
   body?: string;
   terms?: { term: string; definition: string }[];
@@ -195,13 +269,33 @@ export interface SlideContent {
   diagramDescription?: string;
   diagramLabels?: string[];
   image_prompt?: string;
-  layout?: "full" | "two-col" | "image-right" | "image-left" | "centered" | "bullet-list" | "hero-number" | "definition" | "process" | "quote-block";
+  layout?: "full" | "two-col" | "image-right" | "image-left" | "centered" | "bullet-list" | "hero-number" | "definition" | "process" | "quote-block"
+    | "split-stat" | "comparison-table" | "timeline-horizontal" | "card-grid" | "before-after" | "quote-portrait" | "diagram-callouts";
   bulletsRight?: string[];
   headline?: string;
   quote?: string;
   attribution?: string;
   accent?: string;
   speakerNotes?: string;
+
+  // Phase 1 layout-specific fields
+  compareRows?: { label?: string; left: string; right: string }[];
+  compareHeaders?: [string, string];
+  timelineEvents?: { date: string; title: string; description?: string }[];
+  cards?: { title: string; body: string; icon?: string }[];
+  beforeAfter?: { before: string; after: string; beforeLabel?: string; afterLabel?: string };
+  diagramCallouts?: { label: string; position: "top-left"|"top"|"top-right"|"right"|"bottom-right"|"bottom"|"bottom-left"|"left"; description?: string }[];
+
+  // Phase 2 classroom-action slide-type fields
+  coldCallCue?: string;
+  namedPupilHint?: string;
+  liveModel?: { iDo: string; weDo: string; youDo: string };
+  hintLadder?: string[];
+  finalAnswer?: string;
+  homeworkBrief?: string;
+  homeworkDueDate?: string;
+  homeworkMinutes?: number;
+  homeworkLink?: string;
 
   // Teacher-framework content fields
   timingMinutes?: number;
@@ -344,6 +438,52 @@ const THEMES = {
     light: "#F0F9FF",
     gradient: "linear-gradient(135deg, #0C4A6E 0%, #0284C7 60%, #38BDF8 100%)",
   },
+  // ── Phase-1 dark themes ───────────────────────────────────────────────
+  // Three additional dark variants so secondary teachers don't all converge
+  // on `midnight`. Each pairs a true-dark background with one strong accent
+  // so on-screen contrast is still WCAG-AA-friendly. The PPTX export reads
+  // `bg` directly and dark-detect logic at line ~2670 flips body text to
+  // light grey when bg < #3C3C3C, so these slot in without further work.
+  "studio-dark": {
+    name: "Studio Dark",
+    primary: "#F8FAFC",
+    secondary: "#22D3EE",
+    accent: "#FB7185",
+    bg: "#0B1220",
+    text: "#E2E8F0",
+    light: "#1E293B",
+    gradient: "linear-gradient(135deg, #0B1220 0%, #1E3A8A 100%)",
+  },
+  "slate-mono": {
+    name: "Slate Mono",
+    primary: "#F1F5F9",
+    secondary: "#94A3B8",
+    accent: "#FACC15",
+    bg: "#111827",
+    text: "#CBD5E1",
+    light: "#1F2937",
+    gradient: "linear-gradient(135deg, #111827 0%, #374151 100%)",
+  },
+  editorial: {
+    name: "Editorial",
+    primary: "#FDF2F8",
+    secondary: "#F472B6",
+    accent: "#FBBF24",
+    bg: "#1E1B2E",
+    text: "#E9D5FF",
+    light: "#2D2640",
+    gradient: "linear-gradient(135deg, #1E1B2E 0%, #4C1D95 100%)",
+  },
+  "forest-dark": {
+    name: "Forest Dark",
+    primary: "#ECFDF5",
+    secondary: "#34D399",
+    accent: "#FBBF24",
+    bg: "#0A1F14",
+    text: "#D1FAE5",
+    light: "#13301F",
+    gradient: "linear-gradient(135deg, #0A1F14 0%, #064E3B 100%)",
+  },
 };
 type ThemeKey = keyof typeof THEMES;
 
@@ -385,8 +525,34 @@ export interface ComposedTheme {
 export function composeTheme(
   baseKey: ThemeKey,
   sendNeeds: string[] | string | null | undefined,
+  subjectForAuto?: string,
 ): ComposedTheme {
-  const base = THEMES[baseKey];
+  // ── "subject-auto" — use the active subject's palette + font ────────────
+  // Resolves the subject profile (via the same helper the prompt builder
+  // uses) and synthesises a base theme on the fly so every Chemistry deck
+  // looks like Chemistry, every History deck like History, etc. The SEND
+  // override pass below still runs and can clobber any of these values.
+  let base: typeof THEMES[ThemeKey];
+  if (baseKey === ("subject-auto" as ThemeKey) && subjectForAuto) {
+    const sp = getSubjectProfile(subjectForAuto);
+    if (sp) {
+      const p = sp.palette;
+      base = {
+        name: `${sp.label} Auto`,
+        primary: `#${p.darkBg}`,
+        secondary: `#${p.accent1}`,
+        accent: `#${p.accent2}`,
+        bg: `#${p.lightBg}`,
+        text: "#1e293b",
+        light: `#${p.lightBg}`,
+        gradient: `linear-gradient(135deg, #${p.darkBg} 0%, #${p.accent1} 100%)`,
+      };
+    } else {
+      base = THEMES.navy;
+    }
+  } else {
+    base = THEMES[baseKey] || THEMES.navy;
+  }
   const override = getSendThemeOverride(sendNeeds);
   const applied = resolveSendSpecs(sendNeeds).map(s => s.name);
 
@@ -454,8 +620,135 @@ function themeFontFamily(theme: ComposedTheme): string {
   return theme.fontFamily || "Calibri";
 }
 
-// ─── Slide type icons ────────────────────────────────────────────────────
-const SLIDE_ICONS: Record<string, React.ElementType> = {
+// ─── Subject-aware fonts ─────────────────────────────────────────────────────
+// SEND theme overrides win first (Verdana for Dyslexia, Arial for VI).
+// Otherwise STEM gets a clean sans, humanities a serif, and CPD a display
+// face. Returns a font face PPTX & most browsers will resolve.
+function getSubjectFontFamily(subject: string | undefined): string {
+  if (!subject) return "Calibri";
+  const s = subject.toLowerCase();
+  if (/staff|cpd|training/.test(s))                                                       return "Georgia";
+  if (/maths|mathematics|physics|chemistry|biology|science|computer|technology/.test(s))  return "Inter";
+  if (/english|history|religious|sociology|psychology|philosophy|media|film/.test(s))     return "Source Serif Pro";
+  if (/art|design|drama|music/.test(s))                                                   return "Source Serif Pro";
+  return "Inter";
+}
+
+/**
+ * Resolve the active font family taking SEND, theme and subject into account.
+ * SEND > theme.fontFamily > subject-aware > Calibri.
+ */
+function resolveActiveFont(theme: ComposedTheme, subject: string | undefined): string {
+  if (theme.fontFamily) return theme.fontFamily;
+  return getSubjectFontFamily(subject);
+}
+
+// ─── Inline-text rich rendering (items 12 + 13) ──────────────────────────────
+// Renders a string with inline:
+//   `code`      → mono chip with tinted background
+//   $maths$     → Consolas span (Maths-friendly)
+//   [icon:name] → leading emoji (icon registry below)
+// Backwards-compatible: plain strings render unchanged.
+const INLINE_ICONS: Record<string, string> = {
+  warning: "⚠️", note: "📝", check: "✅", cross: "❌",
+  star: "⭐", lightbulb: "💡", bookmark: "🔖", search: "🔍",
+  flask: "🧪", atom: "⚛️", math: "🧮", clock: "⏱",
+  globe: "🌍", rocket: "🚀", brain: "🧠", target: "🎯",
+};
+function richText(text: string, key?: number | string): React.ReactNode {
+  if (!text) return null;
+  // Strip leading icon token: "[icon:warning] do this carefully"
+  let leadingIcon: string | null = null;
+  const iconMatch = text.match(/^\s*\[icon:([a-z-]+)\]\s*/i);
+  if (iconMatch && INLINE_ICONS[iconMatch[1].toLowerCase()]) {
+    leadingIcon = INLINE_ICONS[iconMatch[1].toLowerCase()];
+    text = text.replace(iconMatch[0], "");
+  }
+  // Tokenise: split by `code` and $math$ markers, preserving them.
+  const parts: Array<{ kind: "text" | "code" | "math"; v: string }> = [];
+  const re = /(`[^`]+`|\$[^$\n]+\$)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push({ kind: "text", v: text.slice(last, m.index) });
+    if (m[0].startsWith("`")) parts.push({ kind: "code", v: m[0].slice(1, -1) });
+    else parts.push({ kind: "math", v: m[0].slice(1, -1) });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push({ kind: "text", v: text.slice(last) });
+  return (
+    <span key={key}>
+      {leadingIcon && <span aria-hidden style={{ marginRight: 4 }}>{leadingIcon}</span>}
+      {parts.map((p, i) => {
+        if (p.kind === "code") return <code key={i} className="px-1 py-0.5 rounded bg-slate-100 text-slate-900 font-mono text-[0.92em]">{p.v}</code>;
+        if (p.kind === "math") return <span key={i} className="px-1 py-0.5 rounded bg-blue-50 text-blue-900 font-mono text-[0.95em]">{p.v}</span>;
+        return <span key={i}>{p.v}</span>;
+      })}
+    </span>
+  );
+}
+
+// ─── Subject-mascot per primary slide (item 16) ─────────────────────────────
+function getSubjectMascot(subject: string | undefined): string {
+  const s = (subject || "").toLowerCase();
+  if (/maths|mathematics/.test(s))             return "🧮";
+  if (/biology/.test(s))                        return "🌱";
+  if (/chemistry/.test(s))                      return "🧪";
+  if (/physics/.test(s))                        return "⚛️";
+  if (/science/.test(s))                        return "🔬";
+  if (/computer|technology/.test(s))            return "💻";
+  if (/history/.test(s))                        return "🏛️";
+  if (/geograph/.test(s))                       return "🌍";
+  if (/english|literature|language/.test(s))    return "📖";
+  if (/french|spanish|german|mfl/.test(s))      return "🗣️";
+  if (/art|design/.test(s))                     return "🎨";
+  if (/drama|theatre/.test(s))                  return "🎭";
+  if (/music/.test(s))                          return "🎵";
+  if (/physical education|\bpe\b/.test(s))      return "⚽";
+  if (/religious|theolog/.test(s))              return "🕊️";
+  if (/business|economics/.test(s))             return "💼";
+  if (/sociolog/.test(s))                       return "👥";
+  if (/psycholog/.test(s))                      return "🧠";
+  if (/media/.test(s))                          return "📺";
+  if (/pshe/.test(s))                           return "💛";
+  return "✨";
+}
+
+// ─── Pedagogy badge — Rosenshine + Bloom hint per slide type (item 34) ──────
+const SLIDE_TYPE_PEDAGOGY: Record<string, { rosenshine?: string; bloom: string }> = {
+  "title":               { bloom: "—" },
+  "learning-objectives": { rosenshine: "R1 daily review", bloom: "RECALL" },
+  "retrieval-warm-up":   { rosenshine: "R1 daily review",  bloom: "RECALL" },
+  "hook":                { bloom: "UNDERSTAND" },
+  "key-terms":           { bloom: "UNDERSTAND" },
+  "vocab-reference":     { bloom: "RECALL" },
+  "content":             { rosenshine: "R3 small steps",   bloom: "UNDERSTAND" },
+  "diagram-label":       { bloom: "UNDERSTAND" },
+  "worked-example":      { rosenshine: "R4 modelling",     bloom: "APPLY" },
+  "live-model":          { rosenshine: "R4 modelling",     bloom: "APPLY" },
+  "model-answer":        { rosenshine: "R4 modelling",     bloom: "EVALUATE" },
+  "activity":            { rosenshine: "R5 guided practice", bloom: "APPLY" },
+  "do-now":              { rosenshine: "R5 guided practice", bloom: "APPLY" },
+  "choose-your-task":    { rosenshine: "R5 guided practice", bloom: "APPLY" },
+  "pause-and-solve":     { rosenshine: "R7 high success",  bloom: "APPLY" },
+  "stuck-help":          { rosenshine: "R8 scaffolding",   bloom: "APPLY" },
+  "check-understanding": { rosenshine: "R6 check for understanding", bloom: "ANALYSE" },
+  "mini-quiz":           { rosenshine: "R10 weekly review", bloom: "ANALYSE" },
+  "cold-call":           { rosenshine: "R6 check for understanding", bloom: "ANALYSE" },
+  "misconception-bust":  { bloom: "ANALYSE" },
+  "exam-technique":      { bloom: "EVALUATE" },
+  "real-world-link":     { bloom: "EVALUATE" },
+  "discussion":          { bloom: "EVALUATE" },
+  "think-pair-share":    { bloom: "EVALUATE" },
+  "exam-practice":       { rosenshine: "R9 independent practice", bloom: "APPLY" },
+  "extension":           { bloom: "CREATE" },
+  "summary":             { rosenshine: "R10 weekly review", bloom: "RECALL" },
+  "exit-ticket":         { rosenshine: "R6 check for understanding", bloom: "RECALL" },
+  "homework":            { rosenshine: "R9 independent practice", bloom: "APPLY" },
+  "section-divider":     { bloom: "—" },
+};
+
+// ─── Slide type icons ────────────────────────────────────────────────────const SLIDE_ICONS: Record<string, React.ElementType> = {
   "title": Monitor,
   "learning-objectives": Target,
   "hook": Lightbulb,
@@ -494,6 +787,14 @@ const SLIDE_ICONS: Record<string, React.ElementType> = {
   "help-box": BookOpen,
   "word-bank": List,
   "take-a-break": HelpCircle,
+  // Phase 1 section divider + Phase 2 classroom actions
+  "section-divider": ArrowRight,
+  "cold-call": Users,
+  "live-model": Brain,
+  "do-now": Pencil,
+  "choose-your-task": List,
+  "stuck-help": HelpCircle,
+  "homework": Edit3,
 };
 
 // ─── Slide type labels ────────────────────────────────────────────────────
@@ -536,6 +837,14 @@ const SLIDE_LABELS: Record<string, string> = {
   "help-box": "Help Box",
   "word-bank": "Word Bank",
   "take-a-break": "Take a Break",
+  // Phase 1 section divider + Phase 2 classroom actions
+  "section-divider": "Section Divider",
+  "cold-call": "Cold Call",
+  "live-model": "Live Model (I do · We do · You do)",
+  "do-now": "Do Now (Starter)",
+  "choose-your-task": "Choose Your Task",
+  "stuck-help": "Stuck? Hint Ladder",
+  "homework": "Homework",
 };
 
 // ─── Subject options ──────────────────────────────────────────────────────────
@@ -938,6 +1247,75 @@ function applyTemplateBias(basePlan: string[], bias: string[]): string[] {
   return plan;
 }
 
+// ─── Per-board command-word reference (item 19) ─────────────────────────────
+// Authoritative command-word lists per (board, subject-family). The prompt
+// builder injects these so model answers and exam-practice questions use the
+// board's actual mark-scheme phraseology rather than a generic synonym.
+const BOARD_COMMAND_WORDS: Record<string, Record<string, string[]>> = {
+  AQA: {
+    science:    ["state", "name", "describe", "explain", "calculate", "compare", "evaluate", "predict", "suggest", "justify"],
+    mathematics:["work out", "show that", "solve", "prove", "hence", "calculate", "factorise", "simplify", "expand"],
+    english:    ["analyse", "evaluate", "compare", "explain", "explore", "infer", "identify"],
+    history:    ["describe", "explain", "evaluate", "to what extent", "how far do you agree"],
+    geography:  ["describe", "explain", "assess", "evaluate", "compare", "calculate", "suggest"],
+    business:   ["state", "calculate", "explain", "analyse", "discuss", "evaluate", "justify"],
+    psychology: ["outline", "describe", "explain", "evaluate", "discuss", "compare"],
+    sociology:  ["identify", "describe", "explain", "evaluate", "discuss", "compare", "assess"],
+    other:      ["describe", "explain", "evaluate", "compare", "analyse", "calculate"],
+  },
+  Edexcel: {
+    science:    ["state", "describe", "explain", "calculate", "predict", "compare", "evaluate", "deduce"],
+    mathematics:["work out", "show that", "solve", "prove", "given that", "express", "calculate"],
+    english:    ["analyse", "evaluate", "compare", "explore"],
+    history:    ["describe", "explain", "to what extent", "how convincing"],
+    geography:  ["describe", "explain", "assess", "evaluate", "compare", "suggest"],
+    business:   ["state", "calculate", "analyse", "evaluate", "recommend"],
+    psychology: ["describe", "explain", "evaluate", "assess"],
+    other:      ["describe", "explain", "evaluate", "analyse", "compare"],
+  },
+  OCR: {
+    science:    ["state", "describe", "explain", "calculate", "compare", "predict", "evaluate", "justify"],
+    mathematics:["work out", "show that", "solve", "prove", "hence", "calculate"],
+    english:    ["analyse", "evaluate", "compare", "explore"],
+    history:    ["describe", "explain", "assess", "to what extent"],
+    geography:  ["describe", "explain", "assess", "evaluate"],
+    business:   ["state", "calculate", "explain", "analyse", "evaluate", "recommend"],
+    psychology: ["outline", "describe", "explain", "evaluate"],
+    other:      ["describe", "explain", "analyse", "evaluate"],
+  },
+  WJEC: {
+    science:    ["state", "describe", "explain", "calculate", "evaluate", "compare"],
+    other:      ["describe", "explain", "analyse", "evaluate"],
+  },
+  CIE: {
+    science:    ["state", "describe", "explain", "calculate", "compare", "predict"],
+    mathematics:["work out", "show that", "solve", "prove"],
+    other:      ["describe", "explain", "analyse", "evaluate"],
+  },
+  SQA: {
+    science:    ["state", "describe", "explain", "calculate", "compare"],
+    other:      ["describe", "explain", "analyse", "evaluate"],
+  },
+};
+
+function getBoardCommandWords(board: string | undefined, subject: string): string[] {
+  if (!board || board === "none") return [];
+  const subjectFamily = (() => {
+    const s = (subject || "").toLowerCase();
+    if (/maths|mathematics/.test(s))                            return "mathematics";
+    if (/biology|chemistry|physics|science/.test(s))            return "science";
+    if (/english|literature|language/.test(s))                  return "english";
+    if (/history/.test(s))                                      return "history";
+    if (/geograph/.test(s))                                     return "geography";
+    if (/business|economics/.test(s))                           return "business";
+    if (/psycholog/.test(s))                                    return "psychology";
+    if (/sociolog/.test(s))                                     return "sociology";
+    return "other";
+  })();
+  const tbl = BOARD_COMMAND_WORDS[board] || {};
+  return tbl[subjectFamily] || tbl.other || [];
+}
+
 function buildSlidePrompt(params: {
   subject: string;
   yearGroup: string;
@@ -959,15 +1337,14 @@ function buildSlidePrompt(params: {
 
   const template = resolvePresentationTemplate({ subject, yearGroup, lessonType, sendNeeds, differentiationLevel });
 
-  // Build the structured slide plan. The 18-slide canonical teacher-framework
-  // flow is protected from template bias — it's the "gold standard" that must
-  // not be mutated. All other slide counts still go through applyTemplateBias
-  // so teacher-chosen templates (maths-gold / science-gold / etc.) can swap
-  // in their preferred slide types.
+  // Build the structured slide plan. Templates always get to bias the plan now
+  // (item 21 fix): the previous "lock 18-slide" rule meant teacher-chosen
+  // humanities-discussion / exam-revision-precision templates couldn't
+  // actually rearrange an 18-slide deck. Now they can — applyTemplateBias
+  // still respects the locked positions (title/objectives/exit-ticket) so
+  // the canonical pedagogy spine survives.
   const basePlan = buildSlidePlan(slideCount, lessonType, yearGroup);
-  const slidePlan = slideCount === 18
-    ? basePlan
-    : applyTemplateBias(basePlan, template.slidePlanBias);
+  const slidePlan = applyTemplateBias(basePlan, template.slidePlanBias);
 
   // Bloom's taxonomy mapping for teaching progression
   const bloomsMap: Record<string, string> = {
@@ -1067,6 +1444,40 @@ EXAM BOARD: ${examBoard}
 - Use ${examBoard} command words, mark scheme language, and assessment objectives.
 - Reference ${examBoard} specification terminology where relevant.
 - Exam technique slides must reflect ${examBoard} mark scheme conventions.` : "";
+
+  // ── Per-board command words (item 19) ────────────────────────────────────
+  // Inject the actual command-word list this board uses for THIS subject so
+  // exam-practice and model-answer slides phrase questions in the canonical
+  // mark-scheme register.
+  const boardCommandWords = getBoardCommandWords(examBoard, subject);
+  const boardCommandWordsBlock = boardCommandWords.length ? `
+${examBoard?.toUpperCase()} COMMAND WORDS (use these EXACTLY when writing exam-practice / model-answer / exam-technique slides):
+${boardCommandWords.map(w => `  • ${w}`).join("\n")}` : "";
+
+  // ── Misconception bank wiring (item 18) ──────────────────────────────────
+  // Pull vetted misconceptions for this (subject, topic, year-group) from the
+  // shared bank rather than letting the LLM hallucinate. Falls back silently
+  // when no entries match.
+  const misconceptionsBlock = (() => {
+    try {
+      return formatMisconceptionsForPrompt({ subject, topic, yearGroup, limit: 4 });
+    } catch { return ""; }
+  })();
+
+  // ── Spec-point catalogue from curriculumBank (item 17) ───────────────────
+  // For boards we have data for, surface real spec-refs so the AI cites them
+  // ("AQA C5.1.2") instead of generic "GCSE chemistry" framing.
+  const specPointsBlock = (() => {
+    try {
+      const board = (examBoard && examBoard !== "none" ? examBoard : "AQA") as any;
+      const entries: CurriculumEntry[] = lookupByTopic(board, subject, yearGroup, topic, "both");
+      if (!entries || entries.length === 0) return "";
+      const lines = entries.slice(0, 6).map(e => `  • ${e.specPoint.specRef} — ${e.specPoint.statement}`);
+      return `
+${board} SPEC POINTS LIKELY RELEVANT TO "${topic}" (cite by ref where appropriate):
+${lines.join("\n")}`;
+    } catch { return ""; }
+  })();
 
   const diffNote = differentiationLevel ? `
 DIFFERENTIATION LEVEL: ${differentiationLevel.toUpperCase()}
@@ -1176,6 +1587,30 @@ CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
 "model-answer" → title, body (the full model answer text, 2-5 sentences), markScheme (array of {point, marks} showing exactly where each mark is earned — sum matches the total), examTip (one-line tip on structure), speakerNotes
 "exam-practice" → title, examQuestion {stem, marks, timeMins, commandWord}, differentiation (optional support/core/extension variants), speakerNotes. Render this as a timed exam card with the mark chip visible.
 
+── Phase 2 classroom-action slide types (use these when the lesson calls for them):
+"section-divider" → title (chapter heading e.g. "Part 2 — Application"), subtitle (one-line teaser), body (optional, italic). Used as a visual chapter break inside longer decks.
+"cold-call" → title, coldCallCue (the exact line the teacher reads), question (the cold-call question), namedPupilHint (optional — "try a quieter pupil"), bullets (optional follow-up cues).
+"live-model" → title, liveModel {iDo, weDo, youDo} — three contrasting phrasings of the same problem. iDo = teacher demonstrates, weDo = guided, youDo = independent. Pairs with worked-example.
+"do-now" → title, question (the silent-start task), bullets (optional sub-tasks), timingMinutes (3-5). Pupils complete this AS THEY ENTER — silent, in their book.
+"choose-your-task" → title, question (the task framing), differentiation {support, core, extension}. Pupils self-select the route they'll take.
+"stuck-help" → title, question (the original task), hintLadder (3 escalating hints: small nudge → method reminder → near-answer), finalAnswer (revealed last). Designed to keep pupils thinking before getting the answer.
+"homework" → title, homeworkBrief (what to do), homeworkDueDate, homeworkMinutes, homeworkLink (optional URL). Replaces a plain "Homework" slide at the end of decks.
+
+── Layout-specific data fields (use these when picking the matching layout):
+- "split-stat" layout: populate `headline` with the big number/percentage, `subtitle` with its caption, `body` with a "what this means" sentence, `bullets` with 1-3 supporting points.
+- "comparison-table" layout: populate `compareHeaders: ["A","B"]` and `compareRows: [{label, left, right}]` (4-6 rows).
+- "timeline-horizontal" layout: populate `timelineEvents: [{date, title, description?}]` (4-6 events).
+- "card-grid" layout: populate `cards: [{title, body, icon?}]` (6 cards in 3×2 grid). icon may be an emoji.
+- "before-after" layout: populate `beforeAfter: {before, after, beforeLabel, afterLabel}` for the contrast pair.
+- "quote-portrait" layout: populate `quote`, `attribution`, `image_prompt` (portrait of speaker).
+- "diagram-callouts" layout: populate `diagramDescription` plus `diagramCallouts: [{label, position, description?}]` where position is one of top-left / top / top-right / right / bottom-right / bottom / bottom-left / left.
+
+── Inline rich-text markers in any text field (bullets / body / question):
+- `code` → mono chip (use for keywords, function names, short code samples)
+- $math$ → Consolas inline maths span (use for inline equations and formulae)
+- [icon:warning] / [icon:check] / [icon:flask] / etc. → leading emoji
+The renderer applies these automatically — DON'T over-use, but reach for them when the line genuinely is code or maths.
+
 ── SEND-native slide types (use these when the named need applies):
 "brain-break" → title ("BRAIN BREAK"), body ("Stand up and stretch for 30 seconds"), timingMinutes (1). Do NOT add bullets or questions — the slide is deliberately sparse.
 "checkin" → title ("How are you feeling?"), bullets (the 5 emoji scale: 😀 Calm / 🙂 OK / 😐 Not sure / 😟 Worried / 😣 Struggling), body (optional: "Show the teacher on your fingers"), timingMinutes (1-2).
@@ -1211,6 +1646,9 @@ ${sendStructuredFieldsNote}
 ${readingAgeNote}
 ${readingAgeClampNote}
 ${examBoardNote}
+${boardCommandWordsBlock}
+${specPointsBlock}
+${misconceptionsBlock}
 ${diffNote}
 ${subjectNote}
 ${templateNote}
@@ -1275,6 +1713,191 @@ function SlidePreview({
   onClick: () => void;
 }) {
   const Icon = SLIDE_ICONS[slide.type] || BookOpen;
+  // Per-type mini layouts so a vocab-reference thumbnail doesn't look the
+  // same as an exam-practice thumbnail. Falls back to the legacy "title +
+  // first 3 bullets" rendering for any type without a bespoke mini.
+  const renderMiniBody = () => {
+    switch (slide.type) {
+      case "title":
+      case "section-divider":
+        return (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-1.5" style={{ background: theme.gradient }}>
+            <div className="text-[7px] font-black truncate text-white max-w-full">{slide.title}</div>
+            {slide.subtitle && <div className="text-[5px] text-white/70 truncate max-w-full">{slide.subtitle}</div>}
+          </div>
+        );
+      case "vocab-reference":
+      case "key-terms":
+      case "word-bank": {
+        const rows = (slide.vocabTable || slide.terms || slide.wordBank || []).slice(0, 4);
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 grid grid-cols-2 gap-0.5 content-start">
+              {rows.map((r: any, i: number) => (
+                <div key={i} className="rounded-[2px] px-0.5 py-0.5" style={{ background: theme.light }}>
+                  <div className="text-[4px] font-bold truncate" style={{ color: theme.secondary }}>{r.term}</div>
+                  <div className="text-[3px] text-gray-500 truncate">{r.definition}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      case "worked-example":
+      case "method-steps": {
+        const steps = (slide.workedExampleBox?.steps || slide.methodSteps || slide.steps || []).slice(0, 3);
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 space-y-0.5">
+              <div className="text-[5px] font-bold truncate" style={{ color: theme.primary }}>{slide.title}</div>
+              {steps.map((st, i) => (
+                <div key={i} className="flex items-start gap-0.5">
+                  <div className="w-2 h-2 rounded-full flex items-center justify-center text-[3px] font-bold text-white flex-shrink-0" style={{ background: theme.secondary }}>{i + 1}</div>
+                  <div className="text-[4px] text-gray-700 truncate">{st}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      case "exam-practice": {
+        const q = slide.examQuestion;
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1">
+              <div className="text-[5px] font-bold truncate" style={{ color: theme.primary }}>{slide.title}</div>
+              <div className="flex gap-0.5 mt-0.5">
+                {q?.commandWord && <span className="px-0.5 py-px rounded bg-slate-900 text-white text-[3px] font-bold">{q.commandWord}</span>}
+                {q?.marks != null && <span className="px-0.5 py-px rounded bg-amber-500 text-white text-[3px] font-bold">[{q.marks}m]</span>}
+              </div>
+              <div className="text-[3px] text-gray-700 line-clamp-3 mt-0.5">{q?.stem || slide.question}</div>
+            </div>
+          </div>
+        );
+      }
+      case "check-understanding":
+      case "mini-quiz": {
+        const opts = (slide.options || []).slice(0, 4);
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1">
+              <div className="text-[4px] font-bold truncate" style={{ color: theme.primary }}>{slide.question || slide.title}</div>
+              <div className="grid grid-cols-2 gap-0.5 mt-0.5">
+                {opts.map((o, i) => (
+                  <div key={i} className="rounded-[2px] px-0.5 py-px text-[3px] truncate" style={{ background: theme.light, color: theme.text }}>
+                    {String.fromCharCode(65 + i)} {o}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case "comparison-table":
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 grid grid-cols-2 gap-0.5">
+              <div className="rounded-[2px] p-0.5" style={{ background: theme.light }}>
+                <div className="text-[3px] font-bold" style={{ color: theme.secondary }}>{slide.compareHeaders?.[0] || "A"}</div>
+              </div>
+              <div className="rounded-[2px] p-0.5" style={{ background: theme.light }}>
+                <div className="text-[3px] font-bold" style={{ color: theme.secondary }}>{slide.compareHeaders?.[1] || "B"}</div>
+              </div>
+              {(slide.compareRows || []).slice(0, 3).flatMap((r, i) => [
+                <div key={`l${i}`} className="text-[3px] truncate" style={{ color: theme.text }}>{r.left}</div>,
+                <div key={`r${i}`} className="text-[3px] truncate" style={{ color: theme.text }}>{r.right}</div>,
+              ])}
+            </div>
+          </div>
+        );
+      case "timeline-horizontal":
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 flex items-center">
+              <div className="relative w-full">
+                <div className="absolute left-0 right-0 top-1/2 h-px" style={{ background: theme.secondary + "60" }} />
+                <div className="grid relative" style={{ gridTemplateColumns: `repeat(${Math.max((slide.timelineEvents || []).length, 1)}, 1fr)` }}>
+                  {(slide.timelineEvents || []).slice(0, 6).map((_, i) => (
+                    <div key={i} className="flex justify-center"><div className="w-1 h-1 rounded-full" style={{ background: theme.secondary }} /></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case "card-grid":
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 grid grid-cols-3 gap-0.5">
+              {(slide.cards || []).slice(0, 6).map((c, i) => (
+                <div key={i} className="rounded-[2px] p-0.5" style={{ background: theme.light }}>
+                  <div className="text-[3px] font-bold truncate" style={{ color: theme.secondary }}>{c.title}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "before-after": {
+        const ba = slide.beforeAfter;
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 grid grid-cols-2 gap-0.5">
+              <div className="rounded-[2px] p-0.5" style={{ background: "#fee2e2" }}>
+                <div className="text-[3px] font-bold text-red-700">{ba?.beforeLabel || "Before"}</div>
+                <div className="text-[3px] text-red-900 truncate">{ba?.before}</div>
+              </div>
+              <div className="rounded-[2px] p-0.5" style={{ background: "#dcfce7" }}>
+                <div className="text-[3px] font-bold text-green-700">{ba?.afterLabel || "After"}</div>
+                <div className="text-[3px] text-green-900 truncate">{ba?.after}</div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case "misconception-bust":
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 space-y-0.5">
+              <div className="rounded-[2px] p-0.5" style={{ background: "#fee2e2" }}>
+                <div className="text-[3px] font-bold text-red-700">❌ Common myth</div>
+              </div>
+              <div className="rounded-[2px] p-0.5" style={{ background: "#dcfce7" }}>
+                <div className="text-[3px] font-bold text-green-700">✓ Truth</div>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        // Legacy fallback: title + first 3 bullets
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-2 flex flex-col justify-center overflow-hidden">
+              <div className="text-[7px] font-bold truncate" style={{ color: theme.primary }}>{slide.title}</div>
+              {slide.bullets && slide.bullets.length > 0 && (
+                <div className="mt-1 space-y-0.5">
+                  {slide.bullets.slice(0, 3).map((b, i) => (
+                    <div key={i} className="flex items-start gap-0.5">
+                      <div className="w-1 h-1 rounded-full mt-0.5 flex-shrink-0" style={{ background: theme.secondary }} />
+                      <div className="text-[5px] text-gray-600 truncate">{b}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+    }
+  };
 
   return (
     <button
@@ -1284,27 +1907,15 @@ function SlidePreview({
       }`}
       style={{ aspectRatio: "16/9", position: "relative" }}
     >
-      <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
-        {/* Mini slide header */}
-        <div className="h-2" style={{ background: theme.gradient }} />
-        <div className="flex-1 p-2 flex flex-col justify-center overflow-hidden">
-          <div className="text-[7px] font-bold truncate" style={{ color: theme.primary }}>
-            {slide.title}
-          </div>
-          {slide.bullets && slide.bullets.length > 0 && (
-            <div className="mt-1 space-y-0.5">
-              {slide.bullets.slice(0, 3).map((b, i) => (
-                <div key={i} className="flex items-start gap-0.5">
-                  <div className="w-1 h-1 rounded-full mt-0.5 flex-shrink-0" style={{ background: theme.secondary }} />
-                  <div className="text-[5px] text-gray-600 truncate">{b}</div>
-                </div>
-              ))}
-            </div>
-          )}
+      {renderMiniBody()}
+      {/* Slide number */}
+      <div className="absolute bottom-1 right-1 text-[5px] text-gray-400 z-10">{index + 1}/{total}</div>
+      {/* Mini icon for non-title types (top-left) */}
+      {slide.type !== "title" && slide.type !== "section-divider" && (
+        <div className="absolute top-1 left-1 z-10 w-3 h-3 rounded-sm flex items-center justify-center" style={{ background: theme.secondary + "30" }}>
+          <Icon className="w-2 h-2" style={{ color: theme.secondary }} />
         </div>
-        {/* Slide number */}
-        <div className="absolute bottom-1 right-1 text-[5px] text-gray-400">{index + 1}/{total}</div>
-      </div>
+      )}
     </button>
   );
 }
@@ -1321,17 +1932,17 @@ const SLIDE_TYPE_COLOURS: Record<string, string> = {
   "diagram-label":       "#0891b2",
   "worked-example":      "#1d4ed8",
   "activity":            "#059669",
-  "pause-and-solve":     "#dc2626",
+  "pause-and-solve":     "#be123c", // distinct from misconception (#dc2626) — rose
   "check-understanding": "#d97706",
   "mini-quiz":           "#7C3AED",
-  "misconception-bust":  "#dc2626",
+  "misconception-bust":  "#dc2626", // alarm red — reserved for "this is WRONG"
   "think-pair-share":    "#0891b2",
   "discussion":          "#059669",
   "real-world-link":     "#065f46",
   "exam-technique":      "#1d4ed8",
   "extension":           "#7C3AED",
   "summary":             "#1B2A4A",
-  "exit-ticket":         "#dc2626",
+  "exit-ticket":         "#9333ea", // distinct from misconception — purple end-of-lesson
   // Teacher-framework additions
   "vocab-reference":     "#0891b2",
   "model-answer":        "#1d4ed8",
@@ -1343,10 +1954,19 @@ const SLIDE_TYPE_COLOURS: Record<string, string> = {
   "help-box":            "#ca8a04",
   "word-bank":           "#0891b2",
   "take-a-break":        "#14b8a6",
+  // Phase 1 + 2 additions
+  "section-divider":     "#475569",
+  "cold-call":           "#0d9488",
+  "live-model":          "#1d4ed8",
+  "do-now":              "#0891b2",
+  "choose-your-task":    "#7C3AED",
+  "stuck-help":          "#a16207",
+  "homework":            "#475569",
 };
 
 function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: ComposedTheme; Icon: React.ElementType }) {
   const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
+  const ped = SLIDE_TYPE_PEDAGOGY[slide.type];
   return (
     <div className="px-10 pt-7 pb-3">
       <div className="flex items-center gap-3 mb-1.5">
@@ -1354,6 +1974,17 @@ function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: Compo
           <Icon className="w-4 h-4 text-white" />
         </div>
         <h2 className="text-[1.35rem] font-bold leading-tight" style={{ color: theme.primary }}>{slide.title}</h2>
+        {/* Pedagogy badge — Rosenshine + Bloom for the teacher's eye. Hidden
+            in the PPTX export and in print, but visible in the on-screen editor
+            so ECTs/SLT can see why each slide is here. */}
+        {ped && ped.bloom !== "—" && (
+          <div className="ml-auto flex items-center gap-1.5">
+            {ped.rosenshine && (
+              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-700 border border-indigo-200" title="Rosenshine's Principles of Instruction">{ped.rosenshine}</span>
+            )}
+            <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide bg-amber-50 text-amber-800 border border-amber-200" title="Bloom's taxonomy band">{ped.bloom}</span>
+          </div>
+        )}
       </div>
       <div className="h-[3px] w-14 rounded-full" style={{ background: badgeColour }} />
     </div>
@@ -1382,7 +2013,7 @@ function renderLayoutSlide(
           ) : (
             <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: badgeColour }} />
           )}
-          <div className={`${size === "xs" ? "text-xs" : "text-sm"} font-medium`} style={{ color: theme.text }}>{bullet}</div>
+          <div className={`${size === "xs" ? "text-xs" : "text-sm"} font-medium`} style={{ color: theme.text }}>{richText(bullet, i)}</div>
         </div>
       ))}
     </div>
@@ -1580,6 +2211,159 @@ function renderLayoutSlide(
         </Shell>
       );
 
+    // ── Phase 1: split-stat — hero number + supporting context cards ─────
+    case "split-stat":
+      return (
+        <Shell contentClass="grid grid-cols-2 gap-5 items-center">
+          <div className="flex flex-col items-center text-center">
+            <div className="text-[5rem] font-black leading-none tracking-tight" style={{ color: badgeColour }}>
+              {slide.headline || slide.bullets?.[0] || "—"}
+            </div>
+            {slide.subtitle && <div className="text-sm font-semibold mt-2" style={{ color: theme.text }}>{slide.subtitle}</div>}
+          </div>
+          <div className="space-y-2">
+            {slide.body && <div className="text-xs uppercase tracking-wide font-bold" style={{ color: badgeColour }}>What this means</div>}
+            {slide.body && <div className="text-sm leading-relaxed" style={{ color: theme.text }}>{slide.body}</div>}
+            <BulletList bullets={(slide.bullets || []).slice(slide.headline ? 0 : 1)} />
+          </div>
+        </Shell>
+      );
+
+    // ── Phase 1: comparison-table — labelled side-by-side rows ──────────
+    case "comparison-table": {
+      const headers = slide.compareHeaders || ["A", "B"];
+      const rows = slide.compareRows || (slide.bullets || []).map((b, i) => ({ label: undefined as string | undefined, left: b, right: slide.bulletsRight?.[i] || "—" }));
+      return (
+        <Shell contentClass="flex flex-col justify-center">
+          <div className="rounded-xl overflow-hidden border" style={{ borderColor: badgeColour + "60" }}>
+            <div className="grid text-[10px] font-bold uppercase tracking-wide text-white"
+                 style={{ background: badgeColour, gridTemplateColumns: rows.some(r => r.label) ? "120px 1fr 1fr" : "1fr 1fr" }}>
+              {rows.some(r => r.label) && <div className="px-2 py-1.5">Aspect</div>}
+              <div className="px-2 py-1.5">{headers[0]}</div>
+              <div className="px-2 py-1.5" style={{ borderLeft: "1px solid rgba(255,255,255,0.2)" }}>{headers[1]}</div>
+            </div>
+            {rows.slice(0, 8).map((r, i) => (
+              <div key={i} className="grid text-[12px]" style={{
+                background: i % 2 ? "white" : theme.light,
+                gridTemplateColumns: rows.some(x => x.label) ? "120px 1fr 1fr" : "1fr 1fr",
+              }}>
+                {rows.some(x => x.label) && <div className="px-2 py-1.5 font-semibold" style={{ color: badgeColour }}>{r.label || ""}</div>}
+                <div className="px-2 py-1.5" style={{ color: theme.text }}>{r.left}</div>
+                <div className="px-2 py-1.5 border-l" style={{ color: theme.text, borderColor: badgeColour + "20" }}>{r.right}</div>
+              </div>
+            ))}
+          </div>
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: timeline-horizontal — event nodes along an axis ────────
+    case "timeline-horizontal": {
+      const events = slide.timelineEvents || [];
+      return (
+        <Shell contentClass="flex flex-col justify-center">
+          {slide.body && <div className="text-xs italic text-gray-500 mb-3 text-center">{slide.body}</div>}
+          <div className="relative pt-8 pb-4">
+            <div className="absolute left-0 right-0 top-12 h-1 rounded" style={{ background: badgeColour + "60" }} />
+            <div className="grid" style={{ gridTemplateColumns: `repeat(${Math.max(events.length, 1)}, 1fr)`, gap: 4 }}>
+              {events.map((e, i) => (
+                <div key={i} className="flex flex-col items-center text-center px-1">
+                  <div className="text-[10px] font-bold mb-1" style={{ color: badgeColour }}>{e.date}</div>
+                  <div className="w-3 h-3 rounded-full ring-4 ring-white" style={{ background: badgeColour }} />
+                  <div className="mt-2 rounded-lg p-1.5 w-full" style={{ background: theme.light, border: `1px solid ${badgeColour}40` }}>
+                    <div className="text-[11px] font-bold leading-tight" style={{ color: theme.primary }}>{e.title}</div>
+                    {e.description && <div className="text-[9px] text-gray-600 mt-0.5 leading-tight">{e.description}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: card-grid — 2×3 callout cards (or 3×2 wide) ─────────────
+    case "card-grid": {
+      const cards = slide.cards || [];
+      return (
+        <Shell contentClass="grid grid-cols-3 gap-2 content-start">
+          {cards.slice(0, 6).map((c, i) => (
+            <div key={i} className="rounded-xl p-2.5" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+              {c.icon && <div className="text-xl mb-1" aria-hidden>{c.icon}</div>}
+              <div className="text-[12px] font-bold mb-0.5" style={{ color: badgeColour }}>{c.title}</div>
+              <div className="text-[11px] leading-tight" style={{ color: theme.text }}>{c.body}</div>
+            </div>
+          ))}
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: before-after — contrasting two-state compare ────────────
+    case "before-after": {
+      const ba = slide.beforeAfter || { before: slide.bullets?.[0] || "—", after: slide.bulletsRight?.[0] || "—" };
+      const beforeLabel = ba.beforeLabel || "Before";
+      const afterLabel = ba.afterLabel || "After";
+      return (
+        <Shell contentClass="grid grid-cols-2 gap-3 items-stretch">
+          <div className="rounded-2xl p-4 flex flex-col" style={{ background: "#fef2f2", border: "2px solid #fca5a5" }}>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-red-700 mb-2">{beforeLabel}</div>
+            <div className="text-sm leading-relaxed text-red-900 flex-1">{ba.before}</div>
+          </div>
+          <div className="rounded-2xl p-4 flex flex-col" style={{ background: "#dcfce7", border: "2px solid #86efac" }}>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-green-700 mb-2">{afterLabel}</div>
+            <div className="text-sm leading-relaxed text-green-900 flex-1">{ba.after}</div>
+          </div>
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: quote-portrait — quote + image of speaker on the left ───
+    case "quote-portrait": {
+      const imgUrlQp = slide.image_prompt
+        ? `https://source.unsplash.com/featured/400x500/?${encodeURIComponent(slide.image_prompt)}`
+        : null;
+      return (
+        <Shell contentClass="grid grid-cols-[180px_1fr] gap-5 items-center">
+          <div className="rounded-2xl overflow-hidden h-full min-h-[220px]"
+               style={{ background: `${theme.light} center/cover no-repeat url(${imgUrlQp || ""})`, border: `1px solid ${badgeColour}30` }}>
+            {!imgUrlQp && <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">portrait</div>}
+          </div>
+          <div>
+            <div className="text-3xl leading-none mb-2" style={{ color: badgeColour }}>“</div>
+            <div className="text-lg italic font-medium leading-snug" style={{ color: theme.primary }}>{slide.quote || slide.body || "(quote)"}</div>
+            {slide.attribution && (
+              <div className="text-sm font-semibold mt-3" style={{ color: theme.text }}>— {slide.attribution}</div>
+            )}
+          </div>
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: diagram-callouts — central area with positioned labels ──
+    case "diagram-callouts": {
+      const callouts = slide.diagramCallouts || [];
+      const posClass: Record<string, string> = {
+        "top-left": "top-2 left-2", "top": "top-2 left-1/2 -translate-x-1/2", "top-right": "top-2 right-2",
+        "right": "right-2 top-1/2 -translate-y-1/2", "bottom-right": "bottom-2 right-2",
+        "bottom": "bottom-2 left-1/2 -translate-x-1/2", "bottom-left": "bottom-2 left-2",
+        "left": "left-2 top-1/2 -translate-y-1/2",
+      };
+      return (
+        <Shell contentClass="relative">
+          <div className="absolute inset-0 rounded-xl border-2 border-dashed flex items-center justify-center"
+               style={{ borderColor: badgeColour + "60", background: theme.light }}>
+            <div className="text-xs italic text-gray-500 max-w-md text-center px-4">{slide.diagramDescription || "Diagram"}</div>
+          </div>
+          {callouts.slice(0, 8).map((c, i) => (
+            <div key={i} className={`absolute ${posClass[c.position] || "top-2 left-2"} rounded-lg px-2 py-1`} style={{ background: "white", border: `1.5px solid ${badgeColour}`, boxShadow: "0 2px 4px rgba(0,0,0,0.08)" }}>
+              <div className="text-[11px] font-bold" style={{ color: badgeColour }}>{c.label}</div>
+              {c.description && <div className="text-[10px] text-gray-600 max-w-[180px]">{c.description}</div>}
+            </div>
+          ))}
+        </Shell>
+      );
+    }
+
     case "bullet-list":
     case "full":
     default:
@@ -1606,11 +2390,17 @@ function FullSlideView({
   theme,
   index,
   total,
+  revealLevel = Infinity,
+  branding,
 }: {
   slide: SlideContent;
   theme: ComposedTheme;
   index: number;
   total: number;
+  revealLevel?: number;
+  /** Per-school branding watermark — applied to title slide always, and to
+   *  every slide when `branding.showOnEverySlide` is true. */
+  branding?: SchoolIdentity;
 }) {
   const Icon = SLIDE_ICONS[slide.type] || BookOpen;
   const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
@@ -1619,27 +2409,81 @@ function FullSlideView({
     switch (slide.type) {
 
       // ── Title ──────────────────────────────────────────────────────────────
-      case "title":
+      // titleVariant controls layout: centered (default), split-image,
+      // asymmetric or module-divider. Each variant uses the chosen theme
+      // gradient for the dark area; only the composition changes.
+      case "title": {
+        const variant = slide.titleVariant || "centered";
+        const bgImage = slide.image_prompt
+          ? `https://source.unsplash.com/featured/1280x720/?${encodeURIComponent(slide.image_prompt)}`
+          : null;
+        if (variant === "split-image") {
+          return (
+            <div className="flex h-full">
+              <div className="w-1/2 flex flex-col justify-center px-10 py-8 gap-3" style={{ background: theme.gradient }}>
+                <div className="text-[2.1rem] font-black leading-tight" style={{ color: "white" }}>{slide.title}</div>
+                {slide.subtitle && <div className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>{slide.subtitle}</div>}
+                {slide.body && (
+                  <div className="text-sm rounded-xl px-4 py-3 mt-2" style={{ color: "rgba(255,255,255,0.95)", background: "rgba(0,0,0,0.25)" }}>{slide.body}</div>
+                )}
+              </div>
+              <div className="w-1/2 bg-cover bg-center" style={{ backgroundImage: bgImage ? `url(${bgImage})` : "linear-gradient(135deg,#cbd5e1,#94a3b8)" }} />
+            </div>
+          );
+        }
+        if (variant === "asymmetric") {
+          return (
+            <div className="relative h-full overflow-hidden" style={{ background: theme.bg }}>
+              {bgImage && <div className="absolute inset-0 opacity-15 bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }} />}
+              <div className="absolute -top-10 -right-10 w-72 h-72 rounded-full" style={{ background: theme.gradient, opacity: 0.85 }} />
+              <div className="absolute -bottom-12 -left-8 w-56 h-56 rounded-full" style={{ background: theme.accent, opacity: 0.5 }} />
+              <div className="relative h-full flex flex-col justify-center px-14 max-w-[60%]">
+                <div className="text-[10px] font-bold tracking-[0.2em] uppercase mb-3" style={{ color: theme.secondary }}>Lesson</div>
+                <div className="text-[2.4rem] font-black leading-tight mb-3" style={{ color: theme.primary }}>{slide.title}</div>
+                {slide.subtitle && <div className="text-sm font-medium" style={{ color: theme.text }}>{slide.subtitle}</div>}
+                {slide.body && <div className="text-xs italic mt-3 max-w-md" style={{ color: theme.text }}>{slide.body}</div>}
+              </div>
+            </div>
+          );
+        }
+        if (variant === "module-divider") {
+          return (
+            <div className="flex flex-col items-center justify-center h-full text-center px-14 gap-3" style={{ background: theme.gradient, color: "white" }}>
+              <div className="text-[10px] font-bold tracking-[0.4em] uppercase opacity-80">Module</div>
+              <div className="text-[3rem] font-black leading-none">{slide.title}</div>
+              <div className="h-1 w-32 rounded-full" style={{ background: theme.accent }} />
+              {slide.subtitle && <div className="text-base font-medium opacity-90 max-w-2xl">{slide.subtitle}</div>}
+              {slide.body && <div className="text-sm italic opacity-80 max-w-xl mt-2">{slide.body}</div>}
+            </div>
+          );
+        }
+        // Default: centered (legacy behaviour)
         return (
           <div className="flex flex-col items-center justify-center h-full text-center px-14 gap-4">
-            {slide.image_prompt && (
-              <div className="absolute inset-0 opacity-10 bg-cover bg-center" style={{ backgroundImage: `url(https://source.unsplash.com/featured/1280x720/?${encodeURIComponent(slide.image_prompt)})` }} />
+            {bgImage && (
+              <div className="absolute inset-0 opacity-10 bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }} />
             )}
             <div className="relative">
-              <div className="text-[2.4rem] font-black mb-3 leading-tight" style={{ color: "white" }}>
-                {slide.title}
-              </div>
+              <div className="text-[2.4rem] font-black mb-3 leading-tight" style={{ color: "white" }}>{slide.title}</div>
               {slide.subtitle && (
-                <div className="text-base font-medium mb-3" style={{ color: "rgba(255,255,255,0.85)" }}>
-                  {slide.subtitle}
-                </div>
+                <div className="text-base font-medium mb-3" style={{ color: "rgba(255,255,255,0.85)" }}>{slide.subtitle}</div>
               )}
               {slide.body && (
-                <div className="text-sm max-w-xl mx-auto rounded-xl px-5 py-3" style={{ color: "rgba(255,255,255,0.9)", background: "rgba(0,0,0,0.25)" }}>
-                  {slide.body}
-                </div>
+                <div className="text-sm max-w-xl mx-auto rounded-xl px-5 py-3" style={{ color: "rgba(255,255,255,0.9)", background: "rgba(0,0,0,0.25)" }}>{slide.body}</div>
               )}
             </div>
+          </div>
+        );
+      }
+
+      // ── Section divider — chapter break inside a longer deck ─────────────
+      case "section-divider":
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-center px-14 gap-3" style={{ background: theme.gradient, color: "white" }}>
+            <div className="text-[10px] font-bold tracking-[0.4em] uppercase opacity-75">Part</div>
+            <div className="text-[3rem] font-black leading-none">{slide.title}</div>
+            {slide.subtitle && <div className="text-base font-medium opacity-90 max-w-2xl">{slide.subtitle}</div>}
+            {slide.body && <div className="text-sm italic opacity-80 max-w-xl mt-2">{slide.body}</div>}
           </div>
         );
 
@@ -1749,17 +2593,22 @@ function FullSlideView({
                       <div className="text-sm font-medium" style={{ color: theme.text, fontFamily: "Consolas, monospace" }}>{w.problem}</div>
                     </div>
                     <div className="space-y-1.5">
-                      {w.steps.map((step, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: badgeColour }}>{i + 1}</div>
-                          <div className="flex-1 text-sm rounded-lg bg-white border border-gray-200 px-2 py-1" style={{ color: theme.text, fontFamily: "Consolas, monospace" }}>{step}</div>
-                        </div>
-                      ))}
+                      {w.steps.map((step, i) => {
+                        const stepShown = revealLevel >= i + 1;
+                        return (
+                          <div key={i} className="flex items-start gap-2" style={{ opacity: stepShown ? 1 : 0.25 }}>
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: badgeColour }}>{i + 1}</div>
+                            <div className="flex-1 text-sm rounded-lg bg-white border border-gray-200 px-2 py-1" style={{ color: theme.text, fontFamily: "Consolas, monospace" }}>
+                              {stepShown ? step : "·".repeat(Math.min(40, step.length))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-gray-200">
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-200" style={{ opacity: revealLevel >= w.steps.length + 1 ? 1 : 0.25 }}>
                       <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Answer</div>
                       <div className="text-base font-black" style={{ color: badgeColour, fontFamily: "Consolas, monospace" }}>
-                        {w.answer}{w.units ? ` ${w.units}` : ""}
+                        {revealLevel >= w.steps.length + 1 ? `${w.answer}${w.units ? ` ${w.units}` : ""}` : "—"}
                       </div>
                     </div>
                     {w.commonError && (
@@ -1817,8 +2666,10 @@ function FullSlideView({
                 </div>
               )}
               {slide.answer && (
-                <div className="rounded-lg p-2.5 text-center" style={{ background: "#dcfce7", border: "1px solid #16a34a" }}>
-                  <div className="text-xs font-bold text-green-700">Answer: {slide.answer}</div>
+                <div className="rounded-lg p-2.5 text-center" style={{ background: revealLevel >= 1 ? "#dcfce7" : "#f1f5f9", border: `1px solid ${revealLevel >= 1 ? "#16a34a" : "#cbd5e1"}` }}>
+                  <div className="text-xs font-bold" style={{ color: revealLevel >= 1 ? "#15803d" : "#64748b" }}>
+                    {revealLevel >= 1 ? `Answer: ${slide.answer}` : "Answer hidden — press → or Space to reveal"}
+                  </div>
                 </div>
               )}
             </div>
@@ -1835,13 +2686,16 @@ function FullSlideView({
               <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-2">
                 {slide.retrievalQuestions.map((q, i) => {
                   const parts = q.split(/\s*A:\s*/);
+                  const showAnswer = revealLevel >= 1;
                   return (
                     <div key={i} className="rounded-lg p-2.5" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
                       <div className="text-sm font-medium" style={{ color: theme.text }}>
                         <span className="font-bold" style={{ color: badgeColour }}>Q{i + 1}: </span>{parts[0]}
                       </div>
                       {parts[1] && (
-                        <div className="text-xs mt-1 font-medium text-green-700">✓ {parts[1]}</div>
+                        showAnswer
+                          ? <div className="text-xs mt-1 font-medium text-green-700">✓ {parts[1]}</div>
+                          : <div className="text-xs mt-1 italic text-gray-400">— answer hidden —</div>
                       )}
                     </div>
                   );
@@ -1863,7 +2717,7 @@ function FullSlideView({
                 <div className="grid grid-cols-2 gap-2">
                   {slide.options.map((opt, i) => {
                     const letters = ["A", "B", "C", "D"];
-                    const isAnswer = slide.answer === letters[i] || slide.answer === opt;
+                    const isAnswer = (slide.answer === letters[i] || slide.answer === opt) && revealLevel >= 1;
                     return (
                       <div key={i} className="flex items-center gap-2 rounded-lg p-2.5 border-2" style={{
                         borderColor: isAnswer ? "#16a34a" : "#e5e7eb",
@@ -2085,21 +2939,21 @@ function FullSlideView({
       // ── Primary: Story Time ──────────────────────────────────────────────
       case "story-time":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF0FB,#FFF8E1)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#EC4899" }}>📖</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#7C3AED" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>📖</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
               {slide.body && (
-                <div className="rounded-3xl p-5 text-[1.1rem] font-semibold leading-relaxed" style={{ background: "rgba(236,72,153,0.1)", border: "3px solid #EC4899", color: "#4a044e" }}>
+                <div className="rounded-3xl p-5 text-[1.1rem] font-semibold leading-relaxed" style={{ background: theme.light, border: `3px solid ${badgeColour}`, color: theme.text }}>
                   {slide.body}
                 </div>
               )}
               {slide.image_prompt && (
-                <div className="rounded-2xl overflow-hidden h-28 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(https://source.unsplash.com/featured/600x200/?${encodeURIComponent(slide.image_prompt)})`, border: "3px solid #F59E0B" }} />
+                <div className="rounded-2xl overflow-hidden h-28 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(https://source.unsplash.com/featured/600x200/?${encodeURIComponent(slide.image_prompt)})`, border: `3px solid ${theme.accent}` }} />
               )}
             </div>
           </div>
@@ -2108,24 +2962,24 @@ function FullSlideView({
       // ── Primary: Draw It ──────────────────────────────────────────────────
       case "draw-it":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#F0FDF4,#ECFEFF)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#22c55e" }}>✏️</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#15803d" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>✏️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex gap-4 items-center">
               <div className="flex-1">
                 {slide.question && (
-                  <div className="text-[1.1rem] font-bold mb-4 rounded-2xl p-4" style={{ background: "rgba(34,197,94,0.15)", border: "3px solid #22c55e", color: "#14532d" }}>
+                  <div className="text-[1.1rem] font-bold mb-4 rounded-2xl p-4" style={{ background: theme.light, border: `3px solid ${badgeColour}`, color: theme.text }}>
                     {slide.question}
                   </div>
                 )}
-                {slide.body && <div className="text-sm font-medium" style={{ color: "#166534" }}>{slide.body}</div>}
+                {slide.body && <div className="text-sm font-medium" style={{ color: theme.text }}>{slide.body}</div>}
               </div>
-              <div className="flex-1 rounded-3xl flex items-center justify-center" style={{ border: "3px dashed #22c55e", background: "white", minHeight: "120px" }}>
-                <div className="text-center" style={{ color: "#86efac" }}>
+              <div className="flex-1 rounded-3xl flex items-center justify-center" style={{ border: `3px dashed ${badgeColour}`, background: "white", minHeight: "120px" }}>
+                <div className="text-center" style={{ color: badgeColour, opacity: 0.6 }}>
                   <div className="text-4xl mb-1">🖊️</div>
                   <div className="text-xs font-semibold">Draw here</div>
                 </div>
@@ -2137,15 +2991,15 @@ function FullSlideView({
       // ── Primary: Sort It ──────────────────────────────────────────────────
       case "sort-it":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF7ED,#FFFBEB)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#f97316" }}>🗂️</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#c2410c" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>🗂️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-3">
-              {slide.question && <div className="text-base font-bold" style={{ color: "#7c2d12" }}>{slide.question}</div>}
+              {slide.question && <div className="text-base font-bold" style={{ color: theme.text }}>{slide.question}</div>}
               <div className="flex gap-3 flex-wrap">
                 {slide.bullets?.map((item, i) => (
                   <div key={i} className="px-4 py-2 rounded-2xl text-sm font-bold" style={{ background: ["#fef9c3","#dcfce7","#dbeafe","#fce7f3","#f3e8ff","#ffedd5"][i%6], border: `2px solid ${["#ca8a04","#16a34a","#2563eb","#db2777","#7c3aed","#ea580c"][i%6]}`, color: ["#713f12","#14532d","#1e3a8a","#831843","#4c1d95","#431407"][i%6] }}>
@@ -2169,17 +3023,17 @@ function FullSlideView({
       // ── Primary: Match It ──────────────────────────────────────────────────
       case "match-it":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#EFF6FF,#F5F3FF)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#7C3AED" }}>⚡</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#4c1d95" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>⚡</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex gap-4 items-center">
               <div className="flex-1 flex flex-col gap-2">
                 {slide.bullets?.map((item, i) => (
-                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: "#ede9fe", border: "2px solid #7C3AED", color: "#4c1d95" }}>{item}</div>
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: theme.light, border: `2px solid ${badgeColour}`, color: theme.text }}>{item}</div>
                 ))}
               </div>
               <div className="flex flex-col gap-2 text-2xl text-gray-300">
@@ -2187,7 +3041,7 @@ function FullSlideView({
               </div>
               <div className="flex-1 flex flex-col gap-2">
                 {slide.body?.split("|").map((item, i) => (
-                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: "#fce7f3", border: "2px solid #EC4899", color: "#831843" }}>{item.trim()}</div>
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: theme.light, border: `2px solid ${theme.accent}`, color: theme.text }}>{item.trim()}</div>
                 ))}
               </div>
             </div>
@@ -2197,27 +3051,27 @@ function FullSlideView({
       // ── Primary: Fill the Gap ──────────────────────────────────────────────
       case "fill-the-gap":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#ECFEFF,#F0FDF4)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#0891b2" }}>✍️</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#164e63" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>✍️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
               {slide.question && (
-                <div className="text-[1.1rem] font-bold rounded-2xl p-5 leading-loose" style={{ background: "rgba(8,145,178,0.1)", border: "3px solid #0891b2", color: "#164e63" }}>
+                <div className="text-[1.1rem] font-bold rounded-2xl p-5 leading-loose" style={{ background: theme.light, border: `3px solid ${badgeColour}`, color: theme.text }}>
                   {slide.question.split("___").map((part, i, arr) => (
-                    <span key={i}>{part}{i < arr.length-1 && <span className="inline-block border-b-4 border-cyan-500 w-20 mx-1 align-bottom" />}</span>
+                    <span key={i}>{part}{i < arr.length-1 && <span className="inline-block border-b-4 w-20 mx-1 align-bottom" style={{ borderColor: badgeColour }} />}</span>
                   ))}
                 </div>
               )}
               {slide.bullets && slide.bullets.length > 0 && (
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#0891b2" }}>Word Bank</div>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: badgeColour }}>Word Bank</div>
                   <div className="flex gap-2 flex-wrap">
                     {slide.bullets.map((word, i) => (
-                      <div key={i} className="px-4 py-1.5 rounded-full text-sm font-bold" style={{ background: "#cffafe", border: "2px solid #0891b2", color: "#164e63" }}>{word}</div>
+                      <div key={i} className="px-4 py-1.5 rounded-full text-sm font-bold" style={{ background: theme.light, border: `2px solid ${badgeColour}`, color: theme.text }}>{word}</div>
                     ))}
                   </div>
                 </div>
@@ -2229,11 +3083,11 @@ function FullSlideView({
       // ── Primary: Spot the Mistake ──────────────────────────────────────────
       case "spot-the-mistake":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF1F2,#FFF7ED)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#dc2626" }}>🔍</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#991b1b" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#dc2626", color: "white" }}>🔍</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
@@ -2255,26 +3109,26 @@ function FullSlideView({
       // ── Primary: Number Talk ──────────────────────────────────────────────
       case "number-talk":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FEFCE8,#FFF0FB)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#eab308" }}>🔢</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#713f12" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>🔢</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex gap-5 items-center">
               {slide.question && (
-                <div className="w-32 h-32 rounded-3xl flex items-center justify-center text-[2.5rem] font-black flex-shrink-0" style={{ background: "#fef9c3", border: "4px solid #eab308", color: "#713f12" }}>
+                <div className="w-32 h-32 rounded-3xl flex items-center justify-center text-[2.5rem] font-black flex-shrink-0" style={{ background: theme.light, border: `4px solid ${badgeColour}`, color: theme.primary }}>
                   {slide.question}
                 </div>
               )}
               <div className="flex-1 flex flex-col gap-2">
                 {slide.bullets?.map((way, i) => (
-                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-semibold" style={{ background: ["#fef9c3","#dcfce7","#dbeafe"][i%3], border: `2px solid ${["#ca8a04","#16a34a","#2563eb"][i%3]}`, color: ["#713f12","#14532d","#1e3a8a"][i%3] }}>
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-semibold" style={{ background: theme.light, border: `2px solid ${badgeColour}`, color: theme.text }}>
                     {way}
                   </div>
                 ))}
-                {slide.body && <div className="text-xs font-semibold italic mt-1" style={{ color: "#92400e" }}>{slide.body}</div>}
+                {slide.body && <div className="text-xs font-semibold italic mt-1" style={{ color: theme.text, opacity: 0.7 }}>{slide.body}</div>}
               </div>
             </div>
           </div>
@@ -2322,8 +3176,8 @@ function FullSlideView({
             <div className="flex-1 px-8 pb-7 grid grid-cols-[1fr_260px] gap-3">
               <div className="rounded-xl border-2 p-3 overflow-y-auto" style={{ borderColor: badgeColour, background: theme.light }}>
                 <div className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: badgeColour }}>Model Answer</div>
-                <div className="text-sm leading-relaxed" style={{ color: theme.text }}>
-                  {slide.body || slide.answer || "(Model answer)"}
+                <div className="text-sm leading-relaxed" style={{ color: theme.text, opacity: revealLevel >= 1 ? 1 : 0.15 }}>
+                  {revealLevel >= 1 ? (slide.body || slide.answer || "(Model answer)") : "[ press → to reveal the model answer ]"}
                 </div>
               </div>
               <div className="space-y-1.5 overflow-y-auto">
@@ -2485,13 +3339,186 @@ function FullSlideView({
           </div>
         );
 
+      // ── Phase 2: cold-call ─────────────────────────────────────────────
+      case "cold-call":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Users} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-3">
+              {slide.coldCallCue && (
+                <div className="rounded-2xl p-4 text-center" style={{ background: theme.light, border: `2px solid ${badgeColour}` }}>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: badgeColour }}>Cold-call cue — say this</div>
+                  <div className="text-lg font-semibold" style={{ color: theme.primary }}>{slide.coldCallCue}</div>
+                </div>
+              )}
+              {slide.question && (
+                <div className="rounded-xl p-3" style={{ background: "white", border: `1px solid ${badgeColour}40` }}>
+                  <div className="text-[10px] font-bold uppercase mb-1 text-gray-500">Question</div>
+                  <div className="text-base font-medium" style={{ color: theme.text }}>{slide.question}</div>
+                </div>
+              )}
+              {slide.namedPupilHint && (
+                <div className="text-[12px] italic text-gray-500 text-center">Try a quieter pupil — {slide.namedPupilHint}</div>
+              )}
+              {slide.bullets && slide.bullets.length > 0 && (
+                <div className="space-y-1.5">
+                  {slide.bullets.map((b, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-4 h-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: badgeColour }}>{i + 1}</div>
+                      <div className="text-xs" style={{ color: theme.text }}>{b}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Phase 2: live-model (I do · We do · You do) ────────────────────
+      case "live-model": {
+        const m = slide.liveModel;
+        const stages: Array<[string, string, string, string, string]> = [
+          ["I DO",   "Watch first",      m?.iDo || "(model)",  "#dbeafe", "#1d4ed8"],
+          ["WE DO",  "Try with me",      m?.weDo || "(guided)", "#fef3c7", "#b45309"],
+          ["YOU DO", "Independent",      m?.youDo || "(solo)",  "#dcfce7", "#16a34a"],
+        ];
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Brain} />
+            <div className="flex-1 px-10 pb-7 grid grid-cols-3 gap-2.5">
+              {stages.map(([label, sub, content, bg, fg]) => (
+                <div key={label} className="rounded-2xl p-3 flex flex-col" style={{ background: bg, border: `2px solid ${fg}` }}>
+                  <div className="text-[10px] font-black tracking-wide uppercase" style={{ color: fg }}>{label}</div>
+                  <div className="text-[10px] italic mb-1" style={{ color: fg, opacity: 0.7 }}>{sub}</div>
+                  <div className="text-sm leading-snug flex-1" style={{ color: fg }}>{content}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      // ── Phase 2: do-now (low-stakes starter as pupils arrive) ─────────────
+      case "do-now":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Pencil} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-3">
+              <div className="text-center">
+                <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-1">Do this now — silently, in your book</div>
+              </div>
+              {slide.question && (
+                <div className="rounded-2xl p-5" style={{ background: theme.light, border: `2px solid ${badgeColour}` }}>
+                  <div className="text-base font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
+                </div>
+              )}
+              {slide.bullets && slide.bullets.length > 0 && (
+                <div className="space-y-1.5">
+                  {slide.bullets.map((b, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-5 h-5 rounded-full bg-white border-2 flex-shrink-0 mt-0.5" style={{ borderColor: badgeColour }} />
+                      <div className="text-sm font-medium" style={{ color: theme.text }}>{b}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Phase 2: choose-your-task (3 routes) ─────────────────────────────
+      case "choose-your-task": {
+        const d = slide.differentiation || {};
+        const routes = [
+          { label: d.support ? "Build it"  : null, body: d.support, bg: "#dcfce7", fg: "#16a34a" },
+          { label: d.core ? "Stretch it"   : null, body: d.core,    bg: "#dbeafe", fg: "#2563eb" },
+          { label: d.extension ? "Master it" : null, body: d.extension, bg: "#f5f3ff", fg: "#7c3aed" },
+        ].filter(r => r.body);
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={List} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-3">
+              {slide.question && (
+                <div className="rounded-xl p-3 text-center" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+                  <div className="text-base font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
+                </div>
+              )}
+              <div className={`grid gap-2.5 ${routes.length === 3 ? "grid-cols-3" : routes.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
+                {routes.map((r, i) => (
+                  <div key={i} className="rounded-2xl p-3 flex flex-col" style={{ background: r.bg, border: `2px solid ${r.fg}` }}>
+                    <div className="text-[10px] font-black uppercase tracking-wide" style={{ color: r.fg }}>{r.label}</div>
+                    <div className="text-[12px] mt-1 leading-snug" style={{ color: r.fg }}>{r.body}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="text-[11px] italic text-center text-gray-500">Pick the one that feels right for you today.</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── Phase 2: stuck-help (hint ladder, answer hidden until last) ─────
+      case "stuck-help":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={HelpCircle} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-2.5">
+              {slide.question && (
+                <div className="rounded-xl p-3" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+                  <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
+                </div>
+              )}
+              {(slide.hintLadder || []).map((hint, i) => (
+                <div key={i} className="flex items-start gap-2 rounded-lg p-2.5" style={{ background: ["#fef9c3","#fed7aa","#fecaca"][Math.min(i, 2)], border: `1.5px solid ${["#ca8a04","#c2410c","#dc2626"][Math.min(i, 2)]}` }}>
+                  <div className="w-6 h-6 rounded-full text-[11px] font-bold text-white flex items-center justify-center flex-shrink-0" style={{ background: ["#ca8a04","#c2410c","#dc2626"][Math.min(i, 2)] }}>H{i + 1}</div>
+                  <div className="text-[12px] flex-1" style={{ color: ["#713f12","#7c2d12","#7f1d1d"][Math.min(i, 2)] }}>{hint}</div>
+                </div>
+              ))}
+              {slide.finalAnswer && (
+                <details className="rounded-lg" style={{ background: "#dcfce7", border: "1.5px solid #16a34a" }}>
+                  <summary className="cursor-pointer px-3 py-2 text-[12px] font-bold text-green-800">Reveal the answer</summary>
+                  <div className="px-3 pb-2 text-[12px] text-green-900">{slide.finalAnswer}</div>
+                </details>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Phase 2: homework — brief + due + minutes + link ──────────────
+      case "homework":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Edit3} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-3">
+              <div className="rounded-2xl p-4" style={{ background: theme.light, border: `2px solid ${badgeColour}` }}>
+                <div className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: badgeColour }}>Homework</div>
+                <div className="text-base font-medium" style={{ color: theme.text }}>{slide.homeworkBrief || slide.body || "(homework brief)"}</div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg p-2" style={{ background: "white", border: `1px solid ${badgeColour}40` }}>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Due</div>
+                  <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.homeworkDueDate || "—"}</div>
+                </div>
+                <div className="rounded-lg p-2" style={{ background: "white", border: `1px solid ${badgeColour}40` }}>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Time</div>
+                  <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.homeworkMinutes ? `${slide.homeworkMinutes} min` : "—"}</div>
+                </div>
+                <div className="rounded-lg p-2 truncate" style={{ background: "white", border: `1px solid ${badgeColour}40` }}>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Submit</div>
+                  <div className="text-sm font-semibold truncate" style={{ color: theme.primary }}>{slide.homeworkLink ? "link in chat" : "in book"}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
       // ── Default: content / activity / extension ────────────────────────────
       default:
         return renderLayoutSlide(slide, theme, badgeColour, Icon);
     }
   };
 
-  const isTitleSlide = slide.type === "title";
+  const isTitleSlide = slide.type === "title" || slide.type === "section-divider";
 
   // SEND field strips — rendered ABOVE the slide's main content so they are
   // unmissable and don't get pushed off-screen on short slides.
@@ -2595,7 +3622,10 @@ function FullSlideView({
         aspectRatio: "16/9",
         background: isTitleSlide ? theme.gradient : theme.bg,
         position: "relative",
-        fontFamily: theme.fontFamily || undefined,
+        // theme.fontFamily wins (SEND), then any preview-level wrapper font
+        // (the parent supplies a CSS variable for subject-aware font when no
+        // SEND override is active).
+        fontFamily: theme.fontFamily || "var(--pres-font, Calibri)",
         lineHeight: theme.lineHeight || undefined,
       }}
     >
@@ -2626,6 +3656,16 @@ function FullSlideView({
       {!isTitleSlide && renderSendStrips()}
       {renderSlideContent()}
       {!isTitleSlide && renderSendFooter()}
+      {/* School-identity watermark — title always; every slide when opted-in. */}
+      {branding?.name && (slide.type === "title" || branding.showOnEverySlide) && (
+        <div className="absolute bottom-2 right-3 flex items-center gap-1.5 opacity-70 pointer-events-none" style={{ color: isTitleSlide ? "rgba(255,255,255,0.85)" : theme.text }}>
+          {branding.logoDataUrl && <img src={branding.logoDataUrl} alt="" className="h-5 w-auto object-contain" />}
+          <div className="text-[9px] font-semibold leading-tight">
+            <div>{branding.name}</div>
+            {branding.motto && slide.type === "title" && <div className="italic font-normal">{branding.motto}</div>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2639,9 +3679,9 @@ async function exportToPptx(
 ): Promise<void> {
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
-  const theme = composeTheme(themeKey, sendNeedIds);
-  // Font family: Dyslexia forces Verdana, VI forces Arial, else the theme default.
-  const pptxFont = themeFontFamily(theme);
+  const theme = composeTheme(themeKey, sendNeedIds, presentation.subject);
+  // Font family resolves: SEND override > theme.fontFamily > subject-aware > Calibri.
+  const pptxFont = theme.fontFamily || getSubjectFontFamily(presentation.subject);
   // Minimum font sizes — raised by SEND needs (VI = 24pt body, 40pt title).
   const minBodyPt = theme.minBodyPt || 12;
   const minTitlePt = theme.minTitlePt || 22;
@@ -3324,6 +4364,147 @@ async function exportToPptx(
   await pptx.writeFile({ fileName: `${presentation.title.replace(/[^a-z0-9]/gi, "_")}_Adaptly.pptx` });
 }
 
+// ─── Presenter Mode ───────────────────────────────────────────────────────
+// Real presenter view: current slide on left, next preview + notes + clock +
+// timer + key legend on the right. Blackout/whiteout overlay sits on top when
+// the teacher hits B / W. All keyboard handling routed through the parent's
+// `onKeyDown` so reveal state stays in one place.
+function PresenterMode({
+  presentation, theme, activeSlide, revealLevel,
+  timerSeconds, timerPaused, blackout, showNotes, branding,
+  onKeyDown, onSetActive, onExit, onTogglePause, onClearBlackout,
+}: {
+  presentation: PresentationData;
+  theme: ComposedTheme;
+  activeSlide: number;
+  revealLevel: number;
+  timerSeconds: number | null;
+  timerPaused: boolean;
+  blackout: "none" | "black" | "white";
+  showNotes: boolean;
+  branding?: SchoolIdentity;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+  onSetActive: (i: number) => void;
+  onExit: () => void;
+  onTogglePause: () => void;
+  onClearBlackout: () => void;
+}) {
+  const slide = presentation.slides[activeSlide];
+  const next = presentation.slides[activeSlide + 1];
+  const total = presentation.slides.length;
+
+  // Wall-clock string, refreshed every second.
+  const [now, setNow] = useState<Date>(new Date());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const wall = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  // Timer chrome — colours shift red <60s.
+  const mins = timerSeconds == null ? null : Math.floor(timerSeconds / 60);
+  const secs = timerSeconds == null ? null : timerSeconds % 60;
+  const timerLow = (timerSeconds ?? 9999) < 60;
+  const timerStr = timerSeconds == null ? "—" : `${mins}:${(secs as number).toString().padStart(2, "0")}`;
+
+  if (!slide) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black flex outline-none"
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+      ref={el => el?.focus()}
+    >
+      {/* Blackout / whiteout overlay (B / W keys) ───────────────────────── */}
+      {blackout !== "none" && (
+        <div
+          className="absolute inset-0 z-[60] flex items-center justify-center cursor-pointer"
+          style={{ background: blackout === "black" ? "#000" : "#fff" }}
+          onClick={onClearBlackout}
+          role="button"
+          aria-label="Blackout — click or press any key to restore"
+        >
+          <div className={`text-xs ${blackout === "black" ? "text-white/30" : "text-black/30"}`}>
+            (press any key to resume)
+          </div>
+        </div>
+      )}
+
+      {/* Left — main slide ───────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-6xl" style={{ aspectRatio: "16/9" }}>
+            <FullSlideView slide={slide} theme={theme} index={activeSlide} total={total} revealLevel={revealLevel} branding={branding} />
+          </div>
+        </div>
+        {/* Bottom control strip ───────────────────────────────────────────── */}
+        <div className="flex items-center justify-between px-6 py-2 bg-black/60 text-white text-xs">
+          <div className="flex items-center gap-3">
+            <button onClick={() => onSetActive(Math.max(0, activeSlide - 1))} disabled={activeSlide === 0} className="flex items-center gap-1 disabled:opacity-30 hover:text-gray-300">
+              <ChevronLeft className="w-4 h-4" /> Prev
+            </button>
+            <button onClick={() => onSetActive(Math.min(total - 1, activeSlide + 1))} disabled={activeSlide === total - 1} className="flex items-center gap-1 disabled:opacity-30 hover:text-gray-300">
+              Next <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="opacity-70 ml-2">{activeSlide + 1} / {total}</div>
+          </div>
+          <div className="opacity-60 hidden md:block">→ reveal · ↓ next · R reveal-all · B black · W white · T pause · N notes · Esc exit</div>
+          <button onClick={onExit} className="opacity-70 hover:opacity-100">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Right — presenter sidebar ───────────────────────────────────────── */}
+      <div className="w-80 bg-slate-900 text-white flex flex-col border-l border-slate-700 hidden lg:flex">
+        {/* Clock + timer */}
+        <div className="p-3 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 opacity-60" />
+            <div className="text-sm font-mono">{wall}</div>
+          </div>
+          <button onClick={onTogglePause} className={`text-xs font-mono px-2 py-1 rounded ${timerLow ? "bg-red-500 text-white animate-pulse" : "bg-slate-800"}`}>
+            {timerPaused ? <Play className="w-3 h-3 inline" /> : <Pause className="w-3 h-3 inline" />} {timerStr}
+          </button>
+        </div>
+        {/* Next slide preview */}
+        <div className="p-3 border-b border-slate-800">
+          <div className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Next slide</div>
+          {next ? (
+            <div className="rounded-md overflow-hidden border border-slate-700 bg-white" style={{ aspectRatio: "16/9" }}>
+              <div className="w-full h-full transform scale-[0.4] origin-top-left" style={{ width: "250%", height: "250%" }}>
+                <FullSlideView slide={next} theme={theme} index={activeSlide + 1} total={total} />
+              </div>
+            </div>
+          ) : (
+            <div className="text-xs text-slate-500 italic">— end of deck —</div>
+          )}
+        </div>
+        {/* Speaker notes */}
+        {showNotes && (
+          <div className="p-3 flex-1 overflow-y-auto">
+            <div className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Speaker notes</div>
+            <div className="text-xs leading-relaxed whitespace-pre-wrap">
+              {slide.speakerNotes || <span className="italic text-slate-500">(no notes)</span>}
+            </div>
+          </div>
+        )}
+        {!showNotes && (
+          <div className="p-3 flex-1 overflow-y-auto">
+            <div className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Slide info</div>
+            <div className="text-xs space-y-1">
+              <div><span className="text-slate-400">Type:</span> {SLIDE_LABELS[slide.type] || slide.type}</div>
+              {slide.timingMinutes && <div><span className="text-slate-400">Timing:</span> {slide.timingMinutes} min</div>}
+              {Number.isFinite(revealLevel) && <div><span className="text-slate-400">Reveal:</span> {revealLevel}</div>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function PresentationMaker() {
   const { user } = useApp();
@@ -3409,10 +4590,115 @@ export default function PresentationMaker() {
   const [refineText, setRefineText] = useState("");
   const [refining, setRefining] = useState(false);
 
+  // ── Phase 3 — Presenter classroom features ─────────────────────────────
+  /** Click-to-reveal counter for the active slide (resets on slide change). */
+  const [revealLevel, setRevealLevel] = useState<number>(Infinity);
+  /** Live countdown remaining seconds; null when no timer running. */
+  const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
+  const [timerPaused, setTimerPaused] = useState<boolean>(false);
+  /** Blackout/whiteout overlay (B / W keys in presenter). */
+  const [blackout, setBlackout] = useState<"none"|"black"|"white">("none");
+  /** Display preferences — independent of SEND. Affects on-screen preview only. */
+  const [zoom, setZoom] = useState<number>(1.0);
+  const [fontOverride, setFontOverride] = useState<""|"sans"|"serif"|"mono"|"dyslexic">("");
+  const [contrastMode, setContrastMode] = useState<"normal"|"high"|"sepia">("normal");
+  const [showDisplayPrefs, setShowDisplayPrefs] = useState(false);
+  /** Read-aloud (Web Speech API) handle. */
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
+  /** AfL polling QR for the active slide. */
+  const [showPollQR, setShowPollQR] = useState(false);
+  /** Speaker-notes batch generator state. */
+  const [generatingNotes, setGeneratingNotes] = useState(false);
+  /** School identity dialog. */
+  const [showIdentityDialog, setShowIdentityDialog] = useState(false);
+  const [identity, setIdentity] = useState<SchoolIdentity>(() => readSchoolIdentity());
+  /** Per-slide version history (item 53) — last 5 versions per slide index. */
+  const [slideHistory, setSlideHistory] = useState<Record<number, SlideContent[]>>({});
+  const [historyForIdx, setHistoryForIdx] = useState<number | null>(null);
+  /** Variant generator state (item 55). */
+  const [generatingVariants, setGeneratingVariants] = useState(false);
+  const [variantOptions, setVariantOptions] = useState<SlideContent[] | null>(null);
+  const [variantTargetIdx, setVariantTargetIdx] = useState<number>(0);
+
+  // Reset reveal level + timer whenever the active slide changes.
+  useEffect(() => {
+    setRevealLevel(Infinity);
+    setBlackout("none");
+    // Stop any in-progress speech when the slide changes.
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setSpeakingIdx(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSlide, presentation?.slides?.length]);
+
+  // Drive the live countdown timer when in fullscreen mode and the slide has a duration.
+  useEffect(() => {
+    if (!isFullscreen || !presentation) { setTimerSeconds(null); return; }
+    const cur = presentation.slides[activeSlide];
+    if (!cur?.timingMinutes) { setTimerSeconds(null); return; }
+    setTimerSeconds(cur.timingMinutes * 60);
+    setTimerPaused(false);
+  }, [isFullscreen, activeSlide, presentation]);
+  useEffect(() => {
+    if (timerSeconds === null || timerPaused) return;
+    if (timerSeconds <= 0) return;
+    const id = window.setInterval(() => setTimerSeconds(s => (s == null ? null : Math.max(0, s - 1))), 1000);
+    return () => window.clearInterval(id);
+  }, [timerSeconds, timerPaused]);
+
+  // ── Autosave & draft recovery ──────────────────────────────────────────
+  // Write the current presentation + form state to localStorage on every
+  // edit (debounced 1.5s), so a refresh / crash doesn't lose work. On mount,
+  // offer to restore the most-recent draft if one exists.
+  const AUTOSAVE_KEY = "adaptly_pres_maker_draft_v1";
+  const hasOfferedRecover = useRef(false);
+  useEffect(() => {
+    if (hasOfferedRecover.current) return;
+    hasOfferedRecover.current = true;
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      const ageHours = (Date.now() - (draft?.at || 0)) / 3_600_000;
+      if (!draft?.presentation || ageHours > 24) return;
+      // Tiny prompt — we don't auto-restore without consent.
+      const ok = window.confirm(`Recover unsaved presentation "${draft.presentation.title}" from ${Math.round(ageHours * 60)} min ago?`);
+      if (ok) {
+        setPresentation(draft.presentation);
+        if (draft.subject) setSubject(draft.subject);
+        if (draft.yearGroup) setYearGroup(draft.yearGroup);
+        if (draft.topic) setTopic(draft.topic);
+        if (draft.theme) setSelectedTheme(draft.theme);
+        toast.success("Draft restored.");
+      } else {
+        localStorage.removeItem(AUTOSAVE_KEY);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (!presentation) return;
+    const id = window.setTimeout(() => {
+      try {
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+          at: Date.now(),
+          presentation,
+          subject, yearGroup, topic, theme: selectedTheme,
+        }));
+      } catch {}
+    }, 1500);
+    return () => window.clearTimeout(id);
+  }, [presentation, subject, yearGroup, topic, selectedTheme]);
+
   // Base theme is what the teacher chose; `theme` is the SEND-composed version
   // used for every render. When no SEND needs are selected, composeTheme
-  // returns the base theme unchanged (applied* fields empty).
-  const theme = composeTheme(selectedTheme, sendNeedIds);
+  // returns the base theme unchanged (applied* fields empty). Passing the
+  // subject lets `subject-auto` resolve the matching subject palette.
+  const theme = composeTheme(selectedTheme, sendNeedIds, subject);
+  // Subject-aware font, honouring SEND > theme > subject. Used for the on-screen
+  // preview; the PPTX export resolves the same way inside `exportToPptx`.
+  const activeFont = resolveActiveFont(theme, subject);
 
   const handleGenerate = async () => {
     if (!subject || !yearGroup || !topic) {
@@ -3582,6 +4868,12 @@ No markdown, no code fences, JSON only.`;
         const idx = typeof parsed.slideIndex === "number" ? parsed.slideIndex : refineTargetSlide;
         const incoming = parsed.slide || parsed;
         if (!incoming || typeof incoming !== "object") throw new Error("Refinement response missing slide data.");
+        // Stash the prior slide so the teacher can rollback (item 53).
+        setSlideHistory(prev => {
+          const cur = presentation.slides[idx];
+          const list = (prev[idx] || []).concat([cur]).slice(-5);
+          return { ...prev, [idx]: list };
+        });
         updatedSlides = [...presentation.slides];
         // Preserve the existing type — the AI MUST NOT change slide types.
         updatedSlides[idx] = { ...updatedSlides[idx], ...incoming, type: updatedSlides[idx].type } as SlideContent;
@@ -3606,6 +4898,7 @@ No markdown, no code fences, JSON only.`;
       setShowRefineDialog(false);
       setRefineText("");
       toast.success(refineScope === "slide" ? "Slide refined." : "Deck refined.");
+      recordTelemetry(refineScope === "slide" ? "refine-slide" : "refine-deck", { slideType: presentation.slides[refineTargetSlide]?.type });
     } catch (err: any) {
       console.error("Refinement failed:", err);
       toast.error(err.message || "Refinement failed. Please try again.");
@@ -3619,6 +4912,7 @@ No markdown, no code fences, JSON only.`;
     setExporting(true);
     try {
       await exportToPptx(presentation, selectedTheme, sendNeedIds);
+      recordTelemetry("export-pptx", { slides: presentation.slides.length, theme: selectedTheme });
       toast.success("PowerPoint downloaded!");
     } catch (err: any) {
       console.error("PPTX export failed:", err);
@@ -3811,7 +5105,7 @@ Return JSON array of adapted slides.`;
   // ── Print Handout ────────────────────────────────────────────────────────────
   const handlePrintHandout = (layout: "1up" | "2up" | "notes") => {
     if (!presentation) return;
-    const theme = composeTheme(selectedTheme, sendNeedIds);
+    const theme = composeTheme(selectedTheme, sendNeedIds, presentation.subject);
     const slidesHtml = presentation.slides.map((slide, i) => {
       const bullets = slide.bullets?.map(b => `<li>${b}</li>`).join("") || "";
       const steps = slide.steps?.map((s, si) => `<li><strong>${si + 1}.</strong> ${s}</li>`).join("") || "";
@@ -3850,14 +5144,228 @@ Return JSON array of adapted slides.`;
     setTimeout(() => { w.print(); }, 500);
   };
 
-  // ── Fullscreen keyboard nav ───────────────────────────────────────────────────
+  // ── Fullscreen / Presenter keyboard binding ─────────────────────────────────
+  // Conventions follow PowerPoint / Keynote so muscle memory transfers:
+  //   →, Space  →  next reveal step on current slide; advance slide if exhausted
+  //   ↓, PgDn   →  next slide (no progressive reveal)
+  //   ←, ↑, PgUp →  previous slide
+  //   R         →  reveal everything on the current slide
+  //   B         →  black-out screen (toggle)
+  //   W         →  white-out screen (toggle)
+  //   T         →  pause/resume countdown timer
+  //   .         →  jump back to first slide
+  //   End       →  jump to last slide
+  //   N         →  toggle speaker notes (companion panel)
+  //   Esc       →  clear blackout, then exit
   const handleFullscreenKeyDown = (e: React.KeyboardEvent) => {
     if (!isFullscreen || !presentation) return;
-    if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ")
-      setActiveSlide(s => Math.min(presentation.slides.length - 1, s + 1));
-    if (e.key === "ArrowLeft" || e.key === "ArrowUp")
-      setActiveSlide(s => Math.max(0, s - 1));
-    if (e.key === "Escape") setIsFullscreen(false);
+    const cur = presentation.slides[activeSlide];
+    const total = presentation.slides.length;
+    // If we're blacked-out, any key restores the slide except Esc which exits.
+    if (blackout !== "none") {
+      if (e.key === "Escape") setBlackout("none");
+      else { e.preventDefault(); setBlackout("none"); }
+      return;
+    }
+    switch (e.key) {
+      case "ArrowRight":
+      case " ":
+      case "Spacebar": {
+        e.preventDefault();
+        // Reveal-aware advance: increment revealLevel up to a slide-specific
+        // ceiling, then advance to the next slide.
+        const ceiling = (() => {
+          if (cur?.workedExampleBox) return cur.workedExampleBox.steps.length + 1; // steps + answer
+          if (cur?.type === "pause-and-solve" || cur?.type === "check-understanding" || cur?.type === "mini-quiz" || cur?.type === "model-answer" || cur?.type === "stuck-help" || cur?.type === "exit-ticket") return 1;
+          return 0;
+        })();
+        if (Number.isFinite(revealLevel) && (revealLevel as number) < ceiling) {
+          setRevealLevel(((revealLevel as number) || 0) + 1);
+        } else {
+          if (activeSlide < total - 1) setActiveSlide(activeSlide + 1);
+        }
+        break;
+      }
+      case "ArrowDown":
+      case "PageDown":
+        e.preventDefault();
+        if (activeSlide < total - 1) setActiveSlide(activeSlide + 1);
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+      case "PageUp":
+        e.preventDefault();
+        if (activeSlide > 0) setActiveSlide(activeSlide - 1);
+        break;
+      case "r":
+      case "R":
+        e.preventDefault();
+        setRevealLevel(Infinity);
+        break;
+      case "b":
+      case "B":
+        e.preventDefault();
+        setBlackout("black");
+        break;
+      case "w":
+      case "W":
+        e.preventDefault();
+        setBlackout("white");
+        break;
+      case "t":
+      case "T":
+        e.preventDefault();
+        setTimerPaused(p => !p);
+        break;
+      case "n":
+      case "N":
+        e.preventDefault();
+        setShowNotes(s => !s);
+        break;
+      case "Home":
+      case ".":
+        e.preventDefault();
+        setActiveSlide(0);
+        break;
+      case "End":
+        e.preventDefault();
+        setActiveSlide(total - 1);
+        break;
+      case "Escape":
+        setIsFullscreen(false);
+        break;
+    }
+  };
+
+  // ── Read-aloud (Web Speech API) ─────────────────────────────────────────
+  const speakSlide = (slide: SlideContent | undefined, idx: number) => {
+    if (!slide || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (speakingIdx === idx) {
+      window.speechSynthesis.cancel();
+      setSpeakingIdx(null);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const text = [
+      slide.title,
+      slide.subtitle,
+      slide.body,
+      slide.question,
+      ...(slide.bullets || []),
+    ].filter(Boolean).join(". ");
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.95;
+    utt.pitch = 1;
+    utt.onend = () => setSpeakingIdx(null);
+    utt.onerror = () => setSpeakingIdx(null);
+    window.speechSynthesis.speak(utt);
+    setSpeakingIdx(idx);
+  };
+
+  // ── Generate speaker notes for slides that lack them (item 25) ──────────
+  // Batches every slide with empty speakerNotes through callAIMessages so the
+  // model uses the deck-wide context. Returns 2-3 sentence notes per slide.
+  const handleGenerateMissingNotes = async () => {
+    if (!presentation) return;
+    const missingIdx = presentation.slides
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => !s.speakerNotes || s.speakerNotes.trim().length < 20)
+      .map(({ i }) => i);
+    if (missingIdx.length === 0) {
+      toast.info("Every slide already has speaker notes.");
+      return;
+    }
+    setGeneratingNotes(true);
+    try {
+      const sys = `You are a UK teacher. Generate practical, classroom-ready speaker notes for each slide listed. Each notes block must be 2-3 sentences and contain: what the teacher should DO (point at, ask, compare), what to LISTEN FOR (a specific pupil response), and what comes NEXT. No fluff.
+
+Return ONLY a JSON object: { "notes": { "<slideIndex>": "...notes...", ... } }`;
+      const slideSummary = missingIdx.map(i => {
+        const s = presentation.slides[i];
+        return { index: i, type: s.type, title: s.title, body: (s.body || "").slice(0, 200), question: s.question, bullets: (s.bullets || []).slice(0, 5) };
+      });
+      const usr = `Deck title: ${presentation.title}
+Subject: ${presentation.subject}
+Year: ${presentation.yearGroup}
+Topic: ${presentation.topic}
+
+Slides needing notes:
+${JSON.stringify(slideSummary)}
+
+Return JSON only.`;
+      const result = await callAI(sys, usr, 4000);
+      const rawText = typeof result === "string" ? result : (result as any).text || JSON.stringify(result);
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(match ? match[0] : cleaned);
+      const notes = parsed.notes || {};
+      const newSlides = presentation.slides.map((s, i) => {
+        const note = notes[String(i)] || notes[i];
+        return note && (typeof note === "string") ? { ...s, speakerNotes: note } : s;
+      });
+      setPresentation({ ...presentation, slides: newSlides });
+      toast.success(`Generated notes for ${missingIdx.length} slide${missingIdx.length === 1 ? "" : "s"}.`);
+    } catch (e: any) {
+      console.error("Generate notes failed:", e);
+      toast.error("Couldn't generate notes — please try again.");
+    } finally {
+      setGeneratingNotes(false);
+    }
+  };
+
+  // ── Variant generator (item 55) ─────────────────────────────────────────
+  // Asks the AI for 3 distinct phrasings of the active slide (formal /
+  // pupil-friendly / story-led). Surfaces them as a chooser modal; pick
+  // one to splice into the deck. The previous slide goes into history so
+  // the choice is reversible.
+  const handleGenerateVariants = async (idx: number) => {
+    if (!presentation) return;
+    const slide = presentation.slides[idx];
+    if (!slide) return;
+    setGeneratingVariants(true);
+    setVariantTargetIdx(idx);
+    setVariantOptions(null);
+    try {
+      const sys = `You produce three distinct phrasings of a single lesson slide.
+The three variants must vary in TONE only — academic content, learning objective and slide TYPE must stay identical:
+  1) Formal / mark-scheme tone
+  2) Pupil-friendly / conversational tone
+  3) Story-led / context-first tone
+Return ONLY a JSON object: { "variants": [<full slide JSON #1>, <full slide JSON #2>, <full slide JSON #3>] }
+Each variant must keep the same "type" as the input slide. Do NOT change any structured data fields like marks/timingMinutes/successCriteria — only rewrite human-readable text fields.`;
+      const usr = `Deck: ${presentation.title} (${presentation.subject}, ${presentation.yearGroup})
+Slide to revoice (preserve type "${slide.type}"):
+${JSON.stringify(slide)}
+
+Return JSON only.`;
+      const result = await callAI(sys, usr, 3500);
+      const rawText = typeof result === "string" ? result : (result as any).text || JSON.stringify(result);
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(match ? match[0] : cleaned);
+      const variants: SlideContent[] = (parsed.variants || []).slice(0, 3).map((v: any) => ({ ...slide, ...v, type: slide.type }));
+      if (variants.length === 0) throw new Error("No variants returned.");
+      setVariantOptions(variants);
+    } catch (err: any) {
+      console.error("Variant generation failed:", err);
+      toast.error("Couldn't generate variants — please try again.");
+    } finally {
+      setGeneratingVariants(false);
+    }
+  };
+  const acceptVariant = (variant: SlideContent) => {
+    if (!presentation) return;
+    const idx = variantTargetIdx;
+    setSlideHistory(prev => {
+      const cur = presentation.slides[idx];
+      const list = (prev[idx] || []).concat([cur]).slice(-5);
+      return { ...prev, [idx]: list };
+    });
+    const newSlides = [...presentation.slides];
+    newSlides[idx] = variant;
+    setPresentation({ ...presentation, slides: newSlides });
+    setVariantOptions(null);
+    toast.success("Variant applied.");
   };
 
   // ── Inline slide editing ─────────────────────────────────────────────────────
@@ -3869,10 +5377,17 @@ Return JSON array of adapted slides.`;
 
   const saveEditSlide = () => {
     if (!presentation || editingSlide === null) return;
+    // Push the prior version into history before overwriting (item 53).
+    setSlideHistory(prev => {
+      const cur = presentation.slides[editingSlide];
+      const list = (prev[editingSlide] || []).concat([cur]).slice(-5);
+      return { ...prev, [editingSlide]: list };
+    });
     const newSlides = [...presentation.slides];
     newSlides[editingSlide] = { ...newSlides[editingSlide], ...slideEditValues } as SlideContent;
     setPresentation({ ...presentation, slides: newSlides });
     setEditingSlide(null);
+    recordTelemetry("edit-slide", { slideType: newSlides[editingSlide].type, slideIndex: editingSlide });
     toast.success("Slide updated!");
   };
 
@@ -3896,8 +5411,47 @@ Return JSON array of adapted slides.`;
 
   const currentSlide = presentation?.slides[activeSlide];
 
+  // ── Phase 5/6 — validator findings + telemetry ───────────────────────────
+  // Run validators on every deck change. Cheap pure functions — no AI calls.
+  const validatorFindings: ValidationFinding[] = useMemo(() => {
+    if (!presentation) return [];
+    return runAllValidators({
+      slides: presentation.slides as any,
+      objectives,
+      readingAge,
+    });
+  }, [presentation, objectives, readingAge]);
+
+  // Telemetry ping when a deck is generated or exported (small useEffect for
+  // each so the meta is keyed correctly).
+  useEffect(() => {
+    if (!presentation) return;
+    recordTelemetry("generate", { slides: presentation.slides.length, theme: selectedTheme });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presentation?.title]);
+  useEffect(() => {
+    if (!selectedTheme) return;
+    recordTelemetry("theme-change", { theme: selectedTheme });
+  }, [selectedTheme]);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className="min-h-screen bg-gray-50"
+      style={{
+        ["--pres-font" as any]: (
+          fontOverride === "sans" ? "Inter, system-ui, sans-serif"
+          : fontOverride === "serif" ? "'Source Serif Pro', Georgia, serif"
+          : fontOverride === "mono" ? "'Consolas', monospace"
+          : fontOverride === "dyslexic" ? "'OpenDyslexic', Verdana, sans-serif"
+          : activeFont
+        ),
+        // Zoom is applied to the slide preview area only (the styles cascade
+        // via the CSS variable); see FullSlideView's wrapper.
+        ["--pres-zoom" as any]: zoom.toFixed(2),
+        ...(contrastMode === "high" ? { filter: "contrast(1.15) saturate(1.1)" } : {}),
+        ...(contrastMode === "sepia" ? { filter: "sepia(0.4)" } : {}),
+      }}
+    >
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -3937,9 +5491,82 @@ Return JSON array of adapted slides.`;
                   <DropdownMenuItem onClick={() => handlePrintHandout("notes")}>📋 Notes page (slide + notes)</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button
+                variant="outline" size="sm" onClick={() => setShowIdentityDialog(true)}
+                className="text-xs gap-1"
+                title="School identity (logo, motto, brand colour)"
+              >
+                🏫 School
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setIsFullscreen(true)} className="text-xs gap-1">
                 <Maximize2 className="w-3 h-3" />Present
               </Button>
+              <Button
+                variant="outline" size="sm" onClick={() => setShowDisplayPrefs(p => !p)}
+                className="text-xs gap-1"
+                title="Display preferences (zoom, font, contrast)"
+              >
+                <TypeIcon className="w-3 h-3" />Display
+              </Button>
+              <Button
+                variant="outline" size="sm"
+                onClick={() => speakSlide(currentSlide, activeSlide)}
+                className="text-xs gap-1"
+                title={speakingIdx === activeSlide ? "Stop reading" : "Read this slide aloud"}
+              >
+                {speakingIdx === activeSlide ? <VolumeX className="w-3 h-3 text-red-500" /> : <Volume2 className="w-3 h-3" />}
+                {speakingIdx === activeSlide ? "Stop" : "Read"}
+              </Button>
+              {/* Show "Live poll QR" only when the active slide is question-bearing. */}
+              {currentSlide && ["check-understanding","mini-quiz","exit-ticket","hook","discussion","cold-call"].includes(currentSlide.type) && (
+                <Button
+                  variant="outline" size="sm"
+                  onClick={() => setShowPollQR(true)}
+                  className="text-xs gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  title="Pupils scan to answer — live AfL poll"
+                >
+                  📱 Live poll
+                </Button>
+              )}
+              {/* Send the current deck context to another tool (Worksheets, Flashcards, Exit Ticket…). */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-xs gap-1" title="Continue this work in another tool">
+                    <Send className="w-3 h-3" />Send
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-60">
+                  <DropdownMenuItem onClick={() => {
+                    persistHandoff("presentation-maker", { topic: presentation?.topic || topic, yearGroup, subject, sourceSlide: currentSlide?.title || "" }, presentation?.title);
+                    setLocation("/worksheets");
+                  }}>📄 Make a worksheet from this lesson</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    const vocabSlide = presentation?.slides.find(s => s.type === "vocab-reference");
+                    const flashContent = vocabSlide?.vocabTable
+                      ? vocabSlide.vocabTable.map(t => `${t.term} :: ${t.definition}`).join("\n")
+                      : (presentation?.slides.flatMap(s => s.terms || []).map(t => `${t.term} :: ${t.definition}`).join("\n") || "");
+                    persistHandoff("presentation-maker", { topic: presentation?.topic || topic, yearGroup, subject }, flashContent);
+                    setLocation("/tools/flashcards");
+                  }}>🃏 Push key terms to Flashcards</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    const exitSlide = presentation?.slides.find(s => s.type === "exit-ticket");
+                    persistHandoff("presentation-maker",
+                      { topic: presentation?.topic || topic, yearGroup, subject },
+                      exitSlide ? `Q: ${exitSlide.question || ""}\nA: ${exitSlide.answer || ""}` : "");
+                    setLocation("/tools/exit-ticket");
+                  }}>✓ Exit-ticket → Exit Ticket tool</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    const examSlides = presentation?.slides.filter(s => s.type === "exam-practice" || s.type === "mini-quiz" || s.type === "check-understanding");
+                    const blastContent = (examSlides || []).map(s => s.question || "").filter(Boolean).join("\n");
+                    persistHandoff("presentation-maker", { topic: presentation?.topic || topic, yearGroup, subject }, blastContent);
+                    setLocation("/tools/quiz-blast");
+                  }}>⚡ Send quiz to Quiz Blast</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    persistHandoff("presentation-maker", { topic: presentation?.topic || topic, yearGroup, subject }, presentation?.title);
+                    setLocation("/tools/lesson-bundle");
+                  }}>📦 Bundle as lesson pack</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button variant="outline" size="sm" onClick={() => setShowSendAdaptDialog(true)} className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold">
                 Adapt for SEND
               </Button>
@@ -4140,6 +5767,21 @@ Return JSON array of adapted slides.`;
                     <Palette className="w-3 h-3" /> Theme
                   </Label>
                   <div className="grid grid-cols-3 gap-1.5">
+                    {/* Subject-auto theme — pulls palette from subject-profiles.ts */}
+                    <button
+                      onClick={() => setSelectedTheme("subject-auto" as ThemeKey)}
+                      className={`rounded-lg p-2 border-2 transition-all text-left ${
+                        selectedTheme === ("subject-auto" as ThemeKey) ? "border-blue-500 shadow-sm" : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      title={subject ? `Use the ${subject} palette automatically` : "Pick a subject first"}
+                    >
+                      <div className="h-4 rounded mb-1" style={{
+                        background: subject
+                          ? `linear-gradient(135deg, #${getSubjectProfile(subject).palette.darkBg} 0%, #${getSubjectProfile(subject).palette.accent1} 100%)`
+                          : "linear-gradient(135deg,#64748b,#94a3b8)",
+                      }} />
+                      <div className="text-[9px] font-bold text-gray-700 truncate">✨ Subject Auto</div>
+                    </button>
                     {(Object.entries(THEMES) as [ThemeKey, typeof THEMES[ThemeKey]][]).map(([key, t]) => (
                       <button
                         key={key}
@@ -4232,6 +5874,36 @@ Return JSON array of adapted slides.`;
                   <SendAppliedBanner sendNeedIds={sendNeedIds} />
                 )}
 
+                {/* ── Phase 5/6 deck-quality findings (items 22, 24, 26) ──── */}
+                {validatorFindings.length > 0 && (
+                  <details className="rounded-lg border border-amber-300 bg-amber-50 overflow-hidden">
+                    <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100/60 list-none flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{validatorFindings.length} deck-quality finding{validatorFindings.length === 1 ? "" : "s"}</span>
+                      <span className="ml-auto text-[10px] text-amber-700 font-normal">click to expand</span>
+                    </summary>
+                    <div className="px-3 pb-3 pt-1 space-y-1.5 border-t border-amber-200 bg-white/40">
+                      {validatorFindings.map((f, i) => (
+                        <div key={i} className="text-[11px] text-amber-900 flex items-start gap-2">
+                          <span className="text-amber-600 flex-shrink-0 mt-0.5">·</span>
+                          <div>
+                            <span className="font-medium">{f.message}</span>
+                            {f.suggestion && <span className="text-amber-700 italic"> — {f.suggestion}</span>}
+                            {f.index >= 0 && (
+                              <button
+                                onClick={() => { setActiveSlide(f.index); openRefineDialog("slide", f.index); }}
+                                className="ml-2 text-[10px] underline text-amber-800 hover:text-amber-950"
+                              >
+                                Fix slide {f.index + 1}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
+
                 {/* Presentation header */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -4243,15 +5915,20 @@ Return JSON array of adapted slides.`;
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowNotes(!showNotes)}
-                      className="text-xs"
-                    >
-                      <Eye className="w-3 h-3 mr-1" />
-                      {showNotes ? "Hide" : "Show"} Notes
-                    </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowNotes(!showNotes)} className="text-xs gap-1" title="Toggle speaker-notes panel">
+                <Eye className="w-3 h-3 mr-1" />
+                {showNotes ? "Hide" : "Show"} Notes
+              </Button>
+              <Button
+                variant="outline" size="sm"
+                onClick={handleGenerateMissingNotes}
+                disabled={generatingNotes}
+                className="text-xs gap-1 border-amber-300 text-amber-700 hover:bg-amber-50"
+                title="Generate practical 2-3 sentence speaker notes for slides that lack them"
+              >
+                {generatingNotes ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                Gen notes
+              </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -4260,6 +5937,17 @@ Return JSON array of adapted slides.`;
                       className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold"
                     >
                       Refine this slide
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGenerateVariants(activeSlide)}
+                      disabled={generatingVariants}
+                      className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold"
+                      title="Generate 3 alternative phrasings (formal / pupil-friendly / story-led)"
+                    >
+                      {generatingVariants ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                      3 variants
                     </Button>
                     <Button
                       variant="outline"
@@ -4284,12 +5972,13 @@ Return JSON array of adapted slides.`;
 
                 {/* Main slide view */}
                 {currentSlide && (
-                  <div>
+                  <div style={{ transform: `scale(var(--pres-zoom, 1))`, transformOrigin: "top center", transition: "transform 0.15s ease-out" }}>
                     <FullSlideView
                       slide={currentSlide}
                       theme={theme}
                       index={activeSlide}
                       total={presentation.slides.length}
+                      branding={identity}
                     />
                     {/* Navigation */}
                     <div className="flex items-center justify-between mt-3">
@@ -4349,6 +6038,11 @@ Return JSON array of adapted slides.`;
                           <button onClick={(e) => { e.stopPropagation(); moveSlide(i, -1); }} disabled={i === 0} className="w-4 h-4 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-30"><ChevronUp className="w-2.5 h-2.5" /></button>
                           <button onClick={(e) => { e.stopPropagation(); moveSlide(i, 1); }} disabled={i === presentation.slides.length - 1} className="w-4 h-4 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-30"><ChevronDown className="w-2.5 h-2.5" /></button>
                           <button onClick={(e) => { e.stopPropagation(); startEditSlide(i); }} className="w-4 h-4 flex items-center justify-center hover:bg-blue-50 rounded"><Pencil className="w-2.5 h-2.5 text-blue-600" /></button>
+                          {(slideHistory[i]?.length || 0) > 0 && (
+                            <button onClick={(e) => { e.stopPropagation(); setHistoryForIdx(i); }} className="w-4 h-4 flex items-center justify-center hover:bg-amber-50 rounded" title={`${slideHistory[i].length} prior version(s)`}>
+                              <HistoryIcon className="w-2.5 h-2.5 text-amber-600" />
+                            </button>
+                          )}
                           <button onClick={(e) => { e.stopPropagation(); deleteSlide(i); }} disabled={presentation.slides.length <= 1} className="w-4 h-4 flex items-center justify-center hover:bg-red-50 rounded disabled:opacity-30"><Trash2 className="w-2.5 h-2.5 text-red-500" /></button>
                         </div>
                       </div>
@@ -4456,40 +6150,27 @@ Return JSON array of adapted slides.`;
         </div>
       </div>
 
-      {/* ── Fullscreen Presentation Mode ─────────────────────────────────────── */}
+      {/* ── Presenter Mode (replaces the legacy fullscreen) ─────────────────── */}
+      {/* Layout: large current slide on the left, side panel on the right with
+          next-slide thumbnail + speaker notes + countdown + wall-clock + key
+          legend. B/W blackout overlay sits above everything when active.    */}
       {isFullscreen && presentation && currentSlide && (
-        <div
-          className="fixed inset-0 z-50 bg-black flex flex-col outline-none"
-          tabIndex={0}
+        <PresenterMode
+          presentation={presentation}
+          theme={theme}
+          activeSlide={activeSlide}
+          revealLevel={revealLevel}
+          timerSeconds={timerSeconds}
+          timerPaused={timerPaused}
+          blackout={blackout}
+          showNotes={showNotes}
+          branding={identity}
           onKeyDown={handleFullscreenKeyDown}
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          ref={el => el?.focus()}
-        >
-          <div className="flex-1 flex items-center justify-center p-4">
-            <div className="w-full max-w-5xl" style={{ aspectRatio: "16/9" }}>
-              <FullSlideView slide={currentSlide} theme={theme} index={activeSlide} total={presentation.slides.length} />
-            </div>
-          </div>
-          {/* Fullscreen controls */}
-          <div className="flex items-center justify-between px-8 py-3 bg-black/60 text-white">
-            <button onClick={() => setActiveSlide(s => Math.max(0, s - 1))} disabled={activeSlide === 0} className="flex items-center gap-1 text-sm disabled:opacity-30 hover:text-gray-300">
-              <ChevronLeft className="w-5 h-5" />Previous
-            </button>
-            <div className="text-center">
-              <div className="text-sm font-semibold">{currentSlide.title}</div>
-              <div className="text-xs text-gray-400">{activeSlide + 1} / {presentation.slides.length}</div>
-            </div>
-            <div className="flex items-center gap-4">
-              <button onClick={() => setActiveSlide(s => Math.min(presentation.slides.length - 1, s + 1))} disabled={activeSlide === presentation.slides.length - 1} className="flex items-center gap-1 text-sm disabled:opacity-30 hover:text-gray-300">
-                Next<ChevronRight className="w-5 h-5" />
-              </button>
-              <button onClick={() => setIsFullscreen(false)} className="text-gray-400 hover:text-white ml-4">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-          <div className="text-center pb-2 text-gray-600 text-xs">Press ← → to navigate · Esc to exit</div>
-        </div>
+          onSetActive={setActiveSlide}
+          onExit={() => setIsFullscreen(false)}
+          onTogglePause={() => setTimerPaused(p => !p)}
+          onClearBlackout={() => setBlackout("none")}
+        />
       )}
 
       {/* ── Email Dialog ────────────────────────────────────────────────────── */}
@@ -4524,6 +6205,220 @@ Return JSON array of adapted slides.`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── AfL Live Poll QR ─────────────────────────────────────────────── */}
+      <SlidePollQR
+        open={showPollQR}
+        onOpenChange={setShowPollQR}
+        slide={currentSlide ? {
+          title: currentSlide.title,
+          question: currentSlide.question,
+          options: currentSlide.options,
+          answer: currentSlide.answer,
+          type: currentSlide.type,
+        } : null}
+      />
+
+      {/* ── Variant Chooser dialog (item 55) ─────────────────────────────── */}
+      <Dialog open={!!variantOptions} onOpenChange={(o) => !o && setVariantOptions(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Pick a variant for slide {variantTargetIdx + 1}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {(variantOptions || []).map((v, i) => {
+              const labels = ["Formal", "Pupil-friendly", "Story-led"];
+              return (
+                <div key={i} className="rounded-lg border-2 border-gray-200 hover:border-purple-400 p-3 cursor-pointer flex flex-col gap-2"
+                     onClick={() => acceptVariant(v)}>
+                  <div className="text-[9px] font-bold uppercase tracking-wide text-purple-700">{labels[i] || `Variant ${i + 1}`}</div>
+                  <div className="text-sm font-bold" style={{ color: theme.primary }}>{v.title}</div>
+                  {v.subtitle && <div className="text-[11px] italic text-gray-500">{v.subtitle}</div>}
+                  {v.body && <div className="text-[11px] text-gray-700 line-clamp-3">{v.body}</div>}
+                  {v.bullets && v.bullets.length > 0 && (
+                    <ul className="text-[10px] text-gray-700 list-disc pl-4">
+                      {v.bullets.slice(0, 4).map((b, bi) => <li key={bi} className="line-clamp-1">{b}</li>)}
+                    </ul>
+                  )}
+                  <Button size="sm" className="mt-auto bg-purple-600 hover:bg-purple-700 text-white text-xs">Use this variant</Button>
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Slide Version History dialog (item 53) ───────────────────────── */}
+      <Dialog open={historyForIdx !== null} onOpenChange={(o) => !o && setHistoryForIdx(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Slide {historyForIdx === null ? "" : historyForIdx + 1} — version history</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {historyForIdx !== null && (slideHistory[historyForIdx] || []).slice().reverse().map((past, vi) => {
+              const realIdx = (slideHistory[historyForIdx] || []).length - 1 - vi;
+              return (
+                <div key={vi} className="rounded-lg border border-gray-200 p-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-semibold text-gray-700">v{realIdx + 1} — {SLIDE_LABELS[past.type] || past.type}</div>
+                    <Button size="sm" variant="outline" className="text-xs h-6"
+                      onClick={() => {
+                        if (!presentation || historyForIdx === null) return;
+                        // Stash the current as a new version, then restore.
+                        setSlideHistory(prev => {
+                          const cur = presentation.slides[historyForIdx];
+                          const list = (prev[historyForIdx] || []).concat([cur]).slice(-5);
+                          return { ...prev, [historyForIdx]: list };
+                        });
+                        const newSlides = [...presentation.slides];
+                        newSlides[historyForIdx] = past;
+                        setPresentation({ ...presentation, slides: newSlides });
+                        toast.success("Reverted to earlier version.");
+                        setHistoryForIdx(null);
+                      }}>
+                      Restore
+                    </Button>
+                  </div>
+                  <div className="text-[11px] font-bold" style={{ color: theme.primary }}>{past.title}</div>
+                  {past.body && <div className="text-[10px] text-gray-600 line-clamp-2">{past.body}</div>}
+                  {past.bullets && past.bullets.length > 0 && (
+                    <ul className="text-[10px] text-gray-700 list-disc pl-4 mt-1">
+                      {past.bullets.slice(0, 3).map((b, i) => <li key={i} className="line-clamp-1">{b}</li>)}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
+            {historyForIdx !== null && (slideHistory[historyForIdx] || []).length === 0 && (
+              <div className="text-xs italic text-gray-500">No prior versions yet — they'll appear here after you edit or refine this slide.</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── School Identity Dialog ───────────────────────────────────────── */}
+      <Dialog open={showIdentityDialog} onOpenChange={setShowIdentityDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>School identity</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-gray-600">
+              Add your school's name, motto and logo. Every deck you build will carry a small footer
+              watermark, and the logo appears on the title slide.
+            </p>
+            <div className="space-y-1">
+              <Label className="text-xs">School name</Label>
+              <Input value={identity.name || ""} onChange={e => setIdentity({ ...identity, name: e.target.value })} className="h-8 text-xs" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Motto / tagline (optional)</Label>
+              <Input value={identity.motto || ""} onChange={e => setIdentity({ ...identity, motto: e.target.value })} className="h-8 text-xs" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Brand colour</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={identity.brandColour || "#1B2A4A"}
+                  onChange={e => setIdentity({ ...identity, brandColour: e.target.value })}
+                  className="h-8 w-12 rounded border"
+                />
+                <Input
+                  value={identity.brandColour || ""}
+                  onChange={e => setIdentity({ ...identity, brandColour: e.target.value })}
+                  placeholder="#1B2A4A"
+                  className="h-8 text-xs flex-1 font-mono"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Logo (PNG/JPG, &lt; 200kb)</Label>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml"
+                onChange={async e => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  if (f.size > 200_000) { toast.error("Logo too large — please use under 200kb."); return; }
+                  const url = await fileToDataUrl(f);
+                  setIdentity(id => ({ ...id, logoDataUrl: url }));
+                }}
+                className="text-xs"
+              />
+              {identity.logoDataUrl && (
+                <div className="flex items-center gap-2 mt-1">
+                  <img src={identity.logoDataUrl} alt="logo" className="w-12 h-12 object-contain border rounded bg-white" />
+                  <button onClick={() => setIdentity(id => ({ ...id, logoDataUrl: undefined }))} className="text-[10px] text-red-600 underline">Remove</button>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                checked={!!identity.showOnEverySlide}
+                onChange={e => setIdentity({ ...identity, showOnEverySlide: e.target.checked })}
+                id="show-everywhere"
+              />
+              <Label htmlFor="show-everywhere" className="text-xs">Show watermark on every slide (not just title)</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setShowIdentityDialog(false)}>Cancel</Button>
+            <Button size="sm" onClick={() => { writeSchoolIdentity(identity); toast.success("School identity saved."); setShowIdentityDialog(false); }} className="bg-blue-600 hover:bg-blue-700 text-white">
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Display Preferences popover ──────────────────────────────────── */}
+      {showDisplayPrefs && (
+        <div className="fixed top-14 right-4 z-40 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-bold text-gray-800">Display preferences</div>
+            <button onClick={() => setShowDisplayPrefs(false)} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
+          </div>
+          <div className="text-[10px] text-gray-500">
+            These are independent of any SEND adaptations and only affect how slides look on YOUR screen.
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Zoom · {Math.round(zoom * 100)}%</Label>
+            <Slider min={0.7} max={1.6} step={0.05} value={[zoom]} onValueChange={([v]) => setZoom(v)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Font</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {([
+                ["", "Auto"], ["sans", "Sans"], ["serif", "Serif"],
+                ["mono", "Mono"], ["dyslexic", "Dyslexic"],
+              ] as const).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setFontOverride(val as any)}
+                  className={`text-[10px] py-1 rounded border ${fontOverride === val ? "bg-blue-50 border-blue-500 text-blue-700" : "bg-white border-gray-200 text-gray-600"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Contrast</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {([["normal","Normal"],["high","High"],["sepia","Sepia"]] as const).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setContrastMode(val as any)}
+                  className={`text-[10px] py-1 rounded border ${contrastMode === val ? "bg-blue-50 border-blue-500 text-blue-700" : "bg-white border-gray-200 text-gray-600"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── SEND Adaptation Dialog ───────────────────────────────────────────── */}
       <Dialog open={showSendAdaptDialog} onOpenChange={setShowSendAdaptDialog}>
