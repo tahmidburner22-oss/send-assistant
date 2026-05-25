@@ -115,6 +115,14 @@ export default function AdminPanel() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [usageTrend, setUsageTrend] = useState<any[]>([]);
+  const [costRollup, setCostRollup] = useState<{
+    windowDays: number;
+    totalCalls: number;
+    cachedCalls: number;
+    totalSpendUsd: number;
+    estimatedSavingsUsd: number;
+    byProvider: Array<{ provider: string; calls: number; spendUsd: number }>;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
@@ -166,10 +174,12 @@ export default function AdminPanel() {
       fetch("/api/admin/ai-keys", { credentials: "include" }).then(r => r.ok ? r.json() : {}).catch(() => ({})),
       fetch("/api/admin/breach-log", { credentials: "include" }).then(r => r.ok ? r.json() : { breaches: [] }).catch(() => ({ breaches: [] })),
       fetch("/api/admin/school-usage-trend", { credentials: "include" }).then(r => r.ok ? r.json() : []).catch(() => []),
-    ]).then(([u, i, a, s, k, b, trend]) => {
+      fetch("/api/admin/cost-rollup?windowDays=30", { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([u, i, a, s, k, b, trend, cost]) => {
       setUsers(u || []); setIncidents(i || []); setAuditLogs(a || []);
       setStats(s); setApiKeys(k || {}); setBreaches((b as any)?.breaches || []);
       setUsageTrend(Array.isArray(trend) ? trend : []);
+      setCostRollup(cost as any);
     }).catch(() => toast.error("Failed to load admin data"))
       .finally(() => setLoading(false));
 
@@ -590,6 +600,62 @@ export default function AdminPanel() {
                       <Line type="monotone" dataKey="activeUsers" stroke="#F59E0B" strokeWidth={2} dot={{ r: 2 }} name="Active Users" />
                     </LineChart>
                   </ResponsiveContainer>
+                </div>
+              )}
+
+              {/* PD13 — Generation cost transparency: monthly spend + cache savings */}
+              {costRollup && (
+                <div data-testid="admin-cost-rollup" className="mt-4 pt-4 border-t border-border/50">
+                  <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                    <BarChart3 className="w-3.5 h-3.5 text-indigo-600" /> Generation cost — last {costRollup.windowDays} days
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    {[
+                      { label: "Total calls", value: costRollup.totalCalls.toLocaleString(), color: "text-slate-700" },
+                      { label: "Cached (free)", value: costRollup.cachedCalls.toLocaleString(), color: "text-emerald-600" },
+                      { label: "Spend (USD)", value: `$${costRollup.totalSpendUsd.toFixed(4)}`, color: "text-indigo-600" },
+                      { label: "Saved by cache (USD)", value: `$${costRollup.estimatedSavingsUsd.toFixed(4)}`, color: "text-emerald-600" },
+                    ].map((s, i) => (
+                      <Card key={i} className="border-border/40">
+                        <CardContent className="p-3 text-center">
+                          <div className={`text-base font-bold ${s.color}`}>{s.value}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{s.label}</div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  {costRollup.byProvider.length > 0 ? (
+                    <table className="w-full text-[11px]">
+                      <thead>
+                        <tr className="border-b border-border/40 text-muted-foreground">
+                          <th className="text-left py-1 px-2">Provider</th>
+                          <th className="text-right py-1 px-2">Calls</th>
+                          <th className="text-right py-1 px-2">Spend (USD)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {costRollup.byProvider.map((p) => (
+                          <tr key={p.provider} className="border-b border-border/20">
+                            <td className="py-1 px-2 font-mono">{p.provider}</td>
+                            <td className="py-1 px-2 text-right">{p.calls.toLocaleString()}</td>
+                            <td className="py-1 px-2 text-right font-semibold">${p.spendUsd.toFixed(4)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground italic">
+                      No cost-logged generations yet in this window. The log starts populating
+                      from the next worksheet generation onwards.
+                    </p>
+                  )}
+                  <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">
+                    Token counts are estimated from prompt + response length using the public
+                    4-chars-per-token rule. USD figures use the per-provider mid-2026 rates in
+                    <code className="mx-1 px-1 rounded bg-muted/40 font-mono">aiCostEstimate.ts</code>.
+                    Cached calls are logged with $0 spend; saved-by-cache is the imputed
+                    would-have-cost from the same provider's average non-cached call.
+                  </p>
                 </div>
               )}
             </CardContent>
