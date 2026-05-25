@@ -40,6 +40,19 @@ import {
   type CurriculumEntry,
 } from "../../client/src/lib/curriculumBank.js";
 import type { ExamBoard as BankExamBoard } from "../../client/src/lib/specPointTaxonomy.js";
+// Year of Reading 2026 — book grounding. The cache stores parsed pages
+// per book so a teacher can re-use the same upload across many chapter
+// sessions; the criteria parser turns an uploaded spreadsheet into a
+// per-reading-age criteria table.
+import {
+  computeBookId,
+  setBook as setCachedBook,
+  getPageRangeText,
+} from "../lib/book-content-cache.js";
+import {
+  parseCriteriaFile,
+  selectCriteriaForReadingAge,
+} from "../lib/criteria-parser.js";
 
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -3172,57 +3185,242 @@ Return a JSON object with this EXACT structure:
   }
 });
 
+// ── Book Content — parse & cache a book file for grounded questions ─────────
+//
+// Year of Reading 2026 addition. Teachers upload the actual book (PDF /
+// DOCX / TXT). We split it into pages, cache it for 24h keyed by a hash
+// of the file (so re-uploading is a no-op), and return a bookId the
+// client can pass to /book-questions to ground question generation in
+// the real text — and only the pages the pupil has read.
+router.post("/book-content", requireAuth, worksheetUpload.single("file"), async (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  const { title } = req.body as { title?: string };
+  const schoolId = req.user?.schoolId ?? null;
+
+  const allowedMimes = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+  ];
+  // Some browsers omit the mimetype for .txt — fall back to extension.
+  const lowerName = (req.file.originalname || "").toLowerCase();
+  const isTxtFallback = lowerName.endsWith(".txt") && !req.file.mimetype;
+  if (!allowedMimes.includes(req.file.mimetype) && !isTxtFallback) {
+    return res.status(415).json({
+      error: `Unsupported book file type: ${req.file.mimetype || "unknown"}. Use PDF, Word, or plain text.`,
+    });
+  }
+
+  try {
+    let pages: string[] = [];
+    if (req.file.mimetype === "application/pdf") {
+      const { PDFParse } = await import("pdf-parse" as any);
+      const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
+      await parser.load();
+      const result = await parser.getText();
+      if (result?.pages && Array.isArray(result.pages)) {
+        pages = result.pages.map((p: any) => (p.text || "").trim());
+      } else if (typeof result?.text === "string") {
+        pages = paginateFlatText(result.text);
+      }
+    } else if (req.file.mimetype === "text/plain" || isTxtFallback) {
+      pages = paginateFlatText(req.file.buffer.toString("utf-8"));
+    } else {
+      // Word .docx
+      const mammoth = await import("mammoth" as any);
+      const mammothLib = mammoth.default || mammoth;
+      const result = await mammothLib.extractRawText({ buffer: req.file.buffer });
+      pages = paginateFlatText(result.value || "");
+    }
+
+    pages = pages.map(p => p.trim()).filter(p => p.length > 0);
+    if (pages.length === 0) {
+      return res.status(422).json({ error: "Could not extract any readable text from this file." });
+    }
+
+    const bookId = computeBookId(req.file.buffer, schoolId);
+    const byteSize = pages.reduce((sum, p) => sum + p.length, 0);
+    const entry = setCachedBook({
+      bookId,
+      pages,
+      filename: req.file.originalname || "book",
+      title: (title || "").trim() || undefined,
+      byteSize,
+    });
+
+    res.json({
+      bookId: entry.bookId,
+      totalPages: entry.pages.length,
+      filename: entry.filename,
+      title: entry.title || entry.filename,
+      // Tiny preview so the UI can confirm the right book parsed correctly.
+      preview: entry.pages[0]?.slice(0, 240) || "",
+      cachedUntil: entry.createdAt + 24 * 60 * 60 * 1000,
+    });
+  } catch (err: any) {
+    console.error("[book-content] parse error:", err);
+    res.status(500).json({ error: err.message || "Failed to parse book file" });
+  }
+});
+
+/**
+ * Split a flat string of text into ~250-word pseudo-pages. Used for
+ * DOCX and TXT inputs which don't carry true page boundaries. The size
+ * mirrors a typical printed page so teacher page-range filtering still
+ * lines up reasonably.
+ */
+function paginateFlatText(text: string, wordsPerPage = 250): string[] {
+  if (!text) return [];
+  // First, honour explicit form-feed (\f) markers if the file has them.
+  if (text.includes("\f")) {
+    return text.split("\f").map(s => s.trim()).filter(Boolean);
+  }
+  const words = text.split(/\s+/).filter(Boolean);
+  const pages: string[] = [];
+  for (let i = 0; i < words.length; i += wordsPerPage) {
+    pages.push(words.slice(i, i + wordsPerPage).join(" "));
+  }
+  return pages;
+}
+
 // ── Book Questions — generate comprehension questions for a book ─────────────
+//
+// Year of Reading 2026: this endpoint now supports two new modes on top
+// of the original "title + page-range string only" behaviour:
+//
+//   1. Grounded mode — the client passes `bookContentId` from a prior
+//      /book-content upload. We slice the cached pages and pass the
+//      actual text to the AI, instructing it to ground every question
+//      in the passage. The response carries `grounded: true`.
+//
+//   2. Per-reading-age criteria — the criteria file may now be .csv or
+//      .xlsx with a "reading age" / "criteria" column pair, in which
+//      case only the row matching the pupil's selected reading age is
+//      sent to the AI. The response carries `criteriaSource` so the UI
+//      can show "Using row for Year 4 (8–9)".
 router.post("/book-questions", requireAuth, worksheetUpload.single("file"), async (req: Request, res: Response) => {
-  const { bookTitle, author, readingAge, yearGroup, pagesFrom, pagesTo, chapterInfo, questionCount } = req.body;
+  const { bookTitle, author, readingAge, yearGroup, pagesFrom, pagesTo, chapterInfo, questionCount, bookContentId, vipersFocus, includeBookTalk } = req.body as Record<string, string | undefined>;
   if (!bookTitle) return res.status(400).json({ error: "bookTitle is required" });
   const schoolId = req.user?.schoolId ?? undefined;
 
-  // Extract criteria text from uploaded file if provided
+  // ── Criteria file — now with .csv and .xlsx support ────────────────────
   let criteriaText = "";
+  let criteriaSource: { type: "matched-row" | "flat" | "none"; matchedRow?: string } = { type: "none" };
   if (req.file) {
-    const allowedMimes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-    ];
-    if (allowedMimes.includes(req.file.mimetype)) {
-      try {
-        if (req.file.mimetype === "application/pdf") {
-          const { PDFParse } = await import("pdf-parse" as any);
-          const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
-          await parser.load();
-          const result = await parser.getText();
-          // v2 returns { pages: [{ text: string }] }
-          if (result?.pages && Array.isArray(result.pages)) {
-            criteriaText = result.pages.map((p: any) => p.text || "").join("\n\n");
-          } else if (typeof result?.text === "string") {
-            criteriaText = result.text;
-          } else {
-            criteriaText = "";
-          }
-        } else if (req.file.mimetype === "text/plain") {
-          criteriaText = req.file.buffer.toString("utf-8");
-        } else {
-          const mammoth = await import("mammoth" as any);
-          const mammothLib = mammoth.default || mammoth;
-          const result = await mammothLib.extractRawText({ buffer: req.file.buffer });
-          criteriaText = result.value || "";
+    const mt = req.file.mimetype || "";
+    const lowerName = (req.file.originalname || "").toLowerCase();
+    const isSpreadsheet =
+      mt === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      mt === "application/vnd.ms-excel" ||
+      mt === "text/csv" ||
+      mt === "application/csv" ||
+      lowerName.endsWith(".csv") ||
+      lowerName.endsWith(".xlsx") ||
+      lowerName.endsWith(".xls");
+    const isPdf = mt === "application/pdf";
+    const isText = mt === "text/plain" || lowerName.endsWith(".txt");
+    const isDocx = mt === "application/msword" ||
+      mt === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+    try {
+      if (isSpreadsheet) {
+        const parsed = await parseCriteriaFile(req.file.buffer, mt, req.file.originalname);
+        const ageOrYear = readingAge || yearGroup || "";
+        const picked = selectCriteriaForReadingAge(parsed, ageOrYear);
+        criteriaText = picked.criteria.slice(0, 6000).trim();
+        criteriaSource =
+          picked.reason === "matched"
+            ? { type: "matched-row", matchedRow: picked.matchedRow }
+            : picked.reason === "flat"
+            ? { type: "flat" }
+            : { type: "none" };
+      } else if (isPdf) {
+        const { PDFParse } = await import("pdf-parse" as any);
+        const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
+        await parser.load();
+        const result = await parser.getText();
+        if (result?.pages && Array.isArray(result.pages)) {
+          criteriaText = result.pages.map((p: any) => p.text || "").join("\n\n");
+        } else if (typeof result?.text === "string") {
+          criteriaText = result.text;
         }
         criteriaText = criteriaText.slice(0, 6000).trim();
-      } catch (e: any) {
-        console.warn("[book-questions] criteria file parse error:", e?.message);
+        criteriaSource = criteriaText ? { type: "flat" } : { type: "none" };
+      } else if (isText) {
+        criteriaText = req.file.buffer.toString("utf-8").slice(0, 6000).trim();
+        criteriaSource = criteriaText ? { type: "flat" } : { type: "none" };
+      } else if (isDocx) {
+        const mammoth = await import("mammoth" as any);
+        const mammothLib = mammoth.default || mammoth;
+        const result = await mammothLib.extractRawText({ buffer: req.file.buffer });
+        criteriaText = (result.value || "").slice(0, 6000).trim();
+        criteriaSource = criteriaText ? { type: "flat" } : { type: "none" };
       }
+    } catch (e: any) {
+      console.warn("[book-questions] criteria file parse error:", e?.message);
     }
   }
 
+  // ── Optional grounded passage from cached book content ─────────────────
+  const fromPage = pagesFrom ? parseInt(String(pagesFrom), 10) : null;
+  const toPage = pagesTo ? parseInt(String(pagesTo), 10) : null;
+  let groundedPassage: { text: string; firstPage: number; lastPage: number; totalPages: number } | undefined;
+  let groundedExpired = false;
+  if (bookContentId) {
+    const slice = getPageRangeText(
+      bookContentId,
+      Number.isFinite(fromPage as number) ? (fromPage as number) : null,
+      Number.isFinite(toPage as number) ? (toPage as number) : null,
+    );
+    if (slice && slice.text) {
+      groundedPassage = slice;
+    } else {
+      groundedExpired = true;
+    }
+  }
+  const grounded = !!groundedPassage;
+  // Trim grounded passage to keep us under provider context limits while
+  // still leaving room for the prompt and JSON response.
+  const groundedText = groundedPassage
+    ? groundedPassage.text.slice(0, 12000)
+    : "";
+
   const ageLabel = readingAge || yearGroup || "age-appropriate";
   const numQuestions = parseInt(questionCount || "8", 10) || 8;
-  const pagesLabel = pagesFrom && pagesTo ? `pages ${pagesFrom}–${pagesTo}` : pagesFrom ? `from page ${pagesFrom}` : "the section they have read";
+  const pagesLabel = grounded
+    ? `pages ${groundedPassage!.firstPage}–${groundedPassage!.lastPage}`
+    : (fromPage && toPage
+        ? `pages ${fromPage}–${toPage}`
+        : (fromPage ? `from page ${fromPage}` : "the section they have read"));
   const authorLabel = author ? ` by ${author}` : "";
 
-  const system = `You are an expert UK primary and secondary school teacher specialising in reading comprehension and literacy assessment. You generate high-quality, age-appropriate comprehension questions that genuinely test a pupil's understanding of a book or text they have read.`;
+  // VIPERS framework — when supplied, bias the question type mix toward
+  // the requested strands. Empty / absent ⇒ balanced.
+  const VIPERS_LABEL: Record<string, string> = {
+    V: "Vocabulary", I: "Inference", P: "Predict",
+    E: "Explain", R: "Retrieve", S: "Sequence / Summarise",
+  };
+  const vipersIds = (vipersFocus || "").split(/[,\s]+/).filter(s => /^[VIPERS]$/.test(s));
+  const vipersLabels = vipersIds.length > 0
+    ? vipersIds.map(id => VIPERS_LABEL[id]).join(", ")
+    : "balanced VIPERS coverage (Vocabulary, Inference, Predict, Explain, Retrieve, Sequence)";
+
+  const wantsBookTalk = (includeBookTalk || "").toLowerCase() === "true";
+  const bookTalkBlock = wantsBookTalk
+    ? `\n\nALSO return a "bookTalk" array with 4 oracy / discussion sentence starters
+suitable for guided reading conversation. Examples: "I think… because in the text…",
+"The author's choice of word '…' makes me feel…", "I would change/agree/disagree with…".
+These should be open-ended and reusable across the book, not tied to one specific page.`
+    : "";
+
+  const system = grounded
+    ? `You are an expert UK primary and secondary school teacher specialising in reading comprehension and literacy assessment. You write comprehension questions GROUNDED in a specific passage of text. Every question you produce MUST be directly answerable from the passage provided. Do not draw on outside knowledge of the book.`
+    : `You are an expert UK primary and secondary school teacher specialising in reading comprehension and literacy assessment. You generate high-quality, age-appropriate comprehension questions that genuinely test a pupil's understanding of a book or text they have read.`;
+
+  const groundingBlock = grounded
+    ? `\n\n=== EXACT PASSAGE THE PUPIL HAS READ (pages ${groundedPassage!.firstPage}–${groundedPassage!.lastPage} of ${groundedPassage!.totalPages}) ===\n${groundedText}\n=== END PASSAGE ===\n\nALL questions and teacher notes MUST refer only to events, characters, and language in the passage above. Do NOT invent details. If a vocabulary question targets a word, the word MUST appear verbatim in the passage.`
+    : "";
 
   const user = `Generate ${numQuestions} comprehension questions for pupils who have just read ${pagesLabel} of the book "${bookTitle}"${authorLabel}.
 
@@ -3230,27 +3428,36 @@ Pupil reading age / level: ${ageLabel}
 ${yearGroup ? `Year group: ${yearGroup}` : ""}
 ${chapterInfo ? `\nContext / chapter summary provided by teacher:\n${chapterInfo}` : ""}
 ${criteriaText ? `\nAssessment criteria / mark scheme (base questions on this):\n${criteriaText}` : ""}
+VIPERS focus: ${vipersLabels}${groundingBlock}${bookTalkBlock}
+
+Use these "type" values to align with VIPERS:
+- "vocabulary" (V — word meaning in context)
+- "inference"  (I — read between the lines)
+- "predict"    (P — what might happen next, why)
+- "explain"    (E — author's choices, language, structure)
+- "retrieve"   (R — find it in the text)
+- "sequence"   (S — order or summarise events)
 
 Requirements:
-- Questions must be directly answerable from the pages the pupil has read
-- Vary question types: literal recall (2), inference (2), vocabulary/language (2), personal response/evaluation (2)
+- ${grounded ? "Every question must be answerable ONLY from the passage above" : "Questions must be directly answerable from the pages the pupil has read"}
+- ${vipersIds.length > 0 ? `At least 70% of questions must use these VIPERS strands: ${vipersIds.join(", ")}` : "Vary question types across the VIPERS strands (mix retrieve, inference, vocabulary, predict, explain, sequence)"}
 - Match vocabulary and sentence complexity to the reading age: ${ageLabel}
 - For younger readers (age 6-9): short, clear questions with simple vocabulary
 - For older readers (age 10+): include inference, authorial intent, and evaluative questions
 - Number each question Q1–Q${numQuestions}
-- After the questions, add a brief TEACHER NOTES section with suggested answers / marking guidance
+- After the questions, add a brief TEACHER NOTES section with suggested answers / marking guidance${grounded ? " — quote the exact line(s) from the passage that support each answer" : ""}
 
 Format your response as JSON:
 {
   "questions": [
-    { "number": 1, "type": "literal", "question": "...", "marks": 1 },
+    { "number": 1, "type": "retrieve",  "question": "...", "marks": 1 },
     { "number": 2, "type": "inference", "question": "...", "marks": 2 },
     { "number": 3, "type": "vocabulary", "question": "...", "marks": 1 },
-    { "number": 4, "type": "evaluation", "question": "...", "marks": 3 }
+    { "number": 4, "type": "explain", "question": "...", "marks": 3 }
   ],
   "teacherNotes": [
-    { "number": 1, "guidance": "Accept any answer that mentions..." }
-  ]
+    { "number": 1, "guidance": "${grounded ? "Quote the lines from the passage that support the answer..." : "Accept any answer that mentions..."}" }
+  ]${wantsBookTalk ? ',\n  "bookTalk": ["I think… because…", "..."]' : ""}
 }`;
 
   try {
@@ -3271,7 +3478,16 @@ Format your response as JSON:
         teacherNotes: [],
       };
     }
-    res.json({ ...parsed, provider });
+    res.json({
+      ...parsed,
+      provider,
+      grounded,
+      groundedExpired,
+      groundedRange: groundedPassage
+        ? { firstPage: groundedPassage.firstPage, lastPage: groundedPassage.lastPage, totalPages: groundedPassage.totalPages }
+        : undefined,
+      criteriaSource,
+    });
   } catch (err: any) {
     console.error("[book-questions] error:", err);
     res.status(500).json({ error: err.message || "Failed to generate questions" });
