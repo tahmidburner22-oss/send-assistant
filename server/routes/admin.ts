@@ -692,3 +692,27 @@ router.get("/email/health", requireAuth, requireAdmin, async (_req: Request, res
     }),
   });
 });
+
+
+
+// ── GET /api/admin/cost-rollup — PD13 generation cost transparency ──────────
+// Returns the last 30 days of generation cost data for the caller's school,
+// pre-aggregated by `rollupSchoolCosts`. Schools see only their own data.
+router.get("/cost-rollup", requireAuth, async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const schoolId = user?.schoolId;
+  if (!schoolId) {
+    return res.status(400).json({ error: "No school associated with user." });
+  }
+  const windowDaysRaw = Number((req.query.windowDays as string | undefined) ?? 30);
+  const windowDays = Number.isFinite(windowDaysRaw) && windowDaysRaw > 0 && windowDaysRaw <= 365
+    ? Math.floor(windowDaysRaw)
+    : 30;
+  try {
+    const { rollupSchoolCosts } = await import("../lib/generationCostLog.js");
+    const rollup = rollupSchoolCosts(schoolId, windowDays);
+    res.json(rollup);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message ?? "Cost rollup failed." });
+  }
+});

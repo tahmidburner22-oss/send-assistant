@@ -280,6 +280,10 @@ export const WorksheetOutputSchema = z.object({
       estimatedUsd: z.number().min(0),
       provider: z.string(),
       model: z.string(),
+      /** PD13 — wall-clock time the LLM call took, milliseconds. Optional
+       *  for backwards compatibility with PR-9 worksheets that didn't
+       *  capture timing. */
+      durationMs: z.number().min(0).optional(),
     }).optional(),
     /** PR-9 — generation cache: deterministic hash key for this request. */
     cacheKey: z.string().max(256).optional(),

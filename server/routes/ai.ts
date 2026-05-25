@@ -9,6 +9,16 @@ import { getSchoolKey } from "./schoolApiKeys.js";
 import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
 import { getCached, setCached, redactPii } from "../lib/generationCache.js";
 import { computeCacheKey } from "../../client/src/lib/aiCacheKey.js";
+import { estimateCost } from "../../client/src/lib/aiCostEstimate.js";
+import {
+  stampCostMetadata,
+  restampCacheHit,
+  approxTokenCount,
+} from "../../client/src/lib/aiCostStamp.js";
+import {
+  logGenerationCost,
+  rollupSchoolCosts,
+} from "../lib/generationCostLog.js";
 // Reuse the dependency-free SVG layout audit from the client. The module is
 // pure (no DOM, no fetch, no React) so it bundles cleanly into the server
 // build via esbuild.
@@ -691,9 +701,34 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
     tier: req.body.tier || '',
   };
   const cacheKey = computeCacheKey(cacheFields);
+  // PD13 — capture wall-clock duration for the cost chip.
+  const generateStartedAt = Date.now();
   const cached = getCached(cacheKey);
   if (cached) {
-    return res.json({ content: cached, provider: "cache", cacheHit: true, cacheKey });
+    // PR-9 stored an envelope { content, provider }. Pull out the
+    // worksheet JSON, re-stamp it as a cache hit (cacheHit=true,
+    // estimatedUsd=0) and return the same shape the cache-miss path
+    // returns so the client can treat both uniformly.
+    const cachedContent = (cached as { content?: unknown }).content;
+    const stamped = typeof cachedContent === "string"
+      ? restampCacheHit(cachedContent)
+      : "";
+    // Best-effort log so the admin panel sees the cache hit (free).
+    try {
+      logGenerationCost({
+        schoolId: req.user!.schoolId,
+        userId: req.user!.id,
+        provider: "cache",
+        model: "(cached)",
+        promptTokens: 0,
+        completionTokens: 0,
+        estimatedUsd: 0,
+        durationMs: Date.now() - generateStartedAt,
+        cacheKey,
+        cached: true,
+      });
+    } catch (_) {}
+    return res.json({ content: stamped, provider: "cache", cacheHit: true, cacheKey });
   }
 
   try {
@@ -740,9 +775,51 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
       const toolHint = (systemPrompt || "").slice(0, 80).replace(/\n/g, " ").trim();
       auditLog(req.user!.id, req.user!.schoolId, "ai.generate", "ai_filter_log", logId, { provider: result.provider, tool: toolHint || "unknown" }, req.ip);
     } catch (_) {}
-    // PR-9 — cache the successful response (PII-redacted)
-    try { setCached(cacheKey, redactPii({ content: result.content, provider: result.provider })); } catch (_e) {}
-    res.json({ content: result.content, provider: result.provider, aiGenerated: true });
+
+    // PD13 — UI surface for cost transparency. Stamp metadata.costEstimate
+    // / cacheKey / cacheHit=false onto the worksheet JSON so the chip in
+    // WorksheetRenderer can read them. Approximate token counts via the
+    // public 4-chars-per-token rule of thumb (the bursar's view is "is
+    // this in the right order of magnitude" — exact token usage from the
+    // provider response is a refinement for a later PR).
+    const promptText = (systemPrompt || "") + (prompt || "");
+    const promptTokens = approxTokenCount(promptText);
+    const completionTokens = approxTokenCount(result.content);
+    let resolvedModel = "(unknown)";
+    try {
+      resolvedModel = await getAdminModel(result.provider, req.user!.schoolId || undefined);
+    } catch (_) { /* fall back to "(unknown)" */ }
+    const cost = estimateCost(result.provider, resolvedModel, promptTokens, completionTokens);
+    const durationMs = Date.now() - generateStartedAt;
+    const stampedContent = stampCostMetadata(result.content, {
+      costEstimate: { ...cost, durationMs },
+      cacheKey,
+      cacheHit: false,
+    });
+
+    // PR-9 — cache the (stamped) response so subsequent hits return with
+    // cost metadata intact. PII-redact before write.
+    try {
+      setCached(cacheKey, redactPii({ content: stampedContent, provider: result.provider }));
+    } catch (_e) {}
+
+    // PD13 — append the cost-log row used by the admin spend panel.
+    try {
+      logGenerationCost({
+        schoolId: req.user!.schoolId,
+        userId: req.user!.id,
+        provider: result.provider,
+        model: resolvedModel,
+        promptTokens,
+        completionTokens,
+        estimatedUsd: cost.estimatedUsd,
+        durationMs,
+        cacheKey,
+        cached: false,
+      });
+    } catch (_) {}
+
+    res.json({ content: stampedContent, provider: result.provider, aiGenerated: true });
   } catch (err: any) {
     console.error("AI proxy error:", err);
     const errMsg = err?.message || String(err);
