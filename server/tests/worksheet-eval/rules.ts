@@ -26,7 +26,8 @@
  */
 
 import type { PostValidatorWorksheet } from "../../../client/src/lib/worksheetPostValidator";
-import type { EvalFixture } from "./types";
+import type { EvalFixture, AxisScores } from "./types";
+import { AXIS_KEYS } from "./types";
 
 /** Single-rule outcome. `null` reason ⇒ rule passed. */
 export type RuleResult = { ok: true } | { ok: false; reason: string };
@@ -210,6 +211,52 @@ const qaScoreFloor: Rule = (ws, fixture) => {
   return { ok: true };
 };
 
+/**
+ * PR-1 Sprint 1.C — model-judge axis-floor rule.
+ *
+ * The model-judge stamps its per-axis scores at
+ * `metadata.modelJudgeScores` (see `modelJudgeRater.ts`, Sprint 1.D).
+ * This rule fails when any axis falls below the fixture's declared
+ * floor — the floor is configurable per-fixture via
+ * `fixture.modelJudgeAxisFloor`. Missing axes inherit the runner
+ * default of 3 ("usable with edit"). A floor of 0 disables the
+ * check for that axis (useful during early calibration when one
+ * axis is intentionally being measured but not gated on).
+ *
+ * `null` axis scores (e.g. `sendAlignment` for non-SEND fixtures)
+ * are skipped — they're an explicit "n/a" per the rubric, not a
+ * failure.
+ *
+ * No-op when the model-judge didn't run (no
+ * `metadata.modelJudgeScores` present). This means a fixture that
+ * declares the rule but is exercised in a run without judge keys
+ * still passes — the rule is a gate on judge output, not on judge
+ * presence.
+ */
+const DEFAULT_AXIS_FLOOR = 3;
+
+const modelJudgeAxisFloor: Rule = (ws, fixture) => {
+  const meta = ws.metadata as Record<string, unknown> | undefined;
+  const scores = meta?.modelJudgeScores as AxisScores | undefined;
+  if (!scores) return { ok: true }; // no judge ran — not a failure
+
+  const floors = fixture.modelJudgeAxisFloor ?? {};
+  const failures: string[] = [];
+
+  for (const axis of AXIS_KEYS) {
+    const score = scores[axis];
+    if (score === null || score === undefined) continue; // n/a
+    const floor = floors[axis] ?? DEFAULT_AXIS_FLOOR;
+    if (floor <= 0) continue; // disabled
+    if (score < floor) {
+      failures.push(`${axis} ${score} < floor ${floor}`);
+    }
+  }
+
+  if (failures.length === 0) return { ok: true };
+  return { ok: false, reason: failures.join("; ") };
+};
+
 // ─── Registry ────────────────────────────────────────────────────────────────
 
 export const RULE_REGISTRY: Record<string, Rule> = {
@@ -220,6 +267,7 @@ export const RULE_REGISTRY: Record<string, Rule> = {
   "spec-ref-present": specRefPresent,
   "send-fidelity-floor": sendFidelityFloor,
   "qa-score-floor": qaScoreFloor,
+  "model-judge-axis-floor": modelJudgeAxisFloor,
 };
 
 export const ALL_RULE_NAMES = Object.keys(RULE_REGISTRY);

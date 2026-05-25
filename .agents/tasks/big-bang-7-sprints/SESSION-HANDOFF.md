@@ -5,14 +5,19 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1.A + 1.B
+Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1.A + 1.B + 1.C
 shipped.** Branch `big-bang-7/pr-1-measure-and-prompt-arch`. Sprint
-1.B added the 30-fixture comparison corpus (4 KS1/KS2 · 8 KS3 · 12
-GCSE · 3 A-Level · 3 SEND), distribution validated (maths 9 ·
-english 6 · science 7 · humanities 5 · send 3) at JSON-load time.
-Loader + 9-test shape lock at `server/tests/comparisonCorpus.test.ts`.
-Next chunk: Sprint 1.C — extend `EvalReport` schema with
-`humanScores` + `modelJudgeScores`.
+1.C extended `EvalReport` schema additively with `AxisScores` (6
+axes from rubric, null = n/a), `HumanScoreEntry`, `AxisScoresAggregate`,
+plus per-row `modelJudgeScores` / `humanScores` / `corpus` tags and
+report-level `modelJudgeProvider` / `modelJudgeAggregate` /
+`humanScoresPath` / `humanScoresAggregate` / `comparisonCorpus`
+metadata. New `model-judge-axis-floor` rule (default floor 3, per-axis
+override via `fixture.modelJudgeAxisFloor`, floor=0 disables).
+Summariser renders a "Per-axis (model-judge)" + "Per-axis (human,
+median)" markdown block when present. 17-test lock at
+`server/tests/evalRubricExtensions.test.ts`. Next chunk: Sprint 1.D —
+`modelJudgeRater.ts` cross-provider judge.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -107,66 +112,111 @@ Goal: complete the next un-shipped item in "What is next" below.
     Helper test asserts `bucketCounts` sums to corpus length and
     `tagFixtures` is non-mutating.
 
+- **PR-1 / Sprint 1.C — Eval-report schema additive extension +
+  axis-floor rule + per-axis summariser.** Five files touched:
+  - `server/tests/worksheet-eval/types.ts` — additive only.
+    Added: `AxisScores` (6 axes, `null` = n/a), `HumanScoreEntry`
+    (raterId + axes + optional notes), `AxisScoresAggregate`
+    (per-axis `{ mean, min, max, count }`), `AxisAggregate`,
+    frozen `AXIS_KEYS` array (single source of truth for axis
+    iteration order — matches the rubric document), derived
+    `AxisKey` type. `EvalFixture` gained
+    `modelJudgeAxisFloor?: Partial<Record<AxisKey, number>>`.
+    `EvalReportRow` gained `corpus?: "fixtures" | "comparison"`,
+    `modelJudgeScores?: AxisScores`,
+    `modelJudgeRationale?: string` (truncated ~500 chars),
+    `humanScores?: HumanScoreEntry[]`. `EvalReport` gained
+    `modelJudgeProvider`, `modelJudgeModel`, `modelJudgeAggregate`,
+    `humanScoresPath`, `humanScoresAggregate`, `comparisonCorpus
+    { version, size }`. Older runners that don't read these fields
+    keep working — every addition is `?` optional.
+  - `server/tests/worksheet-eval/rules.ts` — added
+    `model-judge-axis-floor` rule. Reads
+    `metadata.modelJudgeScores`; passes when not present (no judge
+    ran). Default floor 3 ("usable with edit"); per-fixture override
+    via `fixture.modelJudgeAxisFloor[axis]`; floor 0 disables an
+    axis check. `null` axis values treated as n/a (skipped, never
+    counted as 0). Multi-axis failures are aggregated into one
+    reason string for compact reporting.
+  - `server/tests/worksheet-eval/summariser.ts` — three new pure
+    helpers: `aggregateAxisScores(blocks)` (mean to 2dp, min, max,
+    count; non-mutating; null-safe), `medianHumanScores(entries)`
+    (per-axis median across raters; outlier-resistant via median
+    over mean), and the private `renderAxisBlock`. The markdown
+    summary now renders "Per-axis (model-judge)" and "Per-axis
+    (human, median)" tables when those aggregates are present;
+    legacy reports without them produce identical markdown to
+    before. Header gains one-line provider + corpus + human-scores
+    annotations when those fields are present.
+  - `server/tests/evalRubricExtensions.test.ts` (new) — 17 vitest
+    cases across 4 describe blocks: 8 for the new rule
+    (registered, no-op when judge absent, default-floor pass,
+    default-floor fail, per-axis override relax, override tighten,
+    floor=0 disables, null=n/a, multi-axis aggregation), 4 for
+    `aggregateAxisScores` (empty, null/undefined safe, correct
+    mean+min+max+count, 2dp rounding, non-mutating), 4 for
+    `medianHumanScores` (empty, single-rater pass-through, odd-count
+    median, even-count midpoint, all-null axis stays null), 1 for
+    `AXIS_KEYS` ordering matching the rubric document.
+
 ## What is in flight
 
 _Nothing in flight; ready to start Sprint 1.B._
 
 ## What is next
 
-**PR-1 / Sprint 1.C — `EvalReport` schema additive extension.**
-Branch `big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
+**PR-1 / Sprint 1.D — Model-judge rater (cross-provider).** Branch
+`big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
 
-Edit `server/tests/worksheet-eval/types.ts` to add (additive only —
-older runners keep reading newer reports):
+New file `server/tests/worksheet-eval/modelJudgeRater.ts`:
 
 ```ts
-export interface AxisScores {
-  curriculumFidelity: number | null;   // 1-5, null = not rated this run
-  stemAuthenticity: number | null;
-  accessibility: number | null;
-  marksAndAnswers: number | null;
-  sendAlignment: number | null;        // null when no sendNeed declared
-  uxAndPrintability: number | null;
+export interface Rater {
+  name: string;
+  provider: string;
+  model: string;
+  estimatedCostUsd: number;
+  rate(worksheet: PostValidatorWorksheet, fixture: EvalFixture):
+    Promise<{ scores: AxisScores; rationale: string }>;
 }
 
-// EvalReportRow gains:
-//   modelJudgeScores?: AxisScores;
-//   humanScores?: AxisScoresWithRaterId[];  // per-rater rows
-//   corpus?: "fixtures" | "comparison";
-
-// EvalReport gains:
-//   modelJudgeProvider?: string;     // "claude" / "openai" / "none"
-//   modelJudgeAggregate?: AxisScoresAggregate;  // mean per axis across rows
-//   humanScoresPath?: string;        // path to humanScores.csv loaded, when present
+export const stubRater: Rater = { ... };  // deterministic, $0
+export const liveRater: Rater = { ... };  // hits judge provider
+export function pickRater(): Rater { ... } // EVAL_JUDGE_PROVIDER
 ```
 
-Then update `summariser.ts` to render a per-axis breakdown block
-when `modelJudgeAggregate` is present:
+Key constraints:
+- Stub returns deterministic scores derived from the worksheet's
+  `qaScore.total` (so CI without keys is meaningful: high
+  qaScore = high axis means; low = low). NOT random — must be
+  reproducible across runs given the same input.
+- Live mode requires `EVAL_JUDGE_PROVIDER !== EVAL_GENERATOR_PROVIDER`
+  (cross-provider isolation); mismatch yields a runtime warning
+  but doesn't abort.
+- Prompt embeds the rubric anchors from
+  `docs/teacher-rater-rubric.md` so the judge rates against the
+  same contract as humans.
+- Returns shape `{ scores, rationale }`; rationale truncated to
+  500 chars before stamping on the row.
 
-```
-### Per-axis (model-judge)
-| Axis | Mean | Min | Max |
-| --- | ---: | ---: | ---: |
-| Curriculum fidelity | 4.1 | 2 | 5 |
-...
-```
-
-After Sprint 1.C → Sprint 1.D (model-judge harness).
+After Sprint 1.D → Sprint 1.E (runner integration: invoke rater
+per row, stamp scores onto `metadata.modelJudgeScores`, populate
+`modelJudgeAggregate` on the report, plus comparison-corpus loader
+wiring).
 
 ## Per-PR tracking (live state for the current PR)
 
 ### PR-1 — `big-bang-7/pr-1-measure-and-prompt-arch`
 
-Status: **in flight, 2/13 deliverables shipped**.
+Status: **in flight, 3/13 deliverables shipped**.
 
 Sprint 1 deliverables (from PHASE-PLAN.md):
 
 - [x] `docs/teacher-rater-rubric.md` (6-axis × 1–5 with anchors)
 - [x] `server/tests/worksheet-eval/comparison-corpus.json` (30 triples) + loader + tests
-- [ ] `EvalReport` schema extended with `humanScores` + `modelJudgeScores`
+- [x] `EvalReport` schema extended with `humanScores` + `modelJudgeScores` + `model-judge-axis-floor` rule + per-axis summariser
 - [ ] `server/tests/worksheet-eval/modelJudgeRater.ts` (cross-provider judge)
-- [ ] `summariser.ts` per-axis breakdown
-- [ ] `rules.ts` `model-judge-axis-floor` rule
+- [ ] runner wires rater + corpus into the run; populates `modelJudgeAggregate`
 - [ ] `eval-report.baseline.json` checked in
 - [ ] `.github/workflows/worksheet-eval.yml` invokes model-judge when keys set
 
