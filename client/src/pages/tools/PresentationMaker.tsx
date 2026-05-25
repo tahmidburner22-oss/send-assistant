@@ -39,6 +39,8 @@ import { resolvePresentationTemplate } from "@/lib/presentation-templates";
 import { buildSubjectPromptFragments, getSubjectProfile } from "@/lib/subject-profiles";
 import { formatMisconceptionsForPrompt } from "@/lib/misconception-bank";
 import { lookupByTopic, type CurriculumEntry } from "@/lib/curriculumBank";
+import { runAllValidators, type ValidationFinding } from "@/lib/presentation-validators";
+import { recordTelemetry } from "@/lib/presentation-telemetry";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
@@ -4871,6 +4873,7 @@ No markdown, no code fences, JSON only.`;
       setShowRefineDialog(false);
       setRefineText("");
       toast.success(refineScope === "slide" ? "Slide refined." : "Deck refined.");
+      recordTelemetry(refineScope === "slide" ? "refine-slide" : "refine-deck", { slideType: presentation.slides[refineTargetSlide]?.type });
     } catch (err: any) {
       console.error("Refinement failed:", err);
       toast.error(err.message || "Refinement failed. Please try again.");
@@ -4884,6 +4887,7 @@ No markdown, no code fences, JSON only.`;
     setExporting(true);
     try {
       await exportToPptx(presentation, selectedTheme, sendNeedIds);
+      recordTelemetry("export-pptx", { slides: presentation.slides.length, theme: selectedTheme });
       toast.success("PowerPoint downloaded!");
     } catch (err: any) {
       console.error("PPTX export failed:", err);
@@ -5320,6 +5324,29 @@ Return JSON only.`;
 
   const currentSlide = presentation?.slides[activeSlide];
 
+  // ── Phase 5/6 — validator findings + telemetry ───────────────────────────
+  // Run validators on every deck change. Cheap pure functions — no AI calls.
+  const validatorFindings: ValidationFinding[] = useMemo(() => {
+    if (!presentation) return [];
+    return runAllValidators({
+      slides: presentation.slides as any,
+      objectives,
+      readingAge,
+    });
+  }, [presentation, objectives, readingAge]);
+
+  // Telemetry ping when a deck is generated or exported (small useEffect for
+  // each so the meta is keyed correctly).
+  useEffect(() => {
+    if (!presentation) return;
+    recordTelemetry("generate", { slides: presentation.slides.length, theme: selectedTheme });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presentation?.title]);
+  useEffect(() => {
+    if (!selectedTheme) return;
+    recordTelemetry("theme-change", { theme: selectedTheme });
+  }, [selectedTheme]);
+
   return (
     <div
       className="min-h-screen bg-gray-50"
@@ -5751,6 +5778,36 @@ Return JSON only.`;
                     inspector as justification for the adaptation. */}
                 {sendNeedIds.length > 0 && (
                   <SendAppliedBanner sendNeedIds={sendNeedIds} />
+                )}
+
+                {/* ── Phase 5/6 deck-quality findings (items 22, 24, 26) ──── */}
+                {validatorFindings.length > 0 && (
+                  <details className="rounded-lg border border-amber-300 bg-amber-50 overflow-hidden">
+                    <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100/60 list-none flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{validatorFindings.length} deck-quality finding{validatorFindings.length === 1 ? "" : "s"}</span>
+                      <span className="ml-auto text-[10px] text-amber-700 font-normal">click to expand</span>
+                    </summary>
+                    <div className="px-3 pb-3 pt-1 space-y-1.5 border-t border-amber-200 bg-white/40">
+                      {validatorFindings.map((f, i) => (
+                        <div key={i} className="text-[11px] text-amber-900 flex items-start gap-2">
+                          <span className="text-amber-600 flex-shrink-0 mt-0.5">·</span>
+                          <div>
+                            <span className="font-medium">{f.message}</span>
+                            {f.suggestion && <span className="text-amber-700 italic"> — {f.suggestion}</span>}
+                            {f.index >= 0 && (
+                              <button
+                                onClick={() => { setActiveSlide(f.index); openRefineDialog("slide", f.index); }}
+                                className="ml-2 text-[10px] underline text-amber-800 hover:text-amber-950"
+                              >
+                                Fix slide {f.index + 1}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
                 )}
 
                 {/* Presentation header */}
