@@ -43,6 +43,7 @@ import { lookupByTopic, type CurriculumEntry } from "@/lib/curriculumBank";
 import { runAllValidators, type ValidationFinding } from "@/lib/presentation-validators";
 import { recordTelemetry } from "@/lib/presentation-telemetry";
 import { readSchoolIdentity, writeSchoolIdentity, fileToDataUrl, type SchoolIdentity } from "@/lib/school-identity";
+import { resolveDeckImages, bestImageUrl, fetchImageAsDataUrl } from "@/lib/presentation-image-resolver";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
@@ -118,6 +119,20 @@ const SlideContentSchema = z.object({
     equation: z.string().max(200).optional(),
   }).optional(),
   image_prompt: z.string().max(500).optional(),
+  /** Phase 4 — resolved stock-image record (see shared/aiSchemas.ts). */
+  image: z.object({
+    url: z.string().min(1).max(2000),
+    thumbUrl: z.string().max(2000).optional(),
+    width: z.number().int().min(1).max(20000).optional(),
+    height: z.number().int().min(1).max(20000).optional(),
+    source: z.enum(["pexels", "unsplash", "openverse", "wikimedia", "manual"]).optional(),
+    photographer: z.string().max(200).optional(),
+    photographerUrl: z.string().max(500).optional(),
+    sourceUrl: z.string().max(2000).optional(),
+    attribution: z.string().max(300).optional(),
+    licence: z.string().max(200).optional(),
+    resolvedAt: z.string().max(40).optional(),
+  }).optional(),
   layout: z.enum(["full","two-col","image-right","image-left","centered","bullet-list","hero-number","definition","process","quote-block",
     // ── Phase 1: 7 new layouts ────────────────────────────────────────
     "split-stat","comparison-table","timeline-horizontal","card-grid","before-after","quote-portrait","diagram-callouts",
@@ -300,6 +315,25 @@ export interface SlideContent {
     equation?: string;
   };
   image_prompt?: string;
+  /**
+   * Phase 4 — resolved stock-image record. Populated by the server image
+   * proxy after the AI returns `image_prompt`. The renderer prefers this
+   * over the legacy `source.unsplash.com` shortcut so the same picture
+   * lands in every export and the licence travels with the slide JSON.
+   */
+  image?: {
+    url: string;
+    thumbUrl?: string;
+    width?: number;
+    height?: number;
+    source?: "pexels" | "unsplash" | "openverse" | "wikimedia" | "manual";
+    photographer?: string;
+    photographerUrl?: string;
+    sourceUrl?: string;
+    attribution?: string;
+    licence?: string;
+    resolvedAt?: string;
+  };
   layout?: "full" | "two-col" | "image-right" | "image-left" | "centered" | "bullet-list" | "hero-number" | "definition" | "process" | "quote-block"
     | "split-stat" | "comparison-table" | "timeline-horizontal" | "card-grid" | "before-after" | "quote-portrait" | "diagram-callouts";
   bulletsRight?: string[];
@@ -2018,8 +2052,33 @@ const SLIDE_TYPE_COLOURS: Record<string, string> = {
   "homework":            "#475569",
 };
 
-function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: ComposedTheme; Icon: React.ElementType }) {
-  const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
+/**
+ * Small attribution chip rendered over slide images that came from a
+ * stock-photo proxy. Required by the Pexels/Unsplash terms (Pexels asks
+ * for credit; Unsplash strongly recommends it). The chip is hidden in
+ * presenter mode to keep the slide clean — but it still ships in the
+ * slide JSON, in the PPTX export and in any printed handout.
+ */
+function ImageCredit({ slide }: { slide: SlideContent }) {
+  const img = slide.image;
+  if (!img || !img.attribution) return null;
+  return (
+    <div
+      className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-medium leading-tight pointer-events-none"
+      style={{
+        background: "rgba(0,0,0,0.55)",
+        color: "white",
+        maxWidth: "70%",
+        backdropFilter: "blur(2px)",
+      }}
+      title={img.licence || ""}
+    >
+      {img.attribution}
+    </div>
+  );
+}
+
+function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: ComposedTheme; Icon: React.ElementType }) {  const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
   const ped = SLIDE_TYPE_PEDAGOGY[slide.type];
   return (
     <div className="px-10 pt-7 pb-3">
@@ -2053,10 +2112,8 @@ function renderLayoutSlide(
   Icon: React.ElementType,
 ) {
   const layout = slide.layout || "bullet-list";
-  const hasImage = Boolean(slide.image_prompt);
-  const imgUrl = slide.image_prompt
-    ? `https://source.unsplash.com/featured/800x600/?${encodeURIComponent(slide.image_prompt)}`
-    : null;
+  const hasImage = Boolean(slide.image_prompt || slide.image?.url);
+  const imgUrl = bestImageUrl(slide as any, 800, 600);
 
   const BulletList = ({ bullets, size = "sm" }: { bullets?: string[]; size?: "sm" | "xs" }) => (
     <div className="space-y-2">
@@ -2198,9 +2255,10 @@ function renderLayoutSlide(
             )}
             <BulletList bullets={slide.bullets} />
           </div>
-          <div className={`rounded-xl overflow-hidden h-full min-h-[220px] ${layout === "image-right" ? "order-2" : "order-1"}`}
+          <div className={`rounded-xl overflow-hidden h-full min-h-[220px] relative ${layout === "image-right" ? "order-2" : "order-1"}`}
                style={{ background: `#f1f5f9 center/cover no-repeat url(${imgUrl || ""})`, border: `1px solid ${badgeColour}30` }}>
             {!hasImage && <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">No image prompt provided</div>}
+            <ImageCredit slide={slide} />
           </div>
         </Shell>
       );
@@ -2373,14 +2431,13 @@ function renderLayoutSlide(
 
     // ── Phase 1: quote-portrait — quote + image of speaker on the left ───
     case "quote-portrait": {
-      const imgUrlQp = slide.image_prompt
-        ? `https://source.unsplash.com/featured/400x500/?${encodeURIComponent(slide.image_prompt)}`
-        : null;
+      const imgUrlQp = bestImageUrl(slide as any, 400, 500);
       return (
         <Shell contentClass="grid grid-cols-[180px_1fr] gap-5 items-center">
-          <div className="rounded-2xl overflow-hidden h-full min-h-[220px]"
+          <div className="rounded-2xl overflow-hidden h-full min-h-[220px] relative"
                style={{ background: `${theme.light} center/cover no-repeat url(${imgUrlQp || ""})`, border: `1px solid ${badgeColour}30` }}>
             {!imgUrlQp && <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">portrait</div>}
+            <ImageCredit slide={slide} />
           </div>
           <div>
             <div className="text-3xl leading-none mb-2" style={{ color: badgeColour }}>“</div>
@@ -2474,9 +2531,7 @@ function FullSlideView({
       // gradient for the dark area; only the composition changes.
       case "title": {
         const variant = slide.titleVariant || "centered";
-        const bgImage = slide.image_prompt
-          ? `https://source.unsplash.com/featured/1280x720/?${encodeURIComponent(slide.image_prompt)}`
-          : null;
+        const bgImage = bestImageUrl(slide as any, 1280, 720);
         if (variant === "split-image") {
           return (
             <div className="flex h-full">
@@ -2487,7 +2542,9 @@ function FullSlideView({
                   <div className="text-sm rounded-xl px-4 py-3 mt-2" style={{ color: "rgba(255,255,255,0.95)", background: "rgba(0,0,0,0.25)" }}>{slide.body}</div>
                 )}
               </div>
-              <div className="w-1/2 bg-cover bg-center" style={{ backgroundImage: bgImage ? `url(${bgImage})` : "linear-gradient(135deg,#cbd5e1,#94a3b8)" }} />
+              <div className="w-1/2 bg-cover bg-center relative" style={{ backgroundImage: bgImage ? `url(${bgImage})` : "linear-gradient(135deg,#cbd5e1,#94a3b8)" }}>
+                <ImageCredit slide={slide} />
+              </div>
             </div>
           );
         }
@@ -3017,7 +3074,9 @@ function FullSlideView({
                 </div>
               )}
               {slide.image_prompt && (
-                <div className="rounded-2xl overflow-hidden h-28 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(https://source.unsplash.com/featured/600x200/?${encodeURIComponent(slide.image_prompt)})`, border: `3px solid ${theme.accent}` }} />
+                <div className="rounded-2xl overflow-hidden h-28 bg-cover bg-center opacity-80 relative" style={{ backgroundImage: `url(${bestImageUrl(slide as any, 600, 200) || ""})`, border: `3px solid ${theme.accent}` }}>
+                  <ImageCredit slide={slide} />
+                </div>
               )}
             </div>
           </div>
@@ -3755,6 +3814,26 @@ async function exportToPptx(
   pptx.subject = presentation.subject;
   pptx.author = "Adaptly AI";
 
+  // ── Image data URLs (Phase 4 / item 10) ─────────────────────────────────
+  // pptxgenjs `addImage({ data })` needs base64 bytes. Cross-origin fetches
+  // against Pexels/Unsplash CDN are blocked from the browser, so we route
+  // every fetch through `/api/image-proxy/fetch?format=base64`. Pre-resolve
+  // in parallel before painting so the per-slide loop stays synchronous.
+  const imageDataByIndex = new Map<number, string>();
+  const imageFetches: Promise<void>[] = [];
+  presentation.slides.forEach((slide, i) => {
+    const url = slide.image?.thumbUrl || slide.image?.url;
+    if (!url) return;
+    imageFetches.push(
+      fetchImageAsDataUrl(url).then((dataUrl) => {
+        if (dataUrl) imageDataByIndex.set(i, dataUrl);
+      }).catch(() => { /* best-effort */ })
+    );
+  });
+  if (imageFetches.length > 0) {
+    await Promise.all(imageFetches);
+  }
+
   // Helper: hex to RGB
   const hexToRgb = (hex: string) => {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -3995,6 +4074,28 @@ async function exportToPptx(
         x: 0, y: 0, w: "100%", h: "100%",
         fill: { type: "solid", color: primaryClean },
       });
+      // ── Phase 4 / item 10 — embed real image when resolved ───────────
+      // titleVariant === "split-image" → photo on the right half.
+      // Other variants → full-bleed dim background photo + dark overlay
+      // so the title text stays legible.
+      const titleImg = imageDataByIndex.get(idx);
+      const isSplit = slide.titleVariant === "split-image";
+      if (titleImg && isSplit) {
+        // Right half image
+        pSlide.addImage({
+          data: titleImg,
+          x: 5, y: 0, w: 5, h: 5.625,
+          sizing: { type: "cover", w: 5, h: 5.625 },
+        });
+      } else if (titleImg) {
+        // Full-bleed dim image behind the gradient overlay
+        pSlide.addImage({
+          data: titleImg,
+          x: 0, y: 0, w: 10, h: 5.625,
+          sizing: { type: "cover", w: 10, h: 5.625 },
+          transparency: 70, // 0=opaque, 100=invisible
+        });
+      }
       // Decorative accent bar
       pSlide.addShape(pptx.ShapeType.rect, {
         x: 0, y: 0, w: "100%", h: 0.08,
@@ -4002,26 +4103,26 @@ async function exportToPptx(
       });
       // Title
       pSlide.addText(slide.title, {
-        x: 0.5, y: 1.8, w: 9, h: 1.5,
+        x: 0.5, y: 1.8, w: isSplit ? 4.3 : 9, h: 1.5,
         fontSize: 36, bold: true, color: "FFFFFF",
-        align: "center", fontFace: pptxFont,
+        align: isSplit ? "left" : "center", fontFace: pptxFont,
         wrap: true,
       });
       // Subtitle
       if (slide.subtitle) {
         pSlide.addText(slide.subtitle, {
-          x: 0.5, y: 3.5, w: 9, h: 0.5,
+          x: 0.5, y: 3.5, w: isSplit ? 4.3 : 9, h: 0.5,
           fontSize: 16, color: "CCDDFF",
-          align: "center", fontFace: pptxFont,
+          align: isSplit ? "left" : "center", fontFace: pptxFont,
           italic: true,
         });
       }
       // Body / hook
       if (slide.body) {
         pSlide.addText(slide.body, {
-          x: 1, y: 4.2, w: 8, h: 0.6,
+          x: isSplit ? 0.5 : 1, y: 4.2, w: isSplit ? 4.3 : 8, h: 0.6,
           fontSize: 13, color: "AABBDD",
-          align: "center", fontFace: pptxFont,
+          align: isSplit ? "left" : "center", fontFace: pptxFont,
           italic: true,
         });
       }
@@ -4031,6 +4132,15 @@ async function exportToPptx(
         fontSize: 9, color: "8899BB",
         align: "right",
       });
+      // Image attribution chip — small, dim, bottom-left corner.
+      if (titleImg && slide.image?.attribution) {
+        pSlide.addText(slide.image.attribution, {
+          x: isSplit ? 5.05 : 0.1, y: 5.4,
+          w: isSplit ? 4.9 : 4.5, h: 0.2,
+          fontSize: 7, color: "FFFFFF", italic: true,
+          fontFace: pptxFont, align: "left",
+        });
+      }
     } else if (slide.type === "learning-objectives") {
       pSlide.background = { fill: slideBgClean };
       paintHeader(pSlide, slide);
@@ -4382,58 +4492,140 @@ async function exportToPptx(
       // plus any other type without a bespoke branch. Uses the shared header painter + strips.
       pSlide.background = { fill: slideBgClean };
       paintHeader(pSlide, slide);
+
+      // ── Phase 4 / item 10 — image-bearing layouts ──────────────────────
+      // image-left, image-right, quote-portrait and story-time all reserve
+      // half (or part) of the canvas for a real photograph. We embed via
+      // `pSlide.addImage({ data })` so the photo travels inside the .pptx
+      // with its credit chip — no external dependency at open time.
+      const slideImg = imageDataByIndex.get(idx);
+      const imageLayout = slide.layout;
+      const isImageLeft = slideImg && imageLayout === "image-left";
+      const isImageRight = slideImg && imageLayout === "image-right";
+      const isQuotePortrait = slideImg && imageLayout === "quote-portrait";
+      const isStoryTime = slideImg && slide.type === "story-time";
+      const hasSideImage = isImageLeft || isImageRight || isQuotePortrait;
+      // Reserve content-area X bounds when an image takes one side.
+      const contentX = isImageLeft || isQuotePortrait ? 5.1 : 0.5;
+      const contentW = hasSideImage ? 4.4 : 9;
+
+      if (hasSideImage) {
+        // Image side: left half for image-left/quote-portrait, right half
+        // for image-right.
+        const imgX = (isImageLeft || isQuotePortrait) ? 0.2 : 5.4;
+        const imgY = 1.15;
+        const imgW = 4.4;
+        const imgH = 3.95;
+        pSlide.addImage({
+          data: slideImg!,
+          x: imgX, y: imgY, w: imgW, h: imgH,
+          sizing: { type: "cover", w: imgW, h: imgH },
+        });
+        if (slide.image?.attribution) {
+          pSlide.addText(slide.image.attribution, {
+            x: imgX, y: imgY + imgH - 0.22, w: imgW, h: 0.2,
+            fontSize: 7, color: "FFFFFF", italic: true,
+            fill: { type: "solid", color: "000000" },
+            transparency: 50,
+            fontFace: pptxFont, align: "left",
+          });
+        }
+      }
+
       let yPos = paintSendStrips(pSlide, slide, 1.15);
 
-      if (slide.body) {
+      // Quote-portrait: put the quote in big italic text on the content side
+      // instead of running the generic body/bullet path.
+      const skipGenericBody = isQuotePortrait && Boolean(slide.quote);
+      if (skipGenericBody) {
+        pSlide.addText(`"${slide.quote}"`, {
+          x: contentX, y: yPos + 0.2, w: contentW, h: 2.5,
+          fontSize: 18, italic: true, color: slideTitleClean,
+          fontFace: pptxFont, wrap: true, valign: "middle",
+        });
+        if (slide.attribution) {
+          pSlide.addText(`— ${slide.attribution}`, {
+            x: contentX, y: yPos + 2.8, w: contentW, h: 0.4,
+            fontSize: 12, bold: true, color: slideTextClean,
+            fontFace: pptxFont, wrap: true,
+          });
+        }
+      }
+
+      if (!skipGenericBody && slide.body) {
         pSlide.addText(slide.body, {
-          x: 0.5, y: yPos, w: 9, h: 0.5,
+          x: contentX, y: yPos, w: contentW, h: 0.5,
           fontSize: Math.max(12, minBodyPt), color: isDark ? "94A3B8" : "6B7280",
           italic: true, fontFace: pptxFont, wrap: true,
         });
         yPos += 0.6;
       }
 
-      if (slide.question) {
+      if (!skipGenericBody && slide.question) {
         pSlide.addShape(pptx.ShapeType.rect, {
-          x: 0.5, y: yPos, w: 9, h: 0.8,
+          x: contentX, y: yPos, w: contentW, h: 0.8,
           fill: { type: "solid", color: lightClean },
           rectRadius: 0.1,
         });
         pSlide.addText(slide.question, {
-          x: 0.7, y: yPos + 0.1, w: 8.6, h: 0.6,
+          x: contentX + 0.2, y: yPos + 0.1, w: contentW - 0.4, h: 0.6,
           fontSize: Math.max(15, minBodyPt + 3), bold: true, color: slideTitleClean,
           align: "center", fontFace: pptxFont, wrap: true,
         });
         yPos += 1.0;
       }
 
-      if (slide.bullets && slide.bullets.length > 0) {
+      if (!skipGenericBody && slide.bullets && slide.bullets.length > 0) {
         slide.bullets.forEach(bullet => {
           pSlide.addShape(pptx.ShapeType.rect, {
-            x: 0.5, y: yPos, w: 9, h: 0.55,
+            x: contentX, y: yPos, w: contentW, h: 0.55,
             fill: { type: "solid", color: lightClean },
             rectRadius: 0.06,
           });
           // Visible checkbox (ADHD) or regular bullet dot
           if (slide.visibleCheckboxes) {
             pSlide.addShape(pptx.ShapeType.rect, {
-              x: 0.6, y: yPos + 0.14, w: 0.28, h: 0.28,
+              x: contentX + 0.1, y: yPos + 0.14, w: 0.28, h: 0.28,
               fill: { type: "solid", color: "FFFFFF" }, line: { color: secondaryClean, width: 1.5 },
               rectRadius: 0.03,
             });
           } else {
             pSlide.addShape(pptx.ShapeType.ellipse, {
-              x: 0.65, y: yPos + 0.18, w: 0.18, h: 0.18,
+              x: contentX + 0.15, y: yPos + 0.18, w: 0.18, h: 0.18,
               fill: { type: "solid", color: secondaryClean },
             });
           }
           pSlide.addText(bullet, {
-            x: 1.05, y: yPos + 0.08, w: 8.3, h: 0.4,
+            x: contentX + 0.55, y: yPos + 0.08, w: contentW - 0.7, h: 0.4,
             fontSize: Math.max(12, minBodyPt), color: slideTextClean,
             fontFace: pptxFont, wrap: true,
           });
           yPos += 0.65;
         });
+      }
+
+      // Story-time: render a wide horizontal image strip below body when no
+      // side image is in play (story-time uses the narrative + photo combo,
+      // not a half-canvas split).
+      if (isStoryTime && !hasSideImage && slideImg) {
+        const stripY = Math.max(yPos + 0.1, 3.6);
+        const stripH = Math.min(1.4, 5.1 - stripY - 0.1);
+        if (stripH > 0.4) {
+          pSlide.addImage({
+            data: slideImg,
+            x: 0.5, y: stripY, w: 9, h: stripH,
+            sizing: { type: "cover", w: 9, h: stripH },
+          });
+          if (slide.image?.attribution) {
+            pSlide.addText(slide.image.attribution, {
+              x: 0.5, y: stripY + stripH - 0.22, w: 9, h: 0.2,
+              fontSize: 7, color: "FFFFFF", italic: true,
+              fill: { type: "solid", color: "000000" },
+              transparency: 50,
+              fontFace: pptxFont, align: "left",
+            });
+          }
+        }
       }
 
       // Method steps inline (Dyslexia/Dyscalculia)
@@ -4900,6 +5092,25 @@ export default function PresentationMaker() {
         parsed.theme = template.defaultTheme;
       }
       setPresentation(parsed);
+      // Phase 4 / items 9 + 52 — resolve every slide's `image_prompt` to a
+      // real Pexels/Unsplash image with attribution + licence so the
+      // library save, email digest and PPTX export all carry the same
+      // picture. Runs in the background; the renderer falls back to the
+      // legacy keyword URL until resolution completes.
+      void (async () => {
+        try {
+          const resolvedSlides = await resolveDeckImages(parsed.slides as any);
+          setPresentation((curr) => {
+            if (!curr) return curr;
+            // Bail if the user has already moved on to a different deck.
+            if (curr.title !== parsed.title || curr.slides.length !== resolvedSlides.length) return curr;
+            return { ...curr, slides: resolvedSlides as typeof curr.slides };
+          });
+        } catch (e) {
+          // Resolution is best-effort — never block the generation flow.
+          console.warn("[PresentationMaker] image resolution failed:", e);
+        }
+      })();
       // Seed the conversation with the system + user + assistant round so
       // refinement turns can build on this context without re-sending
       // everything. The assistant message stores the AI's JSON output so the
@@ -5017,17 +5228,40 @@ No markdown, no code fences, JSON only.`;
         updatedSlides = [...presentation.slides];
         // Preserve the existing type — the AI MUST NOT change slide types.
         updatedSlides[idx] = { ...updatedSlides[idx], ...incoming, type: updatedSlides[idx].type } as SlideContent;
+        // Phase 4 — if the refined slide changed its `image_prompt` we must
+        // drop the stale resolved `image` so resolveDeckImages picks a new
+        // picture for the new prompt. Without this, refining a slide leaves
+        // the image record pointing at the previous keyword.
+        if (typeof incoming.image_prompt === "string" && incoming.image_prompt !== presentation.slides[idx].image_prompt) {
+          updatedSlides[idx] = { ...updatedSlides[idx], image: undefined };
+        }
       } else {
         const arr = Array.isArray(parsed.slides) ? parsed.slides : null;
         if (!arr) throw new Error("Refinement response missing slides array.");
         updatedSlides = presentation.slides.map((orig, i) => {
           const incoming = arr[i] || arr.find((s: any) => s?.index === i);
           if (!incoming) return orig;
-          return { ...orig, ...incoming, type: orig.type } as SlideContent;
+          const merged = { ...orig, ...incoming, type: orig.type } as SlideContent;
+          if (typeof incoming.image_prompt === "string" && incoming.image_prompt !== orig.image_prompt) {
+            merged.image = undefined;
+          }
+          return merged;
         });
       }
 
       setPresentation({ ...presentation, slides: updatedSlides, totalSlides: updatedSlides.length });
+      // Re-resolve any slides whose image_prompt changed (the spread above
+      // intentionally cleared `image` so resolveDeckImages will fill it).
+      void (async () => {
+        try {
+          const resolved = await resolveDeckImages(updatedSlides as any);
+          setPresentation((curr) => {
+            if (!curr) return curr;
+            if (curr.slides.length !== resolved.length) return curr;
+            return { ...curr, slides: resolved as typeof curr.slides };
+          });
+        } catch { /* best-effort */ }
+      })();
       if (refineScope === "slide") setActiveSlide(refineTargetSlide);
       // Append this round to the conversation so future refinements know
       // what was asked and what the AI produced.

@@ -792,6 +792,30 @@ export const PresentationSlideSchema = z.object({
     equation: z.string().max(200).optional(),
   }).optional(),
   image_prompt: z.string().max(500).optional(),
+  /**
+   * Phase 4 / items 9 + 52 — resolved image record.
+   * When the AI returns an `image_prompt`, the client calls
+   * `/api/image-proxy/search` and persists the chosen result here so the
+   * library save, email digest and PPTX export all see the same URL +
+   * attribution + licence. The `url` is a stock-photo CDN URL
+   * (images.pexels.com / images.unsplash.com / plus.unsplash.com); the
+   * PPTX painter reaches it via `/api/image-proxy/fetch` to side-step
+   * cross-origin restrictions.
+   */
+  image: z.object({
+    url: z.string().min(1).max(2000),
+    thumbUrl: z.string().max(2000).optional(),
+    width: z.number().int().min(1).max(20000).optional(),
+    height: z.number().int().min(1).max(20000).optional(),
+    source: z.enum(["pexels", "unsplash", "openverse", "wikimedia", "manual"]).optional(),
+    photographer: z.string().max(200).optional(),
+    photographerUrl: z.string().max(500).optional(),
+    sourceUrl: z.string().max(2000).optional(),
+    attribution: z.string().max(300).optional(),
+    licence: z.string().max(200).optional(),
+    /** ISO timestamp when the image was resolved by the proxy. */
+    resolvedAt: z.string().max(40).optional(),
+  }).optional(),
   layout: LayoutEnumPM.optional(),
   bulletsRight: z.array(z.string().min(1).max(500)).max(6).optional(),
   headline: z.string().max(200).optional(),
