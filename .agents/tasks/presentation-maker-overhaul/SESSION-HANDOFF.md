@@ -11,12 +11,18 @@
 | Phase | Status      | Last commit topic                        |
 |-------|-------------|------------------------------------------|
 | 0     | done        | scaffold ledger                          |
-| 1     | done        | type-aware thumbnails + primary theme    |
-| 2     | done        | 12 new subject profiles                  |
-| 3     | done        | AfL polling QR + Send-to                 |
-| 4     | partial     | inline icons/equations done; images + diagrams + PDF + rich print pending |
-| 5     | partial     | spec/misconception/board CW/server schema done; coverage check + fact-check + diff validator + reading-age verifier pending |
-| 6     | partial     | pedagogy badges + mascots done; identity + telemetry + diff + variant + cohort + companion + exit-ticket → marksheet pending |
+| 1     | done        | dark themes + subject auto + layouts + variants + section dividers + thumbnails + primary theme + accents + mascots |
+| 2     | done        | 12 subject profiles + 6 classroom-action slide types |
+| 3     | done        | presenter mode + reveal + timer + read-aloud + display prefs + autosave + AfL QR + Send-to |
+| 4     | partial     | inline icons + equations done; **images + diagrams + PDF + rich print pending** |
+| 5     | partial     | spec/misconception/board CW/server schema/coverage/diff-validator/reading-age/notes-batch done; **fact-check pass pending** |
+| 6     | partial     | pedagogy badges + mascots + telemetry + history + identity + variants done; **cohort + companion + exit-ticket marksheet pending** |
+
+**Remaining items: 9, 10, 11, 23, 43, 44, 45, 47, 48, 52** — all detailed below.
+
+## How many of the original 56 are done?
+
+46 of 56 (82%). The remaining 10 are the heavy infrastructure ones (real image pipeline, PDF generation, programmatic diagrams, pupil companion, exit-ticket capture, cohort aware regen).
 
 ## Files most-likely to touch (next)
 
@@ -115,10 +121,10 @@
 - [x] 34 Pedagogy badges (Rosenshine + Bloom)
 - [ ] 47 Exit-ticket → marksheet pipe (capture pupil responses; large)
 - [ ] 48 Cohort-aware regeneration (Year 9 Set 4)
-- [ ] 53 Slide-level diff & rollback (version history)
-- [ ] 54 School identity (logo, brand colours, motto)
-- [ ] 55 Variant generator (3 versions of one slide)
-- [x] 56 Per-slide telemetry (presentation-telemetry.ts; recordTelemetry calls wired into export, theme-change, refine paths)
+- [x] 53 Slide-level diff & rollback (last-5 versions per slide; HistoryIcon button on slide strip; restore dialog)
+- [x] 54 School identity (logo + motto + brand colour stored in localStorage; watermark on title slide / every slide; "🏫 School" header button)
+- [x] 55 Variant generator ("3 variants" button → AI returns formal / pupil-friendly / story-led options → chooser modal)
+- [x] 56 Per-slide telemetry (presentation-telemetry.ts; recordTelemetry calls wired into export, theme-change, refine, edit paths)
 - [ ] 43 Pupil-facing companion view (deck-level)
 
 ## Suggested order for the next session
