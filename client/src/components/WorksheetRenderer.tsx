@@ -33,6 +33,7 @@ import "katex/dist/katex.min.css";
 // stamped by the generator + post-validator chain. Default-collapsed,
 // print-hidden via the existing `ws-no-print-on-student` class.
 import AuditTrailPanel, { type AuditTrailWorksheet } from "@/components/AuditTrailPanel";
+import WorksheetCostChip from "@/components/WorksheetCostChip";
 
 const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
   // Legacy question type aliases
@@ -8426,6 +8427,32 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             </>
           )}
           .
+        </div>
+      )}
+
+      {/* PD13 — UI surface for cost transparency. Sits above the
+          existing per-page footer, teacher-view only so it never
+          leaks into pupil-facing prints. The wrapper carries the
+          existing `no-print` class (see client/src/index.css) so even
+          a teacher-view print run hides the chip. Hides itself when:
+            (a) the worksheet has no cost data (older worksheets),
+            (b) the user has the Settings → Generation cost toggle OFF.
+          Click opens the breakdown modal with a full audit view. */}
+      {isTeacherView && (worksheet.metadata as any)?.costEstimate && (
+        <div
+          data-testid="cost-chip-wrapper"
+          className="ws-cost-chip-wrapper no-print"
+          style={{
+            marginTop: "10px",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <WorksheetCostChip
+            costEstimate={(worksheet.metadata as any).costEstimate}
+            cacheHit={(worksheet.metadata as any).cacheHit === true}
+            cacheKey={(worksheet.metadata as any).cacheKey}
+          />
         </div>
       )}
 
