@@ -2,8 +2,14 @@ import { Router } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { query } from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
+import { PresentationDataSchemaShared, PresentationSlideSchema } from "../../shared/aiSchemas.js";
+import { z } from "zod";
 
 const router = Router();
+
+// Boundary validator — reject malformed slides at the API edge so the DB
+// only ever contains rich-schema-conforming presentations.
+const SlidesArraySchema = z.array(PresentationSlideSchema).min(1).max(60);
 
 // ─── GET /api/presentation-library/entries ──────────────────────────────────
 // List all presentation library entries (metadata only, no slides_json)
@@ -49,6 +55,16 @@ router.post("/entries", requireAuth, async (req: any, res) => {
     const { title, subject, topic, year_group, tier, slides, thumbnail_url, tags } = req.body;
     if (!title) return res.status(400).json({ error: "title is required" });
     const slidesArr = Array.isArray(slides) ? slides : [];
+    // Validate at the boundary — reject malformed slide payloads so the DB
+    // only contains rich-schema-conforming presentations. Use safeParse so we
+    // can surface a specific error to the client without throwing.
+    const validated = SlidesArraySchema.safeParse(slidesArr);
+    if (!validated.success) {
+      return res.status(400).json({
+        error: "slides_validation_failed",
+        details: validated.error.flatten(),
+      });
+    }
     const tagsArr = Array.isArray(tags) ? tags : [];
     const id = uuidv4();
     await query(

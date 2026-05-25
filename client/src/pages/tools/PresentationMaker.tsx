@@ -37,6 +37,8 @@ import SlidePollQR from "@/components/SlidePollQR";
 import { persistHandoff } from "@/components/SendToMenu";
 import { resolvePresentationTemplate } from "@/lib/presentation-templates";
 import { buildSubjectPromptFragments, getSubjectProfile } from "@/lib/subject-profiles";
+import { formatMisconceptionsForPrompt } from "@/lib/misconception-bank";
+import { lookupByTopic, type CurriculumEntry } from "@/lib/curriculumBank";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
@@ -1138,6 +1140,75 @@ function applyTemplateBias(basePlan: string[], bias: string[]): string[] {
   return plan;
 }
 
+// ─── Per-board command-word reference (item 19) ─────────────────────────────
+// Authoritative command-word lists per (board, subject-family). The prompt
+// builder injects these so model answers and exam-practice questions use the
+// board's actual mark-scheme phraseology rather than a generic synonym.
+const BOARD_COMMAND_WORDS: Record<string, Record<string, string[]>> = {
+  AQA: {
+    science:    ["state", "name", "describe", "explain", "calculate", "compare", "evaluate", "predict", "suggest", "justify"],
+    mathematics:["work out", "show that", "solve", "prove", "hence", "calculate", "factorise", "simplify", "expand"],
+    english:    ["analyse", "evaluate", "compare", "explain", "explore", "infer", "identify"],
+    history:    ["describe", "explain", "evaluate", "to what extent", "how far do you agree"],
+    geography:  ["describe", "explain", "assess", "evaluate", "compare", "calculate", "suggest"],
+    business:   ["state", "calculate", "explain", "analyse", "discuss", "evaluate", "justify"],
+    psychology: ["outline", "describe", "explain", "evaluate", "discuss", "compare"],
+    sociology:  ["identify", "describe", "explain", "evaluate", "discuss", "compare", "assess"],
+    other:      ["describe", "explain", "evaluate", "compare", "analyse", "calculate"],
+  },
+  Edexcel: {
+    science:    ["state", "describe", "explain", "calculate", "predict", "compare", "evaluate", "deduce"],
+    mathematics:["work out", "show that", "solve", "prove", "given that", "express", "calculate"],
+    english:    ["analyse", "evaluate", "compare", "explore"],
+    history:    ["describe", "explain", "to what extent", "how convincing"],
+    geography:  ["describe", "explain", "assess", "evaluate", "compare", "suggest"],
+    business:   ["state", "calculate", "analyse", "evaluate", "recommend"],
+    psychology: ["describe", "explain", "evaluate", "assess"],
+    other:      ["describe", "explain", "evaluate", "analyse", "compare"],
+  },
+  OCR: {
+    science:    ["state", "describe", "explain", "calculate", "compare", "predict", "evaluate", "justify"],
+    mathematics:["work out", "show that", "solve", "prove", "hence", "calculate"],
+    english:    ["analyse", "evaluate", "compare", "explore"],
+    history:    ["describe", "explain", "assess", "to what extent"],
+    geography:  ["describe", "explain", "assess", "evaluate"],
+    business:   ["state", "calculate", "explain", "analyse", "evaluate", "recommend"],
+    psychology: ["outline", "describe", "explain", "evaluate"],
+    other:      ["describe", "explain", "analyse", "evaluate"],
+  },
+  WJEC: {
+    science:    ["state", "describe", "explain", "calculate", "evaluate", "compare"],
+    other:      ["describe", "explain", "analyse", "evaluate"],
+  },
+  CIE: {
+    science:    ["state", "describe", "explain", "calculate", "compare", "predict"],
+    mathematics:["work out", "show that", "solve", "prove"],
+    other:      ["describe", "explain", "analyse", "evaluate"],
+  },
+  SQA: {
+    science:    ["state", "describe", "explain", "calculate", "compare"],
+    other:      ["describe", "explain", "analyse", "evaluate"],
+  },
+};
+
+function getBoardCommandWords(board: string | undefined, subject: string): string[] {
+  if (!board || board === "none") return [];
+  const subjectFamily = (() => {
+    const s = (subject || "").toLowerCase();
+    if (/maths|mathematics/.test(s))                            return "mathematics";
+    if (/biology|chemistry|physics|science/.test(s))            return "science";
+    if (/english|literature|language/.test(s))                  return "english";
+    if (/history/.test(s))                                      return "history";
+    if (/geograph/.test(s))                                     return "geography";
+    if (/business|economics/.test(s))                           return "business";
+    if (/psycholog/.test(s))                                    return "psychology";
+    if (/sociolog/.test(s))                                     return "sociology";
+    return "other";
+  })();
+  const tbl = BOARD_COMMAND_WORDS[board] || {};
+  return tbl[subjectFamily] || tbl.other || [];
+}
+
 function buildSlidePrompt(params: {
   subject: string;
   yearGroup: string;
@@ -1159,15 +1230,14 @@ function buildSlidePrompt(params: {
 
   const template = resolvePresentationTemplate({ subject, yearGroup, lessonType, sendNeeds, differentiationLevel });
 
-  // Build the structured slide plan. The 18-slide canonical teacher-framework
-  // flow is protected from template bias — it's the "gold standard" that must
-  // not be mutated. All other slide counts still go through applyTemplateBias
-  // so teacher-chosen templates (maths-gold / science-gold / etc.) can swap
-  // in their preferred slide types.
+  // Build the structured slide plan. Templates always get to bias the plan now
+  // (item 21 fix): the previous "lock 18-slide" rule meant teacher-chosen
+  // humanities-discussion / exam-revision-precision templates couldn't
+  // actually rearrange an 18-slide deck. Now they can — applyTemplateBias
+  // still respects the locked positions (title/objectives/exit-ticket) so
+  // the canonical pedagogy spine survives.
   const basePlan = buildSlidePlan(slideCount, lessonType, yearGroup);
-  const slidePlan = slideCount === 18
-    ? basePlan
-    : applyTemplateBias(basePlan, template.slidePlanBias);
+  const slidePlan = applyTemplateBias(basePlan, template.slidePlanBias);
 
   // Bloom's taxonomy mapping for teaching progression
   const bloomsMap: Record<string, string> = {
@@ -1267,6 +1337,40 @@ EXAM BOARD: ${examBoard}
 - Use ${examBoard} command words, mark scheme language, and assessment objectives.
 - Reference ${examBoard} specification terminology where relevant.
 - Exam technique slides must reflect ${examBoard} mark scheme conventions.` : "";
+
+  // ── Per-board command words (item 19) ────────────────────────────────────
+  // Inject the actual command-word list this board uses for THIS subject so
+  // exam-practice and model-answer slides phrase questions in the canonical
+  // mark-scheme register.
+  const boardCommandWords = getBoardCommandWords(examBoard, subject);
+  const boardCommandWordsBlock = boardCommandWords.length ? `
+${examBoard?.toUpperCase()} COMMAND WORDS (use these EXACTLY when writing exam-practice / model-answer / exam-technique slides):
+${boardCommandWords.map(w => `  • ${w}`).join("\n")}` : "";
+
+  // ── Misconception bank wiring (item 18) ──────────────────────────────────
+  // Pull vetted misconceptions for this (subject, topic, year-group) from the
+  // shared bank rather than letting the LLM hallucinate. Falls back silently
+  // when no entries match.
+  const misconceptionsBlock = (() => {
+    try {
+      return formatMisconceptionsForPrompt({ subject, topic, yearGroup, limit: 4 });
+    } catch { return ""; }
+  })();
+
+  // ── Spec-point catalogue from curriculumBank (item 17) ───────────────────
+  // For boards we have data for, surface real spec-refs so the AI cites them
+  // ("AQA C5.1.2") instead of generic "GCSE chemistry" framing.
+  const specPointsBlock = (() => {
+    try {
+      const board = (examBoard && examBoard !== "none" ? examBoard : "AQA") as any;
+      const entries: CurriculumEntry[] = lookupByTopic(board, subject, yearGroup, topic, "both");
+      if (!entries || entries.length === 0) return "";
+      const lines = entries.slice(0, 6).map(e => `  • ${e.specPoint.specRef} — ${e.specPoint.statement}`);
+      return `
+${board} SPEC POINTS LIKELY RELEVANT TO "${topic}" (cite by ref where appropriate):
+${lines.join("\n")}`;
+    } catch { return ""; }
+  })();
 
   const diffNote = differentiationLevel ? `
 DIFFERENTIATION LEVEL: ${differentiationLevel.toUpperCase()}
@@ -1411,6 +1515,9 @@ ${sendStructuredFieldsNote}
 ${readingAgeNote}
 ${readingAgeClampNote}
 ${examBoardNote}
+${boardCommandWordsBlock}
+${specPointsBlock}
+${misconceptionsBlock}
 ${diffNote}
 ${subjectNote}
 ${templateNote}

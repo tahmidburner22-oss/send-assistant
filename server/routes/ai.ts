@@ -5,6 +5,7 @@ import multer from "multer";
 import db, { query as dbQuery } from "../db/index.js";
 import { requireAuth, requireAdmin, auditLog, tryAuthOptional } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
+import { PresentationDataSchemaShared } from "../../shared/aiSchemas.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
 import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
 import { getCached, setCached, redactPii } from "../lib/generationCache.js";
@@ -4085,6 +4086,12 @@ router.post("/presentation/email", requireAuth, async (req: Request, res: Respon
   const { presentation, themeKey, recipientEmail, message, format } = req.body;
   if (!presentation || !recipientEmail) {
     return res.status(400).json({ error: "presentation and recipientEmail are required" });
+  }
+  // Validate the rich presentation shape before composing email so we don't
+  // try to render bullets-on-a-vocab-table mid-flight.
+  const validated = PresentationDataSchemaShared.safeParse(presentation);
+  if (!validated.success) {
+    return res.status(400).json({ error: "presentation_validation_failed", details: validated.error.flatten() });
   }
 
   try {
