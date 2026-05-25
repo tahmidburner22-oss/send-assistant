@@ -5,12 +5,14 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1.A shipped.**
-Branch `big-bang-7/pr-1-measure-and-prompt-arch` cut from main and
-pushed. Sprint 1.A — `docs/teacher-rater-rubric.md` written with
-6 axes × 5 anchors each, plus CSV format for batch human ratings,
-plus the calibration contract between model-judge and human raters.
-Next chunk: Sprint 1.B — comparison corpus.
+Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1.A + 1.B
+shipped.** Branch `big-bang-7/pr-1-measure-and-prompt-arch`. Sprint
+1.B added the 30-fixture comparison corpus (4 KS1/KS2 · 8 KS3 · 12
+GCSE · 3 A-Level · 3 SEND), distribution validated (maths 9 ·
+english 6 · science 7 · humanities 5 · send 3) at JSON-load time.
+Loader + 9-test shape lock at `server/tests/comparisonCorpus.test.ts`.
+Next chunk: Sprint 1.C — extend `EvalReport` schema with
+`humanScores` + `modelJudgeScores`.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -76,49 +78,91 @@ Goal: complete the next un-shipped item in "What is next" below.
   axis, drift ≥1.0 triggers judge-prompt recalibration). Hand-offable
   to any practising UK classroom teacher; ~7-minute rate-time budget.
 
+- **PR-1 / Sprint 1.B — Comparison corpus.** Three new files:
+  - `server/tests/worksheet-eval/comparison-corpus.json` — 30 fixed
+    fixtures with `cmp-` prefixed ids. Distribution: 4 KS1/KS2
+    (Y2 maths, Y4 English, Y5 science, Y6 RE) + 8 KS3 (Y7+Y9 maths,
+    Y7+Y8 English, Y8+Y9 science, Y8 geography, Y9 history) + 12
+    GCSE (AQA maths Y10F + Y10H + Y11H, Edexcel maths Y10H, OCR
+    maths Y10H, AQA bio Y10, AQA chem Y11, AQA phys Y10, AQA Eng
+    Lit Y10 Macbeth, AQA Eng Lang Y11 P2 Q5, AQA geography Y11
+    tectonics, AQA history Y10 Cold War) + 3 A-Level (AQA maths
+    Y12, AQA biology Y13, AQA Eng Lit Y12) + 3 SEND (dyslexia Y8
+    maths, ADHD Y10 English, ASC sensory Y8 science). Per-bucket
+    counts: maths 9 · english 6 · science 7 · humanities 5 · send 3.
+  - `server/tests/worksheet-eval/comparisonCorpus.ts` — loader
+    (`loadComparisonCorpus`, `bucketCounts`, `tagFixtures`,
+    `COMPARISON_CORPUS_VERSION = "1.0.0"`,
+    `COMPARISON_CORPUS_EXPECTED_SIZE = 30`). Loader validates id
+    prefix, uniqueness, bucket whitelist, required params, exact
+    size, and throws on any deviation so a hand-edit can't silently
+    shift the benchmark.
+  - `server/tests/comparisonCorpus.test.ts` — 9 vitest cases
+    locking corpus size, prefix + uniqueness, rule-name validity
+    (against `ALL_RULE_NAMES`), bucket distribution, key-stage
+    coverage (KS1/KS2 + KS3 + GCSE + A-Level + SEND), SEND
+    `send-fidelity-floor` rule presence, exam-board + spec-rule
+    presence on GCSE/A-Level fixtures, readingAgeRange monotonic +
+    plausible (5–20, span ≤5 years), and version semver shape.
+    Helper test asserts `bucketCounts` sums to corpus length and
+    `tagFixtures` is non-mutating.
+
 ## What is in flight
 
 _Nothing in flight; ready to start Sprint 1.B._
 
 ## What is next
 
-**PR-1 / Sprint 1.B — Comparison corpus.** Branch:
-`big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
+**PR-1 / Sprint 1.C — `EvalReport` schema additive extension.**
+Branch `big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
 
-Write `server/tests/worksheet-eval/comparison-corpus.json` — 30 fixed
-(subject, year, topic) triples that span the segments the user cares
-about. Distribution:
+Edit `server/tests/worksheet-eval/types.ts` to add (additive only —
+older runners keep reading newer reports):
 
-| Tier | Count | Coverage |
-| ---- | ----: | -------- |
-| KS1 / KS2 (primary) | 4 | maths Y2, English Y4, science Y5, RE Y6 |
-| KS3 (Y7–Y9) | 8 | maths Y7+Y9, English Y7+Y8, science Y8+Y9, geography Y8, history Y9 |
-| GCSE (Y10–Y11) | 12 | AQA maths Y10 + Y11 (F + H), Edexcel maths Y10 (H), AQA bio Y10, AQA chem Y11, AQA phys Y10, OCR maths Y10, English Lit Y10 (Macbeth), English Lang Y11, geography Y11, history Y10, RS Y11 |
-| A-Level | 3 | AQA maths Y12, AQA biology Y13, AQA English Lit Y12 |
-| SEND-flagged | 3 | dyslexia (KS3 maths), ADHD (Y10 English), ASC sensory (KS3 science) |
+```ts
+export interface AxisScores {
+  curriculumFidelity: number | null;   // 1-5, null = not rated this run
+  stemAuthenticity: number | null;
+  accessibility: number | null;
+  marksAndAnswers: number | null;
+  sendAlignment: number | null;        // null when no sendNeed declared
+  uxAndPrintability: number | null;
+}
 
-Each entry gets the same JSON shape as the existing fixtures (id,
-title, bucket, params, rules, optional readingAgeRange,
-estimatedTokens). Save as `comparison-corpus.json` (a single JSON
-array file — NOT 30 separate fixtures, because the comparison corpus
-is a distinct artefact from the existing fixture-per-file harness).
+// EvalReportRow gains:
+//   modelJudgeScores?: AxisScores;
+//   humanScores?: AxisScoresWithRaterId[];  // per-rater rows
+//   corpus?: "fixtures" | "comparison";
 
-Then: extend `runner.ts` (or add a sibling loader) so a
-`COMPARISON_CORPUS=1` env flag invokes the corpus instead of (or in
-addition to) the per-file fixtures. Default behaviour unchanged.
+// EvalReport gains:
+//   modelJudgeProvider?: string;     // "claude" / "openai" / "none"
+//   modelJudgeAggregate?: AxisScoresAggregate;  // mean per axis across rows
+//   humanScoresPath?: string;        // path to humanScores.csv loaded, when present
+```
 
-After Sprint 1.B lands → Sprint 1.C (eval-report schema extension).
+Then update `summariser.ts` to render a per-axis breakdown block
+when `modelJudgeAggregate` is present:
+
+```
+### Per-axis (model-judge)
+| Axis | Mean | Min | Max |
+| --- | ---: | ---: | ---: |
+| Curriculum fidelity | 4.1 | 2 | 5 |
+...
+```
+
+After Sprint 1.C → Sprint 1.D (model-judge harness).
 
 ## Per-PR tracking (live state for the current PR)
 
 ### PR-1 — `big-bang-7/pr-1-measure-and-prompt-arch`
 
-Status: **in flight, 1/13 deliverables shipped**.
+Status: **in flight, 2/13 deliverables shipped**.
 
 Sprint 1 deliverables (from PHASE-PLAN.md):
 
-- [x] `docs/teacher-rater-rubric.md` (6-axis × 1–5 with anchors) — commit pending push
-- [ ] `server/tests/worksheet-eval/comparison-corpus.json` (30 triples)
+- [x] `docs/teacher-rater-rubric.md` (6-axis × 1–5 with anchors)
+- [x] `server/tests/worksheet-eval/comparison-corpus.json` (30 triples) + loader + tests
 - [ ] `EvalReport` schema extended with `humanScores` + `modelJudgeScores`
 - [ ] `server/tests/worksheet-eval/modelJudgeRater.ts` (cross-provider judge)
 - [ ] `summariser.ts` per-axis breakdown

@@ -1,0 +1,701 @@
+[
+  {
+    "id": "cmp-y2-maths-place-value",
+    "title": "Year 2 Maths — Place value to 100",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Place value within 100",
+      "yearGroup": "Year 2",
+      "difficulty": "easy",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [6, 8],
+    "estimatedTokens": 3500
+  },
+  {
+    "id": "cmp-y4-english-fronted-adverbials",
+    "title": "Year 4 English — Fronted adverbials",
+    "bucket": "english",
+    "params": {
+      "subject": "English",
+      "topic": "Fronted adverbials",
+      "yearGroup": "Year 4",
+      "difficulty": "easy",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [8, 10],
+    "estimatedTokens": 3500
+  },
+  {
+    "id": "cmp-y5-science-states-of-matter",
+    "title": "Year 5 Science — States of matter",
+    "bucket": "science",
+    "params": {
+      "subject": "Science",
+      "topic": "States of matter — solids, liquids, gases",
+      "yearGroup": "Year 5",
+      "difficulty": "easy",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [9, 11],
+    "estimatedTokens": 3500
+  },
+  {
+    "id": "cmp-y6-re-christianity-easter",
+    "title": "Year 6 Religious Studies — Christianity: Easter",
+    "bucket": "humanities",
+    "params": {
+      "subject": "Religious Studies",
+      "topic": "Christianity — Easter and the resurrection",
+      "yearGroup": "Year 6",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [10, 12],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-y7-maths-fractions",
+    "title": "Year 7 Maths — Adding fractions",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Adding fractions with the same denominator",
+      "yearGroup": "Year 7",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [11, 13],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-y9-maths-linear-equations",
+    "title": "Year 9 Maths — Solving linear equations",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Solving linear equations with one unknown",
+      "yearGroup": "Year 9",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [13, 15],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-y7-english-poetry-imagery",
+    "title": "Year 7 English — Poetic imagery",
+    "bucket": "english",
+    "params": {
+      "subject": "English",
+      "topic": "Poetic imagery — similes, metaphors, personification",
+      "yearGroup": "Year 7",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [11, 13],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-y8-english-non-fiction-writing",
+    "title": "Year 8 English — Persuasive non-fiction writing",
+    "bucket": "english",
+    "params": {
+      "subject": "English",
+      "topic": "Persuasive writing — rhetorical devices and audience",
+      "yearGroup": "Year 8",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [12, 14],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-y8-science-respiration",
+    "title": "Year 8 Science — Aerobic respiration",
+    "bucket": "science",
+    "params": {
+      "subject": "Biology",
+      "topic": "Aerobic respiration — word and balanced equations",
+      "yearGroup": "Year 8",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [12, 14],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-y9-science-electricity",
+    "title": "Year 9 Science — Series and parallel circuits",
+    "bucket": "science",
+    "params": {
+      "subject": "Physics",
+      "topic": "Series and parallel circuits — current, p.d., resistance",
+      "yearGroup": "Year 9",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [13, 15],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-y8-geography-rivers",
+    "title": "Year 8 Geography — Rivers and the water cycle",
+    "bucket": "humanities",
+    "params": {
+      "subject": "Geography",
+      "topic": "The water cycle and river processes (erosion, transportation, deposition)",
+      "yearGroup": "Year 8",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [12, 14],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-y9-history-ww1",
+    "title": "Year 9 History — Causes of WWI (MAIN)",
+    "bucket": "humanities",
+    "params": {
+      "subject": "History",
+      "topic": "Causes of the First World War — Militarism, Alliances, Imperialism, Nationalism",
+      "yearGroup": "Year 9",
+      "difficulty": "medium",
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [13, 15],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-aqa-maths-y10-foundation-percentages",
+    "title": "AQA GCSE Maths Y10 Foundation — Percentages",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Percentage of an amount, percentage change, reverse percentages (Foundation)",
+      "yearGroup": "Year 10",
+      "examBoard": "AQA",
+      "difficulty": "medium",
+      "examStyle": true,
+      "includeAnswers": true,
+      "calculator": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [13, 16],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-aqa-maths-y10-higher-quadratics",
+    "title": "AQA GCSE Maths Y10 Higher — Quadratic equations",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Solving quadratic equations by factorising and the quadratic formula (Higher)",
+      "yearGroup": "Year 10",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "calculator": false
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-aqa-maths-y11-higher-trigonometry",
+    "title": "AQA GCSE Maths Y11 Higher — Sine and cosine rules",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Sine rule, cosine rule and area of non-right-angled triangles (Higher)",
+      "yearGroup": "Year 11",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "calculator": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-edexcel-maths-y10-higher-vectors",
+    "title": "Edexcel GCSE Maths Y10 Higher — Vectors",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Vector addition, subtraction and parallel vectors (Higher)",
+      "yearGroup": "Year 10",
+      "examBoard": "Edexcel",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "calculator": false
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-ocr-maths-y10-higher-circle-theorems",
+    "title": "OCR GCSE Maths Y10 Higher — Circle theorems",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Circle theorems — angles in same segment, alternate segment, tangent properties (Higher)",
+      "yearGroup": "Year 10",
+      "examBoard": "OCR",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "calculator": false
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-aqa-biology-y10-photosynthesis",
+    "title": "AQA GCSE Biology Y10 — Photosynthesis",
+    "bucket": "science",
+    "params": {
+      "subject": "Biology",
+      "topic": "Photosynthesis — limiting factors and required practical",
+      "yearGroup": "Year 10",
+      "examBoard": "AQA",
+      "difficulty": "medium",
+      "examStyle": true,
+      "includeAnswers": true,
+      "paper": "P1"
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4500
+  },
+  {
+    "id": "cmp-aqa-chemistry-y11-equilibria",
+    "title": "AQA GCSE Chemistry Y11 — Reversible reactions and dynamic equilibria",
+    "bucket": "science",
+    "params": {
+      "subject": "Chemistry",
+      "topic": "Reversible reactions and Le Chatelier's principle",
+      "yearGroup": "Year 11",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "paper": "P2"
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4500
+  },
+  {
+    "id": "cmp-aqa-physics-y10-forces",
+    "title": "AQA GCSE Physics Y10 — Forces and motion",
+    "bucket": "science",
+    "params": {
+      "subject": "Physics",
+      "topic": "Resultant forces, Newton's laws and momentum (Higher)",
+      "yearGroup": "Year 10",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "paper": "P2"
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4500
+  },
+  {
+    "id": "cmp-aqa-english-lit-y10-macbeth",
+    "title": "AQA GCSE English Lit Y10 — Macbeth Act 1 Scene 7",
+    "bucket": "english",
+    "params": {
+      "subject": "English Literature",
+      "topic": "Macbeth — Act 1 Scene 7: ambition and the dagger soliloquy",
+      "yearGroup": "Year 10",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4500
+  },
+  {
+    "id": "cmp-aqa-english-lang-y11-paper2-q5",
+    "title": "AQA GCSE English Language Y11 — Paper 2 Q5 (persuasive writing)",
+    "bucket": "english",
+    "params": {
+      "subject": "English Language",
+      "topic": "Paper 2 Question 5 — persuasive writing for a specified audience",
+      "yearGroup": "Year 11",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "paper": "P2"
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4500
+  },
+  {
+    "id": "cmp-aqa-geography-y11-tectonic-hazards",
+    "title": "AQA GCSE Geography Y11 — Tectonic hazards",
+    "bucket": "humanities",
+    "params": {
+      "subject": "Geography",
+      "topic": "Tectonic hazards — plate boundaries, earthquake/volcano case studies",
+      "yearGroup": "Year 11",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "paper": "P1"
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4500
+  },
+  {
+    "id": "cmp-aqa-history-y10-cold-war",
+    "title": "AQA GCSE History Y10 — Origins of the Cold War",
+    "bucket": "humanities",
+    "params": {
+      "subject": "History",
+      "topic": "Origins of the Cold War 1945–1949 — Yalta, Potsdam, Truman Doctrine",
+      "yearGroup": "Year 10",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [14, 17],
+    "estimatedTokens": 4500
+  },
+  {
+    "id": "cmp-aqa-alevel-maths-y12-differentiation",
+    "title": "AQA A-Level Maths Y12 — Differentiation from first principles",
+    "bucket": "maths",
+    "params": {
+      "subject": "Maths",
+      "topic": "Differentiation from first principles for polynomial functions (A-Level Year 1)",
+      "yearGroup": "Year 12",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true,
+      "calculator": false
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [16, 18],
+    "estimatedTokens": 5000
+  },
+  {
+    "id": "cmp-aqa-alevel-biology-y13-protein-synthesis",
+    "title": "AQA A-Level Biology Y13 — Protein synthesis",
+    "bucket": "science",
+    "params": {
+      "subject": "Biology",
+      "topic": "Transcription, translation and the genetic code (A-Level Year 2)",
+      "yearGroup": "Year 13",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [16, 18],
+    "estimatedTokens": 5000
+  },
+  {
+    "id": "cmp-aqa-alevel-english-lit-y12-tragedy",
+    "title": "AQA A-Level English Lit Y12 — Aspects of Tragedy",
+    "bucket": "english",
+    "params": {
+      "subject": "English Literature",
+      "topic": "Aspects of Tragedy — comparative analysis of Othello and Death of a Salesman",
+      "yearGroup": "Year 12",
+      "examBoard": "AQA",
+      "difficulty": "hard",
+      "examStyle": true,
+      "includeAnswers": true
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "spec-ref-present",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [16, 18],
+    "estimatedTokens": 5000
+  },
+  {
+    "id": "cmp-send-dyslexia-ks3-maths-fractions",
+    "title": "SEND (dyslexia) Y8 Maths — Equivalent fractions",
+    "bucket": "send",
+    "params": {
+      "subject": "Maths",
+      "topic": "Equivalent fractions and simplifying fractions",
+      "yearGroup": "Year 8",
+      "sendNeed": "dyslexia",
+      "difficulty": "medium",
+      "includeAnswers": true,
+      "readingAge": 10
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "send-fidelity-floor",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [9, 12],
+    "qaScoreFloor": 60,
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-send-adhd-y10-english",
+    "title": "SEND (ADHD) Y10 AQA English Language — Reading non-fiction",
+    "bucket": "send",
+    "params": {
+      "subject": "English Language",
+      "topic": "Paper 2 Section A — comparing two non-fiction texts",
+      "yearGroup": "Year 10",
+      "examBoard": "AQA",
+      "sendNeed": "adhd",
+      "difficulty": "medium",
+      "includeAnswers": true,
+      "readingAge": 12
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "send-fidelity-floor",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [11, 14],
+    "qaScoreFloor": 60,
+    "estimatedTokens": 4000
+  },
+  {
+    "id": "cmp-send-asc-sensory-ks3-science",
+    "title": "SEND (ASC sensory) Y8 Science — The digestive system",
+    "bucket": "send",
+    "params": {
+      "subject": "Biology",
+      "topic": "The human digestive system — organs and enzymes",
+      "yearGroup": "Year 8",
+      "sendNeed": "asc-sensory",
+      "difficulty": "medium",
+      "includeAnswers": true,
+      "readingAge": 11
+    },
+    "rules": [
+      "mcq-single-correct",
+      "word-bank-deduped",
+      "no-foreign-diagrams",
+      "send-fidelity-floor",
+      "qa-score-floor",
+      "reading-age-in-range"
+    ],
+    "readingAgeRange": [10, 13],
+    "qaScoreFloor": 60,
+    "estimatedTokens": 4000
+  }
+]
