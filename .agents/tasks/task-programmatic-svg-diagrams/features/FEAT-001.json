@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add AI-prompted programmatic SVG diagram system to the Presentation Maker. This replaces items 9 (stock photo proxy), 10 (PPTX image embed), 11 (programmatic diagrams), and 52 (licence record) from the overhaul ledger. Instead of external images, the AI generates structured diagram data as part of slide JSON, and a new React component renders SVG diagrams client-side.",
+  "status": "in_progress",
+  "steps": [
+    "Step 1 - Define the diagram data schema. Add a `diagram` field to the SlideContent interface and SlideContentSchema in `client/src/pages/tools/PresentationMaker.tsx` (around line 95 and line 270). The field is an optional object: `diagram?: { kind: 'flowchart' | 'venn' | 'timeline' | 'circuit' | 'cell' | 'water-cycle' | 'food-chain' | 'equation-graph' | 'labelled-box' | 'cycle'; title?: string; nodes: Array<{ id: string; label: string; group?: string; x?: number; y?: number }>; edges?: Array<{ from: string; to: string; label?: string; style?: 'arrow' | 'line' | 'dashed' }>; sets?: Array<{ label: string; items: string[] }>; equation?: string; }`. Also add the same schema to PresentationSlideSchema in `shared/aiSchemas.ts` (use z.object with .optional()).",
+    "Step 2 - Create `client/src/components/PresentationDiagram.tsx`. This component accepts `diagram` data + `theme` (ComposedTheme) and renders pure SVG. Implement renderers for each `kind`: (a) flowchart - boxes with arrows, laid out top-to-bottom or left-to-right using nodes/edges; (b) venn - 2-3 overlapping circles with items placed in/outside intersections using sets[]; (c) timeline - horizontal line with dated nodes; (d) circuit - simplified electrical circuit symbols (battery, resistor, lamp, switch) connected by lines; (e) cell - biological cell outline with labelled parts; (f) water-cycle - cyclical arrows with labelled stages; (g) food-chain - linear chain with arrows between organisms; (h) equation-graph - simple x/y axes with a plotted line/curve; (i) labelled-box - generic central shape with callout labels; (j) cycle - circular arrangement with arrows between stages. Use the theme colours (theme.primary, theme.secondary, theme.accent, theme.text) for styling. Export the component as default.",
+    "Step 3 - Wire PresentationDiagram into FullSlideView. In the `diagram-label` case (line ~2856) and the `diagram-callouts` layout case, check if `slide.diagram` exists. If so, render `<PresentationDiagram diagram={slide.diagram} theme={theme} />` in place of the dashed placeholder box. Keep the existing dashed-box fallback for slides without `slide.diagram`. Also allow any slide type that has a `diagram` field to show the diagram (e.g., content slides with layout='diagram-callouts').",
+    "Step 4 - Update the AI prompt in `buildSlidePrompt` (around line 1571 where diagram-label spec is). Replace the existing diagram-label instruction to tell the AI to populate the `diagram` field with structured data. Add a new section to the slideTypeGuide explaining the diagram schema and when to use each kind. The prompt should say: 'For diagram-label slides, ALWAYS populate the `diagram` field with structured data. Choose the appropriate `kind` based on the subject and topic. Populate nodes, edges, and/or sets as appropriate for the kind. The renderer will draw the SVG automatically - do NOT rely on image_prompt for diagrams.' Also update the IMAGE SYSTEM section to note that diagrams are handled programmatically and image_prompt is only for photographic backgrounds.",
+    "Step 5 - Update the PPTX export (`exportToPptx`, line ~3675). Add a helper function `paintDiagram(pSlide, diagram, theme, x, y, w, h)` that draws pptxgenjs shapes to represent the diagram. For flowchart: addShape rects + addText for nodes, addShape lines for edges. For venn: addShape ellipses with semi-transparent fills. For timeline: horizontal line with circles at nodes. For others: simplified shape representations using addShape + addText. Call this helper from the diagram-label slide branch and from any generic slide that has a `diagram` field.",
+    "Step 6 - Update the SESSION-HANDOFF.md ledger to mark items 9, 10, 11, and 52 as done with a note that they were replaced by programmatic SVG diagrams (no external image API needed, no licence record needed since all content is self-generated)."
+  ],
+  "acceptance_criteria": [
+    "The `diagram` field is defined in both the client SlideContentSchema and shared PresentationSlideSchema with Zod validation",
+    "PresentationDiagram.tsx renders at least 6 distinct diagram kinds as SVG (flowchart, venn, timeline, circuit, cell, cycle)",
+    "FullSlideView renders the PresentationDiagram component when slide.diagram is present on a diagram-label slide",
+    "The AI prompt instructs the model to populate the diagram field with structured data for diagram-label slides",
+    "The PPTX export paints diagram shapes using pptxgenjs when slide.diagram is present",
+    "TypeScript compilation passes (`tsc --noEmit`)",
+    "Items 9, 10, 11, 52 are marked [x] in the SESSION-HANDOFF ledger"
+  ],
+  "verification": [
+    "Run `npx tsc --noEmit` in the project root and confirm no type errors",
+    "Run `npx vitest run` and confirm existing tests still pass",
+    "Verify PresentationDiagram.tsx exports a valid React component by checking the file exists and has proper TypeScript/JSX structure"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

@@ -769,6 +769,28 @@ export const PresentationSlideSchema = z.object({
   markSchemeHint: z.string().max(500).optional(),
   diagramDescription: z.string().max(500).optional(),
   diagramLabels: z.array(z.string().min(1)).max(20).optional(),
+  diagram: z.object({
+    kind: z.enum(["flowchart", "venn", "timeline", "circuit", "cell", "water-cycle", "food-chain", "equation-graph", "labelled-box", "cycle"]),
+    title: z.string().max(120).optional(),
+    nodes: z.array(z.object({
+      id: z.string().max(40),
+      label: z.string().max(100),
+      group: z.string().max(40).optional(),
+      x: z.number().optional(),
+      y: z.number().optional(),
+    })).max(20),
+    edges: z.array(z.object({
+      from: z.string().max(40),
+      to: z.string().max(40),
+      label: z.string().max(80).optional(),
+      style: z.enum(["arrow", "line", "dashed"]).optional(),
+    })).max(30).optional(),
+    sets: z.array(z.object({
+      label: z.string().max(80),
+      items: z.array(z.string().max(80)).max(10),
+    })).max(4).optional(),
+    equation: z.string().max(200).optional(),
+  }).optional(),
   image_prompt: z.string().max(500).optional(),
   layout: LayoutEnumPM.optional(),
   bulletsRight: z.array(z.string().min(1).max(500)).max(6).optional(),
