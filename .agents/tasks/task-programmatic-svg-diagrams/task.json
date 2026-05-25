@@ -1,0 +1,7 @@
+{
+  "task_id": "task-programmatic-svg-diagrams",
+  "task_description": "Replace Pexels/Unsplash stock photo approach with AI-prompted programmatic SVG diagrams. The AI slide generation prompt produces structured diagram data as part of slide JSON, and a new PresentationDiagram component renders SVG client-side. Covers items 9, 10, 11, 52 from the presentation-maker-overhaul ledger.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null
+}

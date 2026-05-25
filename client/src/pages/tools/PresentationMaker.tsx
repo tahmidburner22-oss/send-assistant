@@ -32,6 +32,7 @@ import { useApp } from "@/contexts/AppContext";
 import { useLocation } from "wouter";
 
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
+import PresentationDiagram from "@/components/PresentationDiagram";
 import PresentationMakerEnhancementsPanel from "@/components/PresentationMakerEnhancementsPanel";
 import SlidePollQR from "@/components/SlidePollQR";
 import { persistHandoff } from "@/components/SendToMenu";
@@ -94,6 +95,28 @@ const SlideContentSchema = z.object({
   markSchemeHint: z.string().max(500).optional(),
   diagramDescription: z.string().max(500).optional(),
   diagramLabels: z.array(z.string().min(1)).max(20).optional(),
+  diagram: z.object({
+    kind: z.enum(["flowchart", "venn", "timeline", "circuit", "cell", "water-cycle", "food-chain", "equation-graph", "labelled-box", "cycle"]),
+    title: z.string().max(120).optional(),
+    nodes: z.array(z.object({
+      id: z.string().max(40),
+      label: z.string().max(100),
+      group: z.string().max(40).optional(),
+      x: z.number().optional(),
+      y: z.number().optional(),
+    })).max(20),
+    edges: z.array(z.object({
+      from: z.string().max(40),
+      to: z.string().max(40),
+      label: z.string().max(80).optional(),
+      style: z.enum(["arrow", "line", "dashed"]).optional(),
+    })).max(30).optional(),
+    sets: z.array(z.object({
+      label: z.string().max(80),
+      items: z.array(z.string().max(80)).max(10),
+    })).max(4).optional(),
+    equation: z.string().max(200).optional(),
+  }).optional(),
   image_prompt: z.string().max(500).optional(),
   layout: z.enum(["full","two-col","image-right","image-left","centered","bullet-list","hero-number","definition","process","quote-block",
     // ── Phase 1: 7 new layouts ────────────────────────────────────────
@@ -268,6 +291,14 @@ export interface SlideContent {
   // Diagram label fields
   diagramDescription?: string;
   diagramLabels?: string[];
+  diagram?: {
+    kind: "flowchart" | "venn" | "timeline" | "circuit" | "cell" | "water-cycle" | "food-chain" | "equation-graph" | "labelled-box" | "cycle";
+    title?: string;
+    nodes: Array<{ id: string; label: string; group?: string; x?: number; y?: number }>;
+    edges?: Array<{ from: string; to: string; label?: string; style?: "arrow" | "line" | "dashed" }>;
+    sets?: Array<{ label: string; items: string[] }>;
+    equation?: string;
+  };
   image_prompt?: string;
   layout?: "full" | "two-col" | "image-right" | "image-left" | "centered" | "bullet-list" | "hero-number" | "definition" | "process" | "quote-block"
     | "split-stat" | "comparison-table" | "timeline-horizontal" | "card-grid" | "before-after" | "quote-portrait" | "diagram-callouts";
@@ -1568,7 +1599,7 @@ CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
 "key-terms" → title, terms (array of {term, definition} — 5-8 terms, definitions max 10 words each)
 "content" → title, bullets (3-5 concise facts/concepts, max 8 words each), body (optional context sentence), layout ("two-col" if comparing), image_prompt (optional)
 "worked-example" → title, workedExampleBox {problem, steps[3-6], answer, units, commonError}, speakerNotes. The steps MUST include the formula, the substitution, any rearrangement, and the final answer with units.
-"diagram-label" → title, diagramDescription (describe the diagram clearly for rendering), diagramLabels (array of 4-8 label strings), question (what to label/identify), speakerNotes
+"diagram-label" -> title, diagram {kind, nodes[], edges[], sets?, equation?, title?}, diagramLabels (array of 4-8 label strings), question (what to label/identify), speakerNotes. ALWAYS populate the \`diagram\` field -- choose the best kind for the topic. The renderer draws SVG automatically from this data.
 "activity" → title, question (task instruction), bullets (3-5 step-by-step instructions), differentiation {support, core, extension}, timingMinutes, body (brief context), speakerNotes
 "pause-and-solve" → title, question (the problem to solve), steps (reveal steps — show method progressively), answer (final answer), timingMinutes, speakerNotes
 "check-understanding" → title, question (MCQ question stem), options (array of 4 options A-D), answer (correct letter), timingMinutes (2-3), speakerNotes
@@ -1604,6 +1635,28 @@ CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
 - "before-after" layout: populate `beforeAfter: {before, after, beforeLabel, afterLabel}` for the contrast pair.
 - "quote-portrait" layout: populate `quote`, `attribution`, `image_prompt` (portrait of speaker).
 - "diagram-callouts" layout: populate `diagramDescription` plus `diagramCallouts: [{label, position, description?}]` where position is one of top-left / top / top-right / right / bottom-right / bottom / bottom-left / left.
+
+── DIAGRAM SYSTEM (populate \`diagram\` on any diagram-label slide):
+The \`diagram\` field is rendered as a programmatic SVG. Choose the \`kind\` that best fits:
+- "flowchart": nodes connected by directional arrows (processes, algorithms, decision trees)
+- "venn": overlapping sets with items (comparing/contrasting concepts)
+- "timeline": events on a horizontal timeline
+- "circuit": electrical circuit (label nodes as: battery, resistor, lamp, switch, ammeter, voltmeter)
+- "cell": biological cell diagram (label parts: nucleus, mitochondria, cell membrane, cytoplasm, etc.)
+- "water-cycle": cyclical natural process (evaporation, condensation, precipitation, collection)
+- "food-chain": linear chain of organisms with energy flow arrows
+- "equation-graph": x/y coordinate graph (provide \`equation\` field, nodes as axis labels)
+- "labelled-box": generic central diagram with surrounding labels
+- "cycle": any cyclical process (carbon cycle, rock cycle, nitrogen cycle, etc.)
+
+Structure: { kind, title?, nodes: [{id, label, group?}], edges?: [{from, to, label?, style?}], sets?: [{label, items[]}], equation? }
+- For flowchart/food-chain: populate nodes + edges
+- For venn: populate sets (2-3 sets with their items; shared items appear in multiple sets)
+- For circuit: populate nodes (id = component type) + edges (connections)
+- For timeline: populate nodes (label = event, group = date)
+- For cell/labelled-box: populate nodes (label = part name)
+- For cycle/water-cycle: populate nodes in order + edges connecting them in a loop
+- For equation-graph: populate equation + nodes for axis labels
 
 ── Inline rich-text markers in any text field (bullets / body / question):
 - `code` → mono chip (use for keywords, function names, short code samples)
@@ -1660,10 +1713,11 @@ ${slideTypeGuide}
 
 IMAGE SYSTEM — TWO-STAGE RELEVANCE CHECK:
 For every slide with an image_prompt field:
-1. First check: Is this slide type visual? (title, hook, content, real-world-link, diagram-label = YES; objectives, key-terms, exit-ticket = NO)
-2. Second check: Is the topic specific enough for a relevant image? (e.g. "Ohm's Law circuit" = YES; "Introduction" = NO)
+1. First check: Is this slide type visual? (title, hook, content, real-world-link = YES; objectives, key-terms, exit-ticket = NO)
+2. Second check: Is the topic specific enough for a relevant image? (e.g. "photograph of a rainforest canopy" = YES; "Introduction" = NO)
 Only include image_prompt if BOTH checks pass. Make it specific: "photograph of a series circuit with labelled components" not "science image".
 When you do include images, they must match this style: ${template.imageStyle}.
+NOTE: Diagrams are generated programmatically via the \`diagram\` field -- do NOT use image_prompt for scientific diagrams, circuits, cells, flowcharts, etc. Use image_prompt only for photographic backgrounds (e.g. "photograph of a rainforest canopy").
 
 QUALITY STANDARDS:
 - Every bullet max 8 words, factually accurate for ${topic}
@@ -2339,7 +2393,7 @@ function renderLayoutSlide(
       );
     }
 
-    // ── Phase 1: diagram-callouts — central area with positioned labels ──
+    // ── Phase 1: diagram-callouts -- central area with positioned labels ──
     case "diagram-callouts": {
       const callouts = slide.diagramCallouts || [];
       const posClass: Record<string, string> = {
@@ -2350,10 +2404,16 @@ function renderLayoutSlide(
       };
       return (
         <Shell contentClass="relative">
-          <div className="absolute inset-0 rounded-xl border-2 border-dashed flex items-center justify-center"
-               style={{ borderColor: badgeColour + "60", background: theme.light }}>
-            <div className="text-xs italic text-gray-500 max-w-md text-center px-4">{slide.diagramDescription || "Diagram"}</div>
-          </div>
+          {slide.diagram ? (
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <PresentationDiagram diagram={slide.diagram} theme={theme} />
+            </div>
+          ) : (
+            <div className="absolute inset-0 rounded-xl border-2 border-dashed flex items-center justify-center"
+                 style={{ borderColor: badgeColour + "60", background: theme.light }}>
+              <div className="text-xs italic text-gray-500 max-w-md text-center px-4">{slide.diagramDescription || "Diagram"}</div>
+            </div>
+          )}
           {callouts.slice(0, 8).map((c, i) => (
             <div key={i} className={`absolute ${posClass[c.position] || "top-2 left-2"} rounded-lg px-2 py-1`} style={{ background: "white", border: `1.5px solid ${badgeColour}`, boxShadow: "0 2px 4px rgba(0,0,0,0.08)" }}>
               <div className="text-[11px] font-bold" style={{ color: badgeColour }}>{c.label}</div>
@@ -2860,12 +2920,16 @@ function FullSlideView({
             <div className="flex-1 px-10 pb-7 flex gap-6">
               {/* Left: diagram description box */}
               <div className="flex-1 flex flex-col justify-center">
-                <div className="rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-4 text-center" style={{ borderColor: badgeColour + "60", background: theme.light, minHeight: "140px" }}>
-                  <div className="text-xs text-gray-500 mb-2">Diagram Area</div>
-                  {slide.diagramDescription && (
-                    <div className="text-xs text-gray-700 italic">{slide.diagramDescription}</div>
-                  )}
-                </div>
+                {slide.diagram ? (
+                  <PresentationDiagram diagram={slide.diagram} theme={theme} />
+                ) : (
+                  <div className="rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-4 text-center" style={{ borderColor: badgeColour + "60", background: theme.light, minHeight: "140px" }}>
+                    <div className="text-xs text-gray-500 mb-2">Diagram Area</div>
+                    {slide.diagramDescription && (
+                      <div className="text-xs text-gray-700 italic">{slide.diagramDescription}</div>
+                    )}
+                  </div>
+                )}
               </div>
               {/* Right: labels + question */}
               <div className="w-48 flex flex-col justify-center gap-2">
@@ -3844,6 +3908,77 @@ async function exportToPptx(
     });
   };
 
+  // ── Diagram painter — renders structured diagram data as pptxgenjs shapes ──
+  const paintDiagram = (pSlide: any, diagram: NonNullable<SlideContent['diagram']>, x: number, y: number, w: number, h: number) => {
+    const nodes = diagram.nodes || [];
+    const edges = diagram.edges || [];
+
+    if (diagram.kind === "flowchart" || diagram.kind === "food-chain") {
+      const isHorizontal = diagram.kind === "food-chain";
+      const nodeW = isHorizontal ? Math.min(1.8, (w - 0.4) / Math.max(nodes.length, 1)) : 2.0;
+      const nodeH = 0.45;
+      const positions: Record<string, { cx: number; cy: number }> = {};
+
+      nodes.forEach((node, i) => {
+        const nx = isHorizontal ? x + 0.2 + i * (w / nodes.length) : x + (w - nodeW) / 2;
+        const ny = isHorizontal ? y + h / 2 - nodeH / 2 : y + 0.2 + i * (h / nodes.length);
+        positions[node.id] = { cx: nx + nodeW / 2, cy: ny + nodeH / 2 };
+        pSlide.addShape(pptx.ShapeType.rect, { x: nx, y: ny, w: nodeW, h: nodeH, fill: { type: "solid", color: secondaryClean }, rectRadius: 0.06 });
+        pSlide.addText(node.label, { x: nx, y: ny, w: nodeW, h: nodeH, fontSize: 9, color: "FFFFFF", align: "center", valign: "middle", fontFace: pptxFont, bold: true });
+      });
+
+      edges.forEach(edge => {
+        const from = positions[edge.from];
+        const to = positions[edge.to];
+        if (from && to) {
+          pSlide.addShape(pptx.ShapeType.line, {
+            x: from.cx, y: from.cy, w: to.cx - from.cx || 0.01, h: to.cy - from.cy || 0.01,
+            line: { color: accentClean, width: 1.5 },
+          });
+        }
+      });
+    } else if (diagram.kind === "venn") {
+      const sets = diagram.sets || [];
+      const circleW = w * 0.55;
+      const circleH = h * 0.7;
+      if (sets.length >= 2) {
+        pSlide.addShape(pptx.ShapeType.ellipse, { x: x, y: y + 0.3, w: circleW, h: circleH, fill: { type: "solid", color: secondaryClean + "40" }, line: { color: secondaryClean, width: 1.5 } });
+        pSlide.addShape(pptx.ShapeType.ellipse, { x: x + w - circleW, y: y + 0.3, w: circleW, h: circleH, fill: { type: "solid", color: accentClean + "40" }, line: { color: accentClean, width: 1.5 } });
+        pSlide.addText(sets[0].label, { x: x, y: y, w: circleW, h: 0.3, fontSize: 10, bold: true, color: secondaryClean, align: "center", fontFace: pptxFont });
+        pSlide.addText(sets[1].label, { x: x + w - circleW, y: y, w: circleW, h: 0.3, fontSize: 10, bold: true, color: accentClean, align: "center", fontFace: pptxFont });
+        const leftItems = sets[0].items.filter(i => !sets[1].items.includes(i)).join("\n");
+        const rightItems = sets[1].items.filter(i => !sets[0].items.includes(i)).join("\n");
+        const shared = sets[0].items.filter(i => sets[1].items.includes(i)).join("\n");
+        if (leftItems) pSlide.addText(leftItems, { x: x + 0.15, y: y + 0.6, w: circleW * 0.5, h: circleH - 0.4, fontSize: 8, color: slideTextClean, fontFace: pptxFont, wrap: true });
+        if (rightItems) pSlide.addText(rightItems, { x: x + w - circleW * 0.55, y: y + 0.6, w: circleW * 0.5, h: circleH - 0.4, fontSize: 8, color: slideTextClean, fontFace: pptxFont, wrap: true });
+        if (shared) pSlide.addText(shared, { x: x + (w - 1.2) / 2, y: y + h * 0.4, w: 1.2, h: circleH * 0.5, fontSize: 8, color: slideTextClean, fontFace: pptxFont, wrap: true, align: "center" });
+      }
+    } else if (diagram.kind === "timeline") {
+      const lineY = y + h / 2;
+      pSlide.addShape(pptx.ShapeType.line, { x: x + 0.1, y: lineY, w: w - 0.2, h: 0, line: { color: secondaryClean, width: 2 } });
+      nodes.forEach((node, i) => {
+        const nx = x + 0.3 + i * ((w - 0.6) / Math.max(nodes.length - 1, 1));
+        pSlide.addShape(pptx.ShapeType.ellipse, { x: nx - 0.08, y: lineY - 0.08, w: 0.16, h: 0.16, fill: { type: "solid", color: accentClean } });
+        pSlide.addText(node.group || "", { x: nx - 0.5, y: lineY - 0.45, w: 1.0, h: 0.3, fontSize: 7, color: secondaryClean, align: "center", fontFace: pptxFont, bold: true });
+        pSlide.addText(node.label, { x: nx - 0.6, y: lineY + 0.15, w: 1.2, h: 0.4, fontSize: 7, color: slideTextClean, align: "center", fontFace: pptxFont, wrap: true });
+      });
+    } else {
+      // Generic: labelled-box, cell, cycle, water-cycle, circuit, equation-graph
+      const boxW = w * 0.45;
+      const boxH = h * 0.5;
+      const boxX = x + (w - boxW) / 2;
+      const boxY = y + (h - boxH) / 2;
+      pSlide.addShape(pptx.ShapeType.rect, { x: boxX, y: boxY, w: boxW, h: boxH, fill: { type: "solid", color: lightClean }, line: { color: secondaryClean, width: 1.5 }, rectRadius: 0.08 });
+      pSlide.addText(diagram.title || diagram.kind, { x: boxX, y: boxY, w: boxW, h: boxH, fontSize: 10, color: slideTextClean, align: "center", valign: "middle", fontFace: pptxFont });
+      nodes.slice(0, 8).forEach((node, i) => {
+        const angle = (i / Math.min(nodes.length, 8)) * Math.PI * 2 - Math.PI / 2;
+        const labelX = boxX + boxW / 2 + Math.cos(angle) * (boxW * 0.7) - 0.5;
+        const labelY = boxY + boxH / 2 + Math.sin(angle) * (boxH * 0.7) - 0.12;
+        pSlide.addText(node.label, { x: Math.max(x, labelX), y: Math.max(y, labelY), w: 1.2, h: 0.28, fontSize: 8, color: slideTextClean, fontFace: pptxFont, align: "center" });
+      });
+    }
+  };
+
   for (const [idx, slide] of presentation.slides.entries()) {
     const pSlide = pptx.addSlide();
 
@@ -4348,6 +4483,11 @@ async function exportToPptx(
           pSlide.addText(c.label, { x: cx + 0.08, y: yPos + 0.04, w: cw - 0.16, h: 0.2, fontSize: 8, bold: true, color: c.tcol, fontFace: pptxFont });
           pSlide.addText(c.text, { x: cx + 0.08, y: yPos + 0.24, w: cw - 0.16, h: 0.44, fontSize: 10, color: c.tcol, fontFace: pptxFont, wrap: true });
         });
+      }
+
+      // Paint programmatic diagram if present
+      if (slide.diagram) {
+        paintDiagram(pSlide, slide.diagram, 0.5, 1.15, 5.5, 3.5);
       }
 
       paintSendFooter(pSlide, slide);
