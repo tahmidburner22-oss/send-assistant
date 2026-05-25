@@ -1,6 +1,12 @@
 /**
  * ReadingEnhancementsPanel — embedded next to the Reading & Stories
- * output. Surfaces all five improvements.
+ * output. Surfaces six improvements:
+ *   1. Decodable phonics check
+ *   2. Comprehension question taxonomy
+ *   3. Personalisation safeguarding
+ *   4. Audio narration with character voices + speed control
+ *   5. Running record / WCPM
+ *   6. Miscue analysis log (FY2026 — Year of Reading)
  */
 import { useMemo, useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,14 +18,15 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import {
-  BookOpen, ShieldAlert, Headphones, GitBranch, Timer,
-  AlertTriangle, CheckCircle2, Pause, Play,
+  BookOpen, Timer,
+  AlertTriangle, CheckCircle2, Pause, Play, Plus, Trash2,
 } from "lucide-react";
-import { toast } from "sonner";
 import {
   validatePhonicsPassage, classifyAll, safeguardPersonalisation,
-  tagDialogue, speakWithCharacters, computeRunningRecord, type LSPhase,
+  tagDialogue, speakWithCharacters, computeRunningRecord,
+  categoriseMiscue, type LSPhase,
   type ClassifiedQuestion,
 } from "@/lib/reading-enhancements";
 
@@ -28,6 +35,14 @@ interface Props {
   questions?: string[];
   pupilName?: string;
   pupilInterest?: string;
+}
+
+interface Miscue {
+  id: string;
+  target: string;
+  said: string;
+  category: ReturnType<typeof categoriseMiscue>;
+  selfCorrected: boolean;
 }
 
 export default function ReadingEnhancementsPanel({ passage, questions = [], pupilName, pupilInterest }: Props) {
@@ -40,19 +55,27 @@ export default function ReadingEnhancementsPanel({ passage, questions = [], pupi
   );
   const chunks = useMemo(() => tagDialogue(passage), [passage]);
 
+  // Running record state
   const [running, setRunning] = useState(false);
-  const [errors, setErrors] = useState(0);
-  const [selfCorrections, setSelfCorrections] = useState(0);
   const startRef = useRef<number>(0);
   const [record, setRecord] = useState<ReturnType<typeof computeRunningRecord> | null>(null);
+  const [miscues, setMiscues] = useState<Miscue[]>([]);
+  const [miscueTarget, setMiscueTarget] = useState("");
+  const [miscueSaid, setMiscueSaid] = useState("");
+
+  // Audio playback rate (0.6–1.4 covers slow learners through to confident)
+  const [audioRate, setAudioRate] = useState(0.95);
 
   function startRecord() {
-    setErrors(0); setSelfCorrections(0); setRecord(null);
+    setMiscues([]); setRecord(null);
     startRef.current = Date.now();
     setRunning(true);
   }
+
   function stopRecord() {
     const totalWords = passage.replace(/[^\w\s]/g, " ").split(/\s+/).filter(Boolean).length;
+    const errors = miscues.filter(m => !m.selfCorrected).length;
+    const selfCorrections = miscues.filter(m => m.selfCorrected).length;
     setRecord(computeRunningRecord({
       totalWords, errors, selfCorrections,
       startMs: startRef.current,
@@ -60,6 +83,31 @@ export default function ReadingEnhancementsPanel({ passage, questions = [], pupi
     }));
     setRunning(false);
   }
+
+  function logMiscue(opts: { selfCorrected: boolean }) {
+    const target = miscueTarget.trim();
+    const said = miscueSaid.trim();
+    if (!target) return;
+    setMiscues(arr => [...arr, {
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      target,
+      said,
+      category: said ? categoriseMiscue(target, said) : "whole",
+      selfCorrected: opts.selfCorrected,
+    }]);
+    setMiscueTarget(""); setMiscueSaid("");
+  }
+
+  function removeMiscue(id: string) {
+    setMiscues(arr => arr.filter(m => m.id !== id));
+  }
+
+  // Miscue-category breakdown for analysis output
+  const miscueBreakdown = useMemo(() => {
+    const breakdown = { initial: 0, medial: 0, final: 0, whole: 0 };
+    for (const m of miscues) if (!m.selfCorrected) breakdown[m.category] += 1;
+    return breakdown;
+  }, [miscues]);
 
   const counts: Record<string, number> = {};
   for (const c of classified) counts[c.domain] = (counts[c.domain] || 0) + 1;
@@ -81,6 +129,7 @@ export default function ReadingEnhancementsPanel({ passage, questions = [], pupi
             <TabsTrigger value="personalise">Personalisation</TabsTrigger>
             <TabsTrigger value="audio">Audio</TabsTrigger>
             <TabsTrigger value="record">Running record</TabsTrigger>
+            <TabsTrigger value="miscue">Miscue analysis</TabsTrigger>
           </TabsList>
 
           {/* 1. Decodable */}
@@ -143,11 +192,33 @@ export default function ReadingEnhancementsPanel({ passage, questions = [], pupi
           </TabsContent>
 
           {/* 4. Audio narration */}
-          <TabsContent value="audio" className="space-y-2 pt-3">
+          <TabsContent value="audio" className="space-y-3 pt-3">
             <p className="text-[11px] text-muted-foreground">
-              Detected {chunks.filter(c => c.speaker === "character").length} dialogue line(s). Each named character will be voiced with a distinct pitch.
+              Detected {chunks.filter(c => c.speaker === "character").length} dialogue line(s).
+              Each named character will be voiced with a distinct pitch.
             </p>
-            <Button size="sm" variant="outline" onClick={() => speakWithCharacters(chunks)} className="gap-1.5">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <Label className="text-xs">Reading speed</Label>
+                <span className="text-muted-foreground">
+                  {audioRate < 0.8 ? "Slow" : audioRate > 1.1 ? "Fast" : "Normal"} · {audioRate.toFixed(2)}×
+                </span>
+              </div>
+              <Slider
+                value={[audioRate]}
+                min={0.6}
+                max={1.4}
+                step={0.05}
+                onValueChange={(v) => setAudioRate(v[0])}
+                className="w-full"
+              />
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => speakWithCharacters(chunks, { rate: audioRate })}
+              className="gap-1.5"
+            >
               <Play className="w-3.5 h-3.5" /> Read aloud (multi-voice)
             </Button>
           </TabsContent>
@@ -155,9 +226,11 @@ export default function ReadingEnhancementsPanel({ passage, questions = [], pupi
           {/* 5. Running record */}
           <TabsContent value="record" className="space-y-2 pt-3">
             <p className="text-[11px] text-muted-foreground">
-              Use during 1:1 reading. Tap "Error" each time the pupil misreads, "SC" when they self-correct.
+              Use during 1:1 reading. Tap "+ Error" each time the pupil misreads,
+              "+ SC" when they self-correct. For deeper analysis (initial/medial/final
+              sound errors) use the <strong>Miscue analysis</strong> tab.
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {!running ? (
                 <Button size="sm" onClick={startRecord} className="gap-1.5"><Play className="w-3.5 h-3.5" /> Start</Button>
               ) : (
@@ -165,8 +238,14 @@ export default function ReadingEnhancementsPanel({ passage, questions = [], pupi
               )}
               {running && (
                 <>
-                  <Button size="sm" variant="outline" onClick={() => setErrors(e => e + 1)}>+ Error ({errors})</Button>
-                  <Button size="sm" variant="outline" onClick={() => setSelfCorrections(e => e + 1)}>+ SC ({selfCorrections})</Button>
+                  <Button size="sm" variant="outline"
+                    onClick={() => setMiscues(arr => [...arr, { id: `q${Date.now()}`, target: "(quick)", said: "", category: "whole", selfCorrected: false }])}>
+                    + Error ({miscues.filter(m => !m.selfCorrected).length})
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    onClick={() => setMiscues(arr => [...arr, { id: `q${Date.now()}`, target: "(quick)", said: "", category: "whole", selfCorrected: true }])}>
+                    + SC ({miscues.filter(m => m.selfCorrected).length})
+                  </Button>
                 </>
               )}
             </div>
@@ -180,8 +259,100 @@ export default function ReadingEnhancementsPanel({ passage, questions = [], pupi
               </div>
             )}
           </TabsContent>
+
+          {/* 6. Miscue analysis — surfaces categoriseMiscue() */}
+          <TabsContent value="miscue" className="space-y-3 pt-3">
+            <p className="text-[11px] text-muted-foreground">
+              Log each miscue word-by-word to see whether errors cluster at the
+              start, middle or end of words — useful for targeting phonics support.
+              Accumulates into the running record above when started.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[11px]">Target word</Label>
+                <Input
+                  value={miscueTarget}
+                  onChange={(e) => setMiscueTarget(e.target.value)}
+                  placeholder="e.g. through"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px]">Pupil said</Label>
+                <Input
+                  value={miscueSaid}
+                  onChange={(e) => setMiscueSaid(e.target.value)}
+                  placeholder="e.g. though"
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => logMiscue({ selfCorrected: false })} disabled={!miscueTarget.trim()} className="gap-1.5">
+                <Plus className="w-3.5 h-3.5" />Log error
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => logMiscue({ selfCorrected: true })} disabled={!miscueTarget.trim()} className="gap-1.5">
+                <Plus className="w-3.5 h-3.5" />Log self-correction
+              </Button>
+            </div>
+
+            {miscues.length > 0 && (
+              <>
+                <div className="rounded-md bg-muted/40 p-2 text-[11px] grid grid-cols-4 gap-1.5">
+                  <Stat label="Initial" value={miscueBreakdown.initial} />
+                  <Stat label="Medial" value={miscueBreakdown.medial} />
+                  <Stat label="Final" value={miscueBreakdown.final} />
+                  <Stat label="Whole" value={miscueBreakdown.whole} />
+                </div>
+
+                <ul className="text-[11px] space-y-0.5 max-h-40 overflow-auto">
+                  {miscues.map(m => (
+                    <li key={m.id} className="flex items-center gap-1.5">
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] capitalize ${m.selfCorrected ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}
+                      >
+                        {m.selfCorrected ? "SC" : m.category}
+                      </Badge>
+                      <span className="font-medium">{m.target}</span>
+                      {m.said && <><span className="text-muted-foreground">→</span><span>{m.said}</span></>}
+                      <button
+                        aria-label="Remove miscue"
+                        onClick={() => removeMiscue(m.id)}
+                        className="ml-auto text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                {miscueBreakdown.initial > miscueBreakdown.medial + miscueBreakdown.final && (
+                  <p className="text-[11px] text-amber-700">
+                    Pattern: errors cluster at the <strong>start</strong> of words.
+                    Consider targeted onset-phoneme practice.
+                  </p>
+                )}
+                {miscueBreakdown.final > miscueBreakdown.initial + miscueBreakdown.medial && (
+                  <p className="text-[11px] text-amber-700">
+                    Pattern: errors cluster at the <strong>end</strong> of words.
+                    Consider suffix and final-blend practice.
+                  </p>
+                )}
+              </>
+            )}
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="text-center">
+      <div className="font-bold">{value}</div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+    </div>
   );
 }

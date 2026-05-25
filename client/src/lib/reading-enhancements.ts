@@ -165,7 +165,10 @@ export function tagDialogue(passage: string): NarratedChunk[] {
   return out;
 }
 
-export async function speakWithCharacters(chunks: NarratedChunk[]): Promise<void> {
+export async function speakWithCharacters(
+  chunks: NarratedChunk[],
+  opts?: { rate?: number },
+): Promise<void> {
   // Cycle through a small palette of pitches to differentiate characters.
   const charToPitch: Record<string, number> = {};
   let nextPitch = 0;
@@ -175,9 +178,10 @@ export async function speakWithCharacters(chunks: NarratedChunk[]): Promise<void
       charToPitch[c.characterName] = palette[nextPitch++ % palette.length];
     }
   }
+  const rate = opts?.rate ?? 0.95;
   for (const c of chunks) {
     const pitch = c.speaker === "character" && c.characterName ? charToPitch[c.characterName] : 1.0;
-    await voiceSpeak(c.text, { profileOverride: { pitch, rate: 0.95 } });
+    await voiceSpeak(c.text, { profileOverride: { pitch, rate } });
   }
 }
 

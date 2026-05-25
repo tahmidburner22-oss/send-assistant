@@ -15,6 +15,7 @@ import { generateStoryContent } from "@/lib/worksheet-generator";
 
 import { downloadStoryPdf } from "@/lib/pdf-generator";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
+import ReadingEnhancementsPanel from "@/components/ReadingEnhancementsPanel";
 
 async function generateComprehensionQuestionsAI(content: string, yearGroup: string, sendNeed: string): Promise<string[]> {
   try {
@@ -454,6 +455,17 @@ export default function StoriesContent() {
               />
             </div>
           )}
+
+          {/* Year of Reading enhancements — phonics check, miscue analysis,
+              multi-voice read-aloud with speed control, etc. Hidden when
+              printing the story PDF. */}
+          <div className="no-print">
+            <ReadingEnhancementsPanel
+              passage={result.content}
+              questions={result.questions}
+              pupilName={characters.find(c => c.trim()) || undefined}
+            />
+          </div>
         </motion.div>
       )}
     </div>

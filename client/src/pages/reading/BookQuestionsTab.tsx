@@ -3,6 +3,11 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Enter a book title, reading age, pages read, and optionally upload a criteria
  * file → AI generates comprehension questions tailored to the reading age.
+ *
+ * Year of Reading 2026 additions:
+ *   - VIPERS focus selector (Vocabulary, Inference, Predict, Explain,
+ *     Retrieve, Sequence) — the dominant UK reading framework
+ *   - Optional Book Talk sentence starters for oracy / guided reading
  */
 import { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, Sparkles, Upload, X, Download, Printer, RotateCcw, FileText, Loader2 } from "lucide-react";
+import { HelpCircle, Sparkles, Upload, X, Download, Printer, RotateCcw, FileText, Loader2, MessageCircle, Target } from "lucide-react";
 import { readingLevels, sendNeeds } from "@/lib/send-data";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { callAI, parseWithFixes } from "@/lib/ai";
@@ -33,6 +38,8 @@ interface TeacherNote {
 interface QuestionResult {
   questions: Question[];
   teacherNotes: TeacherNote[];
+  /** Year of Reading addition — oracy / discussion prompts for guided reading. */
+  bookTalk?: string[];
   provider?: string;
 }
 
@@ -44,6 +51,11 @@ const QUESTION_TYPES: Record<string, string> = {
   comprehension: "Comprehension",
   prediction: "Prediction",
   summary: "Summary",
+  // VIPERS-aligned
+  predict: "Predict",
+  explain: "Explain",
+  retrieve: "Retrieve",
+  sequence: "Sequence",
 };
 
 const TYPE_COLOURS: Record<string, string> = {
@@ -53,8 +65,25 @@ const TYPE_COLOURS: Record<string, string> = {
   evaluation: "bg-green-50 text-green-700 border-green-200",
   comprehension: "bg-slate-50 text-slate-700 border-slate-200",
   prediction: "bg-rose-50 text-rose-700 border-rose-200",
+  predict: "bg-rose-50 text-rose-700 border-rose-200",
+  explain: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  retrieve: "bg-blue-50 text-blue-700 border-blue-200",
+  sequence: "bg-teal-50 text-teal-700 border-teal-200",
   summary: "bg-teal-50 text-teal-700 border-teal-200",
 };
+
+// VIPERS — UK primary reading-comprehension framework. Each strand has a
+// short label, a one-line teacher description, and an example stem.
+const VIPERS = [
+  { id: "V", label: "Vocabulary", colour: "bg-amber-100 text-amber-800 border-amber-300", desc: "Word meaning in context" },
+  { id: "I", label: "Inference",  colour: "bg-purple-100 text-purple-800 border-purple-300", desc: "Read between the lines" },
+  { id: "P", label: "Predict",    colour: "bg-rose-100 text-rose-800 border-rose-300",       desc: "What might happen next" },
+  { id: "E", label: "Explain",    colour: "bg-indigo-100 text-indigo-800 border-indigo-300", desc: "Author's choices and intent" },
+  { id: "R", label: "Retrieve",   colour: "bg-blue-100 text-blue-800 border-blue-300",       desc: "Find it in the text" },
+  { id: "S", label: "Sequence / Summarise", colour: "bg-teal-100 text-teal-800 border-teal-300", desc: "Order or summarise events" },
+] as const;
+
+type VipersId = (typeof VIPERS)[number]["id"];
 
 export default function BookQuestionsTab() {
   const [bookTitle, setBookTitle] = useState("");
@@ -67,6 +96,9 @@ export default function BookQuestionsTab() {
   const [criteriaFile, setCriteriaFile] = useState<File | null>(null);
   const [criteriaText, setCriteriaText] = useState("");
   const [sendNeed, setSendNeed] = useState("");
+  // VIPERS focus — Year of Reading addition. Empty array = "all VIPERS".
+  const [vipersFocus, setVipersFocus] = useState<VipersId[]>([]);
+  const [includeBookTalk, setIncludeBookTalk] = useState(true);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QuestionResult | null>(null);
   const [showTeacherNotes, setShowTeacherNotes] = useState(false);
@@ -134,33 +166,50 @@ export default function BookQuestionsTab() {
       const chapterLabel = chapterInfo ? `(${chapterInfo})` : "";
       const criteriaSection = criteriaText ? `\n\nCriteria / mark scheme provided by teacher:\n${criteriaText.slice(0, 2000)}` : "";
 
-      const system = `You are an expert English teacher and literacy specialist. Generate high-quality comprehension questions for pupils who have just read a section of a book. Questions must be appropriate for the specified reading age and follow a range of question types (literal, inference, vocabulary, evaluation). Always return valid JSON only.`;
+      // VIPERS focus translates to a question-type bias the prompt can honour.
+      const vipersLabels = vipersFocus.length > 0
+        ? VIPERS.filter(v => vipersFocus.includes(v.id)).map(v => v.label).join(", ")
+        : "balanced VIPERS coverage (Vocabulary, Inference, Predict, Explain, Retrieve, Sequence)";
+
+      const bookTalkSection = includeBookTalk
+        ? `\n\nALSO return a "bookTalk" array with 4 oracy / discussion sentence starters
+suitable for guided reading conversation. Examples: "I think… because in the text…",
+"The author's choice of word '…' makes me feel…", "I would change/agree/disagree with…".
+These should be open-ended and reusable across the book, not tied to one specific page.`
+        : "";
+
+      const system = `You are an expert English teacher and literacy specialist working in UK primary or secondary schools. You generate high-quality comprehension questions aligned to the VIPERS framework (Vocabulary, Inference, Predict, Explain, Retrieve, Sequence/Summarise). Questions must be appropriate for the specified reading age. Always return valid JSON only.`;
 
       const user = `Book: "${bookTitle}"${author ? ` by ${author}` : ""}
 Reading age / level: ${readingAgeLabel}
 Section read: ${pagesLabel} ${chapterLabel}
-Number of questions: ${questionCount}${criteriaSection}
+Number of questions: ${questionCount}
+VIPERS focus: ${vipersLabels}${criteriaSection}
 
-Generate ${questionCount} comprehension questions for pupils at ${readingAgeLabel} level who have just read this section.
+Generate ${questionCount} VIPERS-tagged comprehension questions for pupils at ${readingAgeLabel} level who have just read this section.
 
-Include a mix of:
-- Literal questions (find it in the text)
-- Inference questions (read between the lines)
-- Vocabulary questions (word meaning in context)
-- Evaluation questions (opinion / justify with evidence)
+Use these "type" values to align with VIPERS:
+- "vocabulary" (V — word meaning in context)
+- "inference"  (I — read between the lines)
+- "predict"    (P — what might happen next, why)
+- "explain"    (E — author's choices, language, structure)
+- "retrieve"   (R — find it in the text)
+- "sequence"   (S — order or summarise events)
+
+If the user requested a specific VIPERS focus (above), at least 70% of questions must use those types.${bookTalkSection}
 
 Return JSON:
 {
   "questions": [
-    { "number": 1, "type": "literal", "question": "...", "marks": 1 },
+    { "number": 1, "type": "retrieve",  "question": "...", "marks": 1 },
     { "number": 2, "type": "inference", "question": "...", "marks": 2 }
   ],
   "teacherNotes": [
     { "number": 1, "guidance": "Accept any answer that mentions..." }
-  ]
+  ]${includeBookTalk ? ',\n  "bookTalk": ["I think… because…", "..."]' : ""}
 }`;
 
-      const { text } = await callAI(system, user, 2000);
+      const { text } = await callAI(system, user, 2200);
       let parsed: QuestionResult;
       try {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -332,6 +381,66 @@ Return JSON:
                   )}
                 </div>
 
+                {/* VIPERS focus — Year of Reading 2026 */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium flex items-center gap-1.5">
+                      <Target className="w-3 h-3 text-brand" />VIPERS focus
+                    </Label>
+                    {vipersFocus.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setVipersFocus([])}
+                        className="text-[10px] text-muted-foreground hover:text-brand"
+                      >
+                        Clear (use all)
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Tap one or more strands to bias the questions toward them. Leave all unselected for a balanced mix.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {VIPERS.map(v => {
+                      const active = vipersFocus.includes(v.id);
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setVipersFocus(prev =>
+                            active ? prev.filter(x => x !== v.id) : [...prev, v.id]
+                          )}
+                          className={`text-left p-2 rounded-lg border transition-all ${
+                            active ? `${v.colour} border-current ring-1 ring-current/20` : "bg-muted text-muted-foreground border-transparent hover:border-border"
+                          }`}
+                        >
+                          <div className="text-[11px] font-bold">{v.id} — {v.label}</div>
+                          <div className="text-[10px] opacity-80 leading-tight">{v.desc}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Book Talk sentence starters toggle */}
+                <label className="flex items-start gap-2 p-2.5 rounded-lg border border-border hover:border-brand/30 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeBookTalk}
+                    onChange={e => setIncludeBookTalk(e.target.checked)}
+                    className="mt-0.5"
+                  />
+                  <div className="flex-1">
+                    <div className="text-xs font-medium flex items-center gap-1.5">
+                      <MessageCircle className="w-3 h-3 text-brand" />
+                      Include Book Talk sentence starters
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Adds 4 oracy prompts for guided reading discussion (e.g. "I think… because…").
+                    </p>
+                  </div>
+                </label>
+
                 <Button
                   onClick={handleGenerate}
                   disabled={loading}
@@ -432,6 +541,28 @@ Return JSON:
                 );
               })}
             </div>
+
+            {/* Book Talk sentence starters — Year of Reading 2026 */}
+            {result.bookTalk && result.bookTalk.length > 0 && (
+              <Card className="border-brand/30 bg-brand-light/30">
+                <CardContent className="p-4">
+                  <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+                    <MessageCircle className="w-4 h-4 text-brand" />Book Talk — sentence starters
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mb-2">
+                    Use during guided reading to prompt oracy and discussion.
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {result.bookTalk.map((s, i) => (
+                      <li key={i} className="rounded-md border border-brand/20 bg-white px-3 py-2 text-sm">
+                        <span className="text-brand font-bold mr-1">{i + 1}.</span>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
