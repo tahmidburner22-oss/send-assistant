@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Add AI-prompted programmatic SVG diagram system to the Presentation Maker. This replaces items 9 (stock photo proxy), 10 (PPTX image embed), 11 (programmatic diagrams), and 52 (licence record) from the overhaul ledger. Instead of external images, the AI generates structured diagram data as part of slide JSON, and a new React component renders SVG diagrams client-side.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Step 1 - Define the diagram data schema. Add a `diagram` field to the SlideContent interface and SlideContentSchema in `client/src/pages/tools/PresentationMaker.tsx` (around line 95 and line 270). The field is an optional object: `diagram?: { kind: 'flowchart' | 'venn' | 'timeline' | 'circuit' | 'cell' | 'water-cycle' | 'food-chain' | 'equation-graph' | 'labelled-box' | 'cycle'; title?: string; nodes: Array<{ id: string; label: string; group?: string; x?: number; y?: number }>; edges?: Array<{ from: string; to: string; label?: string; style?: 'arrow' | 'line' | 'dashed' }>; sets?: Array<{ label: string; items: string[] }>; equation?: string; }`. Also add the same schema to PresentationSlideSchema in `shared/aiSchemas.ts` (use z.object with .optional()).",
     "Step 2 - Create `client/src/components/PresentationDiagram.tsx`. This component accepts `diagram` data + `theme` (ComposedTheme) and renders pure SVG. Implement renderers for each `kind`: (a) flowchart - boxes with arrows, laid out top-to-bottom or left-to-right using nodes/edges; (b) venn - 2-3 overlapping circles with items placed in/outside intersections using sets[]; (c) timeline - horizontal line with dated nodes; (d) circuit - simplified electrical circuit symbols (battery, resistor, lamp, switch) connected by lines; (e) cell - biological cell outline with labelled parts; (f) water-cycle - cyclical arrows with labelled stages; (g) food-chain - linear chain with arrows between organisms; (h) equation-graph - simple x/y axes with a plotted line/curve; (i) labelled-box - generic central shape with callout labels; (j) cycle - circular arrangement with arrows between stages. Use the theme colours (theme.primary, theme.secondary, theme.accent, theme.text) for styling. Export the component as default.",
@@ -26,5 +26,5 @@
     "Verify PresentationDiagram.tsx exports a valid React component by checking the file exists and has proper TypeScript/JSX structure"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "Pre-existing TypeScript errors (60 total, all TS1005/TS1109/TS1443 in PresentationMaker.tsx due to a combined comment/const line) exist on the base branch. No new errors introduced. Vitest could not run due to INTEGRATIONS_ONLY network mode (package not installed in node_modules). Verified same error count before and after changes."
 }
