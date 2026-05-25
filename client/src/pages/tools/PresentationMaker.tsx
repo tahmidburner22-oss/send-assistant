@@ -1634,7 +1634,7 @@ CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
 - "card-grid" layout: populate `cards: [{title, body, icon?}]` (6 cards in 3×2 grid). icon may be an emoji.
 - "before-after" layout: populate `beforeAfter: {before, after, beforeLabel, afterLabel}` for the contrast pair.
 - "quote-portrait" layout: populate `quote`, `attribution`, `image_prompt` (portrait of speaker).
-- "diagram-callouts" layout: populate `diagramDescription` plus `diagramCallouts: [{label, position, description?}]` where position is one of top-left / top / top-right / right / bottom-right / bottom / bottom-left / left.
+- "diagram-callouts" layout: populate `diagramDescription` plus `diagramCallouts: [{label, position, description?}]` where position is one of top-left / top / top-right / right / bottom-right / bottom / bottom-left / left. Also populate the \`diagram\` field if the topic warrants a structured diagram (the renderer will use it when present).
 
 ── DIAGRAM SYSTEM (populate \`diagram\` on any diagram-label slide):
 The \`diagram\` field is rendered as a programmatic SVG. Choose the \`kind\` that best fits:

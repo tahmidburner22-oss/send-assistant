@@ -2,7 +2,7 @@
  * PresentationDiagram - Renders programmatic SVG diagrams from structured data.
  * Used by FullSlideView when a slide has a `diagram` field populated by the AI.
  */
-import React from "react";
+import React, { useId } from "react";
 
 interface DiagramData {
   kind: "flowchart" | "venn" | "timeline" | "circuit" | "cell" | "water-cycle" | "food-chain" | "equation-graph" | "labelled-box" | "cycle";
@@ -42,7 +42,7 @@ function wrapText(text: string, maxChars: number): string[] {
 
 // ── Renderers ────────────────────────────────────────────────────────────────
 
-function renderFlowchart(diagram: DiagramData, theme: DiagramTheme) {
+function renderFlowchart(diagram: DiagramData, theme: DiagramTheme, uid: string) {
   const nodes = diagram.nodes || [];
   const edges = diagram.edges || [];
   const nodeW = 110;
@@ -62,7 +62,7 @@ function renderFlowchart(diagram: DiagramData, theme: DiagramTheme) {
   return (
     <g>
       <defs>
-        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <marker id={`arrowhead-${uid}`} markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
           <polygon points="0 0, 8 3, 0 6" fill={theme.secondary} />
         </marker>
       </defs>
@@ -80,7 +80,7 @@ function renderFlowchart(diagram: DiagramData, theme: DiagramTheme) {
             <line x1={x1} y1={y1} x2={x2} y2={y2}
               stroke={theme.secondary} strokeWidth="1.5"
               strokeDasharray={dashArray}
-              markerEnd={edge.style !== "line" ? "url(#arrowhead)" : undefined} />
+              markerEnd={edge.style !== "line" ? `url(#arrowhead-${uid})` : undefined} />
             {edge.label && (
               <text x={(x1 + x2) / 2 + 4} y={(y1 + y2) / 2} fontSize="8" fill={theme.text} textAnchor="start">{edge.label}</text>
             )}
@@ -263,7 +263,7 @@ function renderCell(diagram: DiagramData, theme: DiagramTheme) {
   );
 }
 
-function renderCycle(diagram: DiagramData, theme: DiagramTheme) {
+function renderCycle(diagram: DiagramData, theme: DiagramTheme, uid: string) {
   const nodes = diagram.nodes || [];
   const cx = 200, cy = 145;
   const r = 90;
@@ -271,7 +271,7 @@ function renderCycle(diagram: DiagramData, theme: DiagramTheme) {
   return (
     <g>
       <defs>
-        <marker id="cycle-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <marker id={`cycle-arrow-${uid}`} markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
           <polygon points="0 0, 8 3, 0 6" fill={theme.accent} />
         </marker>
       </defs>
@@ -291,7 +291,7 @@ function renderCycle(diagram: DiagramData, theme: DiagramTheme) {
           <g key={`cy-${i}`}>
             <path d={`M ${x} ${y} Q ${ctrlX} ${ctrlY} ${nx} ${ny}`}
               fill="none" stroke={theme.accent} strokeWidth="1.5"
-              markerEnd="url(#cycle-arrow)" />
+              markerEnd={`url(#cycle-arrow-${uid})`} />
             <rect x={x - 40} y={y - 12} width="80" height="24" rx="5" fill={theme.primary} />
             <text x={x} y={y + 4} fontSize="8" fill="white" textAnchor="middle" fontWeight="bold">
               {node.label.length > 14 ? node.label.slice(0, 13) + "..." : node.label}
@@ -303,11 +303,11 @@ function renderCycle(diagram: DiagramData, theme: DiagramTheme) {
   );
 }
 
-function renderWaterCycle(diagram: DiagramData, theme: DiagramTheme) {
-  return renderCycle(diagram, theme);
+function renderWaterCycle(diagram: DiagramData, theme: DiagramTheme, uid: string) {
+  return renderCycle(diagram, theme, uid);
 }
 
-function renderFoodChain(diagram: DiagramData, theme: DiagramTheme) {
+function renderFoodChain(diagram: DiagramData, theme: DiagramTheme, uid: string) {
   const nodes = diagram.nodes || [];
   const edges = diagram.edges || [];
   const nodeW = 90;
@@ -319,7 +319,7 @@ function renderFoodChain(diagram: DiagramData, theme: DiagramTheme) {
   return (
     <g>
       <defs>
-        <marker id="fc-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <marker id={`fc-arrow-${uid}`} markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
           <polygon points="0 0, 8 3, 0 6" fill={theme.accent} />
         </marker>
       </defs>
@@ -329,7 +329,7 @@ function renderFoodChain(diagram: DiagramData, theme: DiagramTheme) {
           <g key={`fc-${i}`}>
             {i > 0 && (
               <line x1={x - spacing + nodeW} y1={y + nodeH / 2} x2={x} y2={y + nodeH / 2}
-                stroke={theme.accent} strokeWidth="1.5" markerEnd="url(#fc-arrow)" />
+                stroke={theme.accent} strokeWidth="1.5" markerEnd={`url(#fc-arrow-${uid})`} />
             )}
             <rect x={x} y={y} width={nodeW} height={nodeH} rx="6" fill={theme.primary} />
             <text x={x + nodeW / 2} y={y + nodeH / 2 + 4} fontSize="8" fill="white" textAnchor="middle" fontWeight="bold">
@@ -348,6 +348,48 @@ function renderFoodChain(diagram: DiagramData, theme: DiagramTheme) {
       })}
     </g>
   );
+}
+
+function getEquationPath(equation: string, originX: number, originY: number, axisW: number, axisH: number): string {
+  const eq = equation.toLowerCase().replace(/\s/g, '');
+
+  // Detect y = mx + b (linear)
+  const linearMatch = eq.match(/y=(-?\d*\.?\d*)x([+-]\d+\.?\d*)?$/);
+  if (linearMatch) {
+    // Draw a straight line
+    const startY = originY - axisH * 0.1;
+    const endY = originY - axisH * 0.85;
+    return `M ${originX + 20} ${startY} L ${originX + axisW - 20} ${endY}`;
+  }
+
+  // Detect y = ax^2 (quadratic, possibly with bx + c)
+  const quadMatch = eq.match(/y=(-?\d*\.?\d*)x\^?2|y=(-?)x\^?2/);
+  if (quadMatch) {
+    const isNegative = eq.includes('-x^2') || eq.includes('-x2') || (quadMatch[1] && quadMatch[1].startsWith('-'));
+    const midX = originX + axisW / 2;
+    if (isNegative) {
+      // Downward parabola
+      return `M ${originX + 30} ${originY - axisH * 0.2} Q ${midX} ${originY - axisH * 0.95} ${originX + axisW - 30} ${originY - axisH * 0.2}`;
+    } else {
+      // Upward parabola
+      return `M ${originX + 30} ${originY - axisH * 0.8} Q ${midX} ${originY - 5} ${originX + axisW - 30} ${originY - axisH * 0.8}`;
+    }
+  }
+
+  // Detect sin/cos (draw a wave)
+  if (eq.includes('sin') || eq.includes('cos')) {
+    const points: string[] = [];
+    for (let i = 0; i <= 20; i++) {
+      const t = i / 20;
+      const x = originX + 20 + t * (axisW - 40);
+      const y = originY - axisH / 2 + Math.sin(t * Math.PI * 2) * (axisH * 0.35) * (eq.includes('cos') ? -1 : 1);
+      points.push(i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`);
+    }
+    return points.join(' ');
+  }
+
+  // Generic upward curve (fallback)
+  return `M ${originX + 10} ${originY - 10} Q ${originX + axisW * 0.4} ${originY - axisH * 0.8} ${originX + axisW - 20} ${originY - axisH + 20}`;
 }
 
 function renderEquationGraph(diagram: DiagramData, theme: DiagramTheme) {
@@ -374,12 +416,19 @@ function renderEquationGraph(diagram: DiagramData, theme: DiagramTheme) {
           transform={i === 1 ? `rotate(-90, ${originX - 10}, ${originY - axisH / 2})` : undefined}
         >{node.label}</text>
       ))}
-      {/* Simple curve */}
-      <path d={`M ${originX + 10} ${originY - 10} Q ${originX + axisW * 0.4} ${originY - axisH * 0.8} ${originX + axisW - 20} ${originY - axisH + 20}`}
+      {/* Curve based on equation */}
+      <path d={getEquationPath(eq, originX, originY, axisW, axisH)}
         fill="none" stroke={theme.accent} strokeWidth="2" />
       {/* Equation display */}
       {eq && (
         <text x={originX + axisW / 2} y={50} fontSize="11" fill={theme.primary} textAnchor="middle" fontWeight="bold" fontFamily="monospace">{eq}</text>
+      )}
+      {/* Show "(illustrative)" for non-recognized equations */}
+      {eq && !eq.toLowerCase().replace(/\s/g, '').match(/y=(-?\d*\.?\d*)x([+-]\d+\.?\d*)?$/) &&
+       !eq.toLowerCase().replace(/\s/g, '').match(/y=(-?\d*\.?\d*)x\^?2|y=(-?)x\^?2/) &&
+       !eq.toLowerCase().replace(/\s/g, '').includes('sin') &&
+       !eq.toLowerCase().replace(/\s/g, '').includes('cos') && (
+        <text x={originX + axisW / 2} y={66} fontSize="8" fill={theme.secondary} textAnchor="middle" fontStyle="italic">(illustrative)</text>
       )}
     </g>
   );
@@ -419,18 +468,19 @@ function renderLabelledBox(diagram: DiagramData, theme: DiagramTheme) {
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export default function PresentationDiagram({ diagram, theme }: { diagram: DiagramData; theme: DiagramTheme }) {
+  const uid = useId();
   const renderDiagram = () => {
     switch (diagram.kind) {
-      case "flowchart": return renderFlowchart(diagram, theme);
+      case "flowchart": return renderFlowchart(diagram, theme, uid);
       case "venn": return renderVenn(diagram, theme);
       case "timeline": return renderTimeline(diagram, theme);
       case "circuit": return renderCircuit(diagram, theme);
       case "cell": return renderCell(diagram, theme);
-      case "water-cycle": return renderWaterCycle(diagram, theme);
-      case "food-chain": return renderFoodChain(diagram, theme);
+      case "water-cycle": return renderWaterCycle(diagram, theme, uid);
+      case "food-chain": return renderFoodChain(diagram, theme, uid);
       case "equation-graph": return renderEquationGraph(diagram, theme);
       case "labelled-box": return renderLabelledBox(diagram, theme);
-      case "cycle": return renderCycle(diagram, theme);
+      case "cycle": return renderCycle(diagram, theme, uid);
       default: return renderLabelledBox(diagram, theme);
     }
   };
