@@ -131,6 +131,25 @@ const SlideContentSchema = z.object({
     description: z.string().max(160).optional(),
   })).max(8).optional(),
 
+  // ── Phase 2 classroom-action slide-type fields ─────────────────────────────
+  /** cold-call: the prompt teacher reads + an optional cue for the named pupil. */
+  coldCallCue: z.string().max(300).optional(),
+  namedPupilHint: z.string().max(120).optional(),
+  /** live-model: explicit I-do / We-do / You-do progression. */
+  liveModel: z.object({
+    iDo: z.string().min(1).max(500),
+    weDo: z.string().min(1).max(500),
+    youDo: z.string().min(1).max(500),
+  }).optional(),
+  /** stuck-help: escalating hint ladder + final answer (revealed last). */
+  hintLadder: z.array(z.string().min(1).max(240)).max(5).optional(),
+  finalAnswer: z.string().max(500).optional(),
+  /** homework: brief, link, due date, estimated minutes. */
+  homeworkBrief: z.string().max(500).optional(),
+  homeworkDueDate: z.string().max(40).optional(),
+  homeworkMinutes: z.number().int().min(1).max(180).optional(),
+  homeworkLink: z.string().max(400).optional(),
+
   // ── Teacher-framework content fields ───────────────────────────────────────
   /** Timing chip shown top-right. "5" becomes "⏱ 5 min". */
   timingMinutes: z.number().int().min(1).max(60).optional(),
@@ -256,6 +275,17 @@ export interface SlideContent {
   cards?: { title: string; body: string; icon?: string }[];
   beforeAfter?: { before: string; after: string; beforeLabel?: string; afterLabel?: string };
   diagramCallouts?: { label: string; position: "top-left"|"top"|"top-right"|"right"|"bottom-right"|"bottom"|"bottom-left"|"left"; description?: string }[];
+
+  // Phase 2 classroom-action slide-type fields
+  coldCallCue?: string;
+  namedPupilHint?: string;
+  liveModel?: { iDo: string; weDo: string; youDo: string };
+  hintLadder?: string[];
+  finalAnswer?: string;
+  homeworkBrief?: string;
+  homeworkDueDate?: string;
+  homeworkMinutes?: number;
+  homeworkLink?: string;
 
   // Teacher-framework content fields
   timingMinutes?: number;
@@ -3034,6 +3064,179 @@ function FullSlideView({
             <div className="text-3xl font-black" style={{ color: "#134e4a" }}>Take a Break</div>
             <div className="text-base font-medium max-w-lg" style={{ color: "#134e4a" }}>
               {slide.body || "Take a breath here if you need to. Come back when you're ready."}
+            </div>
+          </div>
+        );
+
+      // ── Phase 2: cold-call ─────────────────────────────────────────────
+      case "cold-call":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Users} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-3">
+              {slide.coldCallCue && (
+                <div className="rounded-2xl p-4 text-center" style={{ background: theme.light, border: `2px solid ${badgeColour}` }}>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: badgeColour }}>Cold-call cue — say this</div>
+                  <div className="text-lg font-semibold" style={{ color: theme.primary }}>{slide.coldCallCue}</div>
+                </div>
+              )}
+              {slide.question && (
+                <div className="rounded-xl p-3" style={{ background: "white", border: `1px solid ${badgeColour}40` }}>
+                  <div className="text-[10px] font-bold uppercase mb-1 text-gray-500">Question</div>
+                  <div className="text-base font-medium" style={{ color: theme.text }}>{slide.question}</div>
+                </div>
+              )}
+              {slide.namedPupilHint && (
+                <div className="text-[12px] italic text-gray-500 text-center">Try a quieter pupil — {slide.namedPupilHint}</div>
+              )}
+              {slide.bullets && slide.bullets.length > 0 && (
+                <div className="space-y-1.5">
+                  {slide.bullets.map((b, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-4 h-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: badgeColour }}>{i + 1}</div>
+                      <div className="text-xs" style={{ color: theme.text }}>{b}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Phase 2: live-model (I do · We do · You do) ────────────────────
+      case "live-model": {
+        const m = slide.liveModel;
+        const stages: Array<[string, string, string, string, string]> = [
+          ["I DO",   "Watch first",      m?.iDo || "(model)",  "#dbeafe", "#1d4ed8"],
+          ["WE DO",  "Try with me",      m?.weDo || "(guided)", "#fef3c7", "#b45309"],
+          ["YOU DO", "Independent",      m?.youDo || "(solo)",  "#dcfce7", "#16a34a"],
+        ];
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Brain} />
+            <div className="flex-1 px-10 pb-7 grid grid-cols-3 gap-2.5">
+              {stages.map(([label, sub, content, bg, fg]) => (
+                <div key={label} className="rounded-2xl p-3 flex flex-col" style={{ background: bg, border: `2px solid ${fg}` }}>
+                  <div className="text-[10px] font-black tracking-wide uppercase" style={{ color: fg }}>{label}</div>
+                  <div className="text-[10px] italic mb-1" style={{ color: fg, opacity: 0.7 }}>{sub}</div>
+                  <div className="text-sm leading-snug flex-1" style={{ color: fg }}>{content}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      // ── Phase 2: do-now (low-stakes starter as pupils arrive) ─────────────
+      case "do-now":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Pencil} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-3">
+              <div className="text-center">
+                <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-1">Do this now — silently, in your book</div>
+              </div>
+              {slide.question && (
+                <div className="rounded-2xl p-5" style={{ background: theme.light, border: `2px solid ${badgeColour}` }}>
+                  <div className="text-base font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
+                </div>
+              )}
+              {slide.bullets && slide.bullets.length > 0 && (
+                <div className="space-y-1.5">
+                  {slide.bullets.map((b, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-5 h-5 rounded-full bg-white border-2 flex-shrink-0 mt-0.5" style={{ borderColor: badgeColour }} />
+                      <div className="text-sm font-medium" style={{ color: theme.text }}>{b}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Phase 2: choose-your-task (3 routes) ─────────────────────────────
+      case "choose-your-task": {
+        const d = slide.differentiation || {};
+        const routes = [
+          { label: d.support ? "Build it"  : null, body: d.support, bg: "#dcfce7", fg: "#16a34a" },
+          { label: d.core ? "Stretch it"   : null, body: d.core,    bg: "#dbeafe", fg: "#2563eb" },
+          { label: d.extension ? "Master it" : null, body: d.extension, bg: "#f5f3ff", fg: "#7c3aed" },
+        ].filter(r => r.body);
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={List} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-3">
+              {slide.question && (
+                <div className="rounded-xl p-3 text-center" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+                  <div className="text-base font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
+                </div>
+              )}
+              <div className={`grid gap-2.5 ${routes.length === 3 ? "grid-cols-3" : routes.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
+                {routes.map((r, i) => (
+                  <div key={i} className="rounded-2xl p-3 flex flex-col" style={{ background: r.bg, border: `2px solid ${r.fg}` }}>
+                    <div className="text-[10px] font-black uppercase tracking-wide" style={{ color: r.fg }}>{r.label}</div>
+                    <div className="text-[12px] mt-1 leading-snug" style={{ color: r.fg }}>{r.body}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="text-[11px] italic text-center text-gray-500">Pick the one that feels right for you today.</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── Phase 2: stuck-help (hint ladder, answer hidden until last) ─────
+      case "stuck-help":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={HelpCircle} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-2.5">
+              {slide.question && (
+                <div className="rounded-xl p-3" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+                  <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
+                </div>
+              )}
+              {(slide.hintLadder || []).map((hint, i) => (
+                <div key={i} className="flex items-start gap-2 rounded-lg p-2.5" style={{ background: ["#fef9c3","#fed7aa","#fecaca"][Math.min(i, 2)], border: `1.5px solid ${["#ca8a04","#c2410c","#dc2626"][Math.min(i, 2)]}` }}>
+                  <div className="w-6 h-6 rounded-full text-[11px] font-bold text-white flex items-center justify-center flex-shrink-0" style={{ background: ["#ca8a04","#c2410c","#dc2626"][Math.min(i, 2)] }}>H{i + 1}</div>
+                  <div className="text-[12px] flex-1" style={{ color: ["#713f12","#7c2d12","#7f1d1d"][Math.min(i, 2)] }}>{hint}</div>
+                </div>
+              ))}
+              {slide.finalAnswer && (
+                <details className="rounded-lg" style={{ background: "#dcfce7", border: "1.5px solid #16a34a" }}>
+                  <summary className="cursor-pointer px-3 py-2 text-[12px] font-bold text-green-800">Reveal the answer</summary>
+                  <div className="px-3 pb-2 text-[12px] text-green-900">{slide.finalAnswer}</div>
+                </details>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Phase 2: homework — brief + due + minutes + link ──────────────
+      case "homework":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Edit3} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-3">
+              <div className="rounded-2xl p-4" style={{ background: theme.light, border: `2px solid ${badgeColour}` }}>
+                <div className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: badgeColour }}>Homework</div>
+                <div className="text-base font-medium" style={{ color: theme.text }}>{slide.homeworkBrief || slide.body || "(homework brief)"}</div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg p-2" style={{ background: "white", border: `1px solid ${badgeColour}40` }}>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Due</div>
+                  <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.homeworkDueDate || "—"}</div>
+                </div>
+                <div className="rounded-lg p-2" style={{ background: "white", border: `1px solid ${badgeColour}40` }}>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Time</div>
+                  <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.homeworkMinutes ? `${slide.homeworkMinutes} min` : "—"}</div>
+                </div>
+                <div className="rounded-lg p-2 truncate" style={{ background: "white", border: `1px solid ${badgeColour}40` }}>
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Submit</div>
+                  <div className="text-sm font-semibold truncate" style={{ color: theme.primary }}>{slide.homeworkLink ? "link in chat" : "in book"}</div>
+                </div>
+              </div>
             </div>
           </div>
         );
