@@ -640,8 +640,112 @@ function resolveActiveFont(theme: ComposedTheme, subject: string | undefined): s
   return getSubjectFontFamily(subject);
 }
 
-// ─── Slide type icons ────────────────────────────────────────────────────
-const SLIDE_ICONS: Record<string, React.ElementType> = {
+// ─── Inline-text rich rendering (items 12 + 13) ──────────────────────────────
+// Renders a string with inline:
+//   `code`      → mono chip with tinted background
+//   $maths$     → Consolas span (Maths-friendly)
+//   [icon:name] → leading emoji (icon registry below)
+// Backwards-compatible: plain strings render unchanged.
+const INLINE_ICONS: Record<string, string> = {
+  warning: "⚠️", note: "📝", check: "✅", cross: "❌",
+  star: "⭐", lightbulb: "💡", bookmark: "🔖", search: "🔍",
+  flask: "🧪", atom: "⚛️", math: "🧮", clock: "⏱",
+  globe: "🌍", rocket: "🚀", brain: "🧠", target: "🎯",
+};
+function richText(text: string, key?: number | string): React.ReactNode {
+  if (!text) return null;
+  // Strip leading icon token: "[icon:warning] do this carefully"
+  let leadingIcon: string | null = null;
+  const iconMatch = text.match(/^\s*\[icon:([a-z-]+)\]\s*/i);
+  if (iconMatch && INLINE_ICONS[iconMatch[1].toLowerCase()]) {
+    leadingIcon = INLINE_ICONS[iconMatch[1].toLowerCase()];
+    text = text.replace(iconMatch[0], "");
+  }
+  // Tokenise: split by `code` and $math$ markers, preserving them.
+  const parts: Array<{ kind: "text" | "code" | "math"; v: string }> = [];
+  const re = /(`[^`]+`|\$[^$\n]+\$)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push({ kind: "text", v: text.slice(last, m.index) });
+    if (m[0].startsWith("`")) parts.push({ kind: "code", v: m[0].slice(1, -1) });
+    else parts.push({ kind: "math", v: m[0].slice(1, -1) });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push({ kind: "text", v: text.slice(last) });
+  return (
+    <span key={key}>
+      {leadingIcon && <span aria-hidden style={{ marginRight: 4 }}>{leadingIcon}</span>}
+      {parts.map((p, i) => {
+        if (p.kind === "code") return <code key={i} className="px-1 py-0.5 rounded bg-slate-100 text-slate-900 font-mono text-[0.92em]">{p.v}</code>;
+        if (p.kind === "math") return <span key={i} className="px-1 py-0.5 rounded bg-blue-50 text-blue-900 font-mono text-[0.95em]">{p.v}</span>;
+        return <span key={i}>{p.v}</span>;
+      })}
+    </span>
+  );
+}
+
+// ─── Subject-mascot per primary slide (item 16) ─────────────────────────────
+function getSubjectMascot(subject: string | undefined): string {
+  const s = (subject || "").toLowerCase();
+  if (/maths|mathematics/.test(s))             return "🧮";
+  if (/biology/.test(s))                        return "🌱";
+  if (/chemistry/.test(s))                      return "🧪";
+  if (/physics/.test(s))                        return "⚛️";
+  if (/science/.test(s))                        return "🔬";
+  if (/computer|technology/.test(s))            return "💻";
+  if (/history/.test(s))                        return "🏛️";
+  if (/geograph/.test(s))                       return "🌍";
+  if (/english|literature|language/.test(s))    return "📖";
+  if (/french|spanish|german|mfl/.test(s))      return "🗣️";
+  if (/art|design/.test(s))                     return "🎨";
+  if (/drama|theatre/.test(s))                  return "🎭";
+  if (/music/.test(s))                          return "🎵";
+  if (/physical education|\bpe\b/.test(s))      return "⚽";
+  if (/religious|theolog/.test(s))              return "🕊️";
+  if (/business|economics/.test(s))             return "💼";
+  if (/sociolog/.test(s))                       return "👥";
+  if (/psycholog/.test(s))                      return "🧠";
+  if (/media/.test(s))                          return "📺";
+  if (/pshe/.test(s))                           return "💛";
+  return "✨";
+}
+
+// ─── Pedagogy badge — Rosenshine + Bloom hint per slide type (item 34) ──────
+const SLIDE_TYPE_PEDAGOGY: Record<string, { rosenshine?: string; bloom: string }> = {
+  "title":               { bloom: "—" },
+  "learning-objectives": { rosenshine: "R1 daily review", bloom: "RECALL" },
+  "retrieval-warm-up":   { rosenshine: "R1 daily review",  bloom: "RECALL" },
+  "hook":                { bloom: "UNDERSTAND" },
+  "key-terms":           { bloom: "UNDERSTAND" },
+  "vocab-reference":     { bloom: "RECALL" },
+  "content":             { rosenshine: "R3 small steps",   bloom: "UNDERSTAND" },
+  "diagram-label":       { bloom: "UNDERSTAND" },
+  "worked-example":      { rosenshine: "R4 modelling",     bloom: "APPLY" },
+  "live-model":          { rosenshine: "R4 modelling",     bloom: "APPLY" },
+  "model-answer":        { rosenshine: "R4 modelling",     bloom: "EVALUATE" },
+  "activity":            { rosenshine: "R5 guided practice", bloom: "APPLY" },
+  "do-now":              { rosenshine: "R5 guided practice", bloom: "APPLY" },
+  "choose-your-task":    { rosenshine: "R5 guided practice", bloom: "APPLY" },
+  "pause-and-solve":     { rosenshine: "R7 high success",  bloom: "APPLY" },
+  "stuck-help":          { rosenshine: "R8 scaffolding",   bloom: "APPLY" },
+  "check-understanding": { rosenshine: "R6 check for understanding", bloom: "ANALYSE" },
+  "mini-quiz":           { rosenshine: "R10 weekly review", bloom: "ANALYSE" },
+  "cold-call":           { rosenshine: "R6 check for understanding", bloom: "ANALYSE" },
+  "misconception-bust":  { bloom: "ANALYSE" },
+  "exam-technique":      { bloom: "EVALUATE" },
+  "real-world-link":     { bloom: "EVALUATE" },
+  "discussion":          { bloom: "EVALUATE" },
+  "think-pair-share":    { bloom: "EVALUATE" },
+  "exam-practice":       { rosenshine: "R9 independent practice", bloom: "APPLY" },
+  "extension":           { bloom: "CREATE" },
+  "summary":             { rosenshine: "R10 weekly review", bloom: "RECALL" },
+  "exit-ticket":         { rosenshine: "R6 check for understanding", bloom: "RECALL" },
+  "homework":            { rosenshine: "R9 independent practice", bloom: "APPLY" },
+  "section-divider":     { bloom: "—" },
+};
+
+// ─── Slide type icons ────────────────────────────────────────────────────const SLIDE_ICONS: Record<string, React.ElementType> = {
   "title": Monitor,
   "learning-objectives": Target,
   "hook": Lightbulb,
@@ -1480,6 +1584,30 @@ CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
 "model-answer" → title, body (the full model answer text, 2-5 sentences), markScheme (array of {point, marks} showing exactly where each mark is earned — sum matches the total), examTip (one-line tip on structure), speakerNotes
 "exam-practice" → title, examQuestion {stem, marks, timeMins, commandWord}, differentiation (optional support/core/extension variants), speakerNotes. Render this as a timed exam card with the mark chip visible.
 
+── Phase 2 classroom-action slide types (use these when the lesson calls for them):
+"section-divider" → title (chapter heading e.g. "Part 2 — Application"), subtitle (one-line teaser), body (optional, italic). Used as a visual chapter break inside longer decks.
+"cold-call" → title, coldCallCue (the exact line the teacher reads), question (the cold-call question), namedPupilHint (optional — "try a quieter pupil"), bullets (optional follow-up cues).
+"live-model" → title, liveModel {iDo, weDo, youDo} — three contrasting phrasings of the same problem. iDo = teacher demonstrates, weDo = guided, youDo = independent. Pairs with worked-example.
+"do-now" → title, question (the silent-start task), bullets (optional sub-tasks), timingMinutes (3-5). Pupils complete this AS THEY ENTER — silent, in their book.
+"choose-your-task" → title, question (the task framing), differentiation {support, core, extension}. Pupils self-select the route they'll take.
+"stuck-help" → title, question (the original task), hintLadder (3 escalating hints: small nudge → method reminder → near-answer), finalAnswer (revealed last). Designed to keep pupils thinking before getting the answer.
+"homework" → title, homeworkBrief (what to do), homeworkDueDate, homeworkMinutes, homeworkLink (optional URL). Replaces a plain "Homework" slide at the end of decks.
+
+── Layout-specific data fields (use these when picking the matching layout):
+- "split-stat" layout: populate `headline` with the big number/percentage, `subtitle` with its caption, `body` with a "what this means" sentence, `bullets` with 1-3 supporting points.
+- "comparison-table" layout: populate `compareHeaders: ["A","B"]` and `compareRows: [{label, left, right}]` (4-6 rows).
+- "timeline-horizontal" layout: populate `timelineEvents: [{date, title, description?}]` (4-6 events).
+- "card-grid" layout: populate `cards: [{title, body, icon?}]` (6 cards in 3×2 grid). icon may be an emoji.
+- "before-after" layout: populate `beforeAfter: {before, after, beforeLabel, afterLabel}` for the contrast pair.
+- "quote-portrait" layout: populate `quote`, `attribution`, `image_prompt` (portrait of speaker).
+- "diagram-callouts" layout: populate `diagramDescription` plus `diagramCallouts: [{label, position, description?}]` where position is one of top-left / top / top-right / right / bottom-right / bottom / bottom-left / left.
+
+── Inline rich-text markers in any text field (bullets / body / question):
+- `code` → mono chip (use for keywords, function names, short code samples)
+- $math$ → Consolas inline maths span (use for inline equations and formulae)
+- [icon:warning] / [icon:check] / [icon:flask] / etc. → leading emoji
+The renderer applies these automatically — DON'T over-use, but reach for them when the line genuinely is code or maths.
+
 ── SEND-native slide types (use these when the named need applies):
 "brain-break" → title ("BRAIN BREAK"), body ("Stand up and stretch for 30 seconds"), timingMinutes (1). Do NOT add bullets or questions — the slide is deliberately sparse.
 "checkin" → title ("How are you feeling?"), bullets (the 5 emoji scale: 😀 Calm / 🙂 OK / 😐 Not sure / 😟 Worried / 😣 Struggling), body (optional: "Show the teacher on your fingers"), timingMinutes (1-2).
@@ -1835,6 +1963,7 @@ const SLIDE_TYPE_COLOURS: Record<string, string> = {
 
 function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: ComposedTheme; Icon: React.ElementType }) {
   const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
+  const ped = SLIDE_TYPE_PEDAGOGY[slide.type];
   return (
     <div className="px-10 pt-7 pb-3">
       <div className="flex items-center gap-3 mb-1.5">
@@ -1842,6 +1971,17 @@ function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: Compo
           <Icon className="w-4 h-4 text-white" />
         </div>
         <h2 className="text-[1.35rem] font-bold leading-tight" style={{ color: theme.primary }}>{slide.title}</h2>
+        {/* Pedagogy badge — Rosenshine + Bloom for the teacher's eye. Hidden
+            in the PPTX export and in print, but visible in the on-screen editor
+            so ECTs/SLT can see why each slide is here. */}
+        {ped && ped.bloom !== "—" && (
+          <div className="ml-auto flex items-center gap-1.5">
+            {ped.rosenshine && (
+              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-700 border border-indigo-200" title="Rosenshine's Principles of Instruction">{ped.rosenshine}</span>
+            )}
+            <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide bg-amber-50 text-amber-800 border border-amber-200" title="Bloom's taxonomy band">{ped.bloom}</span>
+          </div>
+        )}
       </div>
       <div className="h-[3px] w-14 rounded-full" style={{ background: badgeColour }} />
     </div>
@@ -1870,7 +2010,7 @@ function renderLayoutSlide(
           ) : (
             <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: badgeColour }} />
           )}
-          <div className={`${size === "xs" ? "text-xs" : "text-sm"} font-medium`} style={{ color: theme.text }}>{bullet}</div>
+          <div className={`${size === "xs" ? "text-xs" : "text-sm"} font-medium`} style={{ color: theme.text }}>{richText(bullet, i)}</div>
         </div>
       ))}
     </div>
@@ -4456,6 +4596,8 @@ export default function PresentationMaker() {
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   /** AfL polling QR for the active slide. */
   const [showPollQR, setShowPollQR] = useState(false);
+  /** Speaker-notes batch generator state. */
+  const [generatingNotes, setGeneratingNotes] = useState(false);
 
   // Reset reveal level + timer whenever the active slide changes.
   useEffect(() => {
@@ -5091,6 +5233,57 @@ Return JSON array of adapted slides.`;
     setSpeakingIdx(idx);
   };
 
+  // ── Generate speaker notes for slides that lack them (item 25) ──────────
+  // Batches every slide with empty speakerNotes through callAIMessages so the
+  // model uses the deck-wide context. Returns 2-3 sentence notes per slide.
+  const handleGenerateMissingNotes = async () => {
+    if (!presentation) return;
+    const missingIdx = presentation.slides
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => !s.speakerNotes || s.speakerNotes.trim().length < 20)
+      .map(({ i }) => i);
+    if (missingIdx.length === 0) {
+      toast.info("Every slide already has speaker notes.");
+      return;
+    }
+    setGeneratingNotes(true);
+    try {
+      const sys = `You are a UK teacher. Generate practical, classroom-ready speaker notes for each slide listed. Each notes block must be 2-3 sentences and contain: what the teacher should DO (point at, ask, compare), what to LISTEN FOR (a specific pupil response), and what comes NEXT. No fluff.
+
+Return ONLY a JSON object: { "notes": { "<slideIndex>": "...notes...", ... } }`;
+      const slideSummary = missingIdx.map(i => {
+        const s = presentation.slides[i];
+        return { index: i, type: s.type, title: s.title, body: (s.body || "").slice(0, 200), question: s.question, bullets: (s.bullets || []).slice(0, 5) };
+      });
+      const usr = `Deck title: ${presentation.title}
+Subject: ${presentation.subject}
+Year: ${presentation.yearGroup}
+Topic: ${presentation.topic}
+
+Slides needing notes:
+${JSON.stringify(slideSummary)}
+
+Return JSON only.`;
+      const result = await callAI(sys, usr, 4000);
+      const rawText = typeof result === "string" ? result : (result as any).text || JSON.stringify(result);
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(match ? match[0] : cleaned);
+      const notes = parsed.notes || {};
+      const newSlides = presentation.slides.map((s, i) => {
+        const note = notes[String(i)] || notes[i];
+        return note && (typeof note === "string") ? { ...s, speakerNotes: note } : s;
+      });
+      setPresentation({ ...presentation, slides: newSlides });
+      toast.success(`Generated notes for ${missingIdx.length} slide${missingIdx.length === 1 ? "" : "s"}.`);
+    } catch (e: any) {
+      console.error("Generate notes failed:", e);
+      toast.error("Couldn't generate notes — please try again.");
+    } finally {
+      setGeneratingNotes(false);
+    }
+  };
+
   // ── Inline slide editing ─────────────────────────────────────────────────────
   const startEditSlide = (idx: number) => {
     if (!presentation) return;
@@ -5571,15 +5764,20 @@ Return JSON array of adapted slides.`;
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowNotes(!showNotes)}
-                      className="text-xs"
-                    >
-                      <Eye className="w-3 h-3 mr-1" />
-                      {showNotes ? "Hide" : "Show"} Notes
-                    </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowNotes(!showNotes)} className="text-xs gap-1" title="Toggle speaker-notes panel">
+                <Eye className="w-3 h-3 mr-1" />
+                {showNotes ? "Hide" : "Show"} Notes
+              </Button>
+              <Button
+                variant="outline" size="sm"
+                onClick={handleGenerateMissingNotes}
+                disabled={generatingNotes}
+                className="text-xs gap-1 border-amber-300 text-amber-700 hover:bg-amber-50"
+                title="Generate practical 2-3 sentence speaker notes for slides that lack them"
+              >
+                {generatingNotes ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                Gen notes
+              </Button>
                     <Button
                       variant="outline"
                       size="sm"
