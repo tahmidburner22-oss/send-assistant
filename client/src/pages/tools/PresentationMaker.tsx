@@ -1663,13 +1663,13 @@ CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
 "homework" → title, homeworkBrief (what to do), homeworkDueDate, homeworkMinutes, homeworkLink (optional URL). Replaces a plain "Homework" slide at the end of decks.
 
 ── Layout-specific data fields (use these when picking the matching layout):
-- "split-stat" layout: populate `headline` with the big number/percentage, `subtitle` with its caption, `body` with a "what this means" sentence, `bullets` with 1-3 supporting points.
-- "comparison-table" layout: populate `compareHeaders: ["A","B"]` and `compareRows: [{label, left, right}]` (4-6 rows).
-- "timeline-horizontal" layout: populate `timelineEvents: [{date, title, description?}]` (4-6 events).
-- "card-grid" layout: populate `cards: [{title, body, icon?}]` (6 cards in 3×2 grid). icon may be an emoji.
-- "before-after" layout: populate `beforeAfter: {before, after, beforeLabel, afterLabel}` for the contrast pair.
-- "quote-portrait" layout: populate `quote`, `attribution`, `image_prompt` (portrait of speaker).
-- "diagram-callouts" layout: populate `diagramDescription` plus `diagramCallouts: [{label, position, description?}]` where position is one of top-left / top / top-right / right / bottom-right / bottom / bottom-left / left. Also populate the \`diagram\` field if the topic warrants a structured diagram (the renderer will use it when present).
+- "split-stat" layout: populate \`headline\` with the big number/percentage, \`subtitle\` with its caption, \`body\` with a "what this means" sentence, \`bullets\` with 1-3 supporting points.
+- "comparison-table" layout: populate \`compareHeaders: ["A","B"]\` and \`compareRows: [{label, left, right}]\` (4-6 rows).
+- "timeline-horizontal" layout: populate \`timelineEvents: [{date, title, description?}]\` (4-6 events).
+- "card-grid" layout: populate \`cards: [{title, body, icon?}]\` (6 cards in 3×2 grid). icon may be an emoji.
+- "before-after" layout: populate \`beforeAfter: {before, after, beforeLabel, afterLabel}\` for the contrast pair.
+- "quote-portrait" layout: populate \`quote\`, \`attribution\`, \`image_prompt\` (portrait of speaker).
+- "diagram-callouts" layout: populate \`diagramDescription\` plus \`diagramCallouts: [{label, position, description?}]\` where position is one of top-left / top / top-right / right / bottom-right / bottom / bottom-left / left. Also populate the \`diagram\` field if the topic warrants a structured diagram (the renderer will use it when present).
 
 ── DIAGRAM SYSTEM (populate \`diagram\` on any diagram-label slide):
 The \`diagram\` field is rendered as a programmatic SVG. Choose the \`kind\` that best fits:
@@ -1694,7 +1694,7 @@ Structure: { kind, title?, nodes: [{id, label, group?}], edges?: [{from, to, lab
 - For equation-graph: populate equation + nodes for axis labels
 
 ── Inline rich-text markers in any text field (bullets / body / question):
-- `code` → mono chip (use for keywords, function names, short code samples)
+- \`code\` → mono chip (use for keywords, function names, short code samples)
 - $math$ → Consolas inline maths span (use for inline equations and formulae)
 - [icon:warning] / [icon:check] / [icon:flask] / etc. → leading emoji
 The renderer applies these automatically — DON'T over-use, but reach for them when the line genuinely is code or maths.
