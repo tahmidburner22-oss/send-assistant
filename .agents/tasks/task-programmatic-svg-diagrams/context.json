@@ -1,0 +1,21 @@
+{
+  "project_type": "TypeScript full-stack app (React + Express), monorepo with client/ and server/ dirs, shared/ for common schemas",
+  "language": "TypeScript/TSX",
+  "build_system": "vite (client) + esbuild (server), pnpm package manager",
+  "test_framework": "vitest (run via `vitest run`)",
+  "build_command": "npx vite build",
+  "test_command": "npx vitest run",
+  "verification_instructions": "1. Run `npx tsc --noEmit` to check types. 2. Run `npx vitest run` to run tests. 3. Confirm new component renders without errors.",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "Project dependencies already installed. No additional setup needed.",
+  "environment_constraints": "INTEGRATIONS_ONLY network mode - no external API access (no Pexels, Unsplash, DALL-E, Stability AI). All diagrams must be generated programmatically as SVG on the client side. No npm install possible.",
+  "contribution_requirements": "Follow existing patterns in PresentationMaker.tsx. Use Zod schemas for validation. All new fields must be added to both client schema (SlideContentSchema) and shared schema (PresentationSlideSchema in shared/aiSchemas.ts).",
+  "key_patterns": "1. SlideContent interface defines slide data shape. 2. FullSlideView switch renders slides by type. 3. exportToPptx handles PPTX generation per slide type. 4. buildSlidePrompt assembles AI instructions. 5. richText() helper renders inline markers. 6. composeTheme() resolves theme colours. 7. SLIDE_ICONS maps types to lucide icons. 8. `.passthrough()` on shared schema for forward compat.",
+  "relevant_files": [
+    "client/src/pages/tools/PresentationMaker.tsx",
+    "shared/aiSchemas.ts",
+    "client/src/components/PresentationDiagram.tsx (new)",
+    ".agents/tasks/presentation-maker-overhaul/SESSION-HANDOFF.md"
+  ],
+  "directory_structure": "/ - monorepo root with package.json. client/src/pages/tools/ - tool pages. client/src/components/ - reusable components. shared/ - schemas shared between client and server. server/routes/ - Express routes."
+}

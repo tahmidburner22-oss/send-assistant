@@ -19,7 +19,7 @@
 | 5     | partial     | spec/misconception/board CW/server schema/coverage/diff-validator/reading-age/notes-batch done; **fact-check pass pending** |
 | 6     | partial     | pedagogy badges + mascots + telemetry + history + identity + variants done; **cohort + companion + exit-ticket marksheet pending** |
 
-**Remaining items: 11, 23, 43, 44, 45, 47, 48** — all detailed below.
+**Remaining items: 23, 43, 44, 45, 47, 48** — all detailed below.
 
 ## How many of the original 56 are done?
 
@@ -95,14 +95,14 @@
 - [x] 46 Autosave drafts to localStorage with recover prompt
 
 ### Phase 4 — Export & integrity
-- [x] 09 Pexels/Unsplash server-side image proxy with cache + licence record
-- [x] 10 PPTX export embeds real images via `addImage`
-- [ ] 11 Programmatic diagrams (circuit/cell/water-cycle/Venn/timeline/flowchart)
+- [x] 09 ~~Pexels/Unsplash server-side image proxy~~ Replaced by programmatic SVG diagrams (AI generates structured diagram data, rendered client-side)
+- [x] 10 PPTX export embeds diagrams via pptxgenjs shapes (paintDiagram helper)
+- [x] 11 Programmatic diagrams (circuit/cell/water-cycle/Venn/timeline/flowchart/food-chain/equation-graph/labelled-box/cycle)
 - [x] 12 Inline icons in bullets (`[icon:name]` markers)
 - [x] 13 Equation/code styling (`code` and $math$ inline markers)
 - [ ] 44 Real PDF email attachment via pdf-generator-v2
 - [ ] 45 Rich print handouts (use FullSlideView, not hand-rolled HTML)
-- [x] 52 Image licence record persisted in slide JSON
+- [x] 52 ~~Image licence record~~ Not needed -- all diagrams are self-generated SVG, no external assets
 
 ### Phase 5 — Content rigour
 - [x] 17 Spec-point catalogue from curriculumBank
