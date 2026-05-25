@@ -335,6 +335,30 @@ Goal: complete the next un-shipped item in "What is next" below.
     metadata), `appendInstructionsConstraints` (3 — empty initial,
     populated initial, non-mutating), `runWorksheetWithRetry`
     (3 — no-retry stamp, retry stamp, identity preservation).
+
+- **PR-1 / Sprint 3.C — Per-subject prompt-family unit test.** One
+  new test file:
+  - `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`
+    (new) — 14 vitest cases across 5 describe blocks. Locks the
+    routing surface so a refactor can't silently swap prompts
+    between subject segments.
+    - `PROMPT_FAMILIES registry` (5 — exactly 7 keys, every header
+      non-empty, every family has ≥1 directive, key matches slot,
+      registry frozen).
+    - `lookupPromptFamily — primary subject routing`: maths
+      variants (6 it.each), science variants (6), english-lit
+      variants (4), english-lang variants (3), humanities variants
+      (5), creative variants (5), unknown → general (3). Plus the
+      "load-bearing" test that `lookupPromptFamily("GCSE Maths
+      Higher")` is NEVER the english-lit family — explicit
+      defensive lock against the worst-case silent-swap regression.
+      Plus english-lit never routes to english-lang.
+    - `forbidden-pattern lock` (3): maths imperial units, science
+      maths-only working-out box (Phase 1 lock), english-lit plot
+      summary (Phase 5 lit-spec lock).
+    - `renderPromptFamily` (5): header verbatim, every directive
+      bullet, forbidden-patterns block present when populated /
+      omitted when empty, non-empty output for every family.
   - `server/tests/worksheet-eval/humanScoresLoader.ts` (new) — pure
     CSV parser (handles double-quoted cells, escaped `""` quotes,
     Windows CRLF, blank lines, trailing newline) +
@@ -390,34 +414,35 @@ Goal: complete the next un-shipped item in "What is next" below.
 
 ## What is in flight
 
-_Nothing in flight; ready to start Sprint 3.C._
+_Nothing in flight; ready to start Sprint 3.D._
 
 ## What is next
 
-**PR-1 / Sprint 3.C — Per-subject prompt-family unit test.** Branch
-`big-bang-7/pr-1-measure-and-prompt-arch`.
+**PR-1 / Sprint 3.D — Wire `promptAbFramework` into the eval
+harness.** Branch `big-bang-7/pr-1-measure-and-prompt-arch`.
 
-New file `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`:
+Edit `server/tests/worksheet-eval/runner.ts` + `generators.ts` so
+the harness can run paired prompt-variant comparisons. Plan:
 
-1. Asserts `lookupPromptFamily("Maths")` returns `PROMPT_FAMILIES.maths`
-   and not the english-lit family.
-2. Asserts `lookupPromptFamily("English Literature")` returns
-   `PROMPT_FAMILIES["english-lit"]`.
-3. Per-family forbidden-pattern lists are correct (maths forbids
-   "mph", "lbs", "°F"; english-lit forbids "plot summary").
-4. `renderPromptFamily` includes header + every directive + every
-   forbidden pattern.
-5. Edge cases: lookupPromptFamily on unknown subject → general;
-   case-insensitive matching; subjects like "Combined Science",
-   "Religious Studies", "Art and Design" route correctly.
+1. Reads `EVAL_AB_EXPERIMENT` env (id of an experiment defined in
+   `promptAbFramework.PROMPT_FAMILIES` registry, or a sibling
+   `evalAbExperiments.ts` with experiment IDs like
+   `legacy-vs-twoPass`, `family-default-vs-tightened`).
+2. Buckets each fixture deterministically by `pickVariant(experiment,
+   fixture.id)`.
+3. The chosen variant's `payload` is consumed by the live generator
+   to switch prompt path (e.g. `payload.useTwoPass: boolean`).
+4. Stamps `row.experimentVariant` on the report row.
+5. Summariser splits ruleStats per variant and renders a paired
+   "A vs B" markdown table.
 
-Then Sprint 3.D — wire promptAbFramework into the eval harness.
+After Sprint 3.D, all Sprint 3 deliverables are shipped → open PR-1.
 
 ## Per-PR tracking (live state for the current PR)
 
 ### PR-1 — `big-bang-7/pr-1-measure-and-prompt-arch`
 
-Status: **in flight, 10/13 deliverables shipped (Sprint 1 complete + 3.A/3.B/3.E shipped).**
+Status: **in flight, 11/13 deliverables shipped (Sprint 1 complete + Sprint 3.A/3.B/3.C/3.E shipped).**
 
 Sprint 1 deliverables: 8/8 complete.
 
@@ -425,7 +450,7 @@ Sprint 3 deliverables (from PHASE-PLAN.md):
 
 - [x] `client/src/lib/aiGenerateWorksheetTwoPass.ts` (orchestrator)
 - [x] `client/src/lib/validatorFeedbackRetry.ts` (retry loop)
-- [ ] `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`
+- [x] `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`
 - [ ] `promptAbFramework` wired into eval harness (`runner.ts` + `generators.ts`)
 - [x] `selfConsistencySampler` wired onto Section 3 hot path (folded into orchestrator)
 
