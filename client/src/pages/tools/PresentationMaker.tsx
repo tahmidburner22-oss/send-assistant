@@ -2,7 +2,7 @@
  * PresentationMaker — AI-powered lesson slide generator
  * Professional-quality output: structured slides, professional themes, PPTX export
  */
-import { useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,9 @@ import {
   Pencil, Zap, Edit3, Calculator, GraduationCap, Sliders,
   Printer, Mail, Save, Maximize2, X, ChevronUp, ChevronDown,
   Trash2, MoreVertical,
+  // Phase 3 imports (timer, reveal, presenter view, accessibility)
+  Volume2, VolumeX, Pause, Play, Clock, Send, Type as TypeIcon,
+  Sun, Moon, ZoomIn, History as HistoryIcon, EyeOff,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -2135,11 +2138,20 @@ function FullSlideView({
   theme,
   index,
   total,
+  revealLevel = Infinity,
 }: {
   slide: SlideContent;
   theme: ComposedTheme;
   index: number;
   total: number;
+  /**
+   * Click-to-reveal step counter. Default Infinity = reveal everything (editor
+   * mode). In presenter mode the parent passes a finite number that the user
+   * increments by pressing the Down arrow / Space; each major reveal-able
+   * surface (worked-example steps, MCQ ✓ marker, pause-and-solve answer,
+   * model-answer body, stuck-help final answer) compares against this number.
+   */
+  revealLevel?: number;
 }) {
   const Icon = SLIDE_ICONS[slide.type] || BookOpen;
   const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
@@ -2332,17 +2344,22 @@ function FullSlideView({
                       <div className="text-sm font-medium" style={{ color: theme.text, fontFamily: "Consolas, monospace" }}>{w.problem}</div>
                     </div>
                     <div className="space-y-1.5">
-                      {w.steps.map((step, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: badgeColour }}>{i + 1}</div>
-                          <div className="flex-1 text-sm rounded-lg bg-white border border-gray-200 px-2 py-1" style={{ color: theme.text, fontFamily: "Consolas, monospace" }}>{step}</div>
-                        </div>
-                      ))}
+                      {w.steps.map((step, i) => {
+                        const stepShown = revealLevel >= i + 1;
+                        return (
+                          <div key={i} className="flex items-start gap-2" style={{ opacity: stepShown ? 1 : 0.25 }}>
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: badgeColour }}>{i + 1}</div>
+                            <div className="flex-1 text-sm rounded-lg bg-white border border-gray-200 px-2 py-1" style={{ color: theme.text, fontFamily: "Consolas, monospace" }}>
+                              {stepShown ? step : "·".repeat(Math.min(40, step.length))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-gray-200">
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-200" style={{ opacity: revealLevel >= w.steps.length + 1 ? 1 : 0.25 }}>
                       <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Answer</div>
                       <div className="text-base font-black" style={{ color: badgeColour, fontFamily: "Consolas, monospace" }}>
-                        {w.answer}{w.units ? ` ${w.units}` : ""}
+                        {revealLevel >= w.steps.length + 1 ? `${w.answer}${w.units ? ` ${w.units}` : ""}` : "—"}
                       </div>
                     </div>
                     {w.commonError && (
@@ -2400,8 +2417,10 @@ function FullSlideView({
                 </div>
               )}
               {slide.answer && (
-                <div className="rounded-lg p-2.5 text-center" style={{ background: "#dcfce7", border: "1px solid #16a34a" }}>
-                  <div className="text-xs font-bold text-green-700">Answer: {slide.answer}</div>
+                <div className="rounded-lg p-2.5 text-center" style={{ background: revealLevel >= 1 ? "#dcfce7" : "#f1f5f9", border: `1px solid ${revealLevel >= 1 ? "#16a34a" : "#cbd5e1"}` }}>
+                  <div className="text-xs font-bold" style={{ color: revealLevel >= 1 ? "#15803d" : "#64748b" }}>
+                    {revealLevel >= 1 ? `Answer: ${slide.answer}` : "Answer hidden — press → or Space to reveal"}
+                  </div>
                 </div>
               )}
             </div>
@@ -2418,13 +2437,16 @@ function FullSlideView({
               <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-2">
                 {slide.retrievalQuestions.map((q, i) => {
                   const parts = q.split(/\s*A:\s*/);
+                  const showAnswer = revealLevel >= 1;
                   return (
                     <div key={i} className="rounded-lg p-2.5" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
                       <div className="text-sm font-medium" style={{ color: theme.text }}>
                         <span className="font-bold" style={{ color: badgeColour }}>Q{i + 1}: </span>{parts[0]}
                       </div>
                       {parts[1] && (
-                        <div className="text-xs mt-1 font-medium text-green-700">✓ {parts[1]}</div>
+                        showAnswer
+                          ? <div className="text-xs mt-1 font-medium text-green-700">✓ {parts[1]}</div>
+                          : <div className="text-xs mt-1 italic text-gray-400">— answer hidden —</div>
                       )}
                     </div>
                   );
@@ -2446,7 +2468,7 @@ function FullSlideView({
                 <div className="grid grid-cols-2 gap-2">
                   {slide.options.map((opt, i) => {
                     const letters = ["A", "B", "C", "D"];
-                    const isAnswer = slide.answer === letters[i] || slide.answer === opt;
+                    const isAnswer = (slide.answer === letters[i] || slide.answer === opt) && revealLevel >= 1;
                     return (
                       <div key={i} className="flex items-center gap-2 rounded-lg p-2.5 border-2" style={{
                         borderColor: isAnswer ? "#16a34a" : "#e5e7eb",
@@ -2905,8 +2927,8 @@ function FullSlideView({
             <div className="flex-1 px-8 pb-7 grid grid-cols-[1fr_260px] gap-3">
               <div className="rounded-xl border-2 p-3 overflow-y-auto" style={{ borderColor: badgeColour, background: theme.light }}>
                 <div className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: badgeColour }}>Model Answer</div>
-                <div className="text-sm leading-relaxed" style={{ color: theme.text }}>
-                  {slide.body || slide.answer || "(Model answer)"}
+                <div className="text-sm leading-relaxed" style={{ color: theme.text, opacity: revealLevel >= 1 ? 1 : 0.15 }}>
+                  {revealLevel >= 1 ? (slide.body || slide.answer || "(Model answer)") : "[ press → to reveal the model answer ]"}
                 </div>
               </div>
               <div className="space-y-1.5 overflow-y-auto">
@@ -4083,6 +4105,146 @@ async function exportToPptx(
   await pptx.writeFile({ fileName: `${presentation.title.replace(/[^a-z0-9]/gi, "_")}_Adaptly.pptx` });
 }
 
+// ─── Presenter Mode ───────────────────────────────────────────────────────
+// Real presenter view: current slide on left, next preview + notes + clock +
+// timer + key legend on the right. Blackout/whiteout overlay sits on top when
+// the teacher hits B / W. All keyboard handling routed through the parent's
+// `onKeyDown` so reveal state stays in one place.
+function PresenterMode({
+  presentation, theme, activeSlide, revealLevel,
+  timerSeconds, timerPaused, blackout, showNotes,
+  onKeyDown, onSetActive, onExit, onTogglePause, onClearBlackout,
+}: {
+  presentation: PresentationData;
+  theme: ComposedTheme;
+  activeSlide: number;
+  revealLevel: number;
+  timerSeconds: number | null;
+  timerPaused: boolean;
+  blackout: "none" | "black" | "white";
+  showNotes: boolean;
+  onKeyDown: (e: React.KeyboardEvent) => void;
+  onSetActive: (i: number) => void;
+  onExit: () => void;
+  onTogglePause: () => void;
+  onClearBlackout: () => void;
+}) {
+  const slide = presentation.slides[activeSlide];
+  const next = presentation.slides[activeSlide + 1];
+  const total = presentation.slides.length;
+
+  // Wall-clock string, refreshed every second.
+  const [now, setNow] = useState<Date>(new Date());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const wall = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  // Timer chrome — colours shift red <60s.
+  const mins = timerSeconds == null ? null : Math.floor(timerSeconds / 60);
+  const secs = timerSeconds == null ? null : timerSeconds % 60;
+  const timerLow = (timerSeconds ?? 9999) < 60;
+  const timerStr = timerSeconds == null ? "—" : `${mins}:${(secs as number).toString().padStart(2, "0")}`;
+
+  if (!slide) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black flex outline-none"
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+      ref={el => el?.focus()}
+    >
+      {/* Blackout / whiteout overlay (B / W keys) ───────────────────────── */}
+      {blackout !== "none" && (
+        <div
+          className="absolute inset-0 z-[60] flex items-center justify-center cursor-pointer"
+          style={{ background: blackout === "black" ? "#000" : "#fff" }}
+          onClick={onClearBlackout}
+          role="button"
+          aria-label="Blackout — click or press any key to restore"
+        >
+          <div className={`text-xs ${blackout === "black" ? "text-white/30" : "text-black/30"}`}>
+            (press any key to resume)
+          </div>
+        </div>
+      )}
+
+      {/* Left — main slide ───────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-6xl" style={{ aspectRatio: "16/9" }}>
+            <FullSlideView slide={slide} theme={theme} index={activeSlide} total={total} revealLevel={revealLevel} />
+          </div>
+        </div>
+        {/* Bottom control strip ───────────────────────────────────────────── */}
+        <div className="flex items-center justify-between px-6 py-2 bg-black/60 text-white text-xs">
+          <div className="flex items-center gap-3">
+            <button onClick={() => onSetActive(Math.max(0, activeSlide - 1))} disabled={activeSlide === 0} className="flex items-center gap-1 disabled:opacity-30 hover:text-gray-300">
+              <ChevronLeft className="w-4 h-4" /> Prev
+            </button>
+            <button onClick={() => onSetActive(Math.min(total - 1, activeSlide + 1))} disabled={activeSlide === total - 1} className="flex items-center gap-1 disabled:opacity-30 hover:text-gray-300">
+              Next <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="opacity-70 ml-2">{activeSlide + 1} / {total}</div>
+          </div>
+          <div className="opacity-60 hidden md:block">→ reveal · ↓ next · R reveal-all · B black · W white · T pause · N notes · Esc exit</div>
+          <button onClick={onExit} className="opacity-70 hover:opacity-100">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Right — presenter sidebar ───────────────────────────────────────── */}
+      <div className="w-80 bg-slate-900 text-white flex flex-col border-l border-slate-700 hidden lg:flex">
+        {/* Clock + timer */}
+        <div className="p-3 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 opacity-60" />
+            <div className="text-sm font-mono">{wall}</div>
+          </div>
+          <button onClick={onTogglePause} className={`text-xs font-mono px-2 py-1 rounded ${timerLow ? "bg-red-500 text-white animate-pulse" : "bg-slate-800"}`}>
+            {timerPaused ? <Play className="w-3 h-3 inline" /> : <Pause className="w-3 h-3 inline" />} {timerStr}
+          </button>
+        </div>
+        {/* Next slide preview */}
+        <div className="p-3 border-b border-slate-800">
+          <div className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Next slide</div>
+          {next ? (
+            <div className="rounded-md overflow-hidden border border-slate-700 bg-white" style={{ aspectRatio: "16/9" }}>
+              <div className="w-full h-full transform scale-[0.4] origin-top-left" style={{ width: "250%", height: "250%" }}>
+                <FullSlideView slide={next} theme={theme} index={activeSlide + 1} total={total} />
+              </div>
+            </div>
+          ) : (
+            <div className="text-xs text-slate-500 italic">— end of deck —</div>
+          )}
+        </div>
+        {/* Speaker notes */}
+        {showNotes && (
+          <div className="p-3 flex-1 overflow-y-auto">
+            <div className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Speaker notes</div>
+            <div className="text-xs leading-relaxed whitespace-pre-wrap">
+              {slide.speakerNotes || <span className="italic text-slate-500">(no notes)</span>}
+            </div>
+          </div>
+        )}
+        {!showNotes && (
+          <div className="p-3 flex-1 overflow-y-auto">
+            <div className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Slide info</div>
+            <div className="text-xs space-y-1">
+              <div><span className="text-slate-400">Type:</span> {SLIDE_LABELS[slide.type] || slide.type}</div>
+              {slide.timingMinutes && <div><span className="text-slate-400">Timing:</span> {slide.timingMinutes} min</div>}
+              {Number.isFinite(revealLevel) && <div><span className="text-slate-400">Reveal:</span> {revealLevel}</div>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function PresentationMaker() {
   const { user } = useApp();
@@ -4167,6 +4329,93 @@ export default function PresentationMaker() {
   const [refineTargetSlide, setRefineTargetSlide] = useState<number>(0);
   const [refineText, setRefineText] = useState("");
   const [refining, setRefining] = useState(false);
+
+  // ── Phase 3 — Presenter classroom features ─────────────────────────────
+  /** Click-to-reveal counter for the active slide (resets on slide change). */
+  const [revealLevel, setRevealLevel] = useState<number>(Infinity);
+  /** Live countdown remaining seconds; null when no timer running. */
+  const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
+  const [timerPaused, setTimerPaused] = useState<boolean>(false);
+  /** Blackout/whiteout overlay (B / W keys in presenter). */
+  const [blackout, setBlackout] = useState<"none"|"black"|"white">("none");
+  /** Display preferences — independent of SEND. Affects on-screen preview only. */
+  const [zoom, setZoom] = useState<number>(1.0);
+  const [fontOverride, setFontOverride] = useState<""|"sans"|"serif"|"mono"|"dyslexic">("");
+  const [contrastMode, setContrastMode] = useState<"normal"|"high"|"sepia">("normal");
+  const [showDisplayPrefs, setShowDisplayPrefs] = useState(false);
+  /** Read-aloud (Web Speech API) handle. */
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
+
+  // Reset reveal level + timer whenever the active slide changes.
+  useEffect(() => {
+    setRevealLevel(Infinity);
+    setBlackout("none");
+    // Stop any in-progress speech when the slide changes.
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setSpeakingIdx(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSlide, presentation?.slides?.length]);
+
+  // Drive the live countdown timer when in fullscreen mode and the slide has a duration.
+  useEffect(() => {
+    if (!isFullscreen || !presentation) { setTimerSeconds(null); return; }
+    const cur = presentation.slides[activeSlide];
+    if (!cur?.timingMinutes) { setTimerSeconds(null); return; }
+    setTimerSeconds(cur.timingMinutes * 60);
+    setTimerPaused(false);
+  }, [isFullscreen, activeSlide, presentation]);
+  useEffect(() => {
+    if (timerSeconds === null || timerPaused) return;
+    if (timerSeconds <= 0) return;
+    const id = window.setInterval(() => setTimerSeconds(s => (s == null ? null : Math.max(0, s - 1))), 1000);
+    return () => window.clearInterval(id);
+  }, [timerSeconds, timerPaused]);
+
+  // ── Autosave & draft recovery ──────────────────────────────────────────
+  // Write the current presentation + form state to localStorage on every
+  // edit (debounced 1.5s), so a refresh / crash doesn't lose work. On mount,
+  // offer to restore the most-recent draft if one exists.
+  const AUTOSAVE_KEY = "adaptly_pres_maker_draft_v1";
+  const hasOfferedRecover = useRef(false);
+  useEffect(() => {
+    if (hasOfferedRecover.current) return;
+    hasOfferedRecover.current = true;
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      const ageHours = (Date.now() - (draft?.at || 0)) / 3_600_000;
+      if (!draft?.presentation || ageHours > 24) return;
+      // Tiny prompt — we don't auto-restore without consent.
+      const ok = window.confirm(`Recover unsaved presentation "${draft.presentation.title}" from ${Math.round(ageHours * 60)} min ago?`);
+      if (ok) {
+        setPresentation(draft.presentation);
+        if (draft.subject) setSubject(draft.subject);
+        if (draft.yearGroup) setYearGroup(draft.yearGroup);
+        if (draft.topic) setTopic(draft.topic);
+        if (draft.theme) setSelectedTheme(draft.theme);
+        toast.success("Draft restored.");
+      } else {
+        localStorage.removeItem(AUTOSAVE_KEY);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (!presentation) return;
+    const id = window.setTimeout(() => {
+      try {
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+          at: Date.now(),
+          presentation,
+          subject, yearGroup, topic, theme: selectedTheme,
+        }));
+      } catch {}
+    }, 1500);
+    return () => window.clearTimeout(id);
+  }, [presentation, subject, yearGroup, topic, selectedTheme]);
 
   // Base theme is what the teacher chose; `theme` is the SEND-composed version
   // used for every render. When no SEND needs are selected, composeTheme
@@ -4613,14 +4862,122 @@ Return JSON array of adapted slides.`;
     setTimeout(() => { w.print(); }, 500);
   };
 
-  // ── Fullscreen keyboard nav ───────────────────────────────────────────────────
+  // ── Fullscreen / Presenter keyboard binding ─────────────────────────────────
+  // Conventions follow PowerPoint / Keynote so muscle memory transfers:
+  //   →, Space  →  next reveal step on current slide; advance slide if exhausted
+  //   ↓, PgDn   →  next slide (no progressive reveal)
+  //   ←, ↑, PgUp →  previous slide
+  //   R         →  reveal everything on the current slide
+  //   B         →  black-out screen (toggle)
+  //   W         →  white-out screen (toggle)
+  //   T         →  pause/resume countdown timer
+  //   .         →  jump back to first slide
+  //   End       →  jump to last slide
+  //   N         →  toggle speaker notes (companion panel)
+  //   Esc       →  clear blackout, then exit
   const handleFullscreenKeyDown = (e: React.KeyboardEvent) => {
     if (!isFullscreen || !presentation) return;
-    if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ")
-      setActiveSlide(s => Math.min(presentation.slides.length - 1, s + 1));
-    if (e.key === "ArrowLeft" || e.key === "ArrowUp")
-      setActiveSlide(s => Math.max(0, s - 1));
-    if (e.key === "Escape") setIsFullscreen(false);
+    const cur = presentation.slides[activeSlide];
+    const total = presentation.slides.length;
+    // If we're blacked-out, any key restores the slide except Esc which exits.
+    if (blackout !== "none") {
+      if (e.key === "Escape") setBlackout("none");
+      else { e.preventDefault(); setBlackout("none"); }
+      return;
+    }
+    switch (e.key) {
+      case "ArrowRight":
+      case " ":
+      case "Spacebar": {
+        e.preventDefault();
+        // Reveal-aware advance: increment revealLevel up to a slide-specific
+        // ceiling, then advance to the next slide.
+        const ceiling = (() => {
+          if (cur?.workedExampleBox) return cur.workedExampleBox.steps.length + 1; // steps + answer
+          if (cur?.type === "pause-and-solve" || cur?.type === "check-understanding" || cur?.type === "mini-quiz" || cur?.type === "model-answer" || cur?.type === "stuck-help" || cur?.type === "exit-ticket") return 1;
+          return 0;
+        })();
+        if (Number.isFinite(revealLevel) && (revealLevel as number) < ceiling) {
+          setRevealLevel(((revealLevel as number) || 0) + 1);
+        } else {
+          if (activeSlide < total - 1) setActiveSlide(activeSlide + 1);
+        }
+        break;
+      }
+      case "ArrowDown":
+      case "PageDown":
+        e.preventDefault();
+        if (activeSlide < total - 1) setActiveSlide(activeSlide + 1);
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+      case "PageUp":
+        e.preventDefault();
+        if (activeSlide > 0) setActiveSlide(activeSlide - 1);
+        break;
+      case "r":
+      case "R":
+        e.preventDefault();
+        setRevealLevel(Infinity);
+        break;
+      case "b":
+      case "B":
+        e.preventDefault();
+        setBlackout("black");
+        break;
+      case "w":
+      case "W":
+        e.preventDefault();
+        setBlackout("white");
+        break;
+      case "t":
+      case "T":
+        e.preventDefault();
+        setTimerPaused(p => !p);
+        break;
+      case "n":
+      case "N":
+        e.preventDefault();
+        setShowNotes(s => !s);
+        break;
+      case "Home":
+      case ".":
+        e.preventDefault();
+        setActiveSlide(0);
+        break;
+      case "End":
+        e.preventDefault();
+        setActiveSlide(total - 1);
+        break;
+      case "Escape":
+        setIsFullscreen(false);
+        break;
+    }
+  };
+
+  // ── Read-aloud (Web Speech API) ─────────────────────────────────────────
+  const speakSlide = (slide: SlideContent | undefined, idx: number) => {
+    if (!slide || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (speakingIdx === idx) {
+      window.speechSynthesis.cancel();
+      setSpeakingIdx(null);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const text = [
+      slide.title,
+      slide.subtitle,
+      slide.body,
+      slide.question,
+      ...(slide.bullets || []),
+    ].filter(Boolean).join(". ");
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.95;
+    utt.pitch = 1;
+    utt.onend = () => setSpeakingIdx(null);
+    utt.onerror = () => setSpeakingIdx(null);
+    window.speechSynthesis.speak(utt);
+    setSpeakingIdx(idx);
   };
 
   // ── Inline slide editing ─────────────────────────────────────────────────────
@@ -4662,7 +5019,20 @@ Return JSON array of adapted slides.`;
   return (
     <div
       className="min-h-screen bg-gray-50"
-      style={{ ["--pres-font" as any]: activeFont }}
+      style={{
+        ["--pres-font" as any]: (
+          fontOverride === "sans" ? "Inter, system-ui, sans-serif"
+          : fontOverride === "serif" ? "'Source Serif Pro', Georgia, serif"
+          : fontOverride === "mono" ? "'Consolas', monospace"
+          : fontOverride === "dyslexic" ? "'OpenDyslexic', Verdana, sans-serif"
+          : activeFont
+        ),
+        // Zoom is applied to the slide preview area only (the styles cascade
+        // via the CSS variable); see FullSlideView's wrapper.
+        ["--pres-zoom" as any]: zoom.toFixed(2),
+        ...(contrastMode === "high" ? { filter: "contrast(1.15) saturate(1.1)" } : {}),
+        ...(contrastMode === "sepia" ? { filter: "sepia(0.4)" } : {}),
+      }}
     >
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
@@ -4705,6 +5075,22 @@ Return JSON array of adapted slides.`;
               </DropdownMenu>
               <Button variant="outline" size="sm" onClick={() => setIsFullscreen(true)} className="text-xs gap-1">
                 <Maximize2 className="w-3 h-3" />Present
+              </Button>
+              <Button
+                variant="outline" size="sm" onClick={() => setShowDisplayPrefs(p => !p)}
+                className="text-xs gap-1"
+                title="Display preferences (zoom, font, contrast)"
+              >
+                <TypeIcon className="w-3 h-3" />Display
+              </Button>
+              <Button
+                variant="outline" size="sm"
+                onClick={() => speakSlide(currentSlide, activeSlide)}
+                className="text-xs gap-1"
+                title={speakingIdx === activeSlide ? "Stop reading" : "Read this slide aloud"}
+              >
+                {speakingIdx === activeSlide ? <VolumeX className="w-3 h-3 text-red-500" /> : <Volume2 className="w-3 h-3" />}
+                {speakingIdx === activeSlide ? "Stop" : "Read"}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setShowSendAdaptDialog(true)} className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold">
                 Adapt for SEND
@@ -5065,7 +5451,7 @@ Return JSON array of adapted slides.`;
 
                 {/* Main slide view */}
                 {currentSlide && (
-                  <div>
+                  <div style={{ transform: `scale(var(--pres-zoom, 1))`, transformOrigin: "top center", transition: "transform 0.15s ease-out" }}>
                     <FullSlideView
                       slide={currentSlide}
                       theme={theme}
@@ -5237,40 +5623,26 @@ Return JSON array of adapted slides.`;
         </div>
       </div>
 
-      {/* ── Fullscreen Presentation Mode ─────────────────────────────────────── */}
+      {/* ── Presenter Mode (replaces the legacy fullscreen) ─────────────────── */}
+      {/* Layout: large current slide on the left, side panel on the right with
+          next-slide thumbnail + speaker notes + countdown + wall-clock + key
+          legend. B/W blackout overlay sits above everything when active.    */}
       {isFullscreen && presentation && currentSlide && (
-        <div
-          className="fixed inset-0 z-50 bg-black flex flex-col outline-none"
-          tabIndex={0}
+        <PresenterMode
+          presentation={presentation}
+          theme={theme}
+          activeSlide={activeSlide}
+          revealLevel={revealLevel}
+          timerSeconds={timerSeconds}
+          timerPaused={timerPaused}
+          blackout={blackout}
+          showNotes={showNotes}
           onKeyDown={handleFullscreenKeyDown}
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          ref={el => el?.focus()}
-        >
-          <div className="flex-1 flex items-center justify-center p-4">
-            <div className="w-full max-w-5xl" style={{ aspectRatio: "16/9" }}>
-              <FullSlideView slide={currentSlide} theme={theme} index={activeSlide} total={presentation.slides.length} />
-            </div>
-          </div>
-          {/* Fullscreen controls */}
-          <div className="flex items-center justify-between px-8 py-3 bg-black/60 text-white">
-            <button onClick={() => setActiveSlide(s => Math.max(0, s - 1))} disabled={activeSlide === 0} className="flex items-center gap-1 text-sm disabled:opacity-30 hover:text-gray-300">
-              <ChevronLeft className="w-5 h-5" />Previous
-            </button>
-            <div className="text-center">
-              <div className="text-sm font-semibold">{currentSlide.title}</div>
-              <div className="text-xs text-gray-400">{activeSlide + 1} / {presentation.slides.length}</div>
-            </div>
-            <div className="flex items-center gap-4">
-              <button onClick={() => setActiveSlide(s => Math.min(presentation.slides.length - 1, s + 1))} disabled={activeSlide === presentation.slides.length - 1} className="flex items-center gap-1 text-sm disabled:opacity-30 hover:text-gray-300">
-                Next<ChevronRight className="w-5 h-5" />
-              </button>
-              <button onClick={() => setIsFullscreen(false)} className="text-gray-400 hover:text-white ml-4">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-          <div className="text-center pb-2 text-gray-600 text-xs">Press ← → to navigate · Esc to exit</div>
-        </div>
+          onSetActive={setActiveSlide}
+          onExit={() => setIsFullscreen(false)}
+          onTogglePause={() => setTimerPaused(p => !p)}
+          onClearBlackout={() => setBlackout("none")}
+        />
       )}
 
       {/* ── Email Dialog ────────────────────────────────────────────────────── */}
@@ -5305,6 +5677,54 @@ Return JSON array of adapted slides.`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── Display Preferences popover ──────────────────────────────────── */}
+      {showDisplayPrefs && (
+        <div className="fixed top-14 right-4 z-40 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-bold text-gray-800">Display preferences</div>
+            <button onClick={() => setShowDisplayPrefs(false)} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
+          </div>
+          <div className="text-[10px] text-gray-500">
+            These are independent of any SEND adaptations and only affect how slides look on YOUR screen.
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Zoom · {Math.round(zoom * 100)}%</Label>
+            <Slider min={0.7} max={1.6} step={0.05} value={[zoom]} onValueChange={([v]) => setZoom(v)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Font</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {([
+                ["", "Auto"], ["sans", "Sans"], ["serif", "Serif"],
+                ["mono", "Mono"], ["dyslexic", "Dyslexic"],
+              ] as const).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setFontOverride(val as any)}
+                  className={`text-[10px] py-1 rounded border ${fontOverride === val ? "bg-blue-50 border-blue-500 text-blue-700" : "bg-white border-gray-200 text-gray-600"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Contrast</Label>
+            <div className="grid grid-cols-3 gap-1">
+              {([["normal","Normal"],["high","High"],["sepia","Sepia"]] as const).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setContrastMode(val as any)}
+                  className={`text-[10px] py-1 rounded border ${contrastMode === val ? "bg-blue-50 border-blue-500 text-blue-700" : "bg-white border-gray-200 text-gray-600"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── SEND Adaptation Dialog ───────────────────────────────────────────── */}
       <Dialog open={showSendAdaptDialog} onOpenChange={setShowSendAdaptDialog}>
