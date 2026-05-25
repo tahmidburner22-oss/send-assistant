@@ -1,0 +1,14 @@
+{
+  "task_id": "task-programmatic-svg-diagrams",
+  "task_description": "Replace Pexels/Unsplash stock photo approach with AI-prompted programmatic SVG diagrams. The AI slide generation prompt produces structured diagram data as part of slide JSON, and a new PresentationDiagram component renders SVG client-side. Covers items 9, 10, 11, 52 from the presentation-maker-overhaul ledger.",
+  "status": "completed",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "skipped",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "TypeScript compilation shows 60 errors - all pre-existing (same count on baseline commit b589e77). No new errors introduced. vitest not runnable in INTEGRATIONS_ONLY network mode. Semantic review completed (v1) with 5 issues found; 3 critical issues fixed in follow-up commit. Remaining 2 issues (PPTX fidelity for non-core kinds, paintDiagram closure coupling) are documented as known limitations."
+  }
+}
