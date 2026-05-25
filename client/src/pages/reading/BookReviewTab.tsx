@@ -3,6 +3,10 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Enter a book title (and optionally author + year group) → AI generates a
  * spoiler-free summary and review to help pupils decide whether to read it.
+ *
+ * Year of Reading 2026: also browse the UK Reading Spine — a hand-curated
+ * list of widely-used primary/secondary titles per year group — and load
+ * any book straight into the review prompt.
  */
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,9 +16,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Sparkles, RotateCcw, Printer, Loader2, BookOpen, Tag, GraduationCap, Link2 } from "lucide-react";
+import { Star, Sparkles, RotateCcw, Printer, Loader2, BookOpen, Tag, GraduationCap, Link2, Library, ChevronDown, ChevronUp } from "lucide-react";
 import { yearGroups } from "@/lib/send-data";
 import { callAI, parseWithFixes } from "@/lib/ai";
+import { READING_SPINE, type ReadingSpineBook } from "@/lib/reading-spine";
 
 interface BookReview {
   title: string;
@@ -61,6 +66,17 @@ export default function BookReviewTab() {
   const [genre, setGenre] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BookReview | null>(null);
+  // Reading Spine browser state — collapsed by default so the form remains primary.
+  const [spineOpen, setSpineOpen] = useState(false);
+  const [spineYear, setSpineYear] = useState<string>(READING_SPINE[2]?.yearGroup ?? READING_SPINE[0].yearGroup);
+
+  function pickFromSpine(book: ReadingSpineBook) {
+    setBookTitle(book.title);
+    setAuthor(book.author);
+    if (book.themes[0]) setGenre(""); // let the AI auto-detect; clear any manual genre pick
+    setSpineOpen(false);
+    toast.success(`Loaded "${book.title}" — tap "Get Book Review" to generate.`);
+  }
 
   const handleGenerate = async () => {
     if (!bookTitle.trim()) {
@@ -130,6 +146,75 @@ Return a JSON object:
       <AnimatePresence mode="wait">
         {!result ? (
           <motion.div key="form" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            {/* UK Reading Spine browser — Year of Reading 2026 */}
+            <Card className="border-amber-200 bg-amber-50/40 mb-3">
+              <CardContent className="p-3">
+                <button
+                  type="button"
+                  onClick={() => setSpineOpen(o => !o)}
+                  className="w-full flex items-center justify-between gap-2"
+                >
+                  <div className="flex items-center gap-2 text-left">
+                    <Library className="w-4 h-4 text-amber-700" />
+                    <div>
+                      <p className="text-xs font-semibold text-amber-900">
+                        Browse the UK Reading Spine
+                      </p>
+                      <p className="text-[11px] text-amber-800/80 leading-tight">
+                        Hand-picked recommendations per year group — Year of Reading 2026.
+                      </p>
+                    </div>
+                  </div>
+                  {spineOpen
+                    ? <ChevronUp className="w-4 h-4 text-amber-700" />
+                    : <ChevronDown className="w-4 h-4 text-amber-700" />}
+                </button>
+
+                {spineOpen && (
+                  <div className="mt-3 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs">Year group:</Label>
+                      <Select value={spineYear} onValueChange={setSpineYear}>
+                        <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {READING_SPINE.map(g => (
+                            <SelectItem key={g.yearGroup} value={g.yearGroup}>{g.yearGroup}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {(READING_SPINE.find(g => g.yearGroup === spineYear)?.books ?? []).map(book => (
+                        <button
+                          key={book.title}
+                          type="button"
+                          onClick={() => pickFromSpine(book)}
+                          className="text-left p-3 rounded-lg border border-amber-200 bg-white hover:border-amber-400 hover:shadow-sm transition-all"
+                        >
+                          <div className="flex items-start gap-2">
+                            <BookOpen className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold leading-tight">{book.title}</p>
+                              <p className="text-[11px] text-muted-foreground">by {book.author} · {book.ageRange}</p>
+                              <p className="text-[11px] text-foreground/80 mt-1 leading-snug">{book.blurb}</p>
+                              <div className="flex flex-wrap gap-1 mt-1.5">
+                                {book.themes.slice(0, 3).map(t => (
+                                  <span key={t} className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <Card className="border-border/50">
               <CardContent className="p-4 space-y-4">
                 <div className="space-y-1.5">
