@@ -57,12 +57,18 @@ const SlideTypeEnum = z.enum([
   "brain-break","checkin","method-steps","help-box","word-bank","take-a-break",
   // Primary-school types (already supported by the renderer)
   "story-time","draw-it","sort-it","match-it","fill-the-gap","spot-the-mistake","number-talk",
+  // ── Phase 1: section divider (item 6) ───────────────────────────────
+  "section-divider",
+  // ── Phase 2: classroom-action slide types (items 28–33) ─────────────
+  "cold-call","live-model","do-now","choose-your-task","stuck-help","homework",
 ]);
 
 const SlideContentSchema = z.object({
   type: SlideTypeEnum,
   title: z.string().min(1).max(200),
   subtitle: z.string().max(300).optional(),
+  /** Title-slide layout variant — used only when type === "title". */
+  titleVariant: z.enum(["centered","split-image","asymmetric","module-divider"]).optional(),
   bullets: z.array(z.string().min(1).max(500)).max(10).optional(),
   body: z.string().max(2000).optional(),
   terms: z.array(z.object({ term: z.string().min(1), definition: z.string().min(1) })).max(20).optional(),
@@ -212,6 +218,7 @@ export interface SlideContent {
   type: SlideType;
   title: string;
   subtitle?: string;
+  titleVariant?: "centered" | "split-image" | "asymmetric" | "module-divider";
   bullets?: string[];
   body?: string;
   terms?: { term: string; definition: string }[];
@@ -636,6 +643,14 @@ const SLIDE_ICONS: Record<string, React.ElementType> = {
   "help-box": BookOpen,
   "word-bank": List,
   "take-a-break": HelpCircle,
+  // Phase 1 section divider + Phase 2 classroom actions
+  "section-divider": ArrowRight,
+  "cold-call": Users,
+  "live-model": Brain,
+  "do-now": Pencil,
+  "choose-your-task": List,
+  "stuck-help": HelpCircle,
+  "homework": Edit3,
 };
 
 // ─── Slide type labels ────────────────────────────────────────────────────
@@ -678,6 +693,14 @@ const SLIDE_LABELS: Record<string, string> = {
   "help-box": "Help Box",
   "word-bank": "Word Bank",
   "take-a-break": "Take a Break",
+  // Phase 1 section divider + Phase 2 classroom actions
+  "section-divider": "Section Divider",
+  "cold-call": "Cold Call",
+  "live-model": "Live Model (I do · We do · You do)",
+  "do-now": "Do Now (Starter)",
+  "choose-your-task": "Choose Your Task",
+  "stuck-help": "Stuck? Hint Ladder",
+  "homework": "Homework",
 };
 
 // ─── Subject options ──────────────────────────────────────────────────────────
@@ -1485,6 +1508,14 @@ const SLIDE_TYPE_COLOURS: Record<string, string> = {
   "help-box":            "#ca8a04",
   "word-bank":           "#0891b2",
   "take-a-break":        "#14b8a6",
+  // Phase 1 + 2 additions
+  "section-divider":     "#475569",
+  "cold-call":           "#0d9488",
+  "live-model":          "#1d4ed8",
+  "do-now":              "#0891b2",
+  "choose-your-task":    "#7C3AED",
+  "stuck-help":          "#a16207",
+  "homework":            "#475569",
 };
 
 function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: ComposedTheme; Icon: React.ElementType }) {
@@ -1914,27 +1945,81 @@ function FullSlideView({
     switch (slide.type) {
 
       // ── Title ──────────────────────────────────────────────────────────────
-      case "title":
+      // titleVariant controls layout: centered (default), split-image,
+      // asymmetric or module-divider. Each variant uses the chosen theme
+      // gradient for the dark area; only the composition changes.
+      case "title": {
+        const variant = slide.titleVariant || "centered";
+        const bgImage = slide.image_prompt
+          ? `https://source.unsplash.com/featured/1280x720/?${encodeURIComponent(slide.image_prompt)}`
+          : null;
+        if (variant === "split-image") {
+          return (
+            <div className="flex h-full">
+              <div className="w-1/2 flex flex-col justify-center px-10 py-8 gap-3" style={{ background: theme.gradient }}>
+                <div className="text-[2.1rem] font-black leading-tight" style={{ color: "white" }}>{slide.title}</div>
+                {slide.subtitle && <div className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>{slide.subtitle}</div>}
+                {slide.body && (
+                  <div className="text-sm rounded-xl px-4 py-3 mt-2" style={{ color: "rgba(255,255,255,0.95)", background: "rgba(0,0,0,0.25)" }}>{slide.body}</div>
+                )}
+              </div>
+              <div className="w-1/2 bg-cover bg-center" style={{ backgroundImage: bgImage ? `url(${bgImage})` : "linear-gradient(135deg,#cbd5e1,#94a3b8)" }} />
+            </div>
+          );
+        }
+        if (variant === "asymmetric") {
+          return (
+            <div className="relative h-full overflow-hidden" style={{ background: theme.bg }}>
+              {bgImage && <div className="absolute inset-0 opacity-15 bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }} />}
+              <div className="absolute -top-10 -right-10 w-72 h-72 rounded-full" style={{ background: theme.gradient, opacity: 0.85 }} />
+              <div className="absolute -bottom-12 -left-8 w-56 h-56 rounded-full" style={{ background: theme.accent, opacity: 0.5 }} />
+              <div className="relative h-full flex flex-col justify-center px-14 max-w-[60%]">
+                <div className="text-[10px] font-bold tracking-[0.2em] uppercase mb-3" style={{ color: theme.secondary }}>Lesson</div>
+                <div className="text-[2.4rem] font-black leading-tight mb-3" style={{ color: theme.primary }}>{slide.title}</div>
+                {slide.subtitle && <div className="text-sm font-medium" style={{ color: theme.text }}>{slide.subtitle}</div>}
+                {slide.body && <div className="text-xs italic mt-3 max-w-md" style={{ color: theme.text }}>{slide.body}</div>}
+              </div>
+            </div>
+          );
+        }
+        if (variant === "module-divider") {
+          return (
+            <div className="flex flex-col items-center justify-center h-full text-center px-14 gap-3" style={{ background: theme.gradient, color: "white" }}>
+              <div className="text-[10px] font-bold tracking-[0.4em] uppercase opacity-80">Module</div>
+              <div className="text-[3rem] font-black leading-none">{slide.title}</div>
+              <div className="h-1 w-32 rounded-full" style={{ background: theme.accent }} />
+              {slide.subtitle && <div className="text-base font-medium opacity-90 max-w-2xl">{slide.subtitle}</div>}
+              {slide.body && <div className="text-sm italic opacity-80 max-w-xl mt-2">{slide.body}</div>}
+            </div>
+          );
+        }
+        // Default: centered (legacy behaviour)
         return (
           <div className="flex flex-col items-center justify-center h-full text-center px-14 gap-4">
-            {slide.image_prompt && (
-              <div className="absolute inset-0 opacity-10 bg-cover bg-center" style={{ backgroundImage: `url(https://source.unsplash.com/featured/1280x720/?${encodeURIComponent(slide.image_prompt)})` }} />
+            {bgImage && (
+              <div className="absolute inset-0 opacity-10 bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }} />
             )}
             <div className="relative">
-              <div className="text-[2.4rem] font-black mb-3 leading-tight" style={{ color: "white" }}>
-                {slide.title}
-              </div>
+              <div className="text-[2.4rem] font-black mb-3 leading-tight" style={{ color: "white" }}>{slide.title}</div>
               {slide.subtitle && (
-                <div className="text-base font-medium mb-3" style={{ color: "rgba(255,255,255,0.85)" }}>
-                  {slide.subtitle}
-                </div>
+                <div className="text-base font-medium mb-3" style={{ color: "rgba(255,255,255,0.85)" }}>{slide.subtitle}</div>
               )}
               {slide.body && (
-                <div className="text-sm max-w-xl mx-auto rounded-xl px-5 py-3" style={{ color: "rgba(255,255,255,0.9)", background: "rgba(0,0,0,0.25)" }}>
-                  {slide.body}
-                </div>
+                <div className="text-sm max-w-xl mx-auto rounded-xl px-5 py-3" style={{ color: "rgba(255,255,255,0.9)", background: "rgba(0,0,0,0.25)" }}>{slide.body}</div>
               )}
             </div>
+          </div>
+        );
+      }
+
+      // ── Section divider — chapter break inside a longer deck ─────────────
+      case "section-divider":
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-center px-14 gap-3" style={{ background: theme.gradient, color: "white" }}>
+            <div className="text-[10px] font-bold tracking-[0.4em] uppercase opacity-75">Part</div>
+            <div className="text-[3rem] font-black leading-none">{slide.title}</div>
+            {slide.subtitle && <div className="text-base font-medium opacity-90 max-w-2xl">{slide.subtitle}</div>}
+            {slide.body && <div className="text-sm italic opacity-80 max-w-xl mt-2">{slide.body}</div>}
           </div>
         );
 
@@ -2786,7 +2871,7 @@ function FullSlideView({
     }
   };
 
-  const isTitleSlide = slide.type === "title";
+  const isTitleSlide = slide.type === "title" || slide.type === "section-divider";
 
   // SEND field strips — rendered ABOVE the slide's main content so they are
   // unmissable and don't get pushed off-screen on short slides.
