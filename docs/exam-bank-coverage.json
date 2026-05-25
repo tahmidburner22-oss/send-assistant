@@ -1,43 +1,43 @@
 {
-  "generatedAt": "2026-05-23T15:22:40.451Z",
+  "generatedAt": "2026-05-25T11:41:28.058Z",
   "threshold": 10,
   "totals": {
-    "questionsScanned": 7062,
-    "questionsTagged": 2879,
+    "questionsScanned": 7222,
+    "questionsTagged": 3039,
     "subtopicsTotal": 907,
-    "subtopicsCovered": 91,
-    "subtopicsBelowTen": 816,
+    "subtopicsCovered": 125,
+    "subtopicsBelowTen": 782,
     "subtopicsZero": 514
   },
   "perSubject": {
     "mathematics": {
-      "questionsScanned": 842,
-      "subtopicsCovered": 13,
-      "subtopicsBelowTen": 203,
+      "questionsScanned": 882,
+      "subtopicsCovered": 22,
+      "subtopicsBelowTen": 194,
       "subtopicsZero": 153
     },
     "biology": {
-      "questionsScanned": 841,
-      "subtopicsCovered": 19,
-      "subtopicsBelowTen": 142,
+      "questionsScanned": 881,
+      "subtopicsCovered": 27,
+      "subtopicsBelowTen": 134,
       "subtopicsZero": 75
     },
     "chemistry": {
-      "questionsScanned": 743,
-      "subtopicsCovered": 11,
-      "subtopicsBelowTen": 21,
+      "questionsScanned": 768,
+      "subtopicsCovered": 16,
+      "subtopicsBelowTen": 16,
       "subtopicsZero": 0
     },
     "physics": {
-      "questionsScanned": 791,
-      "subtopicsCovered": 14,
-      "subtopicsBelowTen": 23,
+      "questionsScanned": 821,
+      "subtopicsCovered": 20,
+      "subtopicsBelowTen": 17,
       "subtopicsZero": 0
     },
     "english-language": {
-      "questionsScanned": 830,
-      "subtopicsCovered": 9,
-      "subtopicsBelowTen": 159,
+      "questionsScanned": 855,
+      "subtopicsCovered": 15,
+      "subtopicsBelowTen": 153,
       "subtopicsZero": 103
     },
     "english": {
@@ -4417,54 +4417,6 @@
       "subject": "psychology"
     },
     {
-      "topic": "Bioenergetics",
-      "subtopic": "Anaerobic respiration in animals (lactic acid)",
-      "count": 5,
-      "subject": "biology"
-    },
-    {
-      "topic": "Bioenergetics",
-      "subtopic": "Anaerobic respiration in plants and yeast (fermentation)",
-      "count": 5,
-      "subject": "biology"
-    },
-    {
-      "topic": "Bioenergetics",
-      "subtopic": "Limiting factors and inverse-square law",
-      "count": 5,
-      "subject": "biology"
-    },
-    {
-      "topic": "Bioenergetics",
-      "subtopic": "Response of the body to exercise",
-      "count": 5,
-      "subject": "biology"
-    },
-    {
-      "topic": "Breathing and Gas Exchange",
-      "subtopic": "Effect of exercise on breathing",
-      "count": 5,
-      "subject": "biology"
-    },
-    {
-      "topic": "Breathing and Gas Exchange",
-      "subtopic": "Gas exchange in the alveoli",
-      "count": 5,
-      "subject": "biology"
-    },
-    {
-      "topic": "Breathing and Gas Exchange",
-      "subtopic": "Mechanism of breathing (inhalation and exhalation)",
-      "count": 5,
-      "subject": "biology"
-    },
-    {
-      "topic": "Breathing and Gas Exchange",
-      "subtopic": "Smoking and lung disease",
-      "count": 5,
-      "subject": "biology"
-    },
-    {
       "topic": "Cell Biology",
       "subtopic": "Mitosis and cell division",
       "count": 5,
@@ -4507,66 +4459,6 @@
       "subject": "biology"
     },
     {
-      "topic": "Chemical Bonding",
-      "subtopic": "Metallic bonding",
-      "count": 5,
-      "subject": "chemistry"
-    },
-    {
-      "topic": "Organic Chemistry",
-      "subtopic": "Alcohols and carboxylic acids",
-      "count": 5,
-      "subject": "chemistry"
-    },
-    {
-      "topic": "Periodic Table",
-      "subtopic": "Group 0 — Noble gases",
-      "count": 5,
-      "subject": "chemistry"
-    },
-    {
-      "topic": "Periodic Table",
-      "subtopic": "Group 7 — Halogens",
-      "count": 5,
-      "subject": "chemistry"
-    },
-    {
-      "topic": "Rates of Reaction",
-      "subtopic": "Measuring rates of reaction",
-      "count": 5,
-      "subject": "chemistry"
-    },
-    {
-      "topic": "Comprehension — Fiction",
-      "subtopic": "Inference and deduction",
-      "count": 5,
-      "subject": "english-language"
-    },
-    {
-      "topic": "Comprehension — Fiction",
-      "subtopic": "Retrieving information from a text",
-      "count": 5,
-      "subject": "english-language"
-    },
-    {
-      "topic": "Grammar and Punctuation",
-      "subtopic": "Apostrophes",
-      "count": 5,
-      "subject": "english-language"
-    },
-    {
-      "topic": "Grammar and Punctuation",
-      "subtopic": "Sentence types — simple, compound, complex",
-      "count": 5,
-      "subject": "english-language"
-    },
-    {
-      "topic": "Language Paper 1 — Creative Writing",
-      "subtopic": "Narrative writing — story structure",
-      "count": 5,
-      "subject": "english-language"
-    },
-    {
       "topic": "Language Paper 1 — Fiction Reading",
       "subtopic": "Writing about structure",
       "count": 5,
@@ -4575,12 +4467,6 @@
     {
       "topic": "Language Paper 2 — Transactional Writing",
       "subtopic": "Writing to persuade",
-      "count": 5,
-      "subject": "english-language"
-    },
-    {
-      "topic": "Reading — Comprehension and Analysis",
-      "subtopic": "Inference and deduction",
       "count": 5,
       "subject": "english-language"
     },
@@ -4607,96 +4493,6 @@
       "subtopic": "Martin Luther King Jr.",
       "count": 5,
       "subject": "history"
-    },
-    {
-      "topic": "Algebra — Simple Formulae and Sequences",
-      "subtopic": "Solving one-step equations",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Functions and Graphs",
-      "subtopic": "Composite and inverse functions",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Functions and Graphs",
-      "subtopic": "Function notation",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Indices and Standard Form",
-      "subtopic": "Laws of indices",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Indices and Standard Form",
-      "subtopic": "Negative and fractional indices",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Indices and Standard Form",
-      "subtopic": "Standard form — writing and converting",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Linear Inequalities",
-      "subtopic": "Writing and solving linear inequalities",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Percentages",
-      "subtopic": "Reverse percentages",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Percentages of Amounts",
-      "subtopic": "Reverse percentages",
-      "count": 5,
-      "subject": "mathematics"
-    },
-    {
-      "topic": "Electricity and Circuits",
-      "subtopic": "Domestic electricity and safety",
-      "count": 5,
-      "subject": "physics"
-    },
-    {
-      "topic": "Electricity and Circuits",
-      "subtopic": "Ohm's Law",
-      "count": 5,
-      "subject": "physics"
-    },
-    {
-      "topic": "Waves — Light",
-      "subtopic": "Lenses and mirrors",
-      "count": 5,
-      "subject": "physics"
-    },
-    {
-      "topic": "Waves — Sound",
-      "subtopic": "Echoes and reflection",
-      "count": 5,
-      "subject": "physics"
-    },
-    {
-      "topic": "Waves — Sound",
-      "subtopic": "Hearing and the ear",
-      "count": 5,
-      "subject": "physics"
-    },
-    {
-      "topic": "Waves — Sound",
-      "subtopic": "Loudness and pitch",
-      "count": 5,
-      "subject": "physics"
     },
     {
       "topic": "Waves — Sound",

@@ -5,16 +5,18 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-25 — **Phase E is fully shipped.** Both PR-A
-and PR-B's content reached `main` via the Phase F PR (#110) — Phase F's
-branch absorbed the Phase E commits before merging, so opening PR-B
-independently became unnecessary. GitHub correctly reports "No commits
-between main and feat/phase-e-exam-paper-builder" because every file
-(PR-A back-tagger / coverage / gap-fill, PR-B assembly engine / tool
-UI) is already in `main` at `c048ca7`. The original branch
-`feat/phase-e-exam-paper-builder` can be deleted at the user's
-discretion. PR #107 (Phase E PR-A) likewise has no remaining commits
-to merge and can be closed.
+Last updated: 2026-05-25 — **Phase E wave 2 shipped.** Wave 2 added 160
+hand-authored exam-style questions (5 per subtopic × 32 wave-1 subtopics)
+across 5 banks (maths 40, biology 40, chemistry 25, physics 30, english
+25). Coverage audit confirms all 32 wave-1 targets are now ≥10
+questions and "covered". `subtopicsCovered` rose 91→125, `subtopicsBelowTen`
+fell 816→782, `subtopicsZero` unchanged at 514. PR-A's overall content
+status: every subtopic that PR-A touched is now at the ≥10 quality
+threshold. Earlier Phase E PR-A / PR-B work (back-tagger, coverage
+audit, gap-fill wave 1, assembly engine, tool UI) had previously
+reached `main` via PR #110 (Phase F absorbed the Phase E commits).
+Wave 2 is its own PR (#113) on branch `feat/phase-e-wave-2` cut from
+the post-#110 main.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -263,27 +265,75 @@ pastPaperQuestions.ts       2,203 lines
     storyboard step "Build a mock exam paper" pointing at the
     new tool.
 
+- **PR-A · Wave 2 — gap-fill top-up to ≥10 questions per subtopic**.
+  In a single branch (`feat/phase-e-wave-2`, opened as PR #113):
+  - 160 hand-authored exam-style questions appended across 5 banks:
+    - `client/src/lib/questionBankMaths.ts` — 40 questions
+      (`phaseE-m-041..080`), 5 per subtopic × 8 maths subtopics.
+    - `client/src/lib/questionBankBiology.ts` — 40 questions
+      (`phaseE-bio-041..080`), 5 per subtopic × 8 biology subtopics.
+    - `client/src/lib/questionBankChemistry.ts` — 25 questions
+      (`phaseE-chem-026..050`), 5 per subtopic × 5 chemistry subtopics.
+    - `client/src/lib/questionBankPhysics.ts` — 30 questions
+      (`phaseE-phys-031..060`), 5 per subtopic × 6 physics subtopics.
+    - `client/src/lib/questionBankEnglish.ts` — 25 questions
+      (`phaseE-engl-026..050`), 5 per subtopic × 5 english subtopics.
+  - Format identical to wave 1 (full fields including explicit
+    `subtopic`, `markScheme`, `hint`, `ao`, `stage`, `yearGroups`).
+    Append-only — no edits to existing entries.
+  - Question variety: each set of 5 spans Foundation 1-3 marks and
+    Higher 3-5 marks, with mixed command words (State / Calculate /
+    Describe / Explain / Suggest / Evaluate / Analyse / Predict)
+    and varied AO levels (AO1 / AO2 / AO3, plus AO5 for English
+    creative writing).
+  - `client/src/lib/subtopicTags.ts` — regenerated. Now
+    3,039 / 7,222 questions tagged (42.1%): 320 explicit-subtopic
+    field (160 wave-1 + 160 wave-2), 2,719 back-tagged from text.
+  - `docs/exam-bank-coverage.json` and
+    `docs/exam-bank-coverage.baseline.json` — regenerated and the
+    baseline locked at the new high-water mark. Wave-2 effect:
+    - Total questions: 7,062 → 7,222 (+160).
+    - Subtopics covered (≥10): **91 → 125 (+34)** — all 32 wave-2
+      targets crossed the threshold, plus 2 indirect closures
+      where the back-tagger picked up extra text matches.
+    - Subtopics belowTen: 816 → 782 (-34).
+    - Subtopics zero: unchanged at 514 (wave 2 was a top-up of
+      already-seeded subtopics, not a new-subtopic seeding wave).
+    - Per-subject covered growth: mathematics 13→22, biology 19→27,
+      english-language 9→15, physics 14→20, chemistry 11→16.
+  - Validation: JS-level shape + uniqueness check across the whole
+    combined bank passes (0 field errors, 0 ID dupes, 320 phaseE IDs).
+    The exam-bank-coverage CI workflow re-runs the back-tagger and
+    audit on PR push and is the authoritative gate.
+
 ## What is in flight
 
-_Nothing. Phase E is shipped on `main` (see "Last updated" header)._
+_Nothing. Phase E PR-A wave 2 is shipped on `feat/phase-e-wave-2` and
+opened as PR #113 (see "Last updated" header). Earlier Phase E content
+is on `main` via PR #110._
 
 ## What is next
 
-**Nothing for Phase E itself.** Future waves are tracked separately:
+**Nothing for the wave-2 PR itself once #113 merges.** Future work is
+tracked separately:
 
-- **Wave 2 gap-fill** — bump every PR-A wave-1 subtopic from 5
-  questions to 10 questions (+5 each × 32 subtopics = +160
-  questions). Use `docs/exam-bank-coverage.json` `belowTen` array to
-  pick rows with `count` between 1 and 9 in the priority subjects.
-- **Wave 3+** — work through the remaining 514 zero-coverage
-  subtopics in non-core subjects (MFL, drama, music, sociology,
-  art, KS1/KS2 maths). The audit JSON makes this a transparent task
-  list; the CI gate ensures no regression.
-- **Class Pack / PDF integration** — wire the new tool into the
-  Worksheets Save-to-Library + Send-to-Class-Pack flow so generated
-  papers persist and can be assigned. The engine already emits the
-  canonical `ExamPaperWorksheet` shape, so this is one extra import
-  away.
+- **Wave 3 — close zero-coverage subtopics in core GCSE subjects**.
+  The audit JSON's `zero` array still lists 514 subtopics with no
+  questions at all. Of those, the highest-priority rows are the
+  remaining maths zeros (153) and english-language zeros (103) at
+  GCSE — these need new seeded questions (5 each, like wave 1)
+  before a wave-2-style top-up. Pick from
+  `docs/exam-bank-coverage.json` `zero[]` filtered by subject.
+- **Wave 4+ — non-core subjects**. The audit lists belowTen and zero
+  in non-core subjects (MFL, drama, music, sociology, art, KS1/KS2
+  maths) where there is currently no bank coverage. The audit JSON
+  makes this a transparent task list; the CI gate ensures no
+  regression.
+- **Class Pack / PDF integration** — wire the Create-an-Exam-Paper
+  tool (PR-B) into the Worksheets Save-to-Library + Send-to-Class-Pack
+  flow so generated papers persist and can be assigned. The engine
+  already emits the canonical `ExamPaperWorksheet` shape, so this is
+  one extra import away.
 
 ## Checkpoint protocol
 
