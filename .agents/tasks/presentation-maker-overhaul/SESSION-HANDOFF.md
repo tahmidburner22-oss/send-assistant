@@ -2,9 +2,10 @@
 
 ## How to resume
 
-1. `git checkout feat/presentation-maker-overhaul && git pull`
-2. Open the **LEDGER** below.
-3. Pick the FIRST `[ ]` item, do it, mark `[x]`, commit, push.
+1. `git checkout main && git pull` (Phase-4 image pipeline #115 merged here; Phase 1–3 work merged via #114)
+2. Create a new branch from main for the next chunk.
+3. Open the **LEDGER** below.
+4. Pick the FIRST `[ ]` item, do it, mark `[x]`, commit, push.
 
 ## Status
 
@@ -14,7 +15,7 @@
 | 1     | done        | dark themes + subject auto + layouts + variants + section dividers + thumbnails + primary theme + accents + mascots |
 | 2     | done        | 12 subject profiles + 6 classroom-action slide types |
 | 3     | done        | presenter mode + reveal + timer + read-aloud + display prefs + autosave + AfL QR + Send-to |
-| 4     | partial     | inline icons + equations done; **images + diagrams + PDF + rich print pending** |
+| 4     | partial     | inline icons + equations done; **image pipeline (9/10/52) done**; **PDF + rich print pending** |
 | 5     | partial     | spec/misconception/board CW/server schema/coverage/diff-validator/reading-age/notes-batch done; **fact-check pass pending** |
 | 6     | partial     | pedagogy badges + mascots + telemetry + history + identity + variants done; **cohort + companion + exit-ticket marksheet pending** |
 
@@ -22,7 +23,7 @@
 
 ## How many of the original 56 are done?
 
-46 of 56 (82%). The remaining 10 are the heavy infrastructure ones (real image pipeline, PDF generation, programmatic diagrams, pupil companion, exit-ticket capture, cohort aware regen).
+49 of 56 (88%). The remaining 7 are the heavy infrastructure ones (PDF generation, programmatic diagrams, pupil companion, exit-ticket capture, cohort aware regen, fact-check pass, rich print).
 
 ## Files most-likely to touch (next)
 
@@ -131,16 +132,13 @@
 
 The remaining work breaks into these size buckets:
 
-**Small (1 commit each, < 100 lines):**
-24, 26, 56, 54, 55, 22
-
 **Medium (1 commit each, 100–300 lines):**
-45 (rich print), 53 (slide diff/rollback), 47 (exit-ticket marksheet), 23 (fact-check pass)
+45 (rich print), 47 (exit-ticket marksheet), 23 (fact-check pass)
 
 **Large (multi-file, server changes):**
-9 + 10 + 52 (image pipeline — do as one), 44 (PDF email), 11 (programmatic diagrams), 43 (pupil companion view), 48 (cohort-aware regen)
+44 (PDF email), 11 (programmatic diagrams), 43 (pupil companion view), 48 (cohort-aware regen)
 
-I'd recommend the next session knock out all the **Small** ones (one commit each) before starting **Medium**.
+I'd recommend the next session start on **Medium** items — 23 (fact-check pass, surfaces in the existing validator banner) is the cheapest unlock; 45 (rich print) lands the last Phase-4 item.
 
 
 
@@ -184,13 +182,37 @@ pnpm add react-to-print
 ```
 then `useReactToPrint({ content: () => printableRef.current })`.
 
-### 9 + 10 + 52 — Image pipeline (large; do as one PR)
-Server: add `GET /api/image-proxy?q=<keyword>&source=pexels|unsplash` that:
-- Calls the relevant API (env: `PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY`).
-- Caches the response by `(source, q)` for 24h in the same Postgres table or a small `image_cache` row.
-- Returns `{ url, attribution, licence }`.
-Client: replace `https://source.unsplash.com/featured/...?prompt` with a fetch to `/api/image-proxy`. Persist the resolved `{url, attribution, licence}` onto the slide as `image: { url, attribution, licence }` so it survives library save / email / PPTX export.
-PPTX: in `exportToPptx`, call `pSlide.addImage({ data: <fetched as base64>, x, y, w, h })` for any slide with a resolved `image.url`.
+### 9 + 10 + 52 — Image pipeline (DONE — feat/presentation-maker-image-pipeline)
+Server: `server/routes/image-proxy.ts` mounts at `/api/image-proxy` and exposes
+two endpoints:
+  - `GET /search?q=&source=auto|pexels|unsplash&perPage=N` — searches the
+    configured providers (env: `PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY`),
+    interleaves results from both, caches by `(source, perPage, q)` for 24h
+    in-memory. Returns `{ results: ResolvedImage[], cached, degraded? }`.
+  - `GET /fetch?url=&format=base64` — proxies bytes for a previously-resolved
+    CDN URL (allowed hosts: `images.pexels.com`, `images.unsplash.com`,
+    `plus.unsplash.com`). With `format=base64` returns a JSON-wrapped
+    `{ dataUrl }` so `pptxgenjs.addImage({ data })` can embed it directly.
+Schema: `PresentationSlideSchema` (shared/aiSchemas.ts) and the client
+local SlideContentSchema both gained an `image: { url, thumbUrl, width,
+height, source, photographer, photographerUrl, sourceUrl, attribution,
+licence, resolvedAt }` field. The boundary validators (library save,
+email digest) now accept and persist the licence record.
+Client: `client/src/lib/presentation-image-resolver.ts` exposes
+`resolveDeckImages(slides)` (concurrency-4 walker that skips already-
+resolved slides), `bestImageUrl(slide, w, h)` (renderer helper with
+legacy fallback) and `fetchImageAsDataUrl(url)` (proxy round-trip for
+PPTX embedding). PresentationMaker.tsx auto-resolves on generation
+completion and on refine when `image_prompt` changes; renderer overlays
+a tiny attribution chip on every image surface.
+PPTX: `exportToPptx` pre-fetches all slides' image bytes in parallel
+before the per-slide loop runs, then `pSlide.addImage({ data, sizing })`
+embeds the photo on title (split-image / dim full-bleed), image-left/
+right, quote-portrait and story-time renderers, with a small
+attribution pill rendered next to each image.
+Set `PEXELS_API_KEY` and/or `UNSPLASH_ACCESS_KEY` in `.env`. With no
+keys configured the proxy returns `degraded: true` and the renderer
+falls back to the legacy `source.unsplash.com/featured/...` shortcut.
 
 ### 11 — Programmatic diagrams (large)
 Build `client/src/components/PresentationDiagram.tsx` that switches on `slide.diagramKind` (new field) and renders SVG for: circuit, cell, water-cycle, food-chain, Venn, timeline, flowchart, equation-graph. Mirror the same SVG → `pptxgenjs` shapes in the PPTX painter (the lib supports `addShape` with rect/ellipse/line which matches what each diagram kind needs).
@@ -212,15 +234,18 @@ After generation, gather every factual claim sentence (slides of type content / 
 
 ## Branch state at end of session
 
-Branch: `feat/presentation-maker-overhaul`
-Commits: see `git log --oneline main..HEAD` on the branch.
-Files added:
+Latest branch: `feat/presentation-maker-image-pipeline` (Phase-4 items 9 + 10 + 52).
+Previous merged branch: `feat/presentation-maker-overhaul` → PR #114 (already in main).
+Files added this session:
+- `server/routes/image-proxy.ts`
+- `client/src/lib/presentation-image-resolver.ts`
+Files modified this session:
+- `client/src/pages/tools/PresentationMaker.tsx` (image fields in schema, renderer prefers `image.url`, PPTX painter embeds via `addImage`, auto-resolve on generation/refine)
+- `shared/aiSchemas.ts` (image field added to `PresentationSlideSchema`)
+- `server/index.ts` (mount `/api/image-proxy`)
+- `.env.example` (`PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY`)
+
+Files added in earlier sessions (still relevant):
 - `client/src/components/SlidePollQR.tsx`
 - `client/src/lib/presentation-validators.ts`
 - `client/src/lib/presentation-telemetry.ts`
-Files heavily modified:
-- `client/src/pages/tools/PresentationMaker.tsx` (~ +1,800 net lines)
-- `client/src/lib/subject-profiles.ts` (+12 subject profiles)
-- `shared/aiSchemas.ts` (+rich Presentation schema)
-- `server/routes/presentationLibrary.ts` (boundary validation)
-- `server/routes/ai.ts` (boundary validation on email route)
