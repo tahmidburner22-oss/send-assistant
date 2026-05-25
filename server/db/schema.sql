@@ -555,3 +555,27 @@ CREATE TABLE IF NOT EXISTS generation_cache (
   hits INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_gen_cache_inserted ON generation_cache(inserted_at);
+
+
+
+-- ── Generation Cost Log (PD13 — cost transparency UI surface) ────────────────
+-- One row per /generate call. Aggregated by client/src/lib/telemetryAggregators
+-- :aggregateTokenCostRollup into the admin spend panel. Append-only — never
+-- updated. Cached responses are logged with estimated_usd = 0 and cached = 1
+-- so the admin panel can show "saved" totals.
+CREATE TABLE IF NOT EXISTS generation_cost_log (
+  id TEXT PRIMARY KEY,
+  school_id TEXT,
+  user_id TEXT,
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  prompt_tokens INTEGER NOT NULL DEFAULT 0,
+  completion_tokens INTEGER NOT NULL DEFAULT 0,
+  estimated_usd REAL NOT NULL DEFAULT 0,
+  duration_ms INTEGER NOT NULL DEFAULT 0,
+  cache_key TEXT,
+  cached INTEGER NOT NULL DEFAULT 0,
+  occurred_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_gen_cost_school ON generation_cost_log(school_id, occurred_at);
+CREATE INDEX IF NOT EXISTS idx_gen_cost_occurred ON generation_cost_log(occurred_at);

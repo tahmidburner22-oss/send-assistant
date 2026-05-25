@@ -1034,6 +1034,25 @@ function PersonalisationSection() {
                 <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${(preferences.show11Plus ?? false) ? 'translate-x-4' : 'translate-x-0.5'}`} />
               </button>
             </div>
+
+            {/* PD13 — Generation cost transparency */}
+            <div className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/50">
+              <div>
+                <p className="text-xs font-medium text-foreground">Show generation cost</p>
+                <p className="text-xs text-muted-foreground">Display a small chip in the worksheet footer showing the time, cost and AI provider for each generation. Click the chip for a full breakdown. (Default: on.)</p>
+              </div>
+              <button
+                onClick={() => {
+                  // Default = ON, so undefined → false on first click.
+                  const next = !(preferences.costTransparency !== false);
+                  updatePreference("costTransparency", next);
+                  toast.success(next ? "Generation cost shown" : "Generation cost hidden");
+                }}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${preferences.costTransparency !== false ? 'bg-brand' : 'bg-muted-foreground/30'}`}
+              >
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${preferences.costTransparency !== false ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
           </div>
         )}
 
