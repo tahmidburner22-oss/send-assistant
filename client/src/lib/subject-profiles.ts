@@ -34,8 +34,20 @@ export type SubjectKey =
   | "physics"
   | "computer_science"
   | "french"
+  | "spanish"
+  | "german"
+  | "mfl_generic"
   | "art_design"
-  | "physical_education";
+  | "physical_education"
+  | "religious_studies"
+  | "sociology"
+  | "psychology"
+  | "business"
+  | "drama"
+  | "music"
+  | "media"
+  | "design_technology"
+  | "pshe";
 
 export interface SubjectPalette {
   /** Dark page / slide background (hex, no '#') */
@@ -491,6 +503,345 @@ export const SUBJECT_PROFILES: Record<SubjectKey, SubjectProfile> = {
 `,
     specAnchor: "AQA/Edexcel/OCR GCSE PE. Mix of theory and applied anatomy. Data-response questions with graphs. Real sports contexts for every principle.",
   },
+
+  // ── Phase 2 additions: 12 missing subjects ─────────────────────────────────
+  // Each follows the same 12-slide pedagogy spine as the original profiles so
+  // the prompt builder treats them identically — palette, slideStructure,
+  // domainPatterns and specAnchor are all populated.
+
+  spanish: {
+    key: "spanish",
+    label: "Spanish",
+    palette: { darkBg: "AA151B", lightBg: "FFF8F0", accent1: "F1BF00", accent2: "FFFFFF", cardDark: "8B1117", cardBorder: "F1BF00" },
+    slideStructure: `
+1.  Title — Spanish flag-inspired bg, topic + CEFR badge
+2.  Vocabulary — French-style 2-column cards (Spanish | English, gender)
+3.  Grammar rule — table with conjugation pattern
+4.  Worked sentences — examples highlighting target structure
+5.  Pronunciation — phoneme cards + IPA
+6.  Listening / reading stimulus + comprehension Qs
+7.  Speaking frame — sentence starters and discourse markers
+8.  Writing model with annotated connectives
+9.  Cultural context — Spain or Hispanophone world facts
+10. Common errors (anglicisms, false friends)
+11. Vocabulary reference table
+12. Exam technique — AQA/Edexcel task types
+`,
+    domainPatterns: `
+- All Spanish words in italic when inline with English
+- Gender markers: el (blue), la (red)
+- Accents and tildes: á é í ó ú ñ ¿ ¡ — render correctly
+- Conjugation tables: row headers yo/tú/él/nosotros/vosotros/ellos
+- Highlight discourse markers (sin embargo, además, por lo tanto) in accent
+`,
+    specAnchor: "AQA/Edexcel GCSE Spanish. CEFR-appropriate vocabulary, accent marks correct, model answers use connectives.",
+  },
+
+  german: {
+    key: "german",
+    label: "German",
+    palette: { darkBg: "000000", lightBg: "FFFAEC", accent1: "DD0000", accent2: "FFCE00", cardDark: "1A1A1A", cardBorder: "DD0000" },
+    slideStructure: `
+1.  Title — German flag-inspired stripe, CEFR badge
+2.  Vocabulary — 2-column cards with der/die/das colour-coded
+3.  Grammar rule — case table (Nom/Acc/Dat/Gen) with worked example
+4.  Worked sentences — word-order callouts (verb second, verb-final)
+5.  Pronunciation — umlauts, ß, ch tips
+6.  Listening/reading stimulus
+7.  Speaking frame
+8.  Writing model with sentence-builder
+9.  Cultural context — DACH region
+10. Common errors (article gender, word-order)
+11. Vocabulary reference table
+12. Exam technique
+`,
+    domainPatterns: `
+- Articles colour-coded: der (blue), die (red), das (green)
+- Cases as a 4-row table (Nom/Acc/Dat/Gen × der/die/das/plural)
+- Umlauts ä ö ü and ß rendered correctly
+- Verb-second rule highlighted in worked sentences
+`,
+    specAnchor: "AQA/Edexcel GCSE German. Cases correct, gender colour-coded, model answers use subordinate clauses.",
+  },
+
+  mfl_generic: {
+    key: "mfl_generic",
+    label: "Modern Foreign Languages",
+    palette: { darkBg: "1E1B4B", lightBg: "FFF8F0", accent1: "8B5CF6", accent2: "F59E0B", cardDark: "2D2456", cardBorder: "8B5CF6" },
+    slideStructure: `
+1.  Title — CEFR badge, target language flag
+2.  Vocabulary — bilingual 2-column cards
+3.  Grammar rule with conjugation/declension table
+4.  Worked sentences highlighting structure
+5.  Pronunciation tips
+6.  Listening/reading stimulus
+7.  Speaking frame
+8.  Writing model
+9.  Cultural context
+10. Common errors
+11. Vocabulary reference
+12. Exam technique
+`,
+    domainPatterns: `
+- Target-language words in italic when inline with English
+- Conjugation tables with subject pronoun row headers
+- Highlight discourse markers / connectives
+- Always provide model answers with annotated structures
+`,
+    specAnchor: "AQA/Edexcel GCSE MFL. CEFR-appropriate, accents and special characters correct.",
+  },
+
+  religious_studies: {
+    key: "religious_studies",
+    label: "Religious Studies",
+    palette: { darkBg: "451A03", lightBg: "FFFAF0", accent1: "C2410C", accent2: "EAB308", cardDark: "5C2710", cardBorder: "C2410C" },
+    slideStructure: `
+1.  Title — illuminated-manuscript feel, faith icon badges
+2.  Key teachings/scripture — quote box with citation
+3.  Beliefs about [topic] — comparison cards across denominations/faiths
+4.  Sources of authority — primary text excerpts
+5.  Religious responses — application to ethical dilemma
+6.  Non-religious / secular view — humanist/utilitarian counterpoint
+7.  Case study or contemporary issue
+8.  Key thinkers — card grid (Aquinas, Mill, Bentham, etc.)
+9.  Evaluation framework — strengths/weaknesses two-column
+10. Common misconceptions about the faith
+11. Key terms reference table
+12. Exam technique — 12-mark "evaluate" question structure
+`,
+    domainPatterns: `
+- Scripture/quote: italic in bordered box with full citation (book + chapter + verse)
+- Cross-tradition comparisons: clear column headers per denomination/faith
+- Frame "evaluate" answers with thesis + counter + reasoned conclusion
+- Avoid generalisations — use named scholars and specific texts
+- Cite real quotes — never paraphrase scripture without marking it as paraphrase
+`,
+    specAnchor: "AQA/Edexcel/OCR GCSE Religious Studies. Use named scholars, real scripture citations, balanced denominational coverage.",
+  },
+
+  sociology: {
+    key: "sociology",
+    label: "Sociology",
+    palette: { darkBg: "2E1065", lightBg: "FAF5FF", accent1: "9333EA", accent2: "F59E0B", cardDark: "3F1380", cardBorder: "9333EA" },
+    slideStructure: `
+1.  Title — academic editorial feel, paradigm badges
+2.  Key concept definition with example
+3.  Theoretical perspectives — Functionalist / Marxist / Feminist / Interactionist comparison
+4.  Key sociologists — name + study + key claim cards
+5.  Empirical evidence — study card (researcher, year, sample, finding)
+6.  Methods — strengths/weaknesses of methodological choice
+7.  Application to contemporary society
+8.  Synoptic links — across topics (family, education, crime, etc.)
+9.  Critical evaluation — counter-arguments and limitations
+10. Common misconceptions
+11. Key thinkers reference table
+12. Exam technique — 10/20/30-mark essay structure
+`,
+    domainPatterns: `
+- Always cite a named sociologist for any claim (Durkheim, Marx, Parsons, Willis, Becker, etc.)
+- Compare perspectives in side-by-side columns
+- Empirical studies: include researcher, year, sample size, key finding
+- Critical evaluation framing: "however..." "on the other hand..."
+- 30-mark essays: PEEL paragraphs with theory + evidence + evaluation
+`,
+    specAnchor: "AQA/Edexcel/OCR/Eduqas GCSE/A-level Sociology. Named sociologists with real studies. Balanced theoretical perspectives.",
+  },
+
+  psychology: {
+    key: "psychology",
+    label: "Psychology",
+    palette: { darkBg: "0C2E5E", lightBg: "F0F7FF", accent1: "1D4ED8", accent2: "06B6D4", cardDark: "0F3D7C", cardBorder: "1D4ED8" },
+    slideStructure: `
+1.  Title — clinical clean feel, approach badges
+2.  Key concept definition with example
+3.  Approaches — Cognitive / Biological / Behaviourist / Psychodynamic / Humanistic comparison
+4.  Key studies — Milgram, Asch, Loftus, etc., as named cards
+5.  Methodology — IV/DV/sample/results structure card
+6.  Ethics — Gold / BPS guidelines callouts where relevant
+7.  Theory worked example — applying to a real-world scenario
+8.  Evaluation — strengths/weaknesses + counter-evidence
+9.  Application to therapy or real life
+10. Common misconceptions (e.g. correlation vs causation)
+11. Key terms reference table (operationalisation, demand characteristics, etc.)
+12. Exam technique — 8/12/16-mark essay structure
+`,
+    domainPatterns: `
+- Studies must include researcher, year, IV, DV, sample, key finding
+- IV/DV explicitly labelled in any methodology slide
+- Ethical issues flagged where present (deception, consent, withdrawal)
+- Counter-evidence: name the contradicting study
+- Statistical claims: include p-value or effect size where relevant
+`,
+    specAnchor: "AQA/Edexcel GCSE/A-level Psychology. Named studies with real methodology. BPS ethics framework. Quantitative + qualitative balance.",
+  },
+
+  business: {
+    key: "business",
+    label: "Business Studies",
+    palette: { darkBg: "0F172A", lightBg: "F8FAFC", accent1: "0EA5E9", accent2: "FACC15", cardDark: "1E293B", cardBorder: "0EA5E9" },
+    slideStructure: `
+1.  Title — corporate-clean feel, sector badges
+2.  Key concept definition with real-company example
+3.  Stakeholders — 6-card grid (owners, employees, customers, suppliers, gov, community)
+4.  Calculation worked example — formula + substitution + answer
+5.  Real case study — named company with year + facts + figures
+6.  Internal vs external factors — two-column compare
+7.  Decision tree / SWOT / PESTLE framework applied
+8.  Financial data table — interpret a P&L or cash flow snippet
+9.  Marketing / Operations / Finance / HR mini-strands
+10. Common errors (margin vs markup, gross vs net, fixed vs variable)
+11. Key formulas reference table
+12. Exam technique — 9/12-mark analyse/evaluate structure
+`,
+    domainPatterns: `
+- Always cite real companies for case studies (Apple, Tesco, Unilever, etc.)
+- Calculations show formula → substitution → answer with units (% or £)
+- Frameworks (SWOT, PESTLE, Boston Matrix, Ansoff) drawn as 2×2 grids with shapes
+- Numbers always include units (£, %, units sold)
+- Evaluation: justified judgement at the end
+`,
+    specAnchor: "AQA/Edexcel/OCR GCSE Business. Real companies, accurate formulas, justified evaluation in long-answer questions.",
+  },
+
+  drama: {
+    key: "drama",
+    label: "Drama",
+    palette: { darkBg: "1F1147", lightBg: "FAF5FF", accent1: "DB2777", accent2: "F59E0B", cardDark: "2C175B", cardBorder: "DB2777" },
+    slideStructure: `
+1.  Title — stage-light dark bg, practitioner badges
+2.  Practitioner study — Stanislavski / Brecht / Artaud / Berkoff / Frantic Assembly card
+3.  Key techniques — physicalisation, status, ensemble, etc., as cards
+4.  Set text scene analysis — extract in quote box + technique annotations
+5.  Vocal & physical skills — checklist
+6.  Devising stimulus — image/text/object as starting point
+7.  Live theatre review — production card (company, venue, date, key scene)
+8.  Role-on-the-wall / hot-seating / forum theatre activities
+9.  Design elements — lighting / sound / set / costume per character
+10. Common errors (describing vs analysing, plot summary vs effect)
+11. Key terminology reference
+12. Exam technique — Component 3 written paper structure
+`,
+    domainPatterns: `
+- Practitioner names always bold + italicised on first use
+- Live theatre: real venue, real production company, real date
+- Quote boxes for extracts, with line numbers and character attribution
+- Frame analysis as "the audience experiences X because of [technique]"
+- Avoid plot summary — every point must analyse intention/effect
+`,
+    specAnchor: "AQA/Edexcel/OCR/Eduqas GCSE Drama. Named practitioners with techniques. Real live theatre productions cited.",
+  },
+
+  music: {
+    key: "music",
+    label: "Music",
+    palette: { darkBg: "0E1424", lightBg: "F8F9FF", accent1: "EF4444", accent2: "F59E0B", cardDark: "1A2138", cardBorder: "EF4444" },
+    slideStructure: `
+1.  Title — stave-line decoration, set work badge
+2.  Set work analysis — composer, year, genre, key facts
+3.  Musical elements — Tempo / Dynamics / Pitch / Rhythm / Texture / Tonality cards
+4.  Score extract — bars highlighted with technique annotation
+5.  Performance technique cards (instrument-specific)
+6.  Composition stimulus — chord progression or motif
+7.  Genre/style context — historical/cultural background
+8.  Listening identification — short audio cue references
+9.  Comparative listening — two excerpts side-by-side
+10. Common errors (describing what you hear vs analysing)
+11. Key terminology reference
+12. Exam technique — listening paper structure
+`,
+    domainPatterns: `
+- Composer names with dates (Bach 1685–1750)
+- Bar numbers cited for any score reference
+- Chord names use standard notation (C, Am, G7, Dsus4)
+- Tempo markings in Italian (Allegro, Andante) with bpm where relevant
+- Frame as "the composer creates X effect by Y technique"
+`,
+    specAnchor: "AQA/Edexcel/Eduqas GCSE Music. Set works with bar numbers. Real-genre conventions. Composition tied to a brief.",
+  },
+
+  media: {
+    key: "media",
+    label: "Media Studies",
+    palette: { darkBg: "0B0F1A", lightBg: "F1F5F9", accent1: "F472B6", accent2: "06B6D4", cardDark: "131A2D", cardBorder: "F472B6" },
+    slideStructure: `
+1.  Title — magazine-cover feel, set product badges
+2.  Set product analysis — title, year, audience, ownership card
+3.  Media language — Barthes / Todorov / Levi-Strauss / Propp theorist cards
+4.  Representation — gender / ethnicity / age / class / region per product
+5.  Audience theory — Hall / Blumler-Katz / Bandura applied
+6.  Industry context — ownership, regulation, distribution
+7.  Genre conventions cards
+8.  Comparative analysis — two set products side-by-side
+9.  Wider contexts — historical / political / social
+10. Common errors (description vs analysis)
+11. Key theorist reference table
+12. Exam technique — Component 2 question types
+`,
+    domainPatterns: `
+- Always cite a named theorist with their concept (Barthes — denotation/connotation)
+- Set products: real titles, dates, audience demographics
+- Use the Eduqas / OCR / AQA-prescribed set products only
+- Frame as "the producer constructs X representation by Y choice"
+- Reception theory: name the reading position (preferred / negotiated / oppositional)
+`,
+    specAnchor: "AQA/Eduqas/OCR GCSE Media. Set products from the spec. Named theorists with real concepts.",
+  },
+
+  design_technology: {
+    key: "design_technology",
+    label: "Design & Technology",
+    palette: { darkBg: "0E1A2A", lightBg: "F0F7FF", accent1: "0284C7", accent2: "F97316", cardDark: "162B47", cardBorder: "0284C7" },
+    slideStructure: `
+1.  Title — workshop-feel dark bg, material category badges
+2.  Materials — properties cards (timber, polymer, metal, textile, paper)
+3.  Manufacturing process — step-by-step with shape diagrams
+4.  Tools & equipment — health & safety callouts
+5.  Iterative design — sketch → prototype → test cycle
+6.  CAD/CAM context — software/process card
+7.  Designer study — Dyson / Conran / Eames / Newson card
+8.  Material costs / sustainability / 6 Rs framework
+9.  Specification & user-centred design checklist
+10. Common errors (describe vs evaluate, vague specifications)
+11. Key terminology reference
+12. Exam technique — written paper structure
+`,
+    domainPatterns: `
+- Materials: include name, key property, typical use, cost band
+- Manufacturing: numbered steps with safety considerations flagged
+- Designer names with dates and signature product
+- Sustainability: explicit 6 Rs (Reduce, Reuse, Recycle, Refuse, Repair, Rethink)
+- CAD/CAM: name the software (Fusion 360, SolidWorks, TinkerCAD)
+`,
+    specAnchor: "AQA/Edexcel/OCR/Eduqas GCSE D&T. Real designers, accurate material properties, named tools and processes.",
+  },
+
+  pshe: {
+    key: "pshe",
+    label: "PSHE",
+    palette: { darkBg: "164E63", lightBg: "F0FDFF", accent1: "0891B2", accent2: "FACC15", cardDark: "1F6082", cardBorder: "0891B2" },
+    slideStructure: `
+1.  Title — calm, supportive tone, theme badges (Health/Relationships/Living)
+2.  Lesson aim — pupil-friendly objective
+3.  Ground rules — confidentiality, respect, opt-out
+4.  Concept introduction — definition + healthy/unhealthy contrast
+5.  Real-life scenario / dilemma cards
+6.  Skills practice — what to say / how to respond cards
+7.  Discussion frame — sentence starters
+8.  Where to go for help — named services with contact info
+9.  Reflection — anonymous feedback or check-in
+10. Common misconceptions (especially around stigma)
+11. Key terminology reference
+12. Exit ticket — one thing I'll do differently
+`,
+    domainPatterns: `
+- Always include "where to go for help" — Childline, Samaritans, school safeguarding lead
+- Avoid graphic detail — focus on skills and decision-making
+- Sentence starters for sensitive discussion ("It's OK to feel..." "I think...")
+- Anonymity options for any reflective question
+- Clear opt-out language for sensitive topics
+`,
+    specAnchor: "DfE PSHE statutory guidance. Age-appropriate. Always signposts to support services.",
+  },
 };
 
 // ─── Auto-detection ───────────────────────────────────────────────────────────
@@ -511,7 +862,20 @@ export function detectSubject(input: string | undefined | null): SubjectKey {
     [/(histor|world war|empire|revolution|civil war|cold war|tudor|medieval)/, "history"],
     [/(english|poem|novel|shakespeare|macbeth|metaphor|theme|character|literature|language paper)/, "english"],
     [/(geograph|climate|migration|urbanisation|river|coastal|earthquake|tectonic|population)/, "geography"],
+    // Phase 2 subject additions
+    [/(spanish|español|vocabulario|conjugaci)/, "spanish"],
+    [/(german|deutsch|grammatik|akkusativ|dativ)/, "german"],
+    [/(modern foreign language|\bmfl\b|language learning)/, "mfl_generic"],
     [/(french|français|vocabulaire|grammaire|conjugaison)/, "french"],
+    [/(religious studies|\brs\b|religion|christian|islam|jud|hindu|buddh|sikh|theolog)/, "religious_studies"],
+    [/(sociolog|durkheim|marx(ism)?|functionalism|interactionism|feminism)/, "sociology"],
+    [/(psycholog|cognitive|behaviou?ral|milgram|asch|loftus|freud|piaget)/, "psychology"],
+    [/(business|economics|marketing|enterprise|finance|stakeholder)/, "business"],
+    [/(drama|theatre|theater|stanislavski|brecht|playwright|stage)/, "drama"],
+    [/(\bmusic\b|composer|melody|harmony|rhythm|tonality|score|stave)/, "music"],
+    [/(media studies|representation|audience theory|barthes|todorov)/, "media"],
+    [/(design technology|\bdt\b|workshop|cad|cam|materials|polymer|timber)/, "design_technology"],
+    [/(pshe|relationships education|wellbeing|mental health lesson|drugs lesson)/, "pshe"],
     [/(\bart\b|design|artist|sketchbook|painting|sculpture|composition|colour theory)/, "art_design"],
     [/(physical education|\bpe\b|muscle|training|fitness|sport|anatomy|exercise)/, "physical_education"],
     [/(science)/, "science"], // generic science fallback
