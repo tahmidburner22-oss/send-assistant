@@ -15,9 +15,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [6, 8],
+    "readingAgeRange": [
+      6,
+      8
+    ],
     "estimatedTokens": 3500
   },
   {
@@ -36,9 +40,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [8, 10],
+    "readingAgeRange": [
+      8,
+      10
+    ],
     "estimatedTokens": 3500
   },
   {
@@ -57,9 +65,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [9, 11],
+    "readingAgeRange": [
+      9,
+      11
+    ],
     "estimatedTokens": 3500
   },
   {
@@ -78,9 +90,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [10, 12],
+    "readingAgeRange": [
+      10,
+      12
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -99,9 +115,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [11, 13],
+    "readingAgeRange": [
+      11,
+      13
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -120,9 +140,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [13, 15],
+    "readingAgeRange": [
+      13,
+      15
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -141,9 +165,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [11, 13],
+    "readingAgeRange": [
+      11,
+      13
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -162,9 +190,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [12, 14],
+    "readingAgeRange": [
+      12,
+      14
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -183,9 +215,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [12, 14],
+    "readingAgeRange": [
+      12,
+      14
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -204,9 +240,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [13, 15],
+    "readingAgeRange": [
+      13,
+      15
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -225,9 +265,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [12, 14],
+    "readingAgeRange": [
+      12,
+      14
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -246,9 +290,13 @@
       "word-bank-deduped",
       "no-foreign-diagrams",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [13, 15],
+    "readingAgeRange": [
+      13,
+      15
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -271,9 +319,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [13, 16],
+    "readingAgeRange": [
+      13,
+      16
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -296,9 +348,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -321,9 +377,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -346,9 +406,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -371,9 +435,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4000
   },
   {
@@ -396,9 +464,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4500
   },
   {
@@ -421,9 +493,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4500
   },
   {
@@ -446,9 +522,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4500
   },
   {
@@ -470,9 +550,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4500
   },
   {
@@ -495,9 +579,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4500
   },
   {
@@ -520,9 +608,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4500
   },
   {
@@ -544,9 +636,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [14, 17],
+    "readingAgeRange": [
+      14,
+      17
+    ],
     "estimatedTokens": 4500
   },
   {
@@ -569,9 +665,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [16, 18],
+    "readingAgeRange": [
+      16,
+      18
+    ],
     "estimatedTokens": 5000
   },
   {
@@ -593,9 +693,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [16, 18],
+    "readingAgeRange": [
+      16,
+      18
+    ],
     "estimatedTokens": 5000
   },
   {
@@ -617,9 +721,13 @@
       "no-foreign-diagrams",
       "spec-ref-present",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [16, 18],
+    "readingAgeRange": [
+      16,
+      18
+    ],
     "estimatedTokens": 5000
   },
   {
@@ -641,9 +749,13 @@
       "no-foreign-diagrams",
       "send-fidelity-floor",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [9, 12],
+    "readingAgeRange": [
+      9,
+      12
+    ],
     "qaScoreFloor": 60,
     "estimatedTokens": 4000
   },
@@ -667,9 +779,13 @@
       "no-foreign-diagrams",
       "send-fidelity-floor",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [11, 14],
+    "readingAgeRange": [
+      11,
+      14
+    ],
     "qaScoreFloor": 60,
     "estimatedTokens": 4000
   },
@@ -692,9 +808,13 @@
       "no-foreign-diagrams",
       "send-fidelity-floor",
       "qa-score-floor",
-      "reading-age-in-range"
+      "reading-age-in-range",
+      "model-judge-axis-floor"
     ],
-    "readingAgeRange": [10, 13],
+    "readingAgeRange": [
+      10,
+      13
+    ],
     "qaScoreFloor": 60,
     "estimatedTokens": 4000
   }

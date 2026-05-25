@@ -42,25 +42,49 @@ import { pickGenerator, type Generator } from "./generators";
 import {
   renderMarkdownSummary,
   writeJobSummary,
+  aggregateAxisScores,
+  medianHumanScores,
 } from "./summariser";
-import type { EvalFixture, EvalReport, EvalReportRow } from "./types";
+import type {
+  AxisScores,
+  AxisScoresAggregate,
+  EvalFixture,
+  EvalReport,
+  EvalReportRow,
+} from "./types";
+import {
+  loadComparisonCorpus,
+  COMPARISON_CORPUS_VERSION,
+  COMPARISON_CORPUS_EXPECTED_SIZE,
+} from "./comparisonCorpus";
+import {
+  pickRater,
+  assessProviderIsolation,
+  type Rater,
+} from "./modelJudgeRater";
+import { loadHumanScoresCsv } from "./humanScoresLoader";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR = join(HERE, "fixtures");
 const REPORT_PATH = join(HERE, "eval-report.json");
 
-const EVAL_HARNESS_VERSION = "1.0.0";
+const EVAL_HARNESS_VERSION = "1.1.0";
 
 /**
- * Load every `*.json` fixture in the corpus, in stable id order.
- * Skips files starting with `_` (templates / READMEs).
+ * Sprint 1.E — fixture with the corpus tag stamped on at load time.
+ * The runner threads `corpus` through to the report row so the
+ * dashboard can split aggregates by corpus origin.
  */
-async function loadFixtures(): Promise<EvalFixture[]> {
+type TaggedFixture = EvalFixture & { corpus: "fixtures" | "comparison" };
+
+/** Load every `*.json` fixture in the per-file corpus, in stable
+ *  id order. Skips files starting with `_` (templates / READMEs). */
+async function loadFileFixtures(): Promise<TaggedFixture[]> {
   const entries = await readdir(FIXTURES_DIR);
   const files = entries
     .filter((f) => f.endsWith(".json") && !f.startsWith("_"))
     .sort();
-  const fixtures: EvalFixture[] = [];
+  const fixtures: TaggedFixture[] = [];
   for (const file of files) {
     const raw = await readFile(join(FIXTURES_DIR, file), "utf8");
     const fixture = JSON.parse(raw) as EvalFixture;
@@ -69,21 +93,60 @@ async function loadFixtures(): Promise<EvalFixture[]> {
       // Sensible default: every built-in rule.
       fixture.rules = [...ALL_RULE_NAMES];
     }
-    fixtures.push(fixture);
+    fixtures.push({ ...fixture, corpus: "fixtures" });
   }
   return fixtures;
 }
 
-/** Pre-flight cost estimate; aborts the run when over budget. */
+/**
+ * Sprint 1.E — load fixtures from one or both corpora.
+ *
+ *   EVAL_CORPUS=fixtures  (default for local dev) — per-file only
+ *   EVAL_CORPUS=comparison              — comparison-corpus.json only
+ *   EVAL_CORPUS=both      (default for CI nightly) — concatenate
+ *
+ * `EVAL_CORPUS` set on the env wins; the runner falls back to
+ * "fixtures" otherwise. CI sets EVAL_CORPUS=both so nightly always
+ * runs both — local dev gets the fast path by default.
+ *
+ * Returns ordered list with stable ids (per-file fixtures first,
+ * comparison entries after — alphabetical within each).
+ */
+async function loadAllFixtures(): Promise<TaggedFixture[]> {
+  const which = (process.env.EVAL_CORPUS ?? "fixtures").toLowerCase();
+  const out: TaggedFixture[] = [];
+  if (which === "fixtures" || which === "both") {
+    out.push(...(await loadFileFixtures()));
+  }
+  if (which === "comparison" || which === "both") {
+    const corpus = await loadComparisonCorpus();
+    for (const f of corpus) {
+      const copy = { ...f, corpus: "comparison" as const };
+      if (!copy.rules || copy.rules.length === 0) {
+        copy.rules = [...ALL_RULE_NAMES];
+      }
+      out.push(copy);
+    }
+  }
+  if (out.length === 0) {
+    throw new Error(
+      `No fixtures loaded. EVAL_CORPUS="${which}" — expected fixtures|comparison|both`,
+    );
+  }
+  return out;
+}
+
+/** Pre-flight cost estimate; aborts the run when over budget.
+ *  Sprint 1.E — sums generator + rater cost per fixture, since the
+ *  rater also makes (potentially) live LLM calls. */
 function checkBudget(
   fixtures: EvalFixture[],
   generator: Generator,
+  rater: Rater,
   budgetUsd: number,
 ): { ok: true; estimatedTotal: number } | { ok: false; estimatedTotal: number } {
-  const estimatedTotal = fixtures.reduce(
-    (sum) => sum + generator.estimatedCostUsd,
-    0,
-  );
+  const perFixture = generator.estimatedCostUsd + rater.estimatedCostUsd;
+  const estimatedTotal = fixtures.length * perFixture;
   return estimatedTotal > budgetUsd
     ? { ok: false, estimatedTotal }
     : { ok: true, estimatedTotal };
@@ -116,16 +179,22 @@ function emptyReport(
 }
 
 /** Run one fixture end-to-end. Catches generator + post-validator
- *  errors and rolls them up into the row's `generationError`. */
+ *  + rater errors and rolls them up into the row's `generationError`.
+ *  Sprint 1.E — also invokes the model-judge rater after post-validators
+ *  and stamps scores onto both `metadata.modelJudgeScores` (so the
+ *  model-judge-axis-floor rule sees them) and `row.modelJudgeScores`
+ *  (so the report row carries them through to the markdown summary). */
 async function runFixture(
-  fixture: EvalFixture,
+  fixture: TaggedFixture,
   generator: Generator,
+  rater: Rater,
 ): Promise<EvalReportRow> {
   const t0 = Date.now();
   const row: EvalReportRow = {
     id: fixture.id,
     title: fixture.title,
     bucket: fixture.bucket,
+    corpus: fixture.corpus,
     passed: false,
     failedRules: [],
     warnings: [],
@@ -149,6 +218,30 @@ async function runFixture(
     const stamped =
       (ws.metadata?.postValidatorWarnings as string[] | undefined) ?? [];
     row.warnings = stamped;
+
+    // Sprint 1.E — invoke model-judge AFTER post-validators run so
+    // the rater sees the final stamped warnings + qaScore. Stamp
+    // onto metadata so the model-judge-axis-floor rule (read by
+    // evaluateRules just below) can see the scores. Errors here
+    // are tolerated — a judge failure shouldn't fail the row;
+    // the rater's own fall-back-to-stub policy means a stub-grade
+    // score still lands.
+    try {
+      const rating = await rater.rate(ws, fixture);
+      // Stamp into metadata for the rule's read path.
+      ws.metadata = {
+        ...(ws.metadata ?? {}),
+        modelJudgeScores: rating.scores,
+        modelJudgeRationale: rating.rationale,
+      };
+      row.modelJudgeScores = rating.scores;
+      row.modelJudgeRationale = rating.rationale;
+    } catch (err) {
+      console.warn(
+        `[eval] rater errored on ${fixture.id} (${err instanceof Error ? err.message : String(err)}); continuing without scores.`,
+      );
+    }
+
     const evaluation = evaluateRules(ws, fixture);
     row.passed = evaluation.passed;
     row.failedRules = evaluation.failedRules;
@@ -158,7 +251,7 @@ async function runFixture(
   }
 
   row.generationMs = Date.now() - t0;
-  row.costUsd = generator.estimatedCostUsd;
+  row.costUsd = generator.estimatedCostUsd + rater.estimatedCostUsd;
   return row;
 }
 
@@ -188,20 +281,29 @@ export async function main(): Promise<EvalReport> {
   const startedAt = new Date(startedWall).toISOString();
 
   const generator = pickGenerator();
+  const rater = pickRater();
   const budgetUsd = parseFloat(process.env.EVAL_BUDGET_USD ?? "1.00");
   const bailOnFail =
     process.env.EVAL_BAIL_ON_FAIL === "1" ||
     process.argv.includes("--bail");
 
-  const fixtures = await loadFixtures();
+  // Sprint 1.E — cross-provider isolation guard. Warns by default;
+  // throws when EVAL_JUDGE_STRICT_ISOLATION=1.
+  const isolation = assessProviderIsolation(rater.provider, generator.name);
+  if (isolation.warning) {
+    console.warn(isolation.warning);
+  }
+
+  const fixtures = await loadAllFixtures();
   if (fixtures.length === 0) {
     throw new Error(`No fixtures found under ${FIXTURES_DIR}`);
   }
+  const corpora = new Set(fixtures.map((f) => f.corpus));
   console.log(
-    `[eval] mode=${generator.name} fixtures=${fixtures.length} budget=$${budgetUsd.toFixed(2)} bail=${bailOnFail}`,
+    `[eval] mode=${generator.name} judge=${rater.name}/${rater.provider} fixtures=${fixtures.length} (corpora: ${[...corpora].join(",")}) budget=$${budgetUsd.toFixed(2)} bail=${bailOnFail}`,
   );
 
-  const budgetCheck = checkBudget(fixtures, generator, budgetUsd);
+  const budgetCheck = checkBudget(fixtures, generator, rater, budgetUsd);
   if (!budgetCheck.ok) {
     const totalMs = Date.now() - startedWall;
     const report = emptyReport(
@@ -218,9 +320,39 @@ export async function main(): Promise<EvalReport> {
     return report;
   }
 
+  // Sprint 1.E — optional human-scores CSV. Loaded once before the
+  // run loop so each row gets its scores attached at construction
+  // time. Path lives outside the worksheet-eval dir so the CSV can
+  // be checked in alongside research artefacts without bloating
+  // the harness folder.
+  let humanScoresPath: string | undefined;
+  let humanScoresIndex: Map<string, EvalReportRow["humanScores"]> | undefined;
+  const humanScoresEnv = process.env.EVAL_HUMAN_SCORES_CSV;
+  if (humanScoresEnv) {
+    try {
+      const loaded = await loadHumanScoresCsv(humanScoresEnv);
+      humanScoresPath = humanScoresEnv;
+      humanScoresIndex = new Map();
+      for (const [fid, entries] of loaded.byFixture) {
+        humanScoresIndex.set(fid, entries);
+      }
+      console.log(
+        `[eval] human-scores loaded: ${loaded.totalRows} rows / ${loaded.uniqueRaters} raters from ${humanScoresEnv}`,
+      );
+    } catch (err) {
+      console.warn(
+        `[eval] human-scores load failed (${err instanceof Error ? err.message : String(err)}); continuing without humanScores.`,
+      );
+    }
+  }
+
   const rows: EvalReportRow[] = [];
   for (const fixture of fixtures) {
-    const row = await runFixture(fixture, generator);
+    const row = await runFixture(fixture, generator, rater);
+    if (humanScoresIndex) {
+      const hs = humanScoresIndex.get(fixture.id);
+      if (hs && hs.length > 0) row.humanScores = hs;
+    }
     rows.push(row);
     const status = row.generationError
       ? "ERR"
@@ -228,7 +360,7 @@ export async function main(): Promise<EvalReport> {
       ? "PASS"
       : "FAIL";
     console.log(
-      `[eval] ${status.padEnd(4)} ${fixture.id} (${fixture.bucket}) ${row.generationMs}ms` +
+      `[eval] ${status.padEnd(4)} ${fixture.id} (${fixture.bucket}/${fixture.corpus}) ${row.generationMs}ms` +
         (row.failedRules.length > 0
           ? ` — ${row.failedRules.map((r) => r.rule).join(", ")}`
           : ""),
@@ -244,6 +376,25 @@ export async function main(): Promise<EvalReport> {
     totalCostUsd: rows.reduce((s, r) => s + r.costUsd, 0),
   };
 
+  // Sprint 1.E — per-axis aggregates over the rated rows.
+  const judgeBlocks: Array<AxisScores | undefined> = rows.map(
+    (r) => r.modelJudgeScores,
+  );
+  const modelJudgeAggregate: AxisScoresAggregate | undefined = judgeBlocks.some(
+    Boolean,
+  )
+    ? aggregateAxisScores(judgeBlocks)
+    : undefined;
+
+  const humanBlocks: Array<AxisScores | null> = rows.map((r) =>
+    medianHumanScores(r.humanScores),
+  );
+  const humanScoresAggregate: AxisScoresAggregate | undefined = humanBlocks.some(
+    Boolean,
+  )
+    ? aggregateAxisScores(humanBlocks)
+    : undefined;
+
   const report: EvalReport = {
     startedAt,
     totalMs: Date.now() - startedWall,
@@ -255,6 +406,17 @@ export async function main(): Promise<EvalReport> {
     summary,
     ruleStats,
     rows,
+    modelJudgeProvider: rater.provider,
+    modelJudgeModel: rater.model || undefined,
+    modelJudgeAggregate,
+    humanScoresPath,
+    humanScoresAggregate,
+    comparisonCorpus: corpora.has("comparison")
+      ? {
+          version: COMPARISON_CORPUS_VERSION,
+          size: COMPARISON_CORPUS_EXPECTED_SIZE,
+        }
+      : undefined,
   };
 
   await writeFile(REPORT_PATH, JSON.stringify(report, null, 2));

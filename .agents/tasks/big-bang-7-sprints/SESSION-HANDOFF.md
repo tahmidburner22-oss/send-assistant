@@ -5,22 +5,23 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1.A–1.D
+Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1.A–1.E
 shipped.** Branch `big-bang-7/pr-1-measure-and-prompt-arch`. Sprint
-1.D added the model-judge rater: `Rater` interface
-(`name`/`provider`/`model`/`estimatedCostUsd`/`rate`), deterministic
-`stubRater` (qaScore-band → axis 1–5, warning classification per
-axis, capped at -3, clamped [1,5], sendAlignment null without
-sendNeed), `liveRater` (calls `callAIMessages` with rubric-grounded
-system prompt, json_object response format, falls back to stub on
-parse/transport error), `pickRater()` factory honouring
-EVAL_JUDGE_MODE=stub|live|off, `assessProviderIsolation` guard
-(warn / error via EVAL_JUDGE_STRICT_ISOLATION=1), and
-`parseJudgeResponse` (handles raw JSON, fenced blocks, JSON
-wrapped in commentary, rejects out-of-range axes). 41-test lock
-at `server/tests/modelJudgeRater.test.ts`. Next chunk: Sprint 1.E
-— runner integration (invoke rater + comparison corpus, populate
-report-level aggregates).
+1.E wired the eval harness: runner.ts now (a) loads either / both
+corpora via `EVAL_CORPUS=fixtures|comparison|both` (default
+"fixtures"), (b) picks rater via `pickRater()` and invokes after
+post-validators, stamping scores onto both `metadata.modelJudgeScores`
+and `row.modelJudgeScores`, (c) cost-guards against
+generator+rater per fixture, (d) runs `assessProviderIsolation` at
+startup, (e) computes `modelJudgeAggregate` + `humanScoresAggregate`
++ `comparisonCorpus` metadata at report level, (f) optionally reads
+`EVAL_HUMAN_SCORES_CSV` via new `humanScoresLoader.ts` (CSV-aware
+parser handling quoted notes + escaped quotes + null-for-empty axes
++ header validation). All 30 comparison-corpus fixtures now opt-in
+to `model-judge-axis-floor` rule so the new wiring is actually
+exercised end-to-end. EVAL_HARNESS_VERSION bumped to 1.1.0.
+17-test lock at `server/tests/humanScoresLoader.test.ts`. Next
+chunk: Sprint 1.F — generate baseline + extend nightly workflow.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -168,97 +169,119 @@ Goal: complete the next un-shipped item in "What is next" below.
       `buildJudgeUserMessage`. JSON-object response format requested.
       Parses via `parseJudgeResponse` (handles raw JSON / fenced /
       wrapped-in-commentary / rejects out-of-range axes).
-      **Falls back to stub on any failure** (parse error, provider
-      error, missing key) so the runner never aborts on judge issues
-      — better to ship a complete report with mostly-stub scores
-      than abort the whole run.
-    - `pickRater()`: env-driven factory.
-      EVAL_JUDGE_MODE=stub (default) / live / off.
+      **Falls back to stub on any failure** so the runner never
+      aborts on judge issues.
+    - `pickRater()`: env-driven factory. EVAL_JUDGE_MODE=stub
+      (default) / live / off.
     - `offRater`: returns all-null scores + explicit "disabled"
-      rationale; the runner detects this and skips the rubric block
-      in the markdown summary.
+      rationale; runner detects this and skips the rubric block.
     - `assessProviderIsolation(judge, generator)`: returns
-      `{ isolated, warning }`. Stub or mock on either side is
-      treated as isolated (offline, nothing to compare). Same
-      provider on both sides yields a warning by default;
-      EVAL_JUDGE_STRICT_ISOLATION=1 upgrades to a thrown error.
-    - `shimLocalStorageForJudge` + `mergeJudgeKeys`: same dynamic
-      `localStorage` shim pattern that `liveGenerator` uses, but
-      non-destructive — judge keys are merged into existing
-      generator keys without overwriting them. EVAL_JUDGE_*_KEY
-      envs override the corresponding EVAL_*_KEY when both are
-      set, so a single run can use different providers for
-      generator vs judge.
-    - `RATIONALE_TRUNCATE_AT = 500`: rationale strings are
-      truncated with `...` elision to keep eval-report.json a
-      reasonable size when 30+ fixtures contribute rationales.
+      `{ isolated, warning }`. Stub/mock on either side = isolated.
+      Same provider both sides → warning (or thrown error under
+      EVAL_JUDGE_STRICT_ISOLATION=1).
+    - `shimLocalStorageForJudge` + `mergeJudgeKeys`:
+      non-destructive merge with any existing generator-side
+      localStorage seed.
+    - `RATIONALE_TRUNCATE_AT = 500`: rationale strings truncated
+      with ellipsis to keep report file size sensible.
   - `server/tests/modelJudgeRater.test.ts` (new) — 41 vitest cases
-    across 9 describe blocks:
-    - `bandFromQaScore`: 5 band edges + missing/NaN default-to-3.
-    - `classifyWarning`: 7 cases, one per axis + unrecognised
-      warning returns empty.
-    - `computeStubScores`: 9 cases — determinism, sendAlignment
-      null without sendNeed, sendAlignment numeric with sendNeed,
-      no-warning baseline, single-warning per-axis deduction,
-      cap-at-3 protection, [1,5] clamp, rationale composition,
-      missing-qaScore default.
-    - `stubRater`: 3 cases — name/provider stamping, async
-      rate-pure-equivalence, $0 cost.
-    - `parseJudgeResponse`: 7 cases — clean JSON, fenced JSON,
-      JSON-in-commentary, completely invalid, out-of-range,
-      null-non-nullable, rationale truncation.
-    - `buildJudgeUserMessage`: 4 cases — full param coverage,
-      non-SEND null instruction, SEND-flagged profile name,
-      section content compact rendering.
-    - `truncateRationale`: 2 cases — within budget, over budget.
-    - `assessProviderIsolation`: 6 cases — stub on either side,
-      providers differ, providers match (warn), strict + match
-      (throw), strict + differ (no throw).
-    - `pickRater + offRater`: 5 cases — default stub, explicit
-      stub/live/off selection, offRater returns all-null.
+    across 9 describe blocks (bandFromQaScore 6, classifyWarning 7,
+    computeStubScores 9, stubRater 3, parseJudgeResponse 7,
+    buildJudgeUserMessage 4, truncateRationale 2,
+    assessProviderIsolation 6, pickRater + offRater 5).
+
+- **PR-1 / Sprint 1.E — Runner integration + human-scores loader.**
+  Four files touched (two new):
+  - `server/tests/worksheet-eval/humanScoresLoader.ts` (new) — pure
+    CSV parser (handles double-quoted cells, escaped `""` quotes,
+    Windows CRLF, blank lines, trailing newline) +
+    `loadHumanScoresCsv(path)` filesystem reader. Empty axis cells
+    become `null` (rubric n/a rule), out-of-range cells throw with
+    full row+axis context. Header validated against the rubric's
+    canonical column order. Returns
+    `{ byFixture: Map<id, HumanScoreEntry[]>, totalRows, uniqueRaters }`.
+  - `server/tests/worksheet-eval/runner.ts` — extensive surgical
+    edit. EVAL_HARNESS_VERSION bumped 1.0.0 → 1.1.0.
+    - New `TaggedFixture = EvalFixture & { corpus }` so per-row
+      origin is preserved through the pipeline.
+    - `loadFileFixtures` (renamed from `loadFixtures`) +
+      `loadAllFixtures` reading either or both corpora per
+      `EVAL_CORPUS=fixtures|comparison|both` env. Default
+      "fixtures" preserves existing local-dev speed; CI sets "both".
+    - `checkBudget` now sums `(generator.estimatedCostUsd +
+      rater.estimatedCostUsd) × fixtures.length` against
+      `EVAL_BUDGET_USD`. Mock+stub stays at $0.
+    - `runFixture(fixture, generator, rater)` — invokes the rater
+      after `runWorksheetPostValidators`, stamps scores onto both
+      `metadata.modelJudgeScores` (so the
+      `model-judge-axis-floor` rule sees them via
+      `evaluateRules`) and `row.modelJudgeScores` (for the report).
+      Rater errors are caught + logged + tolerated — a judge
+      failure doesn't fail the row.
+    - `main()` — calls `assessProviderIsolation(rater.provider,
+      generator.name)` once at startup; logs warning when not
+      isolated (or throws under EVAL_JUDGE_STRICT_ISOLATION=1).
+      Loads optional `EVAL_HUMAN_SCORES_CSV` once before the loop
+      and indexes by fixtureId. After the loop, computes
+      `modelJudgeAggregate` via `aggregateAxisScores(rows.map(r =>
+      r.modelJudgeScores))` and `humanScoresAggregate` via
+      `aggregateAxisScores(rows.map(r =>
+      medianHumanScores(r.humanScores)))`. Stamps
+      `report.modelJudgeProvider` / `modelJudgeModel` /
+      `comparisonCorpus { version, size }` (last only when
+      comparison corpus actually ran).
+  - `server/tests/worksheet-eval/comparison-corpus.json` — every
+    entry's `rules` array now opts into `model-judge-axis-floor`
+    so the new wiring is exercised end-to-end. All 30 fixtures
+    touched. Uses default floor 3 (no per-fixture override yet) —
+    once the stub baseline settles in CI we can tighten per-axis
+    floors per fixture without touching this PR.
+  - `server/tests/humanScoresLoader.test.ts` (new) — 17 vitest
+    cases across 2 describe blocks: `parseCsvLine` (4 cases) and
+    `parseHumanScoresCsv` (13 cases — empty file, header-only,
+    single full row, empty axis = null, multi-rater grouping,
+    multi-fixture grouping, quoted notes with comma, CRLF
+    tolerance, blank-line skip, header typo throws, short row
+    throws, missing fixtureId throws, out-of-range axis throws,
+    non-numeric axis throws, zero-axis throws).
 
 ## What is in flight
 
-_Nothing in flight; ready to start Sprint 1.B._
+_Nothing in flight; ready to start Sprint 1.F._
 
 ## What is next
 
-**PR-1 / Sprint 1.E — Runner integration.** Branch
-`big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
+**PR-1 / Sprint 1.F — Baseline + nightly CI workflow extension.**
+Branch `big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
 
-Edit `server/tests/worksheet-eval/runner.ts` to:
+Steps:
 
-1. Load comparison corpus alongside per-file fixtures via
-   `EVAL_CORPUS=fixtures|comparison|both` (default both for CI,
-   fixtures for local dev). Tag each row with `row.corpus`.
-2. Pick rater via `pickRater()` from `modelJudgeRater.ts`.
-3. After post-validators run, invoke
-   `rater.rate(worksheet, fixture)` and stamp the result onto
-   both `metadata.modelJudgeScores` (so the
-   model-judge-axis-floor rule sees it) and `row.modelJudgeScores`.
-4. Sum cost guard against `generator.estimatedCostUsd +
-   rater.estimatedCostUsd` per fixture (instead of
-   generator-only).
-5. Run `assessProviderIsolation(rater.provider,
-   generatorVersion)` once at startup; log warning if not
-   isolated.
-6. After all rows, compute `report.modelJudgeAggregate` via
-   `aggregateAxisScores(rows.map(r => r.modelJudgeScores))`,
-   stamp `report.modelJudgeProvider/Model`, plus
-   `report.comparisonCorpus = { version, size }` when comparison
-   corpus ran.
-7. (Optional, env-flagged) Read `EVAL_HUMAN_SCORES_CSV` if set,
-   parse, attach to `row.humanScores`, compute
-   `report.humanScoresAggregate` via
-   `aggregateAxisScores(rows.map(r => medianHumanScores(r.humanScores)))`.
+1. Run `npm run eval:worksheets` once with `EVAL_CORPUS=both` to
+   produce a fresh `eval-report.json` that exercises both corpora
+   AND the model-judge stub.
+2. Copy that report to
+   `server/tests/worksheet-eval/eval-report.baseline.json` and
+   commit. PRs that move per-rule failure rates by >5% will then
+   trigger the existing `detectRegressions` gate.
+3. Extend `.github/workflows/worksheet-eval.yml` to:
+   - Set `EVAL_CORPUS=both` so nightly always runs the comparison
+     corpus.
+   - Pass `--diff-against=server/tests/worksheet-eval/eval-report.baseline.json`
+     so the regression detector compares against the baseline.
+   - Optionally set `EVAL_JUDGE_MODE=live` + `EVAL_JUDGE_PROVIDER`
+     when `secrets.EVAL_JUDGE_ANTHROPIC_KEY` is configured;
+     fall back to stub otherwise.
 
-After Sprint 1.E → Sprint 1.F (baseline + workflow).
+Once Sprint 1.F lands, ALL Sprint 1 deliverables are shipped.
+Then move to Sprint 3 (still on same branch — same PR-1).
+
+After Sprint 3 finishes, run final eval, push, open PR-1.
 
 ## Per-PR tracking (live state for the current PR)
 
 ### PR-1 — `big-bang-7/pr-1-measure-and-prompt-arch`
 
-Status: **in flight, 4/13 deliverables shipped**.
+Status: **in flight, 6/13 deliverables shipped**.
 
 Sprint 1 deliverables (from PHASE-PLAN.md):
 
@@ -266,9 +289,10 @@ Sprint 1 deliverables (from PHASE-PLAN.md):
 - [x] `server/tests/worksheet-eval/comparison-corpus.json` (30 triples) + loader + tests
 - [x] `EvalReport` schema extended with `humanScores` + `modelJudgeScores` + `model-judge-axis-floor` rule + per-axis summariser
 - [x] `server/tests/worksheet-eval/modelJudgeRater.ts` (cross-provider judge) + tests
-- [ ] runner wires rater + corpus into the run; populates `modelJudgeAggregate`
+- [x] runner wires rater + corpus into the run; populates `modelJudgeAggregate` + `humanScoresAggregate` + `comparisonCorpus`
+- [x] `humanScoresLoader.ts` for the optional human-scores CSV path
 - [ ] `eval-report.baseline.json` checked in
-- [ ] `.github/workflows/worksheet-eval.yml` invokes model-judge when keys set
+- [ ] `.github/workflows/worksheet-eval.yml` extended (EVAL_CORPUS=both + diff against baseline + optional live judge)
 
 Sprint 3 deliverables (from PHASE-PLAN.md):
 
