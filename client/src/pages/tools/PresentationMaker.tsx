@@ -1440,6 +1440,191 @@ function SlidePreview({
   onClick: () => void;
 }) {
   const Icon = SLIDE_ICONS[slide.type] || BookOpen;
+  // Per-type mini layouts so a vocab-reference thumbnail doesn't look the
+  // same as an exam-practice thumbnail. Falls back to the legacy "title +
+  // first 3 bullets" rendering for any type without a bespoke mini.
+  const renderMiniBody = () => {
+    switch (slide.type) {
+      case "title":
+      case "section-divider":
+        return (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-1.5" style={{ background: theme.gradient }}>
+            <div className="text-[7px] font-black truncate text-white max-w-full">{slide.title}</div>
+            {slide.subtitle && <div className="text-[5px] text-white/70 truncate max-w-full">{slide.subtitle}</div>}
+          </div>
+        );
+      case "vocab-reference":
+      case "key-terms":
+      case "word-bank": {
+        const rows = (slide.vocabTable || slide.terms || slide.wordBank || []).slice(0, 4);
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 grid grid-cols-2 gap-0.5 content-start">
+              {rows.map((r: any, i: number) => (
+                <div key={i} className="rounded-[2px] px-0.5 py-0.5" style={{ background: theme.light }}>
+                  <div className="text-[4px] font-bold truncate" style={{ color: theme.secondary }}>{r.term}</div>
+                  <div className="text-[3px] text-gray-500 truncate">{r.definition}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      case "worked-example":
+      case "method-steps": {
+        const steps = (slide.workedExampleBox?.steps || slide.methodSteps || slide.steps || []).slice(0, 3);
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 space-y-0.5">
+              <div className="text-[5px] font-bold truncate" style={{ color: theme.primary }}>{slide.title}</div>
+              {steps.map((st, i) => (
+                <div key={i} className="flex items-start gap-0.5">
+                  <div className="w-2 h-2 rounded-full flex items-center justify-center text-[3px] font-bold text-white flex-shrink-0" style={{ background: theme.secondary }}>{i + 1}</div>
+                  <div className="text-[4px] text-gray-700 truncate">{st}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+      case "exam-practice": {
+        const q = slide.examQuestion;
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1">
+              <div className="text-[5px] font-bold truncate" style={{ color: theme.primary }}>{slide.title}</div>
+              <div className="flex gap-0.5 mt-0.5">
+                {q?.commandWord && <span className="px-0.5 py-px rounded bg-slate-900 text-white text-[3px] font-bold">{q.commandWord}</span>}
+                {q?.marks != null && <span className="px-0.5 py-px rounded bg-amber-500 text-white text-[3px] font-bold">[{q.marks}m]</span>}
+              </div>
+              <div className="text-[3px] text-gray-700 line-clamp-3 mt-0.5">{q?.stem || slide.question}</div>
+            </div>
+          </div>
+        );
+      }
+      case "check-understanding":
+      case "mini-quiz": {
+        const opts = (slide.options || []).slice(0, 4);
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1">
+              <div className="text-[4px] font-bold truncate" style={{ color: theme.primary }}>{slide.question || slide.title}</div>
+              <div className="grid grid-cols-2 gap-0.5 mt-0.5">
+                {opts.map((o, i) => (
+                  <div key={i} className="rounded-[2px] px-0.5 py-px text-[3px] truncate" style={{ background: theme.light, color: theme.text }}>
+                    {String.fromCharCode(65 + i)} {o}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case "comparison-table":
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 grid grid-cols-2 gap-0.5">
+              <div className="rounded-[2px] p-0.5" style={{ background: theme.light }}>
+                <div className="text-[3px] font-bold" style={{ color: theme.secondary }}>{slide.compareHeaders?.[0] || "A"}</div>
+              </div>
+              <div className="rounded-[2px] p-0.5" style={{ background: theme.light }}>
+                <div className="text-[3px] font-bold" style={{ color: theme.secondary }}>{slide.compareHeaders?.[1] || "B"}</div>
+              </div>
+              {(slide.compareRows || []).slice(0, 3).flatMap((r, i) => [
+                <div key={`l${i}`} className="text-[3px] truncate" style={{ color: theme.text }}>{r.left}</div>,
+                <div key={`r${i}`} className="text-[3px] truncate" style={{ color: theme.text }}>{r.right}</div>,
+              ])}
+            </div>
+          </div>
+        );
+      case "timeline-horizontal":
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 flex items-center">
+              <div className="relative w-full">
+                <div className="absolute left-0 right-0 top-1/2 h-px" style={{ background: theme.secondary + "60" }} />
+                <div className="grid relative" style={{ gridTemplateColumns: `repeat(${Math.max((slide.timelineEvents || []).length, 1)}, 1fr)` }}>
+                  {(slide.timelineEvents || []).slice(0, 6).map((_, i) => (
+                    <div key={i} className="flex justify-center"><div className="w-1 h-1 rounded-full" style={{ background: theme.secondary }} /></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case "card-grid":
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 grid grid-cols-3 gap-0.5">
+              {(slide.cards || []).slice(0, 6).map((c, i) => (
+                <div key={i} className="rounded-[2px] p-0.5" style={{ background: theme.light }}>
+                  <div className="text-[3px] font-bold truncate" style={{ color: theme.secondary }}>{c.title}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "before-after": {
+        const ba = slide.beforeAfter;
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 grid grid-cols-2 gap-0.5">
+              <div className="rounded-[2px] p-0.5" style={{ background: "#fee2e2" }}>
+                <div className="text-[3px] font-bold text-red-700">{ba?.beforeLabel || "Before"}</div>
+                <div className="text-[3px] text-red-900 truncate">{ba?.before}</div>
+              </div>
+              <div className="rounded-[2px] p-0.5" style={{ background: "#dcfce7" }}>
+                <div className="text-[3px] font-bold text-green-700">{ba?.afterLabel || "After"}</div>
+                <div className="text-[3px] text-green-900 truncate">{ba?.after}</div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      case "misconception-bust":
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-1 space-y-0.5">
+              <div className="rounded-[2px] p-0.5" style={{ background: "#fee2e2" }}>
+                <div className="text-[3px] font-bold text-red-700">❌ Common myth</div>
+              </div>
+              <div className="rounded-[2px] p-0.5" style={{ background: "#dcfce7" }}>
+                <div className="text-[3px] font-bold text-green-700">✓ Truth</div>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        // Legacy fallback: title + first 3 bullets
+        return (
+          <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
+            <div className="h-2" style={{ background: theme.gradient }} />
+            <div className="flex-1 p-2 flex flex-col justify-center overflow-hidden">
+              <div className="text-[7px] font-bold truncate" style={{ color: theme.primary }}>{slide.title}</div>
+              {slide.bullets && slide.bullets.length > 0 && (
+                <div className="mt-1 space-y-0.5">
+                  {slide.bullets.slice(0, 3).map((b, i) => (
+                    <div key={i} className="flex items-start gap-0.5">
+                      <div className="w-1 h-1 rounded-full mt-0.5 flex-shrink-0" style={{ background: theme.secondary }} />
+                      <div className="text-[5px] text-gray-600 truncate">{b}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+    }
+  };
 
   return (
     <button
@@ -1449,27 +1634,15 @@ function SlidePreview({
       }`}
       style={{ aspectRatio: "16/9", position: "relative" }}
     >
-      <div className="absolute inset-0 flex flex-col" style={{ background: theme.bg }}>
-        {/* Mini slide header */}
-        <div className="h-2" style={{ background: theme.gradient }} />
-        <div className="flex-1 p-2 flex flex-col justify-center overflow-hidden">
-          <div className="text-[7px] font-bold truncate" style={{ color: theme.primary }}>
-            {slide.title}
-          </div>
-          {slide.bullets && slide.bullets.length > 0 && (
-            <div className="mt-1 space-y-0.5">
-              {slide.bullets.slice(0, 3).map((b, i) => (
-                <div key={i} className="flex items-start gap-0.5">
-                  <div className="w-1 h-1 rounded-full mt-0.5 flex-shrink-0" style={{ background: theme.secondary }} />
-                  <div className="text-[5px] text-gray-600 truncate">{b}</div>
-                </div>
-              ))}
-            </div>
-          )}
+      {renderMiniBody()}
+      {/* Slide number */}
+      <div className="absolute bottom-1 right-1 text-[5px] text-gray-400 z-10">{index + 1}/{total}</div>
+      {/* Mini icon for non-title types (top-left) */}
+      {slide.type !== "title" && slide.type !== "section-divider" && (
+        <div className="absolute top-1 left-1 z-10 w-3 h-3 rounded-sm flex items-center justify-center" style={{ background: theme.secondary + "30" }}>
+          <Icon className="w-2 h-2" style={{ color: theme.secondary }} />
         </div>
-        {/* Slide number */}
-        <div className="absolute bottom-1 right-1 text-[5px] text-gray-400">{index + 1}/{total}</div>
-      </div>
+      )}
     </button>
   );
 }
@@ -2465,21 +2638,21 @@ function FullSlideView({
       // ── Primary: Story Time ──────────────────────────────────────────────
       case "story-time":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF0FB,#FFF8E1)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#EC4899" }}>📖</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#7C3AED" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>📖</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
               {slide.body && (
-                <div className="rounded-3xl p-5 text-[1.1rem] font-semibold leading-relaxed" style={{ background: "rgba(236,72,153,0.1)", border: "3px solid #EC4899", color: "#4a044e" }}>
+                <div className="rounded-3xl p-5 text-[1.1rem] font-semibold leading-relaxed" style={{ background: theme.light, border: `3px solid ${badgeColour}`, color: theme.text }}>
                   {slide.body}
                 </div>
               )}
               {slide.image_prompt && (
-                <div className="rounded-2xl overflow-hidden h-28 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(https://source.unsplash.com/featured/600x200/?${encodeURIComponent(slide.image_prompt)})`, border: "3px solid #F59E0B" }} />
+                <div className="rounded-2xl overflow-hidden h-28 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(https://source.unsplash.com/featured/600x200/?${encodeURIComponent(slide.image_prompt)})`, border: `3px solid ${theme.accent}` }} />
               )}
             </div>
           </div>
@@ -2488,24 +2661,24 @@ function FullSlideView({
       // ── Primary: Draw It ──────────────────────────────────────────────────
       case "draw-it":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#F0FDF4,#ECFEFF)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#22c55e" }}>✏️</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#15803d" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>✏️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex gap-4 items-center">
               <div className="flex-1">
                 {slide.question && (
-                  <div className="text-[1.1rem] font-bold mb-4 rounded-2xl p-4" style={{ background: "rgba(34,197,94,0.15)", border: "3px solid #22c55e", color: "#14532d" }}>
+                  <div className="text-[1.1rem] font-bold mb-4 rounded-2xl p-4" style={{ background: theme.light, border: `3px solid ${badgeColour}`, color: theme.text }}>
                     {slide.question}
                   </div>
                 )}
-                {slide.body && <div className="text-sm font-medium" style={{ color: "#166534" }}>{slide.body}</div>}
+                {slide.body && <div className="text-sm font-medium" style={{ color: theme.text }}>{slide.body}</div>}
               </div>
-              <div className="flex-1 rounded-3xl flex items-center justify-center" style={{ border: "3px dashed #22c55e", background: "white", minHeight: "120px" }}>
-                <div className="text-center" style={{ color: "#86efac" }}>
+              <div className="flex-1 rounded-3xl flex items-center justify-center" style={{ border: `3px dashed ${badgeColour}`, background: "white", minHeight: "120px" }}>
+                <div className="text-center" style={{ color: badgeColour, opacity: 0.6 }}>
                   <div className="text-4xl mb-1">🖊️</div>
                   <div className="text-xs font-semibold">Draw here</div>
                 </div>
@@ -2517,15 +2690,15 @@ function FullSlideView({
       // ── Primary: Sort It ──────────────────────────────────────────────────
       case "sort-it":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF7ED,#FFFBEB)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#f97316" }}>🗂️</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#c2410c" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>🗂️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-3">
-              {slide.question && <div className="text-base font-bold" style={{ color: "#7c2d12" }}>{slide.question}</div>}
+              {slide.question && <div className="text-base font-bold" style={{ color: theme.text }}>{slide.question}</div>}
               <div className="flex gap-3 flex-wrap">
                 {slide.bullets?.map((item, i) => (
                   <div key={i} className="px-4 py-2 rounded-2xl text-sm font-bold" style={{ background: ["#fef9c3","#dcfce7","#dbeafe","#fce7f3","#f3e8ff","#ffedd5"][i%6], border: `2px solid ${["#ca8a04","#16a34a","#2563eb","#db2777","#7c3aed","#ea580c"][i%6]}`, color: ["#713f12","#14532d","#1e3a8a","#831843","#4c1d95","#431407"][i%6] }}>
@@ -2549,17 +2722,17 @@ function FullSlideView({
       // ── Primary: Match It ──────────────────────────────────────────────────
       case "match-it":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#EFF6FF,#F5F3FF)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#7C3AED" }}>⚡</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#4c1d95" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>⚡</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex gap-4 items-center">
               <div className="flex-1 flex flex-col gap-2">
                 {slide.bullets?.map((item, i) => (
-                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: "#ede9fe", border: "2px solid #7C3AED", color: "#4c1d95" }}>{item}</div>
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: theme.light, border: `2px solid ${badgeColour}`, color: theme.text }}>{item}</div>
                 ))}
               </div>
               <div className="flex flex-col gap-2 text-2xl text-gray-300">
@@ -2567,7 +2740,7 @@ function FullSlideView({
               </div>
               <div className="flex-1 flex flex-col gap-2">
                 {slide.body?.split("|").map((item, i) => (
-                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: "#fce7f3", border: "2px solid #EC4899", color: "#831843" }}>{item.trim()}</div>
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: theme.light, border: `2px solid ${theme.accent}`, color: theme.text }}>{item.trim()}</div>
                 ))}
               </div>
             </div>
@@ -2577,27 +2750,27 @@ function FullSlideView({
       // ── Primary: Fill the Gap ──────────────────────────────────────────────
       case "fill-the-gap":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#ECFEFF,#F0FDF4)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#0891b2" }}>✍️</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#164e63" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>✍️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
               {slide.question && (
-                <div className="text-[1.1rem] font-bold rounded-2xl p-5 leading-loose" style={{ background: "rgba(8,145,178,0.1)", border: "3px solid #0891b2", color: "#164e63" }}>
+                <div className="text-[1.1rem] font-bold rounded-2xl p-5 leading-loose" style={{ background: theme.light, border: `3px solid ${badgeColour}`, color: theme.text }}>
                   {slide.question.split("___").map((part, i, arr) => (
-                    <span key={i}>{part}{i < arr.length-1 && <span className="inline-block border-b-4 border-cyan-500 w-20 mx-1 align-bottom" />}</span>
+                    <span key={i}>{part}{i < arr.length-1 && <span className="inline-block border-b-4 w-20 mx-1 align-bottom" style={{ borderColor: badgeColour }} />}</span>
                   ))}
                 </div>
               )}
               {slide.bullets && slide.bullets.length > 0 && (
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#0891b2" }}>Word Bank</div>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: badgeColour }}>Word Bank</div>
                   <div className="flex gap-2 flex-wrap">
                     {slide.bullets.map((word, i) => (
-                      <div key={i} className="px-4 py-1.5 rounded-full text-sm font-bold" style={{ background: "#cffafe", border: "2px solid #0891b2", color: "#164e63" }}>{word}</div>
+                      <div key={i} className="px-4 py-1.5 rounded-full text-sm font-bold" style={{ background: theme.light, border: `2px solid ${badgeColour}`, color: theme.text }}>{word}</div>
                     ))}
                   </div>
                 </div>
@@ -2609,11 +2782,11 @@ function FullSlideView({
       // ── Primary: Spot the Mistake ──────────────────────────────────────────
       case "spot-the-mistake":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF1F2,#FFF7ED)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#dc2626" }}>🔍</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#991b1b" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#dc2626", color: "white" }}>🔍</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
@@ -2635,26 +2808,26 @@ function FullSlideView({
       // ── Primary: Number Talk ──────────────────────────────────────────────
       case "number-talk":
         return (
-          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FEFCE8,#FFF0FB)" }}>
+          <div className="flex flex-col h-full" style={{ background: `linear-gradient(135deg, ${theme.light} 0%, ${theme.bg} 100%)` }}>
             <div className="px-8 pt-6 pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#eab308" }}>🔢</div>
-                <h2 className="text-[1.5rem] font-black" style={{ color: "#713f12" }}>{slide.title}</h2>
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: badgeColour, color: "white" }}>🔢</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: theme.primary }}>{slide.title}</h2>
               </div>
             </div>
             <div className="flex-1 px-8 pb-6 flex gap-5 items-center">
               {slide.question && (
-                <div className="w-32 h-32 rounded-3xl flex items-center justify-center text-[2.5rem] font-black flex-shrink-0" style={{ background: "#fef9c3", border: "4px solid #eab308", color: "#713f12" }}>
+                <div className="w-32 h-32 rounded-3xl flex items-center justify-center text-[2.5rem] font-black flex-shrink-0" style={{ background: theme.light, border: `4px solid ${badgeColour}`, color: theme.primary }}>
                   {slide.question}
                 </div>
               )}
               <div className="flex-1 flex flex-col gap-2">
                 {slide.bullets?.map((way, i) => (
-                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-semibold" style={{ background: ["#fef9c3","#dcfce7","#dbeafe"][i%3], border: `2px solid ${["#ca8a04","#16a34a","#2563eb"][i%3]}`, color: ["#713f12","#14532d","#1e3a8a"][i%3] }}>
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-semibold" style={{ background: theme.light, border: `2px solid ${badgeColour}`, color: theme.text }}>
                     {way}
                   </div>
                 ))}
-                {slide.body && <div className="text-xs font-semibold italic mt-1" style={{ color: "#92400e" }}>{slide.body}</div>}
+                {slide.body && <div className="text-xs font-semibold italic mt-1" style={{ color: theme.text, opacity: 0.7 }}>{slide.body}</div>}
               </div>
             </div>
           </div>
