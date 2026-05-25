@@ -5,21 +5,21 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1 COMPLETE.**
-Branch `big-bang-7/pr-1-measure-and-prompt-arch`. Sprint 1.F closed
-out the measurement foundation: `runner.ts` gained an
-`--update-baseline` (or `EVAL_UPDATE_BASELINE=1`) flag that overwrites
-the diff-target file with the current report on `main` pushes,
-refusing if any fixture errored. New
-`eval-report.baseline.json` placeholder committed (empty `ruleStats`
-so first nightly run has nothing to flag against).
-`.github/workflows/worksheet-eval.yml` extended with EVAL_CORPUS=both
-+ judge-mode knob + `--diff-against=baseline` on every run + a
-sibling `refresh-baseline` job that fires on `main` pushes affecting
-ai.ts / worksheetPostValidator.ts / promptSections / curriculumAuthorityPrompt
-/ worksheet-eval. Path-filtered so doc-only PRs don't trigger.
-Now switching from Sprint 1 → Sprint 3 (still inside PR-1 — same
-branch).
+Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1 + 3.A + 3.E
+shipped.** Branch `big-bang-7/pr-1-measure-and-prompt-arch`. Sprint
+3.A landed `client/src/lib/aiGenerateWorksheetTwoPass.ts` —
+orchestrator that delegates to legacy `aiGenerateWorksheet` when
+`WORKSHEET_TWO_PASS_ENABLED` is OFF (default), or runs Pass 1
+(skeleton) + Pass 2 (parallel section fill via `Promise.all`) when
+ON. Stamps `metadata.generatorVersion = "two-pass-1.0.0"`. Sprint
+3.E folded in: `pickSelfConsistencySection` picks the highest-mark
+q-extended section, `fillSectionWithSelfConsistency` runs N=
+recommendedSampleCount(marks) samples and reconciles via
+`reconcileSelfConsistency`. Stamps `selfConsistencyApplied`,
+`selfConsistencyConfidence`, `selfConsistencySampleCount` on
+metadata. 27-test lock at
+`client/src/lib/__tests__/aiGenerateWorksheetTwoPass.test.ts`. Next
+chunk: Sprint 3.B — validator-feedback retry loop.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -252,6 +252,52 @@ Goal: complete the next un-shipped item in "What is next" below.
       the refreshed baseline back via the bot account. Uses
       `permissions: contents: write` and the standard
       github-actions[bot] commit signature.
+
+- **PR-1 / Sprint 3.A — Two-pass generator orchestrator (+ 3.E
+  self-consistency hook).** Two new files:
+  - `client/src/lib/aiGenerateWorksheetTwoPass.ts` (new) — public
+    entry `aiGenerateWorksheetTwoPass(params)` always returns
+    `AIWorksheetResult`. Two routing paths:
+    - **Flag OFF (default)**: pass-through delegate to legacy
+      `aiGenerateWorksheet`. Strips two-pass-only params before
+      delegating. Existing callers see no change.
+    - **Flag ON** (`WORKSHEET_TWO_PASS_ENABLED=1` env or
+      `globalThis.WORKSHEET_TWO_PASS_ENABLED=true` or per-call
+      `params.twoPassOverride=true`): runs Pass 1 + Pass 2.
+    - Pass 1 (`aiGenerateWorksheetSkeleton`): ~700-token
+      `callAIMessages` request with `buildSkeletonPrompt`. Embeds
+      per-subject family header from `lookupPromptFamily(subject)`.
+      Asserts EXACTLY 7 question sections + LO + word-bank +
+      worked-example + mark-scheme + self-reflection + revision-tips.
+      Forbids invented spec codes.
+    - Pass 2 (`aiFillWorksheetSection`): per-section ~600-token
+      call with `buildSectionFillPrompt`. `sectionContractFor(type)`
+      embeds the section-type contract (LO = single sentence,
+      q-mcq = 4 options + ✓ + diagnoses, q-extended = M/A/E mark
+      points, etc.). All sections fire in parallel via `Promise.all`;
+      a failed section emits empty content + warns + doesn't abort
+      the others.
+    - Self-consistency hook (3.E) — behind
+      `PROMPT_SELF_CONSISTENCY_ENABLED=1`.
+      `pickSelfConsistencySection` picks the highest-mark
+      q-extended section (>=5 marks per `shouldSelfSample`).
+      `fillSectionWithSelfConsistency` runs
+      `recommendedSampleCount(marks)` parallel fills then
+      `reconcileSelfConsistency` picks consensus marking-point list
+      + longest-content sample. Confidence (avg pairwise Jaccard)
+      stamped on metadata.
+    - Stamps `metadata.generatorVersion = "two-pass-1.0.0"`,
+      `selfConsistencyApplied` / `Confidence` / `SampleCount` when
+      applicable, `adaptations[]` from `sendNeed`.
+  - `client/src/lib/__tests__/aiGenerateWorksheetTwoPass.test.ts`
+    (new) — 27 vitest cases across 8 describe blocks:
+    isTwoPassEnabled (6), isSelfConsistencyEnabled (3), routing
+    (3 — legacy delegate + field stripping + two-pass path), 
+    buildSkeletonPrompt (3), aiGenerateWorksheetSkeleton (2),
+    buildSectionFillPrompt (2), aiFillWorksheetSection (2),
+    pickSelfConsistencySection (2), fillSectionWithSelfConsistency
+    (2 — single-shot, N-shot reconciliation), end-to-end metadata
+    stamping (2 — on / off).
   - `server/tests/worksheet-eval/humanScoresLoader.ts` (new) — pure
     CSV parser (handles double-quoted cells, escaped `""` quotes,
     Windows CRLF, blank lines, trailing newline) +
@@ -307,62 +353,40 @@ Goal: complete the next un-shipped item in "What is next" below.
 
 ## What is in flight
 
-_Nothing in flight; Sprint 1 complete. Switching to Sprint 3._
+_Nothing in flight; ready to start Sprint 3.B._
 
 ## What is next
 
-**PR-1 / Sprint 3 — Prompt architecture.** Branch
-`big-bang-7/pr-1-measure-and-prompt-arch` (already on it; Sprint 3
-goes in the same PR as Sprint 1).
+**PR-1 / Sprint 3.B — Validator-feedback retry loop.** Branch
+`big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
 
-Sprint 3 deliverables (5 chunks):
+New file `client/src/lib/validatorFeedbackRetry.ts`. Public
+function `runWithValidatorFeedbackRetry(generate, params, opts)`:
 
-1. **Sprint 3.A — `aiGenerateWorksheetTwoPass.ts` (orchestrator).**
-   New file `client/src/lib/aiGenerateWorksheetTwoPass.ts`. Flagged
-   behind `WORKSHEET_TWO_PASS_ENABLED`. Calls
-   `aiGenerateWorksheetSkeleton` (small ~1.5k-token prompt → returns
-   `{ sections: [{ id, type, marks, specRef }] }`) → calls
-   `aiFillWorksheetSection` per section in parallel (one fill call
-   per section, ~500 tokens each) → reuses entire post-validator
-   chain unchanged. Stamps
-   `metadata.generatorVersion = "two-pass-1.0.0"`. The existing
-   `aiGenerateWorksheet` becomes a router that delegates to this
-   when the flag is on; otherwise legacy path runs untouched.
-2. **Sprint 3.B — `validatorFeedbackRetry.ts` (retry loop).** New
-   file. When ≥ 3 validators fire on a single worksheet, re-prompt
-   ONCE with the specific failures inlined as constraints rather
-   than patching post-hoc. Stamps `metadata.retryCount` +
-   `metadata.retryReasons` for telemetry.
-3. **Sprint 3.C — Per-subject prompt-family unit test.** New file
-   `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`.
-   Asserts `lookupPromptFamily("Maths")` returns the maths family
-   AND not the english-lit family; `lookupPromptFamily("English
-   Literature")` returns english-lit; per-family forbidden-pattern
-   lists are non-empty.
-4. **Sprint 3.D — Wire `promptAbFramework` into the eval harness.**
-   `runner.ts` + `generators.ts` extension. Reads `EVAL_AB_EXPERIMENT`
-   env (id of an experiment from `promptAbFramework.PROMPT_FAMILIES`),
-   buckets fixtures by `pickVariant`, stamps the variant on
-   `row.warnings` (or a new `row.experimentVariant` field), and the
-   summariser splits ruleStats per variant when present.
-5. **Sprint 3.E — Wire `selfConsistencySampler` onto Section 3 hot
-   path.** Behind `PROMPT_SELF_CONSISTENCY_ENABLED` env. The two-pass
-   orchestrator (Sprint 3.A) gains an opt-in to call
-   `aiFillWorksheetSection` N times for the highest-mark section
-   only, then `reconcileSelfConsistency` to pick the modal answer.
-   N = `recommendedSampleCount(marks)`.
+1. Calls `generate(params)`.
+2. Runs `runWorksheetPostValidators` on the result.
+3. If `metadata.postValidatorWarnings.length >= 3` (configurable
+   threshold, default 3), constructs a re-prompt that inlines the
+   specific warnings as constraints ("must include specRef on Q3,
+   must shorten reading age below 14, must remove the foreign
+   diagram on section 4") and calls `generate(params, {
+   additionalInstructions: inlineWarningsBlock })` ONCE.
+4. Threads the second result back through post-validators and
+   keeps the better-scoring one (by `metadata.qaScore.total`).
+5. Stamps `metadata.retryCount = 0|1` and
+   `metadata.retryReasons = string[]` for telemetry.
 
-After Sprint 3 finishes:
-6. Run `npm run eval:worksheets` once to regenerate
-   `eval-report.baseline.json` if Sprint 3 changes prompt flow
-   meaningfully.
-7. Open PR-1.
+Module is generic (works on any generator that takes a params
+object with optional `additionalInstructions`). Used by the
+two-pass orchestrator AND the legacy `aiGenerateWorksheet`.
+
+Then Sprint 3.C, 3.D — open PR-1.
 
 ## Per-PR tracking (live state for the current PR)
 
 ### PR-1 — `big-bang-7/pr-1-measure-and-prompt-arch`
 
-Status: **in flight, 8/13 deliverables shipped (Sprint 1 complete).**
+Status: **in flight, 9/13 deliverables shipped (Sprint 1 complete + Sprint 3.A/3.E shipped).**
 
 Sprint 1 deliverables (from PHASE-PLAN.md):
 
@@ -377,11 +401,11 @@ Sprint 1 deliverables (from PHASE-PLAN.md):
 
 Sprint 3 deliverables (from PHASE-PLAN.md):
 
-- [ ] `client/src/lib/aiGenerateWorksheetTwoPass.ts` (orchestrator)
+- [x] `client/src/lib/aiGenerateWorksheetTwoPass.ts` (orchestrator)
 - [ ] `client/src/lib/validatorFeedbackRetry.ts` (retry loop)
 - [ ] `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`
 - [ ] `promptAbFramework` wired into eval harness (`runner.ts` + `generators.ts`)
-- [ ] `selfConsistencySampler` wired onto Section 3 hot path
+- [x] `selfConsistencySampler` wired onto Section 3 hot path (folded into orchestrator)
 
 ### PR-2 — `big-bang-7/pr-2-taxonomy-expansion`
 
