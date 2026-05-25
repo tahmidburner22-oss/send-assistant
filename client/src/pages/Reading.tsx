@@ -1,29 +1,32 @@
 /**
  * Reading — dedicated reading section
  * ─────────────────────────────────────────────────────────────────────────────
- * Three tabs:
- *  1. Stories       — AI-generated personalised stories (existing Stories page)
- *  2. Book Questions — Enter a book + reading age + pages read → AI comprehension questions
- *  3. Book Review    — Enter a book title → AI summary + review before reading
+ * Four tabs:
+ *  1. Stories         — AI-generated personalised stories
+ *  2. Book Questions  — Enter a book + reading age + pages read → AI comprehension questions
+ *  3. Book Review     — Enter a book title → AI summary + review before reading
+ *  4. Challenge       — Year of Reading 2026 habit tracker, milestones,
+ *                       certificates and home-school reading records
  *
- * Tab can be set via ?tab=book-questions or ?tab=book-review query param
- * (used by sidebar links)
+ * Tab can be set via ?tab=book-questions, ?tab=book-review or
+ * ?tab=challenge query param (used by sidebar links).
  */
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { BookOpen, HelpCircle, Star } from "lucide-react";
+import { BookOpen, HelpCircle, Star, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import StoriesContent from "./reading/StoriesContent";
 import BookQuestionsTab from "./reading/BookQuestionsTab";
 import BookReviewTab from "./reading/BookReviewTab";
+import ReadingChallengeTab from "@/components/ReadingChallengeTab";
 
-type Tab = "stories" | "book-questions" | "book-review";
+type Tab = "stories" | "book-questions" | "book-review" | "challenge";
 
 function getInitialTab(): Tab {
   if (typeof window !== "undefined") {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get("tab");
-    if (tab === "book-questions" || tab === "book-review") return tab;
+    if (tab === "book-questions" || tab === "book-review" || tab === "challenge") return tab;
   }
   return "stories";
 }
@@ -36,7 +39,7 @@ export default function Reading() {
     const handler = () => {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get("tab") as Tab | null;
-      if (tab === "book-questions" || tab === "book-review") {
+      if (tab === "book-questions" || tab === "book-review" || tab === "challenge") {
         setActiveTab(tab);
       } else if (!tab) {
         setActiveTab("stories");
@@ -54,25 +57,28 @@ export default function Reading() {
           Reading
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Generate stories, create comprehension questions for any book, or get a review before reading.
+          Generate stories, build comprehension questions, browse book
+          reviews, and track every reading session for the UK Year of Reading.
         </p>
       </motion.div>
 
       <Tabs value={activeTab} onValueChange={v => setActiveTab(v as Tab)}>
-        <TabsList className="grid w-full grid-cols-3 h-10">
+        <TabsList className="grid w-full grid-cols-4 h-10">
           <TabsTrigger value="stories" className="text-xs flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5" />Stories
           </TabsTrigger>
           <TabsTrigger value="book-questions" className="text-xs flex items-center gap-1.5">
-            <HelpCircle className="w-3.5 h-3.5" />Book Questions
+            <HelpCircle className="w-3.5 h-3.5" />Questions
           </TabsTrigger>
           <TabsTrigger value="book-review" className="text-xs flex items-center gap-1.5">
-            <Star className="w-3.5 h-3.5" />Book Review
+            <Star className="w-3.5 h-3.5" />Review
+          </TabsTrigger>
+          <TabsTrigger value="challenge" className="text-xs flex items-center gap-1.5">
+            <Trophy className="w-3.5 h-3.5" />Challenge
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="stories" className="mt-0">
-          {/* StoriesContent is the inner content of the old Stories page, without outer padding */}
           <StoriesContent />
         </TabsContent>
 
@@ -82,6 +88,10 @@ export default function Reading() {
 
         <TabsContent value="book-review" className="mt-4">
           <BookReviewTab />
+        </TabsContent>
+
+        <TabsContent value="challenge" className="mt-4">
+          <ReadingChallengeTab />
         </TabsContent>
       </Tabs>
     </div>
