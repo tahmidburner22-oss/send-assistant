@@ -1,15 +1,28 @@
 # Worksheet eval harness — closes audit item #44 (FEAT-PR5).
 #
-# Runs nightly + on demand. Exercises the 50 canonical fixtures under
-# server/tests/worksheet-eval/fixtures/ and uploads
+# Runs nightly + on demand + on `main` pushes (baseline-refresh job
+# only). Exercises the per-file fixtures under
+# server/tests/worksheet-eval/fixtures/ AND the 30-fixture
+# comparison-corpus.json (Sprint 1.B). Uploads
 # server/tests/worksheet-eval/eval-report.json as a build artefact.
 #
-# Mode: defaults to `mock` (free, deterministic, no API keys). Switch to
-# `live` via workflow_dispatch input when API keys are configured as
-# repo secrets.
+# Mode: defaults to `mock` (free, deterministic, no API keys). Switch
+# to `live` via workflow_dispatch input when API keys are configured
+# as repo secrets.
 #
-# This workflow does NOT block PRs. The PR-blocking gate lands in PR-22
-# once a regression baseline has settled — see
+# Sprint 1.F (PR-1 / big-bang-7-sprints) — extends the existing PR-5
+# workflow with:
+#   - EVAL_CORPUS=both so nightly always runs the comparison corpus.
+#   - --diff-against=server/tests/worksheet-eval/eval-report.baseline.json
+#     so the regression detector compares against the checked-in
+#     baseline.
+#   - Optional model-judge live mode when EVAL_JUDGE_ANTHROPIC_KEY is
+#     configured as a repo secret. Defaults to stub (deterministic, $0).
+#   - A sibling `refresh-baseline` job that runs on every `main` push
+#     and rewrites eval-report.baseline.json via --update-baseline.
+#
+# This workflow does NOT block PRs. The PR-blocking gate lands in
+# PR-22 once a regression baseline has settled — see
 # .agents/tasks/big-bang-improvements/PHASE-PLAN.md.
 
 name: Worksheet eval
@@ -28,29 +41,74 @@ on:
         options:
           - mock
           - live
+      judge_mode:
+        description: "Model-judge mode: stub (free, deterministic), live (requires EVAL_JUDGE_*_KEY), off."
+        type: choice
+        required: true
+        default: "stub"
+        options:
+          - stub
+          - live
+          - off
+      corpus:
+        description: "Which corpus to run: fixtures only, comparison corpus only, or both."
+        type: choice
+        required: true
+        default: "both"
+        options:
+          - fixtures
+          - comparison
+          - both
       budget_usd:
         description: "Cost guard ceiling in USD (live mode only)."
         required: false
         default: "1.00"
+  push:
+    branches:
+      - main
+    paths:
+      # Refresh baseline only when something that affects the report
+      # actually changed. Cuts noise on doc-only / unrelated PRs that
+      # merge to main.
+      - "client/src/lib/ai.ts"
+      - "client/src/lib/worksheetPostValidator.ts"
+      - "client/src/lib/promptSections/**"
+      - "client/src/lib/curriculumAuthorityPrompt.ts"
+      - "server/tests/worksheet-eval/**"
 
 permissions:
-  contents: read
+  contents: write   # needed by the refresh-baseline job to push commits
 
 jobs:
   eval:
-    name: Run worksheet eval (${{ github.event.inputs.mode || 'mock' }})
+    name: Run worksheet eval (${{ github.event.inputs.mode || 'mock' }} / ${{ github.event.inputs.judge_mode || 'stub' }})
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       EVAL_MODE: ${{ github.event.inputs.mode || 'mock' }}
       EVAL_BUDGET_USD: ${{ github.event.inputs.budget_usd || '1.00' }}
-      # Live-mode keys (only consumed when EVAL_MODE=live). All optional —
-      # the live generator picks the first non-empty key.
+      # Sprint 1.F — corpus + judge knobs. Default 'both' for nightly,
+      # configurable on workflow_dispatch.
+      EVAL_CORPUS: ${{ github.event.inputs.corpus || 'both' }}
+      EVAL_JUDGE_MODE: ${{ github.event.inputs.judge_mode || 'stub' }}
+      EVAL_JUDGE_PROVIDER: ${{ secrets.EVAL_JUDGE_PROVIDER || 'claude' }}
+      EVAL_JUDGE_MODEL: ${{ secrets.EVAL_JUDGE_MODEL || '' }}
+      EVAL_JUDGE_COST_PER_CALL: "0.005"
+      # Live-mode generator keys (only consumed when EVAL_MODE=live).
       EVAL_OPENAI_KEY: ${{ secrets.EVAL_OPENAI_KEY }}
       EVAL_ANTHROPIC_KEY: ${{ secrets.EVAL_ANTHROPIC_KEY }}
       EVAL_GROQ_KEY: ${{ secrets.EVAL_GROQ_KEY }}
       EVAL_GEMINI_KEY: ${{ secrets.EVAL_GEMINI_KEY }}
       EVAL_OPENROUTER_KEY: ${{ secrets.EVAL_OPENROUTER_KEY }}
+      # Live-mode judge keys (consumed when EVAL_JUDGE_MODE=live). The
+      # judge_*_KEY pair takes precedence over the generator pair when
+      # both are set — single-run cross-provider isolation.
+      EVAL_JUDGE_ANTHROPIC_KEY: ${{ secrets.EVAL_JUDGE_ANTHROPIC_KEY }}
+      EVAL_JUDGE_OPENAI_KEY: ${{ secrets.EVAL_JUDGE_OPENAI_KEY }}
+      EVAL_JUDGE_GROQ_KEY: ${{ secrets.EVAL_JUDGE_GROQ_KEY }}
+      EVAL_JUDGE_GEMINI_KEY: ${{ secrets.EVAL_JUDGE_GEMINI_KEY }}
+      EVAL_JUDGE_OPENROUTER_KEY: ${{ secrets.EVAL_JUDGE_OPENROUTER_KEY }}
       EVAL_GENERATOR_VERSION: ${{ github.sha }}
 
     steps:
@@ -66,8 +124,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run worksheet eval
-        run: npm run eval:worksheets
+      - name: Run worksheet eval (with regression detector vs baseline)
+        run: |
+          npm run eval:worksheets -- \
+            --diff-against=server/tests/worksheet-eval/eval-report.baseline.json
 
       - name: Upload eval report
         if: always()
@@ -80,10 +140,63 @@ jobs:
       - name: Fail job on eval regression (manual live runs only)
         # Nightly cron and mock runs MUST NOT fail loudly — only manual
         # live-mode runs (where someone is watching and the report
-        # reflects real generator quality) bail on regression. The
-        # summariser already wrote the markdown table to
-        # $GITHUB_STEP_SUMMARY in the previous step.
+        # reflects real generator quality) bail on regression.
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'live'
         env:
           EVAL_BAIL_ON_FAIL: "1"
-        run: npm run eval:worksheets
+        run: |
+          npm run eval:worksheets -- \
+            --diff-against=server/tests/worksheet-eval/eval-report.baseline.json
+
+  refresh-baseline:
+    # Sprint 1.F — refresh the checked-in baseline on `main` pushes that
+    # touched generator / validator / prompt / harness files. This keeps
+    # PR diffs scoped to behaviour-deltas vs the most recent main, not
+    # whatever stale baseline last got hand-committed.
+    name: Refresh baseline on main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    env:
+      EVAL_MODE: "mock"
+      EVAL_CORPUS: "both"
+      EVAL_JUDGE_MODE: "stub"
+      EVAL_BUDGET_USD: "0.10"
+      EVAL_GENERATOR_VERSION: ${{ github.sha }}
+      EVAL_UPDATE_BASELINE: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need write access to push the refreshed baseline back.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refresh baseline
+        run: |
+          npm run eval:worksheets -- \
+            --diff-against=server/tests/worksheet-eval/eval-report.baseline.json \
+            --update-baseline
+
+      - name: Commit refreshed baseline (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet server/tests/worksheet-eval/eval-report.baseline.json; then
+            echo "Baseline unchanged — no commit needed."
+            exit 0
+          fi
+          git add server/tests/worksheet-eval/eval-report.baseline.json
+          git commit -m "ci(eval): refresh baseline after ${GITHUB_SHA::7}"
+          git push

@@ -1,0 +1,29 @@
+{
+  "_comment": "Sprint 1.F (PR-1 / big-bang-7-sprints) — placeholder baseline. The first nightly CI run on main will refresh this via `npm run eval:worksheets -- --diff-against=eval-report.baseline.json --update-baseline`. Empty ruleStats means detectRegressions has nothing to compare against on the first run; subsequent runs lock in real per-rule failure rates. DO NOT hand-edit ruleStats — let CI populate it. Hand-edit only this _comment block, the version metadata, or the sentinel rows.",
+  "startedAt": "2026-05-25T00:00:00.000Z",
+  "totalMs": 0,
+  "evalHarnessVersion": "1.1.0",
+  "generatorVersion": "mock",
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "errored": 0,
+    "totalCostUsd": 0
+  },
+  "ruleStats": {},
+  "rows": [],
+  "modelJudgeProvider": "stub",
+  "modelJudgeAggregate": {
+    "curriculumFidelity": { "mean": null, "min": null, "max": null, "count": 0 },
+    "stemAuthenticity":   { "mean": null, "min": null, "max": null, "count": 0 },
+    "accessibility":      { "mean": null, "min": null, "max": null, "count": 0 },
+    "marksAndAnswers":    { "mean": null, "min": null, "max": null, "count": 0 },
+    "sendAlignment":      { "mean": null, "min": null, "max": null, "count": 0 },
+    "uxAndPrintability":  { "mean": null, "min": null, "max": null, "count": 0 }
+  },
+  "comparisonCorpus": {
+    "version": "1.0.0",
+    "size": 30
+  }
+}

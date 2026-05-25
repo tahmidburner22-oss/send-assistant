@@ -5,23 +5,21 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1.A–1.E
-shipped.** Branch `big-bang-7/pr-1-measure-and-prompt-arch`. Sprint
-1.E wired the eval harness: runner.ts now (a) loads either / both
-corpora via `EVAL_CORPUS=fixtures|comparison|both` (default
-"fixtures"), (b) picks rater via `pickRater()` and invokes after
-post-validators, stamping scores onto both `metadata.modelJudgeScores`
-and `row.modelJudgeScores`, (c) cost-guards against
-generator+rater per fixture, (d) runs `assessProviderIsolation` at
-startup, (e) computes `modelJudgeAggregate` + `humanScoresAggregate`
-+ `comparisonCorpus` metadata at report level, (f) optionally reads
-`EVAL_HUMAN_SCORES_CSV` via new `humanScoresLoader.ts` (CSV-aware
-parser handling quoted notes + escaped quotes + null-for-empty axes
-+ header validation). All 30 comparison-corpus fixtures now opt-in
-to `model-judge-axis-floor` rule so the new wiring is actually
-exercised end-to-end. EVAL_HARNESS_VERSION bumped to 1.1.0.
-17-test lock at `server/tests/humanScoresLoader.test.ts`. Next
-chunk: Sprint 1.F — generate baseline + extend nightly workflow.
+Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1 COMPLETE.**
+Branch `big-bang-7/pr-1-measure-and-prompt-arch`. Sprint 1.F closed
+out the measurement foundation: `runner.ts` gained an
+`--update-baseline` (or `EVAL_UPDATE_BASELINE=1`) flag that overwrites
+the diff-target file with the current report on `main` pushes,
+refusing if any fixture errored. New
+`eval-report.baseline.json` placeholder committed (empty `ruleStats`
+so first nightly run has nothing to flag against).
+`.github/workflows/worksheet-eval.yml` extended with EVAL_CORPUS=both
++ judge-mode knob + `--diff-against=baseline` on every run + a
+sibling `refresh-baseline` job that fires on `main` pushes affecting
+ai.ts / worksheetPostValidator.ts / promptSections / curriculumAuthorityPrompt
+/ worksheet-eval. Path-filtered so doc-only PRs don't trigger.
+Now switching from Sprint 1 → Sprint 3 (still inside PR-1 — same
+branch).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -196,6 +194,68 @@ Goal: complete the next un-shipped item in "What is next" below.
     CSV parser (handles double-quoted cells, escaped `""` quotes,
     Windows CRLF, blank lines, trailing newline) +
     `loadHumanScoresCsv(path)` filesystem reader. Empty axis cells
+    become `null` (rubric n/a rule); out-of-range cells throw with
+    full row+axis context. Header validated against the rubric's
+    canonical column order.
+  - `server/tests/worksheet-eval/runner.ts` — extensive surgical
+    edit (EVAL_HARNESS_VERSION 1.0.0 → 1.1.0). New `TaggedFixture`
+    type preserves corpus origin through the pipeline.
+    `loadAllFixtures` reads either or both corpora per
+    `EVAL_CORPUS=fixtures|comparison|both`. `checkBudget` sums
+    generator + rater. `runFixture(f, gen, rater)` invokes the
+    rater after post-validators run, stamps onto both
+    `metadata.modelJudgeScores` and `row.modelJudgeScores`, with
+    rater errors caught + logged + tolerated. `main()` runs
+    `assessProviderIsolation` at startup, optionally loads
+    `EVAL_HUMAN_SCORES_CSV`, computes `modelJudgeAggregate` +
+    `humanScoresAggregate` + `comparisonCorpus` metadata.
+  - `server/tests/worksheet-eval/comparison-corpus.json` — every
+    entry's `rules` array opts into `model-judge-axis-floor`. All
+    30 fixtures touched. Default floor 3 (no per-fixture override
+    yet).
+  - `server/tests/humanScoresLoader.test.ts` (new) — 17 vitest
+    cases across 2 describe blocks (parseCsvLine 4, parseHumanScoresCsv
+    13).
+
+- **PR-1 / Sprint 1.F — Baseline + nightly CI workflow extension.**
+  Three files touched (one new):
+  - `server/tests/worksheet-eval/eval-report.baseline.json` (new) —
+    placeholder baseline with empty `ruleStats` and zero rows. The
+    `_comment` field at the top documents the contract: the first
+    `main`-push CI run replaces this in-place via the
+    `refresh-baseline` job below; subsequent runs measure against
+    whatever the most recent main produced. Stamps
+    `comparisonCorpus { version: "1.0.0", size: 30 }` so the
+    report-shape lock holds even in the empty case.
+  - `server/tests/worksheet-eval/runner.ts` — extended the
+    diff-against handling to support `--update-baseline` (or
+    `EVAL_UPDATE_BASELINE=1`). When set, the runner overwrites the
+    diff-target file with the current report after the run.
+    Refuses to write when any fixture errored (would freeze a bad
+    state into the baseline). Default behaviour (no flag) is
+    unchanged: read baseline, detect regressions, log/fail per
+    bail-on-fail.
+  - `.github/workflows/worksheet-eval.yml` — full rewrite preserving
+    the existing nightly + workflow_dispatch entry points, plus:
+    - `EVAL_CORPUS=both` default for nightly so the comparison
+      corpus runs every night.
+    - New `judge_mode` workflow_dispatch input (stub | live | off).
+    - `--diff-against=server/tests/worksheet-eval/eval-report.baseline.json`
+      on every run so PR-day regressions are visible.
+    - Live-judge env wiring: EVAL_JUDGE_*_KEY pair (separate from
+      EVAL_*_KEY) so a single run can use different providers for
+      generator and judge — single-run cross-provider isolation
+      is a config-only choice.
+    - New sibling `refresh-baseline` job that fires on `push` to
+      `main` (with path filter so doc-only PRs don't trigger),
+      runs the harness with `--update-baseline` flag, and commits
+      the refreshed baseline back via the bot account. Uses
+      `permissions: contents: write` and the standard
+      github-actions[bot] commit signature.
+  - `server/tests/worksheet-eval/humanScoresLoader.ts` (new) — pure
+    CSV parser (handles double-quoted cells, escaped `""` quotes,
+    Windows CRLF, blank lines, trailing newline) +
+    `loadHumanScoresCsv(path)` filesystem reader. Empty axis cells
     become `null` (rubric n/a rule), out-of-range cells throw with
     full row+axis context. Header validated against the rubric's
     canonical column order. Returns
@@ -247,41 +307,62 @@ Goal: complete the next un-shipped item in "What is next" below.
 
 ## What is in flight
 
-_Nothing in flight; ready to start Sprint 1.F._
+_Nothing in flight; Sprint 1 complete. Switching to Sprint 3._
 
 ## What is next
 
-**PR-1 / Sprint 1.F — Baseline + nightly CI workflow extension.**
-Branch `big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
+**PR-1 / Sprint 3 — Prompt architecture.** Branch
+`big-bang-7/pr-1-measure-and-prompt-arch` (already on it; Sprint 3
+goes in the same PR as Sprint 1).
 
-Steps:
+Sprint 3 deliverables (5 chunks):
 
-1. Run `npm run eval:worksheets` once with `EVAL_CORPUS=both` to
-   produce a fresh `eval-report.json` that exercises both corpora
-   AND the model-judge stub.
-2. Copy that report to
-   `server/tests/worksheet-eval/eval-report.baseline.json` and
-   commit. PRs that move per-rule failure rates by >5% will then
-   trigger the existing `detectRegressions` gate.
-3. Extend `.github/workflows/worksheet-eval.yml` to:
-   - Set `EVAL_CORPUS=both` so nightly always runs the comparison
-     corpus.
-   - Pass `--diff-against=server/tests/worksheet-eval/eval-report.baseline.json`
-     so the regression detector compares against the baseline.
-   - Optionally set `EVAL_JUDGE_MODE=live` + `EVAL_JUDGE_PROVIDER`
-     when `secrets.EVAL_JUDGE_ANTHROPIC_KEY` is configured;
-     fall back to stub otherwise.
+1. **Sprint 3.A — `aiGenerateWorksheetTwoPass.ts` (orchestrator).**
+   New file `client/src/lib/aiGenerateWorksheetTwoPass.ts`. Flagged
+   behind `WORKSHEET_TWO_PASS_ENABLED`. Calls
+   `aiGenerateWorksheetSkeleton` (small ~1.5k-token prompt → returns
+   `{ sections: [{ id, type, marks, specRef }] }`) → calls
+   `aiFillWorksheetSection` per section in parallel (one fill call
+   per section, ~500 tokens each) → reuses entire post-validator
+   chain unchanged. Stamps
+   `metadata.generatorVersion = "two-pass-1.0.0"`. The existing
+   `aiGenerateWorksheet` becomes a router that delegates to this
+   when the flag is on; otherwise legacy path runs untouched.
+2. **Sprint 3.B — `validatorFeedbackRetry.ts` (retry loop).** New
+   file. When ≥ 3 validators fire on a single worksheet, re-prompt
+   ONCE with the specific failures inlined as constraints rather
+   than patching post-hoc. Stamps `metadata.retryCount` +
+   `metadata.retryReasons` for telemetry.
+3. **Sprint 3.C — Per-subject prompt-family unit test.** New file
+   `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`.
+   Asserts `lookupPromptFamily("Maths")` returns the maths family
+   AND not the english-lit family; `lookupPromptFamily("English
+   Literature")` returns english-lit; per-family forbidden-pattern
+   lists are non-empty.
+4. **Sprint 3.D — Wire `promptAbFramework` into the eval harness.**
+   `runner.ts` + `generators.ts` extension. Reads `EVAL_AB_EXPERIMENT`
+   env (id of an experiment from `promptAbFramework.PROMPT_FAMILIES`),
+   buckets fixtures by `pickVariant`, stamps the variant on
+   `row.warnings` (or a new `row.experimentVariant` field), and the
+   summariser splits ruleStats per variant when present.
+5. **Sprint 3.E — Wire `selfConsistencySampler` onto Section 3 hot
+   path.** Behind `PROMPT_SELF_CONSISTENCY_ENABLED` env. The two-pass
+   orchestrator (Sprint 3.A) gains an opt-in to call
+   `aiFillWorksheetSection` N times for the highest-mark section
+   only, then `reconcileSelfConsistency` to pick the modal answer.
+   N = `recommendedSampleCount(marks)`.
 
-Once Sprint 1.F lands, ALL Sprint 1 deliverables are shipped.
-Then move to Sprint 3 (still on same branch — same PR-1).
-
-After Sprint 3 finishes, run final eval, push, open PR-1.
+After Sprint 3 finishes:
+6. Run `npm run eval:worksheets` once to regenerate
+   `eval-report.baseline.json` if Sprint 3 changes prompt flow
+   meaningfully.
+7. Open PR-1.
 
 ## Per-PR tracking (live state for the current PR)
 
 ### PR-1 — `big-bang-7/pr-1-measure-and-prompt-arch`
 
-Status: **in flight, 6/13 deliverables shipped**.
+Status: **in flight, 8/13 deliverables shipped (Sprint 1 complete).**
 
 Sprint 1 deliverables (from PHASE-PLAN.md):
 
@@ -291,8 +372,8 @@ Sprint 1 deliverables (from PHASE-PLAN.md):
 - [x] `server/tests/worksheet-eval/modelJudgeRater.ts` (cross-provider judge) + tests
 - [x] runner wires rater + corpus into the run; populates `modelJudgeAggregate` + `humanScoresAggregate` + `comparisonCorpus`
 - [x] `humanScoresLoader.ts` for the optional human-scores CSV path
-- [ ] `eval-report.baseline.json` checked in
-- [ ] `.github/workflows/worksheet-eval.yml` extended (EVAL_CORPUS=both + diff against baseline + optional live judge)
+- [x] `eval-report.baseline.json` checked in (placeholder; auto-refreshed by main-push CI job)
+- [x] `.github/workflows/worksheet-eval.yml` extended (EVAL_CORPUS=both + diff-against + judge-mode knob + refresh-baseline job)
 
 Sprint 3 deliverables (from PHASE-PLAN.md):
 

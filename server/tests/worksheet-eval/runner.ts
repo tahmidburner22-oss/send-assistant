@@ -430,28 +430,48 @@ export async function main(): Promise<EvalReport> {
   // EVAL_DIFF_AGAINST=<path>) to compare against a previous report
   // and fail CI when failure rate per rule jumps >5% relative to
   // yesterday's nightly artefact.
+  //
+  // Sprint 1.F — `--update-baseline` (or EVAL_UPDATE_BASELINE=1)
+  // overwrites the supplied diff target with the current report.
+  // Used on `main` pushes so the baseline tracks current behaviour
+  // without manual intervention. Refuses to write if the run had
+  // any errored fixtures (would freeze in a bad state).
   const diffPath = parseDiffAgainstFlag();
+  const updateBaseline =
+    process.env.EVAL_UPDATE_BASELINE === "1" ||
+    process.argv.includes("--update-baseline");
   if (diffPath) {
-    try {
-      const prev = JSON.parse(await readFile(diffPath, "utf8")) as EvalReport;
-      const regressions = detectRegressions(prev, report, 0.05);
-      if (regressions.length > 0) {
-        console.error(
-          `[eval] regression detector: ${regressions.length} rule(s) regressed by >5% versus ${diffPath}:`,
+    if (updateBaseline) {
+      if (summary.errored > 0) {
+        console.warn(
+          `[eval] --update-baseline refused: ${summary.errored} errored fixture(s) — fix before refreshing baseline.`,
         );
-        for (const r of regressions) {
-          console.error(
-            `  - ${r.rule}: prev failure rate ${(r.prevRate * 100).toFixed(1)}% → now ${(r.nextRate * 100).toFixed(1)}% (Δ +${(r.delta * 100).toFixed(1)}%)`,
-          );
-        }
-        if (bailOnFail) process.exit(3);
       } else {
-        console.log(`[eval] regression detector: OK against ${diffPath}.`);
+        await writeFile(diffPath, JSON.stringify(report, null, 2));
+        console.log(`[eval] baseline refreshed at ${diffPath}.`);
       }
-    } catch (e) {
-      console.warn(
-        `[eval] regression detector: could not read ${diffPath} (${e instanceof Error ? e.message : String(e)}). Skipping.`,
-      );
+    } else {
+      try {
+        const prev = JSON.parse(await readFile(diffPath, "utf8")) as EvalReport;
+        const regressions = detectRegressions(prev, report, 0.05);
+        if (regressions.length > 0) {
+          console.error(
+            `[eval] regression detector: ${regressions.length} rule(s) regressed by >5% versus ${diffPath}:`,
+          );
+          for (const r of regressions) {
+            console.error(
+              `  - ${r.rule}: prev failure rate ${(r.prevRate * 100).toFixed(1)}% → now ${(r.nextRate * 100).toFixed(1)}% (Δ +${(r.delta * 100).toFixed(1)}%)`,
+            );
+          }
+          if (bailOnFail) process.exit(3);
+        } else {
+          console.log(`[eval] regression detector: OK against ${diffPath}.`);
+        }
+      } catch (e) {
+        console.warn(
+          `[eval] regression detector: could not read ${diffPath} (${e instanceof Error ? e.message : String(e)}). Skipping.`,
+        );
+      }
     }
   }
 
