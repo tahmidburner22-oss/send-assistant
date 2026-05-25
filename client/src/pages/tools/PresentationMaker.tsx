@@ -31,7 +31,7 @@ import { useLocation } from "wouter";
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import PresentationMakerEnhancementsPanel from "@/components/PresentationMakerEnhancementsPanel";
 import { resolvePresentationTemplate } from "@/lib/presentation-templates";
-import { buildSubjectPromptFragments } from "@/lib/subject-profiles";
+import { buildSubjectPromptFragments, getSubjectProfile } from "@/lib/subject-profiles";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
@@ -431,8 +431,34 @@ export interface ComposedTheme {
 export function composeTheme(
   baseKey: ThemeKey,
   sendNeeds: string[] | string | null | undefined,
+  subjectForAuto?: string,
 ): ComposedTheme {
-  const base = THEMES[baseKey];
+  // ── "subject-auto" — use the active subject's palette + font ────────────
+  // Resolves the subject profile (via the same helper the prompt builder
+  // uses) and synthesises a base theme on the fly so every Chemistry deck
+  // looks like Chemistry, every History deck like History, etc. The SEND
+  // override pass below still runs and can clobber any of these values.
+  let base: typeof THEMES[ThemeKey];
+  if (baseKey === ("subject-auto" as ThemeKey) && subjectForAuto) {
+    const sp = getSubjectProfile(subjectForAuto);
+    if (sp) {
+      const p = sp.palette;
+      base = {
+        name: `${sp.label} Auto`,
+        primary: `#${p.darkBg}`,
+        secondary: `#${p.accent1}`,
+        accent: `#${p.accent2}`,
+        bg: `#${p.lightBg}`,
+        text: "#1e293b",
+        light: `#${p.lightBg}`,
+        gradient: `linear-gradient(135deg, #${p.darkBg} 0%, #${p.accent1} 100%)`,
+      };
+    } else {
+      base = THEMES.navy;
+    }
+  } else {
+    base = THEMES[baseKey] || THEMES.navy;
+  }
   const override = getSendThemeOverride(sendNeeds);
   const applied = resolveSendSpecs(sendNeeds).map(s => s.name);
 
@@ -498,6 +524,29 @@ export function composeTheme(
 // Build the PPTX font-family string pptxgenjs accepts.
 function themeFontFamily(theme: ComposedTheme): string {
   return theme.fontFamily || "Calibri";
+}
+
+// ─── Subject-aware fonts ─────────────────────────────────────────────────────
+// SEND theme overrides win first (Verdana for Dyslexia, Arial for VI).
+// Otherwise STEM gets a clean sans, humanities a serif, and CPD a display
+// face. Returns a font face PPTX & most browsers will resolve.
+function getSubjectFontFamily(subject: string | undefined): string {
+  if (!subject) return "Calibri";
+  const s = subject.toLowerCase();
+  if (/staff|cpd|training/.test(s))                                                       return "Georgia";
+  if (/maths|mathematics|physics|chemistry|biology|science|computer|technology/.test(s))  return "Inter";
+  if (/english|history|religious|sociology|psychology|philosophy|media|film/.test(s))     return "Source Serif Pro";
+  if (/art|design|drama|music/.test(s))                                                   return "Source Serif Pro";
+  return "Inter";
+}
+
+/**
+ * Resolve the active font family taking SEND, theme and subject into account.
+ * SEND > theme.fontFamily > subject-aware > Calibri.
+ */
+function resolveActiveFont(theme: ComposedTheme, subject: string | undefined): string {
+  if (theme.fontFamily) return theme.fontFamily;
+  return getSubjectFontFamily(subject);
 }
 
 // ─── Slide type icons ────────────────────────────────────────────────────
@@ -2641,7 +2690,10 @@ function FullSlideView({
         aspectRatio: "16/9",
         background: isTitleSlide ? theme.gradient : theme.bg,
         position: "relative",
-        fontFamily: theme.fontFamily || undefined,
+        // theme.fontFamily wins (SEND), then any preview-level wrapper font
+        // (the parent supplies a CSS variable for subject-aware font when no
+        // SEND override is active).
+        fontFamily: theme.fontFamily || "var(--pres-font, Calibri)",
         lineHeight: theme.lineHeight || undefined,
       }}
     >
@@ -2685,9 +2737,9 @@ async function exportToPptx(
 ): Promise<void> {
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
-  const theme = composeTheme(themeKey, sendNeedIds);
-  // Font family: Dyslexia forces Verdana, VI forces Arial, else the theme default.
-  const pptxFont = themeFontFamily(theme);
+  const theme = composeTheme(themeKey, sendNeedIds, presentation.subject);
+  // Font family resolves: SEND override > theme.fontFamily > subject-aware > Calibri.
+  const pptxFont = theme.fontFamily || getSubjectFontFamily(presentation.subject);
   // Minimum font sizes — raised by SEND needs (VI = 24pt body, 40pt title).
   const minBodyPt = theme.minBodyPt || 12;
   const minTitlePt = theme.minTitlePt || 22;
@@ -3457,8 +3509,12 @@ export default function PresentationMaker() {
 
   // Base theme is what the teacher chose; `theme` is the SEND-composed version
   // used for every render. When no SEND needs are selected, composeTheme
-  // returns the base theme unchanged (applied* fields empty).
-  const theme = composeTheme(selectedTheme, sendNeedIds);
+  // returns the base theme unchanged (applied* fields empty). Passing the
+  // subject lets `subject-auto` resolve the matching subject palette.
+  const theme = composeTheme(selectedTheme, sendNeedIds, subject);
+  // Subject-aware font, honouring SEND > theme > subject. Used for the on-screen
+  // preview; the PPTX export resolves the same way inside `exportToPptx`.
+  const activeFont = resolveActiveFont(theme, subject);
 
   const handleGenerate = async () => {
     if (!subject || !yearGroup || !topic) {
@@ -3857,7 +3913,7 @@ Return JSON array of adapted slides.`;
   // ── Print Handout ────────────────────────────────────────────────────────────
   const handlePrintHandout = (layout: "1up" | "2up" | "notes") => {
     if (!presentation) return;
-    const theme = composeTheme(selectedTheme, sendNeedIds);
+    const theme = composeTheme(selectedTheme, sendNeedIds, presentation.subject);
     const slidesHtml = presentation.slides.map((slide, i) => {
       const bullets = slide.bullets?.map(b => `<li>${b}</li>`).join("") || "";
       const steps = slide.steps?.map((s, si) => `<li><strong>${si + 1}.</strong> ${s}</li>`).join("") || "";
@@ -3943,7 +3999,10 @@ Return JSON array of adapted slides.`;
   const currentSlide = presentation?.slides[activeSlide];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className="min-h-screen bg-gray-50"
+      style={{ ["--pres-font" as any]: activeFont }}
+    >
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -4186,6 +4245,21 @@ Return JSON array of adapted slides.`;
                     <Palette className="w-3 h-3" /> Theme
                   </Label>
                   <div className="grid grid-cols-3 gap-1.5">
+                    {/* Subject-auto theme — pulls palette from subject-profiles.ts */}
+                    <button
+                      onClick={() => setSelectedTheme("subject-auto" as ThemeKey)}
+                      className={`rounded-lg p-2 border-2 transition-all text-left ${
+                        selectedTheme === ("subject-auto" as ThemeKey) ? "border-blue-500 shadow-sm" : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      title={subject ? `Use the ${subject} palette automatically` : "Pick a subject first"}
+                    >
+                      <div className="h-4 rounded mb-1" style={{
+                        background: subject
+                          ? `linear-gradient(135deg, #${getSubjectProfile(subject).palette.darkBg} 0%, #${getSubjectProfile(subject).palette.accent1} 100%)`
+                          : "linear-gradient(135deg,#64748b,#94a3b8)",
+                      }} />
+                      <div className="text-[9px] font-bold text-gray-700 truncate">✨ Subject Auto</div>
+                    </button>
                     {(Object.entries(THEMES) as [ThemeKey, typeof THEMES[ThemeKey]][]).map(([key, t]) => (
                       <button
                         key={key}
