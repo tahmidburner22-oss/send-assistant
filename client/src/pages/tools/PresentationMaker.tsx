@@ -79,13 +79,51 @@ const SlideContentSchema = z.object({
   diagramDescription: z.string().max(500).optional(),
   diagramLabels: z.array(z.string().min(1)).max(20).optional(),
   image_prompt: z.string().max(500).optional(),
-  layout: z.enum(["full","two-col","image-right","image-left","centered","bullet-list","hero-number","definition","process","quote-block"]).optional(),
+  layout: z.enum(["full","two-col","image-right","image-left","centered","bullet-list","hero-number","definition","process","quote-block",
+    // ── Phase 1: 7 new layouts ────────────────────────────────────────
+    "split-stat","comparison-table","timeline-horizontal","card-grid","before-after","quote-portrait","diagram-callouts",
+  ]).optional(),
   bulletsRight: z.array(z.string().min(1).max(500)).max(6).optional(),
   headline: z.string().max(200).optional(),
   quote: z.string().max(600).optional(),
   attribution: z.string().max(200).optional(),
   accent: z.string().max(50).optional(),
   speakerNotes: z.string().max(2000).optional(),
+
+  // ── Phase 1 layout-specific fields (all optional, used when layout matches) ──
+  /** comparison-table rows: each row is {label, left, right}. */
+  compareRows: z.array(z.object({
+    label: z.string().max(80).optional(),
+    left: z.string().min(1).max(240),
+    right: z.string().min(1).max(240),
+  })).max(8).optional(),
+  /** comparison-table headers ["A","B"] — defaults to ["Before","After"]. */
+  compareHeaders: z.tuple([z.string().max(60), z.string().max(60)]).optional(),
+  /** timeline-horizontal events. */
+  timelineEvents: z.array(z.object({
+    date: z.string().min(1).max(40),
+    title: z.string().min(1).max(80),
+    description: z.string().max(160).optional(),
+  })).max(8).optional(),
+  /** card-grid items (rendered as a 2×3 grid). */
+  cards: z.array(z.object({
+    title: z.string().min(1).max(80),
+    body: z.string().min(1).max(220),
+    icon: z.string().max(40).optional(),
+  })).max(6).optional(),
+  /** before-after two-block compare — populates a contrasting pair. */
+  beforeAfter: z.object({
+    before: z.string().min(1).max(500),
+    after: z.string().min(1).max(500),
+    beforeLabel: z.string().max(40).optional(),
+    afterLabel: z.string().max(40).optional(),
+  }).optional(),
+  /** diagram-callouts: positioned labels around a central diagram. */
+  diagramCallouts: z.array(z.object({
+    label: z.string().min(1).max(80),
+    position: z.enum(["top-left","top","top-right","right","bottom-right","bottom","bottom-left","left"]),
+    description: z.string().max(160).optional(),
+  })).max(8).optional(),
 
   // ── Teacher-framework content fields ───────────────────────────────────────
   /** Timing chip shown top-right. "5" becomes "⏱ 5 min". */
@@ -195,13 +233,22 @@ export interface SlideContent {
   diagramDescription?: string;
   diagramLabels?: string[];
   image_prompt?: string;
-  layout?: "full" | "two-col" | "image-right" | "image-left" | "centered" | "bullet-list" | "hero-number" | "definition" | "process" | "quote-block";
+  layout?: "full" | "two-col" | "image-right" | "image-left" | "centered" | "bullet-list" | "hero-number" | "definition" | "process" | "quote-block"
+    | "split-stat" | "comparison-table" | "timeline-horizontal" | "card-grid" | "before-after" | "quote-portrait" | "diagram-callouts";
   bulletsRight?: string[];
   headline?: string;
   quote?: string;
   attribution?: string;
   accent?: string;
   speakerNotes?: string;
+
+  // Phase 1 layout-specific fields
+  compareRows?: { label?: string; left: string; right: string }[];
+  compareHeaders?: [string, string];
+  timelineEvents?: { date: string; title: string; description?: string }[];
+  cards?: { title: string; body: string; icon?: string }[];
+  beforeAfter?: { before: string; after: string; beforeLabel?: string; afterLabel?: string };
+  diagramCallouts?: { label: string; position: "top-left"|"top"|"top-right"|"right"|"bottom-right"|"bottom"|"bottom-left"|"left"; description?: string }[];
 
   // Teacher-framework content fields
   timingMinutes?: number;
@@ -1674,6 +1721,159 @@ function renderLayoutSlide(
           <BulletList bullets={slide.bullets} />
         </Shell>
       );
+
+    // ── Phase 1: split-stat — hero number + supporting context cards ─────
+    case "split-stat":
+      return (
+        <Shell contentClass="grid grid-cols-2 gap-5 items-center">
+          <div className="flex flex-col items-center text-center">
+            <div className="text-[5rem] font-black leading-none tracking-tight" style={{ color: badgeColour }}>
+              {slide.headline || slide.bullets?.[0] || "—"}
+            </div>
+            {slide.subtitle && <div className="text-sm font-semibold mt-2" style={{ color: theme.text }}>{slide.subtitle}</div>}
+          </div>
+          <div className="space-y-2">
+            {slide.body && <div className="text-xs uppercase tracking-wide font-bold" style={{ color: badgeColour }}>What this means</div>}
+            {slide.body && <div className="text-sm leading-relaxed" style={{ color: theme.text }}>{slide.body}</div>}
+            <BulletList bullets={(slide.bullets || []).slice(slide.headline ? 0 : 1)} />
+          </div>
+        </Shell>
+      );
+
+    // ── Phase 1: comparison-table — labelled side-by-side rows ──────────
+    case "comparison-table": {
+      const headers = slide.compareHeaders || ["A", "B"];
+      const rows = slide.compareRows || (slide.bullets || []).map((b, i) => ({ label: undefined as string | undefined, left: b, right: slide.bulletsRight?.[i] || "—" }));
+      return (
+        <Shell contentClass="flex flex-col justify-center">
+          <div className="rounded-xl overflow-hidden border" style={{ borderColor: badgeColour + "60" }}>
+            <div className="grid text-[10px] font-bold uppercase tracking-wide text-white"
+                 style={{ background: badgeColour, gridTemplateColumns: rows.some(r => r.label) ? "120px 1fr 1fr" : "1fr 1fr" }}>
+              {rows.some(r => r.label) && <div className="px-2 py-1.5">Aspect</div>}
+              <div className="px-2 py-1.5">{headers[0]}</div>
+              <div className="px-2 py-1.5" style={{ borderLeft: "1px solid rgba(255,255,255,0.2)" }}>{headers[1]}</div>
+            </div>
+            {rows.slice(0, 8).map((r, i) => (
+              <div key={i} className="grid text-[12px]" style={{
+                background: i % 2 ? "white" : theme.light,
+                gridTemplateColumns: rows.some(x => x.label) ? "120px 1fr 1fr" : "1fr 1fr",
+              }}>
+                {rows.some(x => x.label) && <div className="px-2 py-1.5 font-semibold" style={{ color: badgeColour }}>{r.label || ""}</div>}
+                <div className="px-2 py-1.5" style={{ color: theme.text }}>{r.left}</div>
+                <div className="px-2 py-1.5 border-l" style={{ color: theme.text, borderColor: badgeColour + "20" }}>{r.right}</div>
+              </div>
+            ))}
+          </div>
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: timeline-horizontal — event nodes along an axis ────────
+    case "timeline-horizontal": {
+      const events = slide.timelineEvents || [];
+      return (
+        <Shell contentClass="flex flex-col justify-center">
+          {slide.body && <div className="text-xs italic text-gray-500 mb-3 text-center">{slide.body}</div>}
+          <div className="relative pt-8 pb-4">
+            <div className="absolute left-0 right-0 top-12 h-1 rounded" style={{ background: badgeColour + "60" }} />
+            <div className="grid" style={{ gridTemplateColumns: `repeat(${Math.max(events.length, 1)}, 1fr)`, gap: 4 }}>
+              {events.map((e, i) => (
+                <div key={i} className="flex flex-col items-center text-center px-1">
+                  <div className="text-[10px] font-bold mb-1" style={{ color: badgeColour }}>{e.date}</div>
+                  <div className="w-3 h-3 rounded-full ring-4 ring-white" style={{ background: badgeColour }} />
+                  <div className="mt-2 rounded-lg p-1.5 w-full" style={{ background: theme.light, border: `1px solid ${badgeColour}40` }}>
+                    <div className="text-[11px] font-bold leading-tight" style={{ color: theme.primary }}>{e.title}</div>
+                    {e.description && <div className="text-[9px] text-gray-600 mt-0.5 leading-tight">{e.description}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: card-grid — 2×3 callout cards (or 3×2 wide) ─────────────
+    case "card-grid": {
+      const cards = slide.cards || [];
+      return (
+        <Shell contentClass="grid grid-cols-3 gap-2 content-start">
+          {cards.slice(0, 6).map((c, i) => (
+            <div key={i} className="rounded-xl p-2.5" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+              {c.icon && <div className="text-xl mb-1" aria-hidden>{c.icon}</div>}
+              <div className="text-[12px] font-bold mb-0.5" style={{ color: badgeColour }}>{c.title}</div>
+              <div className="text-[11px] leading-tight" style={{ color: theme.text }}>{c.body}</div>
+            </div>
+          ))}
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: before-after — contrasting two-state compare ────────────
+    case "before-after": {
+      const ba = slide.beforeAfter || { before: slide.bullets?.[0] || "—", after: slide.bulletsRight?.[0] || "—" };
+      const beforeLabel = ba.beforeLabel || "Before";
+      const afterLabel = ba.afterLabel || "After";
+      return (
+        <Shell contentClass="grid grid-cols-2 gap-3 items-stretch">
+          <div className="rounded-2xl p-4 flex flex-col" style={{ background: "#fef2f2", border: "2px solid #fca5a5" }}>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-red-700 mb-2">{beforeLabel}</div>
+            <div className="text-sm leading-relaxed text-red-900 flex-1">{ba.before}</div>
+          </div>
+          <div className="rounded-2xl p-4 flex flex-col" style={{ background: "#dcfce7", border: "2px solid #86efac" }}>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-green-700 mb-2">{afterLabel}</div>
+            <div className="text-sm leading-relaxed text-green-900 flex-1">{ba.after}</div>
+          </div>
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: quote-portrait — quote + image of speaker on the left ───
+    case "quote-portrait": {
+      const imgUrlQp = slide.image_prompt
+        ? `https://source.unsplash.com/featured/400x500/?${encodeURIComponent(slide.image_prompt)}`
+        : null;
+      return (
+        <Shell contentClass="grid grid-cols-[180px_1fr] gap-5 items-center">
+          <div className="rounded-2xl overflow-hidden h-full min-h-[220px]"
+               style={{ background: `${theme.light} center/cover no-repeat url(${imgUrlQp || ""})`, border: `1px solid ${badgeColour}30` }}>
+            {!imgUrlQp && <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">portrait</div>}
+          </div>
+          <div>
+            <div className="text-3xl leading-none mb-2" style={{ color: badgeColour }}>“</div>
+            <div className="text-lg italic font-medium leading-snug" style={{ color: theme.primary }}>{slide.quote || slide.body || "(quote)"}</div>
+            {slide.attribution && (
+              <div className="text-sm font-semibold mt-3" style={{ color: theme.text }}>— {slide.attribution}</div>
+            )}
+          </div>
+        </Shell>
+      );
+    }
+
+    // ── Phase 1: diagram-callouts — central area with positioned labels ──
+    case "diagram-callouts": {
+      const callouts = slide.diagramCallouts || [];
+      const posClass: Record<string, string> = {
+        "top-left": "top-2 left-2", "top": "top-2 left-1/2 -translate-x-1/2", "top-right": "top-2 right-2",
+        "right": "right-2 top-1/2 -translate-y-1/2", "bottom-right": "bottom-2 right-2",
+        "bottom": "bottom-2 left-1/2 -translate-x-1/2", "bottom-left": "bottom-2 left-2",
+        "left": "left-2 top-1/2 -translate-y-1/2",
+      };
+      return (
+        <Shell contentClass="relative">
+          <div className="absolute inset-0 rounded-xl border-2 border-dashed flex items-center justify-center"
+               style={{ borderColor: badgeColour + "60", background: theme.light }}>
+            <div className="text-xs italic text-gray-500 max-w-md text-center px-4">{slide.diagramDescription || "Diagram"}</div>
+          </div>
+          {callouts.slice(0, 8).map((c, i) => (
+            <div key={i} className={`absolute ${posClass[c.position] || "top-2 left-2"} rounded-lg px-2 py-1`} style={{ background: "white", border: `1.5px solid ${badgeColour}`, boxShadow: "0 2px 4px rgba(0,0,0,0.08)" }}>
+              <div className="text-[11px] font-bold" style={{ color: badgeColour }}>{c.label}</div>
+              {c.description && <div className="text-[10px] text-gray-600 max-w-[180px]">{c.description}</div>}
+            </div>
+          ))}
+        </Shell>
+      );
+    }
 
     case "bullet-list":
     case "full":
