@@ -33,6 +33,8 @@ import { useLocation } from "wouter";
 
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import PresentationMakerEnhancementsPanel from "@/components/PresentationMakerEnhancementsPanel";
+import SlidePollQR from "@/components/SlidePollQR";
+import { persistHandoff } from "@/components/SendToMenu";
 import { resolvePresentationTemplate } from "@/lib/presentation-templates";
 import { buildSubjectPromptFragments, getSubjectProfile } from "@/lib/subject-profiles";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
@@ -4345,6 +4347,8 @@ export default function PresentationMaker() {
   const [showDisplayPrefs, setShowDisplayPrefs] = useState(false);
   /** Read-aloud (Web Speech API) handle. */
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
+  /** AfL polling QR for the active slide. */
+  const [showPollQR, setShowPollQR] = useState(false);
 
   // Reset reveal level + timer whenever the active slide changes.
   useEffect(() => {
@@ -5092,6 +5096,56 @@ Return JSON array of adapted slides.`;
                 {speakingIdx === activeSlide ? <VolumeX className="w-3 h-3 text-red-500" /> : <Volume2 className="w-3 h-3" />}
                 {speakingIdx === activeSlide ? "Stop" : "Read"}
               </Button>
+              {/* Show "Live poll QR" only when the active slide is question-bearing. */}
+              {currentSlide && ["check-understanding","mini-quiz","exit-ticket","hook","discussion","cold-call"].includes(currentSlide.type) && (
+                <Button
+                  variant="outline" size="sm"
+                  onClick={() => setShowPollQR(true)}
+                  className="text-xs gap-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  title="Pupils scan to answer — live AfL poll"
+                >
+                  📱 Live poll
+                </Button>
+              )}
+              {/* Send the current deck context to another tool (Worksheets, Flashcards, Exit Ticket…). */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-xs gap-1" title="Continue this work in another tool">
+                    <Send className="w-3 h-3" />Send
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-60">
+                  <DropdownMenuItem onClick={() => {
+                    persistHandoff("presentation-maker", { topic: presentation?.topic || topic, yearGroup, subject, sourceSlide: currentSlide?.title || "" }, presentation?.title);
+                    setLocation("/worksheets");
+                  }}>📄 Make a worksheet from this lesson</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    const vocabSlide = presentation?.slides.find(s => s.type === "vocab-reference");
+                    const flashContent = vocabSlide?.vocabTable
+                      ? vocabSlide.vocabTable.map(t => `${t.term} :: ${t.definition}`).join("\n")
+                      : (presentation?.slides.flatMap(s => s.terms || []).map(t => `${t.term} :: ${t.definition}`).join("\n") || "");
+                    persistHandoff("presentation-maker", { topic: presentation?.topic || topic, yearGroup, subject }, flashContent);
+                    setLocation("/tools/flashcards");
+                  }}>🃏 Push key terms to Flashcards</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    const exitSlide = presentation?.slides.find(s => s.type === "exit-ticket");
+                    persistHandoff("presentation-maker",
+                      { topic: presentation?.topic || topic, yearGroup, subject },
+                      exitSlide ? `Q: ${exitSlide.question || ""}\nA: ${exitSlide.answer || ""}` : "");
+                    setLocation("/tools/exit-ticket");
+                  }}>✓ Exit-ticket → Exit Ticket tool</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    const examSlides = presentation?.slides.filter(s => s.type === "exam-practice" || s.type === "mini-quiz" || s.type === "check-understanding");
+                    const blastContent = (examSlides || []).map(s => s.question || "").filter(Boolean).join("\n");
+                    persistHandoff("presentation-maker", { topic: presentation?.topic || topic, yearGroup, subject }, blastContent);
+                    setLocation("/tools/quiz-blast");
+                  }}>⚡ Send quiz to Quiz Blast</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    persistHandoff("presentation-maker", { topic: presentation?.topic || topic, yearGroup, subject }, presentation?.title);
+                    setLocation("/tools/lesson-bundle");
+                  }}>📦 Bundle as lesson pack</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button variant="outline" size="sm" onClick={() => setShowSendAdaptDialog(true)} className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold">
                 Adapt for SEND
               </Button>
@@ -5677,6 +5731,19 @@ Return JSON array of adapted slides.`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── AfL Live Poll QR ─────────────────────────────────────────────── */}
+      <SlidePollQR
+        open={showPollQR}
+        onOpenChange={setShowPollQR}
+        slide={currentSlide ? {
+          title: currentSlide.title,
+          question: currentSlide.question,
+          options: currentSlide.options,
+          answer: currentSlide.answer,
+          type: currentSlide.type,
+        } : null}
+      />
 
       {/* ── Display Preferences popover ──────────────────────────────────── */}
       {showDisplayPrefs && (
