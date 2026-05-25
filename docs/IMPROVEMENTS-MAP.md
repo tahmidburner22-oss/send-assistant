@@ -15,14 +15,19 @@ in the same commit.
 
 | Status         | Count |
 | -------------- | ----- |
-| Shipped        | 18    |
+| Shipped        | 25    |
 | Re-applied (PR-2 recovery) | 1 |
-| Specced (ready for fresh-chat execution) | 13 |
+| Deferred (external integration prerequisites) | 8 |
+| Specced (ready for fresh-chat execution) | 1 |
 | Total improvements | 21 |
 
-The "Specced" count is higher than the improvement count because larger
-improvements (#7 LMS/MIS/LTI; #10 accessibility; #12 habit hooks) are
-intentionally split across multiple PR-sized specs.
+The "Shipped" + "Deferred" + "Specced" counts exceed the improvement
+count because several improvements (#7 LMS/MIS/LTI; #10 accessibility;
+#12 habit hooks) are intentionally split across multiple PR-sized
+specs. **As of 2026-05-25**, the only remaining specced-but-unshipped
+work is improvement #19's bursar-facing UI surface (the PD13 server
+scaffolding shipped via PR #94; the cost-chip / admin-spend-panel /
+docs follow-up is the next up).
 
 > **Note (May 2026):** PR #47 (Phase A · PR-2 — Auto-from-class
 > segmented control) was originally merged into the side branch
@@ -60,19 +65,19 @@ Every spec ties back to one of these three shifts.
 | 4 | Misconception-driven re-teach loop         | B · PB3 | [`phase-b-close-the-loop/features/FEAT-PB3.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB3.json) | **Shipped** |
 | 5 | Spec-point provenance + AO tag             | B · PB1 | [`phase-b-close-the-loop/features/FEAT-PB1.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB1.json) | **Shipped** |
 | 6 | Bulk scheme-of-work generation             | C · PC5 | [`phase-c-fit-your-school/features/FEAT-PC5.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC5.json) | **Shipped — PR #58 (zip) + PR #59 (CC)** |
-| 7a | LMS push: Google Classroom + Teams + Satchel | C · PC1 | [`phase-c-fit-your-school/features/FEAT-PC1.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC1.json) | Specced     |
-| 7b | MIS roster: Wonde + GroupCall             | C · PC2 | [`phase-c-fit-your-school/features/FEAT-PC2.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC2.json) | Specced     |
+| 7a | LMS push: Google Classroom + Teams + Satchel | C · PC1 | [`phase-c-fit-your-school/features/FEAT-PC1.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC1.json) | **Deferred** (external creds + 3rd-party APIs) |
+| 7b | MIS roster: Wonde + GroupCall             | C · PC2 | [`phase-c-fit-your-school/features/FEAT-PC2.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC2.json) | **Deferred** (external creds + 3rd-party APIs) |
 | 7c | LTI 1.3 + QTI 3.0 + Common Cartridge      | C · PC3 | [`phase-c-fit-your-school/features/FEAT-PC3.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC3.json) | **Shipped — PR #59** |
 | 8 | Differentiation that prints on one stack — Class Pack as default | A · PR-3 | [`phase-a-class-aware/features/FEAT-PR3.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR3.json) | **Shipped** |
 | 9 | EAL parity (bilingual side-by-side + reading-age memory) | C · PC6 | [`phase-c-fit-your-school/features/FEAT-PC6.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC6.json) | **Shipped — PR #60** |
 | 10 | Accessibility certification (WCAG 2.2 AA + Braille + Large print + Plain English) | C · PC7 | [`phase-c-fit-your-school/features/FEAT-PC7.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC7.json) | **Shipped — PR #60** |
 | 11 | "The marking ends here" — bulk ScanMark + per-pupil feedback + MIS export | B · PB4 | [`phase-b-close-the-loop/features/FEAT-PB4.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB4.json) | **Shipped — PR #55** |
-| 12a | Email-to-generate (worksheets@…)         | D · PD1 | [`phase-d-quality-and-habit/features/FEAT-PD1.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD1.json) | Specced     |
-| 12b | iOS / Android share-sheet                | D · PD2 | [`phase-d-quality-and-habit/features/FEAT-PD2.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD2.json) | Specced     |
-| 12c | 2-tap mobile generate from staffroom     | D · PD3 | [`phase-d-quality-and-habit/features/FEAT-PD3.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD3.json) | Specced     |
-| 12d | Monday-morning email                     | D · PD4 | [`phase-d-quality-and-habit/features/FEAT-PD4.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD4.json) | Specced     |
-| 12e | Streak / weekly summary                  | D · PD5 | [`phase-d-quality-and-habit/features/FEAT-PD5.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD5.json) | Specced     |
-| 12f | Browser extension                        | D · PD6 | [`phase-d-quality-and-habit/features/FEAT-PD6.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD6.json) | Specced     |
+| 12a | Email-to-generate (worksheets@…)         | D · PD1 | [`phase-d-quality-and-habit/features/FEAT-PD1.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD1.json) | **Deferred** (transactional email infra) |
+| 12b | iOS / Android share-sheet                | D · PD2 | [`phase-d-quality-and-habit/features/FEAT-PD2.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD2.json) | **Deferred** (separate mobile distribution) |
+| 12c | 2-tap mobile generate from staffroom     | D · PD3 | [`phase-d-quality-and-habit/features/FEAT-PD3.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD3.json) | **Deferred** (separate mobile distribution) |
+| 12d | Monday-morning email                     | D · PD4 | [`phase-d-quality-and-habit/features/FEAT-PD4.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD4.json) | **Deferred** (transactional email infra) |
+| 12e | Streak / weekly summary                  | D · PD5 | [`phase-d-quality-and-habit/features/FEAT-PD5.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD5.json) | **Deferred** (transactional email infra) |
+| 12f | Browser extension                        | D · PD6 | [`phase-d-quality-and-habit/features/FEAT-PD6.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD6.json) | **Deferred** (separate browser-extension distribution) |
 
 ---
 
@@ -80,15 +85,15 @@ Every spec ties back to one of these three shifts.
 
 | # | Quality bet                                | Phase | Spec file                                                                          | Status      |
 | - | ------------------------------------------ | ----- | ---------------------------------------------------------------------------------- | ----------- |
-| 13 | Versioning + diff                          | D · PD7 | [`phase-d-quality-and-habit/features/FEAT-PD7.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD7.json) | Specced     |
+| 13 | Versioning + diff                          | D · PD7 | [`phase-d-quality-and-habit/features/FEAT-PD7.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD7.json) | **Shipped — PR #102** (combined PR-10..18, audit item #66) |
 | 14 | Symbolic maths verification (CAS round-trip) | B · PB2 | [`phase-b-close-the-loop/features/FEAT-PB2.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB2.json) | **Shipped** |
-| 15 | Bias & sensitivity audit on examples       | D · PD9 | [`phase-d-quality-and-habit/features/FEAT-PD9.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD9.json) | Specced     |
-| 16 | Knowledge organiser per topic              | D · PD10 | [`phase-d-quality-and-habit/features/FEAT-PD10.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD10.json) | Specced     |
-| 17 | Anchor-poster & Now/Next/Then card outputs | D · PD11 | [`phase-d-quality-and-habit/features/FEAT-PD11.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD11.json) | Specced     |
-| 18 | Department library with HOD moderation     | D · PD12 | [`phase-d-quality-and-habit/features/FEAT-PD12.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD12.json) | Specced     |
-| 19 | Generation cost transparency + caching     | D · PD13 | [`phase-d-quality-and-habit/features/FEAT-PD13.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD13.json) | Specced     |
-| 20 | Eval harness (200 canonical UK NC + GCSE prompts) | A · PR-5 | [`phase-a-class-aware/features/FEAT-PR5.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR5.json) | Specced     |
-| 21 | Curriculum bank — tier-aware differentiator + topic-aware scaffolder + spec-point expansion (3 → 16 datasets) + paraphrased exemplar bank | F · PF1 | [`phase-f-curriculum-bank/features/FEAT-PF1.json`](../.agents/tasks/phase-f-curriculum-bank/features/FEAT-PF1.json) | **Shipped — Phase F** |
+| 15 | Bias & sensitivity audit on examples       | D · PD9 | [`phase-d-quality-and-habit/features/FEAT-PD9.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD9.json) | **Shipped — PR #102** (combined PR-10..18, audit item #12) |
+| 16 | Knowledge organiser per topic              | D · PD10 | [`phase-d-quality-and-habit/features/FEAT-PD10.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD10.json) | **Shipped — PR #102** (combined PR-10..18, audit item #20) |
+| 17 | Anchor-poster & Now/Next/Then card outputs | D · PD11 | [`phase-d-quality-and-habit/features/FEAT-PD11.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD11.json) | **Shipped — PR #102** (combined PR-10..18, audit item #21) |
+| 18 | Department library with HOD moderation     | D · PD12 | [`phase-d-quality-and-habit/features/FEAT-PD12.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD12.json) | **Shipped — PR #102** (combined PR-10..18, audit item #67) |
+| 19 | Generation cost transparency + caching     | D · PD13 | [`phase-d-quality-and-habit/features/FEAT-PD13.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD13.json) | **Shipped (server) — PR #94** (audit items #41/#42/#43/#76); UI surface in flight |
+| 20 | Eval harness (200 canonical UK NC + GCSE prompts) | A · PR-5 | [`phase-a-class-aware/features/FEAT-PR5.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR5.json) | **Shipped — PR #89** (audit item #44) |
+| 21 | Curriculum bank — tier-aware differentiator + topic-aware scaffolder + spec-point expansion (3 → 16 datasets) + paraphrased exemplar bank | F · PF1 | [`phase-f-curriculum-bank/features/FEAT-PF1.json`](../.agents/tasks/phase-f-curriculum-bank/features/FEAT-PF1.json) | **Shipped — PR #110** (Phase F) |
 
 ---
 
@@ -96,10 +101,11 @@ Every spec ties back to one of these three shifts.
 
 | Phase | Theme                                             | PRs (shipped / total) | Folder                                                                                              |
 | ----- | ------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------- |
-| A     | "We know your class"                              | 5 / 6                 | [`.agents/tasks/phase-a-class-aware/`](../.agents/tasks/phase-a-class-aware/)                       |
+| A     | "We know your class"                              | 6 / 6 (PR-5 shipped via PR #89) | [`.agents/tasks/phase-a-class-aware/`](../.agents/tasks/phase-a-class-aware/)             |
 | B     | "We close the loop"                               | 4 / 4                 | [`.agents/tasks/phase-b-close-the-loop/`](../.agents/tasks/phase-b-close-the-loop/)                 |
-| C     | "We fit your school"                              | 5 / 7                 | [`.agents/tasks/phase-c-fit-your-school/`](../.agents/tasks/phase-c-fit-your-school/)               |
-| D     | Quality bets + habit hooks                        | 0 / 12                | [`.agents/tasks/phase-d-quality-and-habit/`](../.agents/tasks/phase-d-quality-and-habit/)           |
+| C     | "We fit your school"                              | 5 shipped / 2 deferred (PC1, PC2) | [`.agents/tasks/phase-c-fit-your-school/`](../.agents/tasks/phase-c-fit-your-school/)   |
+| D     | Quality bets + habit hooks                        | 6 shipped / 6 deferred / 1 server-only (PD13 UI follow-up) | [`.agents/tasks/phase-d-quality-and-habit/`](../.agents/tasks/phase-d-quality-and-habit/)           |
+| E     | Exam paper builder + bank subtopic coverage       | 1 / 1 (Phase E content reached `main` via Phase F PR #110; original branch obsolete) | [`.agents/tasks/phase-e-exam-paper-builder/`](../.agents/tasks/phase-e-exam-paper-builder/) |
 | F     | Curriculum bank — tier-aware diff + topic scaffolder | 1 / 1              | [`.agents/tasks/phase-f-curriculum-bank/`](../.agents/tasks/phase-f-curriculum-bank/)               |
 
 ---
@@ -107,16 +113,27 @@ Every spec ties back to one of these three shifts.
 ## E. Sequencing recommendation
 
 The user's original ordering is preserved. Each phase has its own
-`PHASE-PLAN.md` with a concrete recommended order — most importantly:
+`PHASE-PLAN.md` with a concrete recommended order. Most phases are now
+shipped (see Section D). The only remaining specced work is:
 
-- **Phase A** finishes with PR-3 (Class Pack default) and PR-5 (eval
-  harness) — the two specs already on disk.
-- **Phase B** starts with PB1 (provenance) — every later PR consumes
-  spec-point + AO metadata.
-- **Phase C** starts with PC4 (coverage map) and PC5 (bulk SoW) — those
-  are product wins that don't require integrations.
-- **Phase D** starts with PD13 (cost transparency) — earns trust before
-  any other ship.
+- **Improvement #19 — PD13 UI surface.** The server-side scaffolding
+  (`aiCostEstimate.ts`, `aiCacheKey.ts`, `generationCache.ts`,
+  `WorksheetOutputSchema.metadata` cost fields, `/generate` cache hook)
+  shipped via PR #94. The bursar-facing UI — cost chip in
+  `WorksheetRenderer`, breakdown modal, settings toggle, and admin
+  panel monthly aggregate — is the natural next ship.
+
+Deferred items (Section B/C) are blocked on external prerequisites:
+
+- **PC1 (LMS push):** Google Classroom + Teams + Satchel One creds and
+  per-tenant OAuth flows.
+- **PC2 (MIS roster):** Wonde + GroupCall API keys and signed school
+  agreements.
+- **PD1, PD4, PD5 (email surfaces):** transactional email sender SLA
+  uplift and per-tenant from-address config.
+- **PD2, PD3 (mobile):** separate mobile distribution pipeline.
+- **PD6 (browser extension):** separate extension distribution
+  pipeline (Chrome Web Store, Firefox AMO, Edge Add-ons).
 
 ---
 
