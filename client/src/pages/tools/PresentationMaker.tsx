@@ -344,6 +344,52 @@ const THEMES = {
     light: "#F0F9FF",
     gradient: "linear-gradient(135deg, #0C4A6E 0%, #0284C7 60%, #38BDF8 100%)",
   },
+  // ── Phase-1 dark themes ───────────────────────────────────────────────
+  // Three additional dark variants so secondary teachers don't all converge
+  // on `midnight`. Each pairs a true-dark background with one strong accent
+  // so on-screen contrast is still WCAG-AA-friendly. The PPTX export reads
+  // `bg` directly and dark-detect logic at line ~2670 flips body text to
+  // light grey when bg < #3C3C3C, so these slot in without further work.
+  "studio-dark": {
+    name: "Studio Dark",
+    primary: "#F8FAFC",
+    secondary: "#22D3EE",
+    accent: "#FB7185",
+    bg: "#0B1220",
+    text: "#E2E8F0",
+    light: "#1E293B",
+    gradient: "linear-gradient(135deg, #0B1220 0%, #1E3A8A 100%)",
+  },
+  "slate-mono": {
+    name: "Slate Mono",
+    primary: "#F1F5F9",
+    secondary: "#94A3B8",
+    accent: "#FACC15",
+    bg: "#111827",
+    text: "#CBD5E1",
+    light: "#1F2937",
+    gradient: "linear-gradient(135deg, #111827 0%, #374151 100%)",
+  },
+  editorial: {
+    name: "Editorial",
+    primary: "#FDF2F8",
+    secondary: "#F472B6",
+    accent: "#FBBF24",
+    bg: "#1E1B2E",
+    text: "#E9D5FF",
+    light: "#2D2640",
+    gradient: "linear-gradient(135deg, #1E1B2E 0%, #4C1D95 100%)",
+  },
+  "forest-dark": {
+    name: "Forest Dark",
+    primary: "#ECFDF5",
+    secondary: "#34D399",
+    accent: "#FBBF24",
+    bg: "#0A1F14",
+    text: "#D1FAE5",
+    light: "#13301F",
+    gradient: "linear-gradient(135deg, #0A1F14 0%, #064E3B 100%)",
+  },
 };
 type ThemeKey = keyof typeof THEMES;
 
@@ -1321,17 +1367,17 @@ const SLIDE_TYPE_COLOURS: Record<string, string> = {
   "diagram-label":       "#0891b2",
   "worked-example":      "#1d4ed8",
   "activity":            "#059669",
-  "pause-and-solve":     "#dc2626",
+  "pause-and-solve":     "#be123c", // distinct from misconception (#dc2626) — rose
   "check-understanding": "#d97706",
   "mini-quiz":           "#7C3AED",
-  "misconception-bust":  "#dc2626",
+  "misconception-bust":  "#dc2626", // alarm red — reserved for "this is WRONG"
   "think-pair-share":    "#0891b2",
   "discussion":          "#059669",
   "real-world-link":     "#065f46",
   "exam-technique":      "#1d4ed8",
   "extension":           "#7C3AED",
   "summary":             "#1B2A4A",
-  "exit-ticket":         "#dc2626",
+  "exit-ticket":         "#9333ea", // distinct from misconception — purple end-of-lesson
   // Teacher-framework additions
   "vocab-reference":     "#0891b2",
   "model-answer":        "#1d4ed8",
