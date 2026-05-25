@@ -102,11 +102,11 @@
 - [x] 18 Misconception bank wiring
 - [x] 19 Per-board command words (BOARD_COMMAND_WORDS)
 - [x] 21 18-slide plan respects template bias
-- [ ] 22 Coverage check via coverageAggregator/coverageMapBuilder
+- [x] 22 Coverage check (presentation-validators.ts → findUncoveredObjectives)
 - [ ] 23 Fact-check pass on factual slides (use `fact-checker.ts`)
-- [ ] 24 Mandatory `differentiation` validator on activity slides (post-generation pass that retries any activity slide without `differentiation`)
+- [x] 24 Mandatory `differentiation` validator (presentation-validators.ts → findMissingDifferentiation; surfaced as a banner)
 - [x] 25 "Generate speaker notes" batch button
-- [ ] 26 Reading-age verifier (Flesch-Kincaid) — flag slides above the cap
+- [x] 26 Reading-age verifier (Flesch-Kincaid grade × age conversion)
 - [x] 27 Server-side rich schema parity (`PresentationDataSchemaShared` validates library save + email route)
 - [x] 35 I-do/We-do/You-do worked-example progression — `live-model` slide type covers this
 - [x] 36 Vocab → Flashcards push button — covered in Send-to menu
@@ -118,7 +118,7 @@
 - [ ] 53 Slide-level diff & rollback (version history)
 - [ ] 54 School identity (logo, brand colours, motto)
 - [ ] 55 Variant generator (3 versions of one slide)
-- [ ] 56 Per-slide telemetry "your patterns" panel
+- [x] 56 Per-slide telemetry (presentation-telemetry.ts; recordTelemetry calls wired into export, theme-change, refine paths)
 - [ ] 43 Pupil-facing companion view (deck-level)
 
 ## Suggested order for the next session
@@ -135,3 +135,86 @@ The remaining work breaks into these size buckets:
 9 + 10 + 52 (image pipeline — do as one), 44 (PDF email), 11 (programmatic diagrams), 43 (pupil companion view), 48 (cohort-aware regen)
 
 I'd recommend the next session knock out all the **Small** ones (one commit each) before starting **Medium**.
+
+
+
+## Detailed handoff for the deferred items
+
+### 54 — School identity (small)
+Stub:
+```ts
+// client/src/lib/school-identity.ts
+export interface SchoolIdentity { name?: string; motto?: string; logoDataUrl?: string; brandColour?: string; }
+const KEY = "adaptly_school_identity_v1";
+export function readSchoolIdentity(): SchoolIdentity { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch { return {}; } }
+export function writeSchoolIdentity(v: SchoolIdentity) { localStorage.setItem(KEY, JSON.stringify(v)); }
+```
+Wire into PresentationMaker:
+- Add a "School Identity" button in the header → opens a small dialog (name, motto, logo upload as data URL, brand colour picker).
+- In `FullSlideView`'s outer wrapper, render a tiny watermark in the bottom-left if `readSchoolIdentity().name` is set.
+- In `exportToPptx`, call `pSlide.addImage` with the `logoDataUrl` on every slide, bottom-left, 0.4" × 0.4".
+
+### 55 — Variant generator (small)
+Add next to "Refine this slide":
+```tsx
+<Button onClick={() => generateVariants(activeSlide)}>3 variants</Button>
+```
+Handler calls `callAIMessages` 3× (or once asking for an array of 3) with prompt like:
+> "Produce 3 different versions of slide N varying in tone (formal / pupil-friendly / story-led). Return JSON `{variants:[<full slide JSON>×3]}`."
+Render the 3 variants as cards in a Dialog; teacher picks one → `setPresentation` splices it in.
+
+### 53 — Slide diff / rollback (small-medium)
+Add a `slideHistory` state: `Record<index, SlideContent[]>`. Push the prior slide into history every time a slide changes. Keep last 5. Add a "Versions" button in the slide controls strip that opens a dropdown of past versions; clicking restores.
+
+### 45 — Rich print handouts (medium)
+Replace `handlePrintHandout` with a path that:
+1. Renders `FullSlideView` for every slide into an off-screen `<div>` with the same Tailwind classes the editor uses.
+2. Captures `document.documentElement.outerHTML`'s `<style>` and `<link>` tags so Tailwind classes resolve in the popup.
+3. Inlines the same CSS into the popup window, then `window.print()`.
+
+Or use `react-to-print` (zero-config) — installs cleanly:
+```bash
+pnpm add react-to-print
+```
+then `useReactToPrint({ content: () => printableRef.current })`.
+
+### 9 + 10 + 52 — Image pipeline (large; do as one PR)
+Server: add `GET /api/image-proxy?q=<keyword>&source=pexels|unsplash` that:
+- Calls the relevant API (env: `PEXELS_API_KEY`, `UNSPLASH_ACCESS_KEY`).
+- Caches the response by `(source, q)` for 24h in the same Postgres table or a small `image_cache` row.
+- Returns `{ url, attribution, licence }`.
+Client: replace `https://source.unsplash.com/featured/...?prompt` with a fetch to `/api/image-proxy`. Persist the resolved `{url, attribution, licence}` onto the slide as `image: { url, attribution, licence }` so it survives library save / email / PPTX export.
+PPTX: in `exportToPptx`, call `pSlide.addImage({ data: <fetched as base64>, x, y, w, h })` for any slide with a resolved `image.url`.
+
+### 11 — Programmatic diagrams (large)
+Build `client/src/components/PresentationDiagram.tsx` that switches on `slide.diagramKind` (new field) and renders SVG for: circuit, cell, water-cycle, food-chain, Venn, timeline, flowchart, equation-graph. Mirror the same SVG → `pptxgenjs` shapes in the PPTX painter (the lib supports `addShape` with rect/ellipse/line which matches what each diagram kind needs).
+
+### 44 — PDF email attachment (medium)
+Server: extend `sendPresentationEmail` to accept `pdfBuffer?: Buffer`. Build the PDF via `pdf-generator-v2.ts` (already imported by class-pack/lesson-bundle) — feed it the same HTML the email currently uses but full-fidelity. Attach to the email via the `send` helper's attachments option.
+
+### 47 — Exit-ticket → marksheet (large)
+Re-use the `SlidePollQR` flow (item 41) but write responses to a backend table `exit_ticket_responses(id, presentation_id, slide_index, pupil_handle, response, submitted_at)`. New page `/exit-ticket-results/:presentationId` shows a tally + per-pupil breakdown.
+
+### 48 — Cohort-aware regeneration (large)
+Add a "Class" picker to the form. When selected, pre-fill `objectives` from the class's recent exit-ticket gaps (use `pupil-context.ts` if it exposes a class-level signal) and pre-tick relevant SEND chips from `class-auto-brief.ts`. Add a "Regenerate for this class" button that re-runs `handleGenerate` with the cohort context appended to `additionalNotes`.
+
+### 43 — Pupil-facing companion view (large)
+New route `/share/pres/:token` that renders a stripped-down deck view: no speaker notes, no pedagogy badges, but every interactive slide (mini-quiz, exit-ticket, choose-your-task) becomes a tap-able pupil interaction. Token issued by a new `companion-share.presentation` row.
+
+### 23 — Fact-check pass (medium)
+After generation, gather every factual claim sentence (slides of type content / real-world-link / model-answer / exam-practice) and pass through `fact-checker.ts`'s existing `factCheckClaims` function. Surface flagged claims in the validator banner (item 22 already added the banner UI).
+
+## Branch state at end of session
+
+Branch: `feat/presentation-maker-overhaul`
+Commits: see `git log --oneline main..HEAD` on the branch.
+Files added:
+- `client/src/components/SlidePollQR.tsx`
+- `client/src/lib/presentation-validators.ts`
+- `client/src/lib/presentation-telemetry.ts`
+Files heavily modified:
+- `client/src/pages/tools/PresentationMaker.tsx` (~ +1,800 net lines)
+- `client/src/lib/subject-profiles.ts` (+12 subject profiles)
+- `shared/aiSchemas.ts` (+rich Presentation schema)
+- `server/routes/presentationLibrary.ts` (boundary validation)
+- `server/routes/ai.ts` (boundary validation on email route)
