@@ -5,9 +5,16 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-23 — PR-B Step 8 (tool UI + registry + route +
-hub card) shipped on `feat/phase-e-exam-paper-builder`. Opening PR-B
-is the final step.
+Last updated: 2026-05-25 — **Phase E is fully shipped.** Both PR-A
+and PR-B's content reached `main` via the Phase F PR (#110) — Phase F's
+branch absorbed the Phase E commits before merging, so opening PR-B
+independently became unnecessary. GitHub correctly reports "No commits
+between main and feat/phase-e-exam-paper-builder" because every file
+(PR-A back-tagger / coverage / gap-fill, PR-B assembly engine / tool
+UI) is already in `main` at `c048ca7`. The original branch
+`feat/phase-e-exam-paper-builder` can be deleted at the user's
+discretion. PR #107 (Phase E PR-A) likewise has no remaining commits
+to merge and can be closed.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -258,45 +265,11 @@ pastPaperQuestions.ts       2,203 lines
 
 ## What is in flight
 
-_Nothing yet. PR-B Step 9 (open the PR) starts at the next checkpoint._
+_Nothing. Phase E is shipped on `main` (see "Last updated" header)._
 
 ## What is next
 
-**PR-B · Step 9 — Open PR-B.**
-
-Branch is `feat/phase-e-exam-paper-builder` (already pushed through
-Step 8). Both PR-A (#107) and PR-B share the branch — when PR-A
-merges, PR-B continues on the same branch with PR-A's commits
-already in.
-
-> **Branching note for the reviewer:** PR-B's commits sit on top of
-> PR-A's on the same branch. This means PR-B's diff against `main`
-> will include PR-A's changes too. Reviewers should look at the
-> commit history for the PR-B-specific changes — commits prefixed
-> `phase-e PR-B step ...`.
-
-Open PR-B with:
-
-- **Title:** `Phase E PR-B: Create an Exam Paper — assembly engine + tool surface`
-- **Body** must include:
-  1. Link to `.agents/tasks/phase-e-exam-paper-builder/`.
-  2. Link back to PR-A (#107) and note that the diff includes
-     PR-A's changes since both PRs share the branch.
-  3. Brief description of the assembly algorithm (knapsack + bands +
-     per-topic floor + AO/command-word diversity).
-  4. Links to the new files: `createExamPaperBuilder.ts`,
-     `__tests__/createExamPaperBuilder.test.ts`, `CreateExamPaper.tsx`.
-  5. Worked example — show the result of generating an 80-mark
-     mathematics paper across 3 topics (Number, Algebra, Geometry).
-  6. Note that the tool reuses the existing `ExamPaperWorksheet`
-     output type, so plugging into Class Pack / pdf-generator-v2 is
-     a follow-up integration (deliberately out of scope for this PR
-     to keep the diff reviewable).
-
-After PR-B is opened, this phase is complete. Update this handoff
-to mark BOTH PRs complete.
-
-Future waves (subsequent sessions can pick up):
+**Nothing for Phase E itself.** Future waves are tracked separately:
 
 - **Wave 2 gap-fill** — bump every PR-A wave-1 subtopic from 5
   questions to 10 questions (+5 each × 32 subtopics = +160
