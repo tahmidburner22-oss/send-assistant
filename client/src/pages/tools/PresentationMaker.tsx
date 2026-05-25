@@ -41,6 +41,7 @@ import { formatMisconceptionsForPrompt } from "@/lib/misconception-bank";
 import { lookupByTopic, type CurriculumEntry } from "@/lib/curriculumBank";
 import { runAllValidators, type ValidationFinding } from "@/lib/presentation-validators";
 import { recordTelemetry } from "@/lib/presentation-telemetry";
+import { readSchoolIdentity, writeSchoolIdentity, fileToDataUrl, type SchoolIdentity } from "@/lib/school-identity";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
@@ -2390,19 +2391,16 @@ function FullSlideView({
   index,
   total,
   revealLevel = Infinity,
+  branding,
 }: {
   slide: SlideContent;
   theme: ComposedTheme;
   index: number;
   total: number;
-  /**
-   * Click-to-reveal step counter. Default Infinity = reveal everything (editor
-   * mode). In presenter mode the parent passes a finite number that the user
-   * increments by pressing the Down arrow / Space; each major reveal-able
-   * surface (worked-example steps, MCQ ✓ marker, pause-and-solve answer,
-   * model-answer body, stuck-help final answer) compares against this number.
-   */
   revealLevel?: number;
+  /** Per-school branding watermark — applied to title slide always, and to
+   *  every slide when `branding.showOnEverySlide` is true. */
+  branding?: SchoolIdentity;
 }) {
   const Icon = SLIDE_ICONS[slide.type] || BookOpen;
   const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
@@ -3658,6 +3656,16 @@ function FullSlideView({
       {!isTitleSlide && renderSendStrips()}
       {renderSlideContent()}
       {!isTitleSlide && renderSendFooter()}
+      {/* School-identity watermark — title always; every slide when opted-in. */}
+      {branding?.name && (slide.type === "title" || branding.showOnEverySlide) && (
+        <div className="absolute bottom-2 right-3 flex items-center gap-1.5 opacity-70 pointer-events-none" style={{ color: isTitleSlide ? "rgba(255,255,255,0.85)" : theme.text }}>
+          {branding.logoDataUrl && <img src={branding.logoDataUrl} alt="" className="h-5 w-auto object-contain" />}
+          <div className="text-[9px] font-semibold leading-tight">
+            <div>{branding.name}</div>
+            {branding.motto && slide.type === "title" && <div className="italic font-normal">{branding.motto}</div>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -4363,7 +4371,7 @@ async function exportToPptx(
 // `onKeyDown` so reveal state stays in one place.
 function PresenterMode({
   presentation, theme, activeSlide, revealLevel,
-  timerSeconds, timerPaused, blackout, showNotes,
+  timerSeconds, timerPaused, blackout, showNotes, branding,
   onKeyDown, onSetActive, onExit, onTogglePause, onClearBlackout,
 }: {
   presentation: PresentationData;
@@ -4374,6 +4382,7 @@ function PresenterMode({
   timerPaused: boolean;
   blackout: "none" | "black" | "white";
   showNotes: boolean;
+  branding?: SchoolIdentity;
   onKeyDown: (e: React.KeyboardEvent) => void;
   onSetActive: (i: number) => void;
   onExit: () => void;
@@ -4426,7 +4435,7 @@ function PresenterMode({
       <div className="flex-1 flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-6xl" style={{ aspectRatio: "16/9" }}>
-            <FullSlideView slide={slide} theme={theme} index={activeSlide} total={total} revealLevel={revealLevel} />
+            <FullSlideView slide={slide} theme={theme} index={activeSlide} total={total} revealLevel={revealLevel} branding={branding} />
           </div>
         </div>
         {/* Bottom control strip ───────────────────────────────────────────── */}
@@ -4600,6 +4609,16 @@ export default function PresentationMaker() {
   const [showPollQR, setShowPollQR] = useState(false);
   /** Speaker-notes batch generator state. */
   const [generatingNotes, setGeneratingNotes] = useState(false);
+  /** School identity dialog. */
+  const [showIdentityDialog, setShowIdentityDialog] = useState(false);
+  const [identity, setIdentity] = useState<SchoolIdentity>(() => readSchoolIdentity());
+  /** Per-slide version history (item 53) — last 5 versions per slide index. */
+  const [slideHistory, setSlideHistory] = useState<Record<number, SlideContent[]>>({});
+  const [historyForIdx, setHistoryForIdx] = useState<number | null>(null);
+  /** Variant generator state (item 55). */
+  const [generatingVariants, setGeneratingVariants] = useState(false);
+  const [variantOptions, setVariantOptions] = useState<SlideContent[] | null>(null);
+  const [variantTargetIdx, setVariantTargetIdx] = useState<number>(0);
 
   // Reset reveal level + timer whenever the active slide changes.
   useEffect(() => {
@@ -4849,6 +4868,12 @@ No markdown, no code fences, JSON only.`;
         const idx = typeof parsed.slideIndex === "number" ? parsed.slideIndex : refineTargetSlide;
         const incoming = parsed.slide || parsed;
         if (!incoming || typeof incoming !== "object") throw new Error("Refinement response missing slide data.");
+        // Stash the prior slide so the teacher can rollback (item 53).
+        setSlideHistory(prev => {
+          const cur = presentation.slides[idx];
+          const list = (prev[idx] || []).concat([cur]).slice(-5);
+          return { ...prev, [idx]: list };
+        });
         updatedSlides = [...presentation.slides];
         // Preserve the existing type — the AI MUST NOT change slide types.
         updatedSlides[idx] = { ...updatedSlides[idx], ...incoming, type: updatedSlides[idx].type } as SlideContent;
@@ -5288,6 +5313,61 @@ Return JSON only.`;
     }
   };
 
+  // ── Variant generator (item 55) ─────────────────────────────────────────
+  // Asks the AI for 3 distinct phrasings of the active slide (formal /
+  // pupil-friendly / story-led). Surfaces them as a chooser modal; pick
+  // one to splice into the deck. The previous slide goes into history so
+  // the choice is reversible.
+  const handleGenerateVariants = async (idx: number) => {
+    if (!presentation) return;
+    const slide = presentation.slides[idx];
+    if (!slide) return;
+    setGeneratingVariants(true);
+    setVariantTargetIdx(idx);
+    setVariantOptions(null);
+    try {
+      const sys = `You produce three distinct phrasings of a single lesson slide.
+The three variants must vary in TONE only — academic content, learning objective and slide TYPE must stay identical:
+  1) Formal / mark-scheme tone
+  2) Pupil-friendly / conversational tone
+  3) Story-led / context-first tone
+Return ONLY a JSON object: { "variants": [<full slide JSON #1>, <full slide JSON #2>, <full slide JSON #3>] }
+Each variant must keep the same "type" as the input slide. Do NOT change any structured data fields like marks/timingMinutes/successCriteria — only rewrite human-readable text fields.`;
+      const usr = `Deck: ${presentation.title} (${presentation.subject}, ${presentation.yearGroup})
+Slide to revoice (preserve type "${slide.type}"):
+${JSON.stringify(slide)}
+
+Return JSON only.`;
+      const result = await callAI(sys, usr, 3500);
+      const rawText = typeof result === "string" ? result : (result as any).text || JSON.stringify(result);
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(match ? match[0] : cleaned);
+      const variants: SlideContent[] = (parsed.variants || []).slice(0, 3).map((v: any) => ({ ...slide, ...v, type: slide.type }));
+      if (variants.length === 0) throw new Error("No variants returned.");
+      setVariantOptions(variants);
+    } catch (err: any) {
+      console.error("Variant generation failed:", err);
+      toast.error("Couldn't generate variants — please try again.");
+    } finally {
+      setGeneratingVariants(false);
+    }
+  };
+  const acceptVariant = (variant: SlideContent) => {
+    if (!presentation) return;
+    const idx = variantTargetIdx;
+    setSlideHistory(prev => {
+      const cur = presentation.slides[idx];
+      const list = (prev[idx] || []).concat([cur]).slice(-5);
+      return { ...prev, [idx]: list };
+    });
+    const newSlides = [...presentation.slides];
+    newSlides[idx] = variant;
+    setPresentation({ ...presentation, slides: newSlides });
+    setVariantOptions(null);
+    toast.success("Variant applied.");
+  };
+
   // ── Inline slide editing ─────────────────────────────────────────────────────
   const startEditSlide = (idx: number) => {
     if (!presentation) return;
@@ -5297,10 +5377,17 @@ Return JSON only.`;
 
   const saveEditSlide = () => {
     if (!presentation || editingSlide === null) return;
+    // Push the prior version into history before overwriting (item 53).
+    setSlideHistory(prev => {
+      const cur = presentation.slides[editingSlide];
+      const list = (prev[editingSlide] || []).concat([cur]).slice(-5);
+      return { ...prev, [editingSlide]: list };
+    });
     const newSlides = [...presentation.slides];
     newSlides[editingSlide] = { ...newSlides[editingSlide], ...slideEditValues } as SlideContent;
     setPresentation({ ...presentation, slides: newSlides });
     setEditingSlide(null);
+    recordTelemetry("edit-slide", { slideType: newSlides[editingSlide].type, slideIndex: editingSlide });
     toast.success("Slide updated!");
   };
 
@@ -5404,6 +5491,13 @@ Return JSON only.`;
                   <DropdownMenuItem onClick={() => handlePrintHandout("notes")}>📋 Notes page (slide + notes)</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button
+                variant="outline" size="sm" onClick={() => setShowIdentityDialog(true)}
+                className="text-xs gap-1"
+                title="School identity (logo, motto, brand colour)"
+              >
+                🏫 School
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setIsFullscreen(true)} className="text-xs gap-1">
                 <Maximize2 className="w-3 h-3" />Present
               </Button>
@@ -5847,6 +5941,17 @@ Return JSON only.`;
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleGenerateVariants(activeSlide)}
+                      disabled={generatingVariants}
+                      className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold"
+                      title="Generate 3 alternative phrasings (formal / pupil-friendly / story-led)"
+                    >
+                      {generatingVariants ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+                      3 variants
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => openRefineDialog("deck")}
                       disabled={conversation.length === 0}
                       className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold"
@@ -5873,6 +5978,7 @@ Return JSON only.`;
                       theme={theme}
                       index={activeSlide}
                       total={presentation.slides.length}
+                      branding={identity}
                     />
                     {/* Navigation */}
                     <div className="flex items-center justify-between mt-3">
@@ -5932,6 +6038,11 @@ Return JSON only.`;
                           <button onClick={(e) => { e.stopPropagation(); moveSlide(i, -1); }} disabled={i === 0} className="w-4 h-4 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-30"><ChevronUp className="w-2.5 h-2.5" /></button>
                           <button onClick={(e) => { e.stopPropagation(); moveSlide(i, 1); }} disabled={i === presentation.slides.length - 1} className="w-4 h-4 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-30"><ChevronDown className="w-2.5 h-2.5" /></button>
                           <button onClick={(e) => { e.stopPropagation(); startEditSlide(i); }} className="w-4 h-4 flex items-center justify-center hover:bg-blue-50 rounded"><Pencil className="w-2.5 h-2.5 text-blue-600" /></button>
+                          {(slideHistory[i]?.length || 0) > 0 && (
+                            <button onClick={(e) => { e.stopPropagation(); setHistoryForIdx(i); }} className="w-4 h-4 flex items-center justify-center hover:bg-amber-50 rounded" title={`${slideHistory[i].length} prior version(s)`}>
+                              <HistoryIcon className="w-2.5 h-2.5 text-amber-600" />
+                            </button>
+                          )}
                           <button onClick={(e) => { e.stopPropagation(); deleteSlide(i); }} disabled={presentation.slides.length <= 1} className="w-4 h-4 flex items-center justify-center hover:bg-red-50 rounded disabled:opacity-30"><Trash2 className="w-2.5 h-2.5 text-red-500" /></button>
                         </div>
                       </div>
@@ -6053,6 +6164,7 @@ Return JSON only.`;
           timerPaused={timerPaused}
           blackout={blackout}
           showNotes={showNotes}
+          branding={identity}
           onKeyDown={handleFullscreenKeyDown}
           onSetActive={setActiveSlide}
           onExit={() => setIsFullscreen(false)}
@@ -6106,6 +6218,159 @@ Return JSON only.`;
           type: currentSlide.type,
         } : null}
       />
+
+      {/* ── Variant Chooser dialog (item 55) ─────────────────────────────── */}
+      <Dialog open={!!variantOptions} onOpenChange={(o) => !o && setVariantOptions(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Pick a variant for slide {variantTargetIdx + 1}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {(variantOptions || []).map((v, i) => {
+              const labels = ["Formal", "Pupil-friendly", "Story-led"];
+              return (
+                <div key={i} className="rounded-lg border-2 border-gray-200 hover:border-purple-400 p-3 cursor-pointer flex flex-col gap-2"
+                     onClick={() => acceptVariant(v)}>
+                  <div className="text-[9px] font-bold uppercase tracking-wide text-purple-700">{labels[i] || `Variant ${i + 1}`}</div>
+                  <div className="text-sm font-bold" style={{ color: theme.primary }}>{v.title}</div>
+                  {v.subtitle && <div className="text-[11px] italic text-gray-500">{v.subtitle}</div>}
+                  {v.body && <div className="text-[11px] text-gray-700 line-clamp-3">{v.body}</div>}
+                  {v.bullets && v.bullets.length > 0 && (
+                    <ul className="text-[10px] text-gray-700 list-disc pl-4">
+                      {v.bullets.slice(0, 4).map((b, bi) => <li key={bi} className="line-clamp-1">{b}</li>)}
+                    </ul>
+                  )}
+                  <Button size="sm" className="mt-auto bg-purple-600 hover:bg-purple-700 text-white text-xs">Use this variant</Button>
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Slide Version History dialog (item 53) ───────────────────────── */}
+      <Dialog open={historyForIdx !== null} onOpenChange={(o) => !o && setHistoryForIdx(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Slide {historyForIdx === null ? "" : historyForIdx + 1} — version history</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {historyForIdx !== null && (slideHistory[historyForIdx] || []).slice().reverse().map((past, vi) => {
+              const realIdx = (slideHistory[historyForIdx] || []).length - 1 - vi;
+              return (
+                <div key={vi} className="rounded-lg border border-gray-200 p-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-semibold text-gray-700">v{realIdx + 1} — {SLIDE_LABELS[past.type] || past.type}</div>
+                    <Button size="sm" variant="outline" className="text-xs h-6"
+                      onClick={() => {
+                        if (!presentation || historyForIdx === null) return;
+                        // Stash the current as a new version, then restore.
+                        setSlideHistory(prev => {
+                          const cur = presentation.slides[historyForIdx];
+                          const list = (prev[historyForIdx] || []).concat([cur]).slice(-5);
+                          return { ...prev, [historyForIdx]: list };
+                        });
+                        const newSlides = [...presentation.slides];
+                        newSlides[historyForIdx] = past;
+                        setPresentation({ ...presentation, slides: newSlides });
+                        toast.success("Reverted to earlier version.");
+                        setHistoryForIdx(null);
+                      }}>
+                      Restore
+                    </Button>
+                  </div>
+                  <div className="text-[11px] font-bold" style={{ color: theme.primary }}>{past.title}</div>
+                  {past.body && <div className="text-[10px] text-gray-600 line-clamp-2">{past.body}</div>}
+                  {past.bullets && past.bullets.length > 0 && (
+                    <ul className="text-[10px] text-gray-700 list-disc pl-4 mt-1">
+                      {past.bullets.slice(0, 3).map((b, i) => <li key={i} className="line-clamp-1">{b}</li>)}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
+            {historyForIdx !== null && (slideHistory[historyForIdx] || []).length === 0 && (
+              <div className="text-xs italic text-gray-500">No prior versions yet — they'll appear here after you edit or refine this slide.</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── School Identity Dialog ───────────────────────────────────────── */}
+      <Dialog open={showIdentityDialog} onOpenChange={setShowIdentityDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>School identity</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-gray-600">
+              Add your school's name, motto and logo. Every deck you build will carry a small footer
+              watermark, and the logo appears on the title slide.
+            </p>
+            <div className="space-y-1">
+              <Label className="text-xs">School name</Label>
+              <Input value={identity.name || ""} onChange={e => setIdentity({ ...identity, name: e.target.value })} className="h-8 text-xs" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Motto / tagline (optional)</Label>
+              <Input value={identity.motto || ""} onChange={e => setIdentity({ ...identity, motto: e.target.value })} className="h-8 text-xs" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Brand colour</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={identity.brandColour || "#1B2A4A"}
+                  onChange={e => setIdentity({ ...identity, brandColour: e.target.value })}
+                  className="h-8 w-12 rounded border"
+                />
+                <Input
+                  value={identity.brandColour || ""}
+                  onChange={e => setIdentity({ ...identity, brandColour: e.target.value })}
+                  placeholder="#1B2A4A"
+                  className="h-8 text-xs flex-1 font-mono"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Logo (PNG/JPG, &lt; 200kb)</Label>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml"
+                onChange={async e => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  if (f.size > 200_000) { toast.error("Logo too large — please use under 200kb."); return; }
+                  const url = await fileToDataUrl(f);
+                  setIdentity(id => ({ ...id, logoDataUrl: url }));
+                }}
+                className="text-xs"
+              />
+              {identity.logoDataUrl && (
+                <div className="flex items-center gap-2 mt-1">
+                  <img src={identity.logoDataUrl} alt="logo" className="w-12 h-12 object-contain border rounded bg-white" />
+                  <button onClick={() => setIdentity(id => ({ ...id, logoDataUrl: undefined }))} className="text-[10px] text-red-600 underline">Remove</button>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                checked={!!identity.showOnEverySlide}
+                onChange={e => setIdentity({ ...identity, showOnEverySlide: e.target.checked })}
+                id="show-everywhere"
+              />
+              <Label htmlFor="show-everywhere" className="text-xs">Show watermark on every slide (not just title)</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setShowIdentityDialog(false)}>Cancel</Button>
+            <Button size="sm" onClick={() => { writeSchoolIdentity(identity); toast.success("School identity saved."); setShowIdentityDialog(false); }} className="bg-blue-600 hover:bg-blue-700 text-white">
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Display Preferences popover ──────────────────────────────────── */}
       {showDisplayPrefs && (
