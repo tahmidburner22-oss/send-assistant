@@ -813,7 +813,8 @@ const SLIDE_TYPE_PEDAGOGY: Record<string, { rosenshine?: string; bloom: string }
   "section-divider":     { bloom: "—" },
 };
 
-// ─── Slide type icons ────────────────────────────────────────────────────const SLIDE_ICONS: Record<string, React.ElementType> = {
+// ─── Slide type icons ────────────────────────────────────────────────────
+const SLIDE_ICONS: Record<string, React.ElementType> = {
   "title": Monitor,
   "learning-objectives": Target,
   "hook": Lightbulb,
