@@ -5,21 +5,19 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1 + 3.A + 3.E
-shipped.** Branch `big-bang-7/pr-1-measure-and-prompt-arch`. Sprint
-3.A landed `client/src/lib/aiGenerateWorksheetTwoPass.ts` —
-orchestrator that delegates to legacy `aiGenerateWorksheet` when
-`WORKSHEET_TWO_PASS_ENABLED` is OFF (default), or runs Pass 1
-(skeleton) + Pass 2 (parallel section fill via `Promise.all`) when
-ON. Stamps `metadata.generatorVersion = "two-pass-1.0.0"`. Sprint
-3.E folded in: `pickSelfConsistencySection` picks the highest-mark
-q-extended section, `fillSectionWithSelfConsistency` runs N=
-recommendedSampleCount(marks) samples and reconciles via
-`reconcileSelfConsistency`. Stamps `selfConsistencyApplied`,
-`selfConsistencyConfidence`, `selfConsistencySampleCount` on
-metadata. 27-test lock at
-`client/src/lib/__tests__/aiGenerateWorksheetTwoPass.test.ts`. Next
-chunk: Sprint 3.B — validator-feedback retry loop.
+Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1 + 3.A + 3.B +
+3.E shipped.** Branch `big-bang-7/pr-1-measure-and-prompt-arch`.
+Sprint 3.B added `client/src/lib/validatorFeedbackRetry.ts` —
+generic retry helper. Public surface: `runWithValidatorFeedbackRetry`
+(generic over generator/validator/append) +
+`runWorksheetWithRetry` (worksheet convenience wrapper). When ≥3
+post-validator warnings fire, re-prompts ONCE with the warnings
+inlined as a constraint block via `buildConstraintBlock`. Picks the
+better-scoring result by `qaScore.total` (ties go to the retry).
+Stamps `metadata.retryCount` (0 | 1) + `metadata.retryReasons`
+on the returned worksheet. 22-test lock at
+`client/src/lib/__tests__/validatorFeedbackRetry.test.ts`. Next
+chunk: Sprint 3.C — per-subject prompt-family unit test.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -298,6 +296,45 @@ Goal: complete the next un-shipped item in "What is next" below.
     pickSelfConsistencySection (2), fillSectionWithSelfConsistency
     (2 — single-shot, N-shot reconciliation), end-to-end metadata
     stamping (2 — on / off).
+
+- **PR-1 / Sprint 3.B — Validator-feedback retry loop.** Two new
+  files:
+  - `client/src/lib/validatorFeedbackRetry.ts` (new) — generic +
+    worksheet-specific retry surface.
+    - `runWithValidatorFeedbackRetry(generate, validate, append,
+      params, opts)` — generic over generator function shape.
+      Pure / idempotent. Threshold default 3. Single-round-trip
+      (no retry pyramid). Picks higher-qaScore winner; ties go to
+      retry. Catches retry-side errors and falls back to original.
+    - `runWorksheetWithRetry(generate, params, opts)` — worksheet
+      convenience wrapper. Reads `metadata.postValidatorWarnings`
+      + `metadata.qaScore.total` via `extractWorksheetEval`,
+      appends constraints to `additionalInstructions` via
+      `appendInstructionsConstraints`. Stamps
+      `metadata.retryCount` (0 | 1) + `metadata.retryReasons` on
+      the returned worksheet for telemetry. Drop-in around either
+      `aiGenerateWorksheet` or `aiGenerateWorksheetTwoPass`.
+    - `stripValidatorPrefix(warning)` strips bracketed validator
+      labels (`[Phase 1 / enforceSpecAnchorPresence]` etc.) so the
+      retry prompt doesn't waste tokens on internal labels.
+    - `buildConstraintBlock(warnings, maxWarnings=8)` produces
+      the inlined retry block. Cap prevents prompt bloat on
+      noisy outputs. Header asks the LLM to treat each as a hard
+      constraint without discussing why.
+  - `client/src/lib/__tests__/validatorFeedbackRetry.test.ts`
+    (new) — 22 vitest cases across 6 describe blocks:
+    `stripValidatorPrefix` (7 — bracketed prefix variants, no
+    prefix, whitespace, em-dash separator, idempotent),
+    `buildConstraintBlock` (6 — empty input, all-stripped, single
+    warning, multi-numbering, dedup, maxWarnings cap, prefix
+    strip), `runWithValidatorFeedbackRetry` (8 — no retry below
+    threshold, retry at threshold, constraint append, higher-qaScore
+    wins, lower-qaScore loses, tie goes to retry, retry-error
+    fallback to original, threshold=0/Infinity disable),
+    `extractWorksheetEval` (3 — happy, missing fields, missing
+    metadata), `appendInstructionsConstraints` (3 — empty initial,
+    populated initial, non-mutating), `runWorksheetWithRetry`
+    (3 — no-retry stamp, retry stamp, identity preservation).
   - `server/tests/worksheet-eval/humanScoresLoader.ts` (new) — pure
     CSV parser (handles double-quoted cells, escaped `""` quotes,
     Windows CRLF, blank lines, trailing newline) +
@@ -353,56 +390,41 @@ Goal: complete the next un-shipped item in "What is next" below.
 
 ## What is in flight
 
-_Nothing in flight; ready to start Sprint 3.B._
+_Nothing in flight; ready to start Sprint 3.C._
 
 ## What is next
 
-**PR-1 / Sprint 3.B — Validator-feedback retry loop.** Branch
-`big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
+**PR-1 / Sprint 3.C — Per-subject prompt-family unit test.** Branch
+`big-bang-7/pr-1-measure-and-prompt-arch`.
 
-New file `client/src/lib/validatorFeedbackRetry.ts`. Public
-function `runWithValidatorFeedbackRetry(generate, params, opts)`:
+New file `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`:
 
-1. Calls `generate(params)`.
-2. Runs `runWorksheetPostValidators` on the result.
-3. If `metadata.postValidatorWarnings.length >= 3` (configurable
-   threshold, default 3), constructs a re-prompt that inlines the
-   specific warnings as constraints ("must include specRef on Q3,
-   must shorten reading age below 14, must remove the foreign
-   diagram on section 4") and calls `generate(params, {
-   additionalInstructions: inlineWarningsBlock })` ONCE.
-4. Threads the second result back through post-validators and
-   keeps the better-scoring one (by `metadata.qaScore.total`).
-5. Stamps `metadata.retryCount = 0|1` and
-   `metadata.retryReasons = string[]` for telemetry.
+1. Asserts `lookupPromptFamily("Maths")` returns `PROMPT_FAMILIES.maths`
+   and not the english-lit family.
+2. Asserts `lookupPromptFamily("English Literature")` returns
+   `PROMPT_FAMILIES["english-lit"]`.
+3. Per-family forbidden-pattern lists are correct (maths forbids
+   "mph", "lbs", "°F"; english-lit forbids "plot summary").
+4. `renderPromptFamily` includes header + every directive + every
+   forbidden pattern.
+5. Edge cases: lookupPromptFamily on unknown subject → general;
+   case-insensitive matching; subjects like "Combined Science",
+   "Religious Studies", "Art and Design" route correctly.
 
-Module is generic (works on any generator that takes a params
-object with optional `additionalInstructions`). Used by the
-two-pass orchestrator AND the legacy `aiGenerateWorksheet`.
-
-Then Sprint 3.C, 3.D — open PR-1.
+Then Sprint 3.D — wire promptAbFramework into the eval harness.
 
 ## Per-PR tracking (live state for the current PR)
 
 ### PR-1 — `big-bang-7/pr-1-measure-and-prompt-arch`
 
-Status: **in flight, 9/13 deliverables shipped (Sprint 1 complete + Sprint 3.A/3.E shipped).**
+Status: **in flight, 10/13 deliverables shipped (Sprint 1 complete + 3.A/3.B/3.E shipped).**
 
-Sprint 1 deliverables (from PHASE-PLAN.md):
-
-- [x] `docs/teacher-rater-rubric.md` (6-axis × 1–5 with anchors)
-- [x] `server/tests/worksheet-eval/comparison-corpus.json` (30 triples) + loader + tests
-- [x] `EvalReport` schema extended with `humanScores` + `modelJudgeScores` + `model-judge-axis-floor` rule + per-axis summariser
-- [x] `server/tests/worksheet-eval/modelJudgeRater.ts` (cross-provider judge) + tests
-- [x] runner wires rater + corpus into the run; populates `modelJudgeAggregate` + `humanScoresAggregate` + `comparisonCorpus`
-- [x] `humanScoresLoader.ts` for the optional human-scores CSV path
-- [x] `eval-report.baseline.json` checked in (placeholder; auto-refreshed by main-push CI job)
-- [x] `.github/workflows/worksheet-eval.yml` extended (EVAL_CORPUS=both + diff-against + judge-mode knob + refresh-baseline job)
+Sprint 1 deliverables: 8/8 complete.
 
 Sprint 3 deliverables (from PHASE-PLAN.md):
 
 - [x] `client/src/lib/aiGenerateWorksheetTwoPass.ts` (orchestrator)
-- [ ] `client/src/lib/validatorFeedbackRetry.ts` (retry loop)
+- [x] `client/src/lib/validatorFeedbackRetry.ts` (retry loop)
 - [ ] `client/src/lib/__tests__/perSubjectPromptFamilies.test.ts`
 - [ ] `promptAbFramework` wired into eval harness (`runner.ts` + `generators.ts`)
 - [x] `selfConsistencySampler` wired onto Section 3 hot path (folded into orchestrator)
