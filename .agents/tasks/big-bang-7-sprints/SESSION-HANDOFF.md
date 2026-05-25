@@ -5,10 +5,12 @@
 > flight" / "What is next" in the same commit as the work it describes.
 > Push to remote in the same step.
 
-Last updated: 2026-05-25 — **Scaffolding only.** Phase folder created
-with `RESUME.md`, `PHASE-PLAN.md`, this file. No code yet. Next
-chunk: open branch `big-bang-7/pr-1-measure-and-prompt-arch` from
-main, then begin PR-1 / Sprint 1 deliverables in order.
+Last updated: 2026-05-25 — **PR-1 in flight, Sprint 1.A shipped.**
+Branch `big-bang-7/pr-1-measure-and-prompt-arch` cut from main and
+pushed. Sprint 1.A — `docs/teacher-rater-rubric.md` written with
+6 axes × 5 anchors each, plus CSV format for batch human ratings,
+plus the calibration contract between model-judge and human raters.
+Next chunk: Sprint 1.B — comparison corpus.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -59,41 +61,63 @@ Goal: complete the next un-shipped item in "What is next" below.
 
 ## What is done
 
-- **Phase scaffolding** (this commit). Created the phase folder with
-  `RESUME.md`, `PHASE-PLAN.md`, this handoff file. No code yet.
+- **Phase scaffolding** (commit `8828ad2`). Created the phase folder
+  with `RESUME.md`, `PHASE-PLAN.md`, this handoff file. Branch
+  `big-bang-7/pr-1-measure-and-prompt-arch` cut from `main` and
+  pushed.
+
+- **PR-1 / Sprint 1.A — Teacher-rater rubric.** Wrote
+  `docs/teacher-rater-rubric.md`: 6 axes × 5 anchors each
+  (curriculum fidelity, stem authenticity, accessibility, marks &
+  answers tightness, SEND alignment, UX & printability). Includes
+  CSV format for batch human ratings (`humanScores.csv` with
+  fixtureId / raterId / per-axis cells / notes), and the calibration
+  contract (model-judge vs human, target ≤0.5 mean abs deviation per
+  axis, drift ≥1.0 triggers judge-prompt recalibration). Hand-offable
+  to any practising UK classroom teacher; ~7-minute rate-time budget.
 
 ## What is in flight
 
-_Nothing. Awaiting kick-off of PR-1 / Sprint 1._
+_Nothing in flight; ready to start Sprint 1.B._
 
 ## What is next
 
-**PR-1 / Sprint 1 — Measurement foundation.** Branch:
-`big-bang-7/pr-1-measure-and-prompt-arch`. Cut from latest `main`.
+**PR-1 / Sprint 1.B — Comparison corpus.** Branch:
+`big-bang-7/pr-1-measure-and-prompt-arch` (already on it).
 
-Order of chunks (each is one commit + push):
+Write `server/tests/worksheet-eval/comparison-corpus.json` — 30 fixed
+(subject, year, topic) triples that span the segments the user cares
+about. Distribution:
 
-1. **Cut branch + bootstrap commit.** Create `big-bang-7/pr-1-measure-and-prompt-arch` from main. First commit is just the phase scaffolding (this folder). Push.
-2. **Sprint 1.A — rubric document.** Write `docs/teacher-rater-rubric.md`: 6 axes × 5 levels with anchor examples. Axes: (1) curriculum fidelity, (2) stem authenticity, (3) accessibility, (4) marks/answers tightness, (5) SEND alignment, (6) UX/printability. Commit + push.
-3. **Sprint 1.B — comparison corpus.** Write `server/tests/worksheet-eval/comparison-corpus.json` — 30 fixed (subject, year, topic) triples spanning KS1/KS2 (4), KS3 (8), GCSE (12), A-Level (3), SEND-flagged (3). Plus a manifest entry in `server/tests/worksheet-eval/fixtures/_corpus-manifest.json` (or similar) so the runner picks them up. Commit + push.
-4. **Sprint 1.C — eval-report schema extension.** Extend `EvalReport` and `EvalReportRow` in `types.ts` with `humanScores?: AxisScores` and `modelJudgeScores?: AxisScores`. Update `summariser.ts` markdown to render per-axis when present. Commit + push.
-5. **Sprint 1.D — model-judge harness.** New file `server/tests/worksheet-eval/modelJudgeRater.ts` exporting `rateWithModelJudge(worksheet, fixture, judgeProvider): Promise<AxisScores>`. Loads `EVAL_JUDGE_PROVIDER` env (different from generator provider) + `EVAL_JUDGE_MODEL`. Mock implementation returns deterministic stub scores when no key (so CI without keys is meaningful). Commit + push.
-6. **Sprint 1.E — runner wiring.** `runner.ts` calls `rateWithModelJudge` per fixture, stores into `row.modelJudgeScores`. `rules.ts` adds `model-judge-axis-floor` rule (configurable per-axis floor in fixture). Commit + push.
-7. **Sprint 1.F — baseline + nightly CI.** Run the harness once; commit `eval-report.baseline.json`. Extend `.github/workflows/worksheet-eval.yml` to set `EVAL_DIFF_AGAINST=eval-report.baseline.json` so PRs see deltas. Commit + push.
+| Tier | Count | Coverage |
+| ---- | ----: | -------- |
+| KS1 / KS2 (primary) | 4 | maths Y2, English Y4, science Y5, RE Y6 |
+| KS3 (Y7–Y9) | 8 | maths Y7+Y9, English Y7+Y8, science Y8+Y9, geography Y8, history Y9 |
+| GCSE (Y10–Y11) | 12 | AQA maths Y10 + Y11 (F + H), Edexcel maths Y10 (H), AQA bio Y10, AQA chem Y11, AQA phys Y10, OCR maths Y10, English Lit Y10 (Macbeth), English Lang Y11, geography Y11, history Y10, RS Y11 |
+| A-Level | 3 | AQA maths Y12, AQA biology Y13, AQA English Lit Y12 |
+| SEND-flagged | 3 | dyslexia (KS3 maths), ADHD (Y10 English), ASC sensory (KS3 science) |
 
-After Sprint 1.F lands, switch to **Sprint 3** chunks (still inside PR-1 — same branch). See PHASE-PLAN.md PR-1 row for the Sprint 3 deliverables list.
+Each entry gets the same JSON shape as the existing fixtures (id,
+title, bucket, params, rules, optional readingAgeRange,
+estimatedTokens). Save as `comparison-corpus.json` (a single JSON
+array file — NOT 30 separate fixtures, because the comparison corpus
+is a distinct artefact from the existing fixture-per-file harness).
 
-When all Sprint 1 + Sprint 3 deliverables are checked off in PHASE-PLAN.md and `npm test` + `tsc --noEmit` + `npm run eval:worksheets` are all green, run the verification gate, then open PR-1.
+Then: extend `runner.ts` (or add a sibling loader) so a
+`COMPARISON_CORPUS=1` env flag invokes the corpus instead of (or in
+addition to) the per-file fixtures. Default behaviour unchanged.
+
+After Sprint 1.B lands → Sprint 1.C (eval-report schema extension).
 
 ## Per-PR tracking (live state for the current PR)
 
 ### PR-1 — `big-bang-7/pr-1-measure-and-prompt-arch`
 
-Status: **not started**.
+Status: **in flight, 1/13 deliverables shipped**.
 
 Sprint 1 deliverables (from PHASE-PLAN.md):
 
-- [ ] `docs/teacher-rater-rubric.md` (6-axis × 1–5 with anchors)
+- [x] `docs/teacher-rater-rubric.md` (6-axis × 1–5 with anchors) — commit pending push
 - [ ] `server/tests/worksheet-eval/comparison-corpus.json` (30 triples)
 - [ ] `EvalReport` schema extended with `humanScores` + `modelJudgeScores`
 - [ ] `server/tests/worksheet-eval/modelJudgeRater.ts` (cross-provider judge)
