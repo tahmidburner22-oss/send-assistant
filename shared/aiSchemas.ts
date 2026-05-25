@@ -723,3 +723,162 @@ export const BulkScanResultSchema = z.object({
 });
 
 export type BulkScanResult = z.infer<typeof BulkScanResultSchema>;
+
+
+
+// ── Presentation Maker — Rich Schema (Phase 5 / item 27) ─────────────────────
+// Mirrors the rich client schema in client/src/pages/tools/PresentationMaker.tsx.
+// Server boundaries (library save, email digest, future PDF export) validate
+// every incoming slide against this schema so malformed payloads can't write
+// to the database or be emailed unchanged.
+
+export const SlideTypeEnumPM = z.enum([
+  "title","learning-objectives","hook","content","key-terms","worked-example",
+  "activity","discussion","check-understanding","summary","exit-ticket","extension",
+  "retrieval-warm-up","misconception-bust","exam-technique","real-world-link",
+  "think-pair-share","mini-quiz","diagram-label","pause-and-solve",
+  "vocab-reference","model-answer","exam-practice",
+  "brain-break","checkin","method-steps","help-box","word-bank","take-a-break",
+  "story-time","draw-it","sort-it","match-it","fill-the-gap","spot-the-mistake","number-talk",
+  "section-divider",
+  "cold-call","live-model","do-now","choose-your-task","stuck-help","homework",
+]);
+
+const LayoutEnumPM = z.enum([
+  "full","two-col","image-right","image-left","centered","bullet-list","hero-number","definition","process","quote-block",
+  "split-stat","comparison-table","timeline-horizontal","card-grid","before-after","quote-portrait","diagram-callouts",
+]);
+
+export const PresentationSlideSchema = z.object({
+  type: SlideTypeEnumPM,
+  title: z.string().min(1).max(200),
+  subtitle: z.string().max(300).optional(),
+  titleVariant: z.enum(["centered","split-image","asymmetric","module-divider"]).optional(),
+  bullets: z.array(z.string().min(1).max(500)).max(10).optional(),
+  body: z.string().max(2000).optional(),
+  terms: z.array(z.object({ term: z.string().min(1), definition: z.string().min(1) })).max(20).optional(),
+  question: z.string().max(1000).optional(),
+  options: z.array(z.string().min(1)).max(6).optional(),
+  answer: z.string().max(500).optional(),
+  steps: z.array(z.string().min(1)).max(12).optional(),
+  misconception: z.string().max(500).optional(),
+  correction: z.string().max(500).optional(),
+  retrievalQuestions: z.array(z.string().min(1)).max(8).optional(),
+  realWorldContext: z.string().max(1000).optional(),
+  examTip: z.string().max(500).optional(),
+  markSchemeHint: z.string().max(500).optional(),
+  diagramDescription: z.string().max(500).optional(),
+  diagramLabels: z.array(z.string().min(1)).max(20).optional(),
+  image_prompt: z.string().max(500).optional(),
+  layout: LayoutEnumPM.optional(),
+  bulletsRight: z.array(z.string().min(1).max(500)).max(6).optional(),
+  headline: z.string().max(200).optional(),
+  quote: z.string().max(600).optional(),
+  attribution: z.string().max(200).optional(),
+  accent: z.string().max(50).optional(),
+  speakerNotes: z.string().max(2000).optional(),
+  // Phase 1 layout-specific fields
+  compareRows: z.array(z.object({
+    label: z.string().max(80).optional(),
+    left: z.string().min(1).max(240),
+    right: z.string().min(1).max(240),
+  })).max(8).optional(),
+  compareHeaders: z.tuple([z.string().max(60), z.string().max(60)]).optional(),
+  timelineEvents: z.array(z.object({
+    date: z.string().min(1).max(40),
+    title: z.string().min(1).max(80),
+    description: z.string().max(160).optional(),
+  })).max(8).optional(),
+  cards: z.array(z.object({
+    title: z.string().min(1).max(80),
+    body: z.string().min(1).max(220),
+    icon: z.string().max(40).optional(),
+  })).max(6).optional(),
+  beforeAfter: z.object({
+    before: z.string().min(1).max(500),
+    after: z.string().min(1).max(500),
+    beforeLabel: z.string().max(40).optional(),
+    afterLabel: z.string().max(40).optional(),
+  }).optional(),
+  diagramCallouts: z.array(z.object({
+    label: z.string().min(1).max(80),
+    position: z.enum(["top-left","top","top-right","right","bottom-right","bottom","bottom-left","left"]),
+    description: z.string().max(160).optional(),
+  })).max(8).optional(),
+  // Teacher-framework fields
+  timingMinutes: z.number().int().min(1).max(60).optional(),
+  successCriteria: z.object({
+    must: z.string().max(300),
+    should: z.string().max(300),
+    could: z.string().max(300),
+  }).optional(),
+  workedExampleBox: z.object({
+    problem: z.string().max(500),
+    steps: z.array(z.string().min(1).max(300)).min(1).max(8),
+    answer: z.string().max(300),
+    units: z.string().max(50).optional(),
+    commonError: z.string().max(300).optional(),
+  }).optional(),
+  vocabTable: z.array(z.object({
+    term: z.string().min(1).max(80),
+    definition: z.string().min(1).max(240),
+    example: z.string().max(200).optional(),
+  })).max(16).optional(),
+  markScheme: z.array(z.object({
+    point: z.string().min(1).max(300),
+    marks: z.number().int().min(1).max(10),
+  })).max(12).optional(),
+  examQuestion: z.object({
+    stem: z.string().max(1000),
+    marks: z.number().int().min(1).max(30),
+    timeMins: z.number().int().min(1).max(60).optional(),
+    commandWord: z.string().max(40).optional(),
+  }).optional(),
+  differentiation: z.object({
+    support: z.string().max(500).optional(),
+    core: z.string().max(500).optional(),
+    extension: z.string().max(500).optional(),
+  }).optional(),
+  // SEND-structured fields
+  whatYouNeedToDo: z.array(z.string().min(1).max(200)).max(8).optional(),
+  wordBank: z.array(z.object({
+    term: z.string().min(1).max(60),
+    definition: z.string().min(1).max(200),
+  })).max(8).optional(),
+  sentenceStarter: z.string().max(200).optional(),
+  answerFrame: z.string().max(200).optional(),
+  methodSteps: z.array(z.string().min(1).max(200)).max(8).optional(),
+  helpBox: z.array(z.string().min(1).max(200)).max(8).optional(),
+  completionChecklist: z.array(z.string().min(1).max(200)).max(8).optional(),
+  visualCue: z.string().max(200).optional(),
+  bonusLabel: z.string().max(60).optional(),
+  actionVerb: z.string().max(40).optional(),
+  visibleCheckboxes: z.boolean().optional(),
+  // Phase 2 classroom-action fields
+  coldCallCue: z.string().max(300).optional(),
+  namedPupilHint: z.string().max(120).optional(),
+  liveModel: z.object({
+    iDo: z.string().min(1).max(500),
+    weDo: z.string().min(1).max(500),
+    youDo: z.string().min(1).max(500),
+  }).optional(),
+  hintLadder: z.array(z.string().min(1).max(240)).max(5).optional(),
+  finalAnswer: z.string().max(500).optional(),
+  homeworkBrief: z.string().max(500).optional(),
+  homeworkDueDate: z.string().max(40).optional(),
+  homeworkMinutes: z.number().int().min(1).max(180).optional(),
+  homeworkLink: z.string().max(400).optional(),
+}).passthrough(); // forwards-compatible: unknown fields are kept
+
+export const PresentationDataSchemaShared = z.object({
+  title: z.string().min(1).max(300),
+  subject: z.string().min(1).max(100),
+  yearGroup: z.string().min(1).max(50),
+  topic: z.string().min(1).max(300),
+  slides: z.array(PresentationSlideSchema).min(1).max(60),
+  theme: z.string().max(50).optional().default("navy"),
+  totalSlides: z.number().int().min(1).max(60).optional(),
+});
+
+export type PresentationSlideShared = z.infer<typeof PresentationSlideSchema>;
+export type PresentationDataShared = z.infer<typeof PresentationDataSchemaShared>;
