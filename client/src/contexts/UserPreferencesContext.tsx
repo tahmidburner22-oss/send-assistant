@@ -68,6 +68,14 @@ export interface UserPreferences {
   // teacher who lives in the class-set tab on a Sunday-evening marking
   // session doesn't have to re-select it every time the dialog reopens.
   lastScanMarkTab?: "single" | "class" | "voice";
+  // PD13 — UI surface for cost transparency. When true (or undefined,
+  // the default), the WorksheetCostChip is shown in WorksheetRenderer's
+  // teacher-view footer. Bursars who want to keep the cost picture
+  // private from on-screen demos can flip this to false. The data
+  // (metadata.costEstimate) is still stamped on the worksheet — only
+  // the chip is hidden — so toggling back on re-reveals historical
+  // costs without a re-generate.
+  costTransparency?: boolean;
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
