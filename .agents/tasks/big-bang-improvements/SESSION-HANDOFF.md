@@ -10,10 +10,19 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-23 (PR-19..27 combined into a single PR on
-branch `big-bang/pr-19-to-pr-27-combined`; PR #102 (PR-10..18 combined)
-merged; PR-9 (#94), PR-8 (#92), PR-7 (#91), PR-6 (#90), PR-5 (#89),
-PR-4 (#88), PR-3 (#87), PR-2 (#86), PR-1 (#85) all merged).
+Last updated: 2026-05-26 (PR-19..27 verified shipped on main; "in
+flight" status flipped to "done"; status text on PR #87, #90, #91
+de-pended in LEDGER. Phase G + Phase H planning folders created at
+`.agents/tasks/phase-g-where-worksheet-meets-pupil/` and
+`.agents/tasks/phase-h-pupil-journey-and-gamification/` — these are
+the natural next-step phases driven by the competitor-review synthesis
+on 2026-05-26).
+
+Earlier dated note retained: 2026-05-23 (PR-19..27 combined into a
+single PR on branch `big-bang/pr-19-to-pr-27-combined`; PR #102
+(PR-10..18 combined) merged; PR-9 (#94), PR-8 (#92), PR-7 (#91), PR-6
+(#90), PR-5 (#89), PR-4 (#88), PR-3 (#87), PR-2 (#86), PR-1 (#85) all
+merged).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -247,11 +256,18 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is in flight
 
-- **PR-19..27 (combined)** — branch
-  `big-bang/pr-19-to-pr-27-combined`. Single PR delivering nine work
-  units in one push, mirroring the PR #102 (PR-10..18 combined)
-  pattern. This batch closes 30+ audit items and unlocks the deferred
-  PR-28 work as the only remaining pre-launch ledger row.
+(Empty — PR-19..27 has shipped to main, verified on 2026-05-26 by file
+presence check on every PR-19..27 file. The merge SHA is not recorded
+in this handoff — when a fresh chat needs it, run
+`git log --grep "PR-19" --grep "combined PR-19" main`. Section detail
+moved to "What is done — PR-19..27 (combined)" below.)
+
+## What is done — PR-19..27 (combined)
+
+Single PR delivering nine work units in one push, mirroring the PR #102
+(PR-10..18 combined) pattern. This batch closes 30+ audit items and
+unlocks the deferred PR-28 work as the only remaining pre-launch ledger
+row.
 
   Section A — Pure data audits (no LLM, additive only):
   - `client/src/lib/spVocabularyLibraryAudit.ts` (#83) — corpus +
@@ -411,10 +427,33 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is next
 
+The big-bang umbrella is complete. The natural next-step phases are
+**Phase G** and **Phase H** — competitor-derived improvements driven
+by the 2026-05-26 review synthesis (Twinkl, MathsGenie, Dr Frost,
+Save My Exams, Corbettmaths, TpT, Liveworksheets, Kahoot research):
+
+- **Phase G — Where the Worksheet Meets the Pupil** (12
+  implementation work units + 3 already-shipped Tier-4 bug fixes).
+  Folder: `.agents/tasks/phase-g-where-worksheet-meets-pupil/`.
+  Highest-value: pupil-facing auto-marking (G1), same-spec-ref
+  regen (G2), lesson-archetype templates (G3), procedural activity
+  types (G4 — wordsearch / crossword / matching / cloze).
+
+- **Phase H — Pupil Journey & Gamification** (12 work units;
+  6 G-independent, 6 G-dependent). Folder:
+  `.agents/tasks/phase-h-pupil-journey-and-gamification/`. Closes
+  the PR-19..27 deferred follow-ups (telemetry hydration, corpus
+  loaders, dark-flag activation) and ships the engagement layer
+  (pupil progress dashboard, year planner, leaderboards, spaced
+  repetition).
+
+Both phases have full resume contracts (RESUME.md / PHASE-PLAN.md /
+SESSION-HANDOFF.md / LEDGER.md / per-feature FEAT-*.json).
+
 **PR-28 — DEFERRED integrations** (audit items #61 #62 #63 #64 #65
-#68 #69). Explicitly deferred until external service credentials
-land. Out of scope for the big-bang umbrella; needs a separate
-distribution + product-engineering thread:
+#68 #69) remains genuinely deferred until external service
+credentials land. Out of scope for the big-bang umbrella; needs a
+separate distribution + product-engineering thread:
 
 - One-tap LMS push (Google Classroom, Microsoft Teams, Satchel One).
 - MIS roster import (Wonde, GroupCall).
