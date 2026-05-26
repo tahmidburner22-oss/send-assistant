@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-G13",
+  "phase": "G",
+  "title": "Per-question timer (mock-exam mode)",
+  "tier": 3,
+  "effort": "S",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-13-question-timer",
+  "summary": "Tiny pure state machine (`{ status, startedAt, elapsedMs, allocatedMs }`) wrapped in a `<QuestionTimer />` React component on each question card in the companion app. Default allocation pulled from metadata.estimatedTimeMinutes (already stamped by Phase 3 revisionTipsBuilder). 'Mock-exam mode' toggle on the companion auto-starts every question's timer in sequence and locks back-edits when time expires.",
+  "motivation": "Mock-exam practice is a universal Year 11 / Year 13 ask — and the existing companion app is the natural surface. Builds directly on G1's answer-entry surface.",
+  "scope": {
+    "in": [
+      "client/src/lib/questionTimer.ts (new, ~80 LoC) — pure state-machine reducer",
+      "client/src/components/QuestionTimer.tsx (new, ~120 LoC) — display + tick handler driven by useEffect",
+      "client/src/pages/companion/[token].tsx — wire the timer per question; mock-exam-mode toggle in the header",
+      "shared/aiSchemas.ts — additive: metadata.mockExamMode?: boolean; metadata.timeAllocations?: Record<sectionIndex, ms>",
+      "Targeted vitest: state-machine transitions; allocated time defaults; lock-on-expiry behaviour"
+    ],
+    "out": [
+      "Server-side enforcement of the time lock (v1 is client-side only — pupils can refresh; acceptable for revision; summative-mode lock is a Phase H follow-up)",
+      "Per-pupil time calibration via prior data (deferred to H1 / H10)"
+    ]
+  },
+  "depends_on": ["G1"],
+  "acceptance_criteria": [
+    "Timer state-machine: idle → running on start → paused on pause → running on resume → finished on time-up; running → idle on reset.",
+    "Default allocation = metadata.estimatedTimeMinutes / questionCount when unspecified, capped at 5 min per question.",
+    "Mock-exam mode auto-starts the next question's timer when the previous finishes.",
+    "When time expires, the answer-entry input becomes read-only with a 'Time up — your answer is locked' message.",
+    "Component is keyboard-accessible (space pauses / resumes; Esc resets).",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": [
+    "G1 — pupil auto-marking (the surface G13 attaches to)",
+    "H1 — pupil progress dashboard (reads time-on-task data)"
+  ]
+}

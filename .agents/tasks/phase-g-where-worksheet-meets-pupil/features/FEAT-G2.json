@@ -1,0 +1,44 @@
+{
+  "id": "FEAT-G2",
+  "phase": "G",
+  "title": "Another one like this — same-spec-ref regeneration",
+  "tier": 1,
+  "effort": "S",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-2-another-one-like-this",
+  "summary": "One-click regenerate-this-question. Looks up the question's specRef in curriculumBank.lookupBySpecRef, picks a fresh exemplar (preferring one not already used), and inserts the new stem as a sibling section. Falls back to aiGenerateWorksheet with a pinned specRef when the bank only has one exemplar for that ref. Append-by-default with a 'Replace original' affordance so teachers can iterate without losing the worksheet's existing shape.",
+  "motivation": "Dr Frost ('huge bank of question generators for creating custom homework and tests'); Save My Exams ('exam-style questions, organised by topic and difficulty… target specific areas'). Today the only regen surface is aiEditSection which calls the LLM end-to-end; teachers want a deterministic 'fresh question on the same skill' that uses the curriculum bank that already exists.",
+  "scope": {
+    "in": [
+      "client/src/lib/anotherOneLikeThis.ts (new, ~150 LoC) — anotherOneLikeThis(section, worksheet) -> Promise<NewSection>",
+      "client/src/components/AnotherOneButton.tsx (new, ~80 LoC) — wire-in button on every question card (teacher view, .no-print)",
+      "client/src/lib/ai.ts — extend aiGenerateWorksheet signature with optional pinSpecRef? + excludeExemplarIds? (backwards compatible)",
+      "Targeted vitest covering: bank-hit happy path, bank-miss LLM-fallback path, exclude-list honoured, specRef preserved on the new section."
+    ],
+    "out": [
+      "Question-bank-only mode (G2 always falls back to LLM if the bank cannot satisfy)",
+      "Multi-question 'another set' (handled by G6 predicted-paper builder)",
+      "Pupil-facing 'try again' button (covered by G1's wrong-answer card; G2 surface is teacher-only)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Clicking the button on a question with a populated specRef returns a NEW question in <1s (bank-hit branch) or <5s (LLM fallback).",
+    "The new section shares the same specRef, AO and bloomLevel as the original (provenance carries over).",
+    "Stem text is different from the original by Levenshtein distance ≥30% of the shorter string's length.",
+    "When excludeExemplarIds is supplied, the returned section's metadata.questionProvenance.sourceExemplarId is NOT in the exclude list (or undefined when LLM-generated).",
+    "Repeated clicks build a chain — 5 clicks produce 5 distinct stems on the same specRef (when the bank has ≥5 exemplars).",
+    "Section ordering preserved: the new section is appended directly after the original; clicking 'Replace original' deletes the original and renumbers questions via the existing section-question-counts validator.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Bank has no exemplar for the specRef → fallback fires for every click → token cost", "mitigation": "Cache the LLM-fallback result keyed by (specRef, excludeIds) for 1 hour in the existing generationCache (PR-9); subsequent clicks reuse." },
+    { "risk": "Exclude-list grows unbounded as teacher clicks repeatedly", "mitigation": "Cap at 20; after that, allow re-using earliest-excluded with a one-time 'Bank exhausted — variants will repeat' notice." }
+  ],
+  "related": [
+    "G1 — pupil auto-marking (G2's surface can be reused on the wrong-answer card)",
+    "G6 — predicted-paper builder (G6 calls anotherOneLikeThis in batch via the same exemplar lookup)",
+    "H11 — try-harder / try-easier (a tier-shifted variant of G2)",
+    "FEAT-PF1 — curriculum bank (the lookup surface G2 consumes)"
+  ]
+}

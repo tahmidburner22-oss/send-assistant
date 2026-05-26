@@ -1,0 +1,41 @@
+{
+  "id": "FEAT-H7",
+  "phase": "H",
+  "title": "Production corpus loaders",
+  "tier": 3,
+  "effort": "M",
+  "status": "not started",
+  "depends_on": [],
+  "branch_suggestion": "feat/phase-h-7-corpus-loaders",
+  "summary": "Three corpora ship today as caller-injected stubs (citationGroundedFactual.CITATION_CORPUS demo seed; spVocabularyLibraryAudit caller-injected; pastPaperFrequencyAnchor caller-injected). H7 builds the production loaders: filesystem-backed JSON corpora with a refresh job + admin-panel staleness indicator + provenance metadata.",
+  "scope": {
+    "in": [
+      "server/lib/subjectVocabularyCorpus.ts (new, ~200 LoC) — production loader; reads server/data/corpora/subject-vocab/*.json",
+      "server/lib/citationCorpus.ts (new, ~200 LoC) — production loader; reads server/data/corpora/citations/*.json",
+      "server/lib/pastPaperFrequencyCorpus.ts (new, ~200 LoC) — production loader; reads server/data/corpora/past-paper-frequency/*.json",
+      "server/data/corpora/subject-vocab/*.json — seed data for ≥10 subjects × KS3/KS4 (paraphrased per existing curriculum-bank attribution rules)",
+      "server/data/corpora/citations/*.json — ≥500 verified citations (history dates, science values, lit quotes)",
+      "server/data/corpora/past-paper-frequency/*.json — frequency data 2019-2024 for AQA + Edexcel + OCR top GCSE subjects",
+      "scripts/refresh-corpora.mjs (new) — one-shot script the admin runs to refresh; outputs a manifest with last-updated date",
+      "client/src/pages/AdminPanel.tsx — staleness indicator (any corpus >12 months stale shows a yellow banner)",
+      "Targeted vitest per loader: lazy-load semantics; staleness detection; missing-corpus fallback (returns empty corpus + warning)"
+    ],
+    "out": [
+      "Live corpus refresh from external APIs (deferred — admin runs the script manually for v1)",
+      "Per-tenant custom corpora (deferred)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Each loader returns the audit's existing expected shape; cited consumers (spVocabularyLibraryAudit, citationGroundedFactual, pastPaperFrequencyAnchor) work without source-file changes.",
+    "Loaders are idempotent — calling twice returns the same in-memory snapshot until refresh-corpora.mjs is run.",
+    "Refresh script outputs a manifest at server/data/corpora/manifest.json with per-corpus last-updated date.",
+    "Admin panel staleness banner fires when any corpus is >12 months stale.",
+    "All seed data is paraphrased from public sources with explicit per-entry source attribution (mirrors the curriculum-bank exemplar convention).",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Corpus copyright — past-paper text or proprietary vocab lists", "mitigation": "Every entry paraphrased; source attribution mandatory; no verbatim past-paper text; public-source-only vocab lists." },
+    { "risk": "Filesystem read on every call slows generation", "mitigation": "Lazy-load + in-memory cache invalidated only on refresh-corpora.mjs run." }
+  ],
+  "related": ["G6 — predicted-paper builder (uses pastPaperFrequencyCorpus); PR-19 / #83 #84 — audits"]
+}

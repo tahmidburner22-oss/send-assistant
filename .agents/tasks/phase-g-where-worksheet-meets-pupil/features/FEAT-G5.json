@@ -1,0 +1,45 @@
+{
+  "id": "FEAT-G5",
+  "phase": "G",
+  "title": "5-a-day daily-drill builder",
+  "tier": 1,
+  "effort": "S",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-5-five-a-day",
+  "summary": "Self-contained tool page like CreateExamPaper.tsx. Teacher picks subject + year-group + skills (multi-select specRefs) + weeks; the builder emits 5 questions × 5 weekdays × N weeks worksheets, mark-tariff-balanced (1+2+3+3+5=14 marks/day default), seeded by inputs so identical params produce identical packs (CI-stable). Pure deterministic — pulls from the existing past-paper question bank + curriculum bank exemplars. Multi-page PDF export.",
+  "motivation": "Corbettmaths 5-a-day workbooks are the canonical UK 'daily drill' format — praised by every Year 11 maths teacher in the review corpus. The send-assistant Unit Pack handles multi-lesson sequences but not the daily-drill habit-building format. Builds directly on top of unitPack.ts.",
+  "scope": {
+    "in": [
+      "client/src/lib/fiveADayBuilder.ts (new, ~180 LoC) — pure builder buildFiveADay({ subject, yearGroup, weeks, skills, weekdays, calculator, seed }) -> { worksheets: ExamPaperWorksheet[] }",
+      "client/src/pages/tools/FiveADayBuilder.tsx (new, ~250 LoC) — self-contained page",
+      "client/src/lib/tool-registry.ts — append ToolEntry { id: 'five-a-day', hub: 'revision', icon: CalendarDays, sendTo: ['differentiate', 'flash-cards', 'audio-revision-hub'] }",
+      "client/src/App.tsx — lazy import + Route",
+      "client/src/pages/hubs/RevisionHubSection.tsx — append a 6th storyboard step 'Build a 5-a-day pack'",
+      "Targeted vitest in client/src/lib/__tests__/fiveADayBuilder.test.ts (~12 cases): mark balance, weekday on/off, seed determinism, calc filtering, empty-skill warning"
+    ],
+    "out": [
+      "Spaced-repetition scheduler over the skill list (deferred to H12 — Leitner / SM-2)",
+      "Pupil-facing daily streak (deferred to H4 — gamification)",
+      "Auto-email-the-day's-pack (deferred to PR-28 — needs transactional email)"
+    ]
+  },
+  "acceptance_criteria": [
+    "buildFiveADay called twice with identical inputs returns deep-equal output (seed determinism).",
+    "Each day's mark total is within ±2 marks of the requested daily budget.",
+    "Skills rotate fairly: over 5 weeks × 5 days = 25 questions, each requested skill appears at least floor(25 / numSkills) times.",
+    "Calculator policy filters questions correctly (no calc-required questions in non-calc days).",
+    "Multi-page PDF export honours the existing print-preset bleed + stapling-edge rules.",
+    "Empty-skill list returns empty result + a warning (does NOT throw).",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Skill bank is too thin for some specRefs and the builder repeats", "mitigation": "Builder tracks `usedQuestionIds` and warns when ≥30% of a day's questions are repeats from earlier days. Falls back to anotherOneLikeThis (G2) when bank is exhausted." },
+    { "risk": "Mark balance drifts when the bank doesn't have a 5-mark question for a specRef", "mitigation": "Builder uses a relaxed budget — first-fit knapsack with ±2 mark tolerance, documented in the test fixtures." }
+  ],
+  "related": [
+    "G6 — predicted-paper builder (similar bank-driven assembly pattern)",
+    "G3 — '5-a-day' archetype (single-day version of G5)",
+    "H12 — spaced-repetition (Phase H builds on G5 with a Leitner / SM-2 scheduler)"
+  ]
+}

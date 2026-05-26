@@ -1,0 +1,36 @@
+{
+  "id": "FEAT-H5",
+  "phase": "H",
+  "title": "Voice-input for the worksheet brief",
+  "tier": 3,
+  "effort": "S",
+  "status": "not started",
+  "depends_on": [],
+  "branch_suggestion": "feat/phase-h-5-voice-input",
+  "summary": "Web Speech API integration on the natural-language input panel. A 'Speak your brief' button records → transcribes → drops into the existing parseNaturalLanguageInput parser at ai.ts §NL-PARSE. No new server route. Pure frontend; degrades gracefully where Web Speech API isn't supported.",
+  "scope": {
+    "in": [
+      "client/src/hooks/useVoiceToText.tsx — there's already a useVoiceToText helper in Worksheets.tsx §HOOK-VOICE; either factor it out into client/src/hooks/ or reuse in place",
+      "client/src/components/VoiceBriefButton.tsx (new, ~80 LoC) — button + recording-state UI (idle / recording / transcribing / done) + permission-denied fallback",
+      "client/src/pages/Worksheets.tsx — wire VoiceBriefButton into the natural-language input panel; on transcription, call parseNaturalLanguageInput",
+      "Targeted vitest: state machine transitions; permission-denied handled; transcript correctly fed to parser"
+    ],
+    "out": [
+      "Server-side transcription (Whisper API) — deferred; v1 uses the browser-native Web Speech API which is free and respects user privacy",
+      "Multi-language voice input (deferred — Web Speech API supports it but localisation is Phase H's H3 territory)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Button toggles recording on click; visual feedback during recording.",
+    "Transcript is fed to parseNaturalLanguageInput which sets the form state via the existing flow.",
+    "Permission-denied surfaces a clear 'Microphone access required' message with a 'How to enable' link.",
+    "Falls back to typed input if Web Speech API is unsupported.",
+    "Button is keyboard-accessible (Space toggles).",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Web Speech API is browser-dependent (Chrome/Edge support; Firefox partial; Safari limited)", "mitigation": "Detect support at mount; hide the button when unsupported; show typed-input only." },
+    { "risk": "Transcription accuracy on UK accents / SEND voices", "mitigation": "Web Speech API is sufficient for v1; if accuracy is poor we can swap in Whisper server-side later behind an env flag." }
+  ],
+  "related": ["G3 — lesson archetypes (voice input could populate the archetype picker too)"]
+}
