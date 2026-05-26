@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "subject": "english",
+    "keyStage": "ks4",
+    "description": "Seed entries for GCSE English Language and English Literature analytical vocabulary.",
+    "schema": "SubjectVocabEntry[]"
+  },
+  "entries": [
+    {
+      "term": "juxtaposition",
+      "subject": "english",
+      "keyStage": "ks4",
+      "definition": "Placing two contrasting ideas, characters, or images side by side to highlight their differences.",
+      "synonyms": ["contrast pairing"],
+      "source": "AQA GCSE English Language (8700) — Paper 1 Question 2"
+    },
+    {
+      "term": "anaphora",
+      "subject": "english",
+      "keyStage": "ks4",
+      "definition": "The repetition of the same word or phrase at the start of successive clauses or sentences for rhetorical effect.",
+      "synonyms": ["repetition at clause-start"],
+      "source": "Edexcel GCSE English Language (1EN0) — Reading non-fiction"
+    },
+    {
+      "term": "pathetic fallacy",
+      "subject": "english",
+      "keyStage": "ks4",
+      "definition": "A literary device where weather, landscape or natural surroundings reflect a character's emotional state.",
+      "synonyms": ["mood-mirroring weather"],
+      "source": "AQA GCSE English Literature (8702) — Paper 1 Section A"
+    },
+    {
+      "term": "iambic pentameter",
+      "subject": "english",
+      "keyStage": "ks4",
+      "definition": "A line of poetry with five iambs (an unstressed syllable followed by a stressed one); ten syllables of alternating beat.",
+      "synonyms": ["five-iamb line"],
+      "source": "Eduqas GCSE English Literature — Shakespeare component"
+    }
+  ]
+}

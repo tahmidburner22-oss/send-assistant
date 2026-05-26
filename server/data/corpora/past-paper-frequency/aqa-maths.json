@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "subject": "maths",
+    "board": "AQA",
+    "description": "Seed entries for AQA GCSE Mathematics past-paper question frequency. Each entry summarises a question from the published paper; numbers are illustrative for the predicted-paper builder seed.",
+    "schema": "PastPaperQuestionEntry[]"
+  },
+  "entries": [
+    { "year": 2023, "board": "AQA", "subject": "maths", "tier": "higher", "paper": "P1", "topic": "quadratic equations", "marks": 4 },
+    { "year": 2023, "board": "AQA", "subject": "maths", "tier": "higher", "paper": "P2", "topic": "trigonometry", "marks": 5 },
+    { "year": 2022, "board": "AQA", "subject": "maths", "tier": "higher", "paper": "P3", "topic": "circle theorems", "marks": 4 },
+    { "year": 2022, "board": "AQA", "subject": "maths", "tier": "foundation", "paper": "P1", "topic": "ratio and proportion", "marks": 3 },
+    { "year": 2021, "board": "AQA", "subject": "maths", "tier": "higher", "paper": "P2", "topic": "iterative methods", "marks": 4 },
+    { "year": 2021, "board": "AQA", "subject": "maths", "tier": "foundation", "paper": "P3", "topic": "probability tree", "marks": 4 }
+  ]
+}

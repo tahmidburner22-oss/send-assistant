@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "subject": "maths",
+    "description": "Seed citations for the citation-grounded factual validator. Claims are paraphrased and the source is the awarding-body specification or a published mark scheme.",
+    "schema": "CitationEntry[]"
+  },
+  "entries": [
+    {
+      "claim": "GCSE Maths foundation tier covers grades 1 to 5; higher tier covers grades 4 to 9.",
+      "subject": "maths",
+      "topic": "specification overview",
+      "source": "AQA GCSE Mathematics (8300) Specification — overview of tiering",
+      "confidence": "high"
+    },
+    {
+      "claim": "The quadratic formula gives the roots x = (-b plus or minus sqrt(b^2 - 4ac)) / (2a) for any quadratic equation ax^2 + bx + c = 0.",
+      "subject": "maths",
+      "topic": "algebra",
+      "source": "Edexcel GCSE Mathematics (1MA1) Specification — Algebra section A18",
+      "confidence": "high"
+    },
+    {
+      "claim": "Pythagoras' theorem states that for a right-angled triangle, the square of the hypotenuse equals the sum of the squares of the other two sides.",
+      "subject": "maths",
+      "topic": "geometry",
+      "source": "OCR GCSE Mathematics (J560) Specification — Geometry strand",
+      "confidence": "high"
+    },
+    {
+      "claim": "The interquartile range is preferred over the full range as a spread measure because it is not affected by outliers.",
+      "subject": "maths",
+      "topic": "statistics",
+      "source": "AQA GCSE Mathematics (8300) Specification — Statistics S4",
+      "confidence": "high"
+    }
+  ]
+}
