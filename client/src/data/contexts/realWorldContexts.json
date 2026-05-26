@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "lastUpdated": "2026-05-26",
+  "contexts": [
+    { "id": "premier-league", "name": "Premier League football", "category": "sport", "freshness": "evergreen", "suggestedFor": ["maths", "english", "psychology"], "examples": ["Use match attendance for fractions", "Compare Goals For/Against ratios", "Argument essay on transfer fees"] },
+    { "id": "rugby-six-nations", "name": "Six Nations rugby", "category": "sport", "freshness": "seasonal", "suggestedFor": ["maths", "geography"], "examples": ["Compute scoring rates", "Locate teams on a UK/IE map"] },
+    { "id": "olympics", "name": "Olympic Games", "category": "sport", "freshness": "seasonal", "suggestedFor": ["maths", "history", "pe"], "examples": ["Race-time conversions", "Map ancient Greek city-states", "Analyse training programmes"] },
+    { "id": "music-charts", "name": "Top 40 charts", "category": "music", "freshness": "seasonal", "suggestedFor": ["maths", "english"], "examples": ["Bar charts of weekly positions", "Lyrical analysis exercises"] },
+    { "id": "film-blockbusters", "name": "Recent film blockbusters", "category": "film", "freshness": "seasonal", "suggestedFor": ["english", "media"], "examples": ["Compare narrative structures", "Explore camera-work vocabulary"] },
+    { "id": "minecraft", "name": "Minecraft", "category": "video-games", "freshness": "evergreen", "suggestedFor": ["maths", "computing"], "examples": ["Volume of cube structures", "Resource trading ratios"] },
+    { "id": "tiktok-trends", "name": "TikTok trends", "category": "pop-culture", "freshness": "seasonal", "suggestedFor": ["english", "media"], "examples": ["Persuasive language analysis", "Trend evolution timelines"], "avoidWith": ["anxiety"] },
+    { "id": "netflix-shows", "name": "Netflix shows", "category": "pop-culture", "freshness": "seasonal", "suggestedFor": ["english"], "examples": ["Character analysis", "Cliffhanger structures"] },
+    { "id": "sustainability", "name": "Sustainability and climate", "category": "science-news", "freshness": "evergreen", "suggestedFor": ["geography", "science"], "examples": ["Carbon footprint calculations", "Renewable-energy data analysis"] },
+    { "id": "renewable-energy", "name": "Wind / solar / tidal energy", "category": "science-news", "freshness": "evergreen", "suggestedFor": ["physics"], "examples": ["Power output equations", "Comparing UK energy mix"] },
+    { "id": "space-missions", "name": "Recent space missions", "category": "science-news", "freshness": "seasonal", "suggestedFor": ["physics", "geography"], "examples": ["Orbital mechanics worked examples", "Mars-mission timeline analysis"] },
+    { "id": "uk-elections", "name": "UK elections and democracy", "category": "current-events", "freshness": "seasonal", "suggestedFor": ["citizenship", "english"], "examples": ["First-past-the-post calculations", "Manifesto analysis"] },
+    { "id": "local-history", "name": "Local UK history", "category": "history", "freshness": "evergreen", "suggestedFor": ["history", "english"], "examples": ["Visit a local castle / mill", "Industrial Revolution case study"] },
+    { "id": "high-street-shops", "name": "UK high street shops", "category": "local-region", "freshness": "evergreen", "suggestedFor": ["maths", "business"], "examples": ["Percentage discounts", "Profit and loss exercises"] },
+    { "id": "uk-rail", "name": "UK rail network", "category": "local-region", "freshness": "evergreen", "suggestedFor": ["maths", "geography"], "examples": ["Speed = distance / time", "Map-reading from rail timetables"] },
+    { "id": "wildlife-rspb", "name": "UK wildlife (RSPB)", "category": "nature", "freshness": "evergreen", "suggestedFor": ["biology"], "examples": ["Population dynamics", "Food-web construction"] },
+    { "id": "marvel-films", "name": "Marvel cinematic universe", "category": "film", "freshness": "evergreen", "suggestedFor": ["english", "media"], "examples": ["Character archetype analysis", "Discuss representation"] },
+    { "id": "harry-potter", "name": "Harry Potter universe", "category": "literature", "freshness": "evergreen", "suggestedFor": ["english"], "examples": ["Character development analysis", "Setting description writing"] },
+    { "id": "fortnite", "name": "Fortnite", "category": "video-games", "freshness": "evergreen", "suggestedFor": ["maths"], "examples": ["Aim accuracy percentages", "Build-cost optimisation"] },
+    { "id": "tea-uk", "name": "British tea culture", "category": "culture", "freshness": "evergreen", "suggestedFor": ["history", "geography"], "examples": ["Tea trade routes", "Tea-import data over time"] }
+  ]
+}
