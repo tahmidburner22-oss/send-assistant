@@ -8,6 +8,8 @@ import { Printer, FileText, BookOpen, Layers, AlignJustify } from "lucide-react"
 export interface PrintOptions {
   view: "student" | "teacher";
   layout: "together" | "per-page";
+  /** W9 / G12 — append a teacher-only "Answer Key" page after the worksheet. */
+  includeAnswerKey?: boolean;
 }
 
 interface PrintOptionsDialogProps {
@@ -19,9 +21,10 @@ interface PrintOptionsDialogProps {
 export default function PrintOptionsDialog({ open, onClose, onPrint }: PrintOptionsDialogProps) {
   const [view, setView] = useState<"student" | "teacher">("teacher");
   const [layout, setLayout] = useState<"together" | "per-page">("together");
+  const [includeAnswerKey, setIncludeAnswerKey] = useState<boolean>(false);
 
   const handlePrint = () => {
-    onPrint({ view, layout });
+    onPrint({ view, layout, includeAnswerKey });
     onClose();
   };
 
@@ -96,6 +99,35 @@ export default function PrintOptionsDialog({ open, onClose, onPrint }: PrintOpti
                 </div>
               </label>
             </RadioGroup>
+          </div>
+
+          {/* W9 / G12 — Answer key add-on. Off by default. Visible in both
+              student and teacher views; the answer-key page itself is
+              watermarked TEACHER ONLY at the top. */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold text-foreground">Add-ons</Label>
+            <label
+              className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+                includeAnswerKey ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={includeAnswerKey}
+                onChange={(e) => setIncludeAnswerKey(e.target.checked)}
+                aria-label="Include teacher answer-key page"
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-amber-600" />
+                  <span className="font-medium text-sm">Append answer-key page</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Adds a teacher-only answer key after the worksheet (per-question marks, distractor diagnoses, procedural-activity solutions). Print on yellow paper if handing out.
+                </p>
+              </div>
+            </label>
           </div>
         </div>
 

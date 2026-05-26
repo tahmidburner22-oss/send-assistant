@@ -148,9 +148,11 @@ existing pages. Recommended order:
 
 1. **Wire H6's hook into `client/src/pages/admin/telemetry.tsx`**
    (replaces the presentational stub).
-2. **Wire H3's prompt directive** into
+2. ~~**Wire H3's prompt directive** into
    `ai.ts:structuredSystemSections`; add the picker to
-   `Worksheets.tsx`'s form.
+   `Worksheets.tsx`'s form.~~ Wired in PR #127 (W12) — directive
+   injected in `ai.ts` and a context picker added to the Worksheets
+   form alongside the lesson-archetype picker.
 3. **Build the H7 seed corpora** (`server/data/corpora/**/*.json`).
 4. **Add the H8 admin panel UI** to toggle per-school flags.
 5. **Wire H1's dashboard route** in `App.tsx` + the server-side
