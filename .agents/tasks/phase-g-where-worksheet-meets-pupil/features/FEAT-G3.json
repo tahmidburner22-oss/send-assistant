@@ -1,0 +1,71 @@
+{
+  "id": "FEAT-G3",
+  "phase": "G",
+  "title": "Lesson-archetype templates",
+  "tier": 1,
+  "effort": "M",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-3-lesson-archetypes",
+  "summary": "Five frozen lesson-archetype templates: Do-Now → I/We/You-Do (Rosenshine + explicit-instruction), 5-a-day Drill, Mini-Quiz Recap, Exit-Ticket, Worked-Example → Mini-Whiteboard → Independent Practice. Each is a pre-filled brief that the AI completes; teachers pick from a modal and the form state populates. Stamps metadata.lessonArchetype so the audit panel and downstream renderers can show 'Built from: <archetype>'.",
+  "motivation": "Twinkl PlanIt is praised for 'lesson plans with detailed subject knowledge'. Most worksheet teachers want a structured lesson sequence, not a freeform sheet. Today the generator is freeform — teachers either get great rigour (when they specify well) or generic output (when they don't). Templates push every teacher to the rigour ceiling.",
+  "scope": {
+    "in": [
+      "client/src/lib/lessonArchetypes.ts (new, ~200 LoC) — five frozen ArchetypeDefinition objects + buildArchetypeBrief(archetype, context) helper",
+      "client/src/components/ArchetypePickerDialog.tsx (new, ~150 LoC) — modal opened from a 'Use a template' button on the Worksheets generator form",
+      "client/src/lib/promptSections/archetypeDirectives.ts (new, ~100 LoC) — per-archetype prompt block injected into structuredSystemSections",
+      "shared/aiSchemas.ts — additive: metadata.lessonArchetype?: 'do-now-i-we-you-do' | '5-a-day' | 'mini-quiz-recap' | 'exit-ticket' | 'worked-mini-independent'",
+      "client/src/components/AuditTrailPanel.tsx — surface metadata.lessonArchetype as a chip in the audit panel header",
+      "Targeted vitest: each archetype's buildArchetypeBrief output passes the existing post-validator chain"
+    ],
+    "out": [
+      "Custom-archetype editor (teachers can't define their own; that's a Phase H follow-up)",
+      "Year-planner integration (deferred to H2)",
+      "Template marketplace / sharing (deferred to PR-28)"
+    ]
+  },
+  "archetypes": [
+    {
+      "id": "do-now-i-we-you-do",
+      "name": "Do-Now → I/We/You-Do",
+      "structure": "Section A: 3-question Do-Now retrieval. Section B: I-Do worked example (1). Section C: We-Do invitational (1-2). Section D: You-Do independent (5-7). Reflection."
+    },
+    {
+      "id": "5-a-day",
+      "name": "5-a-day Drill",
+      "structure": "5 mixed-skill questions of escalating difficulty (1+2+2+3+5 marks). No pre-amble. Reflection optional."
+    },
+    {
+      "id": "mini-quiz-recap",
+      "name": "Mini-Quiz Recap",
+      "structure": "5-10 MCQ recap of the previous lesson's LO. Mark scheme included. Distractor pedagogy enforced via existing validator."
+    },
+    {
+      "id": "exit-ticket",
+      "name": "Exit-Ticket",
+      "structure": "3-5 stem-questions tagged to today's LO. Designed to be marked in 90 seconds. Self-reflection slot."
+    },
+    {
+      "id": "worked-mini-independent",
+      "name": "Worked-Example → Mini-Whiteboard → Independent",
+      "structure": "Section A: full worked example. Section B: 4-6 mini-whiteboard prompts (short-answer). Section C: 6-8 independent practice. Mark scheme + reflection."
+    }
+  ],
+  "acceptance_criteria": [
+    "Each archetype's prompt block instructs the LLM to emit the named structure; the existing section-question-counts validator passes for every fixture.",
+    "Picking an archetype pre-fills the Worksheets form state and shows a 'Template: <name>' chip on the form.",
+    "metadata.lessonArchetype is stamped before generation and surfaces in the audit-trail panel.",
+    "Mini-quiz-recap output passes the distractor-pedagogy validator (PR-3 / item #4) on ≥80% of test fixtures.",
+    "Worked-mini-independent output's worked-example section passes the cap-worked-example-steps validator.",
+    "tsc --noEmit clean; npm test passes; npm run eval:worksheets passes (no fixture regressions)."
+  ],
+  "risk_register": [
+    { "risk": "Archetype prompt block conflicts with the section-question-counts contract (7-7-5+1)", "mitigation": "Each archetype's structure is encoded as section-target overrides via metadata.sectionTargetsOverride; section-question-counts validator already supports overrides via PostValidatorOptions." },
+    { "risk": "Teachers don't discover the templates", "mitigation": "Onboarding banner on the Worksheets page + the SendToMenu surfaces 'Want a template?' on first generate." }
+  ],
+  "related": [
+    "G4 — procedural activities (templates can include wordsearch / cloze sections)",
+    "G5 — 5-a-day builder (G3's '5-a-day' archetype is single-day; G5 is multi-week)",
+    "H2 — year planner (consumes archetype tags to suggest lesson types per week)"
+  ]
+}

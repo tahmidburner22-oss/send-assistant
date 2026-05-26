@@ -1,0 +1,69 @@
+{
+  "id": "FEAT-G4",
+  "phase": "G",
+  "title": "Procedural activity types — wordsearch, crossword, matching, cloze",
+  "tier": 1,
+  "effort": "M",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-4-procedural-activities",
+  "summary": "Four pure deterministic activity-type generators that don't depend on the LLM. Wordsearch (configurable grid + diagonals on/off + seeded shuffle), crossword (greedy interlocking from clue list), matching (left-right shuffle), cloze (__BLANK__-token-driven extraction). Each emits a `procedural` payload on the section; the renderer + answer-key + print pipeline pick it up.",
+  "motivation": "Twinkl's praised resource breadth is partly volume but partly format breadth — wordsearch, crossword, matching and cloze are the top-downloaded primary formats. The send-assistant generator emits stems + answer-lines today; these four activity types are entirely missing. They are also the cheapest to ship because they are pure deterministic logic, not LLM calls.",
+  "scope": {
+    "in": [
+      "client/src/lib/proceduralActivities/wordsearch.ts (new, ~200 LoC)",
+      "client/src/lib/proceduralActivities/crossword.ts (new, ~300 LoC)",
+      "client/src/lib/proceduralActivities/matching.ts (new, ~120 LoC)",
+      "client/src/lib/proceduralActivities/cloze.ts (new, ~150 LoC)",
+      "shared/aiSchemas.ts — WorksheetSectionSchema additive: type values 'wordsearch'|'crossword'|'matching'|'cloze' + procedural?: { kind, payload }",
+      "client/src/components/WorksheetRenderer.tsx — four new render branches (~250 LoC across them)",
+      "client/src/lib/promptSections/proceduralActivityDirectives.ts (new, ~80 LoC) — instructs the LLM how to emit a section with the right `procedural` payload when a template (G3) requests one",
+      "Targeted vitest per generator (~10 cases each) covering deterministic seed, edge cases (single-word, all-vowel words, very long words)"
+    ],
+    "out": [
+      "Picture-matching (image-on-left / word-on-right) — deferred; needs an image library which is out of scope",
+      "Drag-and-drop interactive variants — deferred to Phase H (depends on G1's interactive surface)",
+      "Anagram / sequence-puzzle / mix-and-match — deferred; team can pick later"
+    ]
+  },
+  "generators": {
+    "wordsearch": {
+      "input":  "{ words: string[]; gridSize?: number; allowDiagonals?: boolean; seed?: number }",
+      "output": "{ grid: string[][]; placements: { word, row, col, dir }[] }",
+      "constraint": "every word fits; grid is N×N where N = max(maxWordLength + 2, ceil(sqrt(totalLetters * 1.4)))"
+    },
+    "crossword": {
+      "input":  "{ entries: { word, clue }[]; seed?: number }",
+      "output": "{ grid: ('#'|null|string)[][]; clues: { num, dir: 'across'|'down', clue }[] }",
+      "constraint": "greedy interlocking; rejects any word that cannot interlock; emits a warning per skipped word"
+    },
+    "matching": {
+      "input":  "{ pairs: { left, right }[]; seed?: number }",
+      "output": "{ left: string[]; right: string[]; key: number[] }",
+      "constraint": "right column shuffled by seeded LCG; key[i] = original index of right[i]"
+    },
+    "cloze": {
+      "input":  "{ prose: string with __BLANK__ tokens; seed?: number }",
+      "output": "{ rendered: string with [1] [2] tokens; blanks: { num, answer }[]; wordBank?: string[] (shuffled) }",
+      "constraint": "wordBank toggleable; shuffled if present"
+    }
+  },
+  "acceptance_criteria": [
+    "Each generator is pure: same inputs (incl. seed) → identical output across two runs.",
+    "Wordsearch grid contains every input word at the recorded placement; no word crosses a grid boundary.",
+    "Crossword interlocks ≥70% of input words for randomly-generated 8-word vocab tests; emits one warning per skipped word.",
+    "Matching key[] is a valid permutation of [0..n-1]; right column is not in the same order as left.",
+    "Cloze blanks count equals the __BLANK__ token count; rendered preserves all non-blank text exactly.",
+    "Renderer prints in B&W with intact lines (no SVG-only rendering — table / grid markup so weak printers cope).",
+    "Answer-key page (G12) lists every blank's answer + every wordsearch placement + every crossword clue's answer.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Crossword greedy algorithm leaves obviously-bad layouts on small word lists", "mitigation": "Algorithm tries 50 seeded restarts and picks the layout that interlocked the most words. Test fixtures lock the expected output for 5 standard vocab lists." },
+    { "risk": "Wordsearch with diagonals disabled and many long words doesn't fit", "mitigation": "Generator increases gridSize and retries up to 3 times; emits a warning if it still fails and the section falls back to 'allowDiagonals: true'." }
+  ],
+  "related": [
+    "G3 — lesson archetypes (Mini-Quiz / Exit-Ticket archetypes can include cloze)",
+    "G12 — teacher-only answer key (lists procedural answers separately)"
+  ]
+}
