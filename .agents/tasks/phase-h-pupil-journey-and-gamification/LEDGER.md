@@ -12,7 +12,7 @@ shipped functional code for all 12 work units alongside Phase G).
 | --- | ---------------------------------------------------- | ---- | ------ | ------------------- | -------------------------------------- | --------------------- |
 | H1  | Pupil progress dashboard with skill mastery heatmap  | 2    | M      | yes (G1)            | Dr Frost progress tracking             | shipped — combined PR |
 | H2  | Curriculum-architect-style year planner              | 2    | L      | no                  | Twinkl Curriculum Architect            | shipped — combined PR |
-| H3  | Real-world context library                           | 2    | S      | no                  | Engagement research (real-world driver)| shipped — combined PR |
+| H3  | Real-world context library                           | 2    | S      | no                  | Engagement research (real-world driver)| wired — PR #127 (W12)  |
 | H4  | Cross-pupil leaderboards / streaks / badges          | 2    | M      | yes (G1, H1)        | Kahoot 2025 survey                     | shipped — combined PR |
 | H5  | Voice-input for the worksheet brief                  | 3    | S      | no                  | Universal teacher polish               | shipped — combined PR |
 | H6  | Telemetry admin dashboard hydration                  | 3    | S      | no                  | PR-27 deferred (telemetry already shipped, hydration not) | wired — PR #126 (W1)  |

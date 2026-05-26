@@ -66,6 +66,16 @@ import {
 import { getSendNoteForWorksheet, getSendSectionTitles } from './sendPromptFragments';
 import { buildSubjectPromptFragments } from './subject-profiles';
 import { enforceSendAdaptations } from './sendEnforcer';
+// PR-B (W5/W6/W12) — Phase G/H prompt directives. These three builders
+// turn an opt-in form selection into a small block of system-prompt text
+// that biases the worksheet output. They are no-ops when the param is
+// absent, so existing callers continue to behave identically.
+import { buildArchetypeDirective, type ArchetypeId } from './promptSections/archetypeDirectives';
+import {
+  buildProceduralActivityDirective,
+  type ProceduralKind,
+} from './promptSections/proceduralActivityDirectives';
+import { buildRealWorldContextDirective } from './promptSections/realWorldContextDirective';
 // Deterministic post-generation validators — fix the specific content bugs
 // teachers flagged in scrutiny reviews (multi-tick MCQ, duplicate word bank,
 // irrelevant diagrams, year-group drift, overlong worked examples) even if
@@ -1028,6 +1038,13 @@ export async function aiGenerateWorksheet(params: {
   /** PA#3 — 1–3 prior topics to interleave as synoptic questions. Replaces
    *  recallTopic on Y10/Y11 sheets; recallTopic still works for KS3. */
   priorTopics?: string[];
+  // ── PR-B (W5 G3 / W6 G4 / W12 H3) — opt-in prompt biases ──────────────
+  /** G3 — lesson archetype id; biases section ordering + intent. */
+  lessonArchetype?: ArchetypeId | null;
+  /** G4 — procedural activity kinds to embed (wordsearch / crossword / matching / cloze). */
+  proceduralActivityKinds?: ProceduralKind[];
+  /** H3 — real-world context id; biases stems towards the chosen domain. */
+  realWorldContextId?: string | null;
 }): Promise<AIWorksheetResult> {
 
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
@@ -2722,6 +2739,14 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
       lorBlock,
       synopticBlock,
       examPaperTemplateBlock,
+      // PR-B / Phase G+H — opt-in prompt biases. Each builder returns "" when
+      // its param is absent, so the structuredSystemSections trim-and-filter
+      // pipeline drops them silently. Order matters: archetype first
+      // (intent), then procedural-activity instructions (layout/format),
+      // then real-world context (the framing the questions sit in).
+      buildArchetypeDirective(params.lessonArchetype ?? null),
+      buildProceduralActivityDirective(params.proceduralActivityKinds ?? null),
+      buildRealWorldContextDirective(params.realWorldContextId ?? null),
       // Phase 1 — section-count contract (7-7-5 + 1). Single source of truth
       // for the question counts every other layer expects.
       `SECTION QUESTION COUNTS — you must hit exactly:
