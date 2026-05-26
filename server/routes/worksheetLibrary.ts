@@ -1472,4 +1472,62 @@ function injectAssetRefs(sections: any[], assets: LibraryAsset[]): any[] {
   });
 }
 
+// ── FEAT-G17 — Worksheet favourites ────────────────────────────────────────
+// In-memory store keyed by (userId). Persistent storage is the
+// `worksheet_favourite` table; v1 ships with the in-memory shim so the
+// route contract is testable without a migration in this PR. Schema
+// migration ships when the feature is enabled in production.
+
+interface FavouriteEntry {
+  worksheetId: string;
+  label: string;
+  createdAt: string;
+  snapshot?: Record<string, unknown>;
+}
+
+const FAVOURITES_BY_USER = new Map<string, FavouriteEntry[]>();
+const MAX_FAVOURITES_PER_USER = 50;
+
+function favouritesFor(userId: string): FavouriteEntry[] {
+  return FAVOURITES_BY_USER.get(userId) || [];
+}
+
+router.get("/favourites", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user?.id) return res.status(401).json({ error: "Authentication required" });
+  res.json({ favourites: favouritesFor(req.user.id) });
+});
+
+router.post("/favourites/:worksheetId", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user?.id) return res.status(401).json({ error: "Authentication required" });
+  const worksheetId = String(req.params.worksheetId || "").trim();
+  if (!worksheetId) return res.status(400).json({ error: "worksheetId required" });
+  const list = favouritesFor(req.user.id);
+  if (list.length >= MAX_FAVOURITES_PER_USER) {
+    return res.status(409).json({ error: `Limit reached (${MAX_FAVOURITES_PER_USER})` });
+  }
+  const existing = list.findIndex((f) => f.worksheetId === worksheetId);
+  if (existing >= 0) {
+    return res.json({ ok: true, alreadyFavourited: true });
+  }
+  const body = req.body || {};
+  const entry: FavouriteEntry = {
+    worksheetId,
+    label: typeof body.label === "string" ? body.label.slice(0, 120) : "",
+    createdAt: new Date().toISOString(),
+    snapshot: body.snapshot && typeof body.snapshot === "object" ? body.snapshot : undefined,
+  };
+  list.unshift(entry);
+  FAVOURITES_BY_USER.set(req.user.id, list);
+  res.json({ ok: true, favourite: entry });
+});
+
+router.delete("/favourites/:worksheetId", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user?.id) return res.status(401).json({ error: "Authentication required" });
+  const worksheetId = String(req.params.worksheetId || "").trim();
+  const list = favouritesFor(req.user.id);
+  const next = list.filter((f) => f.worksheetId !== worksheetId);
+  FAVOURITES_BY_USER.set(req.user.id, next);
+  res.json({ ok: true });
+});
+
 export default router;
