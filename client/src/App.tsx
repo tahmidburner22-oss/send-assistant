@@ -46,6 +46,8 @@ const BehaviourTracking = lazy(() => import("./pages/BehaviourTracking"));
 const Attendance = lazy(() => import("./pages/Attendance"));
 const PupilComments = lazy(() => import("./pages/PupilComments"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const AdminTelemetry = lazy(() => import("./pages/admin/telemetry"));
+const AdminFeatureFlags = lazy(() => import("./pages/admin/feature-flags"));
 const SuperAdminUsers = lazy(() => import("./pages/SuperAdminUsers"));
 
 // AI Tools
@@ -242,6 +244,8 @@ function ProtectedRoutes() {
             <Route path="/attendance" component={Attendance} />
             <Route path="/pupil-comments" component={PupilComments} />
             <Route path="/admin" component={AdminPanel} />
+            <Route path="/admin/telemetry" component={AdminTelemetry} />
+            <Route path="/admin/feature-flags" component={AdminFeatureFlags} />
             <Route path="/super-admin/users" component={SuperAdminUsers} />
 
             {/* Connectivity: pipelines, scheduler, skill ladder, daily work */}

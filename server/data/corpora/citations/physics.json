@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "subject": "physics",
+    "description": "Seed citations for GCSE Physics. Claims are paraphrased; sources are awarding-body specifications.",
+    "schema": "CitationEntry[]"
+  },
+  "entries": [
+    {
+      "claim": "Energy can be transferred, stored or dissipated, but cannot be created or destroyed (the principle of conservation of energy).",
+      "subject": "physics",
+      "topic": "energy",
+      "source": "AQA GCSE Physics (8463) Specification — Topic 4.1 Energy",
+      "confidence": "high"
+    },
+    {
+      "claim": "The acceleration of an object is directly proportional to the resultant force on it and inversely proportional to its mass (Newton's second law).",
+      "subject": "physics",
+      "topic": "forces",
+      "source": "Edexcel GCSE Physics (1PH0) Specification — Topic 9 Motion and forces",
+      "confidence": "high"
+    },
+    {
+      "claim": "The wave equation v = f * lambda relates wave speed, frequency, and wavelength for any wave.",
+      "subject": "physics",
+      "topic": "waves",
+      "source": "OCR Gateway GCSE Physics (J249) Specification — Topic P5 Waves",
+      "confidence": "high"
+    },
+    {
+      "claim": "Alpha radiation is the most ionising and least penetrating type of nuclear radiation; gamma is the least ionising and most penetrating.",
+      "subject": "physics",
+      "topic": "radioactivity",
+      "source": "AQA GCSE Physics (8463) Specification — Topic 4.4 Atomic structure",
+      "confidence": "high"
+    }
+  ]
+}

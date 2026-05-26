@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "subject": "english",
+    "board": "AQA",
+    "description": "Seed entries for AQA GCSE English Language and Literature past-paper question frequency.",
+    "schema": "PastPaperQuestionEntry[]"
+  },
+  "entries": [
+    { "year": 2023, "board": "AQA", "subject": "english", "tier": "mixed", "paper": "Lang-P1", "topic": "structure question (Q3)", "marks": 8 },
+    { "year": 2023, "board": "AQA", "subject": "english", "tier": "mixed", "paper": "Lang-P2", "topic": "comparing writers' viewpoints", "marks": 16 },
+    { "year": 2022, "board": "AQA", "subject": "english", "tier": "mixed", "paper": "Lit-P1", "topic": "macbeth ambition extract", "marks": 30 },
+    { "year": 2022, "board": "AQA", "subject": "english", "tier": "mixed", "paper": "Lit-P2", "topic": "an inspector calls responsibility", "marks": 30 },
+    { "year": 2021, "board": "AQA", "subject": "english", "tier": "mixed", "paper": "Lang-P1", "topic": "creative writing description", "marks": 40 },
+    { "year": 2021, "board": "AQA", "subject": "english", "tier": "mixed", "paper": "Lit-P2", "topic": "power and conflict poetry comparison", "marks": 30 }
+  ]
+}
