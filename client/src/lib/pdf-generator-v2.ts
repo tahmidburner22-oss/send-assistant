@@ -772,19 +772,18 @@ export async function downloadHtmlAsPdf(
 // inserted at the end of the printable element by the Worksheets.tsx print /
 // PDF handlers when `PrintOptions.includeAnswerKey` is true. The page is
 // page-broken with `page-break-before: always` and watermarked at the top.
+//
+// Re-uses the module-level `escapeHtml` helper defined earlier in this file
+// (the one with the 4-char " / & / < / > escape set). A previous revision
+// declared a second `escapeHtml` here, which esbuild rejects as a duplicate
+// top-level binding when bundling for `--format=esm` and breaks the Railway
+// build with: ERROR: The symbol "escapeHtml" has already been declared.
 import { buildAnswerKeyPage } from "./answerKeySheet";
 
 interface MinimalWorksheetForKey {
   title?: string;
   sections?: unknown[];
   metadata?: unknown;
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 }
 
 /**
