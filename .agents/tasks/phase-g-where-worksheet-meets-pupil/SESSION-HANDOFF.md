@@ -166,31 +166,36 @@ its own narrow follow-up):
    `client/src/pages/companion/[token].tsx` next to each question.
 2. **Wire G2's `<AnotherOneButton>`** into `WorksheetRenderer.tsx`
    on every question card (teacher view).
-3. **Wire G3's `<ArchetypePickerDialog>`** into the Worksheets form
+3. ~~**Wire G3's `<ArchetypePickerDialog>`** into the Worksheets form
    header + inject `archetypeDirectives.buildArchetypeDirective` in
-   `ai.ts:structuredSystemSections`.
+   `ai.ts:structuredSystemSections`.~~ Wired in PR #127 (W5).
 4. **Wire G4's `procedural` render branches** in
-   `WorksheetRenderer.tsx` (one switch case per kind) +
-   `proceduralActivityDirectives.buildProceduralActivityDirective`
-   in `ai.ts`.
+   `WorksheetRenderer.tsx` (one switch case per kind). The ai.ts
+   directive injection (`buildProceduralActivityDirective`) shipped
+   in PR #127 (W6); the renderer branches remain for PR-C.
 5. **Hook G5's `fiveADayBuilder`** into a self-contained tool page
    (`client/src/pages/tools/FiveADayBuilder.tsx`) registered via
    `tool-registry.ts`.
 6. **Hook G6's `predictedPaperBuilder`** into a self-contained tool
    page following the same pattern.
-7. **Wire G9's `<ThreeTierButton>`** into the Worksheets toolbar +
+7. ~~**Wire G9's `<ThreeTierButton>`** into the Worksheets toolbar +
    `aiDifferentiateExistingWorksheet` as the differentiate
-   function.
-8. **Wire G12's `buildAnswerKeyPage`** into `pdf-generator-v2.ts`
-   behind a new `PrintOptionsDialog` checkbox.
+   function.~~ Wired in PR #127 (W8).
+8. ~~**Wire G12's `buildAnswerKeyPage`** into `pdf-generator-v2.ts`
+   behind a new `PrintOptionsDialog` checkbox.~~ Wired in PR #127 (W9).
 9. **Wire G13's `<QuestionTimer>`** into the companion app on each
    question (depends on G1's wiring).
 10. **Wire G14's `buildParentLetter`** into a `<ParentLetterDialog>`
-    triggered from the SendToMenu.
+    triggered from the SendToMenu. (W11 — deferred to a follow-up;
+    `SendToMenu` is not currently rendered from `Worksheets.tsx`,
+    so the trigger location needs further design.)
 11. **Wire G15's `renumberSections`** behind a `<DragHandleColumn>`
     on the worksheet preview using `@dnd-kit`.
-12. **Wire G17's `<StarToggle>`** into the worksheet library row +
-    a "Recently favourited" sidebar in the Worksheets generator.
+12. ~~**Wire G17's `<StarToggle>`** into the worksheet library row +
+    a "Recently favourited" sidebar in the Worksheets generator.~~
+    Wired in PR #127 (W4) — star toggle on each library row + a
+    recent-favourites chip strip above the bank list. The full
+    "sidebar" treatment is deferred to a follow-up polish PR.
 
 ## Definition-of-done (per work unit)
 

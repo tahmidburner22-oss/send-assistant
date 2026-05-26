@@ -14,16 +14,16 @@ shipped functional code for all 12 implementation work units).
 | --- | -------------------------------------------------------- | ---- | ------ | ----------------------------------------------------- | ---------------------------- |
 | G1  | Pupil-facing auto-marking in the companion app           | 1    | M      | Dr Frost auto-marking; Liveworksheets auto grading    | shipped — combined PR        |
 | G2  | "Another one like this" same-spec-ref regen              | 1    | S      | Dr Frost question generators; Save My Exams unlimited | shipped — combined PR        |
-| G3  | Lesson-archetype templates (5 archetypes)                | 1    | M      | Twinkl PlanIt lesson plans                            | shipped — combined PR        |
-| G4  | Procedural activity types (4 generators)                 | 1    | M      | Twinkl resource breadth                               | shipped — combined PR        |
+| G3  | Lesson-archetype templates (5 archetypes)                | 1    | M      | Twinkl PlanIt lesson plans                            | wired — PR #127 (W5)         |
+| G4  | Procedural activity types (4 generators)                 | 1    | M      | Twinkl resource breadth                               | wired — PR #127 (W6 ai.ts; renderer in PR-C) |
 | G5  | 5-a-day daily-drill builder                              | 1    | S      | Corbettmaths 5-a-day                                  | shipped — combined PR        |
 | G6  | Predicted-paper builder (UI surface)                     | 1    | S      | MathsGenie predicted papers                           | shipped — combined PR        |
-| G9  | One-click three-tier ability differentiation (LA / MA / HA) | 2 | S      | Twinkl PlanIt three-way differentiation               | shipped — combined PR        |
-| G12 | Teacher-only answer-key separate page                    | 3    | XS     | (universal teacher request)                           | shipped — combined PR        |
+| G9  | One-click three-tier ability differentiation (LA / MA / HA) | 2 | S      | Twinkl PlanIt three-way differentiation               | wired — PR #127 (W8)         |
+| G12 | Teacher-only answer-key separate page                    | 3    | XS     | (universal teacher request)                           | wired — PR #127 (W9)         |
 | G13 | Per-question timer (mock-exam mode)                      | 3    | S      | (mock-exam practice request)                          | shipped — combined PR        |
-| G14 | Parent letter / homework cover note                      | 3    | S      | Twinkl parent letters                                 | shipped — combined PR        |
+| G14 | Parent letter / homework cover note                      | 3    | S      | Twinkl parent letters                                 | shipped — combined PR (W11 deferred) |
 | G15 | Drag-handle section reorder                              | 3    | S      | (universal teacher polish request)                    | shipped — combined PR        |
-| G17 | Worksheet favourites speed-dial                          | 3    | S      | TpT filing-cabinet pattern                            | shipped — combined PR        |
+| G17 | Worksheet favourites speed-dial                          | 3    | S      | TpT filing-cabinet pattern                            | wired — PR #127 (W4)         |
 | G18 | Bug — `semh` resolver order fix                          | 4    | XS     | (internal — flagged in PR-1 SESSION-HANDOFF notes)    | shipped — PR #124            |
 | G19 | Bug — fidelity audit warning idempotency                 | 4    | XS     | (internal — flagged in PR-1 SESSION-HANDOFF notes)    | shipped — PR #124            |
 | G20 | Cleanup — delete `WorksheetRenderer.tsx.bak`             | 4    | XS     | (internal — flagged in repo audit)                    | shipped — PR #124            |

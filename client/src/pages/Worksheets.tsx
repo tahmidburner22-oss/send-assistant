@@ -18,7 +18,7 @@ import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays, getDifficultyOptions, subjectTierMode, getLibrarySubjectName, getSubjectsForYearGroup } from "@/lib/send-data";
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
-import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline } from "@/lib/pdf-generator-v2";
+import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline, buildAnswerKeyHtml } from "@/lib/pdf-generator-v2";
 import { DEFAULT_A11Y_PROFILES, getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
 import ProgressionStrip from "@/components/ProgressionStrip";
@@ -55,6 +55,25 @@ import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
 import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
+// PR-B (W4) — favourites speed-dial. Star toggle on each library row +
+// localStorage persistence via worksheetFavourites. Recent-favourites
+// surface is a small chip strip above the bank list (no full sidebar in
+// this PR; that's a follow-up).
+import { StarToggle } from "@/components/StarToggle";
+import {
+  loadFavourites,
+  toggleFavourite as toggleFavouriteRecord,
+  isFavourited as isFavouritedFn,
+  recentFavourites,
+  type FavouriteRecord,
+} from "@/lib/worksheetFavourites";
+// PR-B (W5) — archetype picker dialog.
+import { ArchetypePickerDialog } from "@/components/ArchetypePickerDialog";
+// PR-B (W8) — three-tier differentiation toolbar button.
+import { ThreeTierButton } from "@/components/ThreeTierButton";
+// PR-B (W12) — real-world context picker (lightweight inline select; no
+// new component file).
+import { listContexts } from "@/lib/realWorldContextLibrary";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import DiagnosticStarterSheet from "@/components/DiagnosticStarterSheet";
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
@@ -638,6 +657,25 @@ export default function Worksheets() {
   // calculator: undefined => paper-default (Maths P1=false, P2/P3=true).
   const [paper, setPaper] = useState<"" | "P1" | "P2" | "P3">("");
   const [calculator, setCalculator] = useState<boolean | undefined>(undefined);
+
+  // ── PR-B (W5 G3 / W6 G4 / W12 H3) — opt-in prompt biases ──────────────────
+  // Each one threads through to aiGenerateWorksheet's new optional params and
+  // injects a directive into ai.ts:structuredSystemSections. Empty / null
+  // values are no-ops, so the existing form behaviour is unchanged when the
+  // teacher doesn't engage these affordances.
+  const [lessonArchetype, setLessonArchetype] = useState<import("@/lib/lessonArchetypes").ArchetypeId | null>(null);
+  const [realWorldContextId, setRealWorldContextId] = useState<string | null>(null);
+  const [proceduralKinds, setProceduralKinds] = useState<Array<"wordsearch" | "crossword" | "matching" | "cloze">>([]);
+  // PR-B (W5) — picker dialog open state.
+  const [showArchetypePicker, setShowArchetypePicker] = useState<boolean>(false);
+
+  // PR-B (W4) — favourites state. Hydrated from localStorage on mount.
+  // The mutation helper returns a fresh list, so we mirror it into state to
+  // avoid an extra storage round-trip per render.
+  const [favourites, setFavourites] = useState<FavouriteRecord[]>([]);
+  useEffect(() => {
+    setFavourites(loadFavourites());
+  }, []);
 
   // ── Class Presets ─────────────────────────────────────────────────────────
   interface ClassPreset {
@@ -1823,6 +1861,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           // Pillar A — paper / calculator flags (Y9+ exam-style mode).
           paper: paper || undefined,
           calculator,
+          // PR-B (W5/W6/W12) — opt-in prompt biases.
+          lessonArchetype: lessonArchetype || null,
+          proceduralActivityKinds: proceduralKinds.length > 0 ? proceduralKinds : undefined,
+          realWorldContextId: realWorldContextId || null,
         });
 
         // Step 2: Replace exercise sections with real exam questions from the bank
@@ -1869,6 +1911,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             // Pillar A — paper / calculator flags (Y9+ exam-style mode).
             paper: paper || undefined,
             calculator,
+            // PR-B (W5/W6/W12) — opt-in prompt biases.
+            lessonArchetype: lessonArchetype || null,
+            proceduralActivityKinds: proceduralKinds.length > 0 ? proceduralKinds : undefined,
+            realWorldContextId: realWorldContextId || null,
           });
           generatedWs = { ...result, isAI: true } as AIWorksheet;
           toast.success("Exam-style worksheet generated with AI!");
@@ -1900,6 +1946,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           // Pillar A — paper / calculator flags (Y9+ exam-style mode).
           paper: paper || undefined,
           calculator,
+          // PR-B (W5/W6/W12) — opt-in prompt biases.
+          lessonArchetype: lessonArchetype || null,
+          proceduralActivityKinds: proceduralKinds.length > 0 ? proceduralKinds : undefined,
+          realWorldContextId: realWorldContextId || null,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
@@ -1974,6 +2024,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               selectedSections: selectedSections as string[],
               paper: paper || undefined,
               calculator,
+              // PR-B (W5/W6/W12) — opt-in prompt biases.
+              lessonArchetype: lessonArchetype || null,
+              proceduralActivityKinds: proceduralKinds.length > 0 ? proceduralKinds : undefined,
+              realWorldContextId: realWorldContextId || null,
             });
             generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
             retrySuccess = true;
@@ -3064,6 +3118,19 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     if (!container) return;
     const a11yId = (generated?.metadata as any)?.accessibilityProfile || activeA11yProfileId;
     const a11yProfile = a11yId && a11yId !== "standard" ? getA11yProfileById(a11yId) : null;
+    // W9 / G12 — when the teacher has ticked "Append answer-key page" in the
+    // PrintOptionsDialog, build the deterministic answer-key HTML fragment
+    // from the current worksheet and pass it to the print popup as
+    // `extraHtml`. The fragment carries its own page break so it always
+    // lands on a fresh page; it is watermarked TEACHER ONLY at the top.
+    let extraHtml: string | undefined = undefined;
+    if (options.includeAnswerKey && generated) {
+      try {
+        extraHtml = buildAnswerKeyHtml(generated as never);
+      } catch {
+        // Non-fatal: fall back to printing without the answer key.
+      }
+    }
     printWorksheetElement(container, {
       overlayColor: overlayBg,
       viewMode: options.view,
@@ -3074,6 +3141,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       landscape: isRevisionMat,
       accessibilityProfileId: a11yId !== "standard" ? a11yId : undefined,
       accessibilityProfileCss: a11yProfile ? buildA11yProfileCss(a11yProfile) : undefined,
+      extraHtml,
     });
   };
   // ─── Paginated Print Preview ────────────────────────────────────────────────
@@ -4458,6 +4526,61 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     </div>
                   );
                 })()}
+
+                {/* PR-B (W5/W12) — opt-in generation biases.
+                    - Lesson archetype (G3): biases section ordering + intent.
+                    - Real-world context (H3): biases stems towards a chosen domain.
+                    Both are optional; clearing them returns to the existing
+                    behaviour. */}
+                <div className="grid grid-cols-2 gap-3" data-testid="generation-options-panel">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Lesson archetype <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-10 flex-1 justify-start text-xs"
+                        onClick={() => setShowArchetypePicker(true)}
+                      >
+                        {lessonArchetype ? `Archetype: ${lessonArchetype}` : "Pick an archetype"}
+                      </Button>
+                      {lessonArchetype && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-10 w-10 p-0 text-muted-foreground"
+                          aria-label="Clear archetype"
+                          onClick={() => setLessonArchetype(null)}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Real-world context <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                    <Select
+                      value={realWorldContextId || "__none__"}
+                      onValueChange={(val) => setRealWorldContextId(val === "__none__" ? null : val)}
+                    >
+                      <SelectTrigger className="h-10" aria-label="Real-world context">
+                        <SelectValue placeholder="No specific context" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-64">
+                        <SelectItem value="__none__">No specific context</SelectItem>
+                        {listContexts().map((ctx) => (
+                          <SelectItem key={ctx.id} value={ctx.id}>
+                            {ctx.name}
+                            <span className="text-[10px] text-muted-foreground ml-1">({ctx.category})</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">SEND Need</Label>
@@ -5268,6 +5391,29 @@ ${s.content}`).join("\n\n"),
                   </Select>
                 </div>
                 <p className="text-xs text-gray-500">{filteredBank.length} worksheets — dyslexia-friendly fonts, SEND adaptations built in</p>
+                {/* PR-B (W4 / G17) — recent favourites speed-dial. Hidden when empty. */}
+                {recentFavourites(6, favourites).length > 0 && (
+                  <div data-testid="recent-favourites" className="flex flex-wrap items-center gap-1 pt-1">
+                    <span className="text-[11px] uppercase tracking-wide text-amber-700 font-semibold mr-1">Recent favourites</span>
+                    {recentFavourites(6, favourites).map((fav) => {
+                      const target = filteredBank.find((b) => b.id === fav.worksheetId);
+                      return (
+                        <button
+                          key={fav.worksheetId}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (target) setSelectedBankSheet(target);
+                          }}
+                          className="text-xs px-2 py-0.5 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 truncate max-w-[160px]"
+                          title={fav.label}
+                        >
+                          ★ {fav.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -5290,6 +5436,32 @@ ${s.content}`).join("\n\n"),
                         </div>
                       </div>
                       <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      {/* PR-B (W4 / G17) — favourite toggle. stopPropagation so the
+                          click doesn't open the bank-sheet preview. */}
+                      <span onClick={(e) => e.stopPropagation()}>
+                        <StarToggle
+                          value={isFavouritedFn(ws.id, favourites)}
+                          label={isFavouritedFn(ws.id, favourites) ? `Remove ${ws.title} from favourites` : `Add ${ws.title} to favourites`}
+                          onChange={() => {
+                            const next = toggleFavouriteRecord(
+                              {
+                                worksheetId: ws.id,
+                                label: ws.title,
+                                createdAt: new Date().toISOString(),
+                                snapshot: {
+                                  subject: ws.subject,
+                                  yearGroup: ws.yearGroup,
+                                  topic: ws.topic,
+                                  difficulty: ws.difficulty,
+                                },
+                              },
+                              favourites,
+                            );
+                            setFavourites(next.list);
+                            if (next.warning) toast.warning(next.warning);
+                          }}
+                        />
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
@@ -5996,6 +6168,28 @@ ${s.content}`).join("\n\n"),
             <Button variant="outline" size="sm" onClick={() => setShowDiffDialog(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
               <Sparkles className="w-3.5 h-3.5" /> Differentiate
             </Button>
+            {/* PR-B (W8 / G9) — one-click three-tier differentiation. Runs LA / MA /
+                HA concurrently. We adapt G9's tier alphabet (LA/MA/HA) onto the
+                existing 'foundation' | 'higher' API; the MA tier is the
+                untransformed sheet. */}
+            {generated && (
+              <ThreeTierButton
+                worksheet={generated}
+                differentiate={async (ws, tier) => {
+                  if (tier === "MA") return ws;
+                  const apiTier = tier === "LA" ? "foundation" : "higher";
+                  const out = await aiDifferentiateExistingWorksheet({
+                    sections: (ws as { sections?: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }> }).sections || [],
+                    tier: apiTier,
+                    subject: (ws as { metadata?: { subject?: string } }).metadata?.subject,
+                    topic: (ws as { metadata?: { topic?: string } }).metadata?.topic,
+                    yearGroup: (ws as { metadata?: { yearGroup?: string } }).metadata?.yearGroup,
+                    title: (ws as { title?: string }).title,
+                  });
+                  return { ...ws, sections: out.sections } as typeof ws;
+                }}
+              />
+            )}
             <Button variant="outline" size="sm" onClick={() => setShowScenarioDialog(true)} className="gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50" disabled={scenarioSwapLoading}>
               {scenarioSwapLoading ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Swapping...</> : <><RefreshCw className="w-3.5 h-3.5" /> Scenario Swap</>}
             </Button>
@@ -6905,6 +7099,32 @@ ${s.content}`).join("\n\n"),
         open={showPrintDialog}
         onClose={() => setShowPrintDialog(false)}
         onPrint={handlePrintWithOptions}
+      />
+
+      {/* PR-B (W5 / G3) — Lesson archetype picker. */}
+      <ArchetypePickerDialog
+        open={showArchetypePicker}
+        onClose={() => setShowArchetypePicker(false)}
+        context={{
+          subject,
+          topic: topic || undefined,
+          yearGroup: yearGroup || undefined,
+        }}
+        onPick={(brief) => {
+          setLessonArchetype(brief.archetypeId);
+          // Append the archetype's prompt preamble to the additional-instructions
+          // box so the teacher can see (and edit) what biased the prompt. We
+          // never overwrite a brief the teacher has already typed in.
+          const tag = `[Archetype: ${brief.archetypeName}]`;
+          const existing = additionalInstructions || "";
+          if (!existing.includes(tag)) {
+            const merged = existing
+              ? `${existing}\n\n${tag} ${brief.briefSummary}`
+              : `${tag} ${brief.briefSummary}`;
+            setAdditionalInstructions(merged);
+          }
+          setShowArchetypePicker(false);
+        }}
       />
 
       {/* FEAT-PC6 — Translate (EAL bilingual) Dialog */}
