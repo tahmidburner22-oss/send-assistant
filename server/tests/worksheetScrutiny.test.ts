@@ -3257,6 +3257,90 @@ describe("Phase 4 follow-up — applySendFidelityAudit accumulates warnings into
   });
 });
 
+// ─── Phase G prework — bare 'semh' resolver fix (Tier 4 bug G18) ──────────
+//
+// Before this fix, the matcher row [/\b(anxiety|semh|mental)\b/, "anxiety"]
+// in resolveSendSpec ran BEFORE the dedicated SEMH matcher
+// [/\b(semh|social.emotional|emotional.mental)\b/, "semh"], so the bare
+// token "semh" was eaten by the anxiety branch and the SEMH spec was
+// unreachable for the most natural input shape. The fix removes `semh`
+// from the anxiety regex (keeping `mental` there because mental-health
+// language is still anxiety territory) so the dedicated row wins.
+
+describe("Phase G prework — resolveSendSpec routes bare 'semh' to the SEMH spec", () => {
+  it("returns the spec with id 'semh' (not 'anxiety') for the bare token", () => {
+    const spec = resolveSendSpec("semh")!;
+    expect(spec).not.toBeNull();
+    expect(spec.id).toBe("semh");
+    expect(spec.name).toMatch(/Social, Emotional and Mental Health/);
+  });
+
+  it("still routes 'anxiety' and 'mental health' tokens to the anxiety spec", () => {
+    expect(resolveSendSpec("anxiety")!.id).toBe("anxiety");
+    expect(resolveSendSpec("mental health")!.id).toBe("anxiety");
+  });
+
+  it("compound forms like 'social-emotional' continue to resolve to semh", () => {
+    expect(resolveSendSpec("social-emotional")!.id).toBe("semh");
+    expect(resolveSendSpec("emotional-mental")!.id).toBe("semh");
+  });
+});
+
+describe("Phase G prework — semh fidelity audit works for the bare token", () => {
+  it("runSendFidelityAudit('semh') returns a report with sendNeedId='semh'", () => {
+    const ws = makeSheet([
+      { type: "q-short", title: "Warm-Up — no pressure!", content: "[ ] Calm   [ ] OK   [ ] Need a break — let your teacher know\nLet's have a go at this together." },
+      { type: "q-short", title: "Section B", content: "Take a breath here — come back when you are ready." },
+      { type: "challenge", title: "OPTIONAL BONUS — only if you want to", content: "An extra question." },
+      { type: "reflection", title: "Reflection", content: "[ ] Calm   [ ] OK   [ ] Need a break" },
+    ]);
+    const report = runSendFidelityAudit(ws, "semh")!;
+    expect(report).not.toBeNull();
+    expect(report.sendNeedId).toBe("semh");
+  });
+});
+
+// ─── Phase G prework — applySendFidelityAudit warning idempotency (G19) ───
+//
+// Before this fix, calling applySendFidelityAudit twice on the same
+// worksheet produced a postValidatorWarnings array with each warning
+// listed twice — the function read existing warnings and appended the
+// freshly-computed report's warnings unconditionally. The
+// sendFidelityReport itself was already idempotent (deep-equal across
+// calls); only the warnings array duplicated. The fix dedupes by
+// string equality before merge.
+
+describe("Phase G prework — applySendFidelityAudit dedupes warnings on the second call", () => {
+  it("running the audit twice produces a postValidatorWarnings array with no duplicates", () => {
+    const ws = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Section A", content: "You must answer all questions." }],
+      metadata: {},
+    };
+    const r1 = applySendFidelityAudit(ws, "asc-demand-avoidant");
+    const r2 = applySendFidelityAudit(r1, "asc-demand-avoidant");
+    const w1 = (r1.metadata?.postValidatorWarnings as string[]) || [];
+    const w2 = (r2.metadata?.postValidatorWarnings as string[]) || [];
+    expect(w2).toEqual(w1);
+    // Hard-check: every entry in w2 is unique.
+    expect(new Set(w2).size).toBe(w2.length);
+  });
+
+  it("preserves any pre-existing unrelated warnings on every call", () => {
+    const ws = {
+      title: "T",
+      sections: [{ type: "q-short", title: "Section A", content: "You must answer all questions." }],
+      metadata: { postValidatorWarnings: ["pre-existing warning"] },
+    };
+    const r1 = applySendFidelityAudit(ws, "asc-demand-avoidant");
+    const r2 = applySendFidelityAudit(r1, "asc-demand-avoidant");
+    const w2 = (r2.metadata?.postValidatorWarnings as string[]) || [];
+    expect(w2).toContain("pre-existing warning");
+    expect(w2.filter((w) => w === "pre-existing warning")).toHaveLength(1);
+    expect(new Set(w2).size).toBe(w2.length);
+  });
+});
+
 
 
 // ─── PR-4 — Quality scorecard (audit item #50) ─────────────────────────────

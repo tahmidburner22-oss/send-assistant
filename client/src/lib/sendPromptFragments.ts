@@ -937,7 +937,12 @@ export function resolveSendSpec(sendNeed: string | undefined | null): SendAdapta
     [/\b(asc|autism|autistic|asd)\b/, "asc"],
     [/\b(mld|moderate learning)\b/, "mld"],
     [/\b(slcn|speech|language|communication)\b/, "slcn"],
-    [/\b(anxiety|semh|mental)\b/, "anxiety"],
+    // Phase 4 follow-up bugfix — `semh` removed from the anxiety regex so
+    // the dedicated SEMH matcher (further down) can win for the bare token
+    // "semh". Before this change, anxiety|semh|mental ran first and ate
+    // every bare "semh" input, masking the SEMH-specific spec. The
+    // resolver ORDER is otherwise preserved.
+    [/\b(anxiety|mental)\b/, "anxiety"],
     [/\b(dyspraxia|dcd|coordination)\b/, "dyspraxia"],
     [/\b(vi|visual impair|visually)\b/, "vi"],
     [/\b(hi|hearing impair|deaf)\b/, "hi"],
