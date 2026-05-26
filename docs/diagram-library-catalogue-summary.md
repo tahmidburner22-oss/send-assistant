@@ -19,7 +19,7 @@ Generated: **2052** unique diagram briefs across 13 subjects.
 | Cross-curricular | 80 |
 | **Total** | **2052** |
 
-Each row in `docs/primary-diagram-library.csv` is a *brief*: a unique title,
+Each row in `docs/diagram-library-catalogue.csv` is a *brief*: a unique title,
 topic and description that an artist or image-gen step can produce. Once an
 image is uploaded via Admin Panel → Diagram Library, the row's `image_url`
 and `asset_ref` are filled in and `curated` flips to 1.
@@ -27,7 +27,7 @@ and `asset_ref` are filled in and `curated` flips to 1.
 Re-run with:
 
 ```bash
-node tools/primary-diagram-catalogue/generate.mjs
+node tools/diagram-catalogue/generate.mjs
 ```
 
 ## Year-band coverage

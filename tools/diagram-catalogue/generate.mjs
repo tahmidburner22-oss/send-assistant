@@ -1,17 +1,21 @@
 #!/usr/bin/env node
 /**
- * Primary diagram catalogue generator.
+ * Diagram catalogue generator (Reception → A-Level).
  *
  * Composes per-subject modules into a single CSV at
- *   docs/primary-diagram-library.csv
+ *   docs/diagram-library-catalogue.csv
  *
  * The CSV columns map 1:1 to the diagram_library DB schema (see
  * server/db/index.ts) plus two editorial extras:
- *   - year_band   — KS1 / LKS2 / UKS2 (derived from year_group)
+ *   - year_band   — KS1 / LKS2 / UKS2 / KS3 / GCSE / A-Level
  *   - style_notes — guidance for the artist / image-gen step
  *
+ * Currently covers Y1–Y6 (primary). Secondary modules (KS3 / GCSE /
+ * A-Level) will be added under tools/diagram-catalogue/secondary/ in a
+ * follow-up — see docs/primary-worksheet-improvement-plan.md §W6.
+ *
  * Run from repo root:
- *   node tools/primary-diagram-catalogue/generate.mjs
+ *   node tools/diagram-catalogue/generate.mjs
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -63,7 +67,7 @@ for (const [name, build] of SUBJECT_BUILDERS) {
 }
 
 // ── Write CSV ────────────────────────────────────────────────────────────────
-const csvPath = path.join(repoRoot, "docs", "primary-diagram-library.csv");
+const csvPath = path.join(repoRoot, "docs", "diagram-library-catalogue.csv");
 fs.mkdirSync(path.dirname(csvPath), { recursive: true });
 fs.writeFileSync(csvPath, rowsToCsv(ctx.rows), "utf8");
 
@@ -79,7 +83,7 @@ const summaryLines = [
   ...summary.map((s) => `| ${s.subject} | ${s.count} |`),
   `| **Total** | **${total}** |`,
   "",
-  "Each row in `docs/primary-diagram-library.csv` is a *brief*: a unique title,",
+  "Each row in `docs/diagram-library-catalogue.csv` is a *brief*: a unique title,",
   "topic and description that an artist or image-gen step can produce. Once an",
   "image is uploaded via Admin Panel → Diagram Library, the row's `image_url`",
   "and `asset_ref` are filled in and `curated` flips to 1.",
@@ -87,7 +91,7 @@ const summaryLines = [
   "Re-run with:",
   "",
   "```bash",
-  "node tools/primary-diagram-catalogue/generate.mjs",
+  "node tools/diagram-catalogue/generate.mjs",
   "```",
   "",
   "## Year-band coverage",
@@ -121,7 +125,7 @@ for (const r of ctx.rows.slice(0, 30)) {
   summaryLines.push(`| ${r.id} | ${r.subject} | ${r.year_group} | ${r.topic} | ${r.title} |`);
 }
 
-const summaryPath = path.join(repoRoot, "docs", "primary-diagram-library-summary.md");
+const summaryPath = path.join(repoRoot, "docs", "diagram-library-catalogue-summary.md");
 fs.writeFileSync(summaryPath, summaryLines.join("\n") + "\n", "utf8");
 
 console.log(`Wrote ${total} rows`);
