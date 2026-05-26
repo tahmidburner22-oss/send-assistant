@@ -7,7 +7,7 @@
 This plan is split into seven workstreams (W1–W7). Each has a problem statement, the
 files we already have, the change required, and the acceptance criteria we can test
 against. Workstreams W3 and W6 depend on the diagram catalogue shipped alongside this
-doc (`docs/primary-diagram-library.csv`).
+doc (`docs/diagram-library-catalogue.csv`).
 
 ---
 
@@ -208,17 +208,22 @@ The primary prompt says "vary after every 3 questions" but doesn't enforce it.
 
 ---
 
-## W6 — Diagram library: 2,000-entry primary catalogue
+## W6 — Diagram library: unified catalogue (Reception → A-Level)
 
-**Problem.** Audit (`docs/diagram-coverage.md`) shows 1,722 entries currently
-exist; coverage of primary topics is near zero. This is the single biggest
-quality lever for primary worksheets.
+**Problem.** Audit (`docs/diagram-coverage.md`) shows ~1,722 entries currently
+exist in the live `diagram_library` table; coverage of primary topics is near
+zero, and KS3 / A-Level coverage is patchy. This is the single biggest quality
+lever for both primary AND secondary worksheets — give the AI a curated entry
+to reach for in every common lesson, regardless of year group.
 
-**Change — shipped with this plan.**
-1. New catalogue: **`docs/primary-diagram-library.csv`** — **2,052 rows**
+**Change — shipped with this plan (primary slice) + follow-up (secondary).**
+
+### Phase 1 — primary slice (this PR)
+
+1. New catalogue: **`docs/diagram-library-catalogue.csv`** — **2,052 rows**
    curated for Y1–Y6 across all primary subjects (KS1: 577, LKS2: 918,
    UKS2: 477, KS1+KS2 branding: 80).
-2. Generator: `tools/primary-diagram-catalogue/` (one module per subject, plus
+2. Generator: `tools/diagram-catalogue/` (one module per subject, plus
    `generate.mjs`). Re-running the generator produces a deterministic CSV so
    we can diff additions over time.
 3. Each row carries: `id, title, subject, topic, year_band, year_group,
@@ -227,8 +232,8 @@ quality lever for primary worksheets.
    — these are *briefs* for the artist/AI image step. As images are produced
    they are uploaded via Admin Panel → Diagram Library, which fills `image_url`
    and `asset_ref` and toggles `curated = 1`.
-4. Distribution (engineered to "10× quality" by giving the AI an entry to
-   reach for in every common primary lesson):
+4. Primary distribution (engineered to "10× quality" by giving the AI an entry
+   to reach for in every common primary lesson):
    - Mathematics: 548
    - English: 324
    - Science: 310
@@ -243,10 +248,48 @@ quality lever for primary worksheets.
    - PSHE / RSE: 70
    - Branding / cross-curricular: 80
 
+### Phase 2 — secondary slice (follow-up PR)
+
+Extend the same generator with modules under
+`tools/diagram-catalogue/secondary/` covering the gap between the live DB's
+existing 1,722 entries and full curriculum coverage. Targets:
+
+- **KS3 (Y7–Y9)**: ~1,000 new briefs across Maths, English, Biology, Chemistry,
+  Physics, Geography, History, Computing, MFL, Art, DT, Music, PE, RE, Drama.
+- **GCSE (Y10–Y11)**: ~2,000 new briefs — biggest priority because that's where
+  worksheet usage peaks. Covers all GCSE subjects including Business, Economics,
+  Sociology, Psychology, Statistics, Citizenship.
+- **A-Level (Y12–Y13)**: ~1,500 new briefs — Maths, Further Maths, Sciences,
+  English Lit/Lang, Humanities, Social Sciences, Computer Science, MFL,
+  Classics, Philosophy.
+
+Heavy-priority diagram families at GCSE (highest exam-prep value):
+
+- **Maths**: probability trees, cumulative-frequency curves, histograms with
+  unequal class widths, transformations, vectors, the eight standard circle
+  theorems, trig graphs, surds/index notation cards.
+- **Biology**: cell organelles, required-practical apparatus, enzyme lock-and-key,
+  heart cross-section, nephron, neurone, synapse, DNA, mitosis/meiosis stages,
+  food-web pyramids, phylogenetic trees.
+- **Chemistry**: atomic structure, periodic table colour-coded by group, dot-and-
+  cross bonding, electrolysis apparatus, Haber/contact processes, energy
+  profile diagrams, equilibria, fractional distillation, fuel cells.
+- **Physics**: ray diagrams (mirror/lens), wave properties, circuits with V/A
+  meters, motion graphs (s-t, v-t, a-t), free-body force diagrams, EM spectrum,
+  transformers, half-life decay curves.
+- **English**: text-type structures, Aristotle's appeals, character relationship
+  maps for set texts (kept simplified & copyright-safe).
+- **History / Geography / Computing / Business**: see §W6 follow-up prompt.
+
+Total target after Phase 2: **5,000–7,000 unique diagram briefs** spanning
+Reception → A-Level.
+
 **Acceptance.**
-- `npm run gen:primary-diagrams` produces a CSV identical to the committed one.
-- After image upload, `GET /api/diagram-library/coverage` for primary subjects
-  returns `topicsWithDiagramA ≥ 90%` and `topicsWithDiagramB ≥ 75%`.
+- `node tools/diagram-catalogue/generate.mjs` produces a CSV identical to the
+  committed one, with zero duplicate titles across all rows.
+- After image upload, `GET /api/diagram-library/coverage` returns
+  `topicsWithDiagramA ≥ 90%` and `topicsWithDiagramB ≥ 75%` for every
+  canonical key in `server/lib/topicNormalizer.ts` — primary AND secondary.
 
 ---
 
@@ -299,5 +342,5 @@ sometimes pushes a single question over a page break, and there's no
 - `server/routes/ai.ts` — diagram lookup at generation time
 - `server/db/index.ts` — `diagram_library` schema (no change required)
 - `docs/diagram-coverage.md` — coverage audit instructions
-- `docs/primary-diagram-library.csv` — **NEW**: 2,000-row primary catalogue
-- `tools/primary-diagram-catalogue/` — **NEW**: catalogue generator
+- `docs/diagram-library-catalogue.csv` — **NEW**: 2,052-row primary catalogue (Phase 1; secondary added in follow-up)
+- `tools/diagram-catalogue/` — **NEW**: catalogue generator
