@@ -4,6 +4,14 @@ data/
 # are static JSON committed alongside the code.
 !client/src/data/
 !client/src/data/**
+
+# W2 (FEAT-H7) — production corpora are committed seed data, not runtime output.
+!server/data/
+!server/data/corpora/
+!server/data/corpora/**
+# Runtime files (e.g. feature-flag-allowlist.json from W3) stay ignored.
+server/data/*.json
+server/data/*.log
 .env
 *.db
 *.db-shm

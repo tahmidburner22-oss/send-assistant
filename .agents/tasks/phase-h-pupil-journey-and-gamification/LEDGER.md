@@ -15,9 +15,9 @@ shipped functional code for all 12 work units alongside Phase G).
 | H3  | Real-world context library                           | 2    | S      | no                  | Engagement research (real-world driver)| shipped — combined PR |
 | H4  | Cross-pupil leaderboards / streaks / badges          | 2    | M      | yes (G1, H1)        | Kahoot 2025 survey                     | shipped — combined PR |
 | H5  | Voice-input for the worksheet brief                  | 3    | S      | no                  | Universal teacher polish               | shipped — combined PR |
-| H6  | Telemetry admin dashboard hydration                  | 3    | S      | no                  | PR-27 deferred (telemetry already shipped, hydration not) | shipped — combined PR |
-| H7  | Production corpus loaders                            | 3    | M      | no                  | PR-19..27 deferred (audits ship; corpus injection deferred) | shipped — combined PR |
-| H8  | Activate dark env flags                              | 3    | S      | no                  | PR-20 dark surfaces (4 flags) + PR-9 generation cache | shipped — combined PR |
+| H6  | Telemetry admin dashboard hydration                  | 3    | S      | no                  | PR-27 deferred (telemetry already shipped, hydration not) | wired — PR #126 (W1)  |
+| H7  | Production corpus loaders                            | 3    | M      | no                  | PR-19..27 deferred (audits ship; corpus injection deferred) | wired — PR #126 (W2)  |
+| H8  | Activate dark env flags                              | 3    | S      | no                  | PR-20 dark surfaces (4 flags) + PR-9 generation cache | wired — PR #126 (W3)  |
 | H9  | Multi-step worked-example interactive walkthrough    | 2    | M      | yes (G1)            | Engagement research (interactive practice) | shipped — combined PR |
 | H10 | Wrong-answer aggregate → re-teach pack               | 2    | M      | yes (G1)            | Internal — reteachPlanner already exists, aggregate input is the gap | shipped — combined PR |
 | H11 | Per-question try-harder / try-easier tier-shift      | 2    | S      | yes (G1, G2)        | Engagement research (choice-and-voice) | shipped — combined PR |
