@@ -491,10 +491,13 @@ export function printWorksheetElement(
     landscape?: boolean;
     accessibilityProfileId?: string;
     accessibilityProfileCss?: string;
+    /** W9 / G12 — extra HTML appended to the popup body after the main worksheet. */
+    extraHtml?: string;
   } = {}
 ): void {
   const viewMode = options.viewMode || "student";
-  const contentHtml = serialiseElement(element, viewMode);
+  const baseContentHtml = serialiseElement(element, viewMode);
+  const contentHtml = options.extraHtml ? `${baseContentHtml}${options.extraHtml}` : baseContentHtml;
   const katexCss = getKatexCssInline();
   const html = buildPopupHtml(contentHtml, katexCss, { ...options, isPdf: false });
   openPrintPopup(html);
@@ -759,4 +762,62 @@ export async function downloadHtmlAsPdf(
       liveStyleEls.forEach((s: HTMLStyleElement, i: number) => { s.textContent = (originalContents as string[])[i]; });
     }
   }
+}
+
+
+
+// ─── W9 / G12 — Answer-key page HTML ────────────────────────────────────────
+// Builds an HTML fragment for the teacher-only answer-key page emitted by
+// `client/src/lib/answerKeySheet.ts:buildAnswerKeyPage`. The fragment is
+// inserted at the end of the printable element by the Worksheets.tsx print /
+// PDF handlers when `PrintOptions.includeAnswerKey` is true. The page is
+// page-broken with `page-break-before: always` and watermarked at the top.
+//
+// Re-uses the module-level `escapeHtml` helper defined earlier in this file
+// (the one with the 4-char " / & / < / > escape set). A previous revision
+// declared a second `escapeHtml` here, which esbuild rejects as a duplicate
+// top-level binding when bundling for `--format=esm`.
+import { buildAnswerKeyPage } from "./answerKeySheet";
+
+interface MinimalWorksheetForKey {
+  title?: string;
+  sections?: unknown[];
+  metadata?: unknown;
+}
+
+/**
+ * Build a self-contained HTML fragment for the answer-key page. The
+ * fragment carries its own page-break + scoped styling so it can be
+ * appended to either the print popup body or the html-to-PDF source
+ * element without disturbing the worksheet styles above it.
+ */
+export function buildAnswerKeyHtml(worksheet: MinimalWorksheetForKey): string {
+  const page = buildAnswerKeyPage(worksheet as never);
+  if (!page || !page.rows || page.rows.length === 0) return "";
+
+  const rowsHtml = page.rows
+    .map((row) => {
+      const num = typeof row.questionNumber === "number" ? `Q${row.questionNumber}` : "";
+      return `<tr>
+        <td style="padding:6px 8px;width:48px;font-weight:700;border-bottom:1px solid #e5e7eb;vertical-align:top">${escapeHtml(num)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;vertical-align:top">
+          <div style="font-weight:600;font-size:12px;color:#1f2937">${escapeHtml(row.title)}</div>
+          <div style="font-size:12px;color:#374151;white-space:pre-wrap;margin-top:2px">${escapeHtml(row.content)}</div>
+        </td>
+      </tr>`;
+    })
+    .join("");
+
+  return `
+    <section class="answer-key-page no-print-skip" style="page-break-before:always;break-before:page;padding:24px 16px;font-family:DM Sans,system-ui,sans-serif;color:#1f2937">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+        <h2 style="margin:0;font-size:18px;font-weight:800">${escapeHtml(page.header.title)}</h2>
+        <span style="font-size:11px;font-weight:700;color:#7f1d1d;letter-spacing:0.05em">${escapeHtml(page.watermark)}</span>
+      </div>
+      <p style="margin:0 0 12px;font-size:12px;color:#6b7280">${escapeHtml(page.header.content)}</p>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </section>
+  `;
 }
