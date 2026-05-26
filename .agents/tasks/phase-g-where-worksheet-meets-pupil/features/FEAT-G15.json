@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-G15",
+  "phase": "G",
+  "title": "Drag-handle section reorder",
+  "tier": 3,
+  "effort": "S",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-15-drag-reorder",
+  "summary": "Drag-handle column (teacher view, .no-print) on the worksheet preview that lets teachers reorder sections without regenerating. Uses @dnd-kit/core (already in deps for ClassPack + Year planner UI). Reorders the worksheet.sections array via the existing AppContext setter; the existing enforceSectionQuestionCounts validator no-ops on reorders since the count is unchanged. Optional '↓ Re-number questions' button to keep sequential numbers after reorder.",
+  "motivation": "Universal polish ask. The current AI-edit-section flow regenerates the section content; teachers often just want to swap order — e.g. move the worked-example before Section A, or push the challenge to last.",
+  "scope": {
+    "in": [
+      "client/src/components/DragHandleColumn.tsx (new, ~120 LoC) — uses useSortable from @dnd-kit/sortable",
+      "client/src/components/WorksheetRenderer.tsx — wrap the section grid in DndContext (teacher view only)",
+      "client/src/contexts/AppContext.tsx — expose reorderSections(worksheetId, fromIndex, toIndex) action",
+      "client/src/lib/worksheet-renumber.ts (new, ~40 LoC) — pure helper that renumbers questionNumber on every q-* section in array order",
+      "Targeted vitest: reorder preserves all section content; renumber assigns 1..N to q-* sections in array order; non-q-* sections (LO, vocab-ref, reflection) keep questionNumber=undefined"
+    ],
+    "out": [
+      "Cross-worksheet drag (move a section from worksheet A to worksheet B) — deferred",
+      "Drag inside print preview (the print preview is a snapshot; reorder is on the editable preview only)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Dragging a section to a new position updates the worksheet immediately (no flicker, no regeneration).",
+    "After reorder, the existing post-validator chain runs idempotently and produces the same warnings as before (modulo question-number reordering).",
+    "Renumber action sets questionNumber to 1..N over q-* sections in the new array order; running the post-validator chain after renumber produces no new warnings.",
+    "Drag is keyboard-accessible (Space to grab, arrow keys to move, Space to drop) per @dnd-kit's a11y defaults.",
+    "Print view is unchanged (drag-handle column has .no-print).",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": [
+    "G3 — lesson archetypes (drag interacts cleanly with archetype-stamped sections; metadata.lessonArchetype is preserved)",
+    "G12 — answer key (regenerates after reorder using the same input array)"
+  ]
+}

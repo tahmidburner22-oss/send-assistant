@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-H12",
+  "phase": "H",
+  "title": "Spaced-repetition for 5-a-day (Leitner / SM-2)",
+  "tier": 2,
+  "effort": "S",
+  "status": "not started",
+  "depends_on": ["G1", "G5"],
+  "branch_suggestion": "feat/phase-h-12-spaced-repetition",
+  "summary": "Leitner-box scheduler over G5's 5-a-day skill list. Reads G1's correct/incorrect log; advances correct skills to the next box, demotes incorrect skills to box 1. Each day's 5-a-day pack is weighted by box (60% box 1 / 30% box 2 / 10% box 3+).",
+  "scope": {
+    "in": [
+      "client/src/lib/leitnerScheduler.ts (new, ~150 LoC) — pure scheduler; reads pupil_attempt rows; emits per-pupil per-skill { box: 1|2|3|4|5, lastReviewed }",
+      "client/src/lib/fiveADayBuilder.ts (G5) — extend with optional schedulerOutput input that biases the day's pack accordingly",
+      "shared/aiSchemas.ts — additive: metadata.spacedRepetitionState?: { skill: string, box: number, lastReviewed: string }[]",
+      "Targeted vitest: scheduler advances/demotes correctly; pack weighting respects box distribution; deterministic"
+    ],
+    "out": [
+      "SM-2 algorithm (deferred — Leitner is simpler and good enough for v1; SM-2 is Phase I if usage demands it)",
+      "Cross-day pack streaming (deferred — v1 emits the pack per day on demand)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Scheduler is pure: same pupil_attempt rows → same box state across runs.",
+    "Correct attempt on a skill in box N moves it to box N+1 (capped at 5); incorrect demotes to box 1.",
+    "5-a-day pack with scheduler bias respects 60/30/10 distribution within ±10%.",
+    "Skills not yet attempted default to box 1.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": ["G1", "G5"]
+}

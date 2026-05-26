@@ -1,0 +1,42 @@
+{
+  "id": "FEAT-H4",
+  "phase": "H",
+  "title": "Cross-pupil leaderboards / streaks / badges",
+  "tier": 2,
+  "effort": "M",
+  "status": "not started",
+  "depends_on": ["G1", "H1"],
+  "branch_suggestion": "feat/phase-h-4-gamification",
+  "summary": "Reads H1's pupil_attempt rows. Per-class: daily-streak (consecutive days with ≥1 correct), badges (first-attempt-100% on a specRef, longest-streak, most-improved-this-week), opt-in leaderboard (off by default per safeguarding research; initials-only when on; opt-out per-pupil).",
+  "scope": {
+    "in": [
+      "client/src/lib/gamificationEngine.ts (new, ~250 LoC) — pure deterministic rules engine over pupil_attempt rows",
+      "client/src/components/PupilStreakBadge.tsx (new, ~80 LoC) — flame icon + day count for the companion app header",
+      "client/src/components/ClassLeaderboard.tsx (new, ~150 LoC) — opt-in leaderboard for the teacher dashboard",
+      "client/src/lib/badgeDefinitions.ts (new, ~120 LoC) — frozen list of 12 badges (first-book, century-of-pages, etc. — mirrors the reading-challenge badge pattern from PR #121)",
+      "shared/aiSchemas.ts — additive: pupil_attempt summary metadata.badgesEarned[]",
+      "Server: extend pupilAttempts.ts (H1) with GET /api/leaderboard?classId&period=week",
+      "Per-school admin toggle for leaderboard on/off + per-pupil opt-out flag",
+      "Targeted vitest: streak rules; badge rules; opt-out honoured"
+    ],
+    "out": [
+      "Cross-school leaderboards (deferred — privacy + safeguarding review needed)",
+      "Public-facing class pages (deferred)",
+      "Badge marketplace / custom badges (deferred)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Streak counter increments daily; resets to 0 if a pupil misses a day with ≥1 correct attempt.",
+    "Leaderboard is OFF by default. Admin can turn on per-class. Pupils can opt out individually.",
+    "When leaderboard is on, displays initials only (e.g. 'A.K.') — never full name.",
+    "Badge rules are pure / deterministic — same pupil_attempt history → same badges.",
+    "Engine handles edge cases: leap day, school holidays (no break-streak penalty), pupil joining mid-year.",
+    "Research-anchored UX safeguards: bottom-3 pupils are NOT shown on the public leaderboard (only the teacher view); pupils only see their own rank + the cohort percentile.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Leaderboards demotivate lower performers (research-backed concern)", "mitigation": "Off-by-default; opt-in; bottom-3 hidden from public leaderboard; pupils see percentile not rank; admin toggle requires accepting a one-click safeguarding warning." },
+    { "risk": "Streaks pressure pupils to attempt sloppy work just to maintain the streak", "mitigation": "Streak only counts attempts on assigned worksheets (not random self-generated practice); a 1-day grace via 'streak freeze' on weekends." }
+  ],
+  "related": ["G1", "H1"]
+}

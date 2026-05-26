@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-H11",
+  "phase": "H",
+  "title": "Per-question try-harder / try-easier tier-shift",
+  "tier": 2,
+  "effort": "S",
+  "status": "not started",
+  "depends_on": ["G1", "G2"],
+  "branch_suggestion": "feat/phase-h-11-tier-shift-buttons",
+  "summary": "Two buttons in the companion app per question (after G1's verifier returns 'incorrect' or 'correct'): 'Try easier' biases the next question to Foundation tier; 'Try harder' biases to Higher. Reuses Phase F's tier filter on curriculumBank.lookupBySpecRef and G2's anotherOneLikeThis pipeline.",
+  "scope": {
+    "in": [
+      "client/src/lib/tierShift.ts (new, ~100 LoC) — wraps anotherOneLikeThis (G2) with a tier-shifted bias",
+      "client/src/components/TierShiftButtons.tsx (new, ~80 LoC) — two buttons on the wrong-answer / correct-answer card in the companion",
+      "Targeted vitest: tier-shift bias respected; bank-miss falls back to LLM with pinned tier"
+    ],
+    "out": [
+      "Multi-step shift (Foundation → Higher → Stretch) — deferred",
+      "Auto-shift based on streak (e.g. 3 correct → auto-try-harder) — deferred"
+    ]
+  },
+  "acceptance_criteria": [
+    "'Try easier' button shows only when current question's tier ≥ Foundation; returns a Foundation-or-below variant on the same specRef.",
+    "'Try harder' button shows only when current question's tier ≤ Higher; returns a Higher-or-above variant.",
+    "Both buttons use G2's anotherOneLikeThis with a tier-shift parameter — no new prompt path.",
+    "Buttons are accessible (Tab order, aria-label).",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": ["G1", "G2", "FEAT-PF1 — curriculum bank tier filter"]
+}

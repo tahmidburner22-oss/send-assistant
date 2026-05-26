@@ -1,0 +1,50 @@
+{
+  "id": "FEAT-G6",
+  "phase": "G",
+  "title": "Predicted-paper builder (UI surface over PR-19's frequency anchor)",
+  "tier": 1,
+  "effort": "S",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-6-predicted-paper",
+  "summary": "UI surface over the pastPaperFrequencyAnchor library that PR-19 (audit #38) shipped but never gave a teacher-facing entry point. Teacher picks subject + tier + year-group + 'Past papers to anchor against' (multi-select 2019–2024 default) + 'Bias toward unseen topics' slider; the builder inverts the frequency weighting so the assembly biases toward topics that are UNDER-represented in the supplied corpus. Reuses createExamPaperBuilder.ts's mark-band knapsack via a thin adapter.",
+  "motivation": "MathsGenie 'predicted papers' is the single most-downloaded GCSE revision format pre-exam season — explicit copy on the site reads 'topics least likely to come up in paper 3 removed'. PR-19 already ships the frequency-anchor logic; the only thing missing is the UI to drive it.",
+  "scope": {
+    "in": [
+      "client/src/lib/predictedPaperBuilder.ts (new, ~200 LoC) — wraps pastPaperFrequencyAnchor + createExamPaperBuilder",
+      "client/src/pages/tools/PredictedExamPaper.tsx (new, ~200 LoC) — wraps CreateExamPaper.tsx form with anchor multi-select + bias slider",
+      "client/src/lib/tool-registry.ts — append ToolEntry { id: 'predicted-paper', hub: 'revision', icon: Sparkle }",
+      "client/src/App.tsx — lazy import + Route",
+      "client/src/pages/hubs/RevisionHubSection.tsx — append a 7th storyboard step 'Build a predicted paper'",
+      "Targeted vitest in client/src/lib/__tests__/predictedPaperBuilder.test.ts (~10 cases): bias=0 produces same distribution as createExamPaperBuilder; bias=1 fully inverts; output is seed-deterministic; over-anchored corpus falls back gracefully"
+    ],
+    "out": [
+      "Production past-paper question-frequency corpus loader (deferred to H7; today the corpus is caller-injected)",
+      "Live-update UI ('predicted paper for next month') (deferred to PR-28; needs a corpus refresh job)",
+      "Auto-detection of awarding body's exam season (deferred — heuristic; teachers can pick)"
+    ]
+  },
+  "bias_semantics": {
+    "bias=0":   "frequency-neutral; behaviour identical to createExamPaperBuilder",
+    "bias=0.5": "moderate inversion — under-represented topics weighted 1.5×, over-represented 0.5×",
+    "bias=1":   "full inversion — top-quartile-frequency topics excluded, bottom-quartile weighted 2×"
+  },
+  "acceptance_criteria": [
+    "bias=0 output is structurally identical to a createExamPaperBuilder call with the same params.",
+    "bias=1 output excludes every topic that appeared in ≥75th percentile of the anchor corpus.",
+    "Same (params, seed) produce identical predicted papers across two runs.",
+    "When the anchor corpus is empty, the builder returns the createExamPaperBuilder output + a warning 'No anchor corpus supplied — falling back to neutral frequency'.",
+    "Per-topic floor (every requested topic ≥1 question) is preserved even at bias=1, with a warning when this conflicts with the bias.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Corpus injection burden — teacher has to upload the anchor corpus", "mitigation": "v1 ships pre-bundled 2019-2024 corpus for AQA / Edexcel / OCR (paraphrased, not verbatim — same paraphrasing convention as the curriculum bank exemplars). Teachers can override." },
+    { "risk": "Predictions drift over the year as more recent papers ship", "mitigation": "Corpus is a JSON file with last-updated date; admin panel surfaces staleness >12 months." }
+  ],
+  "related": [
+    "G5 — 5-a-day daily-drill (similar bank-driven assembly pattern)",
+    "createExamPaperBuilder — Phase E PR-B's existing assembly engine",
+    "PR-19 / audit #38 — pastPaperFrequencyAnchor (the corpus ranker G6 consumes)",
+    "H7 — production corpus loaders (replaces v1's bundled corpus)"
+  ]
+}

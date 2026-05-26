@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-H2",
+  "phase": "H",
+  "title": "Curriculum-architect-style year planner",
+  "tier": 2,
+  "effort": "L",
+  "status": "not started",
+  "depends_on": [],
+  "branch_suggestion": "feat/phase-h-2-year-planner",
+  "summary": "Drag-and-drop UI over the existing topic-bank and Unit Pack libraries. Teacher drags a topic into 'Week 5' of the year view; the planner emits a calendar-anchored Unit Pack. Persists the plan per (school, year-group, academic-year) so HoDs can collaboratively build a SoW.",
+  "scope": {
+    "in": [
+      "client/src/pages/YearPlanner.tsx (new, ~600 LoC) — full-page drag-drop UI using @dnd-kit",
+      "client/src/lib/yearPlannerSchema.ts (new, ~100 LoC) — { weeks: { isoWeek, topicId, unitPackId? }[], academicYear, yearGroup, schoolId }",
+      "server/db/schema.sql — year_plan table (school_id, year_group, academic_year, plan_json, updated_by, updated_at)",
+      "server/routes/yearPlanner.ts (new) — GET/PUT endpoints",
+      "client/src/contexts/AppContext.tsx — yearPlans Map + saveYearPlan / loadYearPlan actions",
+      "Cross-link to Unit Pack: 'Generate Unit Pack from Week N' button calls existing unitPack.ts",
+      "Targeted vitest: schema validation; concurrent-edit conflict resolution (last-write-wins with audit trail)"
+    ],
+    "out": [
+      "Multi-class merging (one teacher's plan per (year-group, academic-year))",
+      "Term/half-term auto-suggestions from spec coverage (deferred — could be a Phase I follow-up)",
+      "Plan templates / sharing across schools (deferred)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Calendar shows 38 ISO weeks (Sep-Aug academic year) with school holidays auto-marked from a UK academic-year heuristic + an editable holiday-override list.",
+    "Drag a topic chip into a week → updates plan immediately (optimistic), saves to server within 500ms.",
+    "'Generate Unit Pack from Week 5-12' produces a Unit Pack via existing unitPack.ts using the topics from those weeks.",
+    "Concurrent edits resolved with last-write-wins; audit trail records updated_by/updated_at; UI shows 'Bob updated this 2 minutes ago'.",
+    "Plan persists across reloads.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Largest UI build in Phase H — could blow the PR size budget", "mitigation": "If diff exceeds 800 LoC, split into a separate PR-H-B (per PHASE-PLAN.md). FEAT-H2 is independent of all other H rows." },
+    { "risk": "School-holiday heuristic drifts year-on-year", "mitigation": "v1 hard-codes school-holiday ISO weeks for 2026/27 + 2027/28; UI shows a 'Override holidays' button that lets admin edit. v2 imports from a public UK academic calendar API." }
+  ],
+  "related": ["H1", "G3 — lesson archetypes (planner could suggest archetypes per week-type)"]
+}

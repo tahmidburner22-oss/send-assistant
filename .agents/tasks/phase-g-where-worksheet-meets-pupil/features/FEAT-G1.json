@@ -1,0 +1,58 @@
+{
+  "id": "FEAT-G1",
+  "phase": "G",
+  "title": "Pupil-facing auto-marking in the companion app",
+  "tier": 1,
+  "effort": "M",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-1-pupil-auto-marking",
+  "summary": "Make the companion app actually mark pupil answers. Pupil enters typed answer, picks an MCQ letter, or writes a short response; the verifier checks correctness deterministically (numeric tolerance via mathsVerifier; short-text via the markScheme synonym bag from PR-13; MCQ via single-correct-letter check; structured multi-mark via method-mark step matching) and surfaces an instant tick / cross + the diagnosed misconception (when metadata.misconceptionLinks has one for this question) + a 'Show hint ladder' disclosure that runs the existing runHintLadder.",
+  "motivation": "The single most-praised feature across competitor reviews — Dr Frost ('auto-marking worksheets and assessments with instant student feedback') and Liveworksheets ('auto grading and instant feedback'). The infrastructure already exists: hint-ladder, mathsVerifier, markScheme synonym bag (PR-13), misconceptionLinks (FEAT-PB7), companion-share. What is missing is the pupil-facing answer-entry surface and the wiring that runs the verifier on submit.",
+  "scope": {
+    "in": [
+      "client/src/lib/answerVerifier.ts (new, ~250 LoC) — pure function `verifyAnswer({ section, pupilInput, options }): VerifyResult`",
+      "client/src/pages/companion/[token].tsx — <AnswerEntryPanel> per question + result card + hint ladder disclosure",
+      "client/src/lib/companion-answer-log.ts (new, ~150 LoC) — per-pupil-per-worksheet localStorage log keyed by companion_token + sectionIndex",
+      "shared/aiSchemas.ts — additive: metadata.companionAttempts? to record what questions a pupil attempted (for H1)",
+      "Targeted vitest in client/src/lib/__tests__/answerVerifier.test.ts (≥15 cases covering numeric / short-text / MCQ / structured / unknown-format)"
+    ],
+    "out": [
+      "Server-side persistence of pupil answers (deferred to H1 — Phase H pupil progress dashboard depends on it)",
+      "Adaptive next-question selection (deferred to H10 — wrong-answer aggregate)",
+      "Handwriting recognition (out of scope of any phase)",
+      "Pupil identity / login (companion app remains share-token-keyed)"
+    ]
+  },
+  "verifier_modes": [
+    { "mode": "numeric",     "format": "{ answer: number, unit?: string, tolerance?: number }", "engine": "mathsVerifier (already exists)" },
+    { "mode": "short-text",  "format": "{ canonicalAnswer: string, synonyms?: string[] }",     "engine": "markSchemeUpgrades.ts synonym bag" },
+    { "mode": "mcq",         "format": "{ correctLetter: 'A'|'B'|'C'|'D'|'E' }",               "engine": "single-letter equality" },
+    { "mode": "structured",  "format": "{ steps: { method, accept }[] }",                       "engine": "step-by-step match (M1/M2/A1 from PR-13)" },
+    { "mode": "open",        "format": "{ rubricRef: string }",                                  "engine": "no auto-mark; surfaces 'Teacher will mark this' message" }
+  ],
+  "acceptance_criteria": [
+    "Verifier function is pure: verifyAnswer(...) called twice with the same input returns deep-equal output.",
+    "Numeric branch accepts `3.14`, `3.140`, `3.14 cm` and (with tolerance=0.01) `3.13`/`3.15` for canonical 3.14 cm.",
+    "Short-text branch accepts case-insensitive whitespace-trimmed equality and any synonym from the metadata.markSchemeSynonyms list (PR-13).",
+    "Wrong MCQ answer that matches a metadata.misconceptionLinks distractor surfaces the diagnosed misconception text.",
+    "Companion-app result card has THREE states only: 'Correct ✓ — N marks', 'Partial ◐ — N marks', 'Try again ✗' — never grey middle ground.",
+    "Hint ladder disclosure is collapsed by default; runs runHintLadder lazily on first open.",
+    "Pupil's answers persist across page reload via localStorage (`companion_answers_<token>`) so they can resume mid-worksheet.",
+    "answerVerifier has zero LLM calls (every verifier branch is deterministic). LLM is reserved for Phase H 'open' essays.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Verifier is too strict and rejects spelling-equivalent right answers", "mitigation": "Synonym bag is already extensively populated by PR-13; tests cover the BNF-form tolerance for numbers; short-text uses Levenshtein distance ≤1 for words >6 chars." },
+    { "risk": "MCQ schema mismatch — some banks emit 'A' / 'B' as the body, not the letter", "mitigation": "Verifier accepts both `correctLetter: 'A'` and `correctLetter: 0` (index) and reads from the section's MCQ payload format if available." },
+    { "risk": "Pupil cheats by reading localStorage and seeing the answer", "mitigation": "Acceptable in v1 — companion is for learning, not summative; answer payload is server-side only and the verifier runs in a Web Worker so the answer literal is not in the client bundle. Move to server-side verify in Phase H if needed." },
+    { "risk": "Companion app token gets shared more widely than intended (one pupil's progress overwrites another's)", "mitigation": "localStorage key includes a per-device random ID generated on first open." }
+  ],
+  "related": [
+    "G2 — same-spec-ref regen (Try-again button on a wrong answer can offer 'Get another like this')",
+    "G13 — per-question timer (depends on G1's answer-entry surface)",
+    "H1 — pupil progress dashboard (depends on G1's answer log)",
+    "H10 — wrong-answer aggregate → re-teach pack (depends on G1's answer log)",
+    "FEAT-PB7 — misconceptionLinks (the metadata field G1 reads to surface diagnosed misconceptions)"
+  ]
+}

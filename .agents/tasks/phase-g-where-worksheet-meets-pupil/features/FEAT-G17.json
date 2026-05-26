@@ -1,0 +1,42 @@
+{
+  "id": "FEAT-G17",
+  "phase": "G",
+  "title": "Worksheet favourites speed-dial",
+  "tier": 3,
+  "effort": "S",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-17-favourites",
+  "summary": "TpT 'filing cabinet' pattern. Star-icon affordance on every library row writes a row to a new worksheet_favourite table; a sidebar 'Recently favourited' speed-dial on the Worksheets generator page pre-fills the form from a chosen favourite's params. Server-side endpoints + AppContext action + UI affordance.",
+  "motivation": "TpT's filing cabinet is the most-praised non-AI ergonomic feature in the review corpus. Teachers regenerate the same shape of worksheet weekly — the favourite is the input config, NOT the output bytes, so re-running gives a fresh worksheet on the same shape.",
+  "scope": {
+    "in": [
+      "server/db/schema.sql — new table worksheet_favourite (school_id, user_id, worksheet_id, label, created_at) + index on (school_id, user_id)",
+      "server/routes/worksheetLibrary.ts — POST/DELETE /api/library/favourites/:id endpoints",
+      "client/src/contexts/AppContext.tsx — favourites: Map<worksheetId, FavouriteRecord> + toggleFavourite(worksheetId, label?) action",
+      "client/src/components/Worksheets/Sidebar.tsx (or extend the existing sidebar) — 'Recently favourited' chip list",
+      "client/src/components/StarToggle.tsx (new, ~60 LoC) — reusable star-icon affordance + tooltip",
+      "Targeted vitest: server endpoint contract; AppContext optimistic update; star-toggle accessibility (aria-pressed)"
+    ],
+    "out": [
+      "Cross-school favourite sharing (deferred — privacy review needed)",
+      "Favourite tagging / folders (deferred — single label string is enough for v1)",
+      "Favourite-as-template (the favourite stores the input config; G3 archetypes are a separate first-class concept)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Toggling the star on a library row inserts/deletes a worksheet_favourite row scoped to the current school + user.",
+    "Sidebar 'Recently favourited' shows up to 8 chips, ordered by created_at DESC.",
+    "Clicking a favourite chip pre-fills the Worksheets generator form (subject, yearGroup, topic, sendNeed, examBoard, difficulty, archetype if any) — does NOT auto-submit.",
+    "Schema is append-only and IF NOT EXISTS so re-runs are safe.",
+    "Optimistic update — UI flips immediately; server call rolls back on failure with a toast.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Favourite worksheet's source params drift over time (e.g. school changes default exam board)", "mitigation": "Favourite stores a snapshot of the params at favouriting time; re-using a favourite from 6 months ago surfaces a 'these defaults may be stale' notice." },
+    { "risk": "favourite_count grows unbounded for power users", "mitigation": "Soft cap at 50 per user; UI shows 'Limit reached — un-favourite older entries' when at cap." }
+  ],
+  "related": [
+    "G3 — lesson archetypes (a favourite can capture an archetype + topic combo)"
+  ]
+}

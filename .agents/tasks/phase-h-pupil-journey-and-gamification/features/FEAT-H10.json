@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-H10",
+  "phase": "H",
+  "title": "Wrong-answer aggregate → re-teach pack",
+  "tier": 2,
+  "effort": "M",
+  "status": "not started",
+  "depends_on": ["G1"],
+  "branch_suggestion": "feat/phase-h-10-wrong-answer-aggregate",
+  "summary": "Class-pack-style follow-up generator. Reads G1's companion-answer-log across a class, identifies the (specRef, misconceptionId) pairs with ≥30% wrong-answer rate, and generates a re-teach worksheet focused on those exact gaps. Reuses reteachPlanner.ts (FEAT-PB3).",
+  "scope": {
+    "in": [
+      "client/src/lib/wrongAnswerAggregator.ts (new, ~180 LoC) — pure aggregator over pupil_attempt rows; emits ReteachBrief shape that reteachPlanner already accepts",
+      "client/src/components/WrongAnswerAggregateButton.tsx (new, ~100 LoC) — toolbar button on the class-progress dashboard (H1 surface)",
+      "Targeted vitest: aggregator threshold (≥30% wrong-answer rate); class-size scaling; stable order"
+    ],
+    "out": [
+      "Per-pupil re-teach (deferred — v1 is class-level; per-pupil is a Phase I if demand emerges)",
+      "Auto-trigger when a class crosses the threshold (deferred — admin-triggered for v1)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Aggregator returns a ReteachBrief with topics ordered by wrong-answer-rate descending.",
+    "ReteachBrief feeds into the existing aiGenerateReteachWorksheet — no new server route needed.",
+    "Threshold is configurable (default 30%); below threshold returns an empty brief with a 'No re-teach needed' message.",
+    "Aggregator is pure: same input rows → same output across runs.",
+    "Stable section order — aggregator is deterministic when input rows have identical (pupil_id, attempted_at).",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": ["G1", "H1", "FEAT-PB3 — reteachPlanner"]
+}

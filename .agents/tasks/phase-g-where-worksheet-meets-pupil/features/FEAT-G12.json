@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-G12",
+  "phase": "G",
+  "title": "Teacher-only answer-key as a separate print page",
+  "tier": 3,
+  "effort": "XS",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-12-answer-key-page",
+  "summary": "Pure helper that consumes a worksheet and emits a sibling print-only page containing only mark-scheme + method marks + diagnosed misconceptions + procedural-activity answers (G4). Compact reference layout (table or two-column). One additional checkbox on PrintOptionsDialog; the PDF export pipeline appends the second page after the main worksheet. Honours the existing print-preset bleed + stapling-edge rules.",
+  "motivation": "Universal teacher request — the existing PDF export interleaves teacher-only sections with pupil-facing ones; teachers want to detach the marking sheet so they can hand the worksheet to pupils and keep the answer-key in the planner.",
+  "scope": {
+    "in": [
+      "client/src/lib/answerKeySheet.ts (new, ~120 LoC) — buildAnswerKeyPage(worksheet, options) -> { sections } compatible with WorksheetRenderer",
+      "client/src/components/PrintOptionsDialog.tsx — new checkbox 'Print answer key as separate page' (default off)",
+      "client/src/lib/pdf-generator-v2.ts — pipeline picks up the option and renders both pages in sequence",
+      "Targeted vitest: every section with a markScheme contributes one row to the answer key; procedural sections (G4) contribute their answer payload; teacher-only sections that are NOT markScheme are excluded"
+    ],
+    "out": [
+      "Two-sided printing logic (deferred — Print presets already handle stapling-edge / margins, the answer-key page slots in as the next sheet)",
+      "Multi-language answer key (deferred — could be added as a follow-up if MFL bilingual tools want it)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Worksheet with 7 questions + a self-reflection + a teacher key produces an answer-key page with 7 rows + the procedural-activity answers (when G4 is in scope).",
+    "Answer-key page header includes the worksheet title, year-group, topic, and a 'TEACHER ONLY — DO NOT DISTRIBUTE' watermark.",
+    "Answer-key page omits any section without a mark scheme (e.g. learning-objective, vocab-reference) and any pupil-facing-only section.",
+    "When the user prints with the option off, the export is byte-identical to today's behaviour.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": [
+    "G4 — procedural activities (the answer-key page lists procedural answers via the same helper)"
+  ]
+}

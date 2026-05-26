@@ -1,0 +1,42 @@
+{
+  "id": "FEAT-G9",
+  "phase": "G",
+  "title": "One-click three-tier ability differentiation (LA / MA / HA)",
+  "tier": 2,
+  "effort": "S",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-9-three-tier-ability",
+  "summary": "One button → three concurrent calls to aiDifferentiateExistingWorksheet (low / middle / high), Promise.allSettled so one failure doesn't block the other two. Tabbed preview shows all three. 'Save all three to library' triggers AppContext.saveWorksheet × 3 with linked metadata.differentiationGroup so HoDs can find them as a set.",
+  "motivation": "Twinkl PlanIt's three-way LA / MA / HA differentiated worksheets are the most-praised primary feature — most UK primary teachers plan in tiers. Today the send-assistant differentiate flow is one-tier-at-a-time. The 4-call AI cost is acceptable because the result feeds three lessons, not one.",
+  "scope": {
+    "in": [
+      "client/src/lib/threeTierDifferentiation.ts (new, ~150 LoC) — wraps the existing aiDifferentiateExistingWorksheet with three concurrent tier calls",
+      "client/src/components/ThreeTierButton.tsx (new, ~100 LoC) — toolbar button + tabbed preview modal",
+      "shared/aiSchemas.ts — additive: metadata.differentiationGroup?: { groupId: string; tier: 'LA'|'MA'|'HA' }",
+      "server/routes/worksheetLibrary.ts — index column on metadata.differentiationGroup.groupId so the library query 'show all 3 versions' is fast",
+      "Targeted vitest: three-call concurrency, partial-failure recovery, group-link metadata stamped on each tier"
+    ],
+    "out": [
+      "Custom tier counts (5-tier / 2-tier) — deferred; v1 is fixed 3",
+      "Per-tier SEND profile mixing — deferred (would conflict with the existing SEND fidelity audit's single-profile assumption)",
+      "Differentiation 'preview-before-commit' — deferred; v1 commits all three immediately"
+    ]
+  },
+  "acceptance_criteria": [
+    "All three tier calls run concurrently (Promise.allSettled, not sequential await).",
+    "If two of three calls succeed, the modal shows the two and a toast for the failed one with a 'Retry just HA' button.",
+    "All three saved worksheets share the same groupId and have linked tier values.",
+    "HoD library view filter 'Show only differentiation groups' returns at most one row per groupId (collapsed display).",
+    "Cost transparency chip (PR-9) reflects 3× generation cost stamped on the parent group's metadata.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "Three concurrent calls hit per-school throttle", "mitigation": "Server adapts cooldown tracker (already in routes/ai.ts:75-115) to honour a per-group queue; concurrency limit of 3 is well under any practical school throttle." },
+    { "risk": "LA / HA versions diverge so much that the 'they're the same lesson' invariant breaks", "mitigation": "Differentiation prompt already preserves the same specRef set (Phase F lock). The tier filter on getCandidatePoolForTopics ensures spec coverage stays aligned." }
+  ],
+  "related": [
+    "G2 — another-one-like-this (same `ai.ts` extension family)",
+    "FEAT-PF1 — curriculum bank's tier filter (consumed by all three calls)"
+  ]
+}
