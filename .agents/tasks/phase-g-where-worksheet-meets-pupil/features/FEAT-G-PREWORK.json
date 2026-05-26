@@ -1,0 +1,55 @@
+{
+  "id": "FEAT-G-PREWORK",
+  "phase": "G",
+  "title": "Tier-4 bug fixes shipped as planning-PR prework (G18 + G19 + G20)",
+  "tier": 4,
+  "effort": "XS",
+  "status": "shipped — this PR",
+  "owner": "kiro",
+  "branch": "feat/phase-g-h-plan-and-bugfixes",
+  "summary": "Three small fixes from the SESSION-HANDOFF 'Pre-existing notes' section + repo audit, shipped together with the Phase G + H planning files. Independent of the implementation work; ships first because each is small and the regression tests give the implementation phases a stable baseline.",
+  "items": [
+    {
+      "id": "G18",
+      "title": "semh resolver order fix",
+      "files_touched": ["client/src/lib/sendPromptFragments.ts"],
+      "lines_changed": "+8 / -1",
+      "fix": "Removed `semh` from the anxiety regex at line 940; the dedicated SEMH matcher (line ~950) now wins for the bare token. The 'mental' token stays with anxiety because mental-health language is anxiety territory.",
+      "tests_added": [
+        "resolveSendSpec routes bare 'semh' to the SEMH spec (3 cases)",
+        "anxiety / mental health still routes to anxiety",
+        "compound forms (social-emotional, emotional-mental) still route to semh",
+        "runSendFidelityAudit('semh') returns sendNeedId='semh'"
+      ]
+    },
+    {
+      "id": "G19",
+      "title": "applySendFidelityAudit warning idempotency",
+      "files_touched": ["client/src/lib/sendFidelityAudit.ts"],
+      "lines_changed": "+13 / -1",
+      "fix": "Replaced the unconditional `[...existingWarnings, ...finalReport.warnings]` merge with a Set-based dedupe loop that preserves order and drops string-equal duplicates. The fix is purely additive — first-call behaviour is unchanged.",
+      "tests_added": [
+        "running applySendFidelityAudit twice produces no duplicates in postValidatorWarnings",
+        "pre-existing unrelated warnings are preserved without duplication"
+      ]
+    },
+    {
+      "id": "G20",
+      "title": "Delete WorksheetRenderer.tsx.bak",
+      "files_touched": ["client/src/components/WorksheetRenderer.tsx.bak (deleted)"],
+      "lines_changed": "deleted (~287KB / ~7,200 lines of stale duplicate)",
+      "fix": "Deleted the .bak duplicate. No reference in the codebase, no entry in .gitignore covered it. Reduces repo size + confusion."
+    }
+  ],
+  "acceptance_criteria": [
+    "tsc --noEmit clean (no new errors).",
+    "Existing tests at server/tests/worksheetScrutiny.test.ts:252 (SEMH content rules), 1480 (buildSelfReflection), 3198 (semh fidelity probes via 'social-emotional') all pass after the fix.",
+    "New tests added at the end of worksheetScrutiny.test.ts pass.",
+    "WorksheetRenderer.tsx (the live file) is unchanged — only the .bak duplicate is gone."
+  ],
+  "related": [
+    "Big-bang SESSION-HANDOFF 'Pre-existing notes' — original location of the G18 + G19 bug callouts",
+    "PR-1 (#85) — the original SEND fidelity probe shipping that documented G18 as deferred",
+    "G1 — Phase G's pupil auto-marking work depends on a clean send-fidelity audit (G19 fix)"
+  ]
+}

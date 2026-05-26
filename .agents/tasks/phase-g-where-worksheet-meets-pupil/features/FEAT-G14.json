@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-G14",
+  "phase": "G",
+  "title": "Parent letter / homework cover note auto-generator",
+  "tier": 3,
+  "effort": "S",
+  "status": "not started",
+  "owner": "kiro",
+  "branch_suggestion": "feat/phase-g-14-parent-letter",
+  "summary": "Adds aiGenerateParentLetter() to client/src/lib/ai.ts — takes { worksheet, schoolName, teacherName, weekStarting, parentTone: 'supportive'|'firm'|'informative' } and returns a one-page letter with a 3-bullet 'How parents can help' section grounded in the worksheet's actual learning objective. Reuses the existing curriculum-authority preamble. Surfaces via a new ParentLetterDialog opened from SendToMenu.",
+  "motivation": "Twinkl parent letters and home-school records are the most-praised primary-school workload-saver in the review corpus. Teachers want a one-click letter that goes home with the homework — not a separate Word document they hand-edit.",
+  "scope": {
+    "in": [
+      "client/src/lib/ai.ts — extend with aiGenerateParentLetter() (~120 LoC) using the existing structuredSystemSections pattern",
+      "client/src/components/ParentLetterDialog.tsx (new, ~120 LoC) — opens from SendToMenu; inline preview; export as a separate PDF page or appended after the main worksheet",
+      "shared/aiSchemas.ts — additive: metadata.parentLetterAttached?: boolean; metadata.parentTone?: 'supportive'|'firm'|'informative'",
+      "client/src/lib/tool-registry.ts — register parent-letter as a SendToMenu target",
+      "Targeted vitest: prompt-shape lock + tone-variation invariants (parent-tone='firm' produces stricter language than 'supportive' on the same worksheet input)"
+    ],
+    "out": [
+      "Automated email-out to parent contacts (deferred to PR-28 — needs MIS roster + transactional email)",
+      "Multi-language parent letter (deferred — bilingual MFL revision shell already exists for MFL homework; general-subject multilingual is Phase H scope)"
+    ]
+  },
+  "tone_definitions": {
+    "supportive":  "Warm, parent-collaborator voice. Frames any 'parents can help' bullet as a positive opportunity. No 'must' / 'should' verbs.",
+    "firm":        "Direct, expectations-clear voice. Specifies submission deadline. Uses 'we expect' / 'please ensure'. Still respectful.",
+    "informative": "Neutral, fact-first voice. Lists the LO + skills practised + how to support without prescribing tone."
+  },
+  "acceptance_criteria": [
+    "Letter contains: school name, week starting, teacher name, worksheet title, 1-paragraph LO summary, 3-bullet 'How parents can help', signature line.",
+    "'How parents can help' bullets are grounded in the worksheet's actual learning objective (no generic 'practise reading' filler).",
+    "Three tone variants produce distinguishable outputs (Levenshtein distance ≥40% between any two on the same input).",
+    "Export pipeline supports both 'separate PDF' and 'appended to main worksheet'.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": [
+    "G1 — pupil auto-marking (parent letter can mention 'your child can practise more at /companion/<token>')"
+  ]
+}
