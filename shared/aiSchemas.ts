@@ -94,6 +94,36 @@ export const WorksheetSectionSchema = z.object({
   /** PR-18 (#24) — tactile description for VI pupil export. Optional;
    *  the accessibility audit warns when absent on diagram sections. */
   tactileDescription: z.string().max(800).optional(),
+  // ── Phase G — Procedural activities (G4) + worked-example walkthrough (H9) ─
+  /** G4 — payload for procedural activity sections (wordsearch / crossword /
+   * matching / cloze). Renderer + answer-key page consume this. */
+  procedural: z.object({
+    kind: z.enum(["wordsearch", "crossword", "matching", "cloze"]),
+    payload: z.unknown(),
+  }).optional(),
+  /** H9 — structured worked-example steps for the multi-step walkthrough. */
+  workedExampleSteps: z.array(z.object({
+    stepNumber: z.number().int().min(1).max(20),
+    prompt: z.string().min(1).max(500),
+    expectedAnswer: z.string().max(500).optional(),
+    methodMark: z.string().max(40).optional(),
+    modelAnswer: z.string().min(1).max(1000),
+  })).max(20).optional(),
+  /** G1 — pupil-typeable answer payload: drives the auto-mark verifier. */
+  answerSpec: z.object({
+    mode: z.enum(["numeric", "short-text", "mcq", "structured", "open"]),
+    answer: z.union([z.string(), z.number()]).optional(),
+    unit: z.string().max(20).optional(),
+    tolerance: z.number().min(0).optional(),
+    canonicalAnswer: z.string().max(500).optional(),
+    synonyms: z.array(z.string().max(200)).max(40).optional(),
+    correctLetter: z.string().max(2).optional(),
+    steps: z.array(z.object({
+      method: z.string().max(500),
+      accept: z.array(z.string().max(200)).max(10).optional(),
+    })).max(10).optional(),
+    rubricRef: z.string().max(120).optional(),
+  }).optional(),
 });
 
 export type WorksheetSection = z.infer<typeof WorksheetSectionSchema>;
@@ -417,6 +447,55 @@ export const WorksheetOutputSchema = z.object({
       totalClaims: z.number().int().min(0),
       matchedCount: z.number().int().min(0),
       unmatchedCount: z.number().int().min(0),
+    }).optional(),
+    // ── Phase G + H — additive metadata fields ───────────────────────────
+    /** G3 — lesson archetype the worksheet was built from. */
+    lessonArchetype: z.enum([
+      "do-now-i-we-you-do",
+      "5-a-day",
+      "mini-quiz-recap",
+      "exit-ticket",
+      "worked-mini-independent",
+    ]).optional(),
+    /** G3 — section-target overrides driven by archetype. */
+    sectionTargetsOverride: z.record(z.string(), z.number().int().min(0)).optional(),
+    /** G1 — append-only log of pupil attempts for this worksheet (companion). */
+    companionAttempts: z.array(z.object({
+      sectionIndex: z.number().int().min(0),
+      attemptedAt: z.string(),
+      status: z.enum(["correct", "partial", "incorrect"]),
+      gainedMarks: z.number().min(0).optional(),
+      pupilAnswer: z.string().max(2000).optional(),
+      misconceptionId: z.string().max(40).optional(),
+    })).max(200).optional(),
+    /** G9 — three-tier differentiation group linkage. */
+    differentiationGroup: z.object({
+      groupId: z.string().min(1).max(64),
+      tier: z.enum(["LA", "MA", "HA"]),
+    }).optional(),
+    /** G13 — mock-exam mode + per-question time allocations. */
+    mockExamMode: z.boolean().optional(),
+    timeAllocations: z.record(z.string(), z.number().int().min(0)).optional(),
+    /** G2 — track exemplar IDs the bank has already returned for this worksheet. */
+    excludedExemplarIds: z.array(z.string().max(120)).max(50).optional(),
+    /** G14 — parent letter attached / tone. */
+    parentLetterAttached: z.boolean().optional(),
+    parentTone: z.enum(["supportive", "firm", "informative"]).optional(),
+    /** H3 — real-world context theme picked by the teacher. */
+    realWorldContextId: z.string().max(80).optional(),
+    /** H4 — badges earned in connection with this worksheet (gamification). */
+    badgesEarned: z.array(z.string().max(40)).max(20).optional(),
+    /** H12 — spaced-repetition state per skill (Leitner box state). */
+    spacedRepetitionState: z.array(z.object({
+      skill: z.string().max(120),
+      box: z.number().int().min(1).max(5),
+      lastReviewed: z.string(),
+    })).max(60).optional(),
+    /** G2 — provenance for sections produced by anotherOneLikeThis. */
+    questionProvenance: z.object({
+      sourceExemplarId: z.string().max(120).optional(),
+      derivedFromSectionIndex: z.number().int().min(0).optional(),
+      via: z.enum(["bank", "llm-fallback"]).optional(),
     }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
