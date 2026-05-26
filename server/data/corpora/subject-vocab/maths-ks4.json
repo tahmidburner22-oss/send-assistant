@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "subject": "maths",
+    "keyStage": "ks4",
+    "description": "Seed entries for the GCSE Maths key vocabulary list. Paraphrased; never copies awarding-body wording verbatim.",
+    "schema": "SubjectVocabEntry[]"
+  },
+  "entries": [
+    {
+      "term": "factorise",
+      "subject": "maths",
+      "keyStage": "ks4",
+      "definition": "Rewrite an expression as a product of its factors. The reverse of expanding brackets.",
+      "synonyms": ["factor", "factorize"],
+      "source": "AQA GCSE Mathematics specification (8300) — Algebra"
+    },
+    {
+      "term": "quadratic",
+      "subject": "maths",
+      "keyStage": "ks4",
+      "definition": "An expression or equation of the form ax^2 + bx + c where a is not zero.",
+      "synonyms": ["second-degree polynomial"],
+      "source": "Edexcel GCSE Mathematics (1MA1) — Algebra"
+    },
+    {
+      "term": "interquartile range",
+      "subject": "maths",
+      "keyStage": "ks4",
+      "definition": "The difference between the upper quartile and lower quartile of a data set; a measure of spread.",
+      "synonyms": ["iqr"],
+      "source": "OCR GCSE Mathematics (J560) — Statistics"
+    },
+    {
+      "term": "congruent",
+      "subject": "maths",
+      "keyStage": "ks4",
+      "definition": "Two shapes are congruent when they are the same shape and size; one can be mapped onto the other by a rotation, reflection or translation.",
+      "synonyms": ["identical shape"],
+      "source": "AQA GCSE Mathematics (8300) — Geometry and measures"
+    }
+  ]
+}

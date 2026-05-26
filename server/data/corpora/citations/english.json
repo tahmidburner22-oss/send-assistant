@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "subject": "english",
+    "description": "Seed citations for GCSE English. Claims are paraphrased and sourced to specifications or accepted scholarly references.",
+    "schema": "CitationEntry[]"
+  },
+  "entries": [
+    {
+      "claim": "AQA GCSE English Language Paper 1 assesses reading and writing of fiction texts; Paper 2 assesses non-fiction across two linked texts.",
+      "subject": "english",
+      "topic": "specification overview",
+      "source": "AQA GCSE English Language (8700) Specification — Paper structure",
+      "confidence": "high"
+    },
+    {
+      "claim": "Romeo and Juliet was first published in 1597; Shakespeare uses prologue and chorus structure to frame the tragedy.",
+      "subject": "english",
+      "topic": "shakespeare",
+      "source": "AQA GCSE English Literature (8702) Set Text Guidance — Romeo and Juliet",
+      "confidence": "medium"
+    },
+    {
+      "claim": "An Inspector Calls (J B Priestley, 1945) is set in 1912 and is widely read as a critique of pre-war class divisions and a moral case for collective responsibility.",
+      "subject": "english",
+      "topic": "modern texts",
+      "source": "Edexcel GCSE English Literature (1ET0) Set Text Guidance — An Inspector Calls",
+      "confidence": "medium"
+    },
+    {
+      "claim": "AO2 in GCSE English Literature requires analysis of how the writer uses language, form and structure to create meaning.",
+      "subject": "english",
+      "topic": "assessment objectives",
+      "source": "AQA GCSE English Literature (8702) Specification — Assessment Objectives",
+      "confidence": "high"
+    }
+  ]
+}

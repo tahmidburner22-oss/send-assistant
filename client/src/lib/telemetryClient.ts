@@ -5,7 +5,7 @@
  * telemetryClient.ts — FEAT-H6.
  *
  * Tiny fetch hook + helper for the admin telemetry dashboard.
- * Wraps the new GET /api/admin/telemetry?metric=... endpoint with
+ * Wraps the new GET /api/telemetry/admin/telemetry?metric=... endpoint with
  * loading / error / success states. Pure (in node) when fetcher is
  * supplied; otherwise uses global fetch.
  */
@@ -47,7 +47,10 @@ export async function fetchTelemetry<T>(
     metric: query.metric,
     windowDays: String(query.windowDays ?? 30),
   });
-  const res = await fetcher(`/api/admin/telemetry?${params.toString()}`, {
+  // The telemetry router is mounted at /api/telemetry (see server/index.ts);
+  // the admin aggregator handler inside it lives at /admin/telemetry, so
+  // the resolved URL is /api/telemetry/admin/telemetry.
+  const res = await fetcher(`/api/telemetry/admin/telemetry?${params.toString()}`, {
     headers: { "Content-Type": "application/json" },
   });
   if (!res.ok) throw new Error(`Telemetry fetch failed: HTTP ${res.status}`);
