@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "subject": "physics",
+    "keyStage": "ks4",
+    "description": "Seed entries for the GCSE Physics tier-1 vocabulary list. Definitions are paraphrased.",
+    "schema": "SubjectVocabEntry[]"
+  },
+  "entries": [
+    {
+      "term": "kinetic energy",
+      "subject": "physics",
+      "keyStage": "ks4",
+      "definition": "The energy a moving object has because of its motion. Calculated as half mass times velocity squared.",
+      "synonyms": ["movement energy"],
+      "source": "AQA GCSE Physics (8463) — Energy"
+    },
+    {
+      "term": "specific heat capacity",
+      "subject": "physics",
+      "keyStage": "ks4",
+      "definition": "The energy needed to raise the temperature of one kilogram of a substance by one degree Celsius.",
+      "synonyms": ["shc"],
+      "source": "AQA GCSE Physics (8463) — Energy"
+    },
+    {
+      "term": "ohm's law",
+      "subject": "physics",
+      "keyStage": "ks4",
+      "definition": "For an ohmic conductor at constant temperature, the current through it is directly proportional to the potential difference across it.",
+      "synonyms": ["v equals i r"],
+      "source": "Edexcel GCSE Physics (1PH0) — Electricity"
+    },
+    {
+      "term": "longitudinal wave",
+      "subject": "physics",
+      "keyStage": "ks4",
+      "definition": "A wave in which the oscillation of the medium is parallel to the direction the wave travels; sound is the standard example.",
+      "synonyms": ["compression wave"],
+      "source": "OCR Gateway GCSE Physics (J249) — Waves"
+    }
+  ]
+}

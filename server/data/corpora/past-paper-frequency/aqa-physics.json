@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "subject": "physics",
+    "board": "AQA",
+    "description": "Seed entries for AQA GCSE Physics past-paper question frequency. Used by the predicted-paper builder.",
+    "schema": "PastPaperQuestionEntry[]"
+  },
+  "entries": [
+    { "year": 2023, "board": "AQA", "subject": "physics", "tier": "higher", "paper": "P1", "topic": "specific heat capacity", "marks": 6 },
+    { "year": 2023, "board": "AQA", "subject": "physics", "tier": "higher", "paper": "P2", "topic": "newton's second law", "marks": 5 },
+    { "year": 2022, "board": "AQA", "subject": "physics", "tier": "foundation", "paper": "P1", "topic": "energy stores and transfers", "marks": 4 },
+    { "year": 2022, "board": "AQA", "subject": "physics", "tier": "higher", "paper": "P2", "topic": "wave equation", "marks": 4 },
+    { "year": 2021, "board": "AQA", "subject": "physics", "tier": "higher", "paper": "P1", "topic": "alpha beta gamma penetration", "marks": 6 },
+    { "year": 2021, "board": "AQA", "subject": "physics", "tier": "foundation", "paper": "P2", "topic": "circuit symbols", "marks": 3 }
+  ]
+}

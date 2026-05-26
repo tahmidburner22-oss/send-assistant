@@ -94,6 +94,7 @@ import ehcpRouter from "./routes/ehcp.js";
 import pupilDocumentsRouter from "./routes/pupilDocuments.js";
 import schedulerRouter from "./routes/scheduler.js";
 import telemetryRouter from "./routes/telemetry.js";
+import featureFlagsAdminRouter from "./routes/featureFlagsAdmin.js";
 import ltiRouter from "./routes/lti.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -350,6 +351,7 @@ app.use("/api/ehcp", aiLimiter, ehcpRouter);
 app.use("/api/pupil-documents", pupilDocumentsRouter);
 app.use("/api/scheduler", schedulerRouter);
 app.use("/api/telemetry", telemetryRouter);
+app.use("/api/admin/feature-flags", featureFlagsAdminRouter);
 app.use("/lti", ltiRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────

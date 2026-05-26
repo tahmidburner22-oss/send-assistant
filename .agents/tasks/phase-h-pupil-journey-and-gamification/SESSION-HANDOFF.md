@@ -146,13 +146,15 @@ Same shape as Phase G's "What is next": the deterministic cores
 ship in this PR; the remaining work is to wire each into the
 existing pages. Recommended order:
 
-1. **Wire H6's hook into `client/src/pages/admin/telemetry.tsx`**
-   (replaces the presentational stub).
+1. ~~**Wire H6's hook into `client/src/pages/admin/telemetry.tsx`**
+   (replaces the presentational stub).~~ Wired in PR #126 (W1).
 2. **Wire H3's prompt directive** into
    `ai.ts:structuredSystemSections`; add the picker to
    `Worksheets.tsx`'s form.
-3. **Build the H7 seed corpora** (`server/data/corpora/**/*.json`).
-4. **Add the H8 admin panel UI** to toggle per-school flags.
+3. ~~**Build the H7 seed corpora** (`server/data/corpora/**/*.json`).~~
+   Wired in PR #126 (W2) — three subjects per corpus dir.
+4. ~~**Add the H8 admin panel UI** to toggle per-school flags.~~
+   Wired in PR #126 (W3) — `/admin/feature-flags`.
 5. **Wire H1's dashboard route** in `App.tsx` + the server-side
    `pupil_attempt` table migration.
 6. **Wire H10's aggregator** into the H1 dashboard with a
