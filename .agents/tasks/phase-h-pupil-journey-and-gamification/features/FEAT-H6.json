@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-H6",
+  "phase": "H",
+  "title": "Telemetry admin dashboard hydration",
+  "tier": 3,
+  "effort": "S",
+  "status": "not started",
+  "depends_on": [],
+  "branch_suggestion": "feat/phase-h-6-telemetry-hydration",
+  "summary": "PR-19..27 shipped telemetryAggregators.ts (audit items #42, #70, #71) and a presentational admin page at client/src/pages/admin/telemetry.tsx but never the hydration container. H6 wires the existing aggregators to a server endpoint and the page to a fetch hook. Closes the last PR-19..27 follow-up row.",
+  "scope": {
+    "in": [
+      "server/routes/telemetry.ts (new, ~150 LoC) — GET /api/admin/telemetry?metric=validatorFirings|regenerationHeatmap|tokenCostRollup&windowDays=N",
+      "client/src/lib/telemetryClient.ts (new, ~80 LoC) — fetch hook (uses React Query if already in deps; otherwise plain useEffect + AbortController)",
+      "client/src/pages/admin/telemetry.tsx — replace the presentational stub with a useTelemetry()-driven view",
+      "server/lib/telemetry.ts — add a query-side function `queryTelemetry(metric, windowDays)` that reads from the existing telemetry log + applies the aggregators",
+      "Targeted vitest: server endpoint contract; client hook handles loading/error states"
+    ],
+    "out": [
+      "Real-time updates / WebSocket push (deferred — daily refresh is enough for admin telemetry)",
+      "Per-tenant scoping beyond school_id (deferred)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Endpoint returns validatorFirings / regenerationHeatmap / tokenCostRollup shapes that match the existing aggregators' output.",
+    "Page hydrates within 500ms on cached data; shows skeleton during cold fetch.",
+    "Admin sees per-validator firing counts (top 10), per-topic regen heat-map, per-school token cost rollup for the past 30 days.",
+    "Errors surface as a banner with retry button; page never crashes.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": ["PR-22 / audit #78 — telemetry log; PR-27 / audits #42, #70, #71 — aggregators; PR-9 / audit #76 — PII redaction"]
+}

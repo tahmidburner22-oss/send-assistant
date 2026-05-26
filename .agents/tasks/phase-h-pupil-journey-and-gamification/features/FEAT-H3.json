@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-H3",
+  "phase": "H",
+  "title": "Real-world context library",
+  "tier": 2,
+  "effort": "S",
+  "status": "not started",
+  "depends_on": [],
+  "branch_suggestion": "feat/phase-h-3-context-library",
+  "summary": "Pickable themes (sport, current-events, music, film, local-region, pop-culture, science-news, sustainability) that bias the AI prompt's worked-example contexts. Builds on the curriculum-authority preamble's UK-context whitelist; adds a teacher-pickable filter on the Worksheets form. Pure data + one prompt-block extension.",
+  "scope": {
+    "in": [
+      "client/src/data/contexts/realWorldContexts.json (new, ~200 entries) — { id, name, category, suggestedFor: subject[], examples: string[], avoidWith?: sendNeed[] }",
+      "client/src/lib/realWorldContextLibrary.ts (new, ~120 LoC) — lookup + format helpers",
+      "client/src/lib/promptSections/realWorldContextDirective.ts (new, ~60 LoC) — prompt block injected when teacher picks a context",
+      "client/src/pages/Worksheets.tsx — new 'Real-world context (optional)' picker on the form",
+      "shared/aiSchemas.ts — additive: metadata.realWorldContextId?: string",
+      "Targeted vitest: context picker honours sendNeed avoidWith list; LLM prompt block is well-formed"
+    ],
+    "out": [
+      "Auto-detection of 'currently trending' contexts (deferred — needs a content moderation review)",
+      "School-supplied custom contexts (deferred — admin-only feature for v2)",
+      "Localisation per region beyond UK (deferred)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Library has ≥200 contexts across 8+ categories.",
+    "Each context lists at least 3 examples a teacher can preview.",
+    "Picking 'Premier League football' biases the AI to use football examples in maths word problems / English creative writing prompts (verifiable via eval-harness fixture).",
+    "Contexts with avoidWith=['anxiety'] are excluded from the picker when the SEND profile is anxiety/SEMH.",
+    "Picker shows 'No context (default)' as the first option — backwards compatible.",
+    "tsc --noEmit clean; npm test passes; npm run eval:worksheets passes."
+  ],
+  "risk_register": [
+    { "risk": "Sensitive contexts (e.g. 'war in Ukraine', 'celebrity scandal') slip into the curated list", "mitigation": "Every context in the JSON file requires a maintainer signoff; CI checker scripts/check-context-library.mjs blocks any context with disallowed-list keywords." },
+    { "risk": "Contexts go stale (e.g. 'Olympics 2024' loses relevance)", "mitigation": "Each context has a freshness field (evergreen | seasonal | dated); dated contexts hide after their expiry month." }
+  ],
+  "related": ["G3 — lesson archetypes (archetype + context combine well, e.g. 'Do-Now on Premier League stats')"]
+}

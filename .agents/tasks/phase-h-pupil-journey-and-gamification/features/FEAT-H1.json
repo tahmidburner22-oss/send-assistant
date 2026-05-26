@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-H1",
+  "phase": "H",
+  "title": "Pupil progress dashboard with skill mastery heatmap",
+  "tier": 2,
+  "effort": "M",
+  "status": "not started",
+  "depends_on": ["G1"],
+  "branch_suggestion": "feat/phase-h-1-pupil-progress-dashboard",
+  "summary": "Server-side persistence of G1's per-pupil-per-worksheet companion-answer-log, plus a per-pupil heatmap of (specRef × correct/partial/incorrect) and a per-class roll-up. Builds on the existing client-side attemptLog.ts and coverageAggregator.ts.",
+  "scope": {
+    "in": [
+      "server/db/schema.sql — new pupil_attempt table (school_id, pupil_id, worksheet_id, section_index, spec_ref, status: 'correct'|'partial'|'incorrect', attempted_at)",
+      "server/routes/pupilAttempts.ts (new) — POST /api/pupil-attempts (idempotent on (pupil_id, worksheet_id, section_index, attempted_at)) + GET /api/pupil-attempts/dashboard?pupilId=&since=",
+      "client/src/lib/companion-answer-log.ts (extend G1's helper) — POSTs to the new endpoint when online; queues offline",
+      "client/src/pages/PupilProgressDashboard.tsx (new) — heatmap + roll-up",
+      "client/src/lib/pupilProgressAggregator.ts (new, ~150 LoC) — pure aggregator producing { perPupil, perClass, perSpecRef } summaries",
+      "Targeted vitest for the aggregator (deterministic, idempotent, handles empty input)"
+    ],
+    "out": [
+      "Per-attempt rich detail view (deferred — v1 is roll-ups only)",
+      "Cross-school benchmarks (deferred; needs aggregation across schools and a privacy review)",
+      "Parent-facing progress view (deferred)"
+    ]
+  },
+  "acceptance_criteria": [
+    "POST endpoint is idempotent — submitting the same (pupil_id, worksheet_id, section_index) row twice updates the existing row instead of creating a duplicate.",
+    "GET /api/pupil-attempts/dashboard returns at most 100 attempts per pupil per query (paginated) with a 304 ETag when no new data.",
+    "Heatmap colours: green ≥80% correct on a specRef, amber 50-79%, red <50%. Cells with <3 attempts show grey ('insufficient data').",
+    "Aggregator is pure: same input rows → same summary across two runs.",
+    "Per-class roll-up surfaces top-3 weakest specRefs and links each to a one-click 'Generate re-teach pack' button (which calls H10).",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "risk_register": [
+    { "risk": "PII concerns — pupil_attempt rows include indirectly identifying data", "mitigation": "pupil_id is a per-school anonymous ID generated at companion share time; never stores name. Logger redacts via existing PII redaction (PR-9)." },
+    { "risk": "Storage growth unbounded", "mitigation": "30-day rolling deletion via a daily cron. Schema includes attempted_at index for efficient deletion." }
+  ],
+  "related": ["G1", "H4", "H10", "FEAT-PB3 — reteachPlanner"]
+}

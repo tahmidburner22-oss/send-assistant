@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-H9",
+  "phase": "H",
+  "title": "Multi-step worked-example interactive walkthrough",
+  "tier": 2,
+  "effort": "M",
+  "status": "not started",
+  "depends_on": ["G1"],
+  "branch_suggestion": "feat/phase-h-9-worked-example-walkthrough",
+  "summary": "Companion-app surface that turns the static worked-example sections the LLM emits today into a step-through experience: pupil reveals step 1, attempts step 2 themselves, gets G1's verifier feedback on their attempt, then reveals the model step. Builds on G1's verifier infrastructure.",
+  "scope": {
+    "in": [
+      "client/src/lib/workedExampleStepper.ts (new, ~150 LoC) — pure state machine over a worked-example section's steps",
+      "client/src/components/WorkedExampleWalkthrough.tsx (new, ~250 LoC) — companion-app surface; per-step reveal/attempt/feedback",
+      "client/src/pages/companion/[token].tsx — wire the walkthrough for sections of type 'worked-example'",
+      "shared/aiSchemas.ts — additive: section.workedExampleSteps?: { stepNumber, prompt, expectedAnswer?, methodMark?, modelAnswer }[]",
+      "client/src/lib/promptSections/workedExampleStepperDirective.ts (new, ~80 LoC) — instructs the LLM to emit structured steps when the worksheet wants the walkthrough",
+      "Targeted vitest: stepper transitions (locked → revealed → attempted → fed-back → next-locked); verifier integration"
+    ],
+    "out": [
+      "Multi-step support beyond mathematical worked examples (deferred — v1 ships maths-flavoured stepper)",
+      "Voice-narrated walkthrough (deferred — could combine with H5)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Worked-example sections without structured steps fall back to the existing static rendering (backwards compatible).",
+    "Pupil cannot skip ahead — step N+1 is locked until step N has been revealed (model) or attempted (verifier-fed-back).",
+    "Verifier accepts pupil's attempt at step N and surfaces G1's tick/cross + the existing hint ladder.",
+    "Walkthrough's step state persists in companion-answer-log so a pupil can resume mid-walkthrough on next visit.",
+    "tsc --noEmit clean; npm test passes."
+  ],
+  "related": ["G1 — pupil auto-marking", "FEAT-PD11 — anchor poster (similar structured-step pattern)"]
+}
