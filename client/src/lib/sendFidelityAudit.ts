@@ -947,12 +947,25 @@ export function applySendFidelityAudit<W extends FidelityAuditableWorksheet>(
   const existingWarnings = Array.isArray(worksheet.metadata?.postValidatorWarnings)
     ? (worksheet.metadata!.postValidatorWarnings as string[])
     : [];
+  // Phase 4 follow-up bugfix — dedupe by string equality so calling
+  // applySendFidelityAudit twice on the same input does not duplicate
+  // warnings in metadata.postValidatorWarnings. The audit is otherwise
+  // already idempotent (sendFidelityReport is deep-equal across calls);
+  // this closes the soft idempotency violation flagged in
+  // .agents/tasks/big-bang-improvements/SESSION-HANDOFF.md.
+  const seen = new Set<string>();
+  const mergedWarnings: string[] = [];
+  for (const w of [...existingWarnings, ...finalReport.warnings]) {
+    if (seen.has(w)) continue;
+    seen.add(w);
+    mergedWarnings.push(w);
+  }
   return {
     ...worksheet,
     metadata: {
       ...(worksheet.metadata || {}),
       sendFidelityReport: finalReport,
-      postValidatorWarnings: [...existingWarnings, ...finalReport.warnings],
+      postValidatorWarnings: mergedWarnings,
     },
   } as W;
 }
