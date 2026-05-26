@@ -1,0 +1,61 @@
+{
+  "id": "FEAT-H8",
+  "phase": "H",
+  "title": "Activate dark env flags",
+  "tier": 3,
+  "effort": "S",
+  "status": "not started",
+  "depends_on": ["H7 (citation flag depends on real corpus)"],
+  "branch_suggestion": "feat/phase-h-8-activate-dark-flags",
+  "summary": "PR-20 shipped four prompt-engineering surfaces dark behind env flags. PR-9 also shipped GENERATION_CACHE_ENABLED. H8 turns each on for a per-tenant subset (school_id allow-list), runs an A/B baseline through the eval harness (PR-5), and either rolls forward (full activation) or rolls back (per-flag).",
+  "flags_to_activate": [
+    {
+      "flag": "PROMPT_AB_ENABLED",
+      "owner": "client/src/lib/promptAbFramework.ts",
+      "rollout": "Per-school allow-list. Pick 5 friendly schools. Eval-harness baseline; if no regression after 2 weeks, expand to 50% of schools then 100%."
+    },
+    {
+      "flag": "PROMPT_FAMILIES_ENABLED",
+      "owner": "client/src/lib/perSubjectPromptFamilies.ts",
+      "rollout": "Subject-by-subject. Start with maths (best test coverage). Extend after 1 week eval-clean per subject."
+    },
+    {
+      "flag": "PROMPT_SELF_CONSISTENCY_ENABLED",
+      "owner": "client/src/lib/selfConsistencySampler.ts",
+      "rollout": "Question-type-by-question-type. Start with extended-answer English Lit (where consistency matters most). Watch token cost; expand if cost-acceptable."
+    },
+    {
+      "flag": "PROMPT_CITATION_LAYER_ENABLED",
+      "owner": "client/src/lib/citationGroundedFactual.ts",
+      "rollout": "Subject-by-subject. Requires H7 citation corpus production loader. Start with history (high-citation density)."
+    },
+    {
+      "flag": "GENERATION_CACHE_ENABLED",
+      "owner": "server/lib/generationCache.ts",
+      "rollout": "Verify PR-9's PII redaction in production logs first. Then enable for all schools. Cache hit rate target: 30% within 30 days."
+    }
+  ],
+  "scope": {
+    "in": [
+      "server/lib/featureFlags.ts (new, ~150 LoC) — per-school allow-list resolution + per-subject scope + per-question-type scope",
+      "server/db/schema.sql — feature_flag_school table (school_id, flag_name, enabled, scope_json)",
+      "server/routes/admin.ts — POST/GET /api/admin/feature-flags endpoints (admin-only)",
+      "client/src/pages/AdminPanel.tsx — UI for flag toggles + per-school + per-subject scope",
+      "scripts/eval-flag-baseline.mjs (new) — one-shot script that runs the eval harness with each flag on/off and compares pass rates",
+      "Targeted vitest: flag resolution logic; scope hierarchy (school > subject > question-type)"
+    ],
+    "out": [
+      "Feature-flag UI for non-admin users (deferred — v1 is admin-only)",
+      "Flag history / rollback per change (deferred)"
+    ]
+  },
+  "acceptance_criteria": [
+    "Flag resolver is pure: same (school_id, subject, questionType, flag_name) → same enabled boolean.",
+    "Each existing flag's downstream surface honours the new resolver in place of the env-only check.",
+    "eval-flag-baseline.mjs runs each flag on/off through the existing PR-5 fixtures and outputs a JSON report.",
+    "Admin panel shows current flag state per school; toggle is 1-click with a 'Are you sure?' confirm.",
+    "Backwards compatible: env-only mode (no DB row) continues to work for self-hosted deployments.",
+    "tsc --noEmit clean; npm test passes; npm run eval:worksheets passes per-flag."
+  ],
+  "related": ["PR-20 (#45-#48); PR-9 (#43); FEAT-PR5 — eval harness"]
+}
