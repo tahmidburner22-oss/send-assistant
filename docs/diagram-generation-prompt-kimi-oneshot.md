@@ -1,57 +1,105 @@
-# Kimi K2.6 — one-shot 500-batch prompt (zip + live viewer URL)
+# Kimi K2.6 — one-shot 500-batch prompt (multi-renderer)
 
-This is the **recommended** prompt for power users who want to process the
-catalogue fast.
+This is the recommended prompt for power users who want to process the
+catalogue fast, accurately, and almost entirely for free.
 
 It is a **one-shot prompt** — paste it once together with up to **500
 catalogue rows** at the bottom, send to Kimi K2.6, and Kimi replies with:
 
-1. **A live, mobile-friendly viewer URL** showing all 500 entries in a
-   filterable / searchable / tick-as-you-go table — perfect for QA on a
-   phone.
-2. **A downloadable zip file** with all the structured artefacts you'll
-   feed to Manus's Nano Banana Pro and to the worksheet generator.
+1. **A live, mobile-friendly viewer URL** showing all 500 entries
+   *with the maths/geometry/graphs already rendered inline as SVG* —
+   you spot-check by scrolling, no separate generator step needed for
+   the deterministic ones.
+2. **A downloadable zip** containing the SVG sources, Mermaid sources,
+   Nano-Banana prompts, structured JSON and a renderer script.
 
-You do **NOT** chat with Kimi turn-by-turn for this version. Each batch is
-a fresh chat:
+## Why the prompt routes every row through one of three renderers
 
-```
-new chat → paste prompt + 500 rows → wait → click viewer URL → QA on phone
-       → download zip → run prompts/*.txt through Manus
-       → upload PNGs to Supabase Storage → next batch (new chat)
-```
+Image-gen models like Manus's Nano Banana Pro are **excellent at
+illustrative content** (anatomy, apparatus, character silhouettes,
+scenes) but **terrible at three things you saw fail**:
 
-5,975 briefs ÷ 500 per batch ≈ **12 batches** to ship the whole catalogue.
+1. **Precise arrow placement** — they don't actually understand that a
+   leader line should end at "the radius" of a circle.
+2. **Mathematical accuracy** — angles drawn at the wrong value, parabolas
+   that don't match the equation, circle theorems that aren't
+   geometrically true.
+3. **Crisp small text** — what you fixed earlier with numbered tags.
 
-If a few images fail QA, you re-run those rows in the next chat with a
-`[REGEN: <reason>]` annotation appended to the row — Kimi includes them in
-that chat's zip with revised prompts.
+The fix is to use **the right tool per diagram type**:
 
----
+| Diagram family | Renderer | Why |
+|---|---|---|
+| Graphs (sin x, parabolas, scatter, histograms, motion graphs) | **SVG** | 100% mathematically accurate, vector-perfect, free, instant |
+| Geometry, circle theorems, transformations, vectors, Punnett squares, dot-and-cross | **SVG** | Geometric truth is computable |
+| Probability trees, flowcharts, mind-maps, network diagrams, decision trees, OSI / TCP-IP, CPU architecture | **Mermaid** | One-line declarative source, perfect spacing, free |
+| Free-body diagrams, circuits | **SVG** | Component positions are deterministic |
+| Periodic table, reactivity series, EM spectrum strip | **SVG** | Static templates, zero ambiguity |
+| Anatomy, apparatus, geological cross-sections, character maps, ecosystems, scenes, art-history homages | **Nano Banana Pro** | Genuinely needs illustrative style — no other tool does anatomy / silhouette portraits / weathered geological strata |
+| Formula cards, AFOREST posters, vocabulary lists, rules cards | **SKIP** | Already rendered by the worksheet generator as styled HTML |
+
+**Estimated split across the 5,975-brief catalogue:**
+
+| Renderer | Approximate share | Cost | Speed |
+|---|---:|---|---|
+| SVG (Kimi outputs the source directly) | ~40% (≈ 2,400) | Free | Instant — viewer renders inline |
+| Mermaid (Kimi outputs the source) | ~15% (≈ 900) | Free | Instant — viewer renders inline |
+| Nano Banana Pro | ~30% (≈ 1,800) | Manus free credits | 30s/image |
+| SKIP (text-only) | ~15% (≈ 875) | n/a | n/a |
+
+So **only ~30% of the catalogue actually goes through Manus** — the
+slow, error-prone path. The other ~55% is rendered deterministically by
+the browser the moment the viewer loads.
+
+## Best free way to ship the whole catalogue, fastest
+
+The phone-only steps remain the same per batch — but the **work-per-batch
+plummets** because most of it is already rendered when you tap the
+viewer URL.
+
+| Step | Time per batch of 500 | Where |
+|---|---|---|
+| Open Kimi, paste prompt + rows, wait | ~3 min | Phone browser |
+| Open viewer URL, scroll-and-tick QA the SVG and Mermaid rows | ~2 min | Phone browser |
+| Run the ~150 image_gen prompts through Manus | ~25 min | Manus app, batch-submit |
+| Upload PNGs to Supabase Storage | ~5 min | Supabase web UI bulk upload |
+| **Total** | **~35 min** | |
+
+12 batches × 35 min = **~7 hours of work** to ship the entire
+catalogue, mostly waiting for Manus. Free except whatever Manus
+charges past its free tier.
+
+If you want to go faster still, after the first batch is done, you can
+hand the **renderer script** in the zip (`render.mjs`) to GitHub
+Actions: it consumes the `batch.json`, executes every SVG / Mermaid
+into a transparent PNG, uploads to Supabase Storage and stamps
+`image_url` into the live DB row — all unattended. You then only have
+to manually run the Nano-Banana ones.
 
 ## How to use it (entirely on phone)
 
 1. Open `docs/diagram-library-catalogue.txt` (the plain-text catalogue).
-   Tap → **Raw** → copy the next 500 rows (one batch). Tip: search for
-   `GCSE (Y10–Y11)` to jump to the GCSE block first.
+   Tap → **Raw** → copy the next 500 rows. Search for `GCSE (Y10–Y11)`
+   to jump to the GCSE block first.
 2. Open Kimi K2.6 (`kimi.com`) in your phone browser. Start a brand-new
-   chat. Make sure **Agent mode** / code-execution is enabled if your
-   account has the toggle (it's needed to publish the viewer URL).
-3. Paste **everything** between the two `===` lines below, then immediately
-   below it, paste the 500 rows you copied. Send.
-4. Wait ~2–4 minutes. Kimi replies with a viewer URL and a zip download
-   link.
-5. Tap the **viewer URL** on your phone. Scroll, filter by `year_band`,
-   tick `qa_checklist` items as you go, mark each row pass/fail. Your
-   ticks are saved in your phone's localStorage so you can come back.
-6. Tap the **zip download link**. Unzip on your phone (iOS Files / Android
-   Files both handle this natively). Inside you'll find one
-   `prompts/<id>.txt` per row — paste each into a new Manus task, save the
-   transparent PNG it returns, upload to Supabase Storage.
+   chat. Make sure **Agent mode** / code-execution is enabled.
+3. Paste **everything** between the two `===` lines below, then
+   immediately below it, paste the 500 rows you copied. Send.
+4. Wait ~3 minutes. Kimi replies with `VIEWER_URL: …`, `ZIP_URL: …`, a
+   one-line summary, and the `BATCH 500 COMPLETE` sentinel.
+5. Tap the **viewer URL**. Maths, geometry, graphs, flowcharts, trees
+   all render inline — *the diagram itself* is your QA, no separate
+   generator pass for those. Scroll, tick the QA checkboxes, mark each
+   pass/fail. State persists in localStorage.
+6. Tap the **zip URL**. The zip's `prompts/` folder has the Nano-Banana
+   prompts only (~150 per batch). Paste each into Manus, save the
+   transparent PNG, upload to Supabase Storage.
 7. Open a fresh Kimi chat for the next 500 rows. Repeat.
 
-If any row failed QA, append `[REGEN: <one-line reason>]` to that row in
-the next batch — Kimi will include a fixed prompt for it.
+If any row failed QA, append `[REGEN: <one-line reason>]` to the row
+in the next batch. Kimi will produce an improved prompt or a corrected
+SVG that addresses the named failure. The viewer marks regen rows
+with a 🔄 chip so you QA those first.
 
 ---
 
@@ -59,410 +107,477 @@ the next batch — Kimi will include a fixed prompt for it.
 
 ```
 =================================================================
-KIMI K2.6 — ONE-SHOT BATCH (UK curriculum diagrams → Nano Banana Pro)
+KIMI K2.6 — ONE-SHOT BATCH (UK curriculum diagrams, multi-renderer)
 =================================================================
 
 ROLE
-You are a UK-curriculum diagram designer.
+You are a UK-curriculum diagram designer AND a maths/SVG/Mermaid
+draftsperson.
 
 MODE
-This is a ONE-SHOT call. I will paste up to 500 "diagram briefs" at the
-bottom of this message. Process EVERY brief in a single response. Do not
-ask clarifying questions. Do not stop part-way. Do not summarise.
+This is a ONE-SHOT call. I will paste up to 500 "diagram briefs" at
+the bottom of this message. Process EVERY brief in a single response.
+Do not ask clarifying questions. Do not stop part-way. Do not
+summarise. You have no knowledge of any private codebase, file system
+or internal tools — everything you need is in this prompt and in the
+batch I paste below.
 
-OUTPUT — you must produce BOTH of the following:
+=================================================================
+RULE 0 — ROUTE EACH ROW TO THE RIGHT RENDERER (most important rule)
+=================================================================
+
+Image generators (Nano Banana Pro included) cannot reliably:
+  - Place arrows or leader lines at precise anatomical / geometric
+    points.
+  - Draw a 60° angle as 60°.
+  - Make a parabola that actually matches y = x² − 4x + 3.
+  - Make a circle-theorem diagram geometrically true.
+
+So you must NOT route those briefs to Manus. Route every row to ONE of
+these four `render_method` values:
+
+  "svg"        — output a complete, self-contained SVG string. Use this
+                 for ALL maths, geometry, graphs, charts, vectors,
+                 transformations, circle theorems, Punnett squares,
+                 dot-and-cross diagrams, free-body diagrams, circuits,
+                 periodic-table layouts, reactivity-series ladders
+                 rendered as boxes (not text), EM spectrum strips,
+                 ray-diagram constructions, probability trees, simple
+                 cross-sections that are geometric (e.g. wave shapes).
+
+  "mermaid"    — output a Mermaid source string (graph LR, flowchart,
+                 sequence, mindmap, gantt, etc). Use for trees,
+                 flowcharts, mind maps, network diagrams (OSI / TCP-IP
+                 / CPU block), decision diagrams, sorting-algorithm
+                 step diagrams, lifecycle / pathway / phylogenetic
+                 trees with simple branching.
+
+  "image_gen"  — output a Nano-Banana-Pro-ready image prompt + numbered
+                 tags. Use ONLY when the brief genuinely needs
+                 illustrative content that SVG/Mermaid can't capture:
+                 anatomy (heart, nephron, neurone, plant cell, eye,
+                 leaf), apparatus (Bunsen + glassware), geological
+                 cross-sections (river V-valley, glacial corrie,
+                 trench), maps with terrain, character relationship
+                 maps with silhouette portraits, ecosystem scenes,
+                 art-history homages, named-figure silhouettes.
+
+  "skip"       — text-only briefs (formula cards, acronyms, vocab
+                 lists, rules cards, theme cards, rhyme-scheme labels).
+                 The downstream worksheet generator renders those as
+                 styled HTML — they don't belong as images.
+
+DEFAULT: when a brief is plausibly renderable as SVG or Mermaid,
+PREFER that — geometric/mathematical correctness wins over photo
+realism every time. Fall back to image_gen only when the brief
+genuinely requires drawing or illustrative style.
+
+When in doubt about which of svg vs mermaid: pick mermaid for tree /
+graph / sequence structures, svg for everything else.
+
+=================================================================
+OUTPUT — you must produce BOTH of the following
+=================================================================
 
   (1) A LIVE, PUBLICLY-ACCESSIBLE HTTPS URL hosting a single
       self-contained `viewer.html` page that I can open on my phone to
-      browse, filter, search and QA the entries. Use your code-execution
-      / agent / file-publishing tooling to host it. If your runtime can
-      attach the file as a sharable artifact with a URL, do that. If not,
-      use a public file-host you can reach (in priority order: 0x0.st,
-      transfer.sh, catbox.moe, file.io). Verify the URL returns
-      `Content-Type: text/html` so it renders inline on a phone — if the
-      service forces download instead, switch to a different one.
-  (2) A DOWNLOADABLE ZIP archive containing all the structured artefacts
-      below. Same hosting strategy — use whatever your runtime exposes.
+      browse, filter, search and QA the entries. The viewer must
+      render the svg field inline as SVG, the mermaid field inline via
+      embedded Mermaid.js, and show image_gen prompts as cards. Use
+      your code-execution / agent / file-publishing tooling to host.
+      Hosting priority: built-in artifact share → 0x0.st → transfer.sh
+      → catbox.moe → file.io. Verify the URL returns
+      `Content-Type: text/html` so it renders inline.
 
-If for any reason you cannot host the URL (no internet egress, no upload
-tool), still produce the zip as base64 between BEGIN_ZIP_BASE64 and
-END_ZIP_BASE64 markers, and clearly state which output mode you used.
+  (2) A DOWNLOADABLE ZIP archive (same hosting strategy) containing:
 
-=================================================================
-ZIP CONTENTS (exact filenames)
-=================================================================
+      /viewer.html             single-file mobile viewer (offline-capable)
+      /batch.json              JSON array of all entries (full schema below)
+      /manifest.csv            id, title, year_band, decision,
+                               render_method, copyright_check
+      /svg/<id>.svg            one file per svg entry
+      /mermaid/<id>.mmd        one file per mermaid entry
+      /prompts/<id>.txt        one file per image_gen entry — Nano
+                               Banana Pro prompt only, paste-ready
+      /qa-checklists.md        all QA checklists, grouped by id
+      /skipped.md              all SKIP entries with reasons
+      /render.mjs              Node script that turns svg/ and mermaid/
+                               into transparent PNGs at 2048×2048 and
+                               uploads them to Supabase Storage if env
+                               vars are set (idempotent)
+      /README.md               one-page guide
 
-/viewer.html             — single-file mobile-first viewer (spec below)
-/batch.json              — JSON array of all entries (full schema below)
-/manifest.csv            — id, title, year_band, decision, diagram_family,
-                           copyright_check, prompt_filename
-/prompts/<id>.txt        — one file per GENERATE entry, plain-text
-                           image_gen_prompt only (ready to paste into
-                           Manus Nano Banana Pro)
-/qa-checklists.md        — markdown, all QA checklists grouped by id
-/skipped.md              — markdown list of all SKIP entries with reasons
-/README.md               — one-page guide on how to use the zip
-
-=================================================================
-VIEWER.HTML SPEC (single-file, no external dependencies)
-=================================================================
-
-- Pure HTML + inline `<style>` + inline `<script>` + inline JSON data.
-  No CDN links, no external fonts. Works offline AND when hosted online.
-- Mobile-first: viewport meta tag, all interactions tap-friendly,
-  minimum 44 px tap targets.
-- Sticky header at top with:
-    - Total count + counts of GENERATE and SKIP.
-    - Filter chips: year_band (KS1 / LKS2 / UKS2 / KS3 / GCSE / A-Level /
-      ALL), decision (GENERATE / SKIP / ALL).
-    - Free-text search across id + title.
-    - QA progress bar: <passed>/<reviewed>/<total>.
-- Table body: one collapsible card per entry. Default collapsed; tap to
-  expand.
-    - Card header (always visible): id + title + year_band chip +
-      decision chip + a status dot (green = QA-passed, red = QA-failed,
-      grey = not reviewed).
-    - Card body (expanded): image_gen_prompt (with a "Copy prompt"
-      button that copies to clipboard), numbered_tags as a 2-column
-      table (n + label), qa_checklist with one checkbox per item,
-      copyright_check, exam_paper_style_notes.
-    - Two big buttons in the body footer: "Mark QA passed" (green),
-      "Mark QA failed" (red, opens a small textarea for failure reason
-      that's saved on the card).
-- All review state (which checkboxes ticked, pass/fail status, failure
-  reasons) persisted in localStorage keyed by id, so the user can close
-  and reopen the page later.
-- Bottom-of-page summary: list of any rows marked failed with their
-  failure reasons, ready to copy back into the next batch as
-  `[REGEN: <reason>]` annotations.
-- Visual style: pure black / dark grey on light grey background, 16 px
-  base font, system sans-serif font stack — no fancy fonts. Honour
-  `prefers-color-scheme: dark` with a dark mode (light grey on dark
-  grey).
+If you cannot host the URL (no internet egress), produce the zip as
+base64 between BEGIN_ZIP_BASE64 and END_ZIP_BASE64 markers and state
+which fallback you used.
 
 =================================================================
-RULE 1 — IMAGES ARE IMAGES, NOT TEXT CARDS
+RULE 1 — TRANSPARENT BACKGROUND (SEND / dyslexia accessibility)
 =================================================================
-Generated images must be a genuine VISUAL — drawing, schematic, anatomy,
-apparatus, geometry, graph, map, cross-section. Forbidden: formula
-cards, acronym posters, vocabulary lists, definition cards, paragraphs,
-infographics with body copy, "posters of words". Equations and prose
-are rendered later by the worksheet generator as styled HTML — they do
-not belong inside the image.
+
+Every output (SVG, Mermaid, or PNG from Nano Banana Pro) MUST have a
+transparent background. UK SEND pupils (dyslexia, scotopic sensitivity
+/ Irlen syndrome, autism, visual stress) read worksheets through
+coloured tint overlays (cream, pale yellow, sky blue, soft grey, pale
+pink). A solid white canvas fights every tint and ruins the
+accommodation; a transparent canvas inherits whatever overlay the
+pupil applied.
+
+  - SVG: do NOT set a `<rect>` background fill. The root `<svg>` element
+    has no `fill`. Do not include `style="background:white"`. Use
+    `viewBox="0 0 W H"` and let the canvas stay transparent.
+  - Mermaid: include `%%{init: {'theme':'neutral', 'themeVariables':
+    {'background': 'transparent', 'primaryColor': '#fff0',
+    'primaryBorderColor': '#1a1a1a', 'primaryTextColor': '#1a1a1a',
+    'lineColor': '#1a1a1a'}}}%%` at the top so the rendered SVG is
+    transparent.
+  - Image_gen prompts: explicitly state "transparent background, RGBA
+    PNG, alpha channel preserved, no fill, no canvas colour".
+
+Across all renderers:
+  - Line work pure black or near-black (`#000` or `#1a1a1a`) — readable
+    on every common SEND tint. 1pt primary, 0.5pt leader.
+  - Spot colours allowed only when semantically necessary (red
+    arteries, blue veins, green "go"). Use saturated versions, never
+    pastels — pastels disappear under tinted overlays.
+  - Region distinction: use thin dark hatching/stipple, not solid
+    fills. Patterns survive overlays; fills don't.
+  - Drop shadows, glows, gradients, paper textures: forbidden.
 
 =================================================================
-RULE 2 — TRANSPARENT BACKGROUND (SEND / dyslexia accessibility)
+RULE 2 — MATHEMATICAL CORRECTNESS (SVG outputs)
 =================================================================
-Every generated image MUST be RGBA PNG with alpha channel preserved —
-no white fill, no paper texture, no gradient. UK SEND pupils
-(dyslexia, scotopic sensitivity / Irlen syndrome, autism, visual
-stress) read worksheets through coloured tint overlays (cream, pale
-yellow, sky blue, soft grey, pale pink). A white canvas fights every
-tint; a transparent canvas inherits whatever overlay the pupil
-applied.
 
-Knock-on rules:
-- Line work pure black or near-black (`#000` or `#1a1a1a`) — readable
-  on every common SEND tint. 1pt primary lines, 0.5pt leader lines.
-- Spot colours allowed only when semantically necessary (red arteries,
-  blue veins, green "go"). Use saturated versions, never pastels.
-- Map regions: thin dark hatching/stipple, NEVER solid colour fills.
-- Drop shadows, glows, gradients, paper textures: forbidden.
+When you emit an SVG, the geometry must be MATHEMATICALLY TRUE. No
+approximations.
 
-Always include in image_gen_prompt: "transparent background, RGBA PNG,
-alpha channel preserved, no fill, no canvas colour".
-Always include in negative_prompt: "white background, solid fill,
-paper texture, gradient background, drop shadow, opaque canvas".
+  - Angles drawn at the stated value. If the brief says 60°, compute
+    cos(60°) and sin(60°) and place the line correctly.
+  - Circle theorems: if the theorem says "angle at the centre = 2 ×
+    angle at the circumference", actually subtend twice the angle.
+  - Graphs: plot a real sample of points along the equation and join
+    them. y = x² is a parabola through the origin, not a vague U
+    shape.
+  - Coordinate axes: tick marks at integer values, equally spaced.
+  - Probability trees: probabilities along sibling branches sum to 1
+    where appropriate.
+  - Punnett squares: each cell shows the correct allele combination
+    given the parent genotypes.
+
+Use `<g transform="...">` and trigonometry as needed. Comment your
+SVG with one-liner notes near non-obvious coordinates so the artist
+can verify by eye.
 
 =================================================================
-RULE 3 — NO TEXT IN IMAGES (numbered tags + worksheet key)
+RULE 3 — ARROWS, LEADER LINES AND LABELS POINT AT THE RIGHT THING
 =================================================================
-Image generators (including Nano Banana Pro) are unreliable at small
-clean text on transparent backgrounds — anti-aliased letters fight
-background removal and look fuzzy. So we don't put text in images.
 
-Numbered tag system:
-- At each labelable point, place a small dark filled circle (~14 px,
-  fill `#1a1a1a`) with a bold white sans-serif single digit (1–9) or
-  two digits (10–99). Numbers render reliably; words don't.
-- The worksheet generator overlays a numbered KEY beside the image
-  (1 = aorta, 2 = right ventricle, …) as crisp HTML/SVG text that
-  screen readers read, pupils resize, and EAL pupils translate.
-- Populate the `numbered_tags` array in the JSON output with one entry
-  per tag in the image, in the order the tags appear (top-to-bottom,
-  left-to-right).
+This is where image_gen breaks. For svg + mermaid you have full
+control — use it.
 
-Allowed text-in-image exceptions (single characters only, render fine):
-- Greek/italic single-letter variables (`θ`, `α`, `x`, `y`) at
-  geometry vertices.
-- Axis tick numerals (0, 1, 2, 3) on graphs.
-- Coordinate annotations like `(2, 3)`.
-- Single-character chemical symbols (H, O, C, N) in dot-and-cross
-  diagrams.
-- KS1 / LKS2 (Year 1–4) child diagrams ONLY: maximum 4 short labels
-  (1–2 words each, 18pt+ rounded sans-serif) directly on the image
-  IF the diagram has fewer than 5 labelable points and a numbered key
-  would be too much cognitive load for a 5–8-year-old. Numbered tags
-  are still the default.
-
-Forbidden in images regardless of band: sentences, paragraphs,
-equations longer than two simple terms, bulleted lists, mnemonic
-acronyms (AFOREST, OILRIG, BIDMAS, SOHCAHTOA), captions, titles —
-all of those go in worksheet text, never in the image canvas.
+  - Define arrow markers with `<marker>` and reference them with
+    `marker-end="url(#arrow)"`. Place the line endpoint at the EXACT
+    coordinate of the labelable feature.
+  - Numbered-tag system (same as before, but now mostly applies to
+    image_gen): small dark filled circle (~14 px, fill #1a1a1a) with
+    a bold white sans-serif single or double digit. Numbers render
+    reliably; words don't.
+  - SVG: place the tag circle as a `<circle>` + `<text>` group at the
+    exact pixel coordinate of the feature. Populate `numbered_tags`
+    so the worksheet generator can render the key.
+  - Mermaid: name nodes with the canonical label, the rendered SVG
+    will place text correctly.
+  - For image_gen rows, EVERY label is a numbered tag — no words on
+    the canvas — because Nano Banana cannot place text precisely.
 
 =================================================================
 RULE 4 — SKIP CRITERIA (text-only briefs)
 =================================================================
-If the brief is essentially text — a formula, an acronym, a poster of
-words, a vocabulary list, a definition card, a numeric table, a rules
-card, a theme card — output a SKIP entry. The worksheet generator
-renders these as styled HTML which is higher quality, fully editable,
-and screen-reader-accessible.
 
-Stylised text cards are SKIP by default. Only generate a stylised-text
-image if the spatial arrangement, typography or visual layout IS
-itself the lesson — concrete poetry, weighted word clouds,
-calligraphy. Even there prefer SKIP if styled HTML can carry the same
-meaning. These cases are rare.
+If the brief is essentially text — formula, acronym (AFOREST,
+OILRIG, BIDMAS, SOHCAHTOA), poster of words, vocabulary list,
+definition card, numeric/word table, rules card, theme card,
+rhyme-scheme labelling — output a SKIP entry. The downstream
+worksheet generator renders these as styled HTML which is higher
+quality, fully editable, and screen-reader-accessible.
 
-When in doubt: if you would have to TYPE the content rather than DRAW
-it, it's a SKIP.
+Stylised text cards are SKIP by default. Only render a stylised-text
+image (via svg) when the spatial arrangement IS itself the lesson —
+concrete poetry whose layout is the poetic device, weighted word
+clouds where size carries meaning, calligraphy. Even there prefer
+SKIP if styled HTML can carry the meaning.
+
+When in doubt: if you'd have to TYPE the content rather than DRAW
+or DIAGRAM it, it's a SKIP.
 
 =================================================================
 COPYRIGHT AND CULTURAL SAFETY
 =================================================================
+
 - No reproductions of famous artworks. "In the style of" homages with
   reduced palette and silhouette only. Set copyright_check to
   "PASS — silhouette/homage only".
 - For Religious Education: no figurative depiction of the Prophet
-  Muhammad ﷺ. Use the Kaaba and Arabic calligraphy ﷺ where relevant.
+  Muhammad ﷺ. Use the Kaaba (drawable as SVG) and Arabic calligraphy
+  ﷺ where relevant.
 - For English Literature character maps: silhouette portraits only,
-  no faces, no copyrighted text from the works. Title of the work
-  and arrows labelling relationships (ally, rival, family, mentor,
-  lover) only.
+  no faces, no copyrighted text from the works. Title of the work +
+  arrows labelling relationships (ally, rival, family, mentor, lover).
+  Silhouettes in dark grey on transparent. Route to image_gen.
 - For named historical figures (Pankhurst, Wilberforce, Snow,
-  Davison): silhouette card style — no attempted likeness, just a
-  generic period-appropriate silhouette with a date label.
+  Davison): silhouette card style, no attempted likeness, generic
+  period-appropriate silhouette + date label. Route to image_gen.
 
 =================================================================
-TARGET MODEL — Manus Nano Banana Pro
+VIEWER.HTML SPEC (single-file, no external deps except Mermaid CDN)
 =================================================================
-Every `image_gen_prompt` is for Manus's Nano Banana Pro (Google's
-high-resolution image-gen model exposed through Manus). Phrasing tips:
-- Lead with diagram TYPE: "Anatomical line illustration of …",
-  "Schematic technical drawing of …", "Geometric construction
-  showing …".
-- State "transparent background" within the first sentence.
+
+- Pure HTML + inline `<style>` + inline `<script>` + inline JSON data.
+- ONE allowed external dep: Mermaid.js via a CDN script tag (so
+  mermaid sources render). If you can inline Mermaid bundle, even
+  better — the viewer must work in any phone browser.
+- Mobile-first: viewport meta, all interactions tap-friendly,
+  minimum 44 px tap targets, system sans-serif font, 16 px base.
+  Honour `prefers-color-scheme: dark`.
+- Sticky header: counts (total / GENERATE / SKIP / svg / mermaid /
+  image_gen), filter chips (year_band, decision, render_method),
+  free-text search across id + title, QA progress bar.
+- Body: one collapsible card per entry. Default collapsed; tap to
+  expand.
+    * Card header (always visible): id + title + year_band chip +
+      render_method chip (SVG / Mermaid / image_gen / SKIP) + status
+      dot (green/red/grey) + 🔄 chip on regenerated rows.
+    * Card body when expanded:
+        * For svg: render the SVG inline, with a "Copy SVG" button.
+        * For mermaid: render the Mermaid inline via mermaid.run(),
+          with a "Copy Mermaid source" button.
+        * For image_gen: show the prompt in a code block with a
+          "Copy prompt" button, plus the numbered_tags table.
+        * For skip: show the skip_reason.
+        * In all cases: qa_checklist with one checkbox per item,
+          copyright_check, exam_paper_style_notes.
+    * Body footer: "Mark QA passed" (green) and "Mark QA failed"
+      (red, opens a textarea for the failure reason).
+- Persist all review state (checkbox ticks, pass/fail, failure
+  reasons) in localStorage keyed by id.
+- Bottom-of-page summary: list of failed rows formatted as
+  `[REGEN: <reason>]` annotations, ready to paste into the next batch.
+
+=================================================================
+TARGET MODEL — Manus Nano Banana Pro (image_gen rows only)
+=================================================================
+
+For image_gen rows, phrasing tips that work with Nano Banana Pro:
+- Lead with the diagram TYPE: "Anatomical line illustration of …",
+  "Geological cross-section showing …", "Silhouette portrait
+  arrangement of …".
+- State "transparent background, RGBA PNG, alpha channel preserved"
+  in the first sentence.
 - Specify hex colours concretely (`#1a1a1a` for line work).
 - Push the numbered-tag instruction near the end of the prompt.
-- Ask for 1024×1024 or 2048×2048 native — high resolution for print.
+- Ask for 1024×1024 or 2048×2048 native.
+- Explicitly state "no text labels anywhere in the image — only
+  numbered tag circles".
 
 =================================================================
-PRIORITY ORDER (informational only — process rows in the order I paste)
+PRIORITY ORDER (informational — process rows in the order I paste)
 =================================================================
-GCSE (Y10–11) → KS3 (Y9 → Y8 → Y7) → Upper KS2 (Y6 → Y5) →
-Lower KS2 (Y4 → Y3) → KS1 (Y2 → Y1) → A-Level (Y12–13).
 
-Subject priority within band: Maths → Biology → Chemistry → Physics →
-Combined Science → English Lit → English Lang → Geography → History →
-Computing → Business → Economics → MFL → Sociology → Psychology →
+GCSE (Y10–11) → KS3 (Y9 → Y8 → Y7) → UKS2 (Y6 → Y5) → LKS2 (Y4 → Y3)
+→ KS1 (Y2 → Y1) → A-Level (Y12–13).
+
+Subject priority within band: Maths → Biology → Chemistry → Physics
+→ Combined Science → English Lit → English Lang → Geography → History
+→ Computing → Business → Economics → MFL → Sociology → Psychology →
 PE → RE → Art → DT → Music → Drama → Statistics → Citizenship → other.
 
-If you spot non-priority order in the input, NOTE it in README.md but
-still process every row.
+Note non-priority order in README.md but still process every row in
+the order pasted.
 
 =================================================================
 INPUT FORMAT
 =================================================================
-Each row will look like:
+
+Each row will look like one of:
 
   [some-id]  Title of the diagram
 
-OR CSV-style:
-  id,title,subject,topic,year_group,year_band,diagram_type,description,
-  style_notes,tags,...
+OR CSV-style with id, title, subject, topic, year_group, year_band,
+diagram_type, description, style_notes, tags, ...
 
-OR with a regeneration annotation appended (when re-running a failed
-row from a previous batch):
-  [some-id]  Title of the diagram   [REGEN: <one-line failure reason>]
+OR with a regen annotation appended:
+  [some-id]  Title   [REGEN: <one-line failure reason>]
 
-If a row has [REGEN: …], output a corrected image_gen_prompt that
-specifically addresses the failure reason. Mark the row in batch.json
-and viewer.html with `regenerated: true` and include the
-original_failure_reason field.
+REGEN handling: output a corrected entry. If the row was previously
+image_gen and the reason mentions geometry / accuracy / arrow placement,
+RE-ROUTE to svg or mermaid if at all possible. Mark `regenerated: true`
+and include `original_failure_reason`.
 
-Treat the id as opaque. Copy verbatim. Never invent or modify ids.
+Treat the id as opaque — copy verbatim.
 
 =================================================================
 JSON SCHEMA (per entry in batch.json)
 =================================================================
 
-GENERATE schema:
+GENERATE — svg:
 {
   "id": "<copied verbatim>",
   "title": "<copied verbatim>",
   "year_band": "KS1|LKS2|UKS2|KS3|GCSE|A-Level",
   "decision": "GENERATE",
-  "diagram_family": "anatomy|apparatus|graph|geometry|map|cross-section|character-map|free-body|circuit|schematic|scene|process",
-  "image_gen_prompt": "<60–140 words, fully self-contained Nano-Banana-Pro-ready>",
-  "negative_prompt": "<short comma-separated list>",
+  "render_method": "svg",
+  "diagram_family": "graph|geometry|circle-theorem|free-body|circuit|punnett|dot-and-cross|periodic-table|wave|coordinate|other",
+  "svg": "<the complete SVG document, transparent background, mathematically correct>",
   "numbered_tags": [
-    { "n": 1, "label": "<canonical exam-paper label>", "position_hint": "<short spatial description>" },
-    { "n": 2, "label": "...", "position_hint": "..." }
+    { "n": 1, "label": "...", "position_hint": "..." }
   ],
-  "exam_paper_style_notes": "<2 sentences max>",
-  "qa_checklist": [
-    "<3–6 short yes/no verifiable observations>"
-  ],
-  "copyright_check": "PASS — original work | PASS — silhouette/homage only | FLAG — <reason>",
+  "qa_checklist": ["3–6 yes/no checks"],
+  "copyright_check": "PASS — original work | FLAG — <reason>",
   "regenerated": false,
   "original_failure_reason": null
 }
 
-SKIP schema:
+GENERATE — mermaid:
 {
-  "id": "<copied verbatim>",
-  "title": "<copied verbatim>",
-  "year_band": "...",
+  "id": "...", "title": "...", "year_band": "...",
+  "decision": "GENERATE",
+  "render_method": "mermaid",
+  "diagram_family": "tree|flowchart|sequence|mindmap|network|other",
+  "mermaid": "<full Mermaid source, including the transparent-theme init block at the top>",
+  "qa_checklist": ["3–6 yes/no checks"],
+  "copyright_check": "...",
+  "regenerated": false,
+  "original_failure_reason": null
+}
+
+GENERATE — image_gen:
+{
+  "id": "...", "title": "...", "year_band": "...",
+  "decision": "GENERATE",
+  "render_method": "image_gen",
+  "diagram_family": "anatomy|apparatus|map|cross-section|character-map|scene|art-history|silhouette|other",
+  "image_gen_prompt": "<60–140 words for Nano Banana Pro, transparent background, numbered tags only, no text labels>",
+  "negative_prompt": "white background, solid fill, paper texture, gradient background, drop shadow, opaque canvas, text labels, label words, paragraphs, sentences, formula card, watermarks, photorealistic 3D, AI artefacts, copyrighted logos",
+  "numbered_tags": [
+    { "n": 1, "label": "...", "position_hint": "..." }
+  ],
+  "exam_paper_style_notes": "<2 sentences>",
+  "qa_checklist": ["3–6 yes/no checks"],
+  "copyright_check": "...",
+  "regenerated": false,
+  "original_failure_reason": null
+}
+
+SKIP:
+{
+  "id": "...", "title": "...", "year_band": "...",
   "decision": "SKIP",
   "skip_reason": "TEXT-ONLY — render as styled text in the worksheet generator (formula | acronym | vocabulary list | definition card | numeric table | rules card | concept text card | typographic poster)"
 }
 
 =================================================================
-FINAL OUTPUT — what your reply must contain, in this order
+FINAL OUTPUT — your reply must contain exactly the following, in
+order, and NOTHING ELSE
 =================================================================
 
-1. ONE LINE: the live viewer URL.
-   Format exactly:
-       VIEWER_URL: https://...
+VIEWER_URL: https://...
+ZIP_URL: https://...
+BATCH SUMMARY: <total> rows — <svg> svg, <mermaid> mermaid, <image_gen> image_gen, <skip> skip, <regen> regenerated
+BATCH 500 COMPLETE — open the VIEWER_URL on your phone to QA. Most rows render inline; only image_gen rows need Manus. Paste the next 500 rows in a fresh chat for the next batch.
 
-2. ONE LINE: the zip download URL.
-   Format exactly:
-       ZIP_URL: https://...
+(If you had to fall back to base64, replace the ZIP_URL line with
+BEGIN_ZIP_BASE64 / single long base64 string / END_ZIP_BASE64, and
+state which fallback you used.)
 
-   (If you had to use base64 fallback, instead emit the zip between:
-       BEGIN_ZIP_BASE64
-       <one long base64 string, no line breaks>
-       END_ZIP_BASE64
-    AND state which fallback you used.)
-
-3. ONE LINE: a tally line.
-   Format exactly:
-       BATCH SUMMARY: <total> rows processed — <generate_count> GENERATE, <skip_count> SKIP, <regen_count> REGEN
-
-4. ONE LINE: the completion sentinel.
-   Format exactly:
-       BATCH 500 COMPLETE — open the VIEWER_URL on your phone to QA.
-       Paste the next 500 rows in a fresh chat for the next batch.
-
-Output NOTHING ELSE — no narration, no apology, no preamble. The viewer
-URL alone is enough for me to inspect every prompt; if I disagree with
-anything, I'll re-run those rows in the next batch with [REGEN: …]
-annotations.
+NO narration, NO apology, NO preamble. Just the four lines and either
+the URL or the base64 block.
 
 =================================================================
-INPUT BATCH — 500 rows below this line
+INPUT BATCH — up to 500 rows below this line
 =================================================================
 ```
 
-[…paste your 500 catalogue rows here, one per line…]
+[…paste your 500 catalogue rows here, one per line, copied from
+docs/diagram-library-catalogue.txt…]
 
 ```
 =================================================================
-END OF INPUT BATCH — produce the viewer URL, the zip URL, the tally and
+END OF INPUT BATCH — produce VIEWER_URL, ZIP_URL, BATCH SUMMARY and
 the sentinel, in that order. Begin.
 =================================================================
 ```
 
 ---
 
-## What you'll see
+## Why this version is different from the previous one
 
-After ~2–4 minutes, Kimi's reply will look like:
+| Concern | Previous prompt | This prompt |
+|---|---|---|
+| Arrows pointing at wrong things | Asked Nano Banana to "place a tag at the radius" — it didn't | SVG places tags at exact pixel coordinates with full control over markers |
+| Maths errors (60° drawn as 75°, parabolas wrong) | Asked Nano Banana to be "geometrically accurate" — it can't | SVG outputs are computed from the equation/spec, not generated |
+| Quality of small text labels | Numbered tags helped but Nano Banana still struggled | Numbered tags only used for image_gen; SVG and Mermaid place text natively, crisply |
+| Cost per batch | ~430 image-gen calls | ~150 image-gen calls (∼65% reduction) |
+| Speed of QA per batch | Wait for 430 generations, then check | ~400 rows already rendered when viewer opens; only ~150 to chase |
+| Required-practical apparatus | Nano Banana, hit-and-miss | Nano Banana (still the right tool — apparatus needs illustration) |
+| Anatomy diagrams | Nano Banana, hit-and-miss | Nano Banana (still the right tool) |
+| Probability trees | Nano Banana, often wrong probabilities | Mermaid — perfect every time |
+| Free-body diagrams | Nano Banana, arrows misaligned | SVG — exact arrow positions |
+| Circle theorems | Nano Banana, frequently false geometry | SVG — geometrically true by computation |
 
-```
-VIEWER_URL: https://0x0.st/abc123/viewer.html
-ZIP_URL: https://0x0.st/abc124/diagrams-batch-001.zip
-BATCH SUMMARY: 500 rows processed — 432 GENERATE, 65 SKIP, 3 REGEN
-BATCH 500 COMPLETE — open the VIEWER_URL on your phone to QA.
-Paste the next 500 rows in a fresh chat for the next batch.
-```
+## What the renderer script in the zip does
 
-Tap the viewer URL. You'll see all 432 generate-eligible entries, each
-collapsed by default. Tap any row to expand: the prompt, the numbered
-tags, the QA checklist as tickable boxes, and pass/fail buttons.
-Filter by year band, search by title, mark each one as you go. Your
-ticks persist in your phone's localStorage.
+`render.mjs` is a Node.js script. When you (or GitHub Actions) run it
+with `DATABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set:
 
-When you're done, the bottom of the viewer shows a **regen list** —
-copy-paste-ready text for the next batch's `[REGEN: …]` annotations.
+1. Reads `batch.json`.
+2. For each `svg` row: writes SVG → converts to transparent PNG via
+   `sharp` → uploads to Supabase Storage → updates `image_url` and
+   `numbered_tags` columns in the `diagram_library` row.
+3. For each `mermaid` row: invokes `mermaid-cli` (free, npm) → renders
+   to transparent PNG → uploads → updates row.
+4. Skips `image_gen` rows entirely (those need manual Manus runs).
+5. Logs a per-row pass/fail summary.
 
-## What's in the zip
+This is the next-PR follow-up. With the renderer script wired into
+GitHub Actions, the SVG and Mermaid rows go from prompt → live in the
+DB **without you doing anything** — you only ever touch the ~150
+image_gen rows per batch in Manus.
 
-| File | Purpose |
+## Cost-per-batch sanity check, updated
+
+- **Kimi K2.6**: 1 chat, ~80–150K tokens. Within K2.6's window. Free
+  on a Kimi subscription.
+- **GitHub Actions** (renderer): free tier covers public-repo CI
+  comfortably; for private repos the included minutes are usually
+  enough. 5,975 SVG/Mermaid rows × 1s render time × 1 cent/min CI =
+  pennies.
+- **Manus Nano Banana Pro**: ~150 image generations × your free-tier
+  rate. Free tier usually clears 100–200 images then you pay. Total
+  for the catalogue ≈ 1,800 images.
+- **Supabase Storage**: free tier (1 GB / 5 GB egress) covers the
+  whole catalogue.
+
+The fastest free path is therefore:
+
+1. **Today**: 1 batch through this prompt → tap viewer URL → 400
+   rows visibly correct in 2 minutes → 100 image_gen rows through
+   Manus.
+2. **This weekend**: GitHub Actions cron renders all SVG/Mermaid rows
+   straight into the DB unattended.
+3. **Next week**: drip-feed the image_gen rows through Manus over
+   coffee breaks. ~1,800 of them at 30s each is 15 hours of
+   *Manus's time*, not yours.
+
+## Files in PR #133 now
+
+| File | Use |
 |---|---|
-| `viewer.html` | Same content as the live URL, but works offline — useful if you need to QA on a flight or weak signal. Open with any phone browser. |
-| `batch.json` | The full structured output for every row. Feed this into your worksheet generator pipeline (or save for later DB ingestion). |
-| `manifest.csv` | Quick at-a-glance summary — open in any spreadsheet app on your phone. |
-| `prompts/<id>.txt` | One plain-text prompt per row, ready to paste straight into Manus Nano Banana Pro. The filename matches the catalogue id, so easy to track which goes where. |
-| `qa-checklists.md` | All QA checklists in one printable markdown file. |
-| `skipped.md` | All the SKIP entries grouped, so you can verify nothing important got skipped. |
-| `README.md` | One-page guide for whoever opens the zip later. |
+| `docs/diagram-generation-prompt-kimi.md` | Older multi-turn iterative prompt — keep as reference |
+| `docs/diagram-generation-prompt-kimi-oneshot.md` | **THIS doc** — multi-renderer one-shot 500-batch with viewer URL + zip |
+| `docs/diagram-library-progress-setup.md` | Phone-friendly setup for the audit workflow |
+| `scripts/diagram-library-progress.mjs` | The audit script |
+| `.github/workflows/diagram-library-progress.yml` | "Run workflow" button for the audit |
 
-## Hosting options for the viewer URL
-
-If Kimi's agent runtime can't reach a public file-host, the prompt
-falls back to base64-encoding the zip in the chat. Decode it on your
-phone with a single shortcut:
-
-- iOS: **Shortcuts** → "Decode Base64 → Save to Files".
-- Android: **Termux** → `base64 -d <input> > diagrams.zip`.
-
-Otherwise, the prompt asks Kimi to use one of these free hosts in
-priority order:
-
-1. **Manus's built-in artifact sharing** (if Kimi's agent has it
-   wired up — fastest, native HTML rendering).
-2. **0x0.st** (public anonymous host, serves HTML inline).
-3. **transfer.sh** (similar, occasionally rate-limited).
-4. **catbox.moe** (rate-limited).
-5. **file.io** (last resort — single-download links).
-
-## Failure handling — the regen loop in one chat
-
-You opened a fresh chat for batch 002. While QA-ing batch 001, you found
-3 images you want to redo. Just append a `[REGEN: …]` annotation to those
-rows in batch 002's input:
-
-```
-[dlc-01641]  Transverse wave — labelled (wavelength, amplitude, crest, trough, period)   [REGEN: tag circles ended up too small to read after Manus rasterised]
-[dlc-00891]  Heart cross-section — fully labelled   [REGEN: chambers were mirrored — left and right swapped]
-[dlc-04022]  Pythagoras — find the hypotenuse (5, 12, ?)
-[dlc-04023]  …
-…497 more rows…
-```
-
-Kimi will produce 500 entries as normal, but for the two REGEN-flagged
-rows the `image_gen_prompt` will explicitly address the named failure
-mode (e.g. "ensure tag circles are at least 24 px diameter" / "the
-right ventricle and right atrium are on the LEFT side of the diagram
-as the viewer faces it"). The viewer marks them with a 🔄 chip so you
-can spot-check those first.
-
-## Cost-per-batch sanity check
-
-- **Kimi K2.6** call: 1 chat / batch, paid via your Kimi subscription —
-  around 80–120K tokens per batch (your input + Kimi's JSON output +
-  the viewer.html). Well within the K2.6 1M-token context window.
-- **Manus Nano Banana Pro**: ~432 image generations × your per-image
-  Manus rate. Free-tier credit usually clears 100–200 images then you
-  pay. Check your Manus dashboard.
-- **Supabase Storage**: free tier covers the lot.
-
-## Continuity between batches
-
-Each batch runs in a fresh chat — no shared state. To track overall
-progress across batches, run the audit workflow shipped in
-[`scripts/diagram-library-progress.mjs`](./diagram-library-progress-setup.md)
-on a regular cadence: it reads your live `diagram_library` table and
-shows what's still to do across the whole 5,975 catalogue.
+A follow-up PR will add `scripts/diagram-render.mjs` + a GitHub
+Actions workflow that runs the renderer over a queue of zips uploaded
+to a `_pending/` folder.
