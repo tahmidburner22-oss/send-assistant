@@ -1,0 +1,7 @@
+{
+  "updatedAt": "1970-01-01T00:00:00.000Z",
+  "counts": { "total": 0, "done": 0, "svg-rendered": 0, "pending": 0, "ai-failed": 0, "provider-out": 0 },
+  "taxonomy": { "summary": { "svg": 0, "ai-structural": 0, "ai-pictorial": 0 }, "svgByRenderer": {} },
+  "recent": [],
+  "failures": []
+}
