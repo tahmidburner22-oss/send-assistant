@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Diagram Pipeline — Live Dashboard</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1a1a1a;
+        --muted: #6b7280;
+        --primary: #1d7bd9;
+        --good: #2a9d8f;
+        --warn: #f4c430;
+        --bad: #e63946;
+        --border: #e5e7eb;
+        --radius: 12px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font: 16px/1.5 system-ui, "Atkinson Hyperlegible", "Open Sans", Arial, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+      }
+      header {
+        padding: 24px 32px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      header h1 { margin: 0; font-size: 24px; }
+      header .meta { color: var(--muted); font-size: 14px; }
+      main { padding: 24px 32px; max-width: 1280px; margin: 0 auto; }
+      section { margin-bottom: 36px; }
+      section h2 {
+        font-size: 18px; margin: 0 0 12px;
+        text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+      }
+      .grid { display: grid; gap: 12px; }
+      .grid.cols-3 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+      .grid.cols-6 { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+      .stat {
+        padding: 16px; border: 1px solid var(--border);
+        border-radius: var(--radius); background: #fff;
+      }
+      .stat .label { color: var(--muted); font-size: 13px; }
+      .stat .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+      .progress {
+        height: 14px; background: #f1f3f5; border-radius: 8px; overflow: hidden;
+        display: flex;
+      }
+      .progress > span { display: block; height: 100%; }
+      .progress .done { background: var(--good); }
+      .progress .svg { background: var(--primary); }
+      .progress .ai-failed { background: var(--bad); }
+      .progress .provider-out { background: var(--warn); }
+      .progress .pending { background: #e5e7eb; }
+
+      .card {
+        border: 1px solid var(--border); border-radius: var(--radius);
+        background: #fff; overflow: hidden; display: flex; flex-direction: column;
+      }
+      .card img {
+        width: 100%; aspect-ratio: 1 / 1; object-fit: contain;
+        background: #fff; border-bottom: 1px solid var(--border);
+      }
+      .card .body { padding: 10px 12px; font-size: 13px; }
+      .card .title { font-weight: 600; font-size: 14px; }
+      .card .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+      .pill {
+        display: inline-block; padding: 2px 8px; border-radius: 999px;
+        font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+      }
+      .pill.svg { background: #d1e9ff; color: #134e89; }
+      .pill.ai-structural { background: #ffe6db; color: #7a3a17; }
+      .pill.ai-pictorial { background: #e8e0ff; color: #3e1f7a; }
+
+      .failures .row {
+        display: flex; justify-content: space-between; padding: 10px 12px;
+        border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px;
+        background: #fff5f5;
+      }
+      .failures .row .err { color: var(--bad); font-size: 12px; max-width: 60%; }
+      .actions {
+        display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;
+      }
+      .btn {
+        display: inline-block; padding: 10px 16px; border-radius: 8px;
+        background: var(--fg); color: #fff; text-decoration: none;
+        font-weight: 600; font-size: 14px;
+      }
+      .btn.alt { background: var(--primary); }
+      .empty { color: var(--muted); padding: 12px; }
+      footer {
+        padding: 20px 32px; color: var(--muted); font-size: 12px;
+        border-top: 1px solid var(--border); text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Diagram pipeline</h1>
+        <div class="meta" id="updated-at">Loading…</div>
+      </div>
+      <div class="actions">
+        <a class="btn" id="run-now" href="#" target="_blank">Run a batch now</a>
+        <a class="btn alt" id="settings" href="#" target="_blank">Settings</a>
+      </div>
+    </header>
+    <main>
+      <section>
+        <h2>Progress</h2>
+        <div class="progress" id="progress-bar"></div>
+        <div class="grid cols-6" style="margin-top: 16px;" id="stats"></div>
+      </section>
+
+      <section>
+        <h2>Latest images</h2>
+        <div class="grid cols-3" id="recent"></div>
+      </section>
+
+      <section class="failures">
+        <h2>Recent failures (will retry automatically)</h2>
+        <div id="failures"></div>
+      </section>
+
+      <section>
+        <h2>Strategy mix (whole catalogue)</h2>
+        <div class="grid cols-3" id="taxonomy"></div>
+      </section>
+    </main>
+    <footer>
+      Pipeline runs every 30 minutes via GitHub Actions. SVG diagrams are 100% accurate by construction; AI diagrams pass white-background, low-text, and spec-compliance QA before they ship. See <code>tools/image-pipeline/HOW-TO-USE.md</code>.
+    </footer>
+
+    <script>
+      // Repo configuration. Replace OWNER/REPO if you fork.
+      const REPO = (function () {
+        // Auto-detect GitHub Pages context.
+        const m = location.host.match(/^([^.]+)\.github\.io$/);
+        if (m) {
+          const seg = location.pathname.split("/").filter(Boolean);
+          const repo = seg[0] || "";
+          return { owner: m[1], repo };
+        }
+        return { owner: "tahmidburner22-oss", repo: "send-assistant" };
+      })();
+
+      const RUN_NOW_URL =
+        `https://github.com/${REPO.owner}/${REPO.repo}/actions/workflows/diagram-image-pipeline.yml`;
+      const SETTINGS_URL =
+        `https://github.com/${REPO.owner}/${REPO.repo}/settings/secrets/actions`;
+      const RAW_BASE =
+        `https://raw.githubusercontent.com/${REPO.owner}/${REPO.repo}/main`;
+
+      document.getElementById("run-now").href = RUN_NOW_URL;
+      document.getElementById("settings").href = SETTINGS_URL;
+
+      function $(id) { return document.getElementById(id); }
+      function el(tag, cls, html) {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (html != null) e.innerHTML = html;
+        return e;
+      }
+
+      function renderProgress(counts) {
+        const total = counts.total || 1;
+        const bar = $("progress-bar");
+        bar.innerHTML = "";
+        const segs = [
+          ["done", counts.done || 0],
+          ["svg", counts["svg-rendered"] || 0],
+          ["ai-failed", counts["ai-failed"] || 0],
+          ["provider-out", counts["provider-out"] || 0],
+          ["pending", counts.pending || 0],
+        ];
+        for (const [cls, n] of segs) {
+          const s = el("span", cls);
+          s.style.width = `${(100 * n) / total}%`;
+          s.title = `${cls}: ${n}`;
+          bar.appendChild(s);
+        }
+
+        const stats = $("stats");
+        stats.innerHTML = "";
+        const ordered = [
+          ["Total", counts.total || 0],
+          ["Done (AI)", counts.done || 0],
+          ["SVG", counts["svg-rendered"] || 0],
+          ["Pending", counts.pending || 0],
+          ["AI failed", counts["ai-failed"] || 0],
+          ["Provider out", counts["provider-out"] || 0],
+        ];
+        for (const [label, value] of ordered) {
+          const c = el("div", "stat");
+          c.appendChild(el("div", "label", label));
+          c.appendChild(el("div", "value", value.toLocaleString()));
+          stats.appendChild(c);
+        }
+      }
+
+      function renderRecent(recent) {
+        const container = $("recent");
+        container.innerHTML = "";
+        if (!recent.length) {
+          container.appendChild(el("div", "empty", "No images generated yet."));
+          return;
+        }
+        for (const r of recent) {
+          const card = el("div", "card");
+          const img = el("img");
+          img.src = `${RAW_BASE}/client/public${r.imagePath}`;
+          img.alt = r.title;
+          img.loading = "lazy";
+          card.appendChild(img);
+          const body = el("div", "body");
+          body.appendChild(
+            el("div", "title", `${r.title.replace(/</g, "&lt;")}`)
+          );
+          body.appendChild(
+            el("div", "meta", `${r.subject} · ${r.topic || ""}`)
+          );
+          const pill = el("span", `pill ${r.strategy}`, r.strategy);
+          body.appendChild(pill);
+          if (r.provider) {
+            body.appendChild(el("span", "meta", ` · ${r.provider}`));
+          }
+          card.appendChild(body);
+          container.appendChild(card);
+        }
+      }
+
+      function renderFailures(failures) {
+        const container = $("failures");
+        container.innerHTML = "";
+        if (!failures.length) {
+          container.appendChild(
+            el("div", "empty", "No failures right now. Nice.")
+          );
+          return;
+        }
+        for (const f of failures) {
+          const row = el("div", "row");
+          row.appendChild(
+            el(
+              "div",
+              "title",
+              `<strong>${f.title}</strong> <span class="meta">${f.subject || ""}</span>`
+            )
+          );
+          row.appendChild(el("div", "err", f.lastError || f.status));
+          container.appendChild(row);
+        }
+      }
+
+      function renderTaxonomy(t) {
+        const container = $("taxonomy");
+        container.innerHTML = "";
+        const entries = [
+          ["SVG (deterministic, 100% accurate)", t.summary.svg],
+          ["AI structural (labelled diagrams)", t.summary["ai-structural"]],
+          ["AI pictorial (illustrations)", t.summary["ai-pictorial"]],
+        ];
+        for (const [label, n] of entries) {
+          const c = el("div", "stat");
+          c.appendChild(el("div", "label", label));
+          c.appendChild(el("div", "value", n.toLocaleString()));
+          container.appendChild(c);
+        }
+      }
+
+      async function load() {
+        try {
+          const res = await fetch("./data.json", { cache: "no-store" });
+          if (!res.ok) throw new Error("data.json not found");
+          const data = await res.json();
+          $("updated-at").textContent =
+            "Last updated " + new Date(data.updatedAt).toLocaleString();
+          renderProgress(data.counts);
+          renderRecent(data.recent || []);
+          renderFailures(data.failures || []);
+          renderTaxonomy(data.taxonomy || { summary: {} });
+        } catch (err) {
+          $("updated-at").textContent =
+            "No pipeline run yet. Trigger the first run with the button above.";
+        }
+      }
+
+      load();
+      setInterval(load, 60_000);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,2 @@
+# Output directory for the diagram pipeline.
+# The pipeline writes one PNG per catalogue id here, e.g. pdl-0001.png.
