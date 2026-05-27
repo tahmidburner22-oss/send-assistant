@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-27T03:24:51.788Z",
+  "updatedAt": "2026-05-27T03:32:15.182Z",
   "rows": {
     "pdl-0003": {
       "status": "svg-rendered",
@@ -560,6 +560,594 @@
       "lastError": "tjs.recognize is not a function",
       "strategy": "ai-pictorial",
       "updatedAt": "2026-05-27T03:24:51.788Z"
+    },
+    "pdl-0053": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:13.728Z"
+    },
+    "pdl-0052": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:13.731Z"
+    },
+    "pdl-0054": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:13.766Z"
+    },
+    "pdl-0057": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.002Z"
+    },
+    "pdl-0051": {
+      "status": "ai-failed",
+      "lastError": "tjs.recognize is not a function",
+      "strategy": "ai-pictorial",
+      "updatedAt": "2026-05-27T03:29:14.129Z"
+    },
+    "pdl-0056": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.179Z"
+    },
+    "pdl-0058": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.232Z"
+    },
+    "pdl-0059": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.352Z"
+    },
+    "pdl-0060": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.418Z"
+    },
+    "pdl-0061": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.483Z"
+    },
+    "pdl-0062": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.577Z"
+    },
+    "pdl-0063": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.642Z"
+    },
+    "pdl-0064": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.714Z"
+    },
+    "pdl-0065": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.799Z"
+    },
+    "pdl-0066": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.864Z"
+    },
+    "pdl-0067": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:14.936Z"
+    },
+    "pdl-0068": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.031Z"
+    },
+    "pdl-0069": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.087Z"
+    },
+    "pdl-0070": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.154Z"
+    },
+    "pdl-0071": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.254Z"
+    },
+    "pdl-0072": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.320Z"
+    },
+    "pdl-0073": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.437Z"
+    },
+    "pdl-0074": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.472Z"
+    },
+    "pdl-0075": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.559Z"
+    },
+    "pdl-0076": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.683Z"
+    },
+    "pdl-0077": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.694Z"
+    },
+    "pdl-0078": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.779Z"
+    },
+    "pdl-0079": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.909Z"
+    },
+    "pdl-0080": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:15.933Z"
+    },
+    "pdl-0081": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.006Z"
+    },
+    "pdl-0082": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.125Z"
+    },
+    "pdl-0083": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.155Z"
+    },
+    "pdl-0084": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.236Z"
+    },
+    "pdl-0085": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.347Z"
+    },
+    "pdl-0086": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.375Z"
+    },
+    "pdl-0087": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.457Z"
+    },
+    "pdl-0088": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.583Z"
+    },
+    "pdl-0089": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.625Z"
+    },
+    "pdl-0090": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.671Z"
+    },
+    "pdl-0091": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.808Z"
+    },
+    "pdl-0092": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.858Z"
+    },
+    "pdl-0093": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:16.894Z"
+    },
+    "pdl-0094": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:17.028Z"
+    },
+    "pdl-0095": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:17.083Z"
+    },
+    "pdl-0096": {
+      "status": "provider-out",
+      "strategy": "ai-structural",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:17.126Z"
+    },
+    "pdl-0097": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:17.274Z"
+    },
+    "pdl-0098": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:17.303Z"
+    },
+    "pdl-0099": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:17.349Z"
+    },
+    "pdl-0100": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:29:17.512Z"
+    },
+    "pdl-0055": {
+      "status": "ai-failed",
+      "lastError": "tjs.recognize is not a function",
+      "strategy": "ai-pictorial",
+      "updatedAt": "2026-05-27T03:32:15.182Z"
     }
   }
 }

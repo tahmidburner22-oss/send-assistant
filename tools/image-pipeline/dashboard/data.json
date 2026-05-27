@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-05-27T03:24:51.857Z",
+  "updatedAt": "2026-05-27T03:32:15.263Z",
   "counts": {
     "total": 5975,
     "done": 0,
     "svg-rendered": 44,
-    "pending": 5925,
-    "ai-failed": 1,
-    "provider-out": 5,
+    "pending": 5875,
+    "ai-failed": 3,
+    "provider-out": 53,
     "skipped": 0
   },
   "taxonomy": {
@@ -314,6 +314,132 @@
       "subject": "Mathematics",
       "status": "ai-failed",
       "lastError": "tjs.recognize is not a function"
+    },
+    {
+      "id": "pdl-0053",
+      "title": "Counting set — 9 frogs",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0052",
+      "title": "Counting set — 8 frogs",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0054",
+      "title": "Counting set — 10 frogs",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0057",
+      "title": "Counting set — 3 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0051",
+      "title": "Counting set — 7 frogs",
+      "subject": "Mathematics",
+      "status": "ai-failed",
+      "lastError": "tjs.recognize is not a function"
+    },
+    {
+      "id": "pdl-0056",
+      "title": "Counting set — 2 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0058",
+      "title": "Counting set — 4 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0059",
+      "title": "Counting set — 5 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0060",
+      "title": "Counting set — 6 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0061",
+      "title": "Counting set — 7 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0062",
+      "title": "Counting set — 8 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0063",
+      "title": "Counting set — 9 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0064",
+      "title": "Counting set — 10 apples",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0065",
+      "title": "Number bond cherry — 0 and 10 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0066",
+      "title": "Number bond cherry — 1 and 9 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0067",
+      "title": "Number bond cherry — 2 and 8 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0068",
+      "title": "Number bond cherry — 3 and 7 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0069",
+      "title": "Number bond cherry — 4 and 6 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
     }
   ]
 }
