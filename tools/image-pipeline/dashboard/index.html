@@ -170,6 +170,35 @@
       #feedback-bar .submit {
         background: var(--bad);
       }
+
+      /* Per-phase progress strip */
+      .phase-strip {
+        display: grid; grid-template-columns: repeat(7, 1fr);
+        gap: 8px; margin-top: 16px;
+      }
+      @media (max-width: 900px) { .phase-strip { grid-template-columns: repeat(2, 1fr); } }
+      .phase-card {
+        border: 1px solid var(--border); border-radius: 10px;
+        padding: 10px 12px; background: #fff;
+      }
+      .phase-card .phase-name {
+        font-weight: 700; font-size: 14px; display: flex;
+        justify-content: space-between; align-items: center;
+      }
+      .phase-card .phase-rank {
+        font-size: 11px; color: var(--muted);
+        background: #f1f3f5; padding: 1px 6px; border-radius: 999px;
+      }
+      .phase-card .phase-counts {
+        font-size: 12px; color: var(--muted); margin-top: 4px;
+      }
+      .phase-card .phase-bar {
+        height: 6px; background: #f1f3f5; border-radius: 3px;
+        overflow: hidden; margin-top: 8px; display: flex;
+      }
+      .phase-card .phase-bar > span { display: block; height: 100%; }
+      .phase-card .phase-bar .done   { background: var(--good); }
+      .phase-card .phase-bar .failed { background: var(--bad); }
     </style>
   </head>
   <body>
@@ -188,6 +217,11 @@
         <h2>Progress</h2>
         <div class="progress" id="progress-bar"></div>
         <div class="grid cols-6" style="margin-top: 16px;" id="stats"></div>
+      </section>
+
+      <section>
+        <h2>Processing order — phases run left-to-right</h2>
+        <div class="phase-strip" id="phase-strip"></div>
       </section>
 
       <section>
@@ -329,6 +363,43 @@
           c.appendChild(el("div", "value", value.toLocaleString()));
           stats.appendChild(c);
         }
+      }
+
+      // Per-phase progress strip — left-to-right reflects processing order.
+      function renderPhaseStrip(byPhase) {
+        const strip = $("phase-strip");
+        strip.innerHTML = "";
+        if (!Array.isArray(byPhase) || byPhase.length === 0) {
+          strip.appendChild(el("div", "empty", "Per-phase progress will appear after the next pipeline run."));
+          return;
+        }
+        byPhase.forEach((p, i) => {
+          const total = p.total || 0;
+          const card = el("div", "phase-card");
+          const name = el("div", "phase-name");
+          name.appendChild(el("span", null, p.phase));
+          name.appendChild(el("span", "phase-rank", `#${i + 1}`));
+          card.appendChild(name);
+          card.appendChild(
+            el(
+              "div",
+              "phase-counts",
+              `${(p.done || 0).toLocaleString()} / ${total.toLocaleString()} done` +
+                (p.failed ? ` · ${p.failed} retrying` : ""),
+            ),
+          );
+          const bar = el("div", "phase-bar");
+          if (total > 0) {
+            const done = el("span", "done");
+            done.style.width = `${(100 * (p.done || 0)) / total}%`;
+            const failed = el("span", "failed");
+            failed.style.width = `${(100 * (p.failed || 0)) / total}%`;
+            bar.appendChild(done);
+            bar.appendChild(failed);
+          }
+          card.appendChild(bar);
+          strip.appendChild(card);
+        });
       }
 
       // ── Filters ─────────────────────────────────────────────────
@@ -570,6 +641,7 @@
           $("updated-at").textContent =
             "Last updated " + new Date(data.updatedAt).toLocaleString();
           renderProgress(data.counts);
+          renderPhaseStrip(data.byPhase || []);
           allBrowse = data.browse || data.recent || [];
           populateFilters(allBrowse);
           applyFilters();
