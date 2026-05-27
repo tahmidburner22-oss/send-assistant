@@ -309,6 +309,40 @@ async function main() {
     `Pipeline run started — batch=${args.batch} concurrency=${args.concurrency} dry=${args.dry}`,
   );
 
+  // Diagnostic: print the active provider chain and which keys are
+  // visible in env. This is the single most-asked debugging question
+  // ("is my Gemini key even reaching the runner?") so we surface the
+  // answer at the top of every run log. Values are NEVER printed —
+  // only "set"/"missing".
+  const keyStatus = {
+    GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
+    TOGETHER_API_KEY: !!process.env.TOGETHER_API_KEY,
+    CLOUDFLARE_AI_TOKEN: !!process.env.CLOUDFLARE_AI_TOKEN,
+    CLOUDFLARE_ACCOUNT_ID: !!process.env.CLOUDFLARE_ACCOUNT_ID,
+    HUGGINGFACE_TOKEN: !!process.env.HUGGINGFACE_TOKEN,
+  };
+  log.info(
+    `Provider keys visible: ${Object.entries(keyStatus)
+      .map(([k, v]) => `${k}=${v ? "set" : "missing"}`)
+      .join(" ")}`,
+  );
+  log.info(`Active provider chain: ${providers.activeChain().join(" → ")}`);
+  if (
+    !keyStatus.GEMINI_API_KEY &&
+    !keyStatus.TOGETHER_API_KEY &&
+    !keyStatus.CLOUDFLARE_AI_TOKEN &&
+    !keyStatus.HUGGINGFACE_TOKEN
+  ) {
+    log.warn(
+      "No paid provider key reached the runner. " +
+        "Pollinations is the only fallback and it returns HTTP 402 in 2026. " +
+        "Add a secret named EXACTLY 'GEMINI_API_KEY' (case-sensitive) at " +
+        "Settings → Secrets and variables → Actions → New repository secret. " +
+        "If you already added it and this warning still appears, the secret " +
+        "name does not match — delete and re-add it with the exact name above.",
+    );
+  }
+
   const catalogue = await loadCatalogue();
   log.info(`Loaded catalogue: ${catalogue.length} rows`);
   const state = await loadState();
