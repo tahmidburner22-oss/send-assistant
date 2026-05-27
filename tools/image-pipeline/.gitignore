@@ -1,0 +1,7 @@
+# Runtime files written by run.mjs / GitHub Actions; the workflow commits
+# state.json + dashboard/data.json explicitly. Logs and node_modules are
+# never committed.
+node_modules/
+package-lock.json
+logs/
+*.log
