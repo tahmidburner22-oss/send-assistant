@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-05-27T20:41:53.360Z",
+  "updatedAt": "2026-05-27T22:33:16.226Z",
   "counts": {
     "total": 5975,
     "done": 0,
     "svg-rendered": 44,
-    "pending": 5867,
-    "ai-failed": 15,
+    "pending": 5866,
+    "ai-failed": 16,
     "provider-out": 49,
     "skipped": 0
   },
@@ -14,8 +14,8 @@
       "phase": "GCSE",
       "total": 1988,
       "done": 0,
-      "pending": 1928,
-      "failed": 60
+      "pending": 1927,
+      "failed": 61
     },
     {
       "phase": "KS3",
@@ -997,8 +997,8 @@
       "id": "dlc-00896",
       "title": "Rationalising — conjugate method (1/(2 + √3))",
       "subject": "Mathematics",
-      "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "status": "ai-failed",
+      "lastError": "qa-rejected-after-retries"
     },
     {
       "id": "dlc-00897",
@@ -1117,7 +1117,7 @@
       "title": "Factorising difference of two squares — x² − 49 = (x + 7)(x − 7)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 503: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 503,\\n    \\\"message\\\": \\\"The service is currently unavailable.\\\",\\n    \\\"status\\\": \\\"UNAVAILABLE\\\"\\n  }\\n}\\n\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00914",
@@ -1339,6 +1339,13 @@
     {
       "id": "dlc-00945",
       "title": "Simplify (x² − 9)/(x − 3) = x + 3",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+    },
+    {
+      "id": "dlc-00946",
+      "title": "Simplify (x² + 5x + 6)/(x + 2) = x + 3",
       "subject": "Mathematics",
       "status": "provider-out",
       "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
