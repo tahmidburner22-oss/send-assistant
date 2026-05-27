@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-27T04:06:47.151Z",
+  "updatedAt": "2026-05-27T04:24:40.865Z",
   "rows": {
     "pdl-0003": {
       "status": "svg-rendered",
@@ -2368,6 +2368,638 @@
       "lastError": "tjs.recognize is not a function",
       "strategy": "ai-pictorial",
       "updatedAt": "2026-05-27T04:06:47.151Z"
+    },
+    "dlc-00938": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:10.449Z"
+    },
+    "dlc-00936": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:10.476Z"
+    },
+    "dlc-00937": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:10.487Z"
+    },
+    "dlc-00941": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2971515702\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2971515702\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:10.835Z"
+    },
+    "dlc-00942": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:10.933Z"
+    },
+    "dlc-00943": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2271963136\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2271963136\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:11.163Z"
+    },
+    "dlc-00939": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2230908432\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (0.0% white edge)"
+          }
+        },
+        {
+          "attempt": 2,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2230908432\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:11.212Z"
+    },
+    "dlc-00944": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:11.309Z"
+    },
+    "dlc-00945": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3968879282\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3968879282\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:11.490Z"
+    },
+    "dlc-00946": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:11.649Z"
+    },
+    "dlc-00947": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:11.701Z"
+    },
+    "dlc-00948": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 4124154669\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 4124154669\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:11.825Z"
+    },
+    "dlc-00949": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3663664270\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3663664270\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:11.991Z"
+    },
+    "dlc-00950": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:12.128Z"
+    },
+    "dlc-00951": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:12.194Z"
+    },
+    "dlc-00952": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 4207516934\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 4207516934\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:12.326Z"
+    },
+    "dlc-00953": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:12.490Z"
+    },
+    "dlc-00954": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2357895884\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2357895884\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:12.568Z"
+    },
+    "dlc-00955": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2548664451\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2548664451\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:12.666Z"
+    },
+    "dlc-00956": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3078236802\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3078236802\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:12.822Z"
+    },
+    "dlc-00957": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3517938849\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3517938849\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:12.924Z"
+    },
+    "dlc-00958": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:13.045Z"
+    },
+    "dlc-00959": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2225220943\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2225220943\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:13.170Z"
+    },
+    "dlc-00960": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:13.330Z"
+    },
+    "dlc-00961": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3806177436\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3806177436\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:13.393Z"
+    },
+    "dlc-00962": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2839473521\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2839473521\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:13.502Z"
+    },
+    "dlc-00963": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2378983122\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2378983122\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:13.680Z"
+    },
+    "dlc-00964": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:13.802Z"
+    },
+    "dlc-00965": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:13.892Z"
+    },
+    "dlc-00966": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3968753653\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3968753653\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.017Z"
+    },
+    "dlc-00967": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3529051606\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3529051606\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.147Z"
+    },
+    "dlc-00968": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2541559339\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2541559339\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.237Z"
+    },
+    "dlc-00969": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.386Z"
+    },
+    "dlc-00970": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2201139406\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2201139406\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.476Z"
+    },
+    "dlc-00971": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2661629805\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2661629805\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.582Z"
+    },
+    "dlc-00972": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.762Z"
+    },
+    "dlc-00973": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3821662143\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3821662143\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.826Z"
+    },
+    "dlc-00974": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3198502986\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3198502986\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:14.932Z"
+    },
+    "dlc-00975": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:15.129Z"
+    },
+    "dlc-00976": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:15.205Z"
+    },
+    "dlc-00977": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:15.309Z"
+    },
+    "dlc-00978": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:15.481Z"
+    },
+    "dlc-00979": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:15.585Z"
+    },
+    "dlc-00980": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2296180929\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2296180929\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:15.647Z"
+    },
+    "dlc-00981": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:15.840Z"
+    },
+    "dlc-00982": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3453653411\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3453653411\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:15.917Z"
+    },
+    "dlc-00983": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3283673196\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3283673196\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:16.017Z"
+    },
+    "dlc-00984": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3446249413\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3446249413\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:16.170Z"
+    },
+    "dlc-00985": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2985759014\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2985759014\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T04:20:16.281Z"
+    },
+    "dlc-00940": {
+      "status": "ai-failed",
+      "strategy": "ai-pictorial",
+      "lastError": "qa-rejected-after-retries",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (0.0% white edge)"
+          }
+        },
+        {
+          "attempt": 2,
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (0.0% white edge)"
+          }
+        },
+        {
+          "attempt": 3,
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (0.0% white edge)"
+          }
+        }
+      ],
+      "updatedAt": "2026-05-27T04:24:40.865Z"
     }
   }
 }
