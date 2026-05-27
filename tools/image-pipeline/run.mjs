@@ -150,13 +150,16 @@ async function processAiRow(row, strategy, log, userFeedback = null) {
 
 function hashSeed(id, attempt) {
   // Deterministic seed per (id, attempt) so retries differ but reruns reproduce.
+  // The seed must fit in a signed 32-bit int — Gemini rejects values > 2^31-1
+  // with "Invalid value at 'generation_config.seed' (TYPE_INT32)". We mask
+  // off the sign bit so the result is always a non-negative int31.
   let h = 2166136261;
   const s = `${id}:${attempt}`;
   for (let i = 0; i < s.length; i += 1) {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
-  return h >>> 0;
+  return h & 0x7fffffff;
 }
 
 async function processBatch(batch, args, state, log, feedbackById) {
