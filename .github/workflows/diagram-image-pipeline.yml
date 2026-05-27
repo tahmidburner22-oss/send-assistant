@@ -1,0 +1,128 @@
+# Diagram image pipeline — 24/7 background generator.
+#
+# Runs every 30 minutes. Each run:
+#   1. Picks up to BATCH pending rows from the catalogue.
+#   2. SVG rows: rendered locally and committed.
+#   3. AI rows: generated via the provider chain, gated by QA, committed.
+#   4. Refreshes dashboard data.
+#   5. Pushes results back to main.
+#   6. Redeploys the dashboard to GitHub Pages.
+#
+# Manual trigger via the Actions tab → "Run workflow" with optional
+# batch and concurrency parameters.
+
+name: Diagram image pipeline
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: "Rows to process this run"
+        required: false
+        default: "50"
+      concurrency:
+        description: "Parallel AI generations"
+        required: false
+        default: "4"
+      dry:
+        description: "Dry-run (no images, just plan)"
+        required: false
+        default: "false"
+        type: boolean
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: diagram-pipeline
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate batch
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      counts: ${{ steps.summary.outputs.counts }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pipeline dependencies
+        working-directory: tools/image-pipeline
+        run: |
+          cat > package.json <<'JSON'
+          {
+            "name": "diagram-image-pipeline",
+            "private": true,
+            "type": "module",
+            "dependencies": {
+              "sharp": "^0.33.5",
+              "tesseract.js": "^5.1.1"
+            }
+          }
+          JSON
+          npm install --no-audit --no-fund --no-package-lock
+
+      - name: Run pipeline
+        env:
+          # Optional — set as repository secrets to enable. The pipeline
+          # works with none of these (Pollinations only).
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+          CLOUDFLARE_AI_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          BATCH="${{ github.event.inputs.batch || '50' }}"
+          CONC="${{ github.event.inputs.concurrency || '4' }}"
+          DRY=""
+          if [ "${{ github.event.inputs.dry }}" = "true" ]; then DRY="--dry"; fi
+          node tools/image-pipeline/run.mjs \
+            --batch=$BATCH --concurrency=$CONC $DRY
+
+      - name: Summarise
+        id: summary
+        run: |
+          if [ -f tools/image-pipeline/dashboard/data.json ]; then
+            echo "counts=$(jq -c .counts tools/image-pipeline/dashboard/data.json)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit results
+        run: |
+          git config user.name  "diagram-pipeline-bot"
+          git config user.email "diagram-pipeline-bot@users.noreply.github.com"
+          git add client/public/diagrams/generated || true
+          git add tools/image-pipeline/state.json || true
+          git add tools/image-pipeline/dashboard/data.json || true
+          git add tools/image-pipeline/logs || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "diagrams: automated batch ${{ github.run_id }}"
+            git push
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: tools/image-pipeline/dashboard
+
+  deploy-dashboard:
+    name: Deploy dashboard
+    needs: generate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
