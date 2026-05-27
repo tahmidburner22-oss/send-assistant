@@ -56,6 +56,16 @@ export async function generate({ positive, negative, width, height, seed }) {
   });
   if (!res.ok) {
     const text = await res.text();
+    // 429 = daily quota exhausted on the free tier. Surface clearly so
+    // the runner log shows it on every row that hit the cap, instead of
+    // a generic "all providers exhausted".
+    if (res.status === 429) {
+      throw new Error(
+        `gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). ` +
+          `Wait until UTC midnight for the quota to reset, or enable billing on the Google ` +
+          `Cloud project that owns this key (~$0.039 per image).`,
+      );
+    }
     throw new Error(`gemini: HTTP ${res.status}: ${text.slice(0, 240)}`);
   }
   const json = await res.json();
