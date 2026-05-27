@@ -12,7 +12,7 @@ explains everything Kimi needs from scratch.
 The prompt follows the priority order **GCSE → KS3 → UKS2 → LKS2 → KS1
 → A-Level**.
 
-## Three rules baked into this prompt
+## Five rules baked into this prompt
 
 1. **The image must be an actual image.** Drawing, schematic, anatomy,
    apparatus, geometry, graph, map, cross-section, simplified scene.
@@ -27,7 +27,17 @@ The prompt follows the priority order **GCSE → KS3 → UKS2 → LKS2 → KS1
    coloured tint overlay (cream, yellow, blue, grey) without the
    image's white background fighting the tint. The diagram lines must
    be dark and high-contrast so they remain readable on any overlay.
-3. **Stylised text cards only when completely necessary.** If a brief
+3. **No text in images — use numbered tags + worksheet key.** Image
+   generators (including Nano Banana Pro) are unreliable at small
+   clean text, especially on transparent backgrounds where
+   anti-aliasing pixels get lost during background removal. Instead,
+   place small dark filled circles with single digits (1, 2, 3 …) at
+   each labelable point. The worksheet generator overlays a numbered
+   key beside the diagram (1 = aorta, 2 = right ventricle, …). This
+   is the standard exam-paper convention anyway, and every label is
+   then rendered as crisp HTML/SVG text that screen readers can read
+   and pupils can resize.
+4. **Stylised text cards only when completely necessary.** If a brief
    is essentially "a poster of words" — formula card, acronym, vocab
    list, rules card, table, theme card — output SKIP. The worksheet
    generator renders text content as styled HTML which is higher
@@ -35,28 +45,57 @@ The prompt follows the priority order **GCSE → KS3 → UKS2 → LKS2 → KS1
    a stylised-text image when the spatial arrangement or typography
    IS itself the lesson (concrete poetry, word cloud where size
    carries meaning, calligraphy). These cases are rare.
+5. **Nano Banana Pro only, with a per-batch QA checklist.** Every
+   `image_gen_prompt` is phrased for Manus's Nano Banana Pro (Google's
+   image-gen model exposed through Manus). Kimi outputs a tight QA
+   checklist alongside each row so you can spot-check the generated
+   images and re-prompt anything that fails. A regeneration loop is
+   built into the protocol — paste back the failing IDs with a
+   one-line reason, Kimi outputs improved prompts.
 
-## How to use it
+## Where to host the generated images for free
 
-1. Open Kimi K2.6 (`kimi.com` or your API client).
-2. Paste **everything between the `===` lines** below as the first message.
-3. Kimi replies "Ready. Send the first batch (GCSE preferred)…".
-4. Open `docs/diagram-library-catalogue.txt`, copy the next batch of
-   20–50 rows, and paste them into Kimi.
-5. Kimi outputs a JSON array — one object per row, with either an
-   `image_gen_prompt` (for visual briefs) or a `skip_reason` (for
-   text-only briefs).
-6. For visual briefs: paste `image_gen_prompt` into Manus, save the
-   resulting **transparent PNG**, upload via Admin Panel → Diagram
-   Library.
-7. For SKIPs: nothing to do — the worksheet generator already handles
-   text-only content.
+The app already reads diagrams from a Postgres `diagram_library` table
+where each row carries an `image_url`. The simplest free hosting that
+fits this stack:
 
-> **Manus / generator alpha-channel note.** If your image generator
-> can't produce a transparent background natively, run the result
-> through a one-click background remover (e.g. `rembg`, `remove.bg`,
-> Photoshop "Remove background") before uploading. This step takes
-> about 2 seconds per image and preserves the diagram lines unchanged.
+**Supabase Storage** (recommended)
+
+- Free tier: **1 GB storage, 5 GB egress / month** — enough for ~5,000
+  small PNGs at 200 KB each, which is roughly the whole catalogue.
+- Already in your stack, no new account or billing setup.
+- Public-bucket URLs slot directly into the `image_url` column with no
+  proxy or CDN to configure.
+
+Setup (2 minutes, on your phone):
+1. Open Supabase → your project → **Storage** in the left menu.
+2. Tap **New bucket**, name it `diagram-library`, toggle **Public** on,
+   tap **Create**.
+3. Set the bucket's file size limit to 5 MB (more than enough for
+   exam-paper line-art PNGs).
+4. When you upload a generated image, the public URL is
+   `https://<project>.supabase.co/storage/v1/object/public/diagram-library/<id>.png`
+   — paste that into the `image_url` column for the matching row.
+
+If you outgrow 1 GB later, **Cloudflare R2** (10 GB free, S3-compatible)
+or **GitHub LFS** (1 GB free, more if the repo is public) are the
+clean upgrade paths.
+
+## What to say to Kimi (literal first message)
+
+1. Open Kimi K2.6 in your phone browser. Start a brand-new chat.
+2. Paste **everything** between the two `===` lines below as the first
+   message. That's the full master prompt.
+3. Kimi will reply with one sentence: "Ready. Send the first batch
+   (GCSE preferred). I'll output JSON per row in priority order…".
+4. From that point on, every message you send is a batch of catalogue
+   rows. Every Kimi reply is a JSON array + a `BATCH COMPLETE` line.
+5. After running a batch through Manus and spot-checking, your next
+   message is either:
+   - The next batch of catalogue rows, OR
+   - `ALL OK — next batch` (no failures), OR
+   - `REGENERATE: dlc-01641, dlc-01643` followed by one-line failure
+     reasons for each ID — Kimi outputs improved prompts.
 
 ---
 
@@ -139,21 +178,58 @@ fill, paper texture, gradient background, drop shadow, glow,
 opaque canvas".
 
 ================================================================
-RULE 3 — LABELS WITHIN IMAGES
+RULE 3 — NO TEXT IN IMAGES (use numbered tags + worksheet key)
 ================================================================
 
-Short pointer labels on a diagram are encouraged where the diagram
-needs them. A pointer label is a 1–4-word noun phrase attached to a
-specific spot in the image with a leader line. Examples:
-  - Anatomy: "aorta", "right ventricle", "Bowman's capsule".
-  - Apparatus: "burette", "conical flask", "tripod", "Bunsen".
-  - Geometry: "θ", "centre", "tangent", "radius".
-  - Graphs: axis titles only, e.g. "Distance / m", "Time / s",
-    plus 1–4 short curve labels if multiple curves are plotted.
-  - Maps / cross-sections: feature names, e.g. "epicentre",
-    "subduction zone", "rainband".
+Image generators — including Manus's Nano Banana Pro — are unreliable
+at rendering small clean text, especially on transparent backgrounds.
+Common failure modes:
+  - Garbled letterforms ("aorta" rendered as "aroia").
+  - Anti-aliased text pixels that fight the background-removal step,
+    leaving fuzzy halos around every label.
+  - Inconsistent font weight and size across labels in the same image.
+  - Text bleed into adjacent shapes.
 
-Forbidden inside the image canvas:
+So we DON'T put text inside the generated image. Instead:
+
+NUMBERED TAG SYSTEM
+- Place a small dark filled circle (~14 px diameter, fill `#1a1a1a`)
+  at each labelable point in the diagram.
+- Inside each circle: a single digit (1–9) or two digits (10–99) in
+  bold white sans-serif. Numbers render reliably even at small sizes
+  because there are only ten glyphs and they're chunky.
+- The worksheet generator overlays a numbered KEY next to the image:
+      1. aorta
+      2. right ventricle
+      3. left ventricle
+      ...
+  This text is HTML/CSS — crisp at any zoom, screen-reader-accessible,
+  resizable for SEND pupils, translatable for EAL pupils.
+
+This pattern is the standard convention in UK exam-paper diagrams and
+GCSE textbooks. Pupils are familiar with it.
+
+OUTPUT — for every GENERATE row, populate the `numbered_tags` array
+with ONE entry per tag in the image, in the order the tags appear
+(top-to-bottom, left-to-right). The downstream pipeline will render
+these as the worksheet key.
+
+ALLOWED EXCEPTIONS — when text IS permitted inside the image:
+  - Geometric variables: a single Greek letter (`θ`, `α`, `π`) or a
+    single italic letter (`a`, `b`, `c`, `x`, `y`) at a vertex of a
+    geometry diagram. These are 1-character labels and render fine.
+  - Axis values on graphs: a small set of numerical tick labels (0,
+    1, 2, 3 along an x-axis). Numbers only.
+  - Coordinate-grid annotations like `(2, 3)` near a plotted point.
+  - Single-character chemical symbols (H, O, C, N) inside dot-and-
+    cross diagrams.
+  - For KS1 / LKS2 child-friendly diagrams ONLY (Year 1–4): a maximum
+    of FOUR short labels (1–2 words each, large 18pt+ rounded sans-
+    serif) directly on the image, IF the diagram has fewer than five
+    labelable points and a numbered key would create too much
+    cognitive load for a young reader.
+
+Forbidden in images regardless of band:
   - Sentences or paragraphs.
   - Equations longer than two simple terms (do NOT write "a² + b² = c²"
     or "y = mx + c" or "πr²" inside the image — those go in the
@@ -284,10 +360,19 @@ VISUAL (image-gen) schema:
     "year_band": "KS1|LKS2|UKS2|KS3|GCSE|A-Level",
     "decision": "GENERATE",
     "diagram_family": "anatomy|apparatus|graph|geometry|map|cross-section|character-map|free-body|circuit|schematic|scene|process",
-    "image_gen_prompt": "<one paragraph, 60–140 words, fully self-contained. Describes the visual, the line weights, the palette, the short pointer labels (in quotes), AND explicitly asks for a transparent background / RGBA PNG. Do NOT include long equations or paragraphs of text inside the image.>",
-    "negative_prompt": "<short comma-separated list — typical: 'white background, solid fill, paper texture, gradient background, drop shadow, opaque canvas, text-heavy, formula card, paragraphs, watermarks, photorealistic 3D, AI artefacts, copyrighted logos'>",
-    "pointer_labels": ["<label 1>", "<label 2>", "..."],
-    "exam_paper_style_notes": "<2 sentences max — line weight, label font, leader-line behaviour. Always confirm transparency.>",
+    "image_gen_prompt": "<one paragraph, 60–140 words, fully self-contained. Targets Manus's Nano Banana Pro model. Describes the visual, the line weights, the palette, the numbered tag positions, AND explicitly asks for a transparent background / RGBA PNG and 'no text labels in image — only numbered tag circles'. Do NOT include long equations or paragraphs of text inside the image.>",
+    "negative_prompt": "<short comma-separated list — typical: 'white background, solid fill, paper texture, gradient background, drop shadow, opaque canvas, text labels, label words, paragraphs, sentences, formula card, watermarks, photorealistic 3D, AI artefacts, copyrighted logos'>",
+    "numbered_tags": [
+      { "n": 1, "label": "<canonical exam-paper label>", "position_hint": "<short spatial description for the artist or QA, e.g. 'top-centre, vessel exiting heart upward'>" },
+      { "n": 2, "label": "...", "position_hint": "..." }
+    ],
+    "exam_paper_style_notes": "<2 sentences max — line weight, label font, leader-line behaviour. Always confirm transparency and numbered-tag-only.>",
+    "qa_checklist": [
+      "<short verifiable check 1, e.g. 'Background is transparent — no white halo around shapes when placed over a coloured tint.'>",
+      "<short verifiable check 2, e.g. 'All four heart chambers are visible and correctly proportioned.'>",
+      "<short verifiable check 3, e.g. 'Twelve numbered tags placed, ordered top-to-bottom matching the numbered_tags array.'>",
+      "<3–6 checks per row, each one a yes/no verifiable observation>"
+    ],
     "copyright_check": "PASS — original work | PASS — silhouette/homage only | FLAG — <reason>"
   }
 
@@ -360,16 +445,53 @@ COPYRIGHT AND CULTURAL SAFETY
   generic period-appropriate silhouette with a date label.
 
 ================================================================
-ITERATION
+ITERATION + QA LOOP
 ================================================================
 
-- Process every row I paste, in the order I paste them. Do not skip,
-  reorder, or batch silently.
-- After the final row, output exactly one line:
-      BATCH COMPLETE — send next batch
-- Output ONLY the JSON array followed by the completion sentinel.
-  Do not summarise, do not editorialise, do not explain your
-  decisions.
+Per-batch flow:
+1. Process every row I paste, in the order I paste them. Do not
+   skip, reorder, or batch silently.
+2. After the final row, output exactly one line:
+       BATCH COMPLETE — send next batch, or paste 'REGENERATE: <ids>'
+       with one-line reasons to fix any failed images.
+3. Output ONLY the JSON array followed by the completion sentinel.
+   Do not summarise, do not editorialise, do not explain your
+   decisions.
+
+After I run the batch through Manus / Nano Banana Pro:
+- I'll spot-check each generated image against its `qa_checklist`.
+- For any image that fails, I'll send a follow-up message:
+       REGENERATE: dlc-01641, dlc-01643
+       dlc-01641 — text leaked into the canvas instead of staying as
+                   numbered tags
+       dlc-01643 — background not transparent, white halo around the
+                   axes after rembg
+- For each ID listed, output a SINGLE updated JSON object using the
+  same schema, with `image_gen_prompt` revised to fix the named
+  failure mode. Wrap the array as before, then append BATCH
+  COMPLETE — send next batch.
+- If I send "ALL OK — next batch", treat the previous batch as
+  passed and wait for the next paste.
+
+================================================================
+TARGET MODEL — Manus Nano Banana Pro
+================================================================
+
+Every `image_gen_prompt` is written to be fed to Manus's Nano Banana
+Pro image-generation model. Phrasing tips that work well with Nano
+Banana:
+- Lead with the diagram TYPE: "Anatomical line illustration of …",
+  "Schematic technical drawing of …", "Geometric construction
+  showing …".
+- State "transparent background" within the first sentence.
+- Specify the colour palette in concrete hex (`#1a1a1a` for line
+  work, etc.) — Nano Banana follows hex guidance reliably.
+- Place the numbered-tag instruction near the end of the prompt:
+  "Place numbered tag circles at the points listed; numbers in white
+  bold sans-serif inside dark circles. No text labels anywhere else
+  in the image."
+- Resolution: ask for 1024×1024 or 2048×2048 native — Nano Banana
+  Pro is "high-resolution" and you want crisp lines for print.
 
 ================================================================
 START
@@ -377,8 +499,10 @@ START
 
 Reply with exactly:
   Ready. Send the first batch (GCSE preferred). I'll output JSON per
-  row in priority order, marking text-only briefs as SKIP and
-  requiring transparent backgrounds for every generated image.
+  row in priority order, with numbered-tag labelling, transparent
+  backgrounds, Nano Banana Pro phrasing, a per-row QA checklist, and
+  SKIP for any text-only briefs. Paste 'REGENERATE: <ids>' after a
+  batch to fix any images that fail QA.
 
 Then wait for me to paste rows. Begin.
 =================================================================
@@ -406,10 +530,23 @@ Kimi should reply with:
     "year_band": "GCSE",
     "decision": "GENERATE",
     "diagram_family": "graph",
-    "image_gen_prompt": "A single transverse sine wave on a TRANSPARENT canvas (RGBA PNG, alpha channel preserved, no fill, no white background). Three full cycles visible, sweeping left to right. Black axes (#000) with arrowheads. X-axis title 'Distance / m' below the axis, y-axis title 'Displacement' rotated to the left of the axis. One peak labelled 'crest' via a short leader line, one trough labelled 'trough'. A horizontal double-arrow span between two consecutive crests labelled 'wavelength'. A vertical double-arrow from the rest line up to one crest labelled 'amplitude'. Pure black 1pt line-art, sans-serif labels in 12pt. No equation written inside the image. UK GCSE Physics paper-1 visual style.",
-    "negative_prompt": "white background, solid fill, paper texture, gradient background, drop shadow, opaque canvas, text-heavy, formula card, paragraphs, equations inside image, watermarks, photorealistic 3D, AI artefacts, copyrighted logos, multiple overlapping waves, gradient fills",
-    "pointer_labels": ["crest", "trough", "wavelength", "amplitude", "Displacement", "Distance / m"],
-    "exam_paper_style_notes": "Pure black line-art on transparent canvas. 1pt strokes for the wave, 0.5pt for label leaders. Labels in 12pt sans-serif. Single wave only. RGBA PNG with alpha preserved.",
+    "image_gen_prompt": "Schematic line drawing of a transverse sine wave on a TRANSPARENT canvas (RGBA PNG, alpha channel preserved, no fill, no white background — for Manus Nano Banana Pro). Three full cycles visible, sweeping left to right. Black axes (#000) with arrowheads. X-axis title 'Distance / m' below the axis (single short label, not a sentence), y-axis title 'Displacement' rotated to the left of the axis. Place four small numbered tag circles (~14 px diameter, fill #1a1a1a, white bold sans-serif numerals) on the diagram: tag 1 at a peak, tag 2 at a trough, tag 3 spanning the horizontal distance between two consecutive crests with a double-arrow under the wave, tag 4 spanning vertically from the rest line to one crest. No text labels anywhere else in the image. No equation. 2048×2048 high-resolution, exam-paper line-art style.",
+    "negative_prompt": "white background, solid fill, paper texture, gradient background, drop shadow, opaque canvas, text labels, label words, paragraphs, sentences, equations inside image, formula card, watermarks, photorealistic 3D, AI artefacts, multiple overlapping waves",
+    "numbered_tags": [
+      { "n": 1, "label": "crest", "position_hint": "at the top of any peak of the wave" },
+      { "n": 2, "label": "trough", "position_hint": "at the bottom of any trough" },
+      { "n": 3, "label": "wavelength", "position_hint": "horizontal span between two consecutive crests, double-headed arrow" },
+      { "n": 4, "label": "amplitude", "position_hint": "vertical span from rest line to a crest, double-headed arrow" }
+    ],
+    "exam_paper_style_notes": "Pure black line-art on transparent canvas. 1pt strokes for the wave, 0.5pt for axis ticks. Axis titles are the only text in the image; everything else is numbered tags. RGBA PNG with alpha preserved.",
+    "qa_checklist": [
+      "Background is transparent — no white halo when overlaid on a coloured tint.",
+      "Single sine wave with three full cycles is visible.",
+      "Axes are black, arrowheads at both ends, axis titles 'Distance / m' and 'Displacement' present and legible.",
+      "Exactly four numbered tag circles (1, 2, 3, 4) are placed in the positions described above.",
+      "No other text, words or equations appear inside the canvas.",
+      "Output is at least 1024×1024 — lines look crisp at print scale."
+    ],
     "copyright_check": "PASS — original work"
   },
   {
@@ -425,14 +562,34 @@ Kimi should reply with:
     "year_band": "GCSE",
     "decision": "GENERATE",
     "diagram_family": "character-map",
-    "image_gen_prompt": "A character relationship map on a TRANSPARENT canvas (RGBA PNG, alpha channel preserved, no fill, no white background). Six dark grey silhouette portraits arranged in a loose hexagon — no faces, no facial features, plain solid silhouettes in `#1a1a1a`. Below each silhouette a small italic name label in 11pt sans-serif: 'Macbeth', 'Lady Macbeth', 'Banquo', 'Macduff', 'Duncan', 'The Witches'. Saturated coloured arrows connect them on top of any overlay tint: a thick red arrow from Macbeth to Duncan labelled 'murders', a black arrow Macbeth ↔ Lady Macbeth labelled 'married', a red arrow Macbeth → Banquo labelled 'murders', a red arrow Macbeth → Macduff's family labelled 'murders', a green arrow The Witches → Macbeth labelled 'prophesy'. No quotations from the play, no copyrighted text.",
-    "negative_prompt": "white background, solid fill, paper texture, opaque canvas, drop shadow, facial features, recognisable likenesses, text from the play, copyrighted typography, watermarks",
-    "pointer_labels": ["Macbeth", "Lady Macbeth", "Banquo", "Macduff", "Duncan", "The Witches", "married", "murders", "prophesy"],
-    "exam_paper_style_notes": "Silhouettes in dark grey #1a1a1a, arrows in saturated red/green/black 1.5pt strokes, name labels in 11pt sans-serif. Transparent canvas, RGBA PNG, alpha preserved.",
+    "image_gen_prompt": "Character relationship map on a TRANSPARENT canvas (RGBA PNG, alpha channel preserved, no fill, no white background — for Manus Nano Banana Pro). Six dark grey silhouette portraits arranged in a loose hexagon — no faces, no facial features, plain solid silhouettes in #1a1a1a. A small numbered tag circle (~14 px, dark fill, white bold sans-serif numeral) is placed BESIDE each silhouette: 1 through 6 in clockwise order from the top. Saturated coloured arrows connect the silhouettes — a thick red arrow, a black arrow, additional red and green arrows. A small numbered tag is placed on each arrow as well: 7 through 11. No text labels of any kind anywhere in the image — names and relationship words live in the worksheet key. No quotations from the play, no copyrighted text. 2048×2048 high-resolution.",
+    "negative_prompt": "white background, solid fill, paper texture, opaque canvas, drop shadow, facial features, recognisable likenesses, text labels, names written on image, copyrighted text from the play, copyrighted typography, watermarks",
+    "numbered_tags": [
+      { "n": 1, "label": "Macbeth", "position_hint": "silhouette at top of hexagon" },
+      { "n": 2, "label": "Lady Macbeth", "position_hint": "silhouette top-right" },
+      { "n": 3, "label": "Banquo", "position_hint": "silhouette bottom-right" },
+      { "n": 4, "label": "Macduff", "position_hint": "silhouette bottom" },
+      { "n": 5, "label": "Duncan", "position_hint": "silhouette bottom-left" },
+      { "n": 6, "label": "The Witches", "position_hint": "silhouette top-left" },
+      { "n": 7, "label": "married — Macbeth ↔ Lady Macbeth", "position_hint": "black arrow between 1 and 2" },
+      { "n": 8, "label": "murders — Macbeth → Duncan", "position_hint": "red arrow from 1 to 5" },
+      { "n": 9, "label": "murders — Macbeth → Banquo", "position_hint": "red arrow from 1 to 3" },
+      { "n": 10, "label": "murders — Macbeth → Macduff's family", "position_hint": "red arrow from 1 to 4" },
+      { "n": 11, "label": "prophesy — Witches → Macbeth", "position_hint": "green arrow from 6 to 1" }
+    ],
+    "exam_paper_style_notes": "Silhouettes in dark grey #1a1a1a, arrows in saturated red/green/black 1.5pt strokes. No text in image — all naming via numbered tags + worksheet key. Transparent canvas, RGBA PNG.",
+    "qa_checklist": [
+      "Background is transparent — no white rectangle behind the silhouettes.",
+      "Six silhouettes are present, all faceless and identical in style, arranged in a recognisable hexagon.",
+      "Five arrows present in the correct colours: 1 black, 3 red, 1 green.",
+      "Eleven numbered tag circles (1–11) are placed correctly, six on silhouettes and five on arrows.",
+      "No copyrighted text from the play appears anywhere on the image.",
+      "Silhouettes show no facial features or identifying details."
+    ],
     "copyright_check": "PASS — silhouette/homage only"
   }
 ]
-BATCH COMPLETE — send next batch
+BATCH COMPLETE — send next batch, or paste 'REGENERATE: <ids>' with one-line reasons to fix any failed images.
 ```
 
 You feed `image_gen_prompt` (when present) to Manus, save the
