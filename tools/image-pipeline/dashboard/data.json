@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-05-27T04:06:47.236Z",
+  "updatedAt": "2026-05-27T04:24:40.906Z",
   "counts": {
     "total": 5975,
     "done": 0,
     "svg-rendered": 44,
-    "pending": 5775,
-    "ai-failed": 6,
-    "provider-out": 150,
+    "pending": 5725,
+    "ai-failed": 7,
+    "provider-out": 199,
     "skipped": 0
   },
   "byPhase": [
@@ -14,8 +14,8 @@
       "phase": "GCSE",
       "total": 1988,
       "done": 0,
-      "pending": 1938,
-      "failed": 50
+      "pending": 1888,
+      "failed": 100
     },
     {
       "phase": "KS3",
