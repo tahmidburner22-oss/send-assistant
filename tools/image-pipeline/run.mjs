@@ -41,6 +41,7 @@ import {
   set as setRow,
   pickBatch,
   summarise,
+  summariseByPhase,
 } from "./state.mjs";
 import {
   loadFeedback,
@@ -268,10 +269,12 @@ async function writeDashboardData(state, catalogue) {
       };
     });
   const taxonomy = summariseStrategies(catalogue);
+  const byPhase = summariseByPhase(state, catalogue);
 
   const data = {
     updatedAt: new Date().toISOString(),
     counts,
+    byPhase,
     taxonomy,
     recent,
     browse,
