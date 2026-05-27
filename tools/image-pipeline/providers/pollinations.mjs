@@ -22,6 +22,18 @@ export async function generate({ positive, negative, width, height, seed, attemp
 
   const res = await fetchWithTimeout(url, 120_000);
   if (!res.ok) {
+    // Pollinations switched parts of its API to paid tiers in 2026; a
+    // 402 means "needs a paid token", not a transient error. Surface
+    // that clearly so the runner skips this provider faster on the
+    // next batch instead of retrying.
+    if (res.status === 402) {
+      throw new Error(
+        "pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.",
+      );
+    }
+    if (res.status === 429) {
+      throw new Error("pollinations: HTTP 429 — rate-limited; will retry next batch.");
+    }
     throw new Error(`pollinations: HTTP ${res.status}`);
   }
   const ct = res.headers.get("content-type") || "";

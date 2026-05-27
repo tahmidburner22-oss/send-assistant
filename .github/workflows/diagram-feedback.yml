@@ -1,0 +1,117 @@
+# Diagram feedback — process teacher feedback issues.
+#
+# When a teacher submits feedback via the dashboard, the dashboard opens
+# a pre-filled GitHub Issue with the `diagram-feedback` label. This
+# workflow runs on issue creation, parses the issue body, appends entries
+# to tools/image-pipeline/feedback.json, commits, and triggers a
+# pipeline batch so the flagged images regenerate without waiting for
+# the next 30-minute cron.
+#
+# Issue body format (written by the dashboard):
+#
+#   <!-- DIAGRAM-FEEDBACK v1
+#   {"entries": [
+#     {"id": "pdl-0042", "flaws": ["too-much-text"], "note": "..."},
+#     ...
+#   ]}
+#   -->
+#
+#   ...human-readable body for the GitHub UI follows...
+#
+# Anything between the JSON markers is considered authoritative; the
+# rest is ignored.
+
+name: Diagram feedback
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+jobs:
+  process:
+    name: Process feedback issue
+    if: contains(github.event.issue.labels.*.name, 'diagram-feedback')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Append feedback entries
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: node .github/scripts/process-diagram-feedback.mjs
+
+      - name: Commit feedback queue
+        run: |
+          git config user.name  "diagram-pipeline-bot"
+          git config user.email "diagram-pipeline-bot@users.noreply.github.com"
+          git add tools/image-pipeline/feedback.json
+          if git diff --cached --quiet; then
+            echo "No new feedback to commit."
+          else
+            git commit -m "feedback: queue from issue #${{ github.event.issue.number }}"
+            git push
+          fi
+
+      - name: Comment on the issue
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const queue = JSON.parse(fs.readFileSync('tools/image-pipeline/feedback.json', 'utf8'));
+            const justAdded = (queue.entries || [])
+              .filter(e => e.issueNumber === context.issue.number);
+            const ids = justAdded.map(e => `\`${e.id}\``).join(', ') || '_none recognised_';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                `Thanks — feedback received and queued for the next pipeline run.`,
+                ``,
+                `**Diagrams queued for regeneration:** ${ids}`,
+                ``,
+                `Triggering a pipeline run now. You can also watch the [dashboard](https://${context.repo.owner}.github.io/${context.repo.repo}/) for live progress.`,
+              ].join('\n'),
+            });
+
+      - name: Trigger pipeline batch
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'diagram-image-pipeline.yml',
+              ref: 'main',
+              inputs: { batch: '50', concurrency: '4' },
+            });
+
+      - name: Close the issue
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed',
+              state_reason: 'completed',
+            });
