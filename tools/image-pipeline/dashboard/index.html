@@ -14,6 +14,7 @@
         --warn: #f4c430;
         --bad: #e63946;
         --border: #e5e7eb;
+        --selected: #1d7bd9;
         --radius: 12px;
       }
       * { box-sizing: border-box; }
@@ -31,10 +32,14 @@
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 12px;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 10;
       }
       header h1 { margin: 0; font-size: 24px; }
       header .meta { color: var(--muted); font-size: 14px; }
-      main { padding: 24px 32px; max-width: 1280px; margin: 0 auto; }
+      main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; padding-bottom: 140px; }
       section { margin-bottom: 36px; }
       section h2 {
         font-size: 18px; margin: 0 0 12px;
@@ -60,9 +65,41 @@
       .progress .provider-out { background: var(--warn); }
       .progress .pending { background: #e5e7eb; }
 
+      .controls {
+        display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+        align-items: center;
+      }
+      .controls input[type="search"] {
+        flex: 1; min-width: 220px; padding: 8px 12px;
+        border: 1px solid var(--border); border-radius: 8px; font: inherit;
+      }
+      .controls select {
+        padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+        font: inherit; background: #fff;
+      }
+      .controls button {
+        padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+        font: inherit; background: #fff; cursor: pointer;
+      }
+      .controls button.primary {
+        background: var(--fg); color: #fff; border-color: var(--fg);
+      }
+
       .card {
-        border: 1px solid var(--border); border-radius: var(--radius);
+        border: 2px solid var(--border); border-radius: var(--radius);
         background: #fff; overflow: hidden; display: flex; flex-direction: column;
+        position: relative; cursor: pointer; transition: border-color 80ms;
+      }
+      .card.selected { border-color: var(--selected); }
+      .card .checkbox {
+        position: absolute; top: 8px; left: 8px;
+        width: 26px; height: 26px; border-radius: 6px;
+        background: rgba(255,255,255,0.92); border: 2px solid var(--fg);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; color: var(--fg);
+      }
+      .card.selected .checkbox {
+        background: var(--selected); color: #fff; border-color: var(--selected);
       }
       .card img {
         width: 100%; aspect-ratio: 1 / 1; object-fit: contain;
@@ -91,13 +128,47 @@
       .btn {
         display: inline-block; padding: 10px 16px; border-radius: 8px;
         background: var(--fg); color: #fff; text-decoration: none;
-        font-weight: 600; font-size: 14px;
+        font-weight: 600; font-size: 14px; cursor: pointer; border: none;
       }
       .btn.alt { background: var(--primary); }
+      .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
       .empty { color: var(--muted); padding: 12px; }
       footer {
         padding: 20px 32px; color: var(--muted); font-size: 12px;
         border-top: 1px solid var(--border); text-align: center;
+      }
+
+      /* Feedback bar — fixed to bottom of viewport when 1+ selected */
+      #feedback-bar {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: #fff; border-top: 2px solid var(--fg);
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+        padding: 14px 24px; display: none; z-index: 20;
+      }
+      #feedback-bar.visible { display: block; }
+      #feedback-bar .inner {
+        max-width: 1400px; margin: 0 auto;
+        display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;
+      }
+      #feedback-bar .count {
+        font-weight: 700; font-size: 18px; padding: 8px 14px;
+        background: var(--fg); color: #fff; border-radius: 8px;
+      }
+      #feedback-bar .chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 280px; }
+      #feedback-bar .chip {
+        padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+        background: #fff; font-size: 13px; cursor: pointer;
+        user-select: none;
+      }
+      #feedback-bar .chip.on {
+        background: var(--bad); color: #fff; border-color: var(--bad);
+      }
+      #feedback-bar textarea {
+        flex-basis: 100%; padding: 8px 12px; border: 1px solid var(--border);
+        border-radius: 8px; font: inherit; resize: vertical; min-height: 44px;
+      }
+      #feedback-bar .submit {
+        background: var(--bad);
       }
     </style>
   </head>
@@ -120,8 +191,22 @@
       </section>
 
       <section>
-        <h2>Latest images</h2>
-        <div class="grid cols-3" id="recent"></div>
+        <h2>Browse images — click to select, then mark flaws below</h2>
+        <div class="controls">
+          <input id="search" type="search" placeholder="Search title, subject, topic, year group…" />
+          <select id="filter-subject"><option value="">All subjects</option></select>
+          <select id="filter-year"><option value="">All year groups</option></select>
+          <select id="filter-strategy">
+            <option value="">All types</option>
+            <option value="svg">SVG (deterministic)</option>
+            <option value="ai-structural">AI structural</option>
+            <option value="ai-pictorial">AI pictorial</option>
+          </select>
+          <button id="select-all">Select all on page</button>
+          <button id="clear-selection">Clear selection</button>
+        </div>
+        <div class="grid cols-3" id="browse"></div>
+        <div style="margin-top: 14px; text-align: center;" id="pagination"></div>
       </section>
 
       <section class="failures">
@@ -134,19 +219,30 @@
         <div class="grid cols-3" id="taxonomy"></div>
       </section>
     </main>
+
+    <!-- Feedback bar (appears when one or more cards are selected) -->
+    <div id="feedback-bar" aria-live="polite">
+      <div class="inner">
+        <div class="count"><span id="selected-count">0</span> selected</div>
+        <div class="chips" id="flaw-chips"></div>
+        <textarea id="user-note" placeholder="Optional note: anything else to fix? (max 400 chars)" maxlength="400"></textarea>
+        <button class="btn submit" id="submit-feedback">Submit feedback for these images</button>
+      </div>
+    </div>
+
     <footer>
-      Pipeline runs every 30 minutes via GitHub Actions. SVG diagrams are 100% accurate by construction; AI diagrams pass white-background, low-text, and spec-compliance QA before they ship. See <code>tools/image-pipeline/HOW-TO-USE.md</code>.
+      Pipeline runs every 30 minutes via GitHub Actions. SVG diagrams are 100% accurate by construction; AI diagrams pass white-background, low-text and spec-compliance QA before they ship. See <code>tools/image-pipeline/HOW-TO-USE.md</code>.
     </footer>
 
     <script>
-      // Repo configuration. Replace OWNER/REPO if you fork.
+      // ──────────────────────────────────────────────────────────────
+      // Repo configuration. Auto-detects on GitHub Pages.
+      // ──────────────────────────────────────────────────────────────
       const REPO = (function () {
-        // Auto-detect GitHub Pages context.
         const m = location.host.match(/^([^.]+)\.github\.io$/);
         if (m) {
           const seg = location.pathname.split("/").filter(Boolean);
-          const repo = seg[0] || "";
-          return { owner: m[1], repo };
+          return { owner: m[1], repo: seg[0] || "" };
         }
         return { owner: "tahmidburner22-oss", repo: "send-assistant" };
       })();
@@ -157,9 +253,39 @@
         `https://github.com/${REPO.owner}/${REPO.repo}/settings/secrets/actions`;
       const RAW_BASE =
         `https://raw.githubusercontent.com/${REPO.owner}/${REPO.repo}/main`;
+      const ISSUE_NEW_URL =
+        `https://github.com/${REPO.owner}/${REPO.repo}/issues/new`;
 
       document.getElementById("run-now").href = RUN_NOW_URL;
       document.getElementById("settings").href = SETTINGS_URL;
+
+      // ──────────────────────────────────────────────────────────────
+      // Flaw vocabulary — must be kept in sync with flaws.mjs.
+      // ──────────────────────────────────────────────────────────────
+      const FLAWS = [
+        { code: "too-much-text",         label: "Too much text" },
+        { code: "background-not-white",  label: "Background not white" },
+        { code: "wrong-subject",         label: "Wrong subject" },
+        { code: "spec-mismatch",         label: "Doesn't match brief" },
+        { code: "too-cluttered",         label: "Too cluttered" },
+        { code: "low-contrast",          label: "Low contrast / thin outlines" },
+        { code: "photorealistic",        label: "Photorealistic / 3D" },
+        { code: "wrong-style",           label: "Wrong style" },
+        { code: "wrong-colours",         label: "Wrong colours" },
+        { code: "multiple-subjects",     label: "Too many subjects" },
+        { code: "low-quality",           label: "Low quality / messy" },
+        { code: "anatomy-wrong",         label: "Anatomy wrong" },
+      ];
+
+      // ──────────────────────────────────────────────────────────────
+      // State (client-side only; no auth required).
+      // ──────────────────────────────────────────────────────────────
+      const PAGE_SIZE = 60;
+      let allBrowse = [];
+      let filtered = [];
+      let page = 0;
+      const selected = new Set();
+      const activeFlaws = new Set();
 
       function $(id) { return document.getElementById(id); }
       function el(tag, cls, html) {
@@ -169,6 +295,7 @@
         return e;
       }
 
+      // ── Top stats ────────────────────────────────────────────────
       function renderProgress(counts) {
         const total = counts.total || 1;
         const bar = $("progress-bar");
@@ -186,7 +313,6 @@
           s.title = `${cls}: ${n}`;
           bar.appendChild(s);
         }
-
         const stats = $("stats");
         stats.innerHTML = "";
         const ordered = [
@@ -205,56 +331,208 @@
         }
       }
 
-      function renderRecent(recent) {
-        const container = $("recent");
+      // ── Filters ─────────────────────────────────────────────────
+      function populateFilters(rows) {
+        const subj = new Set(), yrs = new Set();
+        for (const r of rows) {
+          if (r.subject) subj.add(r.subject);
+          if (r.yearGroup) yrs.add(r.yearGroup);
+        }
+        const subjEl = $("filter-subject");
+        subjEl.innerHTML = '<option value="">All subjects</option>';
+        for (const s of [...subj].sort()) {
+          subjEl.appendChild(el("option", null, s)).value = s;
+        }
+        const yrEl = $("filter-year");
+        yrEl.innerHTML = '<option value="">All year groups</option>';
+        for (const y of [...yrs].sort()) {
+          yrEl.appendChild(el("option", null, y)).value = y;
+        }
+      }
+
+      function applyFilters() {
+        const q = $("search").value.trim().toLowerCase();
+        const fSubj = $("filter-subject").value;
+        const fYear = $("filter-year").value;
+        const fStrat = $("filter-strategy").value;
+        filtered = allBrowse.filter((r) => {
+          if (fSubj && r.subject !== fSubj) return false;
+          if (fYear && r.yearGroup !== fYear) return false;
+          if (fStrat && r.strategy !== fStrat) return false;
+          if (q) {
+            const hay = `${r.title} ${r.subject} ${r.topic} ${r.id}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        });
+        page = 0;
+        renderBrowse();
+      }
+
+      // ── Browse grid + pagination ────────────────────────────────
+      function renderBrowse() {
+        const container = $("browse");
         container.innerHTML = "";
-        if (!recent.length) {
-          container.appendChild(el("div", "empty", "No images generated yet."));
+        if (!filtered.length) {
+          container.appendChild(el("div", "empty", "No images match the current filters yet. The pipeline runs every 30 minutes — check back soon."));
+          $("pagination").innerHTML = "";
           return;
         }
-        for (const r of recent) {
-          const card = el("div", "card");
+        const start = page * PAGE_SIZE;
+        const slice = filtered.slice(start, start + PAGE_SIZE);
+        for (const r of slice) {
+          const card = el("div", "card" + (selected.has(r.id) ? " selected" : ""));
+          card.dataset.id = r.id;
+          card.appendChild(el("div", "checkbox", selected.has(r.id) ? "✓" : ""));
           const img = el("img");
           img.src = `${RAW_BASE}/client/public${r.imagePath}`;
           img.alt = r.title;
           img.loading = "lazy";
           card.appendChild(img);
           const body = el("div", "body");
-          body.appendChild(
-            el("div", "title", `${r.title.replace(/</g, "&lt;")}`)
-          );
-          body.appendChild(
-            el("div", "meta", `${r.subject} · ${r.topic || ""}`)
-          );
-          const pill = el("span", `pill ${r.strategy}`, r.strategy);
-          body.appendChild(pill);
+          body.appendChild(el("div", "title", escapeHtml(r.title)));
+          const m = [];
+          if (r.subject) m.push(escapeHtml(r.subject));
+          if (r.topic) m.push(escapeHtml(r.topic));
+          if (r.yearGroup) m.push(escapeHtml(r.yearGroup));
+          body.appendChild(el("div", "meta", m.join(" · ")));
+          if (r.strategy) {
+            body.appendChild(el("span", `pill ${r.strategy}`, r.strategy));
+          }
           if (r.provider) {
             body.appendChild(el("span", "meta", ` · ${r.provider}`));
           }
           card.appendChild(body);
+          card.addEventListener("click", () => toggleSelect(r.id));
           container.appendChild(card);
+        }
+        renderPagination();
+      }
+
+      function renderPagination() {
+        const total = Math.ceil(filtered.length / PAGE_SIZE);
+        const p = $("pagination");
+        p.innerHTML = "";
+        if (total <= 1) return;
+        const prev = el("button", null, "‹ Prev"); prev.className = "";
+        prev.style.cssText = "padding:6px 12px;margin:0 6px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;";
+        if (page === 0) prev.disabled = true;
+        prev.addEventListener("click", () => { page--; renderBrowse(); window.scrollTo(0, 0); });
+        const next = el("button", null, "Next ›"); next.style.cssText = prev.style.cssText;
+        if (page >= total - 1) next.disabled = true;
+        next.addEventListener("click", () => { page++; renderBrowse(); window.scrollTo(0, 0); });
+        const info = el("span", "meta", ` Page ${page + 1} of ${total} (${filtered.length} images) `);
+        info.style.cssText = "color: var(--muted); font-size: 13px; margin: 0 12px;";
+        p.appendChild(prev);
+        p.appendChild(info);
+        p.appendChild(next);
+      }
+
+      function toggleSelect(id) {
+        if (selected.has(id)) selected.delete(id);
+        else selected.add(id);
+        renderBrowse();
+        renderFeedbackBar();
+      }
+
+      // ── Feedback bar ────────────────────────────────────────────
+      function renderFeedbackBar() {
+        const bar = $("feedback-bar");
+        $("selected-count").textContent = selected.size;
+        bar.classList.toggle("visible", selected.size > 0);
+        // chips
+        const chips = $("flaw-chips");
+        if (chips.children.length === 0) {
+          for (const f of FLAWS) {
+            const c = el("span", "chip", f.label);
+            c.dataset.code = f.code;
+            c.addEventListener("click", () => {
+              if (activeFlaws.has(f.code)) activeFlaws.delete(f.code);
+              else activeFlaws.add(f.code);
+              c.classList.toggle("on", activeFlaws.has(f.code));
+            });
+            chips.appendChild(c);
+          }
         }
       }
 
+      function submitFeedback() {
+        if (selected.size === 0) return;
+        if (activeFlaws.size === 0 && !$("user-note").value.trim()) {
+          alert("Pick at least one flaw chip or write a note before submitting.");
+          return;
+        }
+        const ids = [...selected];
+        const flaws = [...activeFlaws];
+        const note = $("user-note").value.trim();
+        const entries = ids.map((id) => ({ id, flaws, note }));
+        const payload = { entries };
+        const jsonBlock = `<!-- DIAGRAM-FEEDBACK v1\n${JSON.stringify(payload)}\n-->`;
+        const flawsHuman = flaws.map((c) => FLAWS.find((f) => f.code === c)?.label || c).join(", ") || "(none)";
+        const body =
+          `${jsonBlock}\n\n` +
+          `**Diagrams to regenerate (${ids.length}):** ${ids.join(", ")}\n\n` +
+          `**Flaws to fix:** ${flawsHuman}\n\n` +
+          (note ? `**Teacher note:** ${note}\n\n` : "") +
+          `_This issue was created from the pipeline dashboard. The diagram-feedback workflow will queue these images for regeneration with the flaws above applied to the prompt._\n`;
+
+        const title = `Diagram feedback: ${ids.length} image${ids.length === 1 ? "" : "s"} flagged`;
+        const url =
+          `${ISSUE_NEW_URL}?` +
+          `labels=diagram-feedback` +
+          `&title=${encodeURIComponent(title)}` +
+          `&body=${encodeURIComponent(body)}`;
+
+        // GitHub URL length limit ~8KB. If we're over, fall back to
+        // copying the JSON to the clipboard.
+        if (url.length > 7800) {
+          navigator.clipboard.writeText(jsonBlock).then(
+            () =>
+              alert(
+                `Selected ${ids.length} images, which is too many for a pre-filled URL.\n\nI've copied the JSON block to your clipboard. Open a new GitHub Issue, paste it into the body, add the label \"diagram-feedback\", and submit.`,
+              ),
+            () => alert("Selection too large for URL pre-fill — submit in smaller batches (≈100 images at a time)."),
+          );
+          return;
+        }
+        window.open(url, "_blank");
+      }
+
+      $("submit-feedback").addEventListener("click", submitFeedback);
+      $("select-all").addEventListener("click", () => {
+        const start = page * PAGE_SIZE;
+        const slice = filtered.slice(start, start + PAGE_SIZE);
+        for (const r of slice) selected.add(r.id);
+        renderBrowse();
+        renderFeedbackBar();
+      });
+      $("clear-selection").addEventListener("click", () => {
+        selected.clear();
+        activeFlaws.clear();
+        document.querySelectorAll("#flaw-chips .chip.on").forEach((c) => c.classList.remove("on"));
+        $("user-note").value = "";
+        renderBrowse();
+        renderFeedbackBar();
+      });
+      $("search").addEventListener("input", () => applyFilters());
+      $("filter-subject").addEventListener("change", () => applyFilters());
+      $("filter-year").addEventListener("change", () => applyFilters());
+      $("filter-strategy").addEventListener("change", () => applyFilters());
+
+      // ── Failures + taxonomy ─────────────────────────────────────
       function renderFailures(failures) {
         const container = $("failures");
         container.innerHTML = "";
         if (!failures.length) {
-          container.appendChild(
-            el("div", "empty", "No failures right now. Nice.")
-          );
+          container.appendChild(el("div", "empty", "No failures right now. Nice."));
           return;
         }
-        for (const f of failures) {
+        for (const f of failures.slice(0, 24)) {
           const row = el("div", "row");
           row.appendChild(
-            el(
-              "div",
-              "title",
-              `<strong>${f.title}</strong> <span class="meta">${f.subject || ""}</span>`
-            )
+            el("div", "title", `<strong>${escapeHtml(f.title)}</strong> <span class="meta">${escapeHtml(f.subject || "")}</span>`),
           );
-          row.appendChild(el("div", "err", f.lastError || f.status));
+          row.appendChild(el("div", "err", escapeHtml(f.lastError || f.status)));
           container.appendChild(row);
         }
       }
@@ -263,9 +541,9 @@
         const container = $("taxonomy");
         container.innerHTML = "";
         const entries = [
-          ["SVG (deterministic, 100% accurate)", t.summary.svg],
-          ["AI structural (labelled diagrams)", t.summary["ai-structural"]],
-          ["AI pictorial (illustrations)", t.summary["ai-pictorial"]],
+          ["SVG (deterministic, 100% accurate)", t.summary.svg || 0],
+          ["AI structural (labelled diagrams)", t.summary["ai-structural"] || 0],
+          ["AI pictorial (illustrations)", t.summary["ai-pictorial"] || 0],
         ];
         for (const [label, n] of entries) {
           const c = el("div", "stat");
@@ -275,6 +553,15 @@
         }
       }
 
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      // ── Boot ────────────────────────────────────────────────────
       async function load() {
         try {
           const res = await fetch("./data.json", { cache: "no-store" });
@@ -283,9 +570,12 @@
           $("updated-at").textContent =
             "Last updated " + new Date(data.updatedAt).toLocaleString();
           renderProgress(data.counts);
-          renderRecent(data.recent || []);
+          allBrowse = data.browse || data.recent || [];
+          populateFilters(allBrowse);
+          applyFilters();
           renderFailures(data.failures || []);
           renderTaxonomy(data.taxonomy || { summary: {} });
+          renderFeedbackBar();
         } catch (err) {
           $("updated-at").textContent =
             "No pipeline run yet. Trigger the first run with the button above.";
