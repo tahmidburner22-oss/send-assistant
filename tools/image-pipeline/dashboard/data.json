@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-05-27T05:05:48.541Z",
+  "updatedAt": "2026-05-27T05:33:06.063Z",
   "counts": {
     "total": 5975,
     "done": 0,
     "svg-rendered": 44,
-    "pending": 5874,
-    "ai-failed": 9,
-    "provider-out": 48,
+    "pending": 5872,
+    "ai-failed": 10,
+    "provider-out": 49,
     "skipped": 0
   },
   "byPhase": [
@@ -14,8 +14,8 @@
       "phase": "GCSE",
       "total": 1988,
       "done": 0,
-      "pending": 1935,
-      "failed": 53
+      "pending": 1933,
+      "failed": 55
     },
     {
       "phase": "KS3",
@@ -935,28 +935,28 @@
       "title": "Surd simplification — √128 to 8√2",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3257225176\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00888",
       "title": "Surd simplification — √72 to 6√2",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2830290015\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00886",
       "title": "Surd rule — √(ab) = √a × √b (worked: √50 = √25 × √2 = 5√2)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00891",
       "title": "Adding surds — 3√2 + 5√2 = 8√2",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2520765384\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00892",
@@ -970,14 +970,14 @@
       "title": "Surd simplification — √200 to 10√2",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00893",
       "title": "Multiplying surds — (2√3)(5√2) = 10√6",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00894",
@@ -991,21 +991,21 @@
       "title": "Rationalising the denominator — 5/(2√7) = 5√7/14",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00896",
       "title": "Rationalising — conjugate method (1/(2 + √3))",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 4141288121\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00897",
       "title": "Surd in coordinates — distance √2 between (1,1) and (2,2)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 4238469882\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00887",
@@ -1019,259 +1019,259 @@
       "title": "Index law — a^m ÷ a^n = a^(m−n)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00900",
       "title": "Index law — (a^m)^n = a^(mn)",
       "subject": "Mathematics",
-      "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2210678745\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "status": "ai-failed",
+      "lastError": "qa-rejected-after-retries"
     },
     {
       "id": "dlc-00901",
       "title": "Index law — a^0 = 1",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2287072154\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00902",
       "title": "Index law — a^(−n) = 1/a^n",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00903",
       "title": "Index law — a^(1/n) = ⁿ√a",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00904",
       "title": "Index law — a^(m/n) = (ⁿ√a)^m",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3897631037\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00905",
       "title": "Standard form — 4.5 × 10^6 to ordinary number",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3437140638\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00906",
       "title": "Standard form — 0.000 23 to 2.3 × 10^−4",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00907",
       "title": "Standard form — multiplying (3 × 10^4)(2 × 10^3) = 6 × 10^7",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00908",
       "title": "Standard form — dividing (8 × 10^9) ÷ (4 × 10^4) = 2 × 10^5",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00910",
       "title": "Factorising — x² + 5x + 6 = (x + 2)(x + 3)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3035801140\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00909",
       "title": "Standard form — adding with same exponent",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00911",
       "title": "Factorising — x² − 7x + 12 = (x − 3)(x − 4)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00912",
       "title": "Factorising — x² + 2x − 15 = (x + 5)(x − 3)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00913",
       "title": "Factorising difference of two squares — x² − 49 = (x + 7)(x − 7)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00914",
       "title": "Factorising difference of two squares — 9x² − 16 = (3x + 4)(3x − 4)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 4185869624\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00916",
       "title": "Factorising harder — 6x² − 13x + 6 = (2x − 3)(3x − 2)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2737886958\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00915",
       "title": "Factorising harder — 2x² + 7x + 3 = (2x + 1)(x + 3)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00917",
       "title": "Solving by factorising — x² − 5x + 6 = 0",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3198377357\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00918",
       "title": "Quadratic formula card — x = (−b ± √(b² − 4ac)) / 2a",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2343652572\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00919",
       "title": "Quadratic formula worked — 2x² + 3x − 5 = 0",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00920",
       "title": "Completing the square — x² + 6x + 5 → (x + 3)² − 4",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3524679607\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00921",
       "title": "Completing the square — 2x² − 8x + 6 → 2(x − 2)² − 2",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2815255728\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00922",
       "title": "Discriminant — b² − 4ac and root counts (3 cases)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00923",
       "title": "Quadratic graph — y = x², parabola through origin",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00924",
       "title": "Quadratic graph — y = (x − 2)² + 1, vertex translation",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00925",
       "title": "Quadratic graph — y = −x² + 4, downward parabola",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00926",
       "title": "Quadratic graph — roots from intersection with x-axis",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00927",
       "title": "Quadratic graph — turning point and axis of symmetry labelled",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00929",
       "title": "Linear simultaneous — substitution method (y = 2x + 1, 3x + y = 13)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3486615944\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00928",
       "title": "Linear simultaneous — elimination method (3x + 2y = 12, x − y = 1)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00930",
       "title": "Linear simultaneous — graphical solution intersection",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3812918194\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00931",
       "title": "Linear simultaneous — same gradient (no solution) graph",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 4273408593\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00932",
       "title": "Linear simultaneous — coincident lines (infinite solutions)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00933",
       "title": "Quadratic and linear simultaneous — y = x² and y = x + 2",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00934",
       "title": "Word problem — coffee and tea pricing simultaneous",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 2815554614\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00935",
       "title": "Word problem — perimeter and area simultaneous",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 400: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 400,\\n    \\\"message\\\": \\\"Invalid value at 'generation_config.seed' (TYPE_INT32), 3276045013\\\",\\n    \\\"status\\\": \\\"INVALID_ARGUMENT\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.BadRequest\\\",\\n  \"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00898",
@@ -1281,18 +1281,32 @@
       "lastError": "tjs.recognize is not a function"
     },
     {
+      "id": "dlc-00938",
+      "title": "Linear inequality — −1 < x ≤ 4 number line",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+    },
+    {
       "id": "dlc-00936",
       "title": "Linear inequality — x > 3 number line",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00937",
       "title": "Linear inequality — x ≤ −2 number line (closed circle)",
       "subject": "Mathematics",
       "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+    },
+    {
+      "id": "dlc-00939",
+      "title": "Solving inequality — 3x + 5 > 14 worked",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
     },
     {
       "id": "dlc-00940",
