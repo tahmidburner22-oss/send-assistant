@@ -1,0 +1,122 @@
+# One-shot diagnostic. Manually trigger from the Actions tab to verify
+# the Gemini key is (a) reaching the workflow and (b) actually valid.
+#
+# Reports for the GEMINI_API_KEY secret:
+#   - Whether the secret is visible to the workflow (set / MISSING)
+#   - Length and a SHA-256 fingerprint (so we can tell two keys apart
+#     without ever printing either)
+#   - Whether the value starts with "AIza" (genuine Google AI Studio
+#     keys all start with that prefix; if it doesn't, the wrong value
+#     was pasted)
+#   - Live HTTP status from Google's models.list endpoint, which tells
+#     us the key actually works
+#
+# Nothing is committed. Nothing is generated. The whole run takes ~10
+# seconds.
+
+name: Test Gemini API key
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Verify GEMINI_API_KEY
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Inspect the secret
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "::group::1. Secret visibility"
+          if [ -n "$GEMINI_API_KEY" ]; then
+            echo "✅ GEMINI_API_KEY is visible to this workflow."
+            echo "   Length: ${#GEMINI_API_KEY} characters"
+            # SHA-256 fingerprint — one-way, safe to print, lets us
+            # confirm the SAME secret keeps being read across runs.
+            FP=$(printf '%s' "$GEMINI_API_KEY" | sha256sum | cut -c1-12)
+            echo "   Fingerprint: $FP (first 12 chars of SHA-256)"
+            # Detect Google AI Studio key prefix without printing the key.
+            # We use a substring match that the GitHub log redactor will
+            # not be able to mask because we never print the value.
+            case "$GEMINI_API_KEY" in
+              AIza*) echo "   Format: starts with 'AIza' — looks like a real Google AI Studio key" ;;
+              sk-*)  echo "   ⚠️  Format: starts with 'sk-' — this looks like an OpenAI key, not a Google key. Get a Google key at https://aistudio.google.com/app/apikey" ;;
+              *)     echo "   ⚠️  Format: does NOT start with 'AIza'. Google AI Studio keys always start with 'AIza'. The wrong value was pasted." ;;
+            esac
+          else
+            echo "❌ GEMINI_API_KEY is MISSING — the secret is not visible to this workflow."
+            echo ""
+            echo "Most common causes:"
+            echo "  1. Secret added to the wrong scope. It MUST be at:"
+            echo "     Settings → Secrets and variables → Actions → 'Repository secrets' tab"
+            echo "     NOT 'Codespaces secrets' (different feature)"
+            echo "     NOT 'Dependabot secrets' (different feature)"
+            echo "     NOT 'Environment secrets' (different feature)"
+            echo "  2. Invisible character in the secret name. Delete and re-type it."
+            echo "  3. Repository was forked and secrets weren't copied over."
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      - name: Call Google's API to verify the key works
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then exit 1; fi
+          echo "::group::2. Live test against Google AI"
+          # models.list is a cheap, free endpoint that proves the key
+          # is valid AND has access to the Generative Language API.
+          # We capture status separately so the body never reveals
+          # the (already-masked) URL.
+          STATUS=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+            "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API_KEY")
+          echo "HTTP status: $STATUS"
+          case "$STATUS" in
+            200)
+              echo "✅ Key is VALID and has API access."
+              echo ""
+              # Confirm the image-gen model is in the user's available list.
+              if grep -q 'gemini-2.5-flash-image' /tmp/resp.json; then
+                echo "✅ Nano Banana (gemini-2.5-flash-image) is available to this key."
+                echo ""
+                echo "If pipeline runs are still producing 'provider-out' errors"
+                echo "after this passes, the issue is somewhere else — check the"
+                echo "main pipeline run log for the 'Provider key diagnostic'"
+                echo "step and the active provider chain."
+              else
+                echo "⚠️  Nano Banana model not visible to this key. Models available:"
+                jq -r '.models[]?.name // empty' /tmp/resp.json | head -20 || true
+              fi
+              ;;
+            400)
+              echo "❌ HTTP 400. The key is being rejected. Check the body:"
+              jq -r '.error.message // .' /tmp/resp.json | head -5
+              echo ""
+              echo "Common causes:"
+              echo "  • Generative Language API not enabled on the Google project"
+              echo "    → https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview"
+              ;;
+            401|403)
+              echo "❌ HTTP $STATUS. The key is invalid or revoked."
+              jq -r '.error.message // .' /tmp/resp.json | head -5
+              echo ""
+              echo "Generate a fresh key at https://aistudio.google.com/app/apikey"
+              echo "then update the GEMINI_API_KEY secret with the new value."
+              exit 1
+              ;;
+            429)
+              echo "⚠️  HTTP 429. Free-tier daily quota exhausted (~500 RPD)."
+              echo "Wait 24h, or upgrade the project to a paid Google Cloud account."
+              ;;
+            *)
+              echo "❌ HTTP $STATUS. Unexpected response. Body:"
+              cat /tmp/resp.json | head -20
+              exit 1
+              ;;
+          esac
+          echo "::endgroup::"
