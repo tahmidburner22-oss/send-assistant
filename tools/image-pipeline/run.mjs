@@ -327,12 +327,12 @@ async function main() {
       .join(" ")}`,
   );
   log.info(`Active provider chain: ${providers.activeChain().join(" → ")}`);
-  if (
-    !keyStatus.GEMINI_API_KEY &&
-    !keyStatus.TOGETHER_API_KEY &&
-    !keyStatus.CLOUDFLARE_AI_TOKEN &&
-    !keyStatus.HUGGINGFACE_TOKEN
-  ) {
+  const hasPaidKey =
+    keyStatus.GEMINI_API_KEY ||
+    keyStatus.TOGETHER_API_KEY ||
+    keyStatus.CLOUDFLARE_AI_TOKEN ||
+    keyStatus.HUGGINGFACE_TOKEN;
+  if (!hasPaidKey) {
     log.warn(
       "No paid provider key reached the runner. " +
         "Pollinations is the only fallback and it returns HTTP 402 in 2026. " +
@@ -346,6 +346,31 @@ async function main() {
   const catalogue = await loadCatalogue();
   log.info(`Loaded catalogue: ${catalogue.length} rows`);
   const state = await loadState();
+
+  // Auto-rescue: when a paid provider key is now available but rows are
+  // still stuck in 'provider-out' from earlier runs (typically because
+  // they hit Pollinations HTTP 402 before a Gemini key was added),
+  // reset them to 'pending' so they retry on this run. Skipped on --dry.
+  if (hasPaidKey && !args.dry) {
+    let rescued = 0;
+    for (const [id, row] of Object.entries(state.rows)) {
+      if (row.status === "provider-out") {
+        setRow(state, id, {
+          status: "pending",
+          // Keep the previous error around for audit, but clear the
+          // attemptsLog so the next run starts fresh.
+          rescueNote: `Auto-rescued from provider-out at ${new Date().toISOString()} after a paid provider key became available.`,
+          attemptsLog: null,
+        });
+        rescued += 1;
+      }
+    }
+    if (rescued > 0) {
+      log.info(
+        `Auto-rescue: reset ${rescued} 'provider-out' rows to 'pending' (a paid provider key is now available).`,
+      );
+    }
+  }
 
   // Apply any teacher-feedback entries that arrived since the last run:
   // every flagged row is reset to 'pending' (so it gets picked up this

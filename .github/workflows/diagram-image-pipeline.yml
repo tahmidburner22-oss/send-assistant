@@ -72,11 +72,10 @@ jobs:
           JSON
           npm install --no-audit --no-fund --no-package-lock
 
-      # Diagnostic: print which provider secrets the workflow has access
-      # to. Values are NEVER printed — only set/missing — so this is
-      # safe to leave on permanently. If you see "GEMINI_API_KEY=missing"
-      # here but you added the secret, the secret name does not match
-      # exactly (it must be GEMINI_API_KEY, case-sensitive, no spaces).
+      # Diagnostic + gate. Values are NEVER printed — only set/missing —
+      # so this is safe to leave on permanently. If no paid provider key
+      # is available, the workflow HARD-FAILS here so the user can't
+      # miss it and so we don't burn more rows on Pollinations 402s.
       - name: Provider key diagnostic
         env:
           TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
@@ -86,14 +85,19 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           status() { if [ -n "$1" ]; then echo "set (length=${#1})"; else echo "MISSING"; fi; }
+          echo "::group::Provider key visibility"
           echo "GEMINI_API_KEY:        $(status "$GEMINI_API_KEY")"
           echo "TOGETHER_API_KEY:      $(status "$TOGETHER_API_KEY")"
           echo "CLOUDFLARE_AI_TOKEN:   $(status "$CLOUDFLARE_AI_TOKEN")"
           echo "CLOUDFLARE_ACCOUNT_ID: $(status "$CLOUDFLARE_ACCOUNT_ID")"
           echo "HUGGINGFACE_TOKEN:     $(status "$HUGGINGFACE_TOKEN")"
+          echo "::endgroup::"
           if [ -z "$GEMINI_API_KEY" ] && [ -z "$TOGETHER_API_KEY" ] && \
              [ -z "$CLOUDFLARE_AI_TOKEN" ] && [ -z "$HUGGINGFACE_TOKEN" ]; then
-            echo "::warning title=No provider key set::Pollinations alone returns HTTP 402 in 2026. Add GEMINI_API_KEY (free) at Settings → Secrets and variables → Actions."
+            echo "::error title=No provider key reached the workflow::None of GEMINI_API_KEY, TOGETHER_API_KEY, CLOUDFLARE_AI_TOKEN, HUGGINGFACE_TOKEN is visible to this run. Pollinations alone returns HTTP 402 in 2026 so the runner cannot generate any AI images. FIX: open Settings → Secrets and variables → Actions and confirm a secret named EXACTLY 'GEMINI_API_KEY' (case-sensitive, no spaces) exists at the REPOSITORY scope (not Environment, not Codespaces, not Dependabot). If it is named differently or in the wrong scope, delete and re-add it."
+            echo ""
+            echo "Aborting before any AI rows are processed."
+            exit 1
           fi
 
       - name: Run pipeline
