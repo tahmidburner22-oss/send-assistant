@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-27T03:32:15.263Z",
+  "updatedAt": "2026-05-27T03:39:18.074Z",
   "counts": {
     "total": 5975,
     "done": 0,
@@ -36,240 +36,818 @@
       "title": "Number line 0–20 — arrow on 18",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0043.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:51.046Z"
+      "generatedAt": "2026-05-27T03:21:51.046Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0044",
       "title": "Number line 0–20 — arrow on 20",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0044.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:51.045Z"
+      "generatedAt": "2026-05-27T03:21:51.045Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0042",
       "title": "Number line 0–20 — arrow on 16",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0042.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:51.043Z"
+      "generatedAt": "2026-05-27T03:21:51.043Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0041",
       "title": "Number line 0–20 — arrow on 14",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0041.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:51.001Z"
+      "generatedAt": "2026-05-27T03:21:51.001Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0040",
       "title": "Number line 0–20 — arrow on 12",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0040.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.999Z"
+      "generatedAt": "2026-05-27T03:21:50.999Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0039",
       "title": "Number line 0–20 — arrow on 10",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0039.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.975Z"
+      "generatedAt": "2026-05-27T03:21:50.975Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0038",
       "title": "Number line 0–20 — arrow on 8",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0038.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.968Z"
+      "generatedAt": "2026-05-27T03:21:50.968Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0037",
       "title": "Number line 0–20 — arrow on 6",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0037.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.959Z"
+      "generatedAt": "2026-05-27T03:21:50.959Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0036",
       "title": "Number line 0–20 — arrow on 4",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0036.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.947Z"
+      "generatedAt": "2026-05-27T03:21:50.947Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0035",
       "title": "Number line 0–20 — arrow on 2",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0035.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.934Z"
+      "generatedAt": "2026-05-27T03:21:50.934Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0033",
       "title": "Number line 0–10 — arrow on 10",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0033.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.923Z"
+      "generatedAt": "2026-05-27T03:21:50.923Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0032",
       "title": "Number line 0–10 — arrow on 9",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0032.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.915Z"
+      "generatedAt": "2026-05-27T03:21:50.915Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0034",
       "title": "Number line 0–20 — arrow on 0",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0034.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.907Z"
+      "generatedAt": "2026-05-27T03:21:50.907Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0031",
       "title": "Number line 0–10 — arrow on 8",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0031.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.892Z"
+      "generatedAt": "2026-05-27T03:21:50.892Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0027",
       "title": "Number line 0–10 — arrow on 4",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0027.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.864Z"
+      "generatedAt": "2026-05-27T03:21:50.864Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0029",
       "title": "Number line 0–10 — arrow on 6",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0029.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.862Z"
+      "generatedAt": "2026-05-27T03:21:50.862Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0030",
       "title": "Number line 0–10 — arrow on 7",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0030.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.857Z"
+      "generatedAt": "2026-05-27T03:21:50.857Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0028",
       "title": "Number line 0–10 — arrow on 5",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0028.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.851Z"
+      "generatedAt": "2026-05-27T03:21:50.851Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0023",
       "title": "Number line 0–10 — arrow on 0",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0023.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.804Z"
+      "generatedAt": "2026-05-27T03:21:50.804Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0025",
       "title": "Number line 0–10 — arrow on 2",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0025.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.802Z"
+      "generatedAt": "2026-05-27T03:21:50.802Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0024",
       "title": "Number line 0–10 — arrow on 1",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0024.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.802Z"
+      "generatedAt": "2026-05-27T03:21:50.802Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0026",
       "title": "Number line 0–10 — arrow on 3",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 1",
       "imagePath": "/diagrams/generated/pdl-0026.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.801Z"
+      "generatedAt": "2026-05-27T03:21:50.801Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0022",
       "title": "Double ten frame — 20 counters",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0022.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.535Z"
+      "generatedAt": "2026-05-27T03:21:50.535Z",
+      "lastFeedback": null
     },
     {
       "id": "pdl-0021",
       "title": "Double ten frame — 19 counters",
       "subject": "Mathematics",
       "topic": "Counting and place value",
+      "yearGroup": "Year 2",
       "imagePath": "/diagrams/generated/pdl-0021.png",
       "strategy": "svg",
       "provider": null,
-      "generatedAt": "2026-05-27T03:21:50.518Z"
+      "generatedAt": "2026-05-27T03:21:50.518Z",
+      "lastFeedback": null
+    }
+  ],
+  "browse": [
+    {
+      "id": "pdl-0043",
+      "title": "Number line 0–20 — arrow on 18",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0043.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:51.046Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0044",
+      "title": "Number line 0–20 — arrow on 20",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0044.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:51.045Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0042",
+      "title": "Number line 0–20 — arrow on 16",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0042.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:51.043Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0041",
+      "title": "Number line 0–20 — arrow on 14",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0041.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:51.001Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0040",
+      "title": "Number line 0–20 — arrow on 12",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0040.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.999Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0039",
+      "title": "Number line 0–20 — arrow on 10",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0039.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.975Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0038",
+      "title": "Number line 0–20 — arrow on 8",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0038.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.968Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0037",
+      "title": "Number line 0–20 — arrow on 6",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0037.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.959Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0036",
+      "title": "Number line 0–20 — arrow on 4",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0036.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.947Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0035",
+      "title": "Number line 0–20 — arrow on 2",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0035.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.934Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0033",
+      "title": "Number line 0–10 — arrow on 10",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0033.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.923Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0032",
+      "title": "Number line 0–10 — arrow on 9",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0032.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.915Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0034",
+      "title": "Number line 0–20 — arrow on 0",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0034.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.907Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0031",
+      "title": "Number line 0–10 — arrow on 8",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0031.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.892Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0027",
+      "title": "Number line 0–10 — arrow on 4",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0027.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.864Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0029",
+      "title": "Number line 0–10 — arrow on 6",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0029.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.862Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0030",
+      "title": "Number line 0–10 — arrow on 7",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0030.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.857Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0028",
+      "title": "Number line 0–10 — arrow on 5",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0028.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.851Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0023",
+      "title": "Number line 0–10 — arrow on 0",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0023.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.804Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0025",
+      "title": "Number line 0–10 — arrow on 2",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0025.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.802Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0024",
+      "title": "Number line 0–10 — arrow on 1",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0024.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.802Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0026",
+      "title": "Number line 0–10 — arrow on 3",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0026.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.801Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0022",
+      "title": "Double ten frame — 20 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0022.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.535Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0021",
+      "title": "Double ten frame — 19 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0021.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.518Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0019",
+      "title": "Double ten frame — 17 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0019.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.498Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0018",
+      "title": "Double ten frame — 16 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0018.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.478Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0020",
+      "title": "Double ten frame — 18 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0020.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.476Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0017",
+      "title": "Double ten frame — 15 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0017.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.429Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0016",
+      "title": "Double ten frame — 14 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0016.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.415Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0015",
+      "title": "Double ten frame — 13 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0015.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.405Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0014",
+      "title": "Double ten frame — 12 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0014.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.374Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0013",
+      "title": "Double ten frame — 11 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0013.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.357Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0012",
+      "title": "Double ten frame — 10 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 2",
+      "imagePath": "/diagrams/generated/pdl-0012.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.350Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0011",
+      "title": "Ten frame — 10 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0011.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.328Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0010",
+      "title": "Ten frame — 9 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0010.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.297Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0009",
+      "title": "Ten frame — 8 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0009.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.294Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0008",
+      "title": "Ten frame — 7 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0008.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.266Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0007",
+      "title": "Ten frame — 6 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0007.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.265Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0005",
+      "title": "Ten frame — 4 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0005.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.243Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0006",
+      "title": "Ten frame — 5 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0006.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.240Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0002",
+      "title": "Ten frame — 1 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0002.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.197Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0001",
+      "title": "Ten frame — 0 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0001.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.194Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0004",
+      "title": "Ten frame — 3 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0004.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.193Z",
+      "lastFeedback": null
+    },
+    {
+      "id": "pdl-0003",
+      "title": "Ten frame — 2 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "yearGroup": "Year 1",
+      "imagePath": "/diagrams/generated/pdl-0003.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.192Z",
+      "lastFeedback": null
     }
   ],
   "failures": [
@@ -440,6 +1018,230 @@
       "subject": "Mathematics",
       "status": "provider-out",
       "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0070",
+      "title": "Number bond cherry — 5 and 5 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0071",
+      "title": "Number bond cherry — 6 and 4 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0072",
+      "title": "Number bond cherry — 7 and 3 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0073",
+      "title": "Number bond cherry — 8 and 2 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0074",
+      "title": "Number bond cherry — 9 and 1 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0075",
+      "title": "Number bond cherry — 10 and 0 make 10",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0076",
+      "title": "Number bond cherry — 0 and 20 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0077",
+      "title": "Number bond cherry — 1 and 19 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0078",
+      "title": "Number bond cherry — 2 and 18 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0079",
+      "title": "Number bond cherry — 3 and 17 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0080",
+      "title": "Number bond cherry — 4 and 16 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0081",
+      "title": "Number bond cherry — 5 and 15 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0082",
+      "title": "Number bond cherry — 6 and 14 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0083",
+      "title": "Number bond cherry — 7 and 13 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0084",
+      "title": "Number bond cherry — 8 and 12 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0085",
+      "title": "Number bond cherry — 9 and 11 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0086",
+      "title": "Number bond cherry — 10 and 10 make 20",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0087",
+      "title": "Bar model — whole 5 (3 + 2)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0088",
+      "title": "Bar model — whole 6 (4 + 2)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0089",
+      "title": "Bar model — whole 7 (3 + 4)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0090",
+      "title": "Bar model — whole 8 (5 + 3)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0091",
+      "title": "Bar model — whole 9 (6 + 3)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0092",
+      "title": "Bar model — whole 10 (7 + 3)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0093",
+      "title": "Bar model — whole 12 (7 + 5)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0094",
+      "title": "Bar model — whole 15 (9 + 6)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0095",
+      "title": "Bar model — whole 18 (10 + 8)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0096",
+      "title": "Bar model — whole 20 (12 + 8)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0097",
+      "title": "2D shape card — circle",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0098",
+      "title": "2D shape card — square",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0099",
+      "title": "2D shape card — rectangle",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0100",
+      "title": "2D shape card — triangle (equilateral)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0055",
+      "title": "Counting set — 1 apples",
+      "subject": "Mathematics",
+      "status": "ai-failed",
+      "lastError": "tjs.recognize is not a function"
     }
   ]
 }
