@@ -1,7 +1,319 @@
 {
-  "updatedAt": "1970-01-01T00:00:00.000Z",
-  "counts": { "total": 0, "done": 0, "svg-rendered": 0, "pending": 0, "ai-failed": 0, "provider-out": 0 },
-  "taxonomy": { "summary": { "svg": 0, "ai-structural": 0, "ai-pictorial": 0 }, "svgByRenderer": {} },
-  "recent": [],
-  "failures": []
+  "updatedAt": "2026-05-27T03:24:51.857Z",
+  "counts": {
+    "total": 5975,
+    "done": 0,
+    "svg-rendered": 44,
+    "pending": 5925,
+    "ai-failed": 1,
+    "provider-out": 5,
+    "skipped": 0
+  },
+  "taxonomy": {
+    "summary": {
+      "svg": 250,
+      "ai-structural": 598,
+      "ai-pictorial": 5127
+    },
+    "svgByRenderer": {
+      "ten-frame": 11,
+      "double-ten-frame": 11,
+      "number-line": 22,
+      "number-bond-cherry": 22,
+      "bar-model": 30,
+      "dienes": 16,
+      "clock": 44,
+      "array": 36,
+      "place-value-chart": 18,
+      "fraction-bar": 29,
+      "fraction-wall": 4,
+      "number-line-range": 7
+    }
+  },
+  "recent": [
+    {
+      "id": "pdl-0043",
+      "title": "Number line 0–20 — arrow on 18",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0043.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:51.046Z"
+    },
+    {
+      "id": "pdl-0044",
+      "title": "Number line 0–20 — arrow on 20",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0044.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:51.045Z"
+    },
+    {
+      "id": "pdl-0042",
+      "title": "Number line 0–20 — arrow on 16",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0042.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:51.043Z"
+    },
+    {
+      "id": "pdl-0041",
+      "title": "Number line 0–20 — arrow on 14",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0041.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:51.001Z"
+    },
+    {
+      "id": "pdl-0040",
+      "title": "Number line 0–20 — arrow on 12",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0040.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.999Z"
+    },
+    {
+      "id": "pdl-0039",
+      "title": "Number line 0–20 — arrow on 10",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0039.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.975Z"
+    },
+    {
+      "id": "pdl-0038",
+      "title": "Number line 0–20 — arrow on 8",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0038.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.968Z"
+    },
+    {
+      "id": "pdl-0037",
+      "title": "Number line 0–20 — arrow on 6",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0037.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.959Z"
+    },
+    {
+      "id": "pdl-0036",
+      "title": "Number line 0–20 — arrow on 4",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0036.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.947Z"
+    },
+    {
+      "id": "pdl-0035",
+      "title": "Number line 0–20 — arrow on 2",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0035.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.934Z"
+    },
+    {
+      "id": "pdl-0033",
+      "title": "Number line 0–10 — arrow on 10",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0033.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.923Z"
+    },
+    {
+      "id": "pdl-0032",
+      "title": "Number line 0–10 — arrow on 9",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0032.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.915Z"
+    },
+    {
+      "id": "pdl-0034",
+      "title": "Number line 0–20 — arrow on 0",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0034.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.907Z"
+    },
+    {
+      "id": "pdl-0031",
+      "title": "Number line 0–10 — arrow on 8",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0031.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.892Z"
+    },
+    {
+      "id": "pdl-0027",
+      "title": "Number line 0–10 — arrow on 4",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0027.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.864Z"
+    },
+    {
+      "id": "pdl-0029",
+      "title": "Number line 0–10 — arrow on 6",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0029.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.862Z"
+    },
+    {
+      "id": "pdl-0030",
+      "title": "Number line 0–10 — arrow on 7",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0030.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.857Z"
+    },
+    {
+      "id": "pdl-0028",
+      "title": "Number line 0–10 — arrow on 5",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0028.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.851Z"
+    },
+    {
+      "id": "pdl-0023",
+      "title": "Number line 0–10 — arrow on 0",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0023.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.804Z"
+    },
+    {
+      "id": "pdl-0025",
+      "title": "Number line 0–10 — arrow on 2",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0025.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.802Z"
+    },
+    {
+      "id": "pdl-0024",
+      "title": "Number line 0–10 — arrow on 1",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0024.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.802Z"
+    },
+    {
+      "id": "pdl-0026",
+      "title": "Number line 0–10 — arrow on 3",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0026.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.801Z"
+    },
+    {
+      "id": "pdl-0022",
+      "title": "Double ten frame — 20 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0022.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.535Z"
+    },
+    {
+      "id": "pdl-0021",
+      "title": "Double ten frame — 19 counters",
+      "subject": "Mathematics",
+      "topic": "Counting and place value",
+      "imagePath": "/diagrams/generated/pdl-0021.png",
+      "strategy": "svg",
+      "provider": null,
+      "generatedAt": "2026-05-27T03:21:50.518Z"
+    }
+  ],
+  "failures": [
+    {
+      "id": "pdl-0045",
+      "title": "Counting set — 1 frogs",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0047",
+      "title": "Counting set — 3 frogs",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0048",
+      "title": "Counting set — 4 frogs",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0049",
+      "title": "Counting set — 5 frogs",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0046",
+      "title": "Counting set — 2 frogs",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+    },
+    {
+      "id": "pdl-0050",
+      "title": "Counting set — 6 frogs",
+      "subject": "Mathematics",
+      "status": "ai-failed",
+      "lastError": "tjs.recognize is not a function"
+    }
+  ]
 }

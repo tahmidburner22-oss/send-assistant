@@ -1,0 +1,565 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-27T03:24:51.788Z",
+  "rows": {
+    "pdl-0003": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.192Z",
+      "imagePath": "/diagrams/generated/pdl-0003.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.192Z"
+    },
+    "pdl-0004": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.193Z",
+      "imagePath": "/diagrams/generated/pdl-0004.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.193Z"
+    },
+    "pdl-0001": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.194Z",
+      "imagePath": "/diagrams/generated/pdl-0001.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.194Z"
+    },
+    "pdl-0002": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.197Z",
+      "imagePath": "/diagrams/generated/pdl-0002.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.197Z"
+    },
+    "pdl-0006": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.240Z",
+      "imagePath": "/diagrams/generated/pdl-0006.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.240Z"
+    },
+    "pdl-0005": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.243Z",
+      "imagePath": "/diagrams/generated/pdl-0005.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.243Z"
+    },
+    "pdl-0007": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.265Z",
+      "imagePath": "/diagrams/generated/pdl-0007.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.265Z"
+    },
+    "pdl-0008": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.266Z",
+      "imagePath": "/diagrams/generated/pdl-0008.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.266Z"
+    },
+    "pdl-0009": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.294Z",
+      "imagePath": "/diagrams/generated/pdl-0009.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.294Z"
+    },
+    "pdl-0010": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.297Z",
+      "imagePath": "/diagrams/generated/pdl-0010.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.297Z"
+    },
+    "pdl-0011": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.328Z",
+      "imagePath": "/diagrams/generated/pdl-0011.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.328Z"
+    },
+    "pdl-0012": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.350Z",
+      "imagePath": "/diagrams/generated/pdl-0012.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.350Z"
+    },
+    "pdl-0013": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.357Z",
+      "imagePath": "/diagrams/generated/pdl-0013.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.357Z"
+    },
+    "pdl-0014": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.374Z",
+      "imagePath": "/diagrams/generated/pdl-0014.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.374Z"
+    },
+    "pdl-0015": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.405Z",
+      "imagePath": "/diagrams/generated/pdl-0015.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.405Z"
+    },
+    "pdl-0016": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.415Z",
+      "imagePath": "/diagrams/generated/pdl-0016.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.415Z"
+    },
+    "pdl-0017": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.429Z",
+      "imagePath": "/diagrams/generated/pdl-0017.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.429Z"
+    },
+    "pdl-0020": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.476Z",
+      "imagePath": "/diagrams/generated/pdl-0020.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.476Z"
+    },
+    "pdl-0018": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.478Z",
+      "imagePath": "/diagrams/generated/pdl-0018.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.478Z"
+    },
+    "pdl-0019": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.498Z",
+      "imagePath": "/diagrams/generated/pdl-0019.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.498Z"
+    },
+    "pdl-0021": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.518Z",
+      "imagePath": "/diagrams/generated/pdl-0021.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.518Z"
+    },
+    "pdl-0022": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "double-ten-frame",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.535Z",
+      "imagePath": "/diagrams/generated/pdl-0022.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.536Z"
+    },
+    "pdl-0026": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.801Z",
+      "imagePath": "/diagrams/generated/pdl-0026.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.801Z"
+    },
+    "pdl-0025": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.802Z",
+      "imagePath": "/diagrams/generated/pdl-0025.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.802Z"
+    },
+    "pdl-0024": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.802Z",
+      "imagePath": "/diagrams/generated/pdl-0024.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.802Z"
+    },
+    "pdl-0023": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.804Z",
+      "imagePath": "/diagrams/generated/pdl-0023.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.804Z"
+    },
+    "pdl-0028": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.851Z",
+      "imagePath": "/diagrams/generated/pdl-0028.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.851Z"
+    },
+    "pdl-0030": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.857Z",
+      "imagePath": "/diagrams/generated/pdl-0030.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.857Z"
+    },
+    "pdl-0029": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.862Z",
+      "imagePath": "/diagrams/generated/pdl-0029.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.862Z"
+    },
+    "pdl-0027": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.864Z",
+      "imagePath": "/diagrams/generated/pdl-0027.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.864Z"
+    },
+    "pdl-0031": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.892Z",
+      "imagePath": "/diagrams/generated/pdl-0031.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.892Z"
+    },
+    "pdl-0034": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.907Z",
+      "imagePath": "/diagrams/generated/pdl-0034.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.907Z"
+    },
+    "pdl-0032": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.915Z",
+      "imagePath": "/diagrams/generated/pdl-0032.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.915Z"
+    },
+    "pdl-0033": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.923Z",
+      "imagePath": "/diagrams/generated/pdl-0033.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.923Z"
+    },
+    "pdl-0035": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.934Z",
+      "imagePath": "/diagrams/generated/pdl-0035.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.934Z"
+    },
+    "pdl-0036": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.947Z",
+      "imagePath": "/diagrams/generated/pdl-0036.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.947Z"
+    },
+    "pdl-0037": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.959Z",
+      "imagePath": "/diagrams/generated/pdl-0037.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.959Z"
+    },
+    "pdl-0038": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.968Z",
+      "imagePath": "/diagrams/generated/pdl-0038.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.968Z"
+    },
+    "pdl-0039": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.975Z",
+      "imagePath": "/diagrams/generated/pdl-0039.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.975Z"
+    },
+    "pdl-0040": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:50.999Z",
+      "imagePath": "/diagrams/generated/pdl-0040.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:50.999Z"
+    },
+    "pdl-0041": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:51.001Z",
+      "imagePath": "/diagrams/generated/pdl-0041.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:51.001Z"
+    },
+    "pdl-0042": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:51.043Z",
+      "imagePath": "/diagrams/generated/pdl-0042.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:51.043Z"
+    },
+    "pdl-0044": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:51.045Z",
+      "imagePath": "/diagrams/generated/pdl-0044.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:51.045Z"
+    },
+    "pdl-0043": {
+      "status": "svg-rendered",
+      "strategy": "svg",
+      "renderer": "number-line",
+      "provider": null,
+      "attempts": 0,
+      "generatedAt": "2026-05-27T03:21:51.046Z",
+      "imagePath": "/diagrams/generated/pdl-0043.png",
+      "lastError": null,
+      "updatedAt": "2026-05-27T03:21:51.046Z"
+    },
+    "pdl-0045": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:21:51.487Z"
+    },
+    "pdl-0047": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:21:51.506Z"
+    },
+    "pdl-0048": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:21:51.515Z"
+    },
+    "pdl-0049": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:21:51.765Z"
+    },
+    "pdl-0046": {
+      "status": "provider-out",
+      "strategy": "ai-pictorial",
+      "lastError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (6.1% white edge)"
+          }
+        },
+        {
+          "attempt": 2,
+          "providerError": "All providers exhausted: [{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-27T03:21:51.884Z"
+    },
+    "pdl-0050": {
+      "status": "ai-failed",
+      "lastError": "tjs.recognize is not a function",
+      "strategy": "ai-pictorial",
+      "updatedAt": "2026-05-27T03:24:51.788Z"
+    }
+  }
+}
