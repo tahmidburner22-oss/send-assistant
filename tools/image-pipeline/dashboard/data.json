@@ -1,14 +1,65 @@
 {
-  "updatedAt": "2026-05-27T03:55:38.999Z",
+  "updatedAt": "2026-05-27T04:06:47.236Z",
   "counts": {
     "total": 5975,
     "done": 0,
     "svg-rendered": 44,
-    "pending": 5825,
-    "ai-failed": 4,
-    "provider-out": 102,
+    "pending": 5775,
+    "ai-failed": 6,
+    "provider-out": 150,
     "skipped": 0
   },
+  "byPhase": [
+    {
+      "phase": "GCSE",
+      "total": 1988,
+      "done": 0,
+      "pending": 1938,
+      "failed": 50
+    },
+    {
+      "phase": "KS3",
+      "total": 885,
+      "done": 0,
+      "pending": 885,
+      "failed": 0
+    },
+    {
+      "phase": "KS1",
+      "total": 577,
+      "done": 44,
+      "pending": 427,
+      "failed": 106
+    },
+    {
+      "phase": "KS1+KS2",
+      "total": 80,
+      "done": 0,
+      "pending": 80,
+      "failed": 0
+    },
+    {
+      "phase": "LKS2",
+      "total": 918,
+      "done": 0,
+      "pending": 918,
+      "failed": 0
+    },
+    {
+      "phase": "UKS2",
+      "total": 477,
+      "done": 0,
+      "pending": 477,
+      "failed": 0
+    },
+    {
+      "phase": "A-Level",
+      "total": 1050,
+      "done": 0,
+      "pending": 1050,
+      "failed": 0
+    }
+  ],
   "taxonomy": {
     "summary": {
       "svg": 250,
