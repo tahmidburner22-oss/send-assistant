@@ -112,17 +112,16 @@ function tierFraming(strategy) {
 }
 
 /**
- * Mutation (used on QA-driven retries).
+ * Mutation (used on QA-driven retries and user-feedback retries).
  *
- * Each mutation key targets the axis that failed:
- *   - 'white-bg'    → reinforce white background
- *   - 'too-much-text' → reinforce no-text rule
- *   - 'spec-mismatch' → reinforce literal-spec interpretation
- *   - 'low-contrast' → reinforce outline rule
+ * Each mutation key targets the axis that failed. Both QA codes and
+ * user-feedback codes (see flaws.mjs) are accepted — kept aligned by
+ * code where they overlap (e.g. both QA and feedback use "too-much-text").
  */
 function mutation(positive, negative, kind) {
   switch (kind) {
     case "white-bg":
+    case "background-not-white":
       positive.unshift(
         "PURE WHITE BACKGROUND, hex #FFFFFF, completely solid white, no colour cast, no gradient, no paper texture",
       );
@@ -144,6 +143,51 @@ function mutation(positive, negative, kind) {
         "VERY THICK SOLID BLACK OUTLINES on every shape, minimum 4px equivalent",
       );
       break;
+    case "wrong-subject":
+      positive.unshift(
+        "THE SUBJECT MUST EXACTLY MATCH THE BRIEF — re-read the SUBJECT line and produce only that, nothing else.",
+      );
+      break;
+    case "too-cluttered":
+      positive.unshift(
+        "ONE SINGLE SUBJECT, CENTRED. No background scenery, no secondary objects, no decorative elements. White space everywhere except the subject.",
+      );
+      negative.push("background detail", "secondary objects", "scenery", "decoration");
+      break;
+    case "photorealistic":
+      positive.unshift(
+        "FLAT VECTOR ILLUSTRATION ONLY — no shading gradients, no photo textures, no 3D rendering, no specular highlights.",
+      );
+      negative.push("photograph", "photo texture", "3D render", "realistic shading", "ray tracing");
+      break;
+    case "wrong-style":
+      positive.unshift(
+        "STYLE: clean primary-school textbook illustration, Twinkl-grade clarity. Not cartoonish, not ornate, not stylised — calm and clear.",
+      );
+      negative.push("cartoony", "anime", "ornate", "stylised", "Disney-style");
+      break;
+    case "wrong-colours":
+      positive.unshift(
+        "USE ONLY the SEND palette: black outlines, red (#E63946) for primary fills, blue (#1D7BD9) for secondary, green (#2A9D8F) for plant/answer, yellow (#F4C430) sparingly.",
+      );
+      break;
+    case "multiple-subjects":
+      positive.unshift(
+        "EXACTLY ONE SUBJECT IN THE FRAME. If the brief lists multiple things, render only the first.",
+      );
+      negative.push("multiple subjects", "two or more objects", "group of items");
+      break;
+    case "low-quality":
+      positive.unshift(
+        "HIGH QUALITY: crisp clean lines, perfectly proportioned, no jagged edges, no deformations.",
+      );
+      negative.push("blurry", "jagged", "deformed", "low resolution", "messy linework");
+      break;
+    case "anatomy-wrong":
+      positive.unshift(
+        "ANATOMY MUST BE CORRECT. Count and name every feature in the brief and ensure every one is present, in the right place, and labelled if the brief says so.",
+      );
+      break;
     default:
       break;
   }
@@ -156,7 +200,9 @@ function mutation(positive, negative, kind) {
  * @param {object} row catalogue row
  * @param {string} strategy 'ai-structural' | 'ai-pictorial'
  * @param {object} opts
- * @param {string=} opts.mutation key from above
+ * @param {string=} opts.mutation single-axis QA mutation key
+ * @param {string[]=} opts.userFlaws user-flagged flaw codes from flaws.mjs
+ * @param {string=} opts.userNote free-text user note about the previous output
  * @param {number=} opts.attempt 1-based retry counter
  * @returns {{ positive: string, negative: string, width: number, height: number }}
  */
@@ -176,7 +222,26 @@ export function buildPrompt(row, strategy, opts = {}) {
 
   const negative = [...NEGATIVE_TERMS];
 
-  const final = mutation(positive, negative, opts.mutation);
+  // Apply the QA-driven single mutation, if any.
+  let final = mutation(positive, negative, opts.mutation);
+
+  // Apply user-flagged flaws (each flaw layers another mutation). The
+  // teacher's voice is louder than the QA pipeline's, so we apply user
+  // flaws AFTER the QA mutation so they sit at the very top of the
+  // prompt.
+  if (Array.isArray(opts.userFlaws) && opts.userFlaws.length > 0) {
+    for (const code of opts.userFlaws) {
+      final = mutation(final.positive, final.negative, code);
+    }
+    final.positive.unshift(
+      `TEACHER FEEDBACK ON THE PREVIOUS ATTEMPT (you must address every item): ${opts.userFlaws.join(", ")}.`,
+    );
+  }
+  if (opts.userNote && String(opts.userNote).trim().length > 0) {
+    final.positive.unshift(
+      `TEACHER NOTE: ${String(opts.userNote).trim().slice(0, 400)}`,
+    );
+  }
 
   return {
     positive: final.positive.join("\n"),

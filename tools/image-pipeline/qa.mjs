@@ -153,9 +153,10 @@ export async function checkSpecCompliance(pngBuffer, row) {
   const keywords = extractKeywords(description);
   if (keywords.length === 0) return { ok: true, skipped: "no-keywords" };
 
-  // Gemini Pro Vision (free tier endpoint)
+  // Gemini 2.5 Flash for vision compliance — the same key that powers
+  // Nano Banana generation. Faster + cheaper than the image model.
   const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
   const body = {
     contents: [
       {

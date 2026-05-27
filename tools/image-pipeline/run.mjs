@@ -35,7 +35,19 @@ import { getRenderer } from "./renderers/index.mjs";
 import { buildPrompt } from "./prompt.mjs";
 import * as providers from "./providers/index.mjs";
 import { runQA } from "./qa.mjs";
-import { loadState, saveState, set as setRow, pickBatch, summarise } from "./state.mjs";
+import {
+  loadState,
+  saveState,
+  set as setRow,
+  pickBatch,
+  summarise,
+} from "./state.mjs";
+import {
+  loadFeedback,
+  saveFeedback,
+  indexUnappliedById,
+  markApplied,
+} from "./feedback.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../..");
@@ -94,11 +106,16 @@ async function processSvgRow(row, decision, log) {
   return { ok: true, png, path: out };
 }
 
-async function processAiRow(row, strategy, log) {
+async function processAiRow(row, strategy, log, userFeedback = null) {
   let mutation = null;
   let attempts = [];
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt += 1) {
-    const prompt = buildPrompt(row, strategy, { mutation, attempt });
+    const prompt = buildPrompt(row, strategy, {
+      mutation,
+      attempt,
+      userFlaws: userFeedback?.flaws || null,
+      userNote: userFeedback?.note || null,
+    });
     let gen;
     try {
       gen = await providers.generate({
@@ -141,7 +158,7 @@ function hashSeed(id, attempt) {
   return h >>> 0;
 }
 
-async function processBatch(batch, args, state, log) {
+async function processBatch(batch, args, state, log, feedbackById) {
   const queue = batch.slice();
   const workers = Array.from({ length: args.concurrency }, () =>
     (async () => {
@@ -149,18 +166,22 @@ async function processBatch(batch, args, state, log) {
         const row = queue.shift();
         if (!row) break;
         const decision = chooseStrategy(row);
-        log.info(`→ ${row.id} [${decision.strategy}${decision.renderer ? "/" + decision.renderer : ""}] ${row.title}`);
+        const userFb = feedbackById.get(row.id) || null;
+        const fbTag = userFb ? ` (teacher-feedback: ${userFb.flaws.join("|")})` : "";
+        log.info(
+          `→ ${row.id} [${decision.strategy}${decision.renderer ? "/" + decision.renderer : ""}]${fbTag} ${row.title}`,
+        );
         try {
           if (decision.strategy === "svg") {
             const r = await processSvgRow(row, decision, log);
             if (r.downgrade) {
-              const r2 = await processAiRow(row, r.downgrade, log);
+              const r2 = await processAiRow(row, r.downgrade, log, userFb);
               recordResult(state, row, decision, r2, "ai-structural");
             } else {
               recordResult(state, row, decision, r, "svg");
             }
           } else {
-            const r = await processAiRow(row, decision.strategy, log);
+            const r = await processAiRow(row, decision.strategy, log, userFb);
             recordResult(state, row, decision, r, decision.strategy);
           }
         } catch (err) {
@@ -208,10 +229,13 @@ function recordResult(state, row, decision, result, strategy) {
 
 async function writeDashboardData(state, catalogue) {
   const counts = summarise(state, catalogue);
-  const recent = Object.entries(state.rows)
+  // Browse list — every row that has an image, newest first. The
+  // dashboard paginates this client-side; one entry is ~200 bytes so
+  // a fully-populated catalogue is ~1.2 MB which is fine for a static
+  // page.
+  const browse = Object.entries(state.rows)
     .filter(([, v]) => v.imagePath)
     .sort((a, b) => (b[1].generatedAt || "").localeCompare(a[1].generatedAt || ""))
-    .slice(0, 24)
     .map(([id, v]) => {
       const row = catalogue.find((r) => r.id === id);
       return {
@@ -219,15 +243,20 @@ async function writeDashboardData(state, catalogue) {
         title: row?.title || id,
         subject: row?.subject || "",
         topic: row?.topic || "",
+        yearGroup: row?.year_group || "",
         imagePath: v.imagePath,
         strategy: v.strategy,
         provider: v.provider,
         generatedAt: v.generatedAt,
+        lastFeedback: v.lastFeedback || null,
       };
     });
+  // recent[] is kept for backward-compatibility with the previous
+  // dashboard layout — first 24 of `browse`.
+  const recent = browse.slice(0, 24);
   const failures = Object.entries(state.rows)
     .filter(([, v]) => v.status === "ai-failed" || v.status === "provider-out")
-    .slice(0, 24)
+    .slice(0, 100)
     .map(([id, v]) => {
       const row = catalogue.find((r) => r.id === id);
       return {
@@ -245,6 +274,7 @@ async function writeDashboardData(state, catalogue) {
     counts,
     taxonomy,
     recent,
+    browse,
     failures,
   };
   await fs.writeFile(DASHBOARD_DATA, JSON.stringify(data, null, 2) + "\n");
@@ -280,11 +310,46 @@ async function main() {
   log.info(`Loaded catalogue: ${catalogue.length} rows`);
   const state = await loadState();
 
+  // Apply any teacher-feedback entries that arrived since the last run:
+  // every flagged row is reset to 'pending' (so it gets picked up this
+  // batch) and its flaws are passed through to the prompt builder via
+  // feedbackById. Skipped on --dry so feedback survives until a real run.
+  const feedbackQueue = await loadFeedback();
+  const feedbackById = indexUnappliedById(feedbackQueue);
+  if (feedbackById.size > 0 && !args.dry) {
+    log.info(`Applying ${feedbackById.size} teacher-feedback entries`);
+    for (const [id, entry] of feedbackById) {
+      setRow(state, id, {
+        status: "pending",
+        lastFeedback: {
+          flaws: entry.flaws,
+          note: entry.note,
+          submittedBy: entry.submittedBy,
+          submittedAt: entry.submittedAt,
+          issueNumber: entry.issueNumber,
+        },
+      });
+    }
+    markApplied(feedbackQueue, [...feedbackById.values()]);
+    await saveFeedback(feedbackQueue);
+  } else if (feedbackById.size > 0) {
+    log.info(`(dry) ${feedbackById.size} teacher-feedback entries would be applied`);
+  }
+
   let batch;
   if (args.only) {
     batch = catalogue.filter((r) => r.id === args.only);
   } else {
-    batch = pickBatch(state, catalogue, args.batch);
+    // When teacher feedback exists, prioritise those rows in this batch
+    // even if other pending rows would normally come first.
+    const flaggedRows = feedbackById.size
+      ? catalogue.filter((r) => feedbackById.has(r.id))
+      : [];
+    const flaggedIds = new Set(flaggedRows.map((r) => r.id));
+    const rest = pickBatch(state, catalogue, args.batch).filter(
+      (r) => !flaggedIds.has(r.id),
+    );
+    batch = [...flaggedRows, ...rest].slice(0, args.batch);
   }
   log.info(`Batch: ${batch.length} rows`);
 
@@ -305,7 +370,7 @@ async function main() {
     return;
   }
 
-  await processBatch(batch, args, state, log);
+  await processBatch(batch, args, state, log, feedbackById);
   await saveState(state);
   await writeDashboardData(state, catalogue);
   const counts = summarise(state, catalogue);
