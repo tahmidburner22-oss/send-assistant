@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Users, Shield, Activity, UserPlus, UserX, UserCheck, Key,
   AlertTriangle, BarChart3, Settings2, Terminal, RefreshCw,
-  Eye, EyeOff, CheckCircle2, Cpu, Zap, Globe, TrendingUp,
+  Eye, EyeOff, CheckCircle2, Cpu, Zap, Globe, Sparkles, TrendingUp,
   CreditCard, Building2, FileText, ChevronDown, ChevronRight,
   PoundSterling, Calendar, ExternalLink, Image, Presentation, Trash2, Plus, Download
 } from "lucide-react";
@@ -105,6 +105,7 @@ const AI_PROVIDERS = [
   { id: "openai", label: "OpenAI GPT-4", icon: Cpu, color: "text-green-600", description: "GPT-4.1 mini" },
   { id: "openrouter", label: "OpenRouter", icon: Globe, color: "text-purple-500", description: "Multi-model routing" },
   { id: "claude", label: "Anthropic Claude", icon: Cpu, color: "text-amber-600", description: "Claude 3.5 Sonnet" },
+  { id: "deepseek", label: "DeepSeek", icon: Sparkles, color: "text-indigo-500", description: "DeepSeek Chat / Reasoner — strong STEM" },
 ];
 
 export default function AdminPanel() {

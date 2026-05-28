@@ -57,7 +57,7 @@ import {
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
-// ── Provider priority order — 17 providers, ~130,000+ RPD combined ──────────────
+// ── Provider priority order — 18 providers, ~130,000+ RPD combined ──────────────
 //
 // Priority rationale (May 2026):
 //   1. Groq (×3 keys, Llama 4 Scout) — fastest inference, 43,200 RPD combined
@@ -71,7 +71,11 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 //   9. HuggingFace — variable quality, good backup
 //  10. OpenRouter (×2 keys) — 400 RPD combined (last resort before Mistral)
 //  11. Mistral — unlimited RPD but only ~1 RPS, last resort
-// DeepSeek/Perplexity/OpenAI/Claude intentionally excluded (paid or unreliable free tier).
+//  12. DeepSeek — paid; only consulted when DEEPSEEK_API_KEY is configured
+//      (the fallback walker silently skips providers with no resolved key, so
+//      adding it here is opt-in by virtue of the env var being unset).
+//  13. OpenAI — paid; final fallback before failure.
+// Perplexity / Claude intentionally excluded (paid + no JSON mode).
 const PROVIDER_ORDER = [
   "groq_1", "groq_2", "groq_3",
   "cerebras_1", "cerebras_2", "cerebras_3",
@@ -82,6 +86,7 @@ const PROVIDER_ORDER = [
   "huggingface",
   "openrouter_1", "openrouter_2",
   "mistral",
+  "deepseek",
   "openai",
 ] as const;
 
