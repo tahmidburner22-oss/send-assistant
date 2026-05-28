@@ -213,6 +213,7 @@ const BUILT_IN_KEYS: Record<string, string> = {
   openrouter: "",
   openai: "",
   claude: "",
+  deepseek: "",
   huggingface: "",
 };
 
@@ -266,22 +267,27 @@ export function repairTruncatedJson(s: string): string | null {
 
 export function parseWithFixes(s: string): any {
   // Pre-process: escape LaTeX backslash sequences that JSON would misinterpret.
-  // JSON treats \f as form feed (\x0c) and \t as tab (\x09), but the AI uses
-  // \frac, \frown, \times, \text etc. (LaTeX commands) which must be doubled.
+  // JSON treats \b/\f/\n/\r/\t as control-char escapes (BS/FF/LF/CR/TAB),
+  // but the AI emits them as the start of LaTeX commands like \beta, \frac,
+  // \nabla, \rightarrow, \times. JSON.parse silently consumes the backslash,
+  // leaving e.g. "<CR>ightarrow" — which renders as the literal text "ightarrow".
   const preProcess = (raw: string): string => {
     // Scan inside JSON strings and double backslashes before LaTeX-like sequences.
     // Two distinct repair classes:
-    //   1) JSON-conflict escapes — \f and \t. JSON treats these as form feed / tab,
-    //      but the AI uses them as the start of LaTeX commands like \frac and \times.
-    //      We double the backslash only when the next char is a letter (so it really
-    //      is a LaTeX command, not a deliberate control char).
+    //   1) JSON-conflict escapes — \b, \f, \n, \r, \t. JSON treats these as
+    //      control characters, but the AI uses them as the start of LaTeX
+    //      commands (\beta, \binom, \boxed, \begin, \frac, \frown, \nabla,
+    //      \neq, \notin, \nu, \rightarrow, \rho, \rangle, \times, \theta…).
+    //      We double the backslash ONLY when the next char is an ASCII letter,
+    //      so we don't trample on a deliberate JSON control-char escape (those
+    //      are followed by quote/space/punctuation/another escape, not a letter).
     //   2) JSON-invalid escapes for math delimiters — \(, \), \[, \]. JSON.parse
     //      with these silently *drops* the backslash on tolerant browsers, so
     //      "\(b^2-4ac\)" arrives at the renderer as "(b^2-4ac)" and KaTeX never
     //      fires. We always double the backslash so the delimiters survive intact.
-    // We do NOT touch \n, \r, \b because those are legitimately used as control
-    // chars in JSON strings.
-    const latexEscapeChars = new Set(['f', 't']);
+    // The renderer compensates: it converts literal \n/\t to real newline/tab
+    // ONLY when not followed by a letter, so this preservation is safe.
+    const latexEscapeChars = new Set(['b', 'f', 'n', 'r', 't']);
     const mathDelimiters = new Set(['(', ')', '[', ']']);
     const out: string[] = [];
     let inStr = false;
@@ -330,9 +336,13 @@ export function parseWithFixes(s: string): any {
       if (ch === '\\') {
         const next = raw[i + 1];
         const afterNext2 = raw[i + 2];
-        // LaTeX escape chars that conflict with JSON valid escapes:
-        // Only handle \f (\frac) and \t (\times) — NOT \n, \r, \b which are used as real control chars.
-        const latexConflicts = new Set(['f', 't']);
+        // LaTeX escape chars that conflict with JSON control-char escapes:
+        // \b (\beta, \binom, \boxed, \begin, \bf), \f (\frac, \frown, \forall,
+        // \fbox), \n (\nabla, \neq, \notin, \nu, \ne, \ni), \r (\rightarrow,
+        // \rho, \rangle, \rfloor, \right), \t (\times, \text, \theta, \tau, \to).
+        // Only double when followed by another letter — that disambiguates a
+        // LaTeX command from a deliberate JSON control-char escape.
+        const latexConflicts = new Set(['b', 'f', 'n', 'r', 't']);
         if (next !== undefined && latexConflicts.has(next) && afterNext2 && /[a-zA-Z]/.test(afterNext2)) {
           // LaTeX command — double the backslash
           result.push('\\\\');

@@ -210,6 +210,11 @@ router.post("/validate", async (req: Request, res: Response) => {
         url = "https://huggingface.co/api/whoami-v2";
         headers = { Authorization: `Bearer ${apiKey}` };
         break;
+      case "deepseek":
+        // DeepSeek is OpenAI-compatible — has a /v1/models listing endpoint.
+        url = "https://api.deepseek.com/v1/models";
+        headers = { Authorization: `Bearer ${apiKey}` };
+        break;
       default:
         // Custom provider — try OpenAI-compatible /models endpoint
         if (baseUrl) {
