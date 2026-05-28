@@ -318,6 +318,7 @@ async function main() {
   // answer at the top of every run log. Values are NEVER printed —
   // only "set"/"missing".
   const keyStatus = {
+    DEAPI_API_KEY: !!process.env.DEAPI_API_KEY,
     GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
     TOGETHER_API_KEY: !!process.env.TOGETHER_API_KEY,
     CLOUDFLARE_AI_TOKEN: !!process.env.CLOUDFLARE_AI_TOKEN,
@@ -331,6 +332,7 @@ async function main() {
   );
   log.info(`Active provider chain: ${providers.activeChain().join(" → ")}`);
   const hasPaidKey =
+    keyStatus.DEAPI_API_KEY ||
     keyStatus.GEMINI_API_KEY ||
     keyStatus.TOGETHER_API_KEY ||
     keyStatus.CLOUDFLARE_AI_TOKEN ||
