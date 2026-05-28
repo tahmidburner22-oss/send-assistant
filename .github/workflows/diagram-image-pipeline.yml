@@ -78,6 +78,7 @@ jobs:
       # miss it and so we don't burn more rows on Pollinations 402s.
       - name: Provider key diagnostic
         env:
+          DEAPI_API_KEY: ${{ secrets.DEAPI_API_KEY }}
           TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
           CLOUDFLARE_AI_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -86,13 +87,14 @@ jobs:
         run: |
           status() { if [ -n "$1" ]; then echo "set (length=${#1})"; else echo "MISSING"; fi; }
           echo "::group::Provider key visibility"
+          echo "DEAPI_API_KEY:         $(status "$DEAPI_API_KEY")"
           echo "GEMINI_API_KEY:        $(status "$GEMINI_API_KEY")"
           echo "TOGETHER_API_KEY:      $(status "$TOGETHER_API_KEY")"
           echo "CLOUDFLARE_AI_TOKEN:   $(status "$CLOUDFLARE_AI_TOKEN")"
           echo "CLOUDFLARE_ACCOUNT_ID: $(status "$CLOUDFLARE_ACCOUNT_ID")"
           echo "HUGGINGFACE_TOKEN:     $(status "$HUGGINGFACE_TOKEN")"
           echo "::endgroup::"
-          if [ -z "$GEMINI_API_KEY" ] && [ -z "$TOGETHER_API_KEY" ] && \
+          if [ -z "$DEAPI_API_KEY" ] && [ -z "$GEMINI_API_KEY" ] && [ -z "$TOGETHER_API_KEY" ] && \
              [ -z "$CLOUDFLARE_AI_TOKEN" ] && [ -z "$HUGGINGFACE_TOKEN" ]; then
             echo "::error title=No provider key reached the workflow::None of GEMINI_API_KEY, TOGETHER_API_KEY, CLOUDFLARE_AI_TOKEN, HUGGINGFACE_TOKEN is visible to this run. Pollinations alone returns HTTP 402 in 2026 so the runner cannot generate any AI images. FIX: open Settings → Secrets and variables → Actions and confirm a secret named EXACTLY 'GEMINI_API_KEY' (case-sensitive, no spaces) exists at the REPOSITORY scope (not Environment, not Codespaces, not Dependabot). If it is named differently or in the wrong scope, delete and re-add it."
             echo ""
@@ -104,6 +106,7 @@ jobs:
         env:
           # Optional — set as repository secrets to enable. The pipeline
           # works with none of these (Pollinations only).
+          DEAPI_API_KEY: ${{ secrets.DEAPI_API_KEY }}
           TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
           CLOUDFLARE_AI_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
