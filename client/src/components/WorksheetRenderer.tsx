@@ -155,9 +155,13 @@ export function renderMath(text: string | any): string {
   }
   if (!text) return "";
 
-  // Convert literal \n escape sequences (from JSON serialisation) to real newlines
-  // This fixes the "random backslash at end of sentences" rendering bug
-  text = text.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+  // Convert literal \n / \t escape sequences (from JSON serialisation) to real
+  // newline / tab characters. The negative lookahead protects LaTeX commands
+  // that begin with "\n" or "\t" — \nabla, \neq, \notin, \nu, \times, \text,
+  // \theta, \tau, \tilde — so the slash-then-letter pattern survives intact
+  // for KaTeX. Without the lookahead these regexes mangle the math (this is
+  // what produced the "ightarrow" / "abla" rendering bugs).
+  text = text.replace(/\\n(?![a-zA-Z])/g, '\n').replace(/\\t(?![a-zA-Z])/g, '\t');
 
   // Strip legacy decorative pre-amble lines — "Study/Look at/Examine the diagram
   // carefully, then answer the questions" (any capitalisation, with or without
@@ -209,6 +213,49 @@ export function renderMath(text: string | any): string {
   result = result.replace(/\x0c([a-zA-Z]+)/g, (match, suffix) => {
     const candidate = 'f' + suffix;
     const knownCommands = ['frac', 'frown', 'flat', 'forall', 'fbox', 'footnotesize'];
+    if (knownCommands.some(cmd => candidate.startsWith(cmd))) {
+      return '\\' + candidate;
+    }
+    return match;
+  });
+
+  // ── Step 0-pre-0b: recover BS/LF/CR-mangled LaTeX commands ──────────────────
+  // For worksheets cached with the older parseWithFixes (which left \b / \n / \r
+  // alone), JSON.parse consumed the backslash and replaced it with the matching
+  // control character. We restore the leading backslash when the prefix-letter +
+  // suffix forms a known LaTeX command. This is the same pattern as the \x09 /
+  // \x0c handlers above, extended to the rest of the JSON-conflict escapes.
+  // Replace backspace (\x08) + letter sequence (\beta, \binom, \boxed, \begin, \bf, \bigg…)
+  result = result.replace(/\x08([a-zA-Z]+)/g, (match, suffix) => {
+    const candidate = 'b' + suffix;
+    const knownCommands = ['beta', 'binom', 'boxed', 'begin', 'bf', 'bigg', 'big',
+      'bigcup', 'bigcap', 'bigtriangleup', 'bigtriangledown', 'bot', 'bowtie',
+      'bmod', 'bullet', 'bar', 'breve', 'because'];
+    if (knownCommands.some(cmd => candidate.startsWith(cmd))) {
+      return '\\' + candidate;
+    }
+    return match;
+  });
+  // Replace newline (\x0a) + letter sequence (\nabla, \neq, \notin, \nu, \ne, \ni…)
+  // Guarded: we ONLY restore when the suffix forms a known LaTeX command, so a
+  // genuine newline in flowing prose followed by a word is left alone.
+  result = result.replace(/\x0a([a-zA-Z]+)/g, (match, suffix) => {
+    const candidate = 'n' + suffix;
+    const knownCommands = ['nabla', 'neq', 'ne', 'ni', 'notin', 'nu', 'nleq',
+      'ngeq', 'nsubseteq', 'nexists', 'nmid', 'nparallel', 'negthickspace',
+      'negthinspace', 'negmedspace'];
+    if (knownCommands.some(cmd => candidate === cmd)) {
+      return '\\' + candidate;
+    }
+    return match;
+  });
+  // Replace carriage return (\x0d) + letter sequence (\rightarrow, \rho, \rangle, \rfloor, \right, \rm…)
+  // This is the fix for the "ightarrow" rendering bug specifically.
+  result = result.replace(/\x0d([a-zA-Z]+)/g, (match, suffix) => {
+    const candidate = 'r' + suffix;
+    const knownCommands = ['rightarrow', 'rho', 'rangle', 'rfloor', 'rceil',
+      'right', 'rm', 'rule', 'raisebox', 'rightleftharpoons', 'rightharpoonup',
+      'rightharpoondown', 'Rightarrow'];
     if (knownCommands.some(cmd => candidate.startsWith(cmd))) {
       return '\\' + candidate;
     }
@@ -1340,9 +1387,10 @@ function formatContent(
   }
   if (!content) return null;
 
-  // Convert literal \n escape sequences (from JSON serialisation) to real newlines
-  // This fixes the "random backslash at end of sentences" rendering bug
-  content = content.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+  // Convert literal \n / \t escape sequences (from JSON serialisation) to real
+  // newline / tab characters. Negative-lookahead preserves LaTeX commands like
+  // \nabla, \neq, \nu, \times, \text, \theta. See renderMath() above for context.
+  content = content.replace(/\\n(?![a-zA-Z])/g, '\n').replace(/\\t(?![a-zA-Z])/g, '\t');
 
   const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
   // Strip [[DIAGRAM:{...}]] markers — handled by the outer section renderer.
@@ -3783,7 +3831,7 @@ function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnTy
   //       The digit 6 is in the ten-thousands column
   // Sub-lines must render un-numbered under their parent step.
 
-  const normalised = content.replace(/\\n/g, '\n');
+  const normalised = content.replace(/\\n(?![a-zA-Z])/g, '\n');
   // Keep original indentation so we can detect sub-steps
   const rawLines = normalised.split('\n').filter(l => l.trim().length > 0);
 
@@ -4048,8 +4096,8 @@ function WordProblemsSection({ content, fmt, overlayColor = "white", bookMode = 
   // Pre-process: split concatenated numbered problems onto separate lines.
   // The AI sometimes outputs problems separated by " . " (space-period-space)
   // without numbering, e.g. ". Problem one . Problem two . Problem three"
-  // Step 1: Normalise \n escape sequences
-  let normalised = content.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+  // Step 1: Normalise \n escape sequences (lookahead protects LaTeX commands like \nabla)
+  let normalised = content.replace(/\\n(?![a-zA-Z])/g, '\n').replace(/\\t(?![a-zA-Z])/g, '\t');
   // Step 2: Strip leading ". " artifact (AI sometimes starts content with a period)
   normalised = normalised.replace(/^[.\s]+/, '');
   // Step 3: Split on " . " (space-period-space) which the AI uses as a problem separator
@@ -6147,7 +6195,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     // lines, matching the teacher steering ("questions should never be
                     // bunched together; every question must have its own answer lines").
                     content = String(content || "")
-                      .replace(/\\n/g, "\n")
+                      .replace(/\\n(?![a-zA-Z])/g, "\n")
                       // ". 2." or "? 2." etc → newline before the numeral
                       .replace(/([.?!])\s+(?=\d{1,2}[.)]\s+\S)/g, "$1\n")
                       // Comma- or semicolon-separated numbered prefixes
@@ -6443,7 +6491,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     // Parse content into mistake blocks with labelled parts
                     const rawCM = content || "";
                     const normCM = rawCM
-                      .replace(/\\n/g, "\n")
+                      .replace(/\\n(?![a-zA-Z])/g, "\n")
                       .replace(/(Mistake\s*\d+\s*:)/gi, "\n$1")
                       .replace(/(What pupils often write\s*:)/gi, "\n$1")
                       .replace(/(Why that'?s wrong[^:]*:)/gi, "\n$1")
@@ -7002,7 +7050,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
                       // Normalise the content: ensure each Mistake N: header starts on its own line
                       const normalizedContent = rawContent
-                        .replace(/\\n/g, "\n")
+                        .replace(/\\n(?![a-zA-Z])/g, "\n")
                         .replace(/(Mistake\s*\d+\s*:)/gi, "\n$1")
                         .replace(/(What pupils often write\s*:)/gi, "\n$1")
                         .replace(/(Why that'?s wrong[^:]*:)/gi, "\n$1")

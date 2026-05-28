@@ -183,6 +183,16 @@ router.get("/test-ai/:provider", requireAuth, requireAdmin, async (req: Request,
       return res.json({ ok: false, error: `HTTP ${r.status}` });
     }
 
+    if (provider === "deepseek") {
+      const r = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "deepseek-chat", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+      });
+      if (r.ok) return res.json({ ok: true });
+      return res.json({ ok: false, error: `HTTP ${r.status}` });
+    }
+
     res.json({ ok: false, error: "Unknown provider" });
   } catch (err: any) {
     res.json({ ok: false, error: err.message });
