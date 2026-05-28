@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-28T14:43:25.452Z",
+  "updatedAt": "2026-05-28T18:08:49.405Z",
   "rows": {
     "pdl-0003": {
       "status": "svg-rendered",
@@ -1400,35 +1400,12 @@
       "rescueNote": "Auto-rescued from provider-out at 2026-05-28T02:40:33.012Z after a paid provider key became available."
     },
     "dlc-00886": {
-      "status": "provider-out",
+      "status": "ai-failed",
       "strategy": "ai-pictorial",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
-      "attemptsLog": [
-        {
-          "attempt": 1,
-          "provider": "pollinations",
-          "qa": {
-            "ok": false,
-            "fail": "bg",
-            "reason": "background-not-white (0.0% white edge)"
-          }
-        },
-        {
-          "attempt": 2,
-          "provider": "pollinations",
-          "qa": {
-            "ok": false,
-            "fail": "bg",
-            "reason": "background-not-white (0.0% white edge)"
-          }
-        },
-        {
-          "attempt": 3,
-          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
-        }
-      ],
-      "updatedAt": "2026-05-28T14:38:55.137Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "lastError": "tjs.recognize is not a function",
+      "attemptsLog": null,
+      "updatedAt": "2026-05-28T18:04:19.709Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00891": {
       "status": "ai-failed",
@@ -1583,35 +1560,12 @@
       "rescueNote": "Auto-rescued from provider-out at 2026-05-27T05:01:17.337Z after a paid provider key became available."
     },
     "dlc-00895": {
-      "status": "provider-out",
+      "status": "ai-failed",
       "strategy": "ai-pictorial",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
-      "attemptsLog": [
-        {
-          "attempt": 1,
-          "provider": "pollinations",
-          "qa": {
-            "ok": false,
-            "fail": "bg",
-            "reason": "background-not-white (0.0% white edge)"
-          }
-        },
-        {
-          "attempt": 2,
-          "provider": "pollinations",
-          "qa": {
-            "ok": false,
-            "fail": "bg",
-            "reason": "background-not-white (0.0% white edge)"
-          }
-        },
-        {
-          "attempt": 3,
-          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
-        }
-      ],
-      "updatedAt": "2026-05-28T14:38:55.125Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "lastError": "tjs.recognize is not a function",
+      "attemptsLog": null,
+      "updatedAt": "2026-05-28T18:04:19.191Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00896": {
       "status": "ai-failed",
@@ -1851,11 +1805,20 @@
         },
         {
           "attempt": 2,
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (0.0% white edge)"
+          }
+        },
+        {
+          "attempt": 3,
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:54.939Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:19.298Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00904": {
       "status": "provider-out",
@@ -1885,21 +1848,44 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:55.849Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:19.203Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00905": {
-      "status": "provider-out",
+      "status": "ai-failed",
       "strategy": "ai-pictorial",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "lastError": "qa-rejected-after-retries",
       "attemptsLog": [
         {
           "attempt": 1,
-          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (0.0% white edge)"
+          }
+        },
+        {
+          "attempt": 2,
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (0.0% white edge)"
+          }
+        },
+        {
+          "attempt": 3,
+          "provider": "pollinations",
+          "qa": {
+            "ok": false,
+            "fail": "bg",
+            "reason": "background-not-white (0.0% white edge)"
+          }
         }
       ],
-      "updatedAt": "2026-05-28T14:38:55.264Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:08:49.404Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00906": {
       "status": "provider-out",
@@ -1911,8 +1897,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:55.443Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:19.703Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00907": {
       "status": "ai-failed",
@@ -1960,8 +1946,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:55.476Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:19.849Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00910": {
       "status": "provider-out",
@@ -1973,8 +1959,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:55.767Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:20.144Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00909": {
       "status": "ai-failed",
@@ -2022,8 +2008,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:55.812Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:20.154Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00912": {
       "status": "provider-out",
@@ -2035,8 +2021,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.102Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:20.341Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00913": {
       "status": "provider-out",
@@ -2048,8 +2034,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.153Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:20.608Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00914": {
       "status": "provider-out",
@@ -2061,8 +2047,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.172Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:20.593Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00916": {
       "status": "provider-out",
@@ -2074,8 +2060,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.492Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:21.041Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00915": {
       "status": "provider-out",
@@ -2087,8 +2073,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.434Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:20.818Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00917": {
       "status": "provider-out",
@@ -2100,8 +2086,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.511Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:21.058Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00918": {
       "status": "provider-out",
@@ -2113,8 +2099,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.764Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:21.297Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00919": {
       "status": "provider-out",
@@ -2126,8 +2112,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.835Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:21.488Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00920": {
       "status": "provider-out",
@@ -2139,8 +2125,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:56.837Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:21.527Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00921": {
       "status": "provider-out",
@@ -2152,8 +2138,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.126Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.495Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:21.983Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00922": {
       "status": "provider-out",
@@ -2165,8 +2151,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.161Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:21.925Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00923": {
       "status": "provider-out",
@@ -2178,8 +2164,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.177Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:21.967Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00924": {
       "status": "provider-out",
@@ -2191,8 +2177,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.469Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:22.380Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00925": {
       "status": "provider-out",
@@ -2204,8 +2190,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.504Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:22.417Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00926": {
       "status": "provider-out",
@@ -2217,8 +2203,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.503Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:22.454Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00927": {
       "status": "provider-out",
@@ -2230,8 +2216,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.787Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:22.833Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00929": {
       "status": "provider-out",
@@ -2243,8 +2229,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.829Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:22.978Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00928": {
       "status": "provider-out",
@@ -2256,8 +2242,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:57.826Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:22.881Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00930": {
       "status": "provider-out",
@@ -2269,8 +2255,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.105Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:23.281Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00931": {
       "status": "provider-out",
@@ -2282,8 +2268,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.143Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:23.333Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00932": {
       "status": "provider-out",
@@ -2295,8 +2281,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.161Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:23.510Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00933": {
       "status": "provider-out",
@@ -2308,8 +2294,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.426Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:23.746Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00934": {
       "status": "provider-out",
@@ -2321,8 +2307,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.479Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:23.766Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00935": {
       "status": "provider-out",
@@ -2334,8 +2320,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.484Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:23.996Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00898": {
       "status": "ai-failed",
@@ -2353,8 +2339,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.847Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:24.555Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00936": {
       "status": "provider-out",
@@ -2366,8 +2352,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.740Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:24.210Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00937": {
       "status": "provider-out",
@@ -2379,8 +2365,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:58.804Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:24.214Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00941": {
       "status": "provider-out",
@@ -2392,8 +2378,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.117Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:24.671Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00942": {
       "status": "provider-out",
@@ -2405,8 +2391,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.203Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:25.018Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00943": {
       "status": "provider-out",
@@ -2418,8 +2404,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.410Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:25.168Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00939": {
       "status": "provider-out",
@@ -2431,8 +2417,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.083Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:24.770Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00944": {
       "status": "provider-out",
@@ -2444,8 +2430,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.448Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:25.229Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00945": {
       "status": "provider-out",
@@ -2457,8 +2443,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.524Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:25.484Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00946": {
       "status": "provider-out",
@@ -2470,8 +2456,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.740Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:25.619Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00947": {
       "status": "provider-out",
@@ -2483,8 +2469,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.764Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:25.684Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00948": {
       "status": "provider-out",
@@ -2496,8 +2482,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:38:59.866Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:25.947Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00949": {
       "status": "provider-out",
@@ -2509,8 +2495,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:39:00.059Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:26.067Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00950": {
       "status": "provider-out",
@@ -2522,8 +2508,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:39:00.074Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:26.140Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00951": {
       "status": "provider-out",
@@ -2535,8 +2521,8 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:39:00.214Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T14:38:53.496Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:26.400Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00952": {
       "status": "provider-out",
@@ -2548,15 +2534,20 @@
           "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
         }
       ],
-      "updatedAt": "2026-05-28T14:39:00.376Z",
-      "rescueNote": "Auto-rescued from provider-out at 2026-05-27T05:01:17.337Z after a paid provider key became available."
+      "updatedAt": "2026-05-28T18:04:26.576Z",
+      "rescueNote": "Auto-rescued from provider-out at 2026-05-28T18:04:17.564Z after a paid provider key became available."
     },
     "dlc-00953": {
-      "status": "pending",
+      "status": "provider-out",
       "strategy": "ai-pictorial",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429: {\\n  \\\"error\\\": {\\n    \\\"code\\\": 429,\\n    \\\"message\\\": \\\"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your cur\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
-      "attemptsLog": null,
-      "updatedAt": "2026-05-27T05:01:17.337Z",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]",
+      "attemptsLog": [
+        {
+          "attempt": 1,
+          "providerError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+        }
+      ],
+      "updatedAt": "2026-05-28T18:04:26.578Z",
       "rescueNote": "Auto-rescued from provider-out at 2026-05-27T05:01:17.337Z after a paid provider key became available."
     },
     "dlc-00954": {
