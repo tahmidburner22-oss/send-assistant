@@ -30,6 +30,7 @@ const PRESET_PROVIDERS = [
   { id: "openai", label: "OpenAI", description: "GPT-4o Mini and GPT-4o. Pay-as-you-go.", url: "https://platform.openai.com/api-keys", placeholder: "sk-...", defaultModel: "gpt-4o-mini", badge: "Paid", badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
   { id: "openrouter", label: "OpenRouter", description: "Access 100+ models from one API key.", url: "https://openrouter.ai/keys", placeholder: "sk-or-...", defaultModel: "", badge: "Multi-model", badgeColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" },
   { id: "claude", label: "Anthropic Claude", description: "Claude 3.5 Sonnet — excellent for writing.", url: "https://console.anthropic.com/settings/keys", placeholder: "sk-ant-...", defaultModel: "claude-3-5-sonnet-20241022", badge: "Paid", badgeColor: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" },
+  { id: "deepseek", label: "DeepSeek", description: "DeepSeek Chat / Reasoner — strong maths & STEM, low cost.", url: "https://platform.deepseek.com/api_keys", placeholder: "sk-...", defaultModel: "deepseek-chat", badge: "Paid", badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
   { id: "huggingface", label: "HuggingFace", description: "Open-source models via Inference API.", url: "https://huggingface.co/settings/tokens", placeholder: "hf_...", defaultModel: "", badge: "Free tier", badgeColor: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300" },
 ];
 
