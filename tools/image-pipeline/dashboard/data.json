@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-05-28T18:08:49.458Z",
+  "updatedAt": "2026-05-28T20:46:21.047Z",
   "counts": {
     "total": 5975,
     "done": 0,
     "svg-rendered": 44,
-    "pending": 5859,
-    "ai-failed": 25,
-    "provider-out": 47,
+    "pending": 5856,
+    "ai-failed": 26,
+    "provider-out": 49,
     "skipped": 0
   },
   "byPhase": [
@@ -14,8 +14,8 @@
       "phase": "GCSE",
       "total": 1988,
       "done": 0,
-      "pending": 1920,
-      "failed": 68
+      "pending": 1917,
+      "failed": 71
     },
     {
       "phase": "KS3",
@@ -1109,8 +1109,8 @@
       "id": "dlc-00912",
       "title": "Factorising — x² + 2x − 15 = (x + 5)(x − 3)",
       "subject": "Mathematics",
-      "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "status": "ai-failed",
+      "lastError": "qa-rejected-after-retries"
     },
     {
       "id": "dlc-00913",
@@ -1395,6 +1395,27 @@
     {
       "id": "dlc-00953",
       "title": "Proof identity — (n + 1)² − n² ≡ 2n + 1",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+    },
+    {
+      "id": "dlc-00954",
+      "title": "Function notation — f(x) = 2x + 1 with f(3) substitution",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+    },
+    {
+      "id": "dlc-00955",
+      "title": "Composite function — fg(x) order matters card",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+    },
+    {
+      "id": "dlc-00956",
+      "title": "Inverse function — f⁻¹(x) reflection in y = x",
       "subject": "Mathematics",
       "status": "provider-out",
       "lastError": "All providers exhausted: [{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
