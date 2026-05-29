@@ -1813,35 +1813,63 @@ function formatContent(
         subject: parentSubject,
       });
       const workingRows = workingOutBox ? workingOutRowsForMarks(markCount) : 0;
+      // Lane 2.8 — derive a screen-reader-friendly question label so a
+      // VI / blind pupil hears "Question worth 4 marks: Calculate the
+      // …" instead of "button button button". Strips HTML tags from
+      // the stem (renderMath emits <math> nodes) and caps at 200 chars
+      // so the announcement stays comprehensible.
+      const stemPlain = String(stemText).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      const stemForAria = stemPlain.length > 200 ? stemPlain.slice(0, 197) + "…" : stemPlain;
+      const ariaQuestionLabel =
+        `Question worth ${markCount} ${markCount === 1 ? "mark" : "marks"}: ${stemForAria}`;
       elements.push(
-        <div key={idx} style={{ marginBottom: paragraphSpacing }}>
+        <div
+          key={idx}
+          style={{ marginBottom: paragraphSpacing }}
+          role="group"
+          aria-label={ariaQuestionLabel}
+        >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily, marginBottom: bookMode ? "2px" : "6px" }}>
             <span dangerouslySetInnerHTML={{ __html: renderMath(stemText) }} />
-            <span style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700, flexShrink: 0 }}>{markMatch[2]}</span>
+            {/* Lane 2.8 — mark badge announced via the parent group's
+                aria-label, so we hide the badge from screen readers
+                to avoid double-announcing the mark count. */}
+            <span
+              aria-hidden="true"
+              style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700, flexShrink: 0 }}
+            >{markMatch[2]}</span>
           </div>
           {/* Per-question answer affordances — suppressed in Book Mode */}
           {!bookMode && (
             <>
               {/* Dot-grid Working-Out box (calculation stems only) */}
               {workingOutBox && (
-                <div style={{
-                  border: "1px solid #d1d5db",
-                  borderRadius: "4px",
-                  padding: "6px 10px",
-                  background: "repeating-radial-gradient(circle at 6px 6px, #d1d5db 0 1px, transparent 1px 12px)",
-                  marginBottom: "6px",
-                }}>
+                <div
+                  role="group"
+                  aria-label="Working-out space"
+                  style={{
+                    border: "1px solid #d1d5db",
+                    borderRadius: "4px",
+                    padding: "6px 10px",
+                    background: "repeating-radial-gradient(circle at 6px 6px, #d1d5db 0 1px, transparent 1px 12px)",
+                    marginBottom: "6px",
+                  }}
+                >
                   <div style={{ fontSize: `${textSize - 3}px`, color: "#6b7280", fontWeight: 600, fontFamily, marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                     Working out
                   </div>
-                  <div style={{ height: `${workingRows * 22}px` }} />
+                  <div style={{ height: `${workingRows * 22}px` }} aria-hidden="true" />
                 </div>
               )}
               {/* Writing lines — sized by marks via linesForMarks() */}
               {answerLines > 0 && (
-                <div style={{ border: "1px solid #d1d5db", borderRadius: "4px", padding: "4px 8px", background: "#fafafa" }}>
+                <div
+                  role="group"
+                  aria-label={`Answer space, ${answerLines} ${answerLines === 1 ? "line" : "lines"}`}
+                  style={{ border: "1px solid #d1d5db", borderRadius: "4px", padding: "4px 8px", background: "#fafafa" }}
+                >
                   {Array.from({ length: answerLines }).map((_, li) => (
-                    <div key={li} style={{ borderBottom: li < answerLines - 1 ? "1px solid #e5e7eb" : "none", height: "28px" }} />
+                    <div key={li} aria-hidden="true" style={{ borderBottom: li < answerLines - 1 ? "1px solid #e5e7eb" : "none", height: "28px" }} />
                   ))}
                 </div>
               )}
@@ -1849,7 +1877,7 @@ function formatContent(
               {workingOutBox && (
                 <div style={{ display: "flex", alignItems: "center", marginTop: "6px", gap: "8px" }}>
                   <span style={{ fontSize: `${textSize - 1}px`, color: "#374151", fontFamily, fontWeight: 700, whiteSpace: "nowrap" }}>Final answer:</span>
-                  <div style={{ flex: 1, borderBottom: "1.5px solid #1f2937", height: "26px" }} />
+                  <div aria-label="Final answer line" role="textbox" aria-readonly="true" style={{ flex: 1, borderBottom: "1.5px solid #1f2937", height: "26px" }} />
                 </div>
               )}
             </>
