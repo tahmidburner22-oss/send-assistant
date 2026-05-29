@@ -63,6 +63,8 @@ import {
   enforceDiagramDependencyIntegrity,
   enforceDistractorPedagogy,
   enforceTier3VocabularyDeclared,
+  // Lane 1.6 + 1.7 — Phase 4 SEND-marker enforcer.
+  enforceSendOverlayMarkers,
   type PostValidatorWorksheet,
   type PostValidatorOptions,
   type PostValidatorResult,
@@ -218,6 +220,16 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     },
     // Phase 1 — curriculum + GCSE spec lock.
     { name: "spec-anchor-presence", fn: (ws, opts) => enforceSpecAnchorPresence(ws, opts) },
+    // Lane 1.6 + 1.7 — Phase 4 SEND-marker enforcer. Runs BEFORE
+    // self-reflection-topic-anchor so the reflection validator sees the
+    // post-rename Anxiety section titles. Inserts a fresh section for
+    // HI worksheets when the AI omitted the Topic Summary block, and
+    // renames the Challenge / Section 1 titles for Anxiety/SEMH
+    // worksheets to remove threat-language.
+    {
+      name: "send-overlay-markers",
+      fn: (ws, opts) => enforceSendOverlayMarkers(ws, opts),
+    },
     // Phase 2 — topic-specific Self-Reflection.
     {
       name: "self-reflection-topic-anchor",

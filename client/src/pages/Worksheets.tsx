@@ -83,8 +83,22 @@ import {
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
   MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode, BookOpenCheck, Camera,
-  Languages,
+  Languages, MoreHorizontal,
 } from "lucide-react";
+
+// Lane 1.3 — toolbar declutter. Secondary actions collapse into a single
+// "More…" dropdown so the primary toolbar surfaces ≤10 actions for a
+// teacher under classroom time pressure. Primary actions stay
+// individually visible; everything else (export formats, SEND-access
+// toggles, class/lesson tools) lives behind one click.
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 /* ════════════════════════════════════════════════════════════════════════════
  * NAVIGATION INDEX (this file is ~6,500 lines — grep `// §` to jump)
@@ -551,6 +565,34 @@ function isUnresolvedDiagramSection(section: any): boolean {
   const hasPlaceholderHeader = isPlaceholderDiagramValue(title) || isPlaceholderDiagramValue(caption) || /\bdiagram none\b/i.test(`${title} ${caption}`);
   const diagramDependentQuestions = /\bdiagram\b/i.test(content) && /\b(?:q\d|identify|label|shown|illustrated|using the diagram|object in the diagram)\b/i.test(content);
   return hasPlaceholderHeader || (type.includes('diagram') && diagramDependentQuestions);
+}
+
+/**
+ * Lane 1.4 — Stable DJB2 hash over a worksheet's pupil-facing sections.
+ * Used to detect edits between the last successful Print / PDF and the
+ * current state. Excludes `teacherOnly` sections, mark-scheme, and
+ * teacher-notes types so a teacher editing the answer key alone does
+ * NOT trigger the "edited since last print" banner. Pure / cheap to
+ * recompute on every render — runs in low microseconds for typical
+ * worksheets.
+ */
+function hashPupilSections(ws: { sections?: Array<{ title?: string; content?: string; type?: string; teacherOnly?: boolean }> } | null | undefined): string | null {
+  if (!ws || !Array.isArray(ws.sections) || ws.sections.length === 0) return null;
+  const TEACHER_TYPES = new Set(["mark-scheme", "answers", "teacher-notes", "teacher-note", "teacher-key"]);
+  const parts: string[] = [];
+  for (const s of ws.sections) {
+    if (s.teacherOnly) continue;
+    const type = String(s.type || "").toLowerCase();
+    if (TEACHER_TYPES.has(type)) continue;
+    parts.push(`${s.type || ""}|${s.title || ""}|${s.content || ""}`);
+  }
+  const text = parts.join("\n--§--\n");
+  let hash = 5381;
+  for (let i = 0; i < text.length; i++) {
+    hash = ((hash << 5) + hash) ^ text.charCodeAt(i);
+    hash >>>= 0;
+  }
+  return hash.toString(16).padStart(8, "0");
 }
 
 // ═══ §MAIN · default export Worksheets() — MAIN COMPONENT ═════════════════
@@ -1143,8 +1185,15 @@ export default function Worksheets() {
   const [printPreviewHtml, setPrintPreviewHtml] = useState<string>("");
   const [printPreviewLoading, setPrintPreviewLoading] = useState(false);
   const [printPreviewViewMode, setPrintPreviewViewMode] = useState<"teacher" | "student">("teacher");
-  const [diffLoading, setDiffLoading] = useState<string | null>(null);
-  const [diffVersions, setDiffVersions] = useState<Record<string, AIWorksheet>>({});
+  // Lane 1.4 — view-consistency banner. Tracks the pupil-facing content
+  // hash at the moment of last successful print or PDF download. When
+  // the current pupil-facing content hash drifts from this, we render a
+  // yellow banner above the toolbar so a teacher never prints a stale
+  // copy after editing. Reset to null when the worksheet identity
+  // changes (new generation) so a fresh worksheet doesn't immediately
+  // surface the banner.
+  const [lastPrintedPupilHash, setLastPrintedPupilHash] = useState<string | null>(null);
+  const [diffLoading, setDiffLoading] = useState<string | null>(null);  const [diffVersions, setDiffVersions] = useState<Record<string, AIWorksheet>>({});
   // SEND need override for the scaffold dialog (lets teacher pick a different SEND need)
   const [sendNeedForScaffold, setSendNeedForScaffold] = useState<string>("");
 
@@ -1211,6 +1260,32 @@ export default function Worksheets() {
     document.addEventListener("adaptly:changeDiagram", handler);
     return () => document.removeEventListener("adaptly:changeDiagram", handler);
   }, [openDiagramLibrary]);
+
+  // Lane 1.4 — current pupil-facing content hash, recomputed on every
+  // edit. Cheap (DJB2 over a few KB of text). The banner below is shown
+  // when this differs from `lastPrintedPupilHash`.
+  const currentPupilHash = useMemo(
+    () => hashPupilSections(generated as any),
+    [generated],
+  );
+
+  // Lane 1.4 — reset the "last printed" snapshot whenever a fresh
+  // worksheet is loaded (different title / different total section
+  // count = different worksheet identity). Without this, generating
+  // worksheet B after printing A would falsely show the banner on B.
+  const generatedTitle = (generated as any)?.title || "";
+  const generatedSectionCount = Array.isArray((generated as any)?.sections)
+    ? (generated as any).sections.length
+    : 0;
+  useEffect(() => {
+    setLastPrintedPupilHash(null);
+  }, [generatedTitle, generatedSectionCount]);
+
+  const showViewConsistencyBanner =
+    !!generated &&
+    !!lastPrintedPupilHash &&
+    !!currentPupilHash &&
+    lastPrintedPupilHash !== currentPupilHash;
 
   const handleDiagramSelect = useCallback((entry: any) => {
     if (changeDiagramSectionIndex === null || !generated) return;
@@ -3100,6 +3175,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       }
       document.body.removeChild(pdfIframe);
       pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
+      // Lane 1.4 — record the pupil-facing snapshot at the moment of
+      // successful PDF download so the view-consistency banner stays
+      // hidden until the teacher edits something.
+      if (currentPupilHash) setLastPrintedPupilHash(currentPupilHash);
       toast.success("PDF downloaded!");
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
@@ -3116,6 +3195,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   const handlePrintWithOptions = (options: PrintOptions) => {
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) return;
+    // Lane 1.4 — record the pupil-facing snapshot at the moment of
+    // print so the view-consistency banner stays hidden until the
+    // teacher next edits the worksheet. We stamp here (before the
+    // browser print dialog opens) because the dialog cannot easily
+    // signal completion back to React; the user clicking Print on
+    // the dialog is sufficient evidence of intent.
+    if (currentPupilHash) setLastPrintedPupilHash(currentPupilHash);
     const a11yId = (generated?.metadata as any)?.accessibilityProfile || activeA11yProfileId;
     const a11yProfile = a11yId && a11yId !== "standard" ? getA11yProfileById(a11yId) : null;
     // W9 / G12 — when the teacher has ticked "Append answer-key page" in the
@@ -5948,6 +6034,26 @@ ${s.content}`).join("\n\n"),
       ) : (
         /* ─── GENERATED WORKSHEET VIEW ──────────────────────────────── */
         <div className="space-y-4">
+          {/* Lane 1.4 — view-consistency banner. Shown when the teacher
+              has edited the pupil-facing content since the last
+              successful Print or PDF, so a stale copy never goes home
+              with a pupil. */}
+          {showViewConsistencyBanner && (
+            <div className="no-print flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              <AlertCircle className="h-4 w-4 flex-shrink-0 text-amber-600" />
+              <span className="flex-1">
+                You've edited this worksheet since the last print — open Print
+                Preview to confirm the pupil view is what you want before
+                printing again.
+              </span>
+              <button
+                onClick={() => handleOpenPrintPreview(viewMode)}
+                className="rounded border border-amber-400 bg-white px-2 py-0.5 text-xs font-medium text-amber-900 hover:bg-amber-100"
+              >
+                Preview
+              </button>
+            </div>
+          )}
           {/* Toolbar Row 1 */}
           <div className="flex flex-wrap items-center gap-2 no-print">
             <div className="flex bg-muted rounded-lg p-0.5">
@@ -5975,87 +6081,14 @@ ${s.content}`).join("\n\n"),
 
           {/* Toolbar Row 2 */}
           <div className="flex flex-wrap gap-2 no-print">
-            <Button variant="outline" size="sm" onClick={() => setShowOverlayPicker(!showOverlayPicker)}>
-              <Palette className="w-3.5 h-3.5 mr-1.5" /> Overlay
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowA11yPicker(!showA11yPicker)}
-              className={activeA11yProfileId !== "standard" ? "border-brand text-brand bg-brand-light" : ""}
-            >
-              <Eye className="w-3.5 h-3.5 mr-1.5" /> Typography
-              {activeA11yProfileId !== "standard" && (
-                <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">on</span>
-              )}
-            </Button>
-            {/* FEAT-005 — Pupil Companion mode (QR + hint ladder) */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCompanionDialogOpen(true)}
-              className={(generated?.metadata as any)?.companionShare ? "border-emerald-500 text-emerald-700 bg-emerald-50" : ""}
-              title="Issue a QR code for pupils to open a hint-scaffolded view of this worksheet"
-            >
-              <QrCode className="w-3.5 h-3.5 mr-1.5" /> Pupil mode
-              {(generated?.metadata as any)?.companionShare && (
-                <span className="ml-1 text-[10px] bg-emerald-500 text-white rounded-full px-1.5 py-0.5 flex-shrink-0">live</span>
-              )}
-            </Button>
-            {/* FEAT-004 — Class pack: build a per-pupil differentiated booklet */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setClassPackOpen(true)}
-              disabled={!generated || children.length === 0}
-              title={
-                children.length === 0
-                  ? "Register pupils first to build a class pack"
-                  : "Differentiate this worksheet for every pupil in your class — one booklet, one click"
-              }
-            >
-              <Users className="w-3.5 h-3.5 mr-1.5" /> Class pack
-              {children.length > 0 && (
-                <span className="ml-1 text-[10px] bg-muted rounded-full px-1.5 py-0.5 flex-shrink-0">{children.length}</span>
-              )}
-            </Button>
-            {/* FEAT-009 — Multi-modal lesson bundle (starter + Now/Next/Then + exit ticket) */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLessonBundleOpen(true)}
-              disabled={!generated}
-              title="Auto-pair this worksheet with a starter slide, Now/Next/Then visual, and exit ticket"
-            >
-              <BookOpenCheck className="w-3.5 h-3.5 mr-1.5" /> Lesson bundle
-            </Button>
-            {/* FEAT-010 — Scan-and-mark + closed-loop adaptive */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setScanMarkOpen(true)}
-              disabled={children.length === 0}
-              title={
-                children.length === 0
-                  ? "Register pupils first to use scan-and-mark"
-                  : "Photograph a completed worksheet — AI marks it and remembers misconceptions for next time"
-              }
-            >
-              <Camera className="w-3.5 h-3.5 mr-1.5" /> Scan &amp; mark
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSectionPicker(p => !p)}
-              className={showSectionPicker ? "border-brand text-brand bg-brand-light" : ""}
-            >
-              <Layers className="w-3.5 h-3.5 mr-1.5" /> Sections
-              {(hiddenSections.size > 0 || hideHeader) && (
-                <span className="ml-1 text-[10px] bg-brand text-white rounded-full w-4 h-4 flex items-center justify-center flex-shrink-0">
-                  {hiddenSections.size + (hideHeader ? 1 : 0)}
-                </span>
-              )}
-            </Button>
+            {/* Lane 1.3 — primary actions stay visible. Order: Edit
+                affordances → Export (PDF/Print) → Save → Differentiate
+                → Three-tier (LA/MA/HA) → More menu. Secondary surfaces
+                (Overlay, Typography, Pupil mode, Class pack, Lesson
+                bundle, Scan & mark, Sections, QTI, Translate, A11y
+                audit, Braille, Read Aloud, Scenario Swap, Assign) live
+                under the More dropdown so a teacher under classroom
+                time pressure sees ≤10 surfaces in this row. */}
             {!editMode ? (
               <>
                 <Button variant="outline" size="sm"
@@ -6088,83 +6121,7 @@ ${s.content}`).join("\n\n"),
               <FileDown className="w-3.5 h-3.5 mr-1.5" /> PDF
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-3.5 h-3.5 mr-1.5" /> Print</Button>
-            <Button variant="outline" size="sm" onClick={handleExportQti} title="Export as QTI 3.0 (for Canvas, Moodle, etc.)"><FileDown className="w-3.5 h-3.5 mr-1.5" /> QTI</Button>
-            {/* FEAT-PC6 — Translate (EAL bilingual) */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                // Auto-pre-select language from any pupil in the class with preferredLanguage set.
-                const fromClass = children.find(c => c.preferredLanguage && c.preferredLanguage !== "en");
-                setTranslateLang(fromClass?.preferredLanguage || (generated as any)?.bilingual?.lang || "en");
-                setShowTranslateDialog(true);
-              }}
-              disabled={translateLoading}
-              className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-              title="Translate worksheet to a UK EAL language (bilingual side-by-side)"
-            >
-              {translateLoading ? (
-                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Translating…</>
-              ) : (
-                <><Languages className="w-3.5 h-3.5" /> Translate</>
-              )}
-            </Button>
-            {/* FEAT-PC7 — WCAG 2.2 AA accessibility audit */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRunAccessibilityAudit}
-              disabled={auditLoading}
-              className={`gap-1.5 ${auditResult?.passed ? "border-green-400 text-green-700 bg-green-50" : auditResult ? "border-amber-400 text-amber-700 bg-amber-50" : "border-sky-300 text-sky-700 hover:bg-sky-50"}`}
-              title="Run a WCAG 2.2 AA accessibility audit on the rendered worksheet"
-            >
-              {auditLoading ? (
-                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Auditing…</>
-              ) : auditResult?.passed ? (
-                <><CheckCircle className="w-3.5 h-3.5" /> WCAG 2.2 AA</>
-              ) : auditResult ? (
-                <><AlertCircle className="w-3.5 h-3.5" /> A11y · {auditResult.violations.length}</>
-              ) : (
-                <><CheckCircle className="w-3.5 h-3.5" /> A11y audit</>
-              )}
-            </Button>
-            {/* FEAT-PC7 — Braille (.brf) export */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportBraille}
-              disabled={brailleLoading}
-              className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50"
-              title="Export UEB Grade 2 Braille (.brf) — server-side transcription"
-            >
-              {brailleLoading ? (
-                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Braille…</>
-              ) : (
-                <><FileDown className="w-3.5 h-3.5" /> Braille (.brf)</>
-              )}
-            </Button>
             <Button variant="outline" size="sm" onClick={handleSave}><Save className="w-3.5 h-3.5 mr-1.5" /> Save</Button>
-            {/* Read Aloud — neural TTS reads the full worksheet */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReadAloud}
-              disabled={ttsLoading}
-              className={`gap-1.5 ${
-                ttsPlaying
-                  ? "border-green-400 text-green-700 bg-green-50 hover:bg-green-100"
-                  : "border-purple-300 text-purple-700 hover:bg-purple-50"
-              }`}
-              title={ttsPlaying ? "Stop reading" : "Read worksheet aloud"}
-            >
-              {ttsLoading ? (
-                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading...</>
-              ) : ttsPlaying ? (
-                <><VolumeX className="w-3.5 h-3.5" /> Stop</>  
-              ) : (
-                <><Volume2 className="w-3.5 h-3.5" /> Read Aloud</>
-              )}
-            </Button>
             <Button variant="outline" size="sm" onClick={() => setShowDiffDialog(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
               <Sparkles className="w-3.5 h-3.5" /> Differentiate
             </Button>
@@ -6190,13 +6147,194 @@ ${s.content}`).join("\n\n"),
                 }}
               />
             )}
-            <Button variant="outline" size="sm" onClick={() => setShowScenarioDialog(true)} className="gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50" disabled={scenarioSwapLoading}>
-              {scenarioSwapLoading ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Swapping...</> : <><RefreshCw className="w-3.5 h-3.5" /> Scenario Swap</>}
-            </Button>
+
+            {/* Lane 1.3 — More… dropdown. All non-primary actions are
+                grouped here in the order a teacher would reach for
+                them: structural editing, export formats, SEND access
+                toggles, class/lesson tools. Existing onClick handlers
+                are reused unchanged so behaviour is identical to the
+                pre-decutter toolbar. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <MoreHorizontal className="w-3.5 h-3.5" /> More
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Layout</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => setShowSectionPicker(p => !p)}
+                  className="cursor-pointer"
+                >
+                  <Layers className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">Sections</span>
+                  {(hiddenSections.size > 0 || hideHeader) && (
+                    <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">
+                      {hiddenSections.size + (hideHeader ? 1 : 0)}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setShowOverlayPicker(!showOverlayPicker)}
+                  className="cursor-pointer"
+                >
+                  <Palette className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">Overlay</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setShowA11yPicker(!showA11yPicker)}
+                  className="cursor-pointer"
+                >
+                  <Eye className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">Typography</span>
+                  {activeA11yProfileId !== "standard" && (
+                    <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">on</span>
+                  )}
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Export</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={handleExportQti}
+                  className="cursor-pointer"
+                >
+                  <FileDown className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">QTI 3.0 (Canvas, Moodle…)</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleExportBraille}
+                  disabled={brailleLoading}
+                  className="cursor-pointer"
+                >
+                  {brailleLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-muted-foreground" />
+                  ) : (
+                    <FileDown className="w-4 h-4 mr-2 text-muted-foreground" />
+                  )}
+                  <span className="flex-1 text-sm">{brailleLoading ? "Braille…" : "Braille (.brf)"}</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Access</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const fromClass = children.find(c => c.preferredLanguage && c.preferredLanguage !== "en");
+                    setTranslateLang(fromClass?.preferredLanguage || (generated as any)?.bilingual?.lang || "en");
+                    setShowTranslateDialog(true);
+                  }}
+                  disabled={translateLoading}
+                  className="cursor-pointer"
+                >
+                  {translateLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-muted-foreground" />
+                  ) : (
+                    <Languages className="w-4 h-4 mr-2 text-muted-foreground" />
+                  )}
+                  <span className="flex-1 text-sm">{translateLoading ? "Translating…" : "Translate (EAL)"}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleReadAloud}
+                  disabled={ttsLoading}
+                  className="cursor-pointer"
+                >
+                  {ttsLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-muted-foreground" />
+                  ) : ttsPlaying ? (
+                    <VolumeX className="w-4 h-4 mr-2 text-green-700" />
+                  ) : (
+                    <Volume2 className="w-4 h-4 mr-2 text-muted-foreground" />
+                  )}
+                  <span className="flex-1 text-sm">
+                    {ttsLoading ? "Loading…" : ttsPlaying ? "Stop reading" : "Read aloud"}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleRunAccessibilityAudit}
+                  disabled={auditLoading}
+                  className="cursor-pointer"
+                >
+                  {auditLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-muted-foreground" />
+                  ) : auditResult?.passed ? (
+                    <CheckCircle className="w-4 h-4 mr-2 text-green-700" />
+                  ) : auditResult ? (
+                    <AlertCircle className="w-4 h-4 mr-2 text-amber-700" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4 mr-2 text-muted-foreground" />
+                  )}
+                  <span className="flex-1 text-sm">
+                    {auditLoading ? "Auditing…" : auditResult?.passed ? "WCAG 2.2 AA — pass" : auditResult ? `A11y · ${auditResult.violations.length} issues` : "Run A11y audit"}
+                  </span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Class &amp; lesson</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => setCompanionDialogOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <QrCode className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">Pupil mode (QR)</span>
+                  {(generated?.metadata as any)?.companionShare && (
+                    <span className="ml-1 text-[10px] bg-emerald-500 text-white rounded-full px-1.5 py-0.5 flex-shrink-0">live</span>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setClassPackOpen(true)}
+                  disabled={!generated || children.length === 0}
+                  className="cursor-pointer"
+                >
+                  <Users className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">Class pack</span>
+                  {children.length > 0 && (
+                    <span className="ml-1 text-[10px] bg-muted rounded-full px-1.5 py-0.5 flex-shrink-0">{children.length}</span>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLessonBundleOpen(true)}
+                  disabled={!generated}
+                  className="cursor-pointer"
+                >
+                  <BookOpenCheck className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">Lesson bundle</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setScanMarkOpen(true)}
+                  disabled={children.length === 0}
+                  className="cursor-pointer"
+                >
+                  <Camera className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">Scan &amp; mark</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setShowScenarioDialog(true)}
+                  disabled={scenarioSwapLoading}
+                  className="cursor-pointer"
+                >
+                  {scenarioSwapLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin text-muted-foreground" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 mr-2 text-muted-foreground" />
+                  )}
+                  <span className="flex-1 text-sm">{scenarioSwapLoading ? "Swapping…" : "Scenario swap"}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setShowAssignDialog(true)}
+                  className="cursor-pointer"
+                >
+                  <Users className="w-4 h-4 mr-2 text-muted-foreground" />
+                  <span className="flex-1 text-sm">Assign to pupil</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* The Assign Dialog used to live inline in the toolbar via
+                <DialogTrigger asChild>. After Lane 1.3 the trigger is
+                a DropdownMenuItem above; the Dialog stays mounted here
+                so its open/close state flows through showAssignDialog
+                and existing handlers (handleAssign, etc.) are
+                untouched. */}
             <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm"><Users className="w-3.5 h-3.5 mr-1.5" /> Assign</Button>
-              </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Assign to Student</DialogTitle></DialogHeader>
                 <div className="space-y-2 mt-2">
