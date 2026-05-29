@@ -189,3 +189,97 @@ academic-and-direct).
 
 Full vitest run: 736 passed / 32 failed / 1 skipped. Unchanged
 from Lane 2.2 / 2.5 baseline. Zero new regressions.
+
+
+
+## 2026-05-29 — Lane 2.7 complete: six audit-doc-named revision-tip categories
+
+### What changed
+
+The original Phase 3 builder shipped 5 examiner-attempt categories
+(command-word / misconception / method / mark-scheme / time). The
+audit doc Phase 3 acceptance criteria explicitly named a different
+six revision-prep categories:
+
+> Tip 1 lists actual vocabulary terms from the topic
+> Tip 2 references the worked example on the worksheet
+> Tip 3 references a real common mistake
+> Tip 4 directs to GCSE past papers for this subject/topic
+> Tip 5 retrieval practice instruction naming the topic
+> Tip 6 references the actual learning objective
+
+Lane 2.7 swaps the builder over to the audit-doc set so the
+acceptance criteria become testable end-to-end.
+
+New canonical six (in fixed order):
+- VOCABULARY — names actual key terms from the worksheet's vocabulary
+- WORKED EXAMPLE — directs the pupil to cover-and-redo the example
+- COMMON MISTAKE — surfaces a topic-specific misconception
+- PAST PAPERS — names the awarding body, subject and topic
+- RETRIEVAL — retrieval-practice instruction naming the topic
+- LEARNING OBJECTIVE — quotes the actual LO verbatim, in double quotes
+
+### Files
+
+- `client/src/lib/revisionTipsBuilder.ts`:
+  - `RevisionTip.category` union changed to the new six.
+  - `RevisionTipsInputs` extended with `vocabulary?: string[]` and
+    `learningObjective?: string`. Old `commandWordsUsed` / `marksUsed`
+    inputs preserved for backwards compatibility but no longer drive
+    a tip.
+  - `buildRevisionTips` body rewritten to emit the six new tips.
+  - `isGenericRevisionTips` updated:
+    - Tip-shaped line minimum bumped from 5 to 6.
+    - Old labels (COMMAND WORD / WATCH OUT / METHOD / MARK SCHEME /
+      TIME) still recognised as tip-shaped lines so a partial
+      old-format match doesn't fail the placeholder detection.
+    - New labels (VOCABULARY / WORKED EXAMPLE / COMMON MISTAKE / PAST
+      PAPERS / RETRIEVAL / LEARNING OBJECTIVE) added.
+    - The "at least one tip mentions a UK awarding-body command word"
+      heuristic was dropped because the new six-category panel has
+      no command-word slot.
+- `client/src/lib/worksheetPostValidator.ts`:
+  - Added `collectVocabularyTerms()` and `collectLearningObjective()`
+    scrapers that pull terms / LO from the worksheet's existing
+    Key Vocabulary / Learning Objective sections.
+  - `enforceRevisionTipsPresence` now passes `vocabulary` and
+    `learningObjective` to `buildRevisionTips`.
+  - Warning text updated to reference the new six categories.
+- `client/src/lib/ai.ts`:
+  - The structured-prompt block at L1640 (`2. REVISION TIPS — emit ...`)
+    rewritten to describe the new six categories.
+  - The per-section instruction at L2582 (`- REVISION TIPS: ...`)
+    rewritten to require six tips with the new labels.
+- `docs/worksheet-generator-audit.md`:
+  - Phase 3 status updated with a Lane 2.7 follow-up note explaining
+    that the original PR #76 shipped 5 categories that did not match
+    the audit doc's acceptance criteria, and Lane 2.7 brings the
+    builder + prompts + post-validator into line.
+- `server/tests/worksheetScrutiny.test.ts`:
+  - Phase 3 test block rewritten:
+    - Builder tests assert 6 tips with new categories.
+    - Marker-block test asserts SUBTITLE: + TIPS: + 6 numbered LABEL: lines.
+    - Generic-detector tests include an old-format-as-generic case.
+    - Validator tests now include vocabulary-scraping, LO-scraping
+      and PAST-PAPERS-includes-board cases.
+
+### Test status
+
+Full vitest run: 739 passed / 32 failed / 1 skipped (was 736 / 32 / 1
+on Lane 2.5 baseline). Net +3 passing, zero regressions.
+
+The 32 remaining failures are pre-existing on main (UK English
+substitution bug, off-spec command-word detection, etc.) and out of
+scope for this PR.
+
+### Backwards compatibility
+
+- `RevisionTipsInputs` retains `commandWordsUsed?` and `marksUsed?`
+  on the type (no longer drives a tip but doesn't break callers).
+- `isGenericRevisionTips` still recognises old labels as tip-shaped
+  so existing teacher-edited worksheets with old-format panels are
+  detected as "generic" (line count < 6) and rebuilt with the new
+  format on next save.
+- The renderer (`renderRevisionTipsAsMarkerBlock`) is label-agnostic
+  — it iterates `out.tips` and emits `N. LABEL: text` so it works
+  with both old and new category sets without change.
