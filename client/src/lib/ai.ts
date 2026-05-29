@@ -1059,7 +1059,41 @@ export async function aiGenerateWorksheet(params: {
 
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
   if (params.isRevisionMat) {
-    const rmSystem = `You are an expert UK teacher creating a GCSE revision mat. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`;
+    // Lane 2.6 — bind the curriculum-authority preamble to the
+    // revision-mat path. Before this change, revision mats used the
+    // weaker single-line opener "You are an expert UK teacher creating
+    // a GCSE revision mat". Now every revision mat opens with the same
+    // authority chain (curriculum, awarding body, register note) the
+    // standard worksheets use, so the content is anchored identically.
+    //
+    // `isSTEM` isn't yet computed at this point in the function (it's
+    // declared at line ~1191 after the revision-mat early return); we
+    // recompute it locally so the preamble can scale by subject family
+    // without needing a refactor of the broader prompt builder.
+    const rmIsSTEM = !/(english|history|geography|religious|drama|art|mfl|french|spanish|german)/i.test(
+      params.subject || "",
+    );
+    const rmAuthority = buildCurriculumAuthorityPreamble({
+      subject: params.subject,
+      yearGroup: params.yearGroup,
+      examBoard: params.examBoard,
+      topic: params.topic,
+      isSTEM: rmIsSTEM,
+    });
+    const rmRegister = buildPedagogicalRegisterNote({
+      subject: params.subject,
+      yearGroup: params.yearGroup,
+      examBoard: params.examBoard,
+      topic: params.topic,
+      isSTEM: rmIsSTEM,
+    });
+    const rmSystem = `${rmAuthority}
+
+${buildNonNegotiablesBlock()}
+
+${rmRegister || ""}
+
+You are creating a GCSE revision mat for ${params.subject} / ${params.topic}. Respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`;
 
     const rmUser = `Create a revision mat for: Subject: ${params.subject} | Year: ${params.yearGroup} | Topic: ${params.topic}
 
@@ -1450,8 +1484,39 @@ SPACING: Big answer boxes, lots of white space. This should print as a welcoming
 TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Did you spot the pattern?"
 ` : "";
 
+  // Lane 2.6 — bind the curriculum-authority preamble to ALL system
+  // prompts, not just secondary. Before this change, only the secondary
+  // path called buildCurriculumAuthorityPreamble / buildNonNegotiablesBlock
+  // / buildPedagogicalRegisterNote at line 2713; primary worksheets and
+  // revision mats used weaker, separate openers. Now every worksheet's
+  // system prompt opens with the same authority chain (UK National
+  // Curriculum + KS scheme + UK English / SI units / no fabricated codes
+  // + register note scaled by KS1 / KS2 / KS3 / GCSE / A-Level), with
+  // the path-specific guidance below.
+  const authorityPreamble = buildCurriculumAuthorityPreamble({
+    subject: params.subject,
+    yearGroup: params.yearGroup,
+    examBoard: params.examBoard,
+    topic: params.topic,
+    isSTEM,
+  });
+  const nonNegotiables = buildNonNegotiablesBlock();
+  const registerNote = buildPedagogicalRegisterNote({
+    subject: params.subject,
+    yearGroup: params.yearGroup,
+    examBoard: params.examBoard,
+    topic: params.topic,
+    isSTEM,
+  });
+
   const system = isPrimary
-    ? `You are an expert UK primary school teacher creating an engaging, age-appropriate activity worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}".
+    ? `${authorityPreamble}
+
+${nonNegotiables}
+
+${registerNote || ""}
+
+You are an expert UK primary school teacher creating an engaging, age-appropriate activity worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}".
 
 READING AGE CEILING — MANDATORY:
 ${yearNum <= 2 ? '- Reading age: 5–7. Use ONLY words a 5-year-old knows. Max 6 words per instruction. Simple CVC words and common sight words. No technical jargon at all.' : yearNum <= 4 ? '- Reading age: 7–9. Short, everyday sentences (max 10 words). Avoid any Latin/Greek-root words. Define every subject word the first time it appears.' : '- Reading age: 9–11. Clear sentences (max 12 words). Every subject-specific word must have a simple definition in brackets the first time it appears.'}
