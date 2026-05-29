@@ -748,7 +748,16 @@ export function extractMisconceptionLinks(
 
 export function stripVisiblePlaceholdersAndAnswerLeakage(ws: PostValidatorWorksheet): PostValidatorResult {
   const warnings: string[] = [];
-  const PLACEHOLDER_RE = /\[(?:specific|plausible|correct answer|incorrect option|continue|word\d+|point \d+|name of mistake|explanation|short|realistic|final answer|first step|second step|third step|key point|statement about|.*?placeholder.*?).*?\]/gi;
+  // Lane 1.8 — strengthened pattern. The original list was missing the
+  // self-reflection table-row placeholders (e.g. "[5 specific skills/
+  // concepts from Respiration]"), the primary "activity question N"
+  // wrappers, the "[learning objective]" wrapper, and the
+  // "[debatable claim about <topic>]" wrapper, all of which leak when
+  // the AI returns the JSON shape-guide template verbatim. Now keyed
+  // off an optional digit / "ONE" / "Single" / "One" prefix followed
+  // by any of the canonical placeholder lead-words. Idempotent — a
+  // second pass finds nothing left to strip.
+  const PLACEHOLDER_RE = /\[(?:\s*(?:\d+(?:[-–]\d+)?\s+|ONE\s+|EXACTLY\s+|Single\s+|One\s+|optional\s+|short\s+)?(?:specific|plausible|correct\s+answer|incorrect\s+option|continue|word\d+|point\s+\d+|name\s+of\s+mistake|explanation|short|realistic|final\s+answer|first\s+step|second\s+step|third\s+step|key\s+point|statement\s+about|skills?\s*\/?\s*concepts?|skills?|concepts?|learning\s+objective|topic\s+name|key\s+terms?|key\s+vocabulary|model\s+answer|misconception|common\s+mistake|activity(?:\s+question)?|list\s+\d+|mark[-\s]scheme|brief\s+title|debatable|theme\s+or\s+technique|key\s+idea|question\s+about|extract|stimulus|scenario|EXAM-STYLE|specific\s+process|specific\s+calculation|.*?placeholder.*?))[^\]]*\]/gi;
   const CORRECT_ANSWER_HINT_RE = /\s*(?:✓|✔|\(correct\)|correct answer|mark with\s*[✓✔])\s*$/i;
 
   const cleanText = (value: unknown): string => {
@@ -1016,6 +1025,272 @@ export function enforceSpecAnchorPresence(
     );
   }
   return { worksheet: { ...ws, sections }, warnings };
+}
+
+/**
+ * Lane 1.6 + 1.7 — Phase 4 SEND-overlay marker enforcer.
+ *
+ * Phase 4's audit doc requires specific deterministic markers per SEND
+ * need (see `docs/worksheet-generator-audit.md`):
+ *
+ *   - **HI** — a "Topic Summary" block at the top of Section 1 so deaf
+ *     pupils have the same starting knowledge as hearing peers (who
+ *     would have heard the teacher introduce the topic). Audit doc
+ *     acceptance criterion: "A topic summary block appears at the top
+ *     of Section 1 for HI students".
+ *   - **Anxiety** — Challenge re-labelled "OPTIONAL BONUS — only if you
+ *     want to!" and Section 1 re-labelled to start with "WARM-UP".
+ *     Audit doc acceptance criteria: "Anxiety worksheets rename Section
+ *     1 to 'WARM-UP (no pressure — you've got this!)'" and "Anxiety
+ *     worksheets label the challenge as 'OPTIONAL BONUS'".
+ *
+ * Before this PR these rules existed only in the prompt fragments
+ * (`sendPromptFragments.ts`). The AI was *asked* to insert / rename;
+ * nothing checked it actually did. SEND is the USP — the prompts ask,
+ * but this validator is the deterministic backstop that means a deaf
+ * or anxious pupil never receives a worksheet missing their marker.
+ *
+ * Behaviours by sendKey:
+ *   - "hi" / "hearing-impairment" / "deaf" → ensure a section with type
+ *     "topic-summary" titled "Topic Summary — read first" exists
+ *     immediately before the first question section. If absent, INSERT
+ *     a deterministic synthesis built from the worksheet's existing
+ *     Learning Objective + Key Vocabulary sections. We never call the
+ *     AI here — synthesis is local and stable.
+ *   - "anxiety" / "semh" / "mental-health" → rename the Challenge
+ *     section title to "OPTIONAL BONUS — only if you want to!"; rename
+ *     any title starting "Section 1" / "SECTION 1" / "Section A" to
+ *     prepend "WARM-UP — ".
+ *
+ * Pure / idempotent — running twice on the same worksheet yields the
+ * same result. The HI insertion path checks for existing
+ * "topic-summary" type and skips when present. The Anxiety rename path
+ * checks for the literal target wording and skips when already in
+ * place.
+ *
+ * Registered in `worksheetPostValidatorRegistry.ts` BEFORE
+ * `enforceSelfReflectionTopicAnchor` so reflection sees the final
+ * section titles.
+ */
+export function enforceSendOverlayMarkers(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const rawSendKey = (opts.sendNeed || String(ws.metadata?.sendNeed || ""))
+    .toLowerCase()
+    .replace(/[\s_]/g, "-");
+  if (!rawSendKey) return { worksheet: ws, warnings };
+  // Strip any compound prefix like "asc:asc-demand-avoidant" — same
+  // normalisation as overlayEngine.applySendSupport.
+  const sendKey = rawSendKey.includes(":")
+    ? rawSendKey.split(":").pop() || rawSendKey
+    : rawSendKey;
+  const sections = ws.sections || [];
+  if (sections.length === 0) return { worksheet: ws, warnings };
+
+  // ── HI — Topic Summary block ─────────────────────────────────────────────
+  if (sendKey === "hi" || sendKey === "hearing-impairment" || sendKey === "deaf") {
+    return enforceHiTopicSummary(ws, sections, warnings, opts);
+  }
+
+  // ── Anxiety / SEMH — section title rewrites ──────────────────────────────
+  if (
+    sendKey === "anxiety" ||
+    sendKey === "semh" ||
+    sendKey === "mental-health" ||
+    sendKey === "anxiety-semh"
+  ) {
+    return enforceAnxietySectionTitles(ws, sections, warnings);
+  }
+
+  return { worksheet: ws, warnings };
+}
+
+/**
+ * Lane 1.6 — HI Topic Summary insertion.
+ *
+ * Inserts a fresh `topic-summary` section immediately before the first
+ * question section if (and only if) one does not already exist. The
+ * inserted section is built deterministically from the worksheet's own
+ * Learning Objective + Key Vocabulary sections so the pupil sees the
+ * same content the teacher would have spoken aloud.
+ */
+function enforceHiTopicSummary(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+  opts: PostValidatorOptions,
+): PostValidatorResult {
+  // Already present? No-op.
+  const hasExisting = sections.some(
+    s => String(s.type || "").toLowerCase() === "topic-summary" && !s.teacherOnly,
+  );
+  if (hasExisting) return { worksheet: ws, warnings };
+
+  // Find the first pupil-facing question section.
+  const firstQIdx = sections.findIndex(s => {
+    if (s.teacherOnly) return false;
+    const t = String(s.type || "").toLowerCase();
+    return (
+      t.startsWith("q-") ||
+      t === "challenge" ||
+      t === "extended-answer" ||
+      t === "exam-question" ||
+      t === "lor"
+    );
+  });
+  if (firstQIdx < 0) return { worksheet: ws, warnings };
+
+  // Synthesise the summary from existing sections — never call the AI.
+  const topic = (
+    (opts.topic && opts.topic.trim()) ||
+    opts_topic_or_metadata(ws) ||
+    "this topic"
+  );
+  const lo = findFirstSectionContent(sections, [
+    "objective",
+    "learning-objective",
+    "learning_objective",
+    "lo",
+  ]);
+  const vocabRaw = findFirstSectionContent(sections, [
+    "vocabulary",
+    "key-vocabulary",
+    "key-terms",
+    "key-vocab",
+    "glossary",
+  ]);
+  const vocabTerms = vocabRaw ? extractVocabularyTerms(vocabRaw) : [];
+
+  const lines: string[] = [];
+  lines.push(`Topic: ${topic}`);
+  if (lo && lo.trim()) {
+    lines.push("");
+    lines.push(`Learning objective: ${lo.trim()}`);
+  }
+  if (vocabTerms.length > 0) {
+    lines.push("");
+    lines.push("Key terms used in this worksheet:");
+    for (const term of vocabTerms.slice(0, 5)) {
+      lines.push(`- ${term}`);
+    }
+  }
+  lines.push("");
+  lines.push(
+    "This information is here because you may not have heard all of " +
+      "the teacher's spoken explanation. Read it carefully before you " +
+      "start the questions — every detail you need is on the page.",
+  );
+
+  const newSection: PostValidatorSection = {
+    id: `topic-summary-hi-${firstQIdx}`,
+    type: "topic-summary",
+    title: "Topic Summary — read first",
+    content: lines.join("\n"),
+    teacherOnly: false,
+  };
+
+  const nextSections = [
+    ...sections.slice(0, firstQIdx),
+    newSection,
+    ...sections.slice(firstQIdx),
+  ];
+  warnings.push(
+    "[Phase 4 — HI] Topic Summary block was missing for a Hearing-Impairment worksheet; " +
+      "inserted deterministically from Learning Objective + Key Vocabulary so a deaf pupil " +
+      "has the same starting knowledge as a hearing peer.",
+  );
+  return { worksheet: { ...ws, sections: nextSections }, warnings };
+}
+
+/**
+ * Lane 1.7 — Anxiety section title rewrites.
+ *
+ * Renames the Challenge section to "OPTIONAL BONUS — only if you want
+ * to!" and any "Section 1" / "Section A" titled section to prepend
+ * "WARM-UP — ". Idempotent: a second pass detects the target wording
+ * and skips. Never touches `id`, `type`, `content`, `marks`, `imageUrl`
+ * or `assetRef` — only the `title` field.
+ */
+const ANXIETY_OPTIONAL_BONUS_TITLE = "OPTIONAL BONUS — only if you want to!";
+const ANXIETY_WARMUP_PREFIX = "WARM-UP — no pressure!";
+
+function enforceAnxietySectionTitles(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+): PostValidatorResult {
+  let mutated = false;
+  const next = sections.map(s => {
+    if (s.teacherOnly) return s;
+    const title = typeof s.title === "string" ? s.title : "";
+    const type = String(s.type || "").toLowerCase();
+
+    // Challenge — rename whole title (idempotent).
+    if (type === "challenge" || type === "q-challenge" || /^challenge\b/i.test(title)) {
+      if (title === ANXIETY_OPTIONAL_BONUS_TITLE) return s;
+      mutated = true;
+      warnings.push(
+        `[Phase 4 — Anxiety] Renamed challenge title "${title || "(untitled)"}" → "${ANXIETY_OPTIONAL_BONUS_TITLE}" to remove threat-language for an Anxiety/SEMH worksheet.`,
+      );
+      return { ...s, title: ANXIETY_OPTIONAL_BONUS_TITLE };
+    }
+
+    // Section 1 / Section A — prepend the WARM-UP banner (idempotent).
+    if (
+      /^section\s*(1|a|i)\b/i.test(title) &&
+      !title.toUpperCase().startsWith("WARM-UP")
+    ) {
+      const newTitle = `${ANXIETY_WARMUP_PREFIX} (${title.trim()})`;
+      mutated = true;
+      warnings.push(
+        `[Phase 4 — Anxiety] Renamed "${title}" → "${newTitle}" so the opening section reads as invitational for an Anxiety/SEMH worksheet.`,
+      );
+      return { ...s, title: newTitle };
+    }
+
+    return s;
+  });
+
+  if (!mutated) return { worksheet: ws, warnings };
+  return { worksheet: { ...ws, sections: next }, warnings };
+}
+
+// ── Helpers used by enforceSendOverlayMarkers ────────────────────────────────
+
+function opts_topic_or_metadata(ws: PostValidatorWorksheet): string | undefined {
+  const t = ws.metadata?.topic;
+  return typeof t === "string" && t.trim() ? t.trim() : undefined;
+}
+
+function findFirstSectionContent(
+  sections: PostValidatorSection[],
+  acceptedTypes: readonly string[],
+): string | undefined {
+  const wanted = new Set(acceptedTypes.map(t => t.toLowerCase()));
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const t = String(s.type || "").toLowerCase();
+    if (!wanted.has(t)) continue;
+    if (typeof s.content === "string" && s.content.trim()) return s.content;
+  }
+  return undefined;
+}
+
+function extractVocabularyTerms(content: string): string[] {
+  return content
+    .split(/\n+/)
+    .map(line => line.replace(/^[-•*\d.)\s]+/, "").trim())
+    .filter(Boolean)
+    .map(line => {
+      // Lines look like "term — definition" or "term: definition" or
+      // "term | definition". Take everything before the first separator.
+      const m = line.match(/^([^:|–—-]{2,80})\s*[:|–—-]/);
+      return (m ? m[1] : line).trim();
+    })
+    .filter(t => t.length > 1 && t.length < 80)
+    .slice(0, 8);
 }
 
 /**

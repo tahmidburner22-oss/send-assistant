@@ -3963,6 +3963,16 @@ describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-re
   // The exact order the legacy `for (const fn of [ … ])` block ran in,
   // captured here as a string array so a future reorder shows up as a
   // diff rather than passing silently.
+  //
+  // Lane 1 (pre-pilot fixes) — synced this list to the actual registry
+  // including (a) the new `send-overlay-markers` validator added in
+  // 1.6+1.7, and (b) the PR-10 through PR-27 validators that were
+  // already registered but never reflected in this test array. The
+  // mismatch was a pre-existing bug on main: a fresh `npm test`
+  // surfaced two failing assertions (`registry order` /
+  // `WORKSHEET_POST_VALIDATORS has one entry per expected validator`)
+  // before any Lane 1 change. This list is now the true source of
+  // truth — future PRs adding a validator must extend this array.
   const EXPECTED_ORDER: readonly string[] = [
     "single-mcq-correct",
     "dedupe-word-bank",
@@ -3977,6 +3987,9 @@ describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-re
     "extract-misconception-links",
     "section-question-counts",
     "spec-anchor-presence",
+    // Lane 1.6 + 1.7 — Phase 4 SEND-overlay marker enforcer (HI Topic
+    // Summary insertion + Anxiety section title rewrites).
+    "send-overlay-markers",
     "self-reflection-topic-anchor",
     "revision-tips-presence",
     "curriculum-authority-invariants",
@@ -3987,6 +4000,19 @@ describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-re
     "diagram-dependency-integrity",
     "distractor-pedagogy",
     "tier3-vocabulary-declared",
+    // PR-10 through PR-27 — validators registered in the registry but
+    // missing from this expected list before Lane 1.
+    "bias-sensitivity",
+    "mark-scheme-upgrades",
+    "bloom-progression",
+    "past-paper-fingerprint",
+    "accessibility-audit",
+    "sp-vocabulary-library",
+    "spec-point-taxonomy",
+    "ks5-synoptic",
+    "diagram-page-fit",
+    "citation-grounding",
+    "tier-ao-histogram",
   ];
 
   it("listValidatorNames() returns the registered order", () => {

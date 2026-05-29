@@ -1788,11 +1788,20 @@ function formatContent(
     // The AI may also opt-in to a working-out box per-question by appending
     // `[WORKING_OUT]` after the marks tag — used when the parent subject is
     // not maths but a specific question genuinely needs a dot-grid (rare).
-    const markMatch = trimmed.match(/^(.+?)(\[(\d+) marks?\])(.*)$/i);
+    //
+    // Lane 1.1 — Phase 1 audit-doc compliance: accept BOTH `[N marks]` and
+    // `(N marks)`. Section 3 (exam-style) is required by the audit doc to use
+    // round brackets to match real GCSE paper convention; the previous
+    // square-bracket-only regex silently lost the badge + answer-line ramp +
+    // working-out box on every Section 3 question whenever the AI obeyed
+    // the GCSE-style rule. The alternation below mirrors the pattern
+    // already used by the revision-mat split path lower in this file so
+    // both renderers agree on what a valid mark tag looks like.
+    const markMatch = trimmed.match(/^(.+?)(\[(\d+)\s*marks?\]|\((\d+)\s*marks?\))(.*)$/i);
     if (markMatch) {
-      const markCount = parseInt(markMatch[3], 10);
+      const markCount = parseInt(markMatch[3] || markMatch[4] || "0", 10);
       const stemText = markMatch[1] || "";
-      const trailing = markMatch[4] || "";
+      const trailing = markMatch[5] || "";
       const explicitWorkingOpt = /\[\s*WORKING[_\s-]?OUT\s*\]/i.test(trailing);
       // Phase 1 ramp — exam-paper aligned (1m=2, 2m=3, 3m=4, 4m=6, 5-6m=8, 7-8m=12, 9+m=14).
       const answerLines = linesForMarks(markCount);
