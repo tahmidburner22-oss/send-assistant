@@ -6067,9 +6067,9 @@ ${s.content}`).join("\n\n"),
               </button>
             </div>
             <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
-              <button onClick={() => setTextSize(Math.max(10, textSize - 2))} className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomOut className="w-3.5 h-3.5" /></button>
-              <span className="text-xs font-medium px-1.5 min-w-[32px] text-center">{textSize}px</span>
-              <button onClick={() => setTextSize(Math.min(24, textSize + 2))} className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomIn className="w-3.5 h-3.5" /></button>
+              <button onClick={() => setTextSize(Math.max(10, textSize - 2))} aria-label="Decrease text size" className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomOut className="w-3.5 h-3.5" aria-hidden="true" /></button>
+              <span className="text-xs font-medium px-1.5 min-w-[32px] text-center" aria-label={`Text size ${textSize} pixels`}>{textSize}px</span>
+              <button onClick={() => setTextSize(Math.min(24, textSize + 2))} aria-label="Increase text size" className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomIn className="w-3.5 h-3.5" aria-hidden="true" /></button>
             </div>
             <button
               onClick={() => handleOpenPrintPreview(viewMode)}

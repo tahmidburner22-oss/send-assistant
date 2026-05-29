@@ -161,11 +161,16 @@ const SECONDARY_SECTIONS = [
   { id: "application", title: "Application & Analysis", groupLabel: "SECTION 3 — APPLICATION & ANALYSIS", qRange: [7, 9] as [number, number] },
 ];
 
-/** Section definitions for primary worksheets */
+/** Section definitions for primary worksheets — Lane 2.4 brings these
+ *  qRanges into line with the new PRIMARY_SECTION_QUESTION_TARGETS
+ *  (5/4/5). The friendly section names follow the KS1/KS2 naming
+ *  convention from `ai.ts:primaryLayoutNote`. The third section is
+ *  exam-lite ("Show What You Know") not a re-skinned GCSE Section 3 —
+ *  age-appropriate application questions only. */
 const PRIMARY_SECTIONS = [
-  { id: "warm-up", title: "Warm Up", groupLabel: "SECTION 1 — WARM UP", qRange: [1, 3] as [number, number] },
-  { id: "practice", title: "Let's Practise", groupLabel: "SECTION 2 — LET'S PRACTISE", qRange: [4, 6] as [number, number] },
-  { id: "challenge", title: "Challenge", groupLabel: "SECTION 3 — CHALLENGE", qRange: [7, 7] as [number, number] },
+  { id: "warm-up", title: "Warm Up", groupLabel: "SECTION 1 — WARM UP", qRange: [1, 5] as [number, number] },
+  { id: "practice", title: "Let's Practise", groupLabel: "SECTION 2 — LET'S PRACTISE", qRange: [6, 9] as [number, number] },
+  { id: "show-what-you-know", title: "Show What You Know", groupLabel: "SECTION 3 — SHOW WHAT YOU KNOW", qRange: [10, 14] as [number, number] },
 ];
 
 /**

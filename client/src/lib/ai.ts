@@ -1059,7 +1059,41 @@ export async function aiGenerateWorksheet(params: {
 
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
   if (params.isRevisionMat) {
-    const rmSystem = `You are an expert UK teacher creating a GCSE revision mat. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`;
+    // Lane 2.6 — bind the curriculum-authority preamble to the
+    // revision-mat path. Before this change, revision mats used the
+    // weaker single-line opener "You are an expert UK teacher creating
+    // a GCSE revision mat". Now every revision mat opens with the same
+    // authority chain (curriculum, awarding body, register note) the
+    // standard worksheets use, so the content is anchored identically.
+    //
+    // `isSTEM` isn't yet computed at this point in the function (it's
+    // declared at line ~1191 after the revision-mat early return); we
+    // recompute it locally so the preamble can scale by subject family
+    // without needing a refactor of the broader prompt builder.
+    const rmIsSTEM = !/(english|history|geography|religious|drama|art|mfl|french|spanish|german)/i.test(
+      params.subject || "",
+    );
+    const rmAuthority = buildCurriculumAuthorityPreamble({
+      subject: params.subject,
+      yearGroup: params.yearGroup,
+      examBoard: params.examBoard,
+      topic: params.topic,
+      isSTEM: rmIsSTEM,
+    });
+    const rmRegister = buildPedagogicalRegisterNote({
+      subject: params.subject,
+      yearGroup: params.yearGroup,
+      examBoard: params.examBoard,
+      topic: params.topic,
+      isSTEM: rmIsSTEM,
+    });
+    const rmSystem = `${rmAuthority}
+
+${buildNonNegotiablesBlock()}
+
+${rmRegister || ""}
+
+You are creating a GCSE revision mat for ${params.subject} / ${params.topic}. Respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`;
 
     const rmUser = `Create a revision mat for: Subject: ${params.subject} | Year: ${params.yearGroup} | Topic: ${params.topic}
 
@@ -1450,8 +1484,39 @@ SPACING: Big answer boxes, lots of white space. This should print as a welcoming
 TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Did you spot the pattern?"
 ` : "";
 
+  // Lane 2.6 — bind the curriculum-authority preamble to ALL system
+  // prompts, not just secondary. Before this change, only the secondary
+  // path called buildCurriculumAuthorityPreamble / buildNonNegotiablesBlock
+  // / buildPedagogicalRegisterNote at line 2713; primary worksheets and
+  // revision mats used weaker, separate openers. Now every worksheet's
+  // system prompt opens with the same authority chain (UK National
+  // Curriculum + KS scheme + UK English / SI units / no fabricated codes
+  // + register note scaled by KS1 / KS2 / KS3 / GCSE / A-Level), with
+  // the path-specific guidance below.
+  const authorityPreamble = buildCurriculumAuthorityPreamble({
+    subject: params.subject,
+    yearGroup: params.yearGroup,
+    examBoard: params.examBoard,
+    topic: params.topic,
+    isSTEM,
+  });
+  const nonNegotiables = buildNonNegotiablesBlock();
+  const registerNote = buildPedagogicalRegisterNote({
+    subject: params.subject,
+    yearGroup: params.yearGroup,
+    examBoard: params.examBoard,
+    topic: params.topic,
+    isSTEM,
+  });
+
   const system = isPrimary
-    ? `You are an expert UK primary school teacher creating an engaging, age-appropriate activity worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}".
+    ? `${authorityPreamble}
+
+${nonNegotiables}
+
+${registerNote || ""}
+
+You are an expert UK primary school teacher creating an engaging, age-appropriate activity worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}".
 
 READING AGE CEILING — MANDATORY:
 ${yearNum <= 2 ? '- Reading age: 5–7. Use ONLY words a 5-year-old knows. Max 6 words per instruction. Simple CVC words and common sight words. No technical jargon at all.' : yearNum <= 4 ? '- Reading age: 7–9. Short, everyday sentences (max 10 words). Avoid any Latin/Greek-root words. Define every subject word the first time it appears.' : '- Reading age: 9–11. Clear sentences (max 12 words). Every subject-specific word must have a simple definition in brackets the first time it appears.'}
@@ -1574,14 +1639,17 @@ SELF REFLECTION + EXIT TICKET + REVISION TIPS (MANDATORY — every worksheet mus
    A question I still want to ask my teacher is ...
    EXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence.
 
-2. REVISION TIPS — emit a separate section with type "revision-tips" containing five examiner-voice tips in this exact order, each prefixed with its category label in UPPERCASE:
-   SUBTITLE: Examiner tips for tackling ${params.topic}.
+2. REVISION TIPS — emit a separate section with type "revision-tips" containing SIX examiner-voice tips in this exact order, each prefixed with its category label in UPPERCASE:
+   SUBTITLE: Examiner tips for revising ${params.topic}.
    TIPS:
-   1. COMMAND WORD: [what the dominant command word on this worksheet actually wants]
-   2. WATCH OUT: [one named misconception that pupils make on this topic]
-   3. METHOD: [one method habit that loses marks on this topic; for maths: show every step; for sciences: include units before rounding; for humanities: anchor to a date or source; for English: embed the quote then analyse a single word]
-   4. MARK SCHEME: [how marks are awarded for the section's tariff]
-   5. TIME: [time budget — roughly one minute per mark]
+   1. VOCABULARY: [name 3-5 actual key terms from the Key Vocabulary section above; pupils must learn each one verbatim]
+   2. WORKED EXAMPLE: [direct the pupil to cover the worked example above and re-do it from memory; name "${params.topic}" so the tip cannot be generic]
+   3. COMMON MISTAKE: [one named misconception pupils make on ${params.topic} — pull from the Common Mistakes section if present, otherwise pick the most likely error at ${params.yearGroup}]
+   4. PAST PAPERS: [direct the pupil to ${params.examBoard || "AQA / Edexcel / OCR"} ${params.subject || "the subject"} past-paper questions on ${params.topic}; name the awarding body, subject and topic explicitly]
+   5. RETRIEVAL: [a retrieval-practice instruction naming "${params.topic}" — e.g. "list everything you remember about ${params.topic} on a blank sheet without looking back"]
+   6. LEARNING OBJECTIVE: [quote the actual Learning Objective sentence from the worksheet's Learning Objectives section above; place it inside double quotes]
+
+   UK English. UK awarding-body terminology. Second person, imperative, terse — no padding. NEVER emit generic filler ("revise carefully", "study hard", "make sure you understand", "good luck"). NEVER use placeholders ("[Tip 1]", "...", "___").
 
 The Self-Reflection's confidence grid, written prompts and exit ticket all appear on the pupil-facing page (NOT teacher-only) and they sit on their own page break before the Teacher Copy below. Do not bury reflection inside the teacher copy — the pupil must see all three blocks.
 
@@ -2514,7 +2582,7 @@ KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
 - SECTION C (Core Practice): 6 exam-style questions escalating from 1 to 6 marks. Use command words: explain, calculate, evaluate, compare, analyse, justify. Include at least one multi-step calculation and one extended response.
 - CHALLENGE: A synoptic or higher-order question linking the topic to a wider concept. Must require genuine analysis or evaluation.
 - SELF REFLECTION: 5 specific, topic-relevant "I can …" statements for the confidence table — NEVER generic. Every statement must (a) name "${params.topic}" or its core noun phrase, and (b) start with "I can " followed by a real command word (Calculate, Solve, Describe, Explain, Analyse, Compare, Evaluate, Identify, etc. — pick verbs that match the question types in this worksheet). NEVER emit "I can ___", "I can apply what I have learned", or any placeholder. Written prompts must mention the topic explicitly. Exit ticket sentence must contain the topic name.
-- REVISION TIPS: Output EXACTLY 5 examiner-voice tips, one per line, numbered 1–5, in this fixed category order: (1) COMMAND WORD, (2) WATCH OUT, (3) METHOD, (4) MARK SCHEME, (5) TIME. Each line MUST follow the format "N. LABEL: <tip text>" — e.g. "1. COMMAND WORD: When the question says 'Calculate …', the examiner wants you to …". UK English. UK awarding-body command words. Second person, imperative, terse — no padding. Tip 1 MUST quote one of the actual command words used on the questions in this worksheet. Tip 2 MUST name a real misconception about "${params.topic}" — pull it from the Common Mistakes section if present, otherwise pick the most likely error pupils make at ${params.yearGroup}. Tip 4 MUST mention how marks are awarded for the longest question on this worksheet (method marks vs accuracy marks, level descriptors, mark per technique-plus-effect, …). Tip 5 MUST give a time budget anchored to the worksheet total marks (≈ 1 minute per mark). NEVER emit generic filler ("revise carefully", "study hard", "make sure you understand", "good luck"). NEVER use placeholders ("[Tip 1]", "...", "___").
+- REVISION TIPS: Output EXACTLY 6 examiner-voice tips, one per line, numbered 1–6, in this fixed category order: (1) VOCABULARY, (2) WORKED EXAMPLE, (3) COMMON MISTAKE, (4) PAST PAPERS, (5) RETRIEVAL, (6) LEARNING OBJECTIVE. Each line MUST follow the format "N. LABEL: <tip text>" — e.g. "1. VOCABULARY: Learn these key terms first: aerobic respiration, anaerobic respiration, ATP, mitochondria. If you cannot define each one in your own words, go back to the Key Vocabulary box.". UK English. UK awarding-body terminology. Second person, imperative, terse — no padding. Tip 1 MUST list 3-5 ACTUAL vocabulary terms from this worksheet's Key Vocabulary section (not "key terms for this topic"). Tip 2 MUST direct the pupil to the worked example above and name "${params.topic}". Tip 3 MUST name a real misconception about "${params.topic}" — pull from the Common Mistakes section if present, otherwise pick the most likely error at ${params.yearGroup}. Tip 4 MUST mention ${params.examBoard || "AQA / Edexcel / OCR"} ${params.subject || "the subject"} past-paper questions on "${params.topic}" by name. Tip 5 MUST give a retrieval-practice instruction naming "${params.topic}". Tip 6 MUST quote the actual Learning Objective sentence verbatim, in double quotes. NEVER emit generic filler ("revise carefully", "study hard", "make sure you understand", "good luck"). NEVER use placeholders ("[Tip 1]", "...", "___").
 - TEACHER KEY: Complete model answers for EVERY question with mark allocations. For extended answers, list marking points explicitly.
 - DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources from the diagram library — they are already provided as images. Do NOT generate text-based diagram descriptions. Do NOT include any questions about diagrams. All questions come ONLY from Section A (True/False, MCQ, Gap Fill), Section B (Foundation Questions), and Section C (Core Practice + Challenge).
 ` : '';
@@ -3482,9 +3550,9 @@ Return EXACTLY this JSON (raw JSON only):
   "sections": [
     // ── PRIMARY SCHOOL (Chalkie style) ──
     ...(isPrimary ? [
-      {"title": "Activity 1", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words)]\n1. [Activity question 1]\n2. [Activity question 2]\n3. [Activity question 3]\n4. [Activity question 4]\n5. [Activity question 5]"},
-      {"title": "Activity 2", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) for a DIFFERENT activity type]\n1. [Activity question 1]\n2. [Activity question 2]\n3. [Activity question 3]\n4. [Activity question 4]\n5. [Activity question 5]"},
-      {"title": "Activity 3", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) for a DIFFERENT activity type]\n1. [Activity question 1]\n2. [Activity question 2]\n3. [Activity question 3]\n4. [Activity question 4]\n5. [Activity question 5]"},
+      {"title": "Section A — Warm Up", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) — recall / warm-up activity]\n1. [Recall question 1 about ${params.topic}]\n2. [Recall question 2 about ${params.topic}]\n3. [Recall question 3 about ${params.topic}]\n4. [Recall question 4 about ${params.topic}]\n5. [Recall question 5 about ${params.topic}]"},
+      {"title": "Section B — Let's Practise", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) — practice activity, DIFFERENT type from Section A]\n1. [Practice question 1 about ${params.topic} — slightly harder than recall]\n2. [Practice question 2 about ${params.topic}]\n3. [Practice question 3 about ${params.topic}]\n4. [Practice question 4 about ${params.topic}]"},
+      {"title": "Section C — Show What You Know", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) — exam-lite application questions appropriate to ${params.yearGroup}]\n1. [Application question 1 about ${params.topic} — apply what you learned]\n2. [Application question 2 about ${params.topic}]\n3. [Application question 3 about ${params.topic}]\n4. [Application question 4 about ${params.topic}]\n5. [Application question 5 about ${params.topic} — show what you know]"},
       {"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "I found this:\n[ ] Easy\n[ ] OK\n[ ] Tricky"}
     ] : [
     // ── SECONDARY SCHOOL (GCSE style) ──
