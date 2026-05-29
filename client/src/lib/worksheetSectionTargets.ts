@@ -29,7 +29,7 @@
  * paper-density expectations.
  *
  * KS3/KS4 secondary worksheets only. Primary uses a separate, simpler
- * structure (still 3-3-3 — see `PRIMARY_SECTION_QUESTION_TARGETS`).
+ * structure (5-4-5 — see `PRIMARY_SECTION_QUESTION_TARGETS`).
  */
 export const SECTION_QUESTION_TARGETS = {
   recall:        { min: 6, target: 7, max: 8 },
@@ -38,10 +38,22 @@ export const SECTION_QUESTION_TARGETS = {
   challenge:     { min: 1, target: 1, max: 1 },
 } as const;
 
+/**
+ * Lane 2.4 — bumped from the legacy 3/3/3 (which left primary
+ * worksheets feeling sparse and underused page real estate) to the
+ * audit-doc target of 5/4/5. The third section is renamed to "SHOW
+ * WHAT YOU KNOW" downstream — it is exam-lite, not a re-skinned
+ * GCSE Section 3, so a Year 4 pupil sees five short application
+ * questions appropriate to their year band.
+ *
+ * 5 + 4 + 5 = 14 primary questions total. KS1 sheets stay at the
+ * lower end of the min range to respect the 1-page print constraint
+ * (W7 backlog item 3.9).
+ */
 export const PRIMARY_SECTION_QUESTION_TARGETS = {
-  recall:        { min: 3, target: 3, max: 4 },
-  understanding: { min: 3, target: 3, max: 4 },
-  application:   { min: 3, target: 3, max: 4 },
+  recall:        { min: 4, target: 5, max: 6 },
+  understanding: { min: 3, target: 4, max: 5 },
+  application:   { min: 4, target: 5, max: 6 },
 } as const;
 
 /** Total question count target for a secondary worksheet (7+7+5+1 = 20). */
