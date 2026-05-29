@@ -1,0 +1,26 @@
+{
+  "id": "stacked-hi-dyslexia-y10-english",
+  "title": "Year 10 English (HI + Dyslexia) — Macbeth Act 1",
+  "bucket": "send",
+  "params": {
+    "subject": "English",
+    "topic": "Macbeth — Act 1 Scene 5",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "sendNeed": "hi+dyslexia",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "qa-score-floor",
+    "stacked-needs-both-markers-present"
+  ],
+  "readingAgeRange": [
+    12,
+    16
+  ],
+  "estimatedTokens": 4000
+}

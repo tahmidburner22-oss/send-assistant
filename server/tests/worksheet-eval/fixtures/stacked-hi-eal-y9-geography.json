@@ -1,0 +1,27 @@
+{
+  "id": "stacked-hi-eal-y9-geography",
+  "title": "Year 9 Geography (HI + EAL Urdu) — Plate tectonics",
+  "bucket": "send",
+  "params": {
+    "subject": "Geography",
+    "topic": "Plate tectonics",
+    "yearGroup": "Year 9",
+    "examBoard": "AQA",
+    "sendNeed": "hi+eal",
+    "ealLanguage": "ur",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "qa-score-floor",
+    "stacked-needs-both-markers-present"
+  ],
+  "readingAgeRange": [
+    12,
+    16
+  ],
+  "estimatedTokens": 4000
+}
