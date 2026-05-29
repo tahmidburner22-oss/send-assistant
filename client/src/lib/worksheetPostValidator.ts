@@ -1062,11 +1062,38 @@ export function enforceSpecAnchorPresence(
  *     any title starting "Section 1" / "SECTION 1" / "Section A" to
  *     prepend "WARM-UP — ".
  *
+ * Lane 2.2 — extended to cover the remaining SEND needs the audit
+ * doc / `sendPromptFragments.ts` specifies:
+ *
+ *   - "adhd" → tick-box prefix `"[ ] "` on every pupil-facing
+ *     question; brain-break section inserted mid-sheet if missing;
+ *     Challenge titled "BONUS — only if you want to!" (note:
+ *     different from Anxiety's "OPTIONAL BONUS").
+ *   - "dyslexia" → step-by-step method box inserted before Section
+ *     A if missing.
+ *   - "mld" → topic-context block at top of each pupil-facing
+ *     section if missing.
+ *   - "dyscalculia" → "Number Steps" cue stamped on every
+ *     calculation question that lacks one (the existing
+ *     `reinforceDyscalculiaMathsScaffolding` covers maths;
+ *     dyscalculia on non-maths sheets still gets working-memory
+ *     support).
+ *   - "eal" / "esl" → sentence-frame appended to every
+ *     extended-response question that doesn't already have one.
+ *     The bilingual glossary (Lane 1.5) is additive on top.
+ *   - "vi" / "visual-impairment" → diagram-dependent questions
+ *     without a text fallback emit a warning (don't auto-rewrite —
+ *     diagram description is an LLM job and a wrong fallback is
+ *     worse than no fallback).
+ *   - "dyspraxia" / "dcd" → Section A is checked for ≥ 3
+ *     non-writing answer formats (MCQ / matching / circle); if
+ *     fewer, warn. Challenge using extended-writing emits a warning
+ *     because Dyspraxia/DCD pupils tire on sustained handwriting.
+ *
  * Pure / idempotent — running twice on the same worksheet yields the
- * same result. The HI insertion path checks for existing
- * "topic-summary" type and skips when present. The Anxiety rename path
- * checks for the literal target wording and skips when already in
- * place.
+ * same result. Every insertion path checks for existing markers
+ * before creating new sections. Every rewrite path checks for the
+ * literal target wording before mutating.
  *
  * Registered in `worksheetPostValidatorRegistry.ts` BEFORE
  * `enforceSelfReflectionTopicAnchor` so reflection sees the final
@@ -1102,6 +1129,41 @@ export function enforceSendOverlayMarkers(
     sendKey === "anxiety-semh"
   ) {
     return enforceAnxietySectionTitles(ws, sections, warnings);
+  }
+
+  // ── ADHD — tick-box prefix + brain break + BONUS rename ──────────────────
+  if (sendKey === "adhd") {
+    return enforceAdhdMarkers(ws, sections, warnings);
+  }
+
+  // ── Dyslexia — method-box insertion ──────────────────────────────────────
+  if (sendKey === "dyslexia") {
+    return enforceDyslexiaMarkers(ws, sections, warnings, opts);
+  }
+
+  // ── MLD — topic-context block per section ────────────────────────────────
+  if (sendKey === "mld") {
+    return enforceMldMarkers(ws, sections, warnings, opts);
+  }
+
+  // ── Dyscalculia — Number-Steps cue on calculation questions ──────────────
+  if (sendKey === "dyscalculia") {
+    return enforceDyscalculiaMarkers(ws, sections, warnings);
+  }
+
+  // ── EAL / ESL — sentence frame on extended-response questions ────────────
+  if (sendKey === "eal" || sendKey === "esl") {
+    return enforceEalMarkers(ws, sections, warnings);
+  }
+
+  // ── VI — diagram-dependent question audit (warn-only) ────────────────────
+  if (sendKey === "vi" || sendKey === "visual-impairment" || sendKey === "visual") {
+    return enforceViMarkers(ws, sections, warnings);
+  }
+
+  // ── Dyspraxia / DCD — Section A format + Challenge format audit ──────────
+  if (sendKey === "dyspraxia" || sendKey === "dcd") {
+    return enforceDyspraxiaMarkers(ws, sections, warnings);
   }
 
   return { worksheet: ws, warnings };
@@ -1255,6 +1317,623 @@ function enforceAnxietySectionTitles(
 
   if (!mutated) return { worksheet: ws, warnings };
   return { worksheet: { ...ws, sections: next }, warnings };
+}
+
+/**
+ * Lane 2.2 — ADHD markers.
+ *
+ * Three deterministic rules:
+ *   1. Every pupil-facing question content begins with `"[ ] "` (open
+ *      square-bracket, space, close square-bracket, space) — the
+ *      visible tick-box that gives ADHD pupils the dopamine hit of
+ *      ticking off completed work. If absent, prepend.
+ *   2. A brain-break section exists somewhere in the middle of the
+ *      pupil-facing flow. Detection: any section whose content
+ *      contains "BRAIN BREAK" (case-insensitive). If absent, INSERT a
+ *      send-support section after the median question.
+ *   3. The Challenge section is titled `"BONUS — only if you want
+ *      to!"` (note: ADHD uses "BONUS"; Anxiety uses "OPTIONAL BONUS"
+ *      — different by design per `sendPromptFragments.ts`).
+ *
+ * Idempotent: every check looks for the target marker before
+ * mutating.
+ */
+const ADHD_BONUS_TITLE = "BONUS — only if you want to!";
+const ADHD_TICK_PREFIX = "[ ] ";
+const ADHD_BRAIN_BREAK_LINE =
+  "🧠 BRAIN BREAK — stand up and stretch for 30 seconds before continuing!";
+
+function enforceAdhdMarkers(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+): PostValidatorResult {
+  let mutated = false;
+  let prefixedCount = 0;
+  let renamedChallenge = false;
+
+  // Walk sections; (a) prefix tick-box on questions, (b) rename
+  // Challenge title.
+  let next: PostValidatorSection[] = sections.map(s => {
+    if (s.teacherOnly) return s;
+    const type = String(s.type || "").toLowerCase();
+    const isQuestion =
+      type.startsWith("q-") ||
+      type === "challenge" ||
+      type === "q-challenge" ||
+      type === "extended-answer" ||
+      type === "exam-question" ||
+      type === "lor";
+    let updated = s;
+    let didMutate = false;
+
+    // (a) Tick-box prefix on every question's content.
+    if (isQuestion && typeof s.content === "string") {
+      const content = s.content;
+      // Idempotent: skip if already prefixed (most reliable signal —
+      // first non-blank line starts with "[ ] ").
+      const firstLine = (content.split("\n").find(l => l.trim()) || "").trim();
+      if (!firstLine.startsWith(ADHD_TICK_PREFIX.trim())) {
+        updated = { ...updated, content: `${ADHD_TICK_PREFIX}${content}` };
+        didMutate = true;
+        prefixedCount++;
+      }
+    }
+
+    // (b) Challenge title rename.
+    const title = typeof updated.title === "string" ? updated.title : "";
+    if (
+      (type === "challenge" || type === "q-challenge" || /^challenge\b/i.test(title)) &&
+      title !== ADHD_BONUS_TITLE
+    ) {
+      updated = { ...updated, title: ADHD_BONUS_TITLE };
+      didMutate = true;
+      renamedChallenge = true;
+    }
+
+    if (didMutate) mutated = true;
+    return updated;
+  });
+
+  // (c) Brain-break section: insert mid-flow if missing.
+  const hasBrainBreak = next.some(
+    s =>
+      typeof s.content === "string" &&
+      /brain\s*break/i.test(s.content),
+  );
+  if (!hasBrainBreak) {
+    // Find pupil-facing question sections and insert AFTER the median
+    // index. We use the median rather than a fixed Q-number so the
+    // break lands roughly halfway through whatever the AI emitted.
+    const questionIndices: number[] = [];
+    next.forEach((s, idx) => {
+      if (s.teacherOnly) return;
+      const t = String(s.type || "").toLowerCase();
+      if (
+        t.startsWith("q-") ||
+        t === "challenge" ||
+        t === "extended-answer" ||
+        t === "exam-question" ||
+        t === "lor"
+      ) {
+        questionIndices.push(idx);
+      }
+    });
+    if (questionIndices.length >= 4) {
+      const insertAfter = questionIndices[Math.floor(questionIndices.length / 2)];
+      const breakSection: PostValidatorSection = {
+        id: `brain-break-adhd-${insertAfter}`,
+        type: "send-support",
+        title: "Brain break",
+        content: ADHD_BRAIN_BREAK_LINE,
+        teacherOnly: false,
+      };
+      next = [
+        ...next.slice(0, insertAfter + 1),
+        breakSection,
+        ...next.slice(insertAfter + 1),
+      ];
+      mutated = true;
+      warnings.push(
+        "[Phase 4 — ADHD] Brain-break section was missing for an ADHD worksheet; " +
+          "inserted mid-flow so the pupil has a movement-break checkpoint to restore attention.",
+      );
+    }
+  }
+
+  if (prefixedCount > 0) {
+    warnings.push(
+      `[Phase 4 — ADHD] Prepended tick-box "[ ] " to ${prefixedCount} question${prefixedCount === 1 ? "" : "s"} that lacked one — visible progress tracking sustains ADHD attention.`,
+    );
+  }
+  if (renamedChallenge) {
+    warnings.push(
+      `[Phase 4 — ADHD] Renamed Challenge title to "${ADHD_BONUS_TITLE}" so the extension reads as optional, not as a graded demand.`,
+    );
+  }
+
+  if (!mutated) return { worksheet: ws, warnings };
+  return { worksheet: { ...ws, sections: next }, warnings };
+}
+
+/**
+ * Lane 2.2 — Dyslexia markers.
+ *
+ * One deterministic rule (the cosmetic ones — line-height, bold first
+ * use of subject terms — live in the renderer / overlay engine):
+ *
+ *   1. A "Method steps" box exists immediately before the first
+ *      question section so the dyslexic pupil has a visible reference
+ *      while answering. If absent, INSERT one synthesised from the
+ *      worked-example or learning-objective content. Never calls the
+ *      AI.
+ */
+function enforceDyslexiaMarkers(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+  opts: PostValidatorOptions,
+): PostValidatorResult {
+  // Already present? No-op. Detection: section type contains "method"
+  // OR title contains "method steps" / "step-by-step".
+  const hasMethodBox = sections.some(s => {
+    if (s.teacherOnly) return false;
+    const t = String(s.type || "").toLowerCase();
+    const title = String(s.title || "").toLowerCase();
+    return (
+      t === "method-box" ||
+      t === "method-steps" ||
+      /method\s*step|step[-\s]by[-\s]step/i.test(title)
+    );
+  });
+  if (hasMethodBox) return { worksheet: ws, warnings };
+
+  // Find the first pupil-facing question section.
+  const firstQIdx = sections.findIndex(s => {
+    if (s.teacherOnly) return false;
+    const t = String(s.type || "").toLowerCase();
+    return (
+      t.startsWith("q-") ||
+      t === "challenge" ||
+      t === "extended-answer" ||
+      t === "exam-question" ||
+      t === "lor"
+    );
+  });
+  if (firstQIdx < 0) return { worksheet: ws, warnings };
+
+  // Synthesise from worked example > LO > generic fallback.
+  const workedExample = findFirstSectionContent(sections, [
+    "example",
+    "worked-example",
+    "worked_example",
+  ]);
+  const lo = findFirstSectionContent(sections, [
+    "objective",
+    "learning-objective",
+    "learning_objective",
+    "lo",
+  ]);
+
+  const lines: string[] = [];
+  lines.push("Method steps — refer back to this while you work:");
+  lines.push("");
+  if (workedExample && workedExample.trim()) {
+    // Pull numbered/Step lines from the worked example, capped at 5.
+    const steps = workedExample
+      .split("\n")
+      .map(l => l.trim())
+      .filter(l => /^(?:step\s*\d+|^\d+[.)])/i.test(l))
+      .slice(0, 5);
+    if (steps.length > 0) {
+      for (const step of steps) lines.push(`- ${step.replace(/^step\s*\d+\s*[:.\-]?\s*/i, "Step: ")}`);
+    } else {
+      // No structured steps — emit a 3-line skeleton.
+      lines.push("- Step 1: Read the question carefully.");
+      lines.push("- Step 2: Use the worked example above as your guide.");
+      lines.push("- Step 3: Check your answer makes sense before moving on.");
+    }
+  } else if (lo && lo.trim()) {
+    lines.push(`- Goal: ${lo.trim()}`);
+    lines.push("- Step 1: Read each question once before you start writing.");
+    lines.push("- Step 2: Use the worked example or word bank if you need to.");
+    lines.push("- Step 3: Check your answer makes sense before moving on.");
+  } else {
+    const topic =
+      (opts.topic && opts.topic.trim()) ||
+      opts_topic_or_metadata(ws) ||
+      "this topic";
+    lines.push(`- Goal: work through the questions on ${topic}.`);
+    lines.push("- Step 1: Read each question once before you start writing.");
+    lines.push("- Step 2: Look at the word bank for any tricky terms.");
+    lines.push("- Step 3: Check your answer matches the question asked.");
+  }
+
+  const newSection: PostValidatorSection = {
+    id: `method-steps-dyslexia-${firstQIdx}`,
+    type: "method-box",
+    title: "Method steps — keep this in view",
+    content: lines.join("\n"),
+    teacherOnly: false,
+  };
+
+  const next = [
+    ...sections.slice(0, firstQIdx),
+    newSection,
+    ...sections.slice(firstQIdx),
+  ];
+  warnings.push(
+    "[Phase 4 — Dyslexia] Method-steps box was missing for a Dyslexia worksheet; " +
+      "inserted deterministically so the pupil has a working-memory reference while answering.",
+  );
+  return { worksheet: { ...ws, sections: next }, warnings };
+}
+
+/**
+ * Lane 2.2 — MLD markers.
+ *
+ * One deterministic rule:
+ *   1. A topic-context block exists at the top of the pupil-facing
+ *      flow so MLD pupils have an explicit, written reminder of what
+ *      they are working on. Detection: section before the first
+ *      question with type "topic-context" or "topic-summary" (HI
+ *      pupils get this too — we don't double-insert if HI's
+ *      topic-summary is already there). If absent, INSERT one.
+ */
+function enforceMldMarkers(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+  opts: PostValidatorOptions,
+): PostValidatorResult {
+  const hasContextBlock = sections.some(s => {
+    if (s.teacherOnly) return false;
+    const t = String(s.type || "").toLowerCase();
+    return t === "topic-context" || t === "topic-summary";
+  });
+  if (hasContextBlock) return { worksheet: ws, warnings };
+
+  const firstQIdx = sections.findIndex(s => {
+    if (s.teacherOnly) return false;
+    const t = String(s.type || "").toLowerCase();
+    return (
+      t.startsWith("q-") ||
+      t === "challenge" ||
+      t === "extended-answer" ||
+      t === "exam-question" ||
+      t === "lor"
+    );
+  });
+  if (firstQIdx < 0) return { worksheet: ws, warnings };
+
+  const topic =
+    (opts.topic && opts.topic.trim()) ||
+    opts_topic_or_metadata(ws) ||
+    "this topic";
+  const lo = findFirstSectionContent(sections, [
+    "objective",
+    "learning-objective",
+    "learning_objective",
+    "lo",
+  ]);
+
+  const lines: string[] = [];
+  lines.push(`Remember: in this worksheet we are working on ${topic}.`);
+  if (lo && lo.trim()) {
+    lines.push("");
+    lines.push(`What we are learning today: ${lo.trim()}`);
+  }
+  lines.push("");
+  lines.push("Tips while you work:");
+  lines.push("- Take your time on each question.");
+  lines.push("- Check the word bank or worked example if you get stuck.");
+  lines.push("- It is OK to ask your teacher if a word is unfamiliar.");
+
+  const newSection: PostValidatorSection = {
+    id: `topic-context-mld-${firstQIdx}`,
+    type: "topic-context",
+    title: "What we are working on",
+    content: lines.join("\n"),
+    teacherOnly: false,
+  };
+
+  const next = [
+    ...sections.slice(0, firstQIdx),
+    newSection,
+    ...sections.slice(firstQIdx),
+  ];
+  warnings.push(
+    "[Phase 4 — MLD] Topic-context block was missing for an MLD worksheet; " +
+      "inserted deterministically so the pupil has a working-memory anchor while answering.",
+  );
+  return { worksheet: { ...ws, sections: next }, warnings };
+}
+
+/**
+ * Lane 2.2 — Dyscalculia markers.
+ *
+ * One deterministic rule:
+ *   1. Every pupil-facing question whose content contains a number
+ *      gets a "Numbers in this question" cue appended unless one
+ *      already exists. The full 5-step calculation recipe is handled
+ *      by `reinforceDyscalculiaMathsScaffolding` (maths only); this
+ *      validator covers non-maths sheets where dyscalculia is still
+ *      reported (e.g. Y10 Geography rivers — discharge calculations,
+ *      data tables) so the pupil still gets a number-aware highlight.
+ *
+ * Idempotent: skips questions that already contain "Numbers in this
+ * question" or "Number Steps".
+ */
+function enforceDyscalculiaMarkers(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+): PostValidatorResult {
+  let mutated = false;
+  let cuedCount = 0;
+  const next = sections.map(s => {
+    if (s.teacherOnly) return s;
+    const type = String(s.type || "").toLowerCase();
+    const isQuestion =
+      type.startsWith("q-") ||
+      type === "challenge" ||
+      type === "extended-answer" ||
+      type === "exam-question";
+    if (!isQuestion) return s;
+    const content = typeof s.content === "string" ? s.content : "";
+    if (!content.trim()) return s;
+    // Skip if a sibling Number Steps / Numbers cue already exists.
+    if (/numbers\s+in\s+this\s+question|number\s+steps/i.test(content)) return s;
+    // Detect any digit (decimal, fraction, integer). Skip if no
+    // numbers — this is a no-op for prose-only questions.
+    const numbers = content.match(/-?\d+(?:\.\d+)?/g);
+    if (!numbers || numbers.length === 0) return s;
+    const uniqueNumbers = Array.from(new Set(numbers)).slice(0, 6);
+    const cue = `\n\nNumbers in this question: ${uniqueNumbers.join(", ")}. Underline each one as you read so you do not lose them.`;
+    cuedCount++;
+    mutated = true;
+    return { ...s, content: content + cue };
+  });
+
+  if (cuedCount > 0) {
+    warnings.push(
+      `[Phase 4 — Dyscalculia] Appended a "Numbers in this question" cue to ${cuedCount} question${cuedCount === 1 ? "" : "s"} so the pupil can anchor each digit before reasoning about it.`,
+    );
+  }
+
+  if (!mutated) return { worksheet: ws, warnings };
+  return { worksheet: { ...ws, sections: next }, warnings };
+}
+
+/**
+ * Lane 2.2 — EAL / ESL markers.
+ *
+ * One deterministic rule:
+ *   1. Every pupil-facing extended-response question gets a
+ *      "Sentence frame:" line appended unless one already exists.
+ *      EAL pupils often have the knowledge but lack the syntactic
+ *      scaffolding to express it; a frame removes the language
+ *      barrier without simplifying the assessed skill.
+ *
+ * The bilingual glossary (Lane 1.5) is additive — it lives on the
+ * Key Vocabulary section, not on individual questions. Per-section
+ * Key Vocabulary boxes are a Lane 3 follow-up.
+ *
+ * Idempotent: skips questions that already contain "Sentence frame"
+ * or "Frame:" or a generic starter pattern.
+ */
+function enforceEalMarkers(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+): PostValidatorResult {
+  let mutated = false;
+  let framedCount = 0;
+  const next = sections.map(s => {
+    if (s.teacherOnly) return s;
+    const type = String(s.type || "").toLowerCase();
+    // Only frame extended / short-answer questions — MCQs / matching /
+    // gap-fill etc. own their own answer affordance.
+    const isWritten =
+      type === "q-extended" ||
+      type === "extended-answer" ||
+      type === "q-short-answer" ||
+      type === "q-short" ||
+      type === "exam-question" ||
+      type === "lor" ||
+      type === "challenge";
+    if (!isWritten) return s;
+    const content = typeof s.content === "string" ? s.content : "";
+    if (!content.trim()) return s;
+    // Idempotent: skip if a sentence frame is already present.
+    if (/sentence\s+frame|^frame\s*:|starter\s*:/im.test(content)) return s;
+    // Pick a frame appropriate to the command word in the stem.
+    const stemLower = content.toLowerCase();
+    let frame: string;
+    if (/\b(calculate|work\s+out|find|solve|determine)\b/.test(stemLower)) {
+      frame = "Sentence frame: The answer is ___ because ___.";
+    } else if (/\b(explain|why|because)\b/.test(stemLower)) {
+      frame = "Sentence frame: This happens because ___. This shows that ___.";
+    } else if (/\b(compare|contrast)\b/.test(stemLower)) {
+      frame = "Sentence frame: Both ___ and ___ are similar because ___. They are different because ___.";
+    } else if (/\b(describe|state|identify)\b/.test(stemLower)) {
+      frame = "Sentence frame: ___ is ___. One example is ___.";
+    } else if (/\b(evaluate|justify|discuss)\b/.test(stemLower)) {
+      frame = "Sentence frame: One reason for ___ is ___. However, ___. Overall, I think ___ because ___.";
+    } else {
+      frame = "Sentence frame: The answer is ___ because ___.";
+    }
+    framedCount++;
+    mutated = true;
+    return { ...s, content: `${content}\n\n${frame}` };
+  });
+
+  if (framedCount > 0) {
+    warnings.push(
+      `[Phase 4 — EAL] Appended a sentence frame to ${framedCount} written-response question${framedCount === 1 ? "" : "s"} so the pupil has scaffolding to express what they know.`,
+    );
+  }
+
+  if (!mutated) return { worksheet: ws, warnings };
+  return { worksheet: { ...ws, sections: next }, warnings };
+}
+
+/**
+ * Lane 2.2 — VI markers.
+ *
+ * Warn-only. We do NOT auto-rewrite diagram alt-text — a wrong
+ * fallback is worse than no fallback for a screen-reader user. Two
+ * checks:
+ *   1. Any pupil-facing question whose stem references "the diagram"
+ *      / "shown above" / "label X on the diagram" should have a text
+ *      description elsewhere in the worksheet (a non-empty caption,
+ *      altText, or a sibling section with type "diagram-description").
+ *      If not, warn.
+ *   2. Any diagram section with empty or missing alt-text raises a
+ *      separate warning so the teacher can fix it before printing.
+ */
+function enforceViMarkers(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+): PostValidatorResult {
+  let qNum = 0;
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const type = String(s.type || "").toLowerCase();
+    const isQuestion =
+      type.startsWith("q-") ||
+      type === "challenge" ||
+      type === "extended-answer" ||
+      type === "exam-question" ||
+      type === "lor";
+    if (!isQuestion) continue;
+    qNum++;
+    const content = typeof s.content === "string" ? s.content : "";
+    if (!content.trim()) continue;
+    // Diagram-dependent stem signals.
+    const referencesDiagram = /\b(?:the\s+diagram|shown\s+above|in\s+the\s+image|in\s+the\s+figure|label\s+(?:the\s+)?diagram)\b/i.test(content);
+    if (!referencesDiagram) continue;
+    // Look for a sibling diagram section with a useful text equivalent.
+    const hasTextEquivalent = sections.some(other => {
+      const ot = String(other.type || "").toLowerCase();
+      const isDiagramish = ot.includes("diagram") || ot === "topic-summary";
+      if (!isDiagramish) return false;
+      const cap = String((other as { caption?: string }).caption || "").trim();
+      const alt = String((other as { altText?: string }).altText || "").trim();
+      const desc = String(other.content || "").trim();
+      return cap.length > 20 || alt.length > 20 || desc.length > 80;
+    });
+    if (!hasTextEquivalent) {
+      warnings.push(
+        `[Phase 4 — VI] Q${qNum} references "the diagram" but no text equivalent (caption / altText / description ≥ 20 chars) was found on any diagram section. A VI pupil cannot answer this question via screen reader. Add a written description before printing.`,
+      );
+    }
+  }
+
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const type = String(s.type || "").toLowerCase();
+    if (!type.includes("diagram")) continue;
+    const cap = String((s as { caption?: string }).caption || "").trim();
+    const alt = String((s as { altText?: string }).altText || "").trim();
+    if (cap.length === 0 && alt.length === 0) {
+      warnings.push(
+        `[Phase 4 — VI] Diagram section "${s.title || s.type}" has no caption or altText. Add a one-sentence description before printing so a screen-reader pupil can access the visual content.`,
+      );
+    }
+  }
+
+  return { worksheet: ws, warnings };
+}
+
+/**
+ * Lane 2.2 — Dyspraxia / DCD markers.
+ *
+ * Warn-only. Two audits — neither auto-rewrites because the right
+ * answer is an LLM rewrite (changing a question format on the fly
+ * could break its assessment validity).
+ *
+ *   1. Section A (recall) should use a non-writing format (MCQ /
+ *      matching / true-false / circle-the-answer / gap-fill) for at
+ *      least 3 questions to reduce the handwriting burden.
+ *   2. The Challenge section should use a tick / circle / label
+ *      format, not extended writing — sustained handwriting is
+ *      fatiguing for DCD pupils.
+ */
+const DYSPRAXIA_NON_WRITING_TYPES = new Set([
+  "q-mcq",
+  "mcq",
+  "q-true-false",
+  "true-false",
+  "true_false",
+  "q-matching",
+  "matching",
+  "q-gap-fill",
+  "gap-fill",
+  "cloze",
+  "q-label-diagram",
+  "label-diagram",
+  "q-ordering",
+  "ordering",
+]);
+
+function enforceDyspraxiaMarkers(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+): PostValidatorResult {
+  // Audit 1 — Section A non-writing question count.
+  let recallCount = 0;
+  let recallNonWritingCount = 0;
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const type = String(s.type || "").toLowerCase();
+    const title = String(s.title || "");
+    // A "recall" question is one in the Phase-1 recall range OR with
+    // a Section-A title.
+    const titleN = title.match(/Q(\d+)/i);
+    const qn = titleN ? parseInt(titleN[1], 10) : NaN;
+    const inRecallRange =
+      Number.isFinite(qn) && qn >= 1 && qn <= SECTION_QUESTION_TARGETS.recall.max;
+    const isSectionA = /^section\s*(?:1|a)\b/i.test(title);
+    const isQuestion =
+      type.startsWith("q-") ||
+      type === "extended-answer" ||
+      type === "exam-question";
+    if (!isQuestion) continue;
+    if (!(inRecallRange || isSectionA)) continue;
+    recallCount++;
+    if (DYSPRAXIA_NON_WRITING_TYPES.has(type)) recallNonWritingCount++;
+  }
+  if (recallCount > 0 && recallNonWritingCount < 3) {
+    warnings.push(
+      `[Phase 4 — Dyspraxia] Section A has ${recallNonWritingCount} non-writing question${recallNonWritingCount === 1 ? "" : "s"} (MCQ / matching / circle-the-answer) out of ${recallCount}. The audit doc requires at least 3 non-writing formats so a DCD pupil can demonstrate knowledge without the handwriting burden. Regenerate or convert at least ${3 - recallNonWritingCount} question${3 - recallNonWritingCount === 1 ? "" : "s"} to a non-writing format.`,
+    );
+  }
+
+  // Audit 2 — Challenge non-writing format.
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const type = String(s.type || "").toLowerCase();
+    const isChallenge =
+      type === "challenge" ||
+      type === "q-challenge" ||
+      /^challenge\b/i.test(String(s.title || "")) ||
+      /^bonus\b/i.test(String(s.title || ""));
+    if (!isChallenge) continue;
+    const isExtendedWriting =
+      type === "q-extended" ||
+      type === "extended-answer" ||
+      type === "lor";
+    if (isExtendedWriting) {
+      warnings.push(
+        `[Phase 4 — Dyspraxia] Challenge section "${s.title || s.type}" uses extended-writing format. Sustained handwriting is fatiguing for DCD pupils — the audit doc requires the Challenge to use a tick / circle / label format. Regenerate the Challenge with a non-writing layout.`,
+      );
+    }
+  }
+
+  return { worksheet: ws, warnings };
 }
 
 // ── Helpers used by enforceSendOverlayMarkers ────────────────────────────────
