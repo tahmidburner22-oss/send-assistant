@@ -1,0 +1,26 @@
+{
+  "id": "stacked-mld-dyscalculia-y6-maths",
+  "title": "Year 6 Mathematics (MLD + Dyscalculia) — Multiplication",
+  "bucket": "send",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Long multiplication",
+    "yearGroup": "Year 6",
+    "examBoard": "AQA",
+    "sendNeed": "mld+dyscalculia",
+    "difficulty": "easy",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "qa-score-floor",
+    "stacked-needs-both-markers-present"
+  ],
+  "readingAgeRange": [
+    9,
+    13
+  ],
+  "estimatedTokens": 4000
+}

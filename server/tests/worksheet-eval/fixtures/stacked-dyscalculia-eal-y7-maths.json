@@ -1,0 +1,27 @@
+{
+  "id": "stacked-dyscalculia-eal-y7-maths",
+  "title": "Year 7 Mathematics (Dyscalculia + EAL Bengali) — Decimals",
+  "bucket": "send",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Decimals — place value and ordering",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "sendNeed": "dyscalculia+eal",
+    "ealLanguage": "bn",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "qa-score-floor",
+    "stacked-needs-both-markers-present"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}

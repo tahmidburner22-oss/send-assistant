@@ -1,0 +1,26 @@
+{
+  "id": "stacked-dyspraxia-adhd-y9-science",
+  "title": "Year 9 Science (Dyspraxia + ADHD) — Forces and motion",
+  "bucket": "send",
+  "params": {
+    "subject": "Physics",
+    "topic": "Forces and motion",
+    "yearGroup": "Year 9",
+    "examBoard": "AQA",
+    "sendNeed": "dyspraxia+adhd",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "qa-score-floor",
+    "stacked-needs-both-markers-present"
+  ],
+  "readingAgeRange": [
+    11,
+    15
+  ],
+  "estimatedTokens": 4000
+}
