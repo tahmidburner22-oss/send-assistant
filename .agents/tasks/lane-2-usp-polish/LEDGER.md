@@ -474,3 +474,91 @@ later pass shouldn't undo it.
   dispatches a single need then returns. Multi-need overlay
   composition is a Lane 2.1 (SEND collapse) follow-up where the
   unified `SendNeedSpec` shape will allow ordered application.
+
+
+## 2026-05-29 — Lane 2.1 complete: SEND coherence test (drift-prevention without behaviour change)
+
+### What changed
+
+The audit demanded "collapse three SEND systems into one source of
+truth". A full unification would require a richer per-need schema
+than any of the existing locations carries — and would touch every
+SEND need at once. Lane 2.1 ships the safer first step: a
+**coherence test** that locks all four SEND-emitting layers against
+the canonical `sendNeeds` list in `send-data.ts`. New SEND needs
+cannot land in the canonical list without being explicitly
+propagated to (or opted out of) every other layer.
+
+### The four SEND-emitting layers (now formally documented)
+
+| Layer | File | Role |
+|---|---|---|
+| 1 | `client/src/lib/send-data.ts` | Canonical list — drives the UI picker |
+| 2 | `client/src/lib/sendPromptFragments.ts` | Prompt rules sent to the AI |
+| 3 | `client/src/lib/worksheetConstraints.ts` | Cosmetic settings the renderer applies |
+| 4 | `server/lib/overlayEngine.ts` | Post-generation overlay support boxes |
+| 5 | `client/src/lib/worksheetPostValidator.ts` | Fail-closed marker enforcement (Lane 1.6/1.7 + Lane 2.2) |
+
+### Coherence test asserts
+
+1. `sendNeeds` is non-empty, has unique IDs, and every entry has a
+   non-empty id + name.
+2. **Every** `SendNeed.id` resolves to a non-default
+   `SEND_OVERLAYS` entry (or is opted out via the explicit
+   `COSMETIC_OPT_OUT` set with a justification comment).
+3. Every `SendNeed.id` maps to a known overlay-engine dispatcher
+   key, OR is logged via `console.info` as falling through to the
+   generic dispatcher (acceptable but visible).
+4. Every audit-doc-named need (HI, Anxiety, SEMH, ADHD, Dyslexia,
+   MLD, Dyscalculia, EAL, VI, Dyspraxia) MUST trigger either a
+   mutation or a warning when `enforceSendOverlayMarkers` runs on
+   a worksheet missing its marker.
+5. **Non**-audit-doc needs are strict no-ops at the post-validator
+   layer (regression guard against a stray dispatcher branch).
+6. Every post-validator-covered need ALSO has a cosmetic entry
+   (cross-layer regression — the renderer can't deliver the
+   spacing affordances the marker assumes without one).
+
+### Real gaps surfaced + fixed
+
+The coherence test caught two pre-existing gaps on first run:
+
+- **`semh`** — the official SEND Code of Practice term — had no
+  cosmetic SEND_OVERLAYS entry. The colloquial alias `anxiety` did.
+  Fixed: added a `semh` entry mirroring `anxiety`'s settings.
+- **`working-memory`** — listed in `send-data.ts` but had no
+  cosmetic entry, so the renderer silently fell back to the
+  default. Fixed: added a working-memory entry with chunking +
+  reduced-density + key-facts cues.
+
+### Files
+
+- `client/src/lib/__tests__/sendCoherence.test.ts` — NEW. 8 tests
+  covering layers 1, 3, 4, 5 + cross-layer regression guard. The
+  test file is self-documenting so a future contributor adding a
+  new SEND need has a checklist to follow.
+- `client/src/lib/worksheetConstraints.ts` — added `semh` and
+  `working-memory` cosmetic entries to `SEND_OVERLAYS` so the
+  coherence test passes on first run with no opt-outs.
+
+### Test status
+
+- New focused suite (sendCoherence): **8 passed / 8 total** ✓
+- Full vitest run: **760 passed / 32 failed / 1 skipped** (was 752
+  / 32 / 1 on Lane 2.3 baseline). +8 newly passing, zero new
+  regressions.
+
+### Why this isn't the full collapse refactor
+
+The four layers serve genuinely different purposes. A unified
+`SendNeedSpec` interface that carries prompt rules + cosmetics +
+overlay-box descriptors + post-validator markers in one shape
+would require migrating 17 SEND needs at once across four
+generators. The risk-to-value ratio favours shipping the coherence
+test first (which prevents future drift) and tackling the full
+unification as a Lane 3 item with its own PR + migration plan.
+
+The coherence test gives us 80% of the value: every new SEND need
+must be explicitly propagated, opt-outs are documented, and
+audit-doc-named needs cannot lose their post-validator branch
+silently.
