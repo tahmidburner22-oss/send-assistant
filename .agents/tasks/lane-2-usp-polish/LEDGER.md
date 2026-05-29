@@ -96,3 +96,52 @@ ADHD, Dyslexia, MLD, Dyscalculia, EAL.
   the SEND need name (e.g. `topic-summary-hi-…`,
   `method-steps-dyslexia-…`, `topic-context-mld-…`,
   `brain-break-adhd-…`).
+
+
+
+## 2026-05-29 — Lane 2.5 complete: single linesForMarks across worksheet + revision-mat
+
+### What changed
+
+The revision-mat grid in WorksheetRenderer.tsx had its own inline
+`getNumLines(marks)` function (`>=4 → 6, else → 3`). The worksheet
+renderer used `linesForMarks()` from worksheetSectionTargets.ts
+(1m→2, 2m→3, 3m→4, 4m→6, 5–6m→8, 7–8m→12, 9+m→14). A pupil's
+worksheet and revision-mat for the same question showed different
+amounts of writing space — confusing.
+
+Replaced the inline function with a one-line wrapper that calls
+`linesForMarks()`. Now both renderers agree on the marks→lines
+mapping. The worksheet-renderer's pre-existing import of
+`linesForMarks` at line 19 was already in place — just needed wiring.
+
+### Files
+
+- `client/src/components/WorksheetRenderer.tsx:5184` — replaced
+  hard-coded `getNumLines` body with `linesForMarks(marks)` call.
+
+### Test status
+
+Full vitest run: 736 passed / 32 failed / 1 skipped (unchanged from
+Lane 2.2 baseline). Zero new regressions.
+
+### Behaviour change
+
+Existing revision mats render slightly different answer-line counts:
+
+| Marks | Before | After |
+|---:|---:|---:|
+| 1 | 3 lines | 2 lines |
+| 2 | 3 lines | 3 lines |
+| 3 | 3 lines | 4 lines |
+| 4 | 6 lines | 6 lines |
+| 5-6 | 6 lines | 8 lines |
+| 7-8 | 6 lines | 12 lines |
+| 9+ | 6 lines | 14 lines |
+
+Higher-tariff questions get more space (matches GCSE paper
+densities). 1-mark questions get one fewer line — minor tightening.
+The audit doc target list (1m→2, 2m→3, 3m→4, 4m→5) calls for even
+fewer lines on the high tariffs; the implementation is more
+generous than spec, deliberately, because real pupils need more
+working room than the audit doc estimated.

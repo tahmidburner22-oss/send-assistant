@@ -5180,11 +5180,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             const wsRowStart = hasEmpty ? wsR0 + 1 : totalRows + 1;
 
             // ── Answer lines per mark spec ────────────────────────────────
-            // 4+ marks → 6 lines; everything else → 3 lines
-            const getNumLines = (marks: number): number => {
-              if (marks >= 4) return 6;
-              return 3;
-            };
+            // Lane 2.5 — single source of truth: defer to linesForMarks() so
+            // the revision-mat grid and the worksheet renderer always agree
+            // on how many lines a tariff gets. Previously the revision-mat
+            // used `>=4 → 6, else → 3` while the worksheet used the
+            // marks→lines ramp from worksheetSectionTargets.ts:linesForMarks
+            // (1m→2, 2m→3, 3m→4, 4m→6, 5–6m→8, 7–8m→12, 9+m→14). A pupil's
+            // worksheet and revision-mat for the same question now show the
+            // same answer space.
+            const getNumLines = (marks: number): number => linesForMarks(marks);
 
             return (
               <>
