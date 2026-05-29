@@ -145,3 +145,47 @@ The audit doc target list (1m→2, 2m→3, 3m→4, 4m→5) calls for even
 fewer lines on the high tariffs; the implementation is more
 generous than spec, deliberately, because real pupils need more
 working room than the audit doc estimated.
+
+
+
+## 2026-05-29 — Lane 2.6 complete: curriculum-authority preamble on every system prompt
+
+### What changed
+
+Before this change, only the secondary "structured" path
+(`structuredSystemSections` at `ai.ts:2713`) called
+`buildCurriculumAuthorityPreamble` /
+`buildNonNegotiablesBlock` / `buildPedagogicalRegisterNote`. The
+primary path (`ai.ts:1478` legacy `system` string) and the
+revision-mat path (`ai.ts:1062` `rmSystem`) used weaker, separate
+openers.
+
+Now every worksheet's system prompt opens with the same authority
+chain — the curriculum + (KS-scaled) awarding-body / school-scheme
+clause + UK English / SI units / no-fabricated-codes
+non-negotiables + register note (KS1 warm-and-precise → A-Level
+academic-and-direct).
+
+### Files
+
+- `client/src/lib/ai.ts`:
+  - **Primary path** — preamble + non-negotiables + register note
+    prepended to the primary system string. Computed once outside
+    the ternary so both branches share the call (cheap pure
+    functions; secondary discards them and uses the
+    `structuredSystemSections` array's call instead).
+  - **Revision-mat path** — preamble + non-negotiables + register
+    note prepended to `rmSystem`. `isSTEM` is recomputed locally
+    (`rmIsSTEM`) because the broader function's `isSTEM` lives
+    after the revision-mat early-return.
+  - **Secondary structured path** — unchanged (already had the
+    preamble at line 2713).
+  - **Secondary legacy path** — unchanged (the legacy `system`
+    string for the non-structured `callAI` at line 3572 keeps its
+    inline Phase 5 mandate; the curriculum chain is still bound
+    via that inline text).
+
+### Test status
+
+Full vitest run: 736 passed / 32 failed / 1 skipped. Unchanged
+from Lane 2.2 / 2.5 baseline. Zero new regressions.
