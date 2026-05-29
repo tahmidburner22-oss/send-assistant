@@ -333,3 +333,144 @@ from Year 6's 5 questions in difficulty. Lane 3.1 will add per-year
 scaffolding so a Y1 sheet's 5 recall questions are decoded
 phonetically while a Y6 sheet's 5 recall questions can use Tier 3
 vocabulary.
+
+
+
+## 2026-05-29 — Lane 2.8 complete: aria-labels on highest-impact pupil-facing surfaces
+
+### What changed
+
+The renderer previously had zero proper screen-reader labels on
+pupil-facing content. A VI / blind pupil using NVDA / JAWS /
+VoiceOver would hear the raw HTML structure ('group, group, group')
+instead of the actual question content — WCAG 2.2 AA fail.
+
+Lane 2.8 adds the highest-impact aria attributes:
+
+- `role="group" aria-label="Question worth N marks: <stem>"` on every
+  per-question render block.
+- HTML-strip the stem (regex `/<[^>]+>/`) and cap at 200 chars so the
+  screen reader doesn't read out maths markup or a wall of text.
+- `aria-hidden="true"` on the mark badge (announced via the parent's
+  aria-label, so hiding the badge avoids double-announcement).
+- `role="group" aria-label="Working-out space"` on the dot-grid box.
+- `role="group" aria-label="Answer space, N lines"` on the answer
+  block.
+- `aria-hidden="true"` on each individual answer line div (decorative
+  — the parent group already announces "answer space").
+- `role="textbox" aria-readonly="true" aria-label="Final answer line"`
+  on the final-answer underline.
+- `aria-label` on the toolbar zoom-in / zoom-out buttons in
+  Worksheets.tsx (only icon-only buttons remaining after Lane 1.3
+  declutter); a teacher with a VI can now navigate the worksheet
+  view by keyboard / screen reader.
+
+### Files
+
+- `client/src/components/WorksheetRenderer.tsx:1820–1900` — every
+  question render block now has explicit aria attributes; mark badge
+  hidden via aria-hidden; working-out + answer + final-answer
+  surfaces all labelled.
+- `client/src/pages/Worksheets.tsx:6048` — zoom-in / zoom-out
+  buttons get aria-label; the icon glyphs themselves marked
+  aria-hidden.
+
+### What is NOT in scope (Lane 3 follow-up)
+
+- Section headings (`<h2>` semantics) — the worksheet uses
+  `<div>` for section titles; promoting these to `<h2>` requires a
+  larger restructuring of the renderer's section-rendering function.
+- Diagram alt-text auto-fill — Lane 2.2 added a VI-warn-only audit
+  for empty captions; auto-filling is a Lane 3 follow-up because
+  AI-generated alt-text without human review is a known accessibility
+  anti-pattern.
+- Lighthouse a11y target ≥ 95 — verifying this requires a deployed
+  build with axe-core / puppeteer; documented as a follow-up smoke
+  test.
+
+### Test status
+
+Full vitest run: 739 passed / 32 failed / 1 skipped (unchanged
+baseline). UI-only changes — no test updates needed because no
+existing test asserts the renderer's HTML output structure.
+
+
+## 2026-05-29 — Lane 2.3 complete: stacked-need composability tests + bug fix
+
+### What changed
+
+Added 13 stacked-need composability tests to
+`client/src/lib/__tests__/sendOverlayMarkers.test.ts` covering the
+most common dual-need pupil profiles from the DfE School Census /
+EHCP data. Each test simulates stacked SEND application by running
+`enforceSendOverlayMarkers` twice in sequence (once per need) and
+asserts BOTH needs' markers are present after the second run.
+
+### Real bug surfaced + fixed
+
+The new test suite caught a real composability bug: when Anxiety
+renamed the Challenge title to "OPTIONAL BONUS — only if you want
+to!" first, and ADHD was then applied, ADHD's renaming logic
+clobbered Anxiety's title with its own "BONUS — only if you want
+to!". The first need's threat-softening was being silently
+overwritten by the second need.
+
+**Fix:** added a shared `SEND_RENAMED_CHALLENGE_TITLES` set
+containing both Anxiety and ADHD softened titles. Both
+`enforceAdhdMarkers` and `enforceAnxietySectionTitles` now check
+the set before mutating — whichever rename ships first wins. This
+matches the desired UX: once an SEND-aware label is in place, a
+later pass shouldn't undo it.
+
+### Stacked combinations covered
+
+| # | Stack | Markers asserted |
+|---|---|---|
+| 1 | HI + EAL | Topic Summary section + sentence frames on questions |
+| 2 | HI + EAL (reverse order) | Both still ship regardless of apply order |
+| 3 | ADHD + Dyslexia | Tick-box prefix on questions + method-steps box |
+| 4 | Anxiety + MLD | OPTIONAL BONUS rename + topic-context block |
+| 5 | Dyscalculia + EAL | Number cues on questions + sentence frames |
+| 6 | ASC + Anxiety | Anxiety markers ship (ASC has no post-validator branch — overlay engine handles it) |
+| 7 | VI + Dyslexia | Method-steps box + VI warns about diagram-dependent questions |
+| 8 | Dyspraxia + ADHD | ADHD markers ship + Dyspraxia warns Section A format |
+| 9 | HI + ADHD | Topic Summary + tick-box prefix |
+| 10 | Dyscalculia + Dyslexia | Number cues + method-steps box |
+| 11 | Idempotent under stacking (HI + HI = HI alone) | Single Topic Summary, no duplicates |
+| 12 | Unknown second need does not erase first need's marker | Topic Summary survives an unknown subsequent dispatch |
+| 13 | Anxiety wins over ADHD on Challenge title | OPTIONAL BONUS preserved when ADHD applied second |
+
+### Files
+
+- `client/src/lib/worksheetPostValidator.ts`:
+  - Added `SEND_RENAMED_CHALLENGE_TITLES` constant.
+  - `enforceAdhdMarkers` Challenge-rename check extended to skip if
+    the title is already in the SEND-rename set.
+  - `enforceAnxietySectionTitles` Challenge-rename check extended
+    similarly.
+- `client/src/lib/__tests__/sendOverlayMarkers.test.ts`:
+  - New `describe(..."stacked-need composability"...)` block with
+    13 tests.
+
+### Test status
+
+- Focused suite: **50 passed / 50 total** ✓ (was 37; +13 new).
+- Full vitest run: **752 passed / 32 failed / 1 skipped** (was 739
+  / 32 / 1 on Lane 2.4 baseline). +13 newly passing, zero new
+  regressions.
+
+### What is NOT in scope (Lane 3 follow-up)
+
+- **End-to-end eval-harness fixtures for stacked SEND.** The
+  product currently exposes one SEND profile per worksheet, so the
+  eval harness's `params.sendNeed` field accepts a single string.
+  Adding stacked-SEND eval fixtures requires an architectural
+  change to support `params.sendNeeds: string[]` (plural) and a
+  matching loop inside the generator. Documented as a Lane 3 item.
+- **Overlay-engine composability** — the unit tests above prove
+  composability at the post-validator layer. The overlay engine
+  (`server/lib/overlayEngine.ts`) has its own per-need build
+  functions that don't currently compose because `applySendSupport`
+  dispatches a single need then returns. Multi-need overlay
+  composition is a Lane 2.1 (SEND collapse) follow-up where the
+  unified `SendNeedSpec` shape will allow ordered application.

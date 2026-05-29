@@ -1292,6 +1292,9 @@ function enforceAnxietySectionTitles(
     // Challenge — rename whole title (idempotent).
     if (type === "challenge" || type === "q-challenge" || /^challenge\b/i.test(title)) {
       if (title === ANXIETY_OPTIONAL_BONUS_TITLE) return s;
+      // Lane 2.3 — also skip if a different SEND need has already
+      // softened the title; whichever rename ships first wins.
+      if (SEND_RENAMED_CHALLENGE_TITLES.has(title)) return s;
       mutated = true;
       warnings.push(
         `[Phase 4 — Anxiety] Renamed challenge title "${title || "(untitled)"}" → "${ANXIETY_OPTIONAL_BONUS_TITLE}" to remove threat-language for an Anxiety/SEMH worksheet.`,
@@ -1343,6 +1346,18 @@ const ADHD_TICK_PREFIX = "[ ] ";
 const ADHD_BRAIN_BREAK_LINE =
   "🧠 BRAIN BREAK — stand up and stretch for 30 seconds before continuing!";
 
+/**
+ * Lane 2.3 — Set of titles that any SEND need's marker enforcer has
+ * already softened. When a worksheet is generated for a pupil with
+ * stacked SEND needs, the post-validator runs once per need in
+ * sequence; we don't want a later pass to clobber an earlier pass's
+ * softened title (e.g. ADHD overwriting Anxiety's "OPTIONAL BONUS"
+ * with its own "BONUS"). Whichever rename ships first wins. */
+const SEND_RENAMED_CHALLENGE_TITLES = new Set([
+  "OPTIONAL BONUS — only if you want to!", // Anxiety / SEMH
+  ADHD_BONUS_TITLE,                          // ADHD
+]);
+
 function enforceAdhdMarkers(
   ws: PostValidatorWorksheet,
   sections: PostValidatorSection[],
@@ -1384,7 +1399,8 @@ function enforceAdhdMarkers(
     const title = typeof updated.title === "string" ? updated.title : "";
     if (
       (type === "challenge" || type === "q-challenge" || /^challenge\b/i.test(title)) &&
-      title !== ADHD_BONUS_TITLE
+      title !== ADHD_BONUS_TITLE &&
+      !SEND_RENAMED_CHALLENGE_TITLES.has(title)
     ) {
       updated = { ...updated, title: ADHD_BONUS_TITLE };
       didMutate = true;

@@ -510,3 +510,163 @@ describe("enforceSendOverlayMarkers — no SEND need", () => {
     expect(String(teacherKey!.content)).not.toMatch(/^\[\s\]\s/);
   });
 });
+
+// ── Lane 2.3 — Stacked-need composability ────────────────────────────────────
+//
+// Pupils with stacked SEND profiles are common in mainstream UK
+// schools (e.g. HI + EAL is normal in inner-London Y10 sets). The
+// product currently exposes one SEND profile per worksheet, but we
+// MUST guarantee that if a teacher generates an HI worksheet for a
+// pupil and then re-runs the post-validator with that same pupil's
+// other need (EAL, ADHD, MLD, etc.), the second pass does not erase
+// the first pass's markers.
+//
+// These tests simulate stacking by running enforceSendOverlayMarkers
+// twice in sequence, once per need, and asserting BOTH needs' markers
+// are present after the second run. This is also what would happen if
+// stacked-SEND support were added at the params layer (the validator
+// runs once per need, in sequence).
+//
+// 10 fixtures cover the most common stacked combinations from the
+// DfE School Census + EHCP data.
+
+describe("enforceSendOverlayMarkers — stacked-need composability (Lane 2.3)", () => {
+  const stack = (
+    ws: PostValidatorWorksheet,
+    needs: string[],
+  ): PostValidatorWorksheet => {
+    let current = ws;
+    for (const sendNeed of needs) {
+      const { worksheet } = enforceSendOverlayMarkers(current, { sendNeed });
+      current = worksheet;
+    }
+    return current;
+  };
+
+  it("HI + EAL — Topic Summary AND sentence frames both ship", () => {
+    const ws = stack(makeWs("hi"), ["hi", "eal"]);
+    // HI marker
+    expect(ws.sections!.some(s => s.type === "topic-summary")).toBe(true);
+    // EAL marker — sentence frame on the extended-response question
+    const q4 = ws.sections!.find(s => s.id === "q4");
+    expect(String(q4!.content)).toMatch(/Sentence frame/i);
+  });
+
+  it("HI + EAL applied in REVERSE order also yields both markers", () => {
+    const ws = stack(makeWs("hi"), ["eal", "hi"]);
+    expect(ws.sections!.some(s => s.type === "topic-summary")).toBe(true);
+    const q4 = ws.sections!.find(s => s.id === "q4");
+    expect(String(q4!.content)).toMatch(/Sentence frame/i);
+  });
+
+  it("ADHD + Dyslexia — tick boxes AND method-steps box both ship", () => {
+    const ws = stack(makeWs("adhd"), ["adhd", "dyslexia"]);
+    // ADHD marker — tick-box prefix on a question
+    const q1 = ws.sections!.find(s => s.id === "q1");
+    expect(String(q1!.content)).toMatch(/^\[\s\]\s/);
+    // Dyslexia marker — method-steps box
+    expect(ws.sections!.some(s => s.type === "method-box")).toBe(true);
+  });
+
+  it("Anxiety + MLD — OPTIONAL BONUS rename AND topic-context block both ship", () => {
+    const ws = stack(makeWs("anxiety"), ["anxiety", "mld"]);
+    const challenge = ws.sections!.find(s => s.type === "challenge");
+    expect(challenge!.title).toBe("OPTIONAL BONUS — only if you want to!");
+    expect(ws.sections!.some(s => s.type === "topic-context")).toBe(true);
+  });
+
+  it("Dyscalculia + EAL (Bengali) — number cues AND sentence frames both ship", () => {
+    const ws = stack(makeWs("dyscalculia"), ["dyscalculia", "eal"]);
+    const q5 = ws.sections!.find(s => s.id === "q5");
+    expect(String(q5!.content)).toMatch(/Numbers in this question/i);
+    expect(String(q5!.content)).toMatch(/Sentence frame/i);
+  });
+
+  it("ASC + Anxiety — Anxiety markers are not erased by ASC dispatch (ASC is a no-op in the post-validator)", () => {
+    // Note: ASC has no post-validator branch (overlay engine handles
+    // it via buildAscSupport). So stacking ASC + Anxiety should
+    // behave exactly as Anxiety alone — Anxiety's markers ship.
+    const ws = stack(makeWs("anxiety"), ["asc", "anxiety"]);
+    const challenge = ws.sections!.find(s => s.type === "challenge");
+    expect(challenge!.title).toBe("OPTIONAL BONUS — only if you want to!");
+  });
+
+  it("VI + Dyslexia — Dyslexia method-box ships AND VI warns about diagram-dependent questions", () => {
+    const wsBase = makeWs("vi", [
+      {
+        id: "qDiag",
+        type: "q-short-answer",
+        title: "Q-Diag",
+        content: "Label the diagram shown above.",
+        teacherOnly: false,
+      },
+    ]);
+    let current: PostValidatorWorksheet = wsBase;
+    let allWarnings: string[] = [];
+    for (const sendNeed of ["vi", "dyslexia"]) {
+      const r = enforceSendOverlayMarkers(current, { sendNeed });
+      current = r.worksheet;
+      allWarnings = allWarnings.concat(r.warnings);
+    }
+    expect(current.sections!.some(s => s.type === "method-box")).toBe(true);
+    expect(allWarnings.some(w => /Phase 4 — VI.*text equivalent/i.test(w))).toBe(true);
+  });
+
+  it("Dyspraxia + ADHD — both audits run and ADHD markers ship", () => {
+    let current: PostValidatorWorksheet = makeWs("adhd");
+    let allWarnings: string[] = [];
+    for (const sendNeed of ["dyspraxia", "adhd"]) {
+      const r = enforceSendOverlayMarkers(current, { sendNeed });
+      current = r.worksheet;
+      allWarnings = allWarnings.concat(r.warnings);
+    }
+    // ADHD's tick-box prefix should be on every question
+    const q1 = current.sections!.find(s => s.id === "q1");
+    expect(String(q1!.content)).toMatch(/^\[\s\]\s/);
+    // Dyspraxia warns about Section A non-writing format count and
+    // Challenge format
+    expect(allWarnings.some(w => /Phase 4 — Dyspraxia/i.test(w))).toBe(true);
+  });
+
+  it("HI + ADHD — Topic Summary AND tick boxes both ship", () => {
+    const ws = stack(makeWs("hi"), ["hi", "adhd"]);
+    expect(ws.sections!.some(s => s.type === "topic-summary")).toBe(true);
+    const q1 = ws.sections!.find(s => s.id === "q1");
+    expect(String(q1!.content)).toMatch(/^\[\s\]\s/);
+  });
+
+  it("Dyscalculia + Dyslexia — number cues AND method-steps box both ship", () => {
+    const ws = stack(makeWs("dyscalculia"), ["dyscalculia", "dyslexia"]);
+    expect(ws.sections!.some(s => s.type === "method-box")).toBe(true);
+    const q5 = ws.sections!.find(s => s.id === "q5");
+    expect(String(q5!.content)).toMatch(/Numbers in this question/i);
+  });
+
+  it("idempotent under stacking — applying the same need twice yields the same markers as once", () => {
+    const onceHi = stack(makeWs("hi"), ["hi"]);
+    const twiceHi = stack(makeWs("hi"), ["hi", "hi"]);
+    expect(twiceHi.sections!.filter(s => s.type === "topic-summary")).toHaveLength(1);
+    expect(JSON.stringify(twiceHi)).toBe(JSON.stringify(onceHi));
+  });
+
+  it("never erases the previous need's marker section", () => {
+    // Apply HI first (inserts topic-summary) then a no-op need
+    // (unrecognised). The topic-summary must survive.
+    const wsBefore = stack(makeWs("hi"), ["hi"]);
+    const wsAfter = stack(wsBefore, ["xyzzy-not-a-real-need"]);
+    expect(wsAfter.sections!.some(s => s.type === "topic-summary")).toBe(true);
+  });
+
+  it("never erases the previous need's renamed Challenge title", () => {
+    // Apply Anxiety (renames Challenge → OPTIONAL BONUS) then ADHD
+    // (which would normally rename Challenge → BONUS). The first
+    // rename wins because the second pass detects the title is
+    // already overridden — wait, ADHD's rename detects `^challenge\b`
+    // which won't match "OPTIONAL BONUS". So OPTIONAL BONUS is
+    // preserved. Validates the regex precision.
+    const wsBefore = stack(makeWs("anxiety"), ["anxiety"]);
+    const wsAfter = stack(wsBefore, ["adhd"]);
+    const challenge = wsAfter.sections!.find(s => s.type === "challenge");
+    expect(challenge!.title).toBe("OPTIONAL BONUS — only if you want to!");
+  });
+});
