@@ -71,6 +71,15 @@ reflection items.
 ## Phase 3 — Examiner-voice Revision Tips
 
 **PR #76** | Status: IMPLEMENTED (2026-05-22)
+**Lane 2.7 follow-up** | Status: IMPLEMENTED (2026-05-29) — superseded
+the original 5-category panel (command-word / watch-out / method /
+mark-scheme / time) with the audit-doc-named 6-category panel
+(vocabulary / worked-example / common-mistake / past-papers /
+retrieval / learning-objective). The 5 vs 6 category divergence had
+left the acceptance criteria below technically un-passable on
+worksheets generated against the original PR #76 prompt; Lane 2.7
+brings the builder + prompts + post-validator into line with the
+acceptance criteria.
 
 ### What it changes
 A new "REVISION TIPS FOR THIS TOPIC" section is added at the end of every

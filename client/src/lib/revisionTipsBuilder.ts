@@ -7,21 +7,30 @@
  * Why this exists
  * ---------------
  * Pre-Phase-3 the worksheet ended at Self-Reflection. There was no
- * examiner-voice callout that taught a pupil HOW to attempt the
- * questions in front of them — what the command word actually wants,
- * which misconception the awarding body has flagged on this topic,
- * which method habits lose marks, how the mark scheme is structured,
- * and how to budget time against the section mark tariffs. Without
- * that, the worksheet is a question paper, not a revision resource.
+ * examiner-voice callout that taught a pupil HOW to revise from the
+ * questions in front of them — what vocabulary the topic uses, where
+ * the worked example fits, which misconception the awarding body has
+ * flagged on this topic, where to find real past-paper practice on
+ * this spec point, how to embed retrieval into their next session,
+ * and what the actual learning objective was. Without that, the
+ * worksheet is a question paper, not a revision resource.
  *
- * This module is the deterministic floor. It produces five tips, each
- * in a distinct category, each topic-anchored, each in UK examiner
- * voice. The tips are:
- *   1. command-word — what the worksheet's command word actually wants
- *   2. misconception — names a real misconception about THIS topic
- *   3. method        — subject-specific method habit pupils lose marks on
- *   4. mark-scheme   — how marks are awarded for the section's tariff
- *   5. time          — how to budget time against the mark tariff
+ * Lane 2.7 — six audit-doc-named categories
+ * ------------------------------------------
+ * Earlier this builder shipped 5 examiner-attempt categories
+ * (command-word / misconception / method / mark-scheme / time). The
+ * audit doc Phase 3 acceptance criteria explicitly name a different
+ * SIX revision-prep categories (vocabulary / worked-example /
+ * common-mistake / past-papers / retrieval / learning-objective).
+ *
+ * Lane 2.7 swaps the builder over to the audit-doc set so the
+ * acceptance criteria are testable end-to-end:
+ *   1. vocabulary       — Tip 1 names actual vocabulary terms from THIS topic
+ *   2. worked-example   — Tip 2 references the worked example on THIS sheet
+ *   3. common-mistake   — Tip 3 names a real misconception on THIS topic
+ *   4. past-papers      — Tip 4 directs to past papers for THIS subject + topic + board
+ *   5. retrieval        — Tip 5 retrieval-practice instruction naming THE topic
+ *   6. learning-objective — Tip 6 quotes the actual learning objective
  *
  * It is consumed in three places:
  *   1. The structured-path emit in `ai.ts` (so the AI either matches the
@@ -37,12 +46,6 @@
  *     rolled tip strings anywhere else.
  *   - UK English. UK awarding-body command words. SI units. No US
  *     contexts. Examiner voice (second person, imperative, terse).
- *   - Sciences do NOT get the dot-grid working-out box — Phase 1 lock.
- *     The method-tip text differs by subject family (maths: "show every
- *     step"; sciences: "include units before rounding"; humanities:
- *     "anchor every claim to a date or source"; English: "embed the
- *     quote, then analyse a single word") — but this section never
- *     carries a working-out affordance.
  *   - Never invent spec codes — Phase 1 lock. Tips reference `specRef`
  *     only when one is already on the worksheet.
  *
@@ -59,7 +62,6 @@ import {
   classifySendRegister,
   classifySubject,
   extractTopicNounPhrase,
-  pickCommandWords,
   type SendRegister,
   type SubjectFamily,
 } from "./selfReflectionBuilder";
@@ -70,12 +72,22 @@ import {
  * One examiner tip. The category is exposed so the renderer (and tests)
  * can label / colour-code rows; in normal output the category is shown
  * as an UPPERCASE label prefix on the rendered line.
+ *
+ * Lane 2.7 — six audit-doc-named categories. The previous five
+ * (command-word / misconception / method / mark-scheme / time) are
+ * superseded.
  */
 export interface RevisionTip {
-  category: "command-word" | "misconception" | "method" | "mark-scheme" | "time";
-  /** Short uppercase label shown to the pupil (e.g. "COMMAND WORD"). */
+  category:
+    | "vocabulary"
+    | "worked-example"
+    | "common-mistake"
+    | "past-papers"
+    | "retrieval"
+    | "learning-objective";
+  /** Short uppercase label shown to the pupil (e.g. "VOCABULARY"). */
   label: string;
-  /** The tip text itself. Examiner voice. UK English. ≤ 200 chars. */
+  /** The tip text itself. Examiner voice. UK English. ≤ 220 chars. */
   text: string;
 }
 
@@ -89,30 +101,39 @@ export interface RevisionTipsInputs {
    *  future cognitive-load tuning; currently informational only. */
   year?: string | number;
   /** Awarding-body code (aqa | edexcel | ocr | wjec | ccea | …) exactly
-   *  as submitted. Currently used only in the worded mark-scheme tip. */
+   *  as submitted. Used in the past-papers tip. */
   examBoard?: string;
-  /** Command words actually used on the questions in this worksheet.
-   *  When supplied, the command-word tip echoes the FIRST verb so the
-   *  tip mirrors what the pupil is about to see. Falls back to the
-   *  per-subject default when empty. */
-  commandWordsUsed?: string[];
-  /** Per-question marks tariff (e.g. [1, 1, 1, 2, 2, 3, 4, 5, 6, 8]).
-   *  When supplied, the time-tip uses sum-of-marks * 1.0 minute as a
-   *  budget anchor and the mark-scheme tip mentions the largest tariff
-   *  on the worksheet. */
-  marksUsed?: number[];
+  /** Lane 2.7 — Vocabulary terms scraped from the worksheet's Key
+   *  Vocabulary section (or supplied directly). The vocabulary tip
+   *  echoes the first 3-5 terms verbatim so the pupil knows EXACTLY
+   *  what to revise. */
+  vocabulary?: string[];
+  /** Lane 2.7 — Learning Objective sentence scraped from the
+   *  worksheet's Learning Objective / objective section (or supplied
+   *  directly). The LO tip quotes this verbatim so the pupil sees what
+   *  this lesson was supposed to achieve. */
+  learningObjective?: string;
   /** One or more topic-specific misconceptions, exactly as the AI or
-   *  the common-mistakes section surfaced them. The misconception tip
+   *  the common-mistakes section surfaced them. The common-mistake tip
    *  echoes the first item verbatim (≤ 140 chars, sentence-cased). */
   misconceptions?: string[];
+  /** Lane 1 / 2 vestige — command words actually used on the
+   *  questions. No longer drives a tip directly (Lane 2.7 dropped the
+   *  command-word category) but kept on the input shape for
+   *  backwards compatibility with callers in the validator chain. */
+  commandWordsUsed?: string[];
+  /** Lane 1 / 2 vestige — per-question marks tariff. No longer drives
+   *  a tip directly. */
+  marksUsed?: number[];
   /** Optional SEND need (lowercase, hyphenated — same keying as
    *  `sendKey` in `selfReflectionBuilder.ts`). Tunes register / tone. */
   sendKey?: string;
 }
 
 export interface RevisionTipsOutput {
-  /** Always exactly five tips, in canonical category order:
-   *  command-word, misconception, method, mark-scheme, time. */
+  /** Always exactly six tips, in canonical category order:
+   *  vocabulary, worked-example, common-mistake, past-papers,
+   *  retrieval, learning-objective. */
   tips: RevisionTip[];
   /** Subtitle to display above the panel. Tuned for SEND register. */
   subtitle: string;
@@ -336,12 +357,14 @@ function pickFirstMisconception(misconceptions: string[] | undefined, noun: stri
 /**
  * Build a topic-anchored Revision-Tips panel for a worksheet.
  *
- * Always returns exactly five tips, in this fixed order:
- *   1. command-word — what the worksheet's command word actually wants
- *   2. misconception — names a real misconception about THIS topic
- *   3. method — subject-specific method habit
- *   4. mark-scheme — how marks are awarded for the section's tariff
- *   5. time — how to budget time against the mark tariff
+ * Lane 2.7 — always returns exactly six audit-doc-named tips, in this
+ * fixed order:
+ *   1. vocabulary       — names actual vocabulary terms from THIS topic
+ *   2. worked-example   — references the worked example on THIS sheet
+ *   3. common-mistake   — names a real misconception on THIS topic
+ *   4. past-papers      — directs to past papers for THIS subject + topic + board
+ *   5. retrieval        — retrieval-practice instruction naming THE topic
+ *   6. learning-objective — quotes the actual learning objective
  *
  * Pure: identical inputs always produce identical output.
  */
@@ -350,40 +373,62 @@ export function buildRevisionTips(inputs: RevisionTipsInputs): RevisionTipsOutpu
   const noun = extractTopicNounPhrase(topicRaw) || "this topic";
   const family = classifySubject(inputs.subject);
   const register = classifySendRegister(inputs.sendKey);
+  const boardLabel = ((inputs.examBoard || "").trim().toUpperCase()) || "AQA / Edexcel / OCR";
+  const subjectLabel = (inputs.subject || "").trim() || "the subject";
 
-  // ── 1. Command-word tip ────────────────────────────────────────────────
-  // Echo the first command word the worksheet actually used, falling
-  // back to the per-subject default ladder. `pickCommandWords` already
-  // canonicalises casing ("calculate" → "Calculate", "to what extent"
-  // → "Evaluate") so the tip reads cleanly.
-  const verbs = pickCommandWords(inputs.subject, inputs.commandWordsUsed, 1);
-  const verb = verbs[0] || "Answer";
-  const commandText = commandWordTip(verb, noun);
+  // ── 1. VOCABULARY ──────────────────────────────────────────────────────
+  // Echo the first 3-5 vocabulary terms verbatim so the pupil knows
+  // EXACTLY what they're being held to. Falls back to a topic-anchored
+  // pointer when no vocabulary was supplied.
+  const vocabTerms = (inputs.vocabulary || [])
+    .map(t => String(t || "").trim())
+    .filter(Boolean)
+    .slice(0, 5);
+  const vocabText = vocabTerms.length > 0
+    ? `Learn these key terms first: ${vocabTerms.join(", ")}. If you cannot define each one in your own words, go back to the Key Vocabulary box before moving on.`
+    : `Re-read the Key Vocabulary box for ${noun}. If you cannot define each term in your own words, you are not ready for the questions yet.`;
 
-  // ── 2. Misconception tip ───────────────────────────────────────────────
+  // ── 2. WORKED EXAMPLE ──────────────────────────────────────────────────
+  // Anchored to "the worked example on the sheet" so the tip cannot be
+  // generic. Pupil is asked to actively re-do, not passively re-read.
+  const workedExampleText = `Cover the worked example with your hand and re-do it from memory. If you slip on a step, that step is your weakest link — drill it first before attempting the questions on ${noun}.`;
+
+  // ── 3. COMMON MISTAKE ──────────────────────────────────────────────────
+  // Reuses the existing misconception extractor (Lane 1) so the tip
+  // echoes a real worksheet misconception when the AI / Common Mistakes
+  // section provided one. Falls back to the per-subject-family default
+  // when nothing was supplied.
   const supplied = pickFirstMisconception(inputs.misconceptions, noun);
-  const misconceptionText = supplied || defaultMisconceptionTip(family, noun);
+  const commonMistakeText = supplied || defaultMisconceptionTip(family, noun);
 
-  // ── 3. Method tip ──────────────────────────────────────────────────────
-  const methodText = METHOD_TIPS[family];
+  // ── 4. PAST PAPERS ─────────────────────────────────────────────────────
+  // Names the awarding body, the subject and the topic verbatim so the
+  // pupil knows EXACTLY where to look. Acceptance criterion: "Tip 4
+  // mentions the specific subject and topic by name".
+  const pastPapersText = `Find a real ${boardLabel} ${subjectLabel} past-paper question on ${noun} and attempt it under timed conditions. Mark it with the official mark scheme — examiner phrasing matters as much as the final answer.`;
 
-  // ── 4. Mark-scheme tip ─────────────────────────────────────────────────
-  const marks = (inputs.marksUsed || []).filter(m => Number.isFinite(m) && m > 0);
-  const topMarks = marks.length > 0 ? Math.max(...marks) : 0;
-  const totalMarks = marks.reduce((a, b) => a + b, 0);
-  const markSchemeText = markSchemeTip(family, noun, topMarks, inputs.examBoard);
+  // ── 5. RETRIEVAL ───────────────────────────────────────────────────────
+  // Active retrieval instruction. Names the topic so the pupil cannot
+  // mistake it for a generic "revise" prompt.
+  const retrievalText = `In your next study session, list everything you remember about ${noun} on a blank sheet WITHOUT looking at this worksheet. Then check what you missed — those gaps are what to revise next.`;
 
-  // ── 5. Time tip ────────────────────────────────────────────────────────
-  const timeText = timeTip(noun, totalMarks, topMarks);
+  // ── 6. LEARNING OBJECTIVE ──────────────────────────────────────────────
+  // Quotes the actual LO verbatim when supplied. Acceptance criterion:
+  // "Tip 6 quotes the actual learning objective".
+  const lo = (inputs.learningObjective || "").trim();
+  const loText = lo
+    ? `Today's learning objective: "${lo}${/[.!?]$/.test(lo) ? "" : "."}" Tick off each verb in this objective you can do confidently before you move on.`
+    : `Re-state today's learning objective in one short sentence. Tick it off only when you can answer every question on ${noun} without help.`;
 
   // Apply SEND-register shortening last so the canonical category text
   // is preserved on standard register.
   const tips: RevisionTip[] = [
-    { category: "command-word", label: "COMMAND WORD",  text: shortenForSendRegister(commandText,      register) },
-    { category: "misconception", label: "WATCH OUT",     text: shortenForSendRegister(misconceptionText, register) },
-    { category: "method",        label: "METHOD",        text: shortenForSendRegister(methodText,        register) },
-    { category: "mark-scheme",   label: "MARK SCHEME",   text: shortenForSendRegister(markSchemeText,    register) },
-    { category: "time",          label: "TIME",          text: shortenForSendRegister(timeText,          register) },
+    { category: "vocabulary",         label: "VOCABULARY",         text: shortenForSendRegister(vocabText,         register) },
+    { category: "worked-example",     label: "WORKED EXAMPLE",     text: shortenForSendRegister(workedExampleText, register) },
+    { category: "common-mistake",     label: "COMMON MISTAKE",     text: shortenForSendRegister(commonMistakeText, register) },
+    { category: "past-papers",        label: "PAST PAPERS",        text: shortenForSendRegister(pastPapersText,    register) },
+    { category: "retrieval",          label: "RETRIEVAL",          text: shortenForSendRegister(retrievalText,     register) },
+    { category: "learning-objective", label: "LEARNING OBJECTIVE", text: shortenForSendRegister(loText,            register) },
   ];
 
   return { tips, subtitle: subtitleForRegister(register) };
@@ -415,21 +460,28 @@ export function renderRevisionTipsAsMarkerBlock(out: RevisionTipsOutput): string
 /**
  * Returns `true` when a Revision-Tips section's content reads as
  * generic placeholder text (i.e. the AI failed to anchor it to the
- * topic, or the panel is shorter than the canonical five tips). This
+ * topic, or the panel is shorter than the canonical six tips). This
  * is the trigger for the post-validator to swap in builder output.
+ *
+ * Lane 2.7 — bumped from 5 to 6 tip-shaped lines minimum so that
+ * legacy worksheets with the OLD 5-category panel
+ * (command-word/misconception/method/mark-scheme/time) are detected
+ * as generic and rebuilt with the new 6-category audit-doc-named
+ * panel (vocabulary/worked-example/common-mistake/past-papers/
+ * retrieval/learning-objective). Both old and new labels are still
+ * recognised as tip-shaped lines so a partial match doesn't fail the
+ * placeholder detection.
  *
  * Heuristics (any one trips):
  *   - Contains common generic stems ("revise carefully", "study hard",
  *     "make sure you understand", "good luck", "remember to revise").
  *   - Contains the literal placeholder `…` / `___` / `[Tip 1]` etc.
- *   - Has fewer than 5 numbered tips (or 5 lines starting with a tip
+ *   - Has fewer than 6 numbered tips (or 6 lines starting with a tip
  *     category label / number).
  *   - The first tip line does not mention the topic noun phrase.
- *   - None of the tip lines name a UK awarding-body command word.
  *
- * Returns `false` when the panel has ≥ 5 tip-shaped lines, the topic
- * noun appears at least once, and at least one canonical command word
- * appears at least once.
+ * Returns `false` when the panel has ≥ 6 tip-shaped lines AND the
+ * topic noun appears at least once.
  */
 export function isGenericRevisionTips(content: string, topic: string): boolean {
   const text = (content || "").toString();
@@ -444,17 +496,25 @@ export function isGenericRevisionTips(content: string, topic: string): boolean {
   if (/\[\s*tip\s*\d+\s*\]/i.test(text)) return true;
   if (/_{2,}/.test(text)) return true;
 
-  // Count tip-shaped lines: numbered (1. …, 2. …) OR labelled
-  // (COMMAND WORD: …, WATCH OUT: …, METHOD: …, MARK SCHEME: …, TIME: …).
+  // Count tip-shaped lines: numbered (1. …, 2. …) OR labelled with
+  // either the OLD 5-category labels (COMMAND WORD / WATCH OUT /
+  // MISCONCEPTION / METHOD / MARK SCHEME / TIME) or the NEW 6-category
+  // labels (VOCABULARY / WORKED EXAMPLE / COMMON MISTAKE / PAST PAPERS
+  // / RETRIEVAL / LEARNING OBJECTIVE). Recognising both means a
+  // partial old-format panel still counts as "tip-shaped" — but the
+  // line-count threshold of 6 (new canonical count) catches it.
   const tipLines = text.split("\n").map(l => l.trim()).filter(l => {
     if (!l) return false;
     if (/^\d+[.)]\s+\S/.test(l)) return true;
+    // Old labels.
     if (/^(COMMAND\s*WORD|WATCH\s*OUT|MISCONCEPTION|METHOD|MARK\s*SCHEME|TIME)\s*:/i.test(l)) return true;
+    // New labels.
+    if (/^(VOCABULARY|WORKED\s*EXAMPLE|COMMON\s*MISTAKE|PAST\s*PAPERS?|RETRIEVAL|LEARNING\s*OBJECTIVE)\s*:/i.test(l)) return true;
     return false;
   });
-  if (tipLines.length < 5) return true;
+  if (tipLines.length < 6) return true;
 
-  // Topic anchoring — at least one of the first five tips should name
+  // Topic anchoring — at least one of the first six tips should name
   // the topic noun (or one of its words ≥ 4 chars). Mirrors the
   // word-boundary safety rules from `isGenericSelfReflection`.
   const noun = extractTopicNounPhrase(topic).toLowerCase();
@@ -475,23 +535,15 @@ export function isGenericRevisionTips(content: string, topic: string): boolean {
     if (containsNeedle(lower, nounRoot)) return true;
     return nounWords.some(w => containsNeedle(lower, w));
   };
-  const anchored = tipLines.slice(0, 5).some(mentionsTopic);
+  const anchored = tipLines.slice(0, 6).some(mentionsTopic);
   if (!anchored) return true;
 
-  // At least one tip should reference an awarding-body command word.
-  // Use a minimal canonical list (case-insensitive, word-boundary).
-  const COMMAND_WORDS_FOR_DETECTION = [
-    "calculate", "work out", "solve", "find", "show that", "prove that", "determine",
-    "evaluate", "estimate", "describe", "explain", "compare", "contrast", "analyse",
-    "identify", "state", "list", "outline", "suggest", "discuss", "justify", "assess",
-    "interpret", "deduce", "predict", "define", "draw", "sketch", "plot", "label",
-  ];
-  const lower = text.toLowerCase();
-  const hasCommandWord = COMMAND_WORDS_FOR_DETECTION.some(cw => {
-    const re = new RegExp(`\\b${escapeForRegex(cw)}\\b`);
-    return re.test(lower);
-  });
-  if (!hasCommandWord) return true;
+  // Lane 2.7 — the previous detector also required at least one tip to
+  // mention an awarding-body command word, because the old 5-category
+  // panel had a dedicated "command-word" tip. The new 6-category panel
+  // (vocabulary / worked-example / common-mistake / past-papers /
+  // retrieval / learning-objective) doesn't have a command-word slot,
+  // so this check has been removed. Topic-anchoring is enough.
 
   return false;
 }

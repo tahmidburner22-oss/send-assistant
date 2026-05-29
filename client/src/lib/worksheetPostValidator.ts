@@ -2173,6 +2173,83 @@ function collectMarksUsed(ws: PostValidatorWorksheet): number[] {
 }
 
 /**
+ * Lane 2.7 — Scrape vocabulary terms from the worksheet's pupil-facing
+ * Key Vocabulary section so the new revision-tips Tip 1 (VOCABULARY)
+ * can echo them verbatim. Returns up to 8 terms; deduplicated;
+ * lower-cased only when the original was all upper-case so proper
+ * nouns are preserved.
+ */
+function collectVocabularyTerms(ws: PostValidatorWorksheet): string[] {
+  const acceptedTypes = new Set([
+    "vocabulary",
+    "key-vocabulary",
+    "key-vocab",
+    "key-terms",
+    "glossary",
+  ]);
+  for (const s of ws.sections || []) {
+    if (s.teacherOnly) continue;
+    const t = String(s.type || "").toLowerCase();
+    if (!acceptedTypes.has(t)) continue;
+    const content = typeof s.content === "string" ? s.content : "";
+    if (!content.trim()) continue;
+    const out: string[] = [];
+    const seen = new Set<string>();
+    for (const raw of content.split(/\n+/)) {
+      const line = raw.replace(/^[-•*\d.)\s]+/, "").trim();
+      if (!line) continue;
+      // Lines look like "term — definition" or "term: definition" or
+      // "term | definition". Take everything before the first separator.
+      const m = line.match(/^([^:|–—-]{2,80})\s*[:|–—-]/);
+      const term = (m ? m[1] : line).trim();
+      if (term.length < 2 || term.length > 80) continue;
+      const key = term.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(term);
+      if (out.length >= 8) break;
+    }
+    if (out.length > 0) return out;
+  }
+  return [];
+}
+
+/**
+ * Lane 2.7 — Scrape the Learning Objective sentence from the
+ * worksheet's pupil-facing Learning Objective section so the new
+ * revision-tips Tip 6 (LEARNING OBJECTIVE) can quote it verbatim.
+ * Returns a single sentence, with the leading "LO:" / "Objective:" /
+ * "Learning Objective:" / "Students will be able to" stripped.
+ * Empty string if no LO section is found.
+ */
+function collectLearningObjective(ws: PostValidatorWorksheet): string {
+  const acceptedTypes = new Set([
+    "objective",
+    "learning-objective",
+    "learning_objective",
+    "lo",
+  ]);
+  for (const s of ws.sections || []) {
+    if (s.teacherOnly) continue;
+    const t = String(s.type || "").toLowerCase();
+    if (!acceptedTypes.has(t)) continue;
+    const content = typeof s.content === "string" ? s.content : "";
+    if (!content.trim()) continue;
+    // Take the first non-blank line, strip common LO prefixes, cap at
+    // 200 chars so the panel stays readable.
+    const firstLine = content.split("\n").map(l => l.trim()).find(Boolean) || "";
+    if (!firstLine) continue;
+    let lo = firstLine
+      .replace(/^(?:learning\s+objective|lo|objective)\s*[:\-—]\s*/i, "")
+      .replace(/^students?\s+will\s+be\s+able\s+to\s*/i, "")
+      .trim();
+    if (lo.length > 200) lo = lo.slice(0, 197).trimEnd() + "…";
+    return lo;
+  }
+  return "";
+}
+
+/**
  * Phase 3 — examiner-voice Revision Tips enforcement.
  *
  * Walks the worksheet looking for the pupil-facing Revision-Tips
@@ -2238,6 +2315,11 @@ export function enforceRevisionTipsPresence(
   const commandWordsUsed = collectCommandWordsUsed(ws);
   const misconceptions = collectMisconceptions(ws);
   const marksUsed = collectMarksUsed(ws);
+  // Lane 2.7 — also scrape vocabulary + learningObjective from the
+  // worksheet itself so the new 6-category builder can anchor Tip 1
+  // (VOCABULARY) and Tip 6 (LEARNING OBJECTIVE) verbatim.
+  const vocabulary = collectVocabularyTerms(ws);
+  const learningObjective = collectLearningObjective(ws);
   const built = buildRevisionTips({
     topic,
     subject: opts.subject || String(ws.metadata?.subject || ""),
@@ -2247,11 +2329,13 @@ export function enforceRevisionTipsPresence(
     commandWordsUsed,
     misconceptions,
     marksUsed,
+    vocabulary,
+    learningObjective,
   });
   const rebuilt = renderRevisionTipsAsMarkerBlock(built);
 
   warnings.push(
-    `Revision-Tips content was generic / not topic-anchored (fewer than 5 tip-shaped lines, no command-word reference, or generic stems like "revise carefully"). Replaced with deterministic builder output (5 tips: command-word, misconception, method, mark-scheme, time — all naming "${topic}").`,
+    `Revision-Tips content was generic / not topic-anchored (fewer than 6 tip-shaped lines, or generic stems like "revise carefully"). Replaced with deterministic builder output — six audit-doc-named tips (vocabulary, worked-example, common-mistake, past-papers, retrieval, learning-objective), all naming "${topic}".`,
   );
 
   const newSections = sections.slice();
