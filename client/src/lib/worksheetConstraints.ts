@@ -251,8 +251,9 @@ export function buildWorksheetPlan(
   // Pick section structure
   // Phase 1 (curriculum-aligned structure): question counts come from
   // SECTION_QUESTION_TARGETS. Secondary worksheets use 7-7-5 + 1 challenge
-  // = 20 questions; primary keeps 3-3-3 (or up to 4 each) because page
-  // density and reading load are different at KS1/KS2.
+  // = 20 questions; Lane 2.4 lifted primary to 5/4/5 (was 3/3/3) so the
+  // page density better matches a real Year 4 / Year 6 worksheet without
+  // exceeding the 1-page print constraint (W7 backlog).
   const recallTargets = isPrimary
     ? PRIMARY_SECTION_QUESTION_TARGETS.recall
     : SECTION_QUESTION_TARGETS.recall;
@@ -275,9 +276,15 @@ export function buildWorksheetPlan(
 
   const sectionDefs = isPrimary
     ? [
-        { key: "recall",        heading: "SECTION A — REMEMBER",     bloom: "remember"   as BloomLevel, qs: recallQs },
-        { key: "understanding", heading: "SECTION B — UNDERSTAND",   bloom: "understand" as BloomLevel, qs: understandingQs },
-        { key: "application",   heading: "SECTION C — APPLY",        bloom: "apply"      as BloomLevel, qs: applicationQs },
+        // Lane 2.4 — primary 5/4/5. Section A is "WARM UP" so KS1
+        // pupils encounter friendly, short questions first; Section B
+        // is "LET'S PRACTISE" — the bulk of practice; Section C is
+        // "SHOW WHAT YOU KNOW" — exam-lite application questions
+        // appropriate to the year band, NOT a re-skinned GCSE
+        // Section 3.
+        { key: "recall",        heading: "SECTION A — WARM UP",            bloom: "remember"   as BloomLevel, qs: recallQs },
+        { key: "understanding", heading: "SECTION B — LET'S PRACTISE",     bloom: "understand" as BloomLevel, qs: understandingQs },
+        { key: "application",   heading: "SECTION C — SHOW WHAT YOU KNOW", bloom: "apply"      as BloomLevel, qs: applicationQs },
       ]
     : [
         { key: "recall",        heading: "SECTION 1 — RECALL",                   bloom: "remember"   as BloomLevel, qs: recallQs },
