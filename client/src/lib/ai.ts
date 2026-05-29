@@ -3550,9 +3550,9 @@ Return EXACTLY this JSON (raw JSON only):
   "sections": [
     // ── PRIMARY SCHOOL (Chalkie style) ──
     ...(isPrimary ? [
-      {"title": "Activity 1", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words)]\n1. [Activity question 1]\n2. [Activity question 2]\n3. [Activity question 3]\n4. [Activity question 4]\n5. [Activity question 5]"},
-      {"title": "Activity 2", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) for a DIFFERENT activity type]\n1. [Activity question 1]\n2. [Activity question 2]\n3. [Activity question 3]\n4. [Activity question 4]\n5. [Activity question 5]"},
-      {"title": "Activity 3", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) for a DIFFERENT activity type]\n1. [Activity question 1]\n2. [Activity question 2]\n3. [Activity question 3]\n4. [Activity question 4]\n5. [Activity question 5]"},
+      {"title": "Section A — Warm Up", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) — recall / warm-up activity]\n1. [Recall question 1 about ${params.topic}]\n2. [Recall question 2 about ${params.topic}]\n3. [Recall question 3 about ${params.topic}]\n4. [Recall question 4 about ${params.topic}]\n5. [Recall question 5 about ${params.topic}]"},
+      {"title": "Section B — Let's Practise", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) — practice activity, DIFFERENT type from Section A]\n1. [Practice question 1 about ${params.topic} — slightly harder than recall]\n2. [Practice question 2 about ${params.topic}]\n3. [Practice question 3 about ${params.topic}]\n4. [Practice question 4 about ${params.topic}]"},
+      {"title": "Section C — Show What You Know", "type": "q-primary-activity", "content": "[ONE clear, simple instruction sentence (max 8 words) — exam-lite application questions appropriate to ${params.yearGroup}]\n1. [Application question 1 about ${params.topic} — apply what you learned]\n2. [Application question 2 about ${params.topic}]\n3. [Application question 3 about ${params.topic}]\n4. [Application question 4 about ${params.topic}]\n5. [Application question 5 about ${params.topic} — show what you know]"},
       {"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "I found this:\n[ ] Easy\n[ ] OK\n[ ] Tricky"}
     ] : [
     // ── SECONDARY SCHOOL (GCSE style) ──

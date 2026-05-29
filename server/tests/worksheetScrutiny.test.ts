@@ -1032,7 +1032,7 @@ describe("Phase 1 / buildWorksheetPlan — 7-7-5 + 1 secondary structure", () =>
     expect(challenge.questionRange).toBe(`Question ${TOTAL_QUESTIONS_TARGET}`);
   });
 
-  it("produces 3-3-3 for primary worksheets (KS2)", () => {
+  it("produces 5-4-5 for primary worksheets (KS2) (Lane 2.4 — was 3-3-3)", () => {
     const plan = buildWorksheetPlan(
       "Mathematics",
       "Place value",
@@ -1042,8 +1042,12 @@ describe("Phase 1 / buildWorksheetPlan — 7-7-5 + 1 secondary structure", () =>
       undefined,
     );
     const total = plan.sections.reduce((acc, s) => acc + s.questions.length, 0);
-    expect(total).toBe(9);
-    // Primary has no challenge section.
+    // Lane 2.4 — primary lifted from 3/3/3 to 5/4/5 = 14 questions total.
+    // Page real estate now closer to a real Year 4 worksheet density
+    // without exceeding the 1-page print constraint.
+    expect(total).toBe(14);
+    // Primary still has no challenge section — the third primary section
+    // is exam-lite "Show What You Know", not a re-skinned GCSE Section 3.
     expect(plan.sections.find(s => s.name === "challenge")).toBeUndefined();
   });
 });

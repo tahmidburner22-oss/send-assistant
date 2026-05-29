@@ -283,3 +283,53 @@ scope for this PR.
 - The renderer (`renderRevisionTipsAsMarkerBlock`) is label-agnostic
   — it iterates `out.tips` and emits `N. LABEL: text` so it works
   with both old and new category sets without change.
+
+
+
+## 2026-05-29 — Lane 2.4 complete: primary 5/4/5 layout
+
+### What changed
+
+The legacy primary layout was 3/3/3 (Section A "REMEMBER" + Section
+B "UNDERSTAND" + Section C "APPLY", three questions each). The audit
+doc target was 5/4/5. Lane 2.4 brings the implementation in line.
+
+New primary section layout (totals 14 questions vs 9 before):
+- **Section A — WARM UP** — 5 recall questions (target; min 4, max 6)
+- **Section B — LET'S PRACTISE** — 4 understanding questions (target; min 3, max 5)
+- **Section C — SHOW WHAT YOU KNOW** — 5 application questions (target; min 4, max 6) — exam-lite, age-appropriate, NOT a re-skinned GCSE Section 3.
+
+### Files
+
+- `client/src/lib/worksheetSectionTargets.ts:42` —
+  `PRIMARY_SECTION_QUESTION_TARGETS` updated from `{3,3,3}` to
+  `{recall:5, understanding:4, application:5}` with min/max ranges.
+- `client/src/lib/engines/planner.ts:165` — `PRIMARY_SECTIONS`
+  qRange tuples updated: `[1,5] / [6,9] / [10,14]`. Section C
+  renamed from "CHALLENGE" to "SHOW WHAT YOU KNOW" (exam-lite).
+- `client/src/lib/worksheetConstraints.ts:278` — primary
+  `sectionDefs` headings updated: "WARM UP / LET'S PRACTISE /
+  SHOW WHAT YOU KNOW". Layout planner comment updated.
+- `client/src/lib/ai.ts:3553` — primary AI shape-guide template
+  rewritten: three sections now show 5 / 4 / 5 placeholders with
+  explicit Bloom progression labels (recall / practice /
+  application).
+- `server/tests/worksheetScrutiny.test.ts:1035` — test
+  `produces 3-3-3 for primary worksheets (KS2)` renamed to
+  `produces 5-4-5` and the assertion changed from `total=9` to
+  `total=14`.
+
+### Test status
+
+Full vitest run: 739 passed / 32 failed / 1 skipped (unchanged
+baseline). One pre-existing test (the 3-3-3 assertion) flipped to
+the new 5-4-5 value as expected.
+
+### Out of scope (Lane 3 follow-up)
+
+The 6-bucket per-year reading age (W1) is still a Lane 3 item — the
+new primary layout doesn't yet differentiate Year 1's 5 questions
+from Year 6's 5 questions in difficulty. Lane 3.1 will add per-year
+scaffolding so a Y1 sheet's 5 recall questions are decoded
+phonetically while a Y6 sheet's 5 recall questions can use Tier 3
+vocabulary.
