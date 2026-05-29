@@ -1,0 +1,27 @@
+{
+  "id": "stacked-hi-eal-y8-science",
+  "title": "Year 8 Science (HI + EAL Polish) — Light and reflection",
+  "bucket": "send",
+  "params": {
+    "subject": "Physics",
+    "topic": "Light and reflection",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "sendNeed": "hi+eal",
+    "ealLanguage": "pl",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "qa-score-floor",
+    "stacked-needs-both-markers-present"
+  ],
+  "readingAgeRange": [
+    11,
+    15
+  ],
+  "estimatedTokens": 4000
+}

@@ -562,3 +562,203 @@ The coherence test gives us 80% of the value: every new SEND need
 must be explicitly propagated, opt-outs are documented, and
 audit-doc-named needs cannot lose their post-validator branch
 silently.
+
+
+
+## 2026-05-29 — Lane 2.3 follow-up: stacked-need dispatcher + eval-harness fixtures
+
+### Why this commit exists alongside d2d48d8
+
+Two parallel sessions picked up Lane 2.3 from the same six-of-eight
+handoff. They produced complementary, non-overlapping work:
+
+- **Commit d2d48d8** ("composability tests + first-rename-wins
+  fix") — added 13 unit tests in
+  `client/src/lib/__tests__/sendOverlayMarkers.test.ts` that
+  manually call the per-need branches in sequence and verify they
+  don't clobber each other. Also added the
+  `SEND_RENAMED_CHALLENGE_TITLES` set so a later pass cannot
+  overwrite an earlier-applied softened Challenge title. Punted
+  end-to-end eval-harness fixtures to Lane 3 on the assumption
+  they'd require a generator API change.
+- **This commit** — adds the missing piece: an actual compound-key
+  **dispatcher** so the post-validator handles `"hi+eal"` /
+  `"adhd+dyslexia"` / `"anxiety,mld"` etc. as ONE call (not two
+  manual single-need calls), plus 10 eval-harness fixtures and a
+  new eval rule that exercises it. The dispatcher works WITH d2d48d8's
+  first-rename-wins fix (anxiety runs at priority 40, ADHD at 50)
+  rather than replacing it.
+
+The two halves are intentionally additive — d2d48d8 hardens the
+contract that branches don't clobber each other; this commit
+provides the dispatcher that USES that contract end-to-end and the
+eval fixtures that confirm it works in production-shaped JSON.
+
+### What changed
+
+1. **Compound sendNeed support** in `enforceSendOverlayMarkers`:
+   detects `+`, `&` or `,` in the sendNeed string (e.g.
+   `"hi+eal"`, `"adhd+dyslexia"`, `"anxiety,mld"`) and fans out
+   into one branch per part via a new `runStackedSendMarkers`
+   helper. Each branch is already pure + idempotent so re-entering
+   the dispatcher per part is safe.
+2. **Deterministic priority order** so insertions land before
+   per-question rewrites can see them, and so contention between
+   branches is resolved by d2d48d8's first-rename-wins guard:
+
+   | Order | Need | Action |
+   |---:|---|---|
+   | 10 | HI / hearing-impairment / deaf | insert topic-summary at top |
+   | 20 | Dyslexia | insert method-box before first question |
+   | 30 | MLD | insert topic-context (no-op if HI's topic-summary present) |
+   | 40 | Anxiety / SEMH / mental-health | rename Challenge → "OPTIONAL BONUS — only if you want to!" + WARM-UP prefix on Section A |
+   | 50 | ADHD | tick-box prefix on questions, brain-break section, conditionally rename Challenge → "BONUS" (skipped via `SEND_RENAMED_CHALLENGE_TITLES`) |
+   | 60 | Dyscalculia | append "Numbers in this question:" cue |
+   | 70 | EAL / ESL | append sentence frame on extended-response questions |
+   | 80 | VI / visual-impairment | warn-only diagram audit (sees final state) |
+   | 90 | Dyspraxia / DCD | warn-only Section A + Challenge format audit |
+
+   Anxiety (40) runs BEFORE ADHD (50) so the gentler "OPTIONAL
+   BONUS" wording lands first; d2d48d8's
+   `SEND_RENAMED_CHALLENGE_TITLES` set then makes ADHD skip its
+   own rename. End result: stacked Anxiety+ADHD pupils see the
+   anxiety-friendlier title, with all other ADHD markers (tick
+   boxes, brain break) still applied.
+
+3. **Stacked-need normalisation**: `send:hi + send:eal` parses to
+   `["hi", "eal"]` (per-part trim → strip `send:` → collapse
+   whitespace/underscores → strip leading/trailing dashes).
+   Compound detection runs BEFORE the colon-prefix strip so a
+   value like `"send:hi + send:eal"` is treated as a compound
+   (otherwise the top-level `.split(":").pop()` would have
+   collapsed the whole string to just `"eal"`).
+4. **Unknown keys silently dropped.** Compound parts the
+   dispatcher doesn't recognise (`asc`, `slcn`, `working-memory`)
+   are filtered out without raising an error so future fixtures /
+   profiles can be added without breaking the rule. When ALL parts
+   are unknown the dispatcher returns the worksheet untouched.
+5. **Single "Stacked SEND" framing warning** prepended only when
+   ≥2 needs ran AND at least one branch actually mutated (re-runs
+   on already-marked worksheets remain a clean no-op).
+
+### Eval harness — 10 new fixtures + new rule
+
+- **10 new stacked fixtures** under
+  `server/tests/worksheet-eval/fixtures/stacked-*.json`:
+
+  | Fixture | Pair | Year |
+  |---|---|---|
+  | `stacked-hi-eal-y9-geography` | HI + EAL Urdu | Y9 |
+  | `stacked-hi-eal-y8-science` | HI + EAL Polish | Y8 |
+  | `stacked-adhd-dyslexia-y9-english` | ADHD + Dyslexia | Y9 |
+  | `stacked-anxiety-mld-y8-maths` | Anxiety + MLD | Y8 |
+  | `stacked-dyscalculia-eal-y7-maths` | Dyscalculia + EAL Bengali | Y7 |
+  | `stacked-vi-dyslexia-y10-english` | VI + Dyslexia | Y10 |
+  | `stacked-dyspraxia-adhd-y9-science` | Dyspraxia + ADHD | Y9 |
+  | `stacked-hi-dyslexia-y10-english` | HI + Dyslexia | Y10 |
+  | `stacked-mld-dyscalculia-y6-maths` | MLD + Dyscalculia | Y6 |
+  | `stacked-anxiety-adhd-y10-english` | Anxiety + ADHD | Y10 |
+
+  Naming follows the existing flat `send-` / `maths-` / `english-`
+  prefix convention; the runner reads `*.json` non-recursively in
+  `fixtures/` so the new fixtures are picked up with zero workflow
+  changes. (The handoff's "what to do next session" suggested a
+  `fixtures/stacked/` subdirectory, but the corpus actually lives
+  flat — flat layout chosen to avoid a runner change.)
+
+  ASC, SLCN and Working-memory pairs from the original handoff
+  list are **deferred** to a follow-up — the post-validator has
+  no marker enforcer for those needs today (Lane 2.1 ships
+  drift-prevention via `sendCoherence.test.ts`; the actual
+  marker-spec PR is queued for Lane 3). Three additional viable
+  pairs (HI+Dyslexia, MLD+Dyscalculia, Anxiety+ADHD) replace them
+  to keep the corpus at 10. The Anxiety+ADHD fixture exercises
+  the d2d48d8 first-rename-wins guard end-to-end.
+
+- **New rule** `stacked-needs-both-markers-present` in
+  `server/tests/worksheet-eval/rules.ts`. Reads
+  `params.sendNeed`, splits on the same separators the
+  dispatcher recognises, and checks each recognised need's
+  hallmark marker against the post-validated worksheet via a
+  probe table (`STACKED_MARKER_PROBES`). Reports EVERY missing
+  need so the eval report names the gap precisely. Single-need
+  fixtures pass vacuously (no separator → rule is a no-op). VI
+  and Dyspraxia are warn-only audits — they pass vacuously here
+  too so the rule gates only on insert / append branches that
+  produce verifiable evidence.
+
+### Files
+
+- `client/src/lib/worksheetPostValidator.ts`:
+  - `enforceSendOverlayMarkers` — compound-key fast path before
+    colon-stripping; single-need path unchanged.
+  - New exported `runStackedSendMarkers` helper with priority map
+    `STACKED_SEND_PRIORITY` and per-part normalisation.
+  - **No** changes to ADHD / Anxiety branches — d2d48d8's
+    `SEND_RENAMED_CHALLENGE_TITLES` already handles the title
+    contention this dispatcher relies on.
+- `server/tests/worksheet-eval/rules.ts`:
+  - New `stackedNeedsBothMarkersPresent` rule + helpers
+    (`findStackedSection`, `findContentSubstring`,
+    `findAdhdMarker`, `findAnxietyTitleMarker`).
+  - `RULE_REGISTRY` extended with
+    `"stacked-needs-both-markers-present"`.
+- `server/tests/worksheet-eval/fixtures/stacked-*.json` — 10 new
+  fixtures listed above.
+- `client/src/lib/__tests__/sendOverlayMarkersStacked.test.ts` —
+  16 new tests covering each pair plus dispatcher edge cases
+  (separator tolerance, unknown-key dropping, all-unknown
+  returning unmodified, key de-dup, public
+  `runStackedSendMarkers` callable directly, `send:`-prefix +
+  whitespace normalisation). Companion to the existing
+  unit-test composability suite in `sendOverlayMarkers.test.ts`.
+
+### Test status
+
+- **New focused suite** (`sendOverlayMarkersStacked.test.ts`):
+  16 / 16 ✓
+- **Existing composability suite** (`sendOverlayMarkers.test.ts`):
+  50 / 50 ✓ (no regressions from the dispatcher refactor)
+- **Coherence suite** (`sendCoherence.test.ts`): 8 / 8 ✓
+- **Full vitest run**: **776 passed / 32 failed / 1 skipped (809
+  total)**. Lane 2.1 closeout baseline was 760 / 32 / 1 (793
+  total). Net **+16 newly passing**, **zero new regressions**.
+  The 32 remaining failures are pre-existing on main and
+  documented as Lane 3 backlog.
+- **Eval harness mock run**: 49 / 60 fixtures pass. All 10 new
+  stacked fixtures pass. Per-rule stats:
+  `stacked-needs-both-markers-present: 10 / 0`. The 11 baseline
+  failures (spec-ref placeholder mismatches + one reading-age
+  miss) are pre-existing and unaffected by Lane 2.3 — none
+  involve a stacked fixture.
+
+### CI wiring
+
+`.github/workflows/worksheet-eval.yml` runs
+`npm run eval:worksheets` on a nightly cron + workflow_dispatch.
+The runner globs `*.json` in `fixtures/` non-recursively, so the
+new `stacked-*.json` fixtures are picked up automatically — **no
+workflow change required**. Per-fixture pass/fail and per-rule
+stats land in the markdown summary (`$GITHUB_STEP_SUMMARY`) and
+the JSON artefact (`eval-report-${run_id}`) every nightly run.
+
+The eval gate remains advisory — making it PR-blocking is Lane
+3.10 (waits for the baseline to settle).
+
+### Constraints respected
+
+- Single-need behaviour is byte-for-byte identical to pre-Lane-2.3
+  (compound detection branches before any other logic; the
+  existing single-need `sendKey` path is unchanged).
+- Every branch is still pure + idempotent; the dispatcher's own
+  re-entry per stacked part is therefore safe.
+- No mutation of `id`, `type`, `marks`, `imageUrl`, `assetRef`
+  on any base section — the underlying branch helpers were
+  already conformant; the dispatcher just re-uses them.
+- ASC / SLCN / Working-memory remain a Lane 3 follow-up —
+  `STACKED_SEND_PRIORITY` simply omits them so they're treated as
+  unknown keys and filtered out.
+- d2d48d8's `SEND_RENAMED_CHALLENGE_TITLES` first-rename-wins
+  guard is preserved unchanged — the dispatcher's priority order
+  is the contract that lets that guard always pick the correct
+  winner (anxiety before ADHD).

@@ -212,6 +212,149 @@ const qaScoreFloor: Rule = (ws, fixture) => {
 
 // ─── Registry ────────────────────────────────────────────────────────────────
 
+/**
+ * Lane 2.3 — Stacked-need both-markers-present rule.
+ *
+ * Inspects a worksheet whose `params.sendNeed` is a `+`-separated
+ * compound key (e.g. "hi+eal", "adhd+dyslexia") and asserts that
+ * EVERY recognised need in the compound has its hallmark marker
+ * present in the post-validated worksheet. Skipped when the fixture
+ * declares no compound (i.e. single-need or no-need fixtures pass
+ * vacuously).
+ *
+ * The marker dictionary mirrors the dispatch table in
+ * `enforceSendOverlayMarkers`. Unknown need keys (e.g. "asc",
+ * "slcn", "working-memory" — which have no post-validator marker
+ * enforcer today) are tolerated as no-ops so future fixtures can be
+ * added without breaking the rule.
+ *
+ * Failure message lists EVERY missing need so the eval report names
+ * the gap precisely (rather than failing on the first missing
+ * marker).
+ */
+type StackedMarkerProbe = (ws: PostValidatorWorksheet) => string | undefined;
+
+function findStackedSection(
+  ws: PostValidatorWorksheet,
+  sectionType: string,
+  titleRegex?: RegExp,
+): string | undefined {
+  const sections = ws.sections || [];
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const t = String(s.type || "").toLowerCase();
+    const title = String(s.title || "");
+    if (t === sectionType.toLowerCase()) return s.title || s.type || sectionType;
+    if (titleRegex && titleRegex.test(title)) return title;
+  }
+  return undefined;
+}
+
+function findContentSubstring(
+  ws: PostValidatorWorksheet,
+  re: RegExp,
+): string | undefined {
+  const sections = ws.sections || [];
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const content = typeof s.content === "string" ? s.content : "";
+    const m = content.match(re);
+    if (m) return m[0];
+  }
+  return undefined;
+}
+
+/** ADHD has THREE possible markers: tick-box prefix on questions,
+ *  brain-break section, OR Challenge title rewrite to "BONUS — only
+ *  if you want to!". Any one is sufficient evidence. */
+function findAdhdMarker(ws: PostValidatorWorksheet): string | undefined {
+  const sections = ws.sections || [];
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const content = typeof s.content === "string" ? s.content : "";
+    const firstLine = (content.split("\n").find((l) => l.trim()) || "").trim();
+    if (firstLine.startsWith("[ ]")) return "tick-box prefix";
+    if (/brain\s*break/i.test(content)) return "brain break";
+    const title = String(s.title || "");
+    if (/^BONUS\b/.test(title) || /^OPTIONAL BONUS\b/.test(title)) return title;
+  }
+  return undefined;
+}
+
+/** Anxiety markers: Challenge title containing "OPTIONAL BONUS" OR
+ *  Section A/1 title prefixed with "WARM-UP". Either is sufficient. */
+function findAnxietyTitleMarker(ws: PostValidatorWorksheet): string | undefined {
+  const sections = ws.sections || [];
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const title = String(s.title || "");
+    if (/^OPTIONAL BONUS\b/.test(title)) return title;
+    if (/^WARM-UP\b/.test(title)) return title;
+  }
+  return undefined;
+}
+
+const STACKED_MARKER_PROBES: Readonly<Record<string, StackedMarkerProbe>> = {
+  hi: (ws) => findStackedSection(ws, "topic-summary"),
+  "hearing-impairment": (ws) => findStackedSection(ws, "topic-summary"),
+  deaf: (ws) => findStackedSection(ws, "topic-summary"),
+  dyslexia: (ws) =>
+    findStackedSection(ws, "method-box", /method\s*step|step[-\s]by[-\s]step/i),
+  // MLD branch is no-op when HI's topic-summary is already present
+  // (by design — see enforceMldMarkers). Either marker satisfies the
+  // MLD need: a topic-context block, OR a topic-summary that the HI
+  // branch inserted.
+  mld: (ws) =>
+    findStackedSection(ws, "topic-context") ??
+    findStackedSection(ws, "topic-summary"),
+  adhd: (ws) => findAdhdMarker(ws),
+  dyscalculia: (ws) =>
+    findContentSubstring(ws, /numbers\s+in\s+this\s+question|number\s+steps/i),
+  eal: (ws) => findContentSubstring(ws, /sentence\s+frame|^frame\s*:|starter\s*:/im),
+  esl: (ws) => findContentSubstring(ws, /sentence\s+frame|^frame\s*:|starter\s*:/im),
+  anxiety: (ws) => findAnxietyTitleMarker(ws),
+  semh: (ws) => findAnxietyTitleMarker(ws),
+  "mental-health": (ws) => findAnxietyTitleMarker(ws),
+  // VI / Dyspraxia are warn-only audits — they don't INSERT a marker.
+  // For the stacked rule we treat them as satisfied vacuously so the
+  // rule gates only on insert / append branches that produce
+  // verifiable evidence.
+  vi: () => "vi-audit-only-no-marker",
+  "visual-impairment": () => "vi-audit-only-no-marker",
+  visual: () => "vi-audit-only-no-marker",
+  dyspraxia: () => "dyspraxia-audit-only-no-marker",
+  dcd: () => "dyspraxia-audit-only-no-marker",
+};
+
+const stackedNeedsBothMarkersPresent: Rule = (ws, fixture) => {
+  const send = (fixture.params?.sendNeed || "").toString().toLowerCase();
+  if (!send || !/[+&,]/.test(send)) return { ok: true };
+
+  const parts = send
+    .split(/[+&,]/)
+    .map((p) => p.trim().replace(/^send:/, "").replace(/[\s_]/g, "-"))
+    .filter(Boolean);
+  // De-dupe.
+  const unique = Array.from(new Set(parts));
+  // Ignore parts with no probe registered (asc / slcn / working-memory).
+  const probed = unique.filter((p) => STACKED_MARKER_PROBES[p]);
+  if (probed.length === 0) return { ok: true };
+
+  const missing: string[] = [];
+  for (const part of probed) {
+    const probe = STACKED_MARKER_PROBES[part];
+    const evidence = probe(ws);
+    if (!evidence) missing.push(part);
+  }
+  if (missing.length > 0) {
+    return {
+      ok: false,
+      reason: `stacked sendNeed "${send}" missing markers for: ${missing.join(", ")}`,
+    };
+  }
+  return { ok: true };
+};
+
 export const RULE_REGISTRY: Record<string, Rule> = {
   "mcq-single-correct": mcqSingleCorrect,
   "word-bank-deduped": wordBankDeduped,
@@ -220,6 +363,7 @@ export const RULE_REGISTRY: Record<string, Rule> = {
   "spec-ref-present": specRefPresent,
   "send-fidelity-floor": sendFidelityFloor,
   "qa-score-floor": qaScoreFloor,
+  "stacked-needs-both-markers-present": stackedNeedsBothMarkersPresent,
 };
 
 export const ALL_RULE_NAMES = Object.keys(RULE_REGISTRY);

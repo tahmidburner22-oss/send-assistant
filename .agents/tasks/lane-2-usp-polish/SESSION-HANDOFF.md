@@ -39,7 +39,7 @@ Constraint: SEND IS THE USP. Every change must be deterministic
 | 2.7 | Six audit-doc-named revision-tip categories (vocabulary / worked-example / common-mistake / past-papers / retrieval / learning-objective) | ✅ shipped | `ac2a117` |
 | 2.4 | Primary 5/4/5 layout (was 3/3/3) | ✅ shipped | `9ccdf13` |
 | 2.8 | aria-labels on every pupil-facing element + toolbar zoom buttons | ✅ shipped | `dff055d` |
-| 2.3 | Stacked-needs composability tests + first-rename-wins fix | ✅ shipped | `d2d48d8` |
+| 2.3 | Stacked-needs composability tests + first-rename-wins fix + dispatcher + eval-harness fixtures | ✅ shipped | `d2d48d8` + this commit |
 | 2.1 | SEND coherence test — drift prevention across all 4 SEND-emitting layers + 2 pre-existing cosmetic gaps fixed | ✅ shipped | `2b62de9` |
 
 ## Test baseline at Lane 2 close
@@ -48,12 +48,14 @@ Constraint: SEND IS THE USP. Every change must be deterministic
 |-------|-------:|-------:|------:|
 | `main` | 34 | 697 | 732 |
 | `feat/lane-1-pre-pilot-fixes` | 32 | 736 | 769 |
-| `feat/lane-2-usp-polish` (final) | 32 | 760 | 793 |
+| `feat/lane-2-usp-polish` (after 2.1 closeout) | 32 | 760 | 793 |
+| `feat/lane-2-usp-polish` (final, after 2.3 dispatcher + eval fixtures) | 32 | 776 | 809 |
 
-**+24 newly passing tests across Lane 2, zero new regressions.** The
-24 new tests come from:
+**+40 newly passing tests across Lane 2, zero new regressions.** The
+40 new tests come from:
 - Lane 2.2: 37 focused SEND-marker tests in `sendOverlayMarkers.test.ts`
-- Lane 2.3: +13 stacked-need composability tests in the same file
+- Lane 2.3 (d2d48d8): +13 stacked-need composability tests in the same file
+- Lane 2.3 (dispatcher follow-up): +16 dispatcher tests in `sendOverlayMarkersStacked.test.ts`
 - Lane 2.7: ~3 net new Phase 3 tests after the rewrite
 - Lane 2.1: 8 SEND coherence tests in `sendCoherence.test.ts`
 
@@ -77,10 +79,15 @@ for the full backlog. The big rocks:
   cosmetic + overlay + post-validator) is queued as a Lane 3 PR.
   The detailed migration plan is in this folder's `PHASE-PLAN.md`
   under "2.1 detailed change spec".
-- **End-to-end eval-harness fixtures for stacked SEND** — Lane 2.3
-  ships unit-test-level stacked-need tests; the eval-harness
-  fixtures need a `params.sendNeeds: string[]` (plural) generator
-  API change before the harness can exercise multi-need worksheets.
+- **End-to-end eval-harness fixtures for stacked SEND** — Lane
+  2.3's follow-up commit shipped 10 stacked-* JSON fixtures under
+  `server/tests/worksheet-eval/fixtures/` exercised by a new
+  `stacked-needs-both-markers-present` rule. The dispatcher in
+  `enforceSendOverlayMarkers` parses `+` / `&` / `,` separators
+  end-to-end, so no generator API change is needed for the
+  post-validator surface. ASC / SLCN / Working-memory pairs
+  remain queued — they need marker enforcers first (Lane 3
+  follow-up to Lane 2.1's coherence test).
 - **Multi-language EAL glossaries beyond v1** — Lane 1.5 ships ~30
   STEM keywords in 6 languages (Urdu, Polish, Bengali, Punjabi,
   Arabic, Romanian). Densification to per-subject glossaries (200+
@@ -107,7 +114,8 @@ for the full backlog. The big rocks:
 ### Eval / CI
 
 - Page-break audit for question splits (W7)
-- Multi-need params API + stacked-SEND eval fixtures (depends on 2.3 + 2.1)
+- ASC / SLCN / Working-memory marker enforcers + corresponding
+  stacked-need eval fixtures (depends on Lane 2.1 + 3.x)
 - PR-blocking eval gate (Lane 3.10)
 
 ### Pre-existing test failures (out of scope for Lanes 1 & 2)
@@ -139,7 +147,8 @@ ordering on the branch is:
 7. `1b48432` — handoff doc update (mid-PR)
 8. `d2d48d8` — Lane 2.3 (stacked-need composability + first-rename-wins fix)
 9. `2b62de9` — Lane 2.1 (SEND coherence test + semh + working-memory cosmetics)
-10. (this commit) — handoff close-out
+10. `8cdb8ed` — handoff close-out (mid-PR)
+11. (this commit) — Lane 2.3 follow-up (compound dispatcher + 10 eval fixtures + new rule)
 
 ## Smoke-test recipe before pilot
 

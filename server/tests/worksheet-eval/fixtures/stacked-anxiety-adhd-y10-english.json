@@ -1,0 +1,26 @@
+{
+  "id": "stacked-anxiety-adhd-y10-english",
+  "title": "Year 10 English (Anxiety + ADHD) — An Inspector Calls",
+  "bucket": "send",
+  "params": {
+    "subject": "English",
+    "topic": "An Inspector Calls — Mr Birling",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "sendNeed": "anxiety+adhd",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "qa-score-floor",
+    "stacked-needs-both-markers-present"
+  ],
+  "readingAgeRange": [
+    13,
+    17
+  ],
+  "estimatedTokens": 4000
+}
