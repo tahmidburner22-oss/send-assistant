@@ -118,6 +118,14 @@ const DIAGRAM_TYPES = new Set(["diagram", "q-label-diagram", "label-diagram", "d
 const OBJECTIVE_TYPES = new Set(["learning-objective", "learning_objective", "objective", "lo"]);
 
 // ── Bilingual keyword translations ────────────────────────────────────────────
+//
+// Lane 1.5 — extended from {ro, es} to the DfE School Census top six pupil
+// first languages: ur (Urdu), pl (Polish), bn (Bengali), pa (Punjabi),
+// ar (Arabic), ro (Romanian). Spanish (es) is preserved for backwards
+// compatibility but is no longer in the canonical UK L1 list at
+// `client/src/lib/worksheetSectionTargets.ts:206-216`. Each language ships
+// the same ~30 STEM keywords as the original `ro` table for v1; deeper
+// per-subject vocabulary is a Lane 3 follow-up.
 const TERM_TRANSLATIONS: Record<string, Record<string, string>> = {
   ro: {
     current: "curent",
@@ -148,6 +156,153 @@ const TERM_TRANSLATIONS: Record<string, Record<string, string>> = {
     numerator: "numărător",
     denominator: "numitor",
   },
+  // Urdu (ur) — UK's largest non-English pupil L1 (DfE Census).
+  ur: {
+    current: "کرنٹ",
+    voltage: "وولٹیج",
+    resistance: "مزاحمت",
+    conductor: "موصل",
+    insulator: "غیر موصل",
+    series: "سلسلہ وار",
+    parallel: "متوازی",
+    circuit: "سرکٹ",
+    battery: "بیٹری",
+    lamp: "لیمپ",
+    switch: "سوئچ",
+    charge: "چارج",
+    ohm: "اوہم",
+    ohms_law: "اوہم کا قانون",
+    force: "قوت",
+    energy: "توانائی",
+    power: "طاقت",
+    cell: "خلیہ",
+    bulb: "بلب",
+    resistor: "مزاحم",
+    ammeter: "ایمیٹر",
+    voltmeter: "وولٹ میٹر",
+    equation: "مساوات",
+    fraction: "کسر",
+    numerator: "حسابِ بالا",
+    denominator: "حسابِ زیر",
+  },
+  // Polish (pl).
+  pl: {
+    current: "prąd",
+    voltage: "napięcie",
+    resistance: "opór",
+    conductor: "przewodnik",
+    insulator: "izolator",
+    series: "szeregowy",
+    parallel: "równoległy",
+    circuit: "obwód",
+    battery: "bateria",
+    lamp: "lampa",
+    switch: "przełącznik",
+    charge: "ładunek",
+    ohm: "om",
+    ohms_law: "prawo Ohma",
+    force: "siła",
+    energy: "energia",
+    power: "moc",
+    cell: "ogniwo",
+    bulb: "żarówka",
+    resistor: "rezystor",
+    ammeter: "amperomierz",
+    voltmeter: "woltomierz",
+    equation: "równanie",
+    fraction: "ułamek",
+    numerator: "licznik",
+    denominator: "mianownik",
+  },
+  // Bengali (bn).
+  bn: {
+    current: "তড়িৎ প্রবাহ",
+    voltage: "ভোল্টেজ",
+    resistance: "রোধ",
+    conductor: "পরিবাহী",
+    insulator: "অন্তরক",
+    series: "শ্রেণি",
+    parallel: "সমান্তরাল",
+    circuit: "বর্তনী",
+    battery: "ব্যাটারি",
+    lamp: "বাতি",
+    switch: "সুইচ",
+    charge: "আধান",
+    ohm: "ওহম",
+    ohms_law: "ওহমের সূত্র",
+    force: "বল",
+    energy: "শক্তি",
+    power: "ক্ষমতা",
+    cell: "কোষ",
+    bulb: "বাল্ব",
+    resistor: "রোধক",
+    ammeter: "অ্যামিটার",
+    voltmeter: "ভোল্টমিটার",
+    equation: "সমীকরণ",
+    fraction: "ভগ্নাংশ",
+    numerator: "লব",
+    denominator: "হর",
+  },
+  // Punjabi (pa) — Gurmukhi script.
+  pa: {
+    current: "ਕਰੰਟ",
+    voltage: "ਵੋਲਟੇਜ",
+    resistance: "ਪ੍ਰਤੀਰੋਧ",
+    conductor: "ਚਾਲਕ",
+    insulator: "ਨਾਨ-ਚਾਲਕ",
+    series: "ਲੜੀ",
+    parallel: "ਸਮਾਨਾਂਤਰ",
+    circuit: "ਸਰਕਟ",
+    battery: "ਬੈਟਰੀ",
+    lamp: "ਲੈਂਪ",
+    switch: "ਸਵਿਚ",
+    charge: "ਚਾਰਜ",
+    ohm: "ਓਹਮ",
+    ohms_law: "ਓਹਮ ਦਾ ਨਿਯਮ",
+    force: "ਬਲ",
+    energy: "ਊਰਜਾ",
+    power: "ਸ਼ਕਤੀ",
+    cell: "ਸੈੱਲ",
+    bulb: "ਬਲਬ",
+    resistor: "ਰੇਜ਼ਿਸਟਰ",
+    ammeter: "ਐਮੀਟਰ",
+    voltmeter: "ਵੋਲਟਮੀਟਰ",
+    equation: "ਸਮੀਕਰਨ",
+    fraction: "ਭਿੰਨ",
+    numerator: "ਅੰਸ਼",
+    denominator: "ਹਰ",
+  },
+  // Arabic (ar) — RTL script.
+  ar: {
+    current: "تيار",
+    voltage: "جهد",
+    resistance: "مقاومة",
+    conductor: "موصل",
+    insulator: "عازل",
+    series: "توالي",
+    parallel: "توازي",
+    circuit: "دائرة",
+    battery: "بطارية",
+    lamp: "مصباح",
+    switch: "مفتاح",
+    charge: "شحنة",
+    ohm: "أوم",
+    ohms_law: "قانون أوم",
+    force: "قوة",
+    energy: "طاقة",
+    power: "قدرة",
+    cell: "خلية",
+    bulb: "مصباح",
+    resistor: "مقاوم",
+    ammeter: "أميتر",
+    voltmeter: "فولتميتر",
+    equation: "معادلة",
+    fraction: "كسر",
+    numerator: "البسط",
+    denominator: "المقام",
+  },
+  // Spanish (es) — preserved for backwards compatibility; not in the
+  // canonical UK L1 list. Coverage thinner than the L1s above.
   es: {
     current: "corriente",
     voltage: "voltaje",
@@ -187,7 +342,16 @@ function appendDelimitedBlock(content: string, heading: string, lines: string[])
 }
 
 function languageLabel(code: string): string {
-  return ({ ro: "Romanian", es: "Spanish" } as Record<string, string>)[code] || code.toUpperCase();
+  // Lane 1.5 — extended to UK School Census top-six pupil L1s.
+  return ({
+    ro: "Romanian",
+    ur: "Urdu",
+    pl: "Polish",
+    bn: "Bengali",
+    pa: "Punjabi",
+    ar: "Arabic",
+    es: "Spanish",
+  } as Record<string, string>)[code] || code.toUpperCase();
 }
 
 function parseRequestedLanguage(
@@ -202,6 +366,23 @@ function parseRequestedLanguage(
   const text = (additionalInstructions || "").toLowerCase();
   if (!text) return null;
   if (!/(bilingual|translate|translation|keywords? in|vocabulary in)/i.test(additionalInstructions || "")) return null;
+  // Lane 1.5 — detect top-six UK pupil L1s by English name and native script.
+  // Order matters: more specific scripts first to avoid false positives.
+  if (text.includes("urdu") || /[\u0600-\u06ff]/.test(additionalInstructions || "")) {
+    // Urdu uses Arabic script + extended Arabic-Persian range. We default
+    // to Urdu when Arabic-script is detected via "urdu" hint; explicit
+    // "arabic" check below catches the Arabic case.
+    if (text.includes("arabic")) return { code: "ar", label: "Arabic" };
+    return { code: "ur", label: "Urdu" };
+  }
+  if (text.includes("arabic") || text.includes("عربي")) return { code: "ar", label: "Arabic" };
+  if (text.includes("polish") || text.includes("polski")) return { code: "pl", label: "Polish" };
+  if (text.includes("bengali") || text.includes("bangla") || /[\u0980-\u09ff]/.test(additionalInstructions || "")) {
+    return { code: "bn", label: "Bengali" };
+  }
+  if (text.includes("punjabi") || text.includes("ਪੰਜਾਬੀ") || /[\u0a00-\u0a7f]/.test(additionalInstructions || "")) {
+    return { code: "pa", label: "Punjabi" };
+  }
   if (text.includes("romanian") || text.includes("română") || text.includes("romana")) return { code: "ro", label: "Romanian" };
   if (text.includes("spanish") || text.includes("español")) return { code: "es", label: "Spanish" };
   return { code: "ro", label: "Romanian" };
