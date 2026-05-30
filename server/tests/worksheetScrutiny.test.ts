@@ -4040,6 +4040,8 @@ describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-re
     "diagram-page-fit",
     "citation-grounding",
     "tier-ao-histogram",
+    // Lane 3.2 — per-year primary vocabulary blocklist (final audit).
+    "primary-vocab-blocklist",
   ];
 
   it("listValidatorNames() returns the registered order", () => {

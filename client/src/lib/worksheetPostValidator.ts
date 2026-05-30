@@ -57,6 +57,16 @@ import {
   isGenericRevisionTips,
 } from "./revisionTipsBuilder";
 
+// Lane 3.2 — Per-year primary vocabulary blocklist. The validator
+// below reads the band-scoped blocklist from this module (single
+// source of truth shared with the generator prompt) and flags any
+// blocked word that survived into pupil-facing content.
+import {
+  primaryBandForYearGroup,
+  findBlockedVocab,
+  type PrimaryBand,
+} from "./primaryVocabBlocklist";
+
 // Phase 5 — Curriculum-authority invariants. Pure helpers from the
 // curriculum-authority module: silent US → UK English rewriter
 // (idempotent), banned-softener detector (warn only — silent rewrite
@@ -133,8 +143,33 @@ export interface PostValidatorWorksheet {
     postValidatorWarnings?: string[];
     /** FEAT-PB7 — per-MCQ misconception linkage (one entry per diagnosed distractor). */
     misconceptionLinks?: PostValidatorMisconceptionLink[];
+    /** Lane 3.2 — primary vocabulary blocklist violations (one entry
+     *  per distinct blocked word per section). Stamped deterministically
+     *  by enforcePrimaryVocabBlocklist. The generation orchestrator can
+     *  read this to drive a re-prompt; the teacher panel surfaces it as
+     *  an advisory. */
+    primaryVocabViolations?: PostValidatorPrimaryVocabViolation[];
   };
   [key: string]: unknown;
+}
+
+/**
+ * Lane 3.2 — one primary-vocab-blocklist hit: a blocked word that
+ * survived into a pupil-facing section of a primary worksheet.
+ */
+export interface PostValidatorPrimaryVocabViolation {
+  /** 0-based index into worksheet.sections. */
+  sectionIndex: number;
+  /** Section title at detection time (helpful in teacher views). */
+  sectionTitle?: string;
+  /** The primary band the worksheet was scanned against. */
+  band: PrimaryBand;
+  /** The canonical lower-case blocklist entry that matched. */
+  word: string;
+  /** Suggested plain-English replacement, when the entry carries one. */
+  replacement?: string;
+  /** Number of times the word appears in the section's pupil-facing text. */
+  count: number;
 }
 
 /**
@@ -740,6 +775,129 @@ export function extractMisconceptionLinks(
       metadata: {
         ...(ws.metadata || {}),
         misconceptionLinks: mergedLinks,
+      },
+    },
+    warnings,
+  };
+}
+
+/**
+ * Lane 3.2 — Per-year primary vocabulary blocklist enforcer.
+ *
+ * Scans pupil-facing sections of a PRIMARY worksheet for any word on
+ * the band-scoped blocklist (KS1 ⊃ LKS2 ⊃ UKS2 — see
+ * primaryVocabBlocklist.ts) and:
+ *   - emits a warning naming the section, the blocked word, its
+ *     occurrence count, and the plain-English replacement when one
+ *     exists, and
+ *   - stamps a structured `metadata.primaryVocabViolations` array the
+ *     generation orchestrator can read to drive a re-prompt (the
+ *     "fail-closed" hook) and the teacher panel can surface as an
+ *     advisory.
+ *
+ * Design notes:
+ *   - WARN-ONLY. It deliberately does NOT auto-rewrite pupil content.
+ *     A blocked word may legitimately be the curriculum word being
+ *     taught (the band nesting already lets UKS2 keep its own subject
+ *     vocabulary), and a blind in-place swap mid-sentence risks
+ *     producing nonsense. The re-prompt decision belongs to the
+ *     orchestrator, which has the topic / curriculum context this
+ *     pure validator does not.
+ *   - NON-PRIMARY = NO-OP. When the year group resolves to a
+ *     secondary band (or is unrecognised), the worksheet is returned
+ *     untouched with no warnings, so KS3+ behaviour is byte-for-byte
+ *     unchanged.
+ *   - IDEMPOTENT. Violations are recomputed deterministically and the
+ *     full list is re-stamped each run; warnings are only emitted for
+ *     violations not already present on the incoming metadata, so a
+ *     second pass over an already-stamped worksheet adds no fresh
+ *     warnings and produces a deep-equal worksheet.
+ *   - Teacher-only sections (mark scheme, teacher notes, answers,
+ *     SEND-adaptation rationale) are skipped — they legitimately use
+ *     subject vocabulary the pupil-facing page must not.
+ */
+const PRIMARY_VOCAB_SKIP_TYPES = new Set([
+  "mark-scheme",
+  "answers",
+  "answer-key",
+  "teacher-notes",
+  "send-adaptations",
+  "send-adaptation",
+]);
+
+export function enforcePrimaryVocabBlocklist(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const band: PrimaryBand | undefined = primaryBandForYearGroup(
+    opts.yearGroup || (ws.metadata?.yearGroup as string | undefined),
+  );
+  // Non-primary (or unrecognised) year group → no-op.
+  if (!band) return { worksheet: ws, warnings };
+
+  // Collect the pupil-facing haystack for each scannable section and
+  // run the band-scoped blocklist over it.
+  const violations: PostValidatorPrimaryVocabViolation[] = [];
+  (ws.sections || []).forEach((s, idx) => {
+    if (!s || s.teacherOnly) return;
+    const type = String(s.type || "").toLowerCase();
+    if (PRIMARY_VOCAB_SKIP_TYPES.has(type)) return;
+
+    const parts: string[] = [];
+    if (typeof s.content === "string") parts.push(s.content);
+    const questions = (s as Record<string, unknown>).questions;
+    if (Array.isArray(questions)) {
+      for (const q of questions) {
+        if (!q || typeof q !== "object") continue;
+        const qq = q as Record<string, unknown>;
+        for (const key of ["text", "prompt", "question", "stem", "content"]) {
+          if (typeof qq[key] === "string") parts.push(qq[key] as string);
+        }
+        if (Array.isArray(qq.options)) {
+          for (const o of qq.options) if (typeof o === "string") parts.push(o);
+        }
+      }
+    }
+    const haystack = parts.join("\n");
+    if (!haystack) return;
+
+    for (const hit of findBlockedVocab(haystack, band)) {
+      violations.push({
+        sectionIndex: idx,
+        sectionTitle: typeof s.title === "string" ? s.title : undefined,
+        band,
+        word: hit.word,
+        replacement: hit.replacement,
+        count: hit.count,
+      });
+    }
+  });
+
+  // Idempotency: warn only for violations not already recorded on the
+  // incoming metadata. Key on sectionIndex|word so re-runs are quiet.
+  const existing = Array.isArray(ws.metadata?.primaryVocabViolations)
+    ? (ws.metadata!.primaryVocabViolations as PostValidatorPrimaryVocabViolation[])
+    : [];
+  const existingKeys = new Set(
+    existing.map((v) => `${v.sectionIndex}|${v.word}`),
+  );
+
+  for (const v of violations) {
+    if (existingKeys.has(`${v.sectionIndex}|${v.word}`)) continue;
+    const where = v.sectionTitle ? ` ("${v.sectionTitle}")` : "";
+    const fix = v.replacement ? ` Use "${v.replacement}" instead.` : "";
+    warnings.push(
+      `[Lane 3.2 — Primary vocab] ${v.band} worksheet: section ${v.sectionIndex}${where} uses blocked word "${v.word}" (${v.count}×) in pupil-facing content.${fix}`,
+    );
+  }
+
+  return {
+    worksheet: {
+      ...ws,
+      metadata: {
+        ...(ws.metadata || {}),
+        primaryVocabViolations: violations,
       },
     },
     warnings,
