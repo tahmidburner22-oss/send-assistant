@@ -1,0 +1,167 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Atomic Structure and the Periodic Table — Year 10 Science Worksheet
+Year 10 | Science | foundation
+NAME
+DATE
+30/05/2026
+CLASS
+
+By the end of this lesson, students will be able to describe the structure of atoms and explain how elements are arranged in the periodic table.
+
+Atom:
+the smallest part of an element that can exist and still be that elementnProton — a particle in the nucleus of an atom with a positive chargenNeutron — a particle in the nucleus of an atom with no electrical chargenElectron — a particle with a negative charge that orbits the nucleusnAtomic number — the number of protons in the nucleus of an atom of an element
+Watch out for these common errors:
+MISTAKE 1: CONFUSING MASS WITH WEIGHT → MASS IS THE AMOUNT OF MATTER IN AN OBJECT MEASURED IN KILOGRAMS (KG), BUT WEIGHT IS A FORCE MEASURED IN NEWTONS (N) THAT DEPENDS ON GRAVITY.
+MISTAKE 2: MIXING UP ATOMS, ELEMENTS, AND COMPOUNDS → AN ELEMENT CONTAINS ONE TYPE OF ATOM ONLY, BUT A COMPOUND CONTAINS ATOMS OF TWO OR MORE ELEMENTS CHEMICALLY JOINED. ATOMS ARE THE BUILDING BLOCKS.
+MISTAKE 3: THINKING ELECTRONS ARE IN FIXED POSITIONS → ELECTRONS MOVE IN SHELLS (ENERGY LEVELS) AROUND THE NUCLEUS, NOT IN FIXED PLACES; SHELLS FILL IN A SPECIFIC ORDER.
+WORKED EXAMPLE
+— Study this example carefully.
+1
+nCalculate the number of neutrons in an atom of chlorine if the atomic number is 17 and the mass number is 35.
+nStep 1: Identify given values: Atomic number = 17, Mass number = 35nStep 2: Use the formula: Number of neutrons = Mass number - Atomic numbernStep 3: Substitute values: Neutrons = 35 − 17nStep 4: Calculate: Neutrons = 18 ✓ Key point: Neutrons equal the mass number minus the atomic number.
+
+Remember: in this worksheet we are working on Atomic Structure and the Periodic Table.
+
+What we are learning today: By the end of this lesson, students will be able to describe the structure of atoms and explain how elements are arranged in the periodic table.
+
+Tips while you work:
+
+Take your time on each question.
+Check the word bank or worked example if you get stuck.
+It is OK to ask your teacher if a word is unfamiliar.
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+Circle TRUE or FALSE for each statement.
+The atomic number tells us how many protons are in an atom
+TRUE
+FALSE
+Neutrons have a positive charge
+TRUE
+FALSE
+Electrons orbit the nucleus in shells
+TRUE
+FALSE
+A compound contains atoms from only one element
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+Which of these shows the correct parts of an atom?nA Protons and electrons are outside the nucleus nB Protons and neutrons are in the nucleus ✓nC Electrons and neutrons are in the nucleus nD Protons orbit the electronsnTEACHER_DIAGNOSES: A=s-mass-01
+3
+GAP FILL
+
+Complete the paragraph using words from the word bank below. nAn  is the smallest part of an element.nThe nucleus contains  and neutrons.nElectrons move in areas called  around the nucleus.nThe  number is the number of protons.nElements in the same  have similar chemical properties.nThe  number tells us the total particles in the nucleus.nA  is two or more elements chemically joined. nWORD BANK: atom | shells | atomic | compound | mass | group | proton | electron | neutron | moleculenRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank.
+
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[8 marks total]
+1.
+State the charge of a proton.
+[2 marks]
+2.
+Identify the particle that has no charge in an atom.
+[2 marks]
+3.
+Calculate the number of neutrons in an atom with mass number 23 and atomic number 11. Show your working.
+[2 marks]
+4.
+Describe what the atomic number tells about an atom.
+[2 marks]
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[24 marks total]
+1.
+State the name of the particle with a negative charge in an atom.
+[4 marks]
+2.
+Identify which part of the atom has almost all the mass.
+[4 marks]
+3.
+Explain why elements are arranged in groups on the periodic table.
+[4 marks]
+4.
+Compare the number of protons and electrons in a neutral atom.
+[4 marks]
+5.
+Evaluate the statement: "Atoms of isotopes have the same number of protons but different numbers of neutrons." Your answer should include: • Explanation of what isotopes are • Evidence of proton and neutron numbers • How isotopes affect the mass number
+[4 marks]
+6.
+Analyse how the position of an element in the periodic table is related to its number of electrons.
+[4 marks]
+
+Challenge yourself!
+
+1.
+Justify why elements in the same group have similar properties using their electron arrangements.
+2.
+Discuss how understanding the periodic table helps chemists predict the behaviour of new elements.
+Show your working:
+Top tips before you start.\nTIPS:
+1
+VOCABULARY
+Re-read the Key Vocabulary box for atomic structure and the periodic table.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory.
+3
+COMMON MISTAKE
+Pupils most often lose marks on atomic structure and the periodic table by writing the right idea in everyday language.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on atomic structure and the periodic table and attempt it under timed conditions.
+5
+RETRIEVAL
+In your next study session, list everything you remember about atomic structure and the periodic table on a blank sheet WITHOUT looking at notes.
+How did you get on?
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about atomic structure and the periodic table.
+I can Explain the key ideas in atomic structure and the periodic table using the right vocabulary.
+I can Calculate a question about atomic structure and the periodic table with a worked answer.
+I can Compare what I have learned about atomic structure and the periodic table to a new problem.
+I can Evaluate my own answer about atomic structure and the periodic table and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing I now understand about atomic structure and the periodic table that I did not before is …
+One question I still want to ask about atomic structure and the periodic table is …
+Exit Ticket: Write ONE thing you learned today about atomic structure and the periodic table in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Atomic Structure and the Periodic Table
+· Foundation
+· Adapted for Moderate Learning Difficulties (MLD)
+30/05/2026
+Rate this lesson:
+← Generate Another Lesson

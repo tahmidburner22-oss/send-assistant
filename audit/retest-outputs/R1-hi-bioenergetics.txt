@@ -1,0 +1,168 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Bioenergetics — Year 10 Science Worksheet
+Year 10 | Science | higher
+NAME
+DATE
+30/05/2026
+CLASS
+
+By the end of this lesson, students will be able to explain the processes of aerobic and anaerobic respiration and their importance in releasing energy from glucose.
+
+Respiration:
+The process of transferring energy from glucose which goes on in every cell.nAerobic — A type of respiration that uses oxygen to release energy from glucose.nAnaerobic — A type of respiration that occurs without oxygen, releasing less energy.nMetabolism — The sum of all the chemical reactions that happen in a cell or the body.nATP — The molecule that stores the energy released during respiration for cellular processes.
+Watch out for these common errors:
+MISTAKE 1: CONFUSING BREATHING WITH RESPIRATION. → RESPIRATION IS A CHEMICAL REACTION IN CELLS, NOT THE PHYSICAL ACT OF BREATHING (VENTILATION).
+MISTAKE 2: THINKING ANAEROBIC RESPIRATION PRODUCES NO ENERGY. → IT PRODUCES ENERGY, BUT SIGNIFICANTLY LESS THAN AEROBIC RESPIRATION BECAUSE GLUCOSE IS NOT FULLY OXIDISED.
+MISTAKE 3: ASSUMING LACTIC ACID IS PRODUCED IN PLANTS. → PLANTS AND YEAST PRODUCE ETHANOL AND CO₂ DURING ANAEROBIC RESPIRATION, NOT LACTIC ACID.
+WORKED EXAMPLE
+— Study this example carefully.
+1
+nQuestion: Calculate the total energy released if 2 moles of glucose are fully oxidised in aerobic respiration, given that 1 mole of glucose releases 2800 kJ of energy.
+nStep 1: Identify the formula: Total Energy = Moles of Glucose × Energy per mole.nStep 2: Substitute the values: Total Energy = 2 mol × 2800 kJ/mol.nStep 3: Calculate the result: 5600 kJ. ✓ Key point: Always ensure units are consistent before performing the final calculation.
+
+Topic: Bioenergetics
+
+Learning objective: By the end of this lesson, students will be able to explain the processes of aerobic and anaerobic respiration and their importance in releasing energy from glucose.
+
+Key terms used in this worksheet:
+
+Respiration
+
+This information is here because you may not have heard all of the teacher's spoken explanation. Read it carefully before you start the questions — every detail you need is on the page.
+
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+Circle TRUE or FALSE for each statement.
+Aerobic respiration requires oxygen to release energy from glucose
+TRUE
+FALSE
+Anaerobic respiration in humans produces ethanol
+TRUE
+FALSE
+Mitochondria are the site of most aerobic respiration reactions
+TRUE
+FALSE
+Respiration is an endothermic process that absorbs energy from the surroundings
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+Which of the following is the correct word equation for aerobic respiration?nA Glucose + Carbon Dioxide → Oxygen + WaternB Glucose + Oxygen → Carbon Dioxide + Water ✓nC Oxygen + Water → Glucose + Carbon DioxidenD Carbon Dioxide + Water → Glucose + Oxygen
+3
+GAP FILL
+
+Complete the paragraph using words from the word bank below.nRespiration is a vital process that occurs in every  of the body.nDuring aerobic respiration, glucose reacts with  to release energy.nThis energy is used to produce a molecule called  for cellular work.nWhen oxygen is unavailable, cells may switch to  respiration.nIn human muscle cells, this process produces  acid instead of water.nPlants and yeast perform anaerobic respiration to produce  and carbon dioxide.nThese chemical reactions are all part of the organism's . nWORD BANK: cell | oxygen | ATP | anaerobic | lactic | ethanol | metabolism | glucose | water | carbonnRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank.
+
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[8 marks total]
+1.
+State the organelle where aerobic respiration primarily takes place.
+[2 marks]
+2.
+Identify two differences between aerobic and anaerobic respiration.
+[2 marks]
+3.
+Calculate the energy released if 0.5 moles of glucose are oxidised, given 1 mole releases 2800 kJ.
+[2 marks]
+4.
+Describe what happens to the heart rate during vigorous exercise.
+[2 marks]
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[24 marks total]
+1.
+State the chemical formula for glucose.
+[4 marks]
+2.
+Identify the waste products of aerobic respiration.
+[4 marks]
+3.
+Explain why muscle cells contain many mitochondria.
+[4 marks]
+4.
+Analyse why an athlete's breathing rate remains high after finishing a race.
+[4 marks]
+5.
+Explain how the supply of oxygen affects the rate of respiration in muscle cells. Use linking words such as because, therefore and as a result. Your answer should include: • The role of oxygen in aerobic respiration. • The consequence of oxygen debt. • The effect on lactic acid accumulation.
+[4 marks]
+6.
+Compare the energy yield of aerobic and anaerobic respiration.
+[4 marks]
+
+Challenge yourself!
+
+1.
+Evaluate the efficiency of anaerobic respiration compared to aerobic respiration in terms of energy release and waste products.
+2.
+Justify why metabolic rate is higher in endothermic animals compared to ectothermic animals of the same mass.
+Show your working:
+Read these examiner tips before you start.\nTIPS:
+1
+VOCABULARY
+Learn these key terms first: Respiration, Aerobic, Anaerobic, Metabolism, ATP. If you cannot define each one in your own words, go back to the Key Vocabulary box.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory. If you slip on a step, that step is your weakest link — drill it first before attempting the questions on Bioenergetics.
+3
+COMMON MISTAKE
+Pupils most often lose marks on Bioenergetics by writing the right idea in everyday language. Use the precise scientific term and quote the formula.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on Bioenergetics and attempt it under timed conditions. Mark it with the official mark scheme — examiner phrasing matters as much as the final answer.
+5
+RETRIEVAL
+In your next study session, list everything you remember about Bioenergetics on a blank sheet WITHOUT looking at this worksheet. Then check what you missed — those gaps are what to revise next.
+Review your understanding before moving on.
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about bioenergetics.
+I can Explain the key ideas in bioenergetics using the right vocabulary.
+I can Calculate a question about bioenergetics with a worked answer.
+I can Compare what I have learned about bioenergetics to a new problem.
+I can Evaluate my own answer about bioenergetics and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing I now understand about bioenergetics that I did not before is …
+One question I still want to ask about bioenergetics is …
+Exit Ticket: Write ONE thing you learned today about bioenergetics in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Bioenergetics
+· Higher
+· Adapted for Hearing Impairment
+30/05/2026
+Rate this lesson:
+← Generate Another Lesson
