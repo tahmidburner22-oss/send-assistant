@@ -81,6 +81,10 @@ import { buildRealWorldContextDirective } from './promptSections/realWorldContex
 // irrelevant diagrams, year-group drift, overlong worked examples) even if
 // the LLM slipped past the prompt rules.
 import { runWorksheetPostValidators } from './worksheetPostValidator';
+// Lane 3.1 — six-bucket primary reading-age profile (replaces the
+// Y1-2 / Y3-4 / Y5-6 three-bucket switch in the primary system
+// prompt). Spec: docs/primary-worksheet-improvement-plan.md W1.
+import { renderPrimaryReadingProfilePrompt } from './primaryReadingProfile';
 
 // FEAT-PB6 — SEND fidelity audit. Probes every worksheetRules entry for the
 // pupil's SEND profile and emits a per-rule pass/fail report so teachers can
@@ -1518,8 +1522,8 @@ ${registerNote || ""}
 
 You are an expert UK primary school teacher creating an engaging, age-appropriate activity worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}".
 
-READING AGE CEILING — MANDATORY:
-${yearNum <= 2 ? '- Reading age: 5–7. Use ONLY words a 5-year-old knows. Max 6 words per instruction. Simple CVC words and common sight words. No technical jargon at all.' : yearNum <= 4 ? '- Reading age: 7–9. Short, everyday sentences (max 10 words). Avoid any Latin/Greek-root words. Define every subject word the first time it appears.' : '- Reading age: 9–11. Clear sentences (max 12 words). Every subject-specific word must have a simple definition in brackets the first time it appears.'}
+READING AGE CEILING — MANDATORY (Lane 3.1 — six-bucket primary profile, ONE BUCKET PER YEAR — see primary-worksheet-improvement-plan.md W1):
+${renderPrimaryReadingProfilePrompt(yearNum)}
 
 VOCABULARY RULES — NEVER USE these secondary-school words in student-facing content:
 - Do NOT use: analyse, evaluate, assess, justify, synthesise, hypothesis, methodology, criterion, criteria, infer, deduce, extrapolate, correlate, quantify, magnitude, perpendicular, adjacent, coefficient, denominator, numerator, simultaneous, quadratic, trajectory, velocity, acceleration, momentum, photosynthesis (use 'how plants make food'), osmosis (use 'water moving through'), mitosis (use 'cell splitting'), covalent, ionic, oxidation (use 'rusting/burning'), reduction, equilibrium, gradient (use 'slope'), circumference (use 'distance around the circle'), diameter (use 'distance across the middle').

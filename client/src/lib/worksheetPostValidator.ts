@@ -1105,14 +1105,50 @@ export function enforceSendOverlayMarkers(
 ): PostValidatorResult {
   const warnings: string[] = [];
   const rawSendKey = (opts.sendNeed || String(ws.metadata?.sendNeed || ""))
-    .toLowerCase()
-    .replace(/[\s_]/g, "-");
-  if (!rawSendKey) return { worksheet: ws, warnings };
-  // Strip any compound prefix like "asc:asc-demand-avoidant" — same
+    .toLowerCase();
+  if (!rawSendKey.trim()) return { worksheet: ws, warnings };
+
+  // Lane 2.3 — Stacked-need dispatcher.
+  //
+  // A `+`, `&` or `,` separator in the sendNeed string (e.g.
+  // "hi+eal", "adhd+dyslexia", "anxiety,mld") fans out into one
+  // branch per need, applied in deterministic priority order so that:
+  //
+  //   - Insertions (HI topic-summary, Dyslexia method-box, MLD
+  //     topic-context) land before per-question rewrites can see
+  //     them.
+  //   - Anxiety's threat-softening Challenge title rewrite runs
+  //     BEFORE ADHD's, so for a stacked Anxiety+ADHD pupil the
+  //     gentler "OPTIONAL BONUS" wording wins via the
+  //     `SEND_RENAMED_CHALLENGE_TITLES` first-rename-wins guard
+  //     introduced in commit d2d48d8.
+  //   - VI and Dyspraxia warn-only audits run last so their
+  //     checks see the FINAL post-validated state, not an
+  //     intermediate one.
+  //
+  // Each branch is already pure + idempotent so re-entering this
+  // dispatcher per part is safe. Single-need (no separator) takes
+  // the fast path below — byte-for-byte equivalent to pre-Lane-2.3
+  // behaviour.
+  //
+  // NOTE: compound detection runs BEFORE the colon-prefix strip
+  // below so a value like "send:hi + send:eal" is treated as a
+  // compound "send:hi" + "send:eal" (the per-part normaliser then
+  // strips "send:" off each individually). If we colon-stripped
+  // first the `.split(":").pop()` would collapse the whole string
+  // to just "eal".
+  if (/[+&,]/.test(rawSendKey)) {
+    return runStackedSendMarkers(ws, rawSendKey, opts);
+  }
+
+  // Single-need path. Collapse whitespace / underscores to dashes
+  // (e.g. "hearing impairment" → "hearing-impairment") and strip
+  // any compound prefix like "asc:asc-demand-avoidant" — same
   // normalisation as overlayEngine.applySendSupport.
-  const sendKey = rawSendKey.includes(":")
-    ? rawSendKey.split(":").pop() || rawSendKey
-    : rawSendKey;
+  const collapsed = rawSendKey.replace(/[\s_]/g, "-");
+  const sendKey = collapsed.includes(":")
+    ? collapsed.split(":").pop() || collapsed
+    : collapsed;
   const sections = ws.sections || [];
   if (sections.length === 0) return { worksheet: ws, warnings };
 
@@ -1292,6 +1328,9 @@ function enforceAnxietySectionTitles(
     // Challenge — rename whole title (idempotent).
     if (type === "challenge" || type === "q-challenge" || /^challenge\b/i.test(title)) {
       if (title === ANXIETY_OPTIONAL_BONUS_TITLE) return s;
+      // Lane 2.3 — also skip if a different SEND need has already
+      // softened the title; whichever rename ships first wins.
+      if (SEND_RENAMED_CHALLENGE_TITLES.has(title)) return s;
       mutated = true;
       warnings.push(
         `[Phase 4 — Anxiety] Renamed challenge title "${title || "(untitled)"}" → "${ANXIETY_OPTIONAL_BONUS_TITLE}" to remove threat-language for an Anxiety/SEMH worksheet.`,
@@ -1343,6 +1382,18 @@ const ADHD_TICK_PREFIX = "[ ] ";
 const ADHD_BRAIN_BREAK_LINE =
   "🧠 BRAIN BREAK — stand up and stretch for 30 seconds before continuing!";
 
+/**
+ * Lane 2.3 — Set of titles that any SEND need's marker enforcer has
+ * already softened. When a worksheet is generated for a pupil with
+ * stacked SEND needs, the post-validator runs once per need in
+ * sequence; we don't want a later pass to clobber an earlier pass's
+ * softened title (e.g. ADHD overwriting Anxiety's "OPTIONAL BONUS"
+ * with its own "BONUS"). Whichever rename ships first wins. */
+const SEND_RENAMED_CHALLENGE_TITLES = new Set([
+  "OPTIONAL BONUS — only if you want to!", // Anxiety / SEMH
+  ADHD_BONUS_TITLE,                          // ADHD
+]);
+
 function enforceAdhdMarkers(
   ws: PostValidatorWorksheet,
   sections: PostValidatorSection[],
@@ -1384,7 +1435,8 @@ function enforceAdhdMarkers(
     const title = typeof updated.title === "string" ? updated.title : "";
     if (
       (type === "challenge" || type === "q-challenge" || /^challenge\b/i.test(title)) &&
-      title !== ADHD_BONUS_TITLE
+      title !== ADHD_BONUS_TITLE &&
+      !SEND_RENAMED_CHALLENGE_TITLES.has(title)
     ) {
       updated = { ...updated, title: ADHD_BONUS_TITLE };
       didMutate = true;
@@ -1934,6 +1986,137 @@ function enforceDyspraxiaMarkers(
   }
 
   return { worksheet: ws, warnings };
+}
+
+/**
+ * Lane 2.3 — Stacked-need dispatcher.
+ *
+ * Splits a compound sendNeed string (e.g. "hi+eal", "adhd&dyslexia",
+ * "anxiety,mld") into its component keys, orders them by a
+ * deterministic priority map, and recurses into
+ * `enforceSendOverlayMarkers` once per part — threading the worksheet
+ * through so each branch operates on the previous branch's output.
+ *
+ * Order rationale (lower number runs first):
+ *   - 10 HI / hearing-impairment / deaf — insert topic-summary at top
+ *     so MLD's topic-context check sees it (and skips, avoiding a
+ *     duplicate "What we are working on" block).
+ *   - 20 Dyslexia — insert method-box before first question.
+ *   - 30 MLD — insert topic-context (no-op when HI's topic-summary is
+ *     already present, by design — see enforceMldMarkers).
+ *   - 40 Anxiety / SEMH / mental-health — rename Challenge title to
+ *     "OPTIONAL BONUS — only if you want to!" + WARM-UP prefix on
+ *     Section 1/A. Runs BEFORE ADHD so the gentler title wins via
+ *     the `SEND_RENAMED_CHALLENGE_TITLES` first-rename-wins guard
+ *     (commit d2d48d8).
+ *   - 50 ADHD — prefix every question with "[ ] ", add brain-break
+ *     section, conditionally rename Challenge → "BONUS" (skipped if
+ *     Anxiety has already softened it).
+ *   - 60 Dyscalculia — append "Numbers in this question:" cue. Runs
+ *     after ADHD so the cue lands on already-prefixed content.
+ *   - 70 EAL / ESL — append sentence frames. Runs after ADHD and
+ *     Dyscalculia so frames land at the very end of the content.
+ *   - 80 VI / visual-impairment — warn-only diagram audit. Runs late
+ *     so it sees the FINAL state including any inserted sections.
+ *   - 90 Dyspraxia / DCD — warn-only Section A + Challenge format
+ *     audit. Runs last for the same reason as VI.
+ *
+ * Unknown keys (e.g. "asc", "slcn", "working-memory") are silently
+ * dropped — they have no marker enforcer today (Lane 2.1 / Lane 3
+ * follow-up). When all keys in a compound are unknown, returns the
+ * worksheet untouched.
+ */
+const STACKED_SEND_PRIORITY: Readonly<Record<string, number>> = {
+  hi: 10,
+  "hearing-impairment": 10,
+  deaf: 10,
+  dyslexia: 20,
+  mld: 30,
+  anxiety: 40,
+  semh: 40,
+  "mental-health": 40,
+  "anxiety-semh": 40,
+  adhd: 50,
+  dyscalculia: 60,
+  eal: 70,
+  esl: 70,
+  vi: 80,
+  "visual-impairment": 80,
+  visual: 80,
+  dyspraxia: 90,
+  dcd: 90,
+};
+
+export function runStackedSendMarkers(
+  ws: PostValidatorWorksheet,
+  compoundKey: string,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  // Split on +, &, comma. Per-part normalisation:
+  //   1. trim surrounding whitespace
+  //   2. lowercase (defensive — the dispatcher entry already does this
+  //      but this function is also publicly exported)
+  //   3. drop any leading "send:" prefix (e.g. "send:hi" → "hi")
+  //   4. collapse remaining inner whitespace / underscores to dashes
+  //      (matches the single-need normalisation above)
+  //   5. strip leading / trailing dashes that arose from any of the
+  //      previous steps
+  const parts = compoundKey
+    .split(/[+&,]/)
+    .map((p) =>
+      p
+        .trim()
+        .toLowerCase()
+        .replace(/^send:/, "")
+        .replace(/[\s_]/g, "-")
+        .replace(/^-+|-+$/g, ""),
+    )
+    .filter(Boolean);
+
+  // De-dupe while preserving the priority-ordered run order.
+  const seen = new Set<string>();
+  const ordered = parts
+    .filter((p) => {
+      if (seen.has(p)) return false;
+      seen.add(p);
+      return true;
+    })
+    .sort((a, b) => {
+      const pa = STACKED_SEND_PRIORITY[a] ?? 999;
+      const pb = STACKED_SEND_PRIORITY[b] ?? 999;
+      return pa - pb;
+    });
+
+  const recognised = ordered.filter((p) => STACKED_SEND_PRIORITY[p] !== undefined);
+  if (recognised.length === 0) {
+    return { worksheet: ws, warnings: [] };
+  }
+
+  let current = ws;
+  const allWarnings: string[] = [];
+  for (const part of recognised) {
+    // Recurse with a single-need opts override. Each branch is pure +
+    // idempotent so re-entering the dispatcher per part is safe.
+    const result = enforceSendOverlayMarkers(current, {
+      ...opts,
+      sendNeed: part,
+    });
+    current = result.worksheet;
+    allWarnings.push(...result.warnings);
+  }
+
+  // Single "Stacked SEND" framing warning, prepended only when ≥2
+  // needs ran AND at least one branch actually mutated. Re-runs on
+  // already-marked worksheets stay a clean no-op (every branch is
+  // idempotent → second pass produces empty allWarnings → the
+  // framing tag is also suppressed).
+  if (recognised.length >= 2 && allWarnings.length > 0) {
+    allWarnings.unshift(
+      `[Phase 4 — Stacked SEND] Applied markers for ${recognised.length} stacked needs in priority order: ${recognised.join(" → ")}.`,
+    );
+  }
+
+  return { worksheet: current, warnings: allWarnings };
 }
 
 // ── Helpers used by enforceSendOverlayMarkers ────────────────────────────────
