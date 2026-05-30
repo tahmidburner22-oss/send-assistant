@@ -1,0 +1,225 @@
+Skip to main content
+Worksheet generated but could not be saved to history. Please download it now.
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Energy Transfers and Resources — Year 10 Science Worksheet
+Year 10 | Science | higher
+NAME
+DATE
+30/05/2026
+CLASS
+
+By the end of this lesson, students will be able to analyse and evaluate different energy transfer pathways and resource sustainability.
+
+Energy store:
+The energy a system possesses due to its state or position.nEnergy transfer — The movement of energy from one store to another.nConservation of energy — Energy cannot be created or destroyed, only transferred or changed from one form to another.nRenewable resource — A resource that can be replenished naturally over a short period.nNon-renewable resource — A resource that exists in finite quantities and is consumed much faster than it can be formed.
+Watch out for these common errors:
+MISTAKE 1: CONFUSING WEIGHT AND MASS. → MASS IS THE AMOUNT OF MATTER IN AN OBJECT (MEASURED IN KG), WHILE WEIGHT IS THE FORCE OF GRAVITY ACTING ON THAT MASS (MEASURED IN N). THEY ARE NOT THE SAME.
+MISTAKE 2: THINKING ENERGY IS 'USED UP'. → ENERGY IS CONSERVED; IT IS TRANSFERRED OR TRANSFORMED, NOT DESTROYED. WHEN WORK IS DONE, ENERGY MOVES BETWEEN STORES.
+MISTAKE 3: ASSUMING PRIMARY SOURCES ARE ALWAYS MORE RELIABLE. → RELIABILITY DEPENDS ON THE SOURCE'S PURPOSE, BIAS, AND ACCURACY, NOT JUST WHETHER IT'S PRIMARY OR SECONDARY. SECONDARY SOURCES CAN OFFER VALUABLE ANALYSIS.
+WORKED EXAMPLE
+— A 1000 kg car travelling at 20 m/s brakes to a stop. Calculate the initial kinetic energy of the car.
+1
+nStep 1: Identify the formula for kinetic energy.nKE = 
+1
+2
+𝑚
+𝑣
+2
+𝑚
+𝑣
+2
+mv
+2
+2
+1
+	​
+
+mv
+2
+nStep 2: Substitute the given values for mass (m) and velocity (v).nm = 1000 kg, v = 20 m/snKE = 
+1
+2
+×
+1000
+𝑘
+𝑔
+×
+(
+20
+𝑚
+/
+𝑠
+)
+2
+𝑠
+)
+2
+s)
+2
+2
+1
+	​
+
+×1000kg×(20m/s)
+2
+nStep 3: Calculate the final answer, including units.nKE = 
+1
+2
+×
+1000
+×
+400
+2
+1
+	​
+
+×1000×400 JnKE = 200,000 J or 200 kJ ✓ Key point: Ensure all units are SI units before substituting into the formula.
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+Circle TRUE or FALSE for each statement.
+Energy can be created or destroyed if enough work is done
+TRUE
+FALSE
+Solar power is an example of a non-renewable energy resource
+TRUE
+FALSE
+The conservation of energy states that energy can only be transformed from one form to another
+TRUE
+FALSE
+Gravitational potential energy is stored in an object due to its position
+TRUE
+FALSE
+Numbers in this question: 4, 1, 2, 3. Underline each one as you read so you do not lose them.
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+Which of the following is the most efficient method for transferring energy from a power station to homes? nA Overhead power lines with minimal insulationnB Underground cables with advanced insulation and transformers ✓nC Direct transfer via steam pipesnD Transfer through a series of small, inefficient batteriesnTEACHER_DIAGNOSES: B=s-energy-01 Numbers in this question: 1, -01. Underline each one as you read so you do not lose them.
+3
+GAP FILL
+
+Complete the paragraph using words from the word bank below.nEnergy is stored in many different forms, such as chemical potential energy in fuels and gravitational potential energy in objects at height. When work is done, energy is transferred from one store to another. For example, a falling object transfers gravitational potential energy into kinetic energy. However, not all energy transfers are perfectly efficient; some energy is always transferred to the thermal energy store of the surroundings, often as heat. This means that the total energy in a system remains constant, according to the principle of conservation of . This principle is fundamental to understanding energy  and resources.nWORD BANK: conservation | transfer | efficiency | thermal | kinetic | potential | resources | chemical | electrical | powernRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank. Numbers in this question: 7, 10. Underline each one as you read so you do not lose them.
+
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[10 marks total]
+1.
+State two examples of renewable energy resources.
+[2 marks]
+2.
+Describe the energy transfer that occurs when a battery powers a light bulb.
+[2 marks]
+3.
+Calculate the energy transferred by a device with a power of 50 W operating for 30 seconds. Show your working.nRoughly, what answer do you expect?
+[2 marks]
+4.
+Explain why energy efficiency is important when considering energy resources. Numbers in this question: 1, 2, 3, 50, 30,
+[2 marks]
+4.
+Underline each one as you read so you do not lose them.
+[2 marks]
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[28 marks total]
+1.
+Identify the main energy store involved in a stretched rubber band.
+[4 marks]
+2.
+Describe the energy transfers that take place when a cyclist pedals uphill.
+[4 marks]
+3.
+A kettle uses 2000 W of power to heat water. Calculate the energy transferred to the water in 2 minutes. Show your working.nRoughly, what answer do you expect?
+[4 marks]
+4.
+Explain the difference between energy efficiency and energy conservation.
+[4 marks]
+5.
+Evaluate the advantages and disadvantages of using nuclear power as an energy resource.nYour answer should include: • Advantages of nuclear power. • Disadvantages of nuclear power. • Consideration of waste disposal.
+[4 marks]
+6.
+A solar panel system generates 1500 W of power. If it operates for 6 hours, calculate the total energy generated.nRoughly, what answer do you expect? Numbers in this question: 1, 2, 3, 2000, 4,
+[4 marks]
+5.
+Underline each one as you read so you do not lose them.
+[4 marks]
+
+Challenge yourself!
+
+1.
+Analyse the energy transfer diagram for a car engine. Explain why the overall efficiency is typically low, referring to at least two specific energy transfers that result in energy loss.
+2.
+Discuss the long-term sustainability of using fossil fuels compared to renewable energy sources, considering both environmental impact and resource availability.
+
+Numbers in this question: 8, 1, 4
+
+2.
+Underline each one as you read so you do not lose them.
+Show your working:
+Top tips before you start.\nTIPS:
+1
+VOCABULARY
+Re-read the Key Vocabulary box for energy transfers and resources.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory.
+3
+COMMON MISTAKE
+Pupils most often lose marks on energy transfers and resources by writing the right idea in everyday language, not scientific terms.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on energy transfers and resources and attempt it under timed conditions.
+5
+RETRIEVAL
+In your next study session, list everything you remember about energy transfers and resources on a blank sheet WITHOUT looking at this worksheet.
+How did you get on?
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about energy transfers and resources.
+I can Explain the key ideas in energy transfers and resources using the right vocabulary.
+I can Calculate a question about energy transfers and resources with a worked answer.
+I can Compare what I have learned about energy transfers and resources to a new problem.
+I can Evaluate my own answer about energy transfers and resources and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing I now understand about energy transfers and resources that I did not before is …
+One question I still want to ask about energy transfers and resources is …
+Exit Ticket: Write ONE thing you learned today about energy transfers and resources in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Energy Transfers and Resources
+· Higher
+· Adapted for Dyscalculia
+30/05/2026
+Rate this lesson:
+← Generate Another Lesson
