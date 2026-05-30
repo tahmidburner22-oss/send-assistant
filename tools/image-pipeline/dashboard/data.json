@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-05-30T00:07:53.927Z",
+  "updatedAt": "2026-05-30T04:34:17.869Z",
   "counts": {
     "total": 5975,
     "done": 0,
     "svg-rendered": 44,
-    "pending": 5844,
-    "ai-failed": 38,
+    "pending": 5843,
+    "ai-failed": 39,
     "provider-out": 49,
     "skipped": 0
   },
@@ -14,8 +14,8 @@
       "phase": "GCSE",
       "total": 1988,
       "done": 0,
-      "pending": 1905,
-      "failed": 83
+      "pending": 1904,
+      "failed": 84
     },
     {
       "phase": "KS3",
@@ -1053,8 +1053,8 @@
       "id": "dlc-00904",
       "title": "Index law — a^(m/n) = (ⁿ√a)^m",
       "subject": "Mathematics",
-      "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"deapi\",\"ok\":false,\"error\":\"deapi: HTTP 404: <!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n    <head>\\n        <meta charset=\\\"utf-8\\\">\\n        <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\">\\n\\n        <title>Not Found</title>\\n\\n        <style>\\n            /*! normalize.css v8.0.1 \"},{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "status": "ai-failed",
+      "lastError": "tjs.recognize is not a function"
     },
     {
       "id": "dlc-00905",
@@ -1500,6 +1500,13 @@
     {
       "id": "dlc-00968",
       "title": "Transformation — y = af(x) (vertical stretch)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"deapi\",\"ok\":false,\"error\":\"deapi: HTTP 404: <!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n    <head>\\n        <meta charset=\\\"utf-8\\\">\\n        <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\">\\n\\n        <title>Not Found</title>\\n\\n        <style>\\n            /*! normalize.css v8.0.1 \"},{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+    },
+    {
+      "id": "dlc-00969",
+      "title": "Transformation — y = f(ax) (horizontal stretch)",
       "subject": "Mathematics",
       "status": "provider-out",
       "lastError": "All providers exhausted: [{\"provider\":\"deapi\",\"ok\":false,\"error\":\"deapi: HTTP 404: <!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n    <head>\\n        <meta charset=\\\"utf-8\\\">\\n        <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\">\\n\\n        <title>Not Found</title>\\n\\n        <style>\\n            /*! normalize.css v8.0.1 \"},{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
