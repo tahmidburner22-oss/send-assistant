@@ -1,0 +1,170 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Generation Failed
+
+Worksheet generation failed to return content. Please try again.
+
+Try Again
+Dismiss
+Groq
+Gemini
+OpenRouter
+OpenAI
+Claude
+Mistral
+
+Please wait — do not close this page
+
+Gen
+Upload
+Exam Bank
+History
+142
+Manual
+Auto from class
+Worksheet Generator
+
+Create differentiated, curriculum-aligned worksheets in seconds.
+
+What do you want to create today?
+Generate
+
+💡 The more information you provide the better — include topic, year group, SEND need, difficulty and time for best results.
+
+AI Generation (Groq · Llama 4 Scout)
+
+High-quality AI for rich, curriculum-aligned content
+
+Core Settings
+How to use this generator
+Subject *
+Science
+Year Group *
+Year 10
+Topic *
+Forces and Motion
+(Year 7)
+
+32 curriculum topics for Year 10 Science (Years 7–10)
+
+Subtopic
+(optional — narrows the worksheet focus)
+Whole topic (no subtopic)
+Lesson archetype
+(optional)
+Pick an archetype
+Real-world context
+(optional)
+No specific context
+SEND Need
+ADHD
+Tier
+Foundation
+Mixed
+Higher
+Sections
+Estimated 8 pages
+Learning Objective
+Retrieval Topic
+Key Vocabulary
+Common Mistakes
+Worked Example
+Diagram A — Full Page Spread
+Section 1 — True & False
+Section 1 — Multiple Choice (MCQ)
+Section 1 — Word Bank Gap Fill
+Section 2 — Foundation Questions
+Diagram B — Full Page Spread
+Section 3 — Core Practice
+Challenge Question
+Examiner Tips
+Self Reflection
+
+All sections selected by default except Retrieval. Untick any you don't want included.
+
+Reading Age
+Auto (match year group)
+5
+17+
+Auto
+KS1
+KS2
+KS3
+GCSE
+A-Level
+
+Controls vocabulary complexity and sentence length. Academic difficulty stays the same.
+
+ADHD
+Social, Emotional & Mental Health
+
+HOW IT PRESENTS
+
+Attention is variable rather than absent: pupils may complete the first two questions at pace, hit a wall, and struggle to restart without a visible cue. Boredom, repetition, and unclear expectations are disproportionate risks. Movement breaks genuinely restore attention capacity.
+
+BARRIERS ON A STANDARD WORKSHEET
+
+Long undifferentiated sections, identical question formats back-to-back, no visible progress markers, no stopping points, and instructions that bury the action verb in mid-sentence all accelerate loss of focus.
+
+WHAT THE GENERATOR CHANGES
+
+Section A is hard-capped at 3 questions and Section B at 5; every question gets a physical '[ ]' checkbox; question types are varied so no two in a row are the same; the action verb is bolded; a Brain Break prompt is inserted mid-Section B; and the challenge is framed as an optional bonus.
+
+WHAT WILL CHANGE IN YOUR WORKSHEET
+
+Checkboxes next to every question; max 3 questions in Section A; varied question types (calculation, fill-in, true/false); 'BRAIN BREAK' prompt midway; challenge is clearly optional.
+
+Tick checkbox next to every question for visible progress tracking
+
+Why: ADHD impairs working memory and time perception; visible progress markers provide the dopamine feedback that sustains motivation
+
+Maximum 3 questions in Section A, 5 in Section B
+
+Why: ADHD attention span is shorter and more variable; smaller chunks allow the student to complete a section before focus lapses
+
+'BRAIN BREAK — stand up and stretch!' prompt midway through Section B
+
+Why: Movement breaks are evidence-based for ADHD — brief physical activity restores attention capacity (Pontifex et al., 2013)
+
+Varied question types: calculation, fill-in, matching, true/false
+
+Why: Novelty sustains attention in ADHD; varying the format prevents the habituation that causes disengagement
+
+Action word bolded in every instruction (e.g. 'Calculate the area')
+
+Why: ADHD affects selective attention; bolding the key instruction word helps the student identify what to do without reading every word
+
+Teacher section included: The generated content will contain a private teacher-only section explaining every adaptation made and the evidence-based rationale for why it helps students with ADHD.
+
+Advanced Options
+Retrieval topic, exam board & more
+📝
+Additional Requirements
+(optional)
+
+Any specific instructions or requirements for the worksheet. These will be applied as a priority override during generation.
+
+📌
+Class Presets
++ Save current as preset
+
+Save your current settings as a preset for quick re-use with the same class.
+
+📋
+
+Revision Mat
+
+Science only
+
+No Revision Map available for this topic
+
+Generate Worksheet
+Generate Diagnostic Starter
