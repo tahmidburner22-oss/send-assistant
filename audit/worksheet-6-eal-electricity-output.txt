@@ -1,0 +1,249 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Electricity and Magnetism — Year 10 Science Worksheet
+Year 10 | Science | mixed
+NAME
+DATE
+30/05/2026
+CLASS
+
+By the end of this lesson, students will be able to explain the principles of electromagnetism and apply them to solve problems involving circuits and magnetic fields.
+
+Electromagnetism:
+the interaction between electric currents or fields and magnetic fields.nCurrent — the rate of flow of electric charge, measured in amperes (A).nMagnetic field — a region around a magnetic material or a moving electric charge within which the force of magnetism acts.nResistance — the opposition to the flow of electric current in a circuit, measured in ohms (Ω).nVoltage — the electric potential difference between two points, measured in volts (V).
+Watch out for these common errors:
+MISTAKE 1: CONFUSING CURRENT AND VOLTAGE. → VOLTAGE IS THE 'PUSH' THAT MAKES CURRENT FLOW. CURRENT IS THE ACTUAL FLOW OF CHARGE. THEY ARE NOT THE SAME THING.
+MISTAKE 2: THINKING CURRENT IS 'USED UP' IN A CIRCUIT. → IN A SERIES CIRCUIT, THE CURRENT IS THE SAME EVERYWHERE. IT IS THE ENERGY CARRIED BY THE CURRENT THAT IS TRANSFERRED TO COMPONENTS LIKE BULBS OR RESISTORS.
+MISTAKE 3: FORGETTING TO INCLUDE UNITS IN CALCULATIONS. → ALWAYS STATE THE CORRECT SI UNIT WITH YOUR FINAL ANSWER. FOR EXAMPLE, RESISTANCE IS MEASURED IN OHMS (Ω), NOT JUST A NUMBER.
+WORKED EXAMPLE
+— Study this example carefully.
+1
+nCalculate the current flowing through a resistor of 12 Ω when a voltage of 6 V is applied across it.
+nStep 1: Identify the known values: Voltage (V) = 6 V, Resistance (R) = 12 Ω.nStep 2: Identify the unknown value: Current (I).nStep 3: Recall the relevant formula: Ohm's Law, 
+𝑉
+=
+𝐼
+𝑅
+V=IR.nStep 4: Rearrange the formula to solve for current: 
+𝐼
+=
+𝑉
+𝑅
+I=
+R
+V
+	​
+
+.nStep 5: Substitute the values and calculate: 
+𝐼
+=
+6
+𝑉
+12
+Ω
+=
+0.5
+𝐴
+I=
+12Ω
+6V
+	​
+
+=0.5A. ✓ Key point: Always ensure your units are consistent before substituting into a formula.
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+Circle TRUE or FALSE for each statement.
+A magnetic field is produced by a stationary electric charge
+TRUE
+FALSE
+In a series circuit, the current is the same at all points
+TRUE
+FALSE
+Resistance causes the flow of current to increase
+TRUE
+FALSE
+An electromagnet can be switched on and off
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+Which of the following is the unit for electrical resistance?nA AmperesnB VoltsnC Ohms ✓nD WattsnTEACHER_DIAGNOSES: A=s-unit-01, B=s-unit-01, D=s-unit-01
+3
+GAP FILL
+
+Complete the paragraph using words from the word bank below.nAn electric  is created when a current flows through a wire. This wire is often wrapped around a core material, such as iron, to create an electromagnet. The strength of the electromagnet depends on the  of coils and the  flowing through the wire. Electromagnets are used in many devices, including electric  and relays. The  is the unit of electric current. If the current is increased, the magnetic field strength will also . Removing the current will cause the magnetic field to nWORD BANK: current | strength | bell | decrease | voltage | increase | coil | solenoid | switch | disappear
+
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[10 marks total]
+1.
+State the unit of electric current.
+[2 marks]
+2.
+Identify one material that can be used as the core of an electromagnet.
+[2 marks]
+3.
+Describe how to increase the strength of an electromagnet.
+[2 marks]
+4.
+Explain why a switch is important in a circuit containing an electromagnet.
+[2 marks]
+5.
+Calculate the voltage across a resistor of 5 Ω when a current of 2 A flows through it. Show your working. 
+𝑉
+=
+𝐼
+𝑅
+V=IR
+[2 marks]
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[24 marks total]
+1.
+State the formula that relates voltage, current, and resistance.
+[4 marks]
+2.
+Explain the difference between a permanent magnet and an electromagnet.
+[4 marks]
+3.
+A student builds a simple circuit with a battery, a switch, and a bulb. Describe what happens to the bulb when the switch is closed.
+[4 marks]
+4.
+Explain how the direction of the magnetic field around a current-carrying wire can be determined.
+[4 marks]
+5.
+Evaluate the advantages and disadvantages of using electromagnets compared to permanent magnets in industrial applications. Your answer should include: • At least two advantages of electromagnets. • At least two disadvantages of electromagnets. • Specific examples of applications.
+[4 marks]
+6.
+A circuit contains a 9 V battery connected to two resistors in series: one with a resistance of 4 Ω and another with a resistance of 5 Ω. Calculate the total resistance of the circuit and the current flowing through it. Show your working. 
+𝑅
+𝑡
+𝑜
+𝑡
+𝑎
+𝑙
+=
+𝑅
+1
++
+𝑅
+2
+𝑅
+1
+R
+1
+	​
+
+ + 
+𝑅
+2
+R
+2
+	​
+
+R
+total
+	​
+
+=R
+1
+	​
+
++R
+2
+	​
+
+ 
+𝐼
+=
+𝑉
+𝑅
+𝑡
+𝑜
+𝑡
+𝑎
+𝑙
+I=
+R
+total
+	​
+
+V
+	​
+
+[4 marks]
+
+Challenge yourself!
+
+1.
+Analyse the factors that affect the strength of the magnetic field produced by a solenoid. Explain how each factor influences the field strength and suggest how these factors could be optimised for a specific application, such as an MRI scanner.
+2.
+Discuss the role of electromagnetic induction in the generation of electricity. Explain the principles behind how a simple AC generator works, linking it to Faraday's Law of Induction and Lenz's Law.
+Show your working:
+Quick tips to keep you on track.\nTIPS:
+1
+VOCABULARY
+Re-read the Key Vocabulary box for Electricity and Magnetism. If you cannot define each term in your own words, you are not ready for the questions yet.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory. If you slip on a step, that step is your weakest link — drill it first before attempting the questions on Electricity and Magnetism.
+3
+COMMON MISTAKE
+Pupils most often lose marks on Electricity and Magnetism by writing the right idea in everyday language. Use the precise scientific term and quote the formula.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on Electricity and Magnetism and attempt it under timed conditions. Mark it with the official mark scheme — examiner phrasing matters as much as the final answer.
+5
+RETRIEVAL
+In your next study session, list everything you remember about Electricity and Magnetism on a blank sheet WITHOUT looking at this worksheet. Then check what you missed — those gaps are what to revise next.
+How are you feeling?
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about Electricity and Magnetism.
+I can Explain the key ideas in Electricity and Magnetism using the right vocabulary.
+I can Calculate a question about Electricity and Magnetism with a worked answer.
+I can Compare what I have learned about Electricity and Magnetism to a new problem.
+I can Evaluate my own answer about Electricity and Magnetism and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing about Electricity and Magnetism I felt confident about today was …
+One thing about Electricity and Magnetism I would like more time on is …
+Exit Ticket: One thing I want to remember about Electricity and Magnetism is:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Electricity and Magnetism
+· Adapted for Anxiety / Mental Health
+30/05/2026
+Rate this lesson:
+← Generate Another Lesson

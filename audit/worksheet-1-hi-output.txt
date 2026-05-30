@@ -1,0 +1,490 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Bioenergetics — Year 10 Science Worksheet
+Year 10 | Science | higher
+NAME
+DATE
+30/05/2026
+CLASS
+
+By the end of this lesson, students will be able to explain the processes of photosynthesis and respiration, and their interdependence in bioenergetics.
+
+Photosynthesis:
+The process by which green plants and some other organisms use sunlight to synthesise foods with the help of chlorophyll pigment.nRespiration — The process by which organisms combine oxygen with food molecules, diverting the energy in these substances into life-sustaining activities and releasing carbon dioxide and water.nChlorophyll — The green pigment found in chloroplasts that absorbs light energy from the sun.nATP (Adenosine Triphosphate) — The molecule that provides energy for cellular processes.nMitochondria — The organelles found in large numbers in most cells, in which the biochemical processes of respiration and energy production occur.
+Watch out for these common errors:
+MISTAKE 1: CONFUSING PHOTOSYNTHESIS AND RESPIRATION. → PHOTOSYNTHESIS USES LIGHT ENERGY TO MAKE GLUCOSE AND OXYGEN FROM CARBON DIOXIDE AND WATER. RESPIRATION BREAKS DOWN GLUCOSE USING OXYGEN TO RELEASE ENERGY, PRODUCING CARBON DIOXIDE AND WATER.
+MISTAKE 2: THINKING RESPIRATION ONLY HAPPENS IN ANIMALS. → RESPIRATION OCCURS IN ALL LIVING ORGANISMS, INCLUDING PLANTS, FUNGI, AND BACTERIA, TO RELEASE ENERGY FROM GLUCOSE.
+MISTAKE 3: NOT UNDERSTANDING THE ROLE OF ATP. → ATP IS THE IMMEDIATE ENERGY CURRENCY OF THE CELL. GLUCOSE IS A STORAGE MOLECULE; ITS ENERGY MUST BE CONVERTED INTO ATP FOR CELLS TO USE IT.
+WORKED EXAMPLE
+— Study this example carefully.
+1
+nCalculate the energy released from 10g of glucose during aerobic respiration.
+nGiven: Energy released from 1g of glucose = 15 kJ/g
+nStep 1: Identify the knowns. Mass of glucose = 10g. Energy per gram = 15 kJ/g.nStep 2: Identify the unknown. Total energy released.nStep 3: Apply the formula: Total Energy = Mass × Energy per gram.nStep 4: Substitute values: Total Energy = 10g × 15 kJ/g.nStep 5: Calculate the answer: Total Energy = 150 kJ. ✓ Key point: Ensure units are consistent before calculation and include them in the final answer.
+
+Topic: Bioenergetics
+
+Learning objective: By the end of this lesson, students will be able to explain the processes of photosynthesis and respiration, and their interdependence in bioenergetics.
+
+Key terms used in this worksheet:
+
+Photosynthesis
+
+This information is here because you may not have heard all of the teacher's spoken explanation. Read it carefully before you start the questions — every detail you need is on the page.
+
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+Circle TRUE or FALSE for each statement.
+Photosynthesis produces carbon dioxide and water
+TRUE
+FALSE
+Respiration releases energy from glucose
+TRUE
+FALSE
+Chlorophyll is found in the mitochondria
+TRUE
+FALSE
+ATP is the molecule that stores energy for cells
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+Which of the following is the balanced chemical equation for photosynthesis? nA 
+6
+𝐶
+𝑂
+2
++
+6
+𝐻
+2
+𝑂
+→
+𝐶
+6
+𝐻
+12
+𝑂
+6
++
+6
+𝑂
+2
+𝑂
+2
+O
+2
+	​
+
+ + 6
+𝐻
+2
+H
+2
+	​
+
+O → 
+𝐶
+6
+C
+6
+	​
+
+H_{12}
+𝑂
+6
+O
+6
+	​
+
+ + 6
+𝑂
+2
+O
+2
+	​
+
+6CO
+2
+	​
+
++6H
+2
+	​
+
+O→C
+6
+	​
+
+H
+12
+	​
+
+O
+6
+	​
+
++6O
+2
+	​
+
+nB 
+𝐶
+6
+𝐻
+12
+𝑂
+6
++
+6
+𝑂
+2
+→
+6
+𝐶
+𝑂
+2
++
+6
+𝐻
+2
+𝑂
+𝐶
+6
+C
+6
+	​
+
+H_{12}
+𝑂
+6
+O
+6
+	​
+
+ + 6
+𝑂
+2
+O
+2
+	​
+
+ → 6C
+𝑂
+2
+O
+2
+	​
+
+ + 6
+𝐻
+2
+H
+2
+	​
+
+O
+C
+6
+	​
+
+H
+12
+	​
+
+O
+6
+	​
+
++6O
+2
+	​
+
+→6CO
+2
+	​
+
++6H
+2
+	​
+
+OnC 
+𝐶
+6
+𝐻
+12
+𝑂
+6
++
+6
+𝐶
+𝑂
+2
+→
+6
+𝑂
+2
++
+6
+𝐻
+2
+𝑂
+𝐶
+6
+C
+6
+	​
+
+H_{12}
+𝑂
+6
+O
+6
+	​
+
+ + 6C
+𝑂
+2
+O
+2
+	​
+
+ → 6
+𝑂
+2
+O
+2
+	​
+
+ + 6
+𝐻
+2
+H
+2
+	​
+
+O
+C
+6
+	​
+
+H
+12
+	​
+
+O
+6
+	​
+
++6CO
+2
+	​
+
+→6O
+2
+	​
+
++6H
+2
+	​
+
+OnD 
+6
+𝑂
+2
++
+6
+𝐻
+2
+𝑂
+→
+𝐶
+6
+𝐻
+12
+𝑂
+6
++
+6
+𝐶
+𝑂
+2
+𝑂
+2
+O
+2
+	​
+
+ + 6
+𝐻
+2
+H
+2
+	​
+
+O → 
+𝐶
+6
+C
+6
+	​
+
+H_{12}
+𝑂
+6
+O
+6
+	​
+
+ + 6C
+𝑂
+2
+O
+2
+	​
+
+6O
+2
+	​
+
++6H
+2
+	​
+
+O→C
+6
+	​
+
+H
+12
+	​
+
+O
+6
+	​
+
++6CO
+2
+	​
+
+nTEACHER_DIAGNOSES: A=m-frac-02, C=m-frac-01
+3
+GAP FILL
+
+Complete the paragraph using words from the word bank below.nPhotosynthesis is the process where plants use light energy to convert carbon dioxide and water into glucose and oxygen. This process takes place in the chloroplasts, which contain the pigment . The glucose produced can be used immediately for  or stored as starch. Respiration is the process that releases energy from glucose. Aerobic respiration uses  and occurs mainly in the . Anaerobic respiration occurs when oxygen is absent and produces  and lactic acid in animals. The energy released during respiration is used to make , the cell's energy currency.nWORD BANK: chlorophyll | mitochondria | oxygen | ATP | carbon dioxide | glucose | lactic acid | chloroplast | starch | waternRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank.
+
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[10 marks total]
+1.
+State the two main products of photosynthesis.
+[2 marks]
+2.
+Where in a plant cell does photosynthesis take place?
+[2 marks]
+3.
+Describe the process of anaerobic respiration in muscle cells.
+[2 marks]
+4.
+Explain why respiration is essential for all living organisms.
+[2 marks]
+5.
+Calculate the amount of energy released from 5g of glucose if 1g releases 15 kJ. Show your working.
+[2 marks]
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[24 marks total]
+1.
+Identify the organelle responsible for aerobic respiration.
+[4 marks]
+2.
+Explain the role of chlorophyll in photosynthesis.
+[4 marks]
+3.
+A student investigates the effect of light intensity on the rate of photosynthesis. They measure the volume of oxygen produced over 30 minutes at different light intensities. Describe how they would set up this investigation.
+[4 marks]
+4.
+Compare and contrast aerobic and anaerobic respiration, referring to the reactants, products, and energy released.
+[4 marks]
+5.
+A marathon runner collapses during a race. Explain why the runner might have experienced muscle cramps and fatigue, linking this to their bioenergetic processes. Your answer should include: • The immediate energy source used by muscles. • The process that occurs when oxygen supply is limited. • The products of this limited respiration and their effects.
+[4 marks]
+6.
+Explain how the processes of photosynthesis and respiration are interdependent.
+[4 marks]
+
+Challenge yourself!
+
+1.
+Evaluate the statement: 'Plants only respire at night and photosynthesise during the day.' Justify your answer with reference to the processes of photosynthesis and respiration.
+2.
+Some bacteria can respire using nitrates instead of oxygen. Explain how this alternative respiration pathway allows them to survive in environments where oxygen is scarce.
+Show your working:
+Read these examiner tips before you start.\nTIPS:
+1
+VOCABULARY
+Re-read the Key Vocabulary box for bioenergetics. If you cannot define each term in your own words, you are not ready for the questions yet.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory. If you slip on a step, that step is your weakest link — drill it first before attempting the questions on bioenergetics.
+3
+COMMON MISTAKE
+Pupils most often lose marks on bioenergetics by writing the right idea in everyday language. Use the precise scientific term and quote the formula.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on bioenergetics and attempt it under timed conditions. Mark it with the official mark scheme — examiner phrasing matters as much as the final answer.
+5
+RETRIEVAL
+In your next study session, list everything you remember about bioenergetics on a blank sheet WITHOUT looking at this worksheet. Then check what you missed — those gaps are what to revise next.
+Review your understanding before moving on.
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about bioenergetics.
+I can Explain the key ideas in bioenergetics using the right vocabulary.
+I can Calculate a question about bioenergetics with a worked answer.
+I can Compare what I have learned about bioenergetics to a new problem.
+I can Evaluate my own answer about bioenergetics and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing I now understand about bioenergetics that I did not before is …
+One question I still want to ask about bioenergetics is …
+Exit Ticket: Write ONE thing you learned today about bioenergetics in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Bioenergetics
+· Higher
+· Adapted for Hearing Impairment
+30/05/2026
+Rate this lesson:
+← Generate Another Lesson
