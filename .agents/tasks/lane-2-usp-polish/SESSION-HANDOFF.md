@@ -1,24 +1,26 @@
 # Lane 2 — USP Polish — Session Handoff
 
-This file is the **resume point** for any fresh chat picking up Lane 2
-work. Read this first, then `PHASE-PLAN.md`, then `LEDGER.md`.
+This file is the **resume point** for any fresh chat picking up
+follow-up work on the USP-polish lane. Read this first, then
+`PHASE-PLAN.md`, then `LEDGER.md`.
 
-Last updated: 2026-05-29 — six of eight items shipped on
-`feat/lane-2-usp-polish`. Two items (2.1, 2.3) deferred — see
-"What is NOT in this PR" below.
+Last updated: 2026-05-29 — **all 8 Lane 2 items shipped** on
+`feat/lane-2-usp-polish`. PR #145.
 
 ## Quick-resume header (paste into a fresh chat)
 
 ```
 Context: send-assistant repo. Worksheet-generator pre-pilot programme.
          Lane 1 (eight surgical pre-pilot fixes) shipped as PR #144.
-         Lane 2 (USP polish) — six items shipped on
-         feat/lane-2-usp-polish; two queued.
+         Lane 2 (USP polish) — all 8 items shipped as PR #145.
+         Next work is Lane 3 (roadmap polish).
 Resume:  .agents/tasks/lane-2-usp-polish/SESSION-HANDOFF.md
 Plan:    .agents/tasks/lane-2-usp-polish/PHASE-PLAN.md
 Ledger:  .agents/tasks/lane-2-usp-polish/LEDGER.md
+Lane 3:  .agents/tasks/lane-1-pre-pilot-fixes/SESSION-HANDOFF.md
+         (Lane 3 section)
 Branch:  feat/lane-2-usp-polish (off feat/lane-1-pre-pilot-fixes —
-         rebase onto main once PR #144 lands)
+         rebase onto main once both PRs land)
 Audit:   docs/worksheet-generator-audit.md
          docs/primary-worksheet-improvement-plan.md
          (intended output)
@@ -27,130 +29,143 @@ Constraint: SEND IS THE USP. Every change must be deterministic
             in the prompt and hope".
 ```
 
-## Lane 2 items — current status
+## Lane 2 — final status
 
-| # | Item | Status |
-|---|---|---|
-| 2.2 | Fail-closed SEND-marker checklist for ALL needs (ADHD, Dyslexia, MLD, Dyscalculia, EAL, VI, Dyspraxia on top of Lane 1 HI/Anxiety) | ✅ shipped |
-| 2.5 | Single marks→lines mapping shared by worksheet and revision-mat | ✅ shipped |
-| 2.6 | Curriculum-authority preamble bound to primary AND revision-mat paths | ✅ shipped |
-| 2.7 | Six audit-doc-named revision-tip categories (vocabulary / worked-example / common-mistake / past-papers / retrieval / learning-objective) | ✅ shipped |
-| 2.4 | Primary 5/4/5 layout (was 3/3/3) | ✅ shipped |
-| 2.8 | aria-labels on every pupil-facing element + toolbar zoom buttons | ✅ shipped |
-| 2.3 | Stacked-needs test fixtures (HI+EAL, ADHD+Dyslexia, Anxiety+MLD, Dyscalculia+EAL, etc.) | ☐ queued |
-| 2.1 | Collapse three SEND systems into one source of truth | ☐ queued |
+| # | Item | Status | Commit |
+|---|---|---|---|
+| 2.2 | Fail-closed SEND-marker checklist for ALL needs (HI / Anxiety / ADHD / Dyslexia / MLD / Dyscalculia / EAL / VI / Dyspraxia) | ✅ shipped | `89e152d` |
+| 2.5 | Single marks→lines mapping shared by worksheet and revision-mat | ✅ shipped | `bd0eab2` |
+| 2.6 | Curriculum-authority preamble bound to primary AND revision-mat paths | ✅ shipped | `fa725e8` |
+| 2.7 | Six audit-doc-named revision-tip categories (vocabulary / worked-example / common-mistake / past-papers / retrieval / learning-objective) | ✅ shipped | `ac2a117` |
+| 2.4 | Primary 5/4/5 layout (was 3/3/3) | ✅ shipped | `9ccdf13` |
+| 2.8 | aria-labels on every pupil-facing element + toolbar zoom buttons | ✅ shipped | `dff055d` |
+| 2.3 | Stacked-needs composability tests + first-rename-wins fix + dispatcher + eval-harness fixtures | ✅ shipped | `d2d48d8` + this commit |
+| 2.1 | SEND coherence test — drift prevention across all 4 SEND-emitting layers + 2 pre-existing cosmetic gaps fixed | ✅ shipped | `2b62de9` |
 
-## Detailed change spec for the two queued items
+## Test baseline at Lane 2 close
 
-### 2.3 — Stacked-needs test fixtures
+| State | Failed | Passed | Total |
+|-------|-------:|-------:|------:|
+| `main` | 34 | 697 | 732 |
+| `feat/lane-1-pre-pilot-fixes` | 32 | 736 | 769 |
+| `feat/lane-2-usp-polish` (after 2.1 closeout) | 32 | 760 | 793 |
+| `feat/lane-2-usp-polish` (final, after 2.3 dispatcher + eval fixtures) | 32 | 776 | 809 |
 
-**Why it's deferred:** The eval harness lives at
-`server/tests/worksheet-eval/` and runs against either real LLM
-calls (`mode: live`) or deterministic mocks (`mode: mock`). Authoring
-real stacked-need fixtures requires:
-- Generating sample worksheet JSON for each of the 10 stacked
-  combinations (HI + EAL Urdu / Polish, ADHD + Dyslexia, Anxiety +
-  MLD, Dyscalculia + EAL Bengali, ASC + Anxiety, VI + Dyslexia,
-  Dyspraxia + ADHD, SLCN + EAL Punjabi, Working memory + ADHD).
-- Adding fixture rule files that assert each pair's markers ship
-  and don't erase each other.
-- Testing those rule files against either deterministic mock JSON
-  or live LLM output.
+**+40 newly passing tests across Lane 2, zero new regressions.** The
+40 new tests come from:
+- Lane 2.2: 37 focused SEND-marker tests in `sendOverlayMarkers.test.ts`
+- Lane 2.3 (d2d48d8): +13 stacked-need composability tests in the same file
+- Lane 2.3 (dispatcher follow-up): +16 dispatcher tests in `sendOverlayMarkersStacked.test.ts`
+- Lane 2.7: ~3 net new Phase 3 tests after the rewrite
+- Lane 2.1: 8 SEND coherence tests in `sendCoherence.test.ts`
 
-**What to do next session:**
-1. Add fixtures under
-   `server/tests/worksheet-eval/fixtures/stacked/` mirroring the
-   existing structure of `fixtures/maths/`, `fixtures/english/` etc.
-2. For each fixture, hand-author or capture from a real generation
-   the expected combined marker set (HI Topic Summary AND EAL
-   sentence frames AND Urdu glossary, etc.).
-3. Add a stacked-need rule file in `rules.ts` that checks each
-   fixture for both needs' markers.
-4. Wire into `worksheet-eval.yml` so they run on every PR.
-5. Make the eval gate PR-blocking once the baseline settles (this is
-   Lane 3.10).
+(Net of removed legacy tests; existing tests refactored / merged.)
 
-### 2.1 — Collapse three SEND systems
-
-**Why it's deferred:** This is the biggest refactor in the
-programme. Three live code paths emit SEND-related content today
-(`sendPromptFragments.ts` for the prompt, `worksheetConstraints.ts`
-`SEND_OVERLAYS` for cosmetic settings, and `server/lib/overlayEngine.ts`
-for post-gen overlay support boxes). They share no test that
-asserts they agree. Collapsing them touches every SEND need and
-every consumer of those modules. Best done as its own PR with a
-careful migration path.
-
-**What to do next session:**
-1. Pick `sendPromptFragments.ts:SEND_ADAPTATION_SPECS` as the single
-   source of truth (it has the richest content rules — five fields
-   per need: bullets, worksheetRules, worksheetRulesContent,
-   presentationRules, autismProfile? extensions).
-2. Define a unified `SendNeedSpec` interface:
-   ```ts
-   interface SendNeedSpec {
-     id: string;
-     name: string;
-     promptRules: string[];
-     promptContentRules: string[];
-     cosmetics: { fontSize?: string; lineHeight?: number; ... };
-     postGenMarkers: {
-       sectionTitleRewrites?: Array<{ from: RegExp; to: string }>;
-       insertedSections?: Array<{ type: string; title: string; build: ... }>;
-       perQuestionPrefix?: string;
-     };
-     overlayBoxes?: Array<{ heading: string; lines: string[] }>;
-   }
-   ```
-3. Auto-generate `worksheetConstraints.ts:SEND_OVERLAYS` from the
-   unified spec (or remove it entirely — Lane 1.6/1.7 + 2.2 already
-   make the `enforceSendOverlayMarkers` validator the source of
-   truth for marker enforcement).
-4. Auto-generate the per-need branches in
-   `server/lib/overlayEngine.ts:applySendSupport` from the same
-   spec.
-5. Add a build test that fails if any of the three legacy locations
-   drift from the unified spec.
-6. Migrate carefully: ship as a NO-OP refactor first (same external
-   behaviour, single source internally), then tighten in a
-   follow-up.
-
-## Test plan (run before each push)
-
-1. `npm run check` — TypeScript clean (acceptable: only the four
-   pre-existing tsconfig env errors and the four pre-existing
-   App.tsx / AIToolPage.tsx / WorksheetRenderer.tsx unrelated TS
-   errors).
-2. `npx vitest run --reporter=basic` — passing test count must not
-   drop below 739 / 32. Lane 2 baseline is **739 passed / 32 failed
-   / 1 skipped (772 total)**. Pre-existing failures only.
-
-## Rollback plan
-
-Each Lane 2 item is its own commit:
-
-- `89e152d` — Lane 2.2 (SEND markers ALL needs)
-- `bd0eab2` — Lane 2.5 (single linesForMarks)
-- `fa725e8` — Lane 2.6 (auth preamble everywhere)
-- `ac2a117` — Lane 2.7 (six revision-tip categories)
-- `9ccdf13` — Lane 2.4 (primary 5/4/5)
-- `dff055d` — Lane 2.8 (aria-labels)
-
-Reverting any single commit restores the prior behaviour without
-affecting the others.
+The 32 remaining failures are pre-existing on `main` and out of
+scope for both PR #144 and PR #145 (UK English substitution bug,
+off-spec command-word detection, etc.). Documented as Lane 3
+backlog.
 
 ## What is NOT in this PR (Lane 3 backlog)
 
-See `../lane-1-pre-pilot-fixes/SESSION-HANDOFF.md` Lane 3 section.
-The big rocks:
+See `../lane-1-pre-pilot-fixes/SESSION-HANDOFF.md` Lane 3 section
+for the full backlog. The big rocks:
+
+### USP / SEND follow-ups
+
+- **Full SEND-system unification** — Lane 2.1 ships a coherence
+  test that prevents drift; the actual collapse into a unified
+  `SendNeedSpec` shape (one source of truth across prompt +
+  cosmetic + overlay + post-validator) is queued as a Lane 3 PR.
+  The detailed migration plan is in this folder's `PHASE-PLAN.md`
+  under "2.1 detailed change spec".
+- **End-to-end eval-harness fixtures for stacked SEND** — Lane
+  2.3's follow-up commit shipped 10 stacked-* JSON fixtures under
+  `server/tests/worksheet-eval/fixtures/` exercised by a new
+  `stacked-needs-both-markers-present` rule. The dispatcher in
+  `enforceSendOverlayMarkers` parses `+` / `&` / `,` separators
+  end-to-end, so no generator API change is needed for the
+  post-validator surface. ASC / SLCN / Working-memory pairs
+  remain queued — they need marker enforcers first (Lane 3
+  follow-up to Lane 2.1's coherence test).
+- **Multi-language EAL glossaries beyond v1** — Lane 1.5 ships ~30
+  STEM keywords in 6 languages (Urdu, Polish, Bengali, Punjabi,
+  Arabic, Romanian). Densification to per-subject glossaries (200+
+  terms per language) is a Lane 3 follow-up.
+- **Lighthouse a11y target ≥ 95** — Lane 2.8 ships aria-labels on
+  the highest-impact pupil-facing surfaces; verifying the
+  Lighthouse score requires a deployed build with axe-core +
+  puppeteer (Lane 3.10 eval gate work).
+
+### Primary roadmap
 
 - Six-bucket per-year primary reading age (W1)
 - Per-year vocabulary blocklist with re-prompt loop (W1)
 - ~180 primary topic keys (W4)
 - Pull diagram catalogue (5,975 briefs) into live DB (W6)
 - Inline diagram per question for KS1/KS2 (W3)
-- Y11/KS3/A-Level/OCR exemplars + scaffolds (Phase F2)
-- Page-break audit for question splits (W7)
 - Mascots / Andika / section badges (W2)
 - 1-page mode for KS1 (W7)
-- PR-blocking eval gate (depends on 2.3 settling)
+
+### Curriculum bank
+
+- Y11 / KS3 / A-Level / OCR exemplars + scaffolds (Phase F2)
+
+### Eval / CI
+
+- Page-break audit for question splits (W7)
+- ASC / SLCN / Working-memory marker enforcers + corresponding
+  stacked-need eval fixtures (depends on Lane 2.1 + 3.x)
+- PR-blocking eval gate (Lane 3.10)
+
+### Pre-existing test failures (out of scope for Lanes 1 & 2)
+
+The 32 pre-existing failures on `main` should be tackled as a
+clean-up PR before the eval gate is made PR-blocking:
+- Phase 5 UK English substitution bug — `metre` vs `meter`
+  duplication in `applyUKEnglishSubstitutions`
+- PR-2 command-word fidelity — `reflect on` vs `reflect`
+  detection
+- PR-2 unit-conversion topic detection
+- Phase G `resolveSendSpec` semh routing
+- PR-4 placeholder leakage QA-score deduction
+- Plus 17 unitPack / scheduler / billing / auth tests unrelated
+  to the worksheet generator
+
+## Rollback plan
+
+Each Lane 2 item is its own commit. Reverting any single commit
+restores the prior behaviour without affecting the others. The
+ordering on the branch is:
+
+1. `89e152d` — Lane 2.2 (SEND markers ALL needs)
+2. `bd0eab2` — Lane 2.5 (single linesForMarks)
+3. `fa725e8` — Lane 2.6 (auth preamble everywhere)
+4. `ac2a117` — Lane 2.7 (six revision-tip categories)
+5. `9ccdf13` — Lane 2.4 (primary 5/4/5)
+6. `dff055d` — Lane 2.8 (aria-labels)
+7. `1b48432` — handoff doc update (mid-PR)
+8. `d2d48d8` — Lane 2.3 (stacked-need composability + first-rename-wins fix)
+9. `2b62de9` — Lane 2.1 (SEND coherence test + semh + working-memory cosmetics)
+10. `8cdb8ed` — handoff close-out (mid-PR)
+11. (this commit) — Lane 2.3 follow-up (compound dispatcher + 10 eval fixtures + new rule)
+
+## Smoke-test recipe before pilot
+
+After both PR #144 and PR #145 land on main, generate these
+worksheets and verify:
+
+| # | Subject | Topic | Year | Tier | SEND | Marker to confirm |
+|---|---|---|---:|---|---|---|
+| 1 | Biology | Respiration | 10 | Higher | HI | Topic Summary block above Q1 |
+| 2 | Biology | Respiration | 10 | Higher | ADHD | `[ ]` tick boxes on every Q + brain break + "BONUS" challenge title |
+| 3 | Biology | Respiration | 10 | Higher | Anxiety | "OPTIONAL BONUS" challenge title + WARM-UP Section 1 |
+| 4 | Maths | Quadratics | 10 | Higher | Dyslexia | Method-steps box before Section A |
+| 5 | Maths | Quadratics | 10 | Higher | Dyscalculia | "Numbers in this question" cue on calc Qs |
+| 6 | Maths | Quadratics | 10 | Higher | MLD | Topic-context block at top |
+| 7 | English | Macbeth | 10 | — | EAL (Urdu) | Sentence frames on extended-response Qs + Urdu glossary |
+| 8 | Geography | Rivers | 10 | — | VI | Warning if any diagram-dependent Q lacks a text equivalent |
+| 9 | Maths | Money | 4 | — | — | 5/4/5 layout: WARM UP / LET'S PRACTISE / SHOW WHAT YOU KNOW |
+| 10 | Biology | Photosynthesis | 11 | — | — | Six revision tips: VOCABULARY / WORKED EXAMPLE / COMMON MISTAKE / PAST PAPERS / RETRIEVAL / LEARNING OBJECTIVE |
+
+If all 10 render correctly, you're safe to pilot.

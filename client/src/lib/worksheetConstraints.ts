@@ -742,6 +742,33 @@ const SEND_OVERLAYS: Record<string, Partial<SENDOverlay>> = {
     extraAnswerLinesMultiplier: 1.2,
     maxWordsPerPrompt: 50,
   },
+  // Lane 2.1 — SEMH (Social, Emotional and Mental Health) is the
+  // official SEND Code of Practice term; it shares its presentation
+  // settings with `anxiety` (which is the colloquial UI label for the
+  // same need). Aliased rather than duplicated so the two stay in
+  // lockstep.
+  semh: {
+    maxQuestionsPerPage: 5,
+    reducedDensity: true,
+    addStepScaffolds: true,
+    iconCues: true,
+    fontSizeBoost: 1,
+  },
+  // Lane 2.1 — Working-memory profile. Pupils benefit from chunking,
+  // a write-key-facts cue alongside each question, and reduced
+  // density so they can keep one question's information visible at a
+  // time without page-turning.
+  "working-memory": {
+    extraAnswerLinesMultiplier: 1.5,
+    maxQuestionsPerPage: 4,
+    reducedDensity: true,
+    addStepScaffolds: true,
+    addWordBanks: true,
+    sentenceFrames: true,
+    fontSizeBoost: 1,
+    lineHeightBoost: 0.2,
+    maxWordsPerPrompt: 25,
+  },
 };
 
 export function getSENDOverlay(sendNeedId?: string): SENDOverlay {

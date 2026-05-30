@@ -1,0 +1,26 @@
+{
+  "id": "stacked-vi-dyslexia-y10-english",
+  "title": "Year 10 English (VI + Dyslexia) — A Christmas Carol",
+  "bucket": "send",
+  "params": {
+    "subject": "English",
+    "topic": "A Christmas Carol — Stave 1",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "sendNeed": "vi+dyslexia",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "qa-score-floor",
+    "stacked-needs-both-markers-present"
+  ],
+  "readingAgeRange": [
+    12,
+    16
+  ],
+  "estimatedTokens": 4000
+}
