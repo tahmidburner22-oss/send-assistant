@@ -65,6 +65,9 @@ import {
   enforceTier3VocabularyDeclared,
   // Lane 1.6 + 1.7 — Phase 4 SEND-marker enforcer.
   enforceSendOverlayMarkers,
+  // Lane 3.2 — per-year primary vocabulary blocklist (fail-closed
+  // detection + structured metadata stamp for the re-prompt hook).
+  enforcePrimaryVocabBlocklist,
   type PostValidatorWorksheet,
   type PostValidatorOptions,
   type PostValidatorResult,
@@ -307,6 +310,14 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     // Higher: AO1≈40/AO2≈40/AO3≈20). p1 warning when off-target by more
     // than ±15pp on any AO. No-ops when tier or aoHistogram is missing.
     { name: "tier-ao-histogram", fn: (ws, _opts) => enforceTierAoHistogram(ws) },
+    // ─── Lane 3.2 · primary vocabulary blocklist ──────────────────────
+    // Runs LAST so it audits the FINAL pupil-facing content (after every
+    // upstream rewrite). Warn-only + stamps metadata.primaryVocabViolations;
+    // no-op for non-primary year groups. See primaryVocabBlocklist.ts.
+    {
+      name: "primary-vocab-blocklist",
+      fn: (ws, opts) => enforcePrimaryVocabBlocklist(ws, opts),
+    },
   ]);
 
 /**

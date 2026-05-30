@@ -85,6 +85,10 @@ import { runWorksheetPostValidators } from './worksheetPostValidator';
 // Y1-2 / Y3-4 / Y5-6 three-bucket switch in the primary system
 // prompt). Spec: docs/primary-worksheet-improvement-plan.md W1.
 import { renderPrimaryReadingProfilePrompt } from './primaryReadingProfile';
+// Lane 3.2 — band-scoped primary vocabulary blocklist. The same module
+// powers the fail-closed enforcePrimaryVocabBlocklist post-validator,
+// so the prompt rule and the audit can never drift apart.
+import { renderPrimaryVocabBlocklistPrompt } from './primaryVocabBlocklist';
 
 // FEAT-PB6 — SEND fidelity audit. Probes every worksheetRules entry for the
 // pupil's SEND profile and emits a per-rule pass/fail report so teachers can
@@ -1525,9 +1529,8 @@ You are an expert UK primary school teacher creating an engaging, age-appropriat
 READING AGE CEILING — MANDATORY (Lane 3.1 — six-bucket primary profile, ONE BUCKET PER YEAR — see primary-worksheet-improvement-plan.md W1):
 ${renderPrimaryReadingProfilePrompt(yearNum)}
 
-VOCABULARY RULES — NEVER USE these secondary-school words in student-facing content:
-- Do NOT use: analyse, evaluate, assess, justify, synthesise, hypothesis, methodology, criterion, criteria, infer, deduce, extrapolate, correlate, quantify, magnitude, perpendicular, adjacent, coefficient, denominator, numerator, simultaneous, quadratic, trajectory, velocity, acceleration, momentum, photosynthesis (use 'how plants make food'), osmosis (use 'water moving through'), mitosis (use 'cell splitting'), covalent, ionic, oxidation (use 'rusting/burning'), reduction, equilibrium, gradient (use 'slope'), circumference (use 'distance around the circle'), diameter (use 'distance across the middle').
-- ALWAYS replace complex words with simple alternatives. If you must use a subject word, immediately define it in plain English in brackets.
+VOCABULARY RULES — band-scoped blocklist (Lane 3.2 — single source of truth shared with the fail-closed post-validator; KS1 strictest, UKS2 lightest — see primaryVocabBlocklist.ts):
+${renderPrimaryVocabBlocklistPrompt(params.yearGroup)}
 
 TONE: Warm, encouraging, child-friendly. Use 'you', 'let's', 'have a go', 'well done'. No formal academic register.
 
