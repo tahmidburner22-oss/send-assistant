@@ -6148,12 +6148,40 @@ ${s.content}`).join("\n\n"),
               />
             )}
 
-            {/* Lane 1.3 — More… dropdown. All non-primary actions are
-                grouped here in the order a teacher would reach for
-                them: structural editing, export formats, SEND access
-                toggles, class/lesson tools. Existing onClick handlers
+            {/* User-requested promotion — Sections, Overlay and Assign
+                are pulled back out of the More menu onto the primary
+                row. These are the three most-reached-for structural /
+                access / hand-off actions, so a teacher shouldn't have
+                to open More to reach them. The same handlers that
+                powered the (now-removed) More entries are reused here,
+                and the Sections badge (hidden-section count) is
+                mirrored so the affordance is identical. */}
+            <Button variant="outline" size="sm" className="gap-1.5"
+              onClick={() => setShowSectionPicker(p => !p)}>
+              <Layers className="w-3.5 h-3.5" /> Sections
+              {(hiddenSections.size > 0 || hideHeader) && (
+                <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">
+                  {hiddenSections.size + (hideHeader ? 1 : 0)}
+                </span>
+              )}
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5"
+              onClick={() => setShowOverlayPicker(!showOverlayPicker)}>
+              <Palette className="w-3.5 h-3.5" /> Overlay
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5"
+              onClick={() => setShowAssignDialog(true)}>
+              <Users className="w-3.5 h-3.5" /> Assign
+            </Button>
+
+            {/* Lane 1.3 — More… dropdown. The remaining non-primary
+                actions are grouped here in the order a teacher would
+                reach for them: export formats, SEND access toggles,
+                class/lesson tools. Sections / Overlay / Assign were
+                promoted to the primary row above (user request) and so
+                no longer appear in this menu. Existing onClick handlers
                 are reused unchanged so behaviour is identical to the
-                pre-decutter toolbar. */}
+                pre-declutter toolbar. */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5">
@@ -6162,25 +6190,6 @@ ${s.content}`).join("\n\n"),
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60">
                 <DropdownMenuLabel className="text-[10px] uppercase tracking-wide">Layout</DropdownMenuLabel>
-                <DropdownMenuItem
-                  onClick={() => setShowSectionPicker(p => !p)}
-                  className="cursor-pointer"
-                >
-                  <Layers className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span className="flex-1 text-sm">Sections</span>
-                  {(hiddenSections.size > 0 || hideHeader) && (
-                    <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">
-                      {hiddenSections.size + (hideHeader ? 1 : 0)}
-                    </span>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setShowOverlayPicker(!showOverlayPicker)}
-                  className="cursor-pointer"
-                >
-                  <Palette className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span className="flex-1 text-sm">Overlay</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setShowA11yPicker(!showA11yPicker)}
                   className="cursor-pointer"
@@ -6318,22 +6327,15 @@ ${s.content}`).join("\n\n"),
                   )}
                   <span className="flex-1 text-sm">{scenarioSwapLoading ? "Swapping…" : "Scenario swap"}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setShowAssignDialog(true)}
-                  className="cursor-pointer"
-                >
-                  <Users className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span className="flex-1 text-sm">Assign to pupil</span>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             {/* The Assign Dialog used to live inline in the toolbar via
-                <DialogTrigger asChild>. After Lane 1.3 the trigger is
-                a DropdownMenuItem above; the Dialog stays mounted here
-                so its open/close state flows through showAssignDialog
-                and existing handlers (handleAssign, etc.) are
-                untouched. */}
+                <DialogTrigger asChild>. Its trigger is now the "Assign"
+                button promoted to the primary row above; the Dialog
+                stays mounted here so its open/close state flows through
+                showAssignDialog and existing handlers (handleAssign,
+                etc.) are untouched. */}
             <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
               <DialogContent>
                 <DialogHeader><DialogTitle>Assign to Student</DialogTitle></DialogHeader>
