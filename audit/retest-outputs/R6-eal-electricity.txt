@@ -1,0 +1,152 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Gen
+Upload
+Exam Bank
+History
+142
+Manual
+Auto from class
+Worksheet Generator
+
+Create differentiated, curriculum-aligned worksheets in seconds.
+
+What do you want to create today?
+Generate
+
+💡 The more information you provide the better — include topic, year group, SEND need, difficulty and time for best results.
+
+AI Generation (Groq · Llama 4 Scout)
+
+High-quality AI for rich, curriculum-aligned content
+
+Core Settings
+How to use this generator
+Subject *
+Science
+Year Group *
+Year 10
+Topic *
+Electricity and Magnetism
+(Year 8)
+
+32 curriculum topics for Year 10 Science (Years 7–10)
+
+Lesson archetype
+(optional)
+Pick an archetype
+Real-world context
+(optional)
+No specific context
+SEND Need
+Anxiety / Mental Health
+Tier
+Foundation
+Mixed
+Higher
+Sections
+Estimated 8 pages
+Learning Objective
+Retrieval Topic
+Key Vocabulary
+Common Mistakes
+Worked Example
+Diagram A — Full Page Spread
+Section 1 — True & False
+Section 1 — Multiple Choice (MCQ)
+Section 1 — Word Bank Gap Fill
+Section 2 — Foundation Questions
+Diagram B — Full Page Spread
+Section 3 — Core Practice
+Challenge Question
+Examiner Tips
+Self Reflection
+
+All sections selected by default except Retrieval. Untick any you don't want included.
+
+Reading Age
+Auto (match year group)
+5
+17+
+Auto
+KS1
+KS2
+KS3
+GCSE
+A-Level
+
+Controls vocabulary complexity and sentence length. Academic difficulty stays the same.
+
+Anxiety / Mental Health
+Social, Emotional & Mental Health
+
+HOW IT PRESENTS
+
+Pupils may appear quiet and compliant but find it hard to begin, re-read the same question repeatedly, under-perform when asked to show working, or freeze on challenge questions. Physical signs include trembling, fidgeting, or avoidance of eye contact with the task.
+
+BARRIERS ON A STANDARD WORKSHEET
+
+High-stakes language ('must', 'quickly', 'only N minutes'), mandatory challenge questions, unpredictable formatting, and reflection prompts that require exposing uncertainty all amplify threat response and shut down learning.
+
+WHAT THE GENERATOR CHANGES
+
+Section A is renamed 'Warm-Up — no pressure!', the challenge is clearly 'Optional Bonus', each section opens with a positive priming line, obligation words are swapped for invitation words, and an emoji check-in bookends the worksheet. No time pressure language anywhere.
+
+WHAT WILL CHANGE IN YOUR WORKSHEET
+
+Section A renamed 'Warm-Up — no pressure!'; challenge is 'OPTIONAL BONUS'; warm encouraging tone throughout; emoji check-in at start and end; no threatening language.
+
+Section A renamed 'Warm-Up — no pressure!'
+
+Why: Anxiety activates the threat response which shuts down the prefrontal cortex needed for learning; reducing perceived threat is the first priority
+
+Challenge clearly labelled 'OPTIONAL BONUS — only if you want to!'
+
+Why: Mandatory challenge questions create performance anxiety; making them optional removes the fear of failure
+
+Positive statement at the start of each section ('You already know this — let's practise!')
+
+Why: Positive priming reduces anticipatory anxiety and activates approach motivation rather than avoidance motivation
+
+'How are you feeling?' emoji check-in at start and end
+
+Why: Emotional regulation check-ins are a core component of the Zones of Regulation framework recommended for anxiety in the SEND Code of Practice
+
+'Must', 'should', 'need to' replaced with 'try to', 'have a go at'
+
+Why: Obligation language triggers anxiety responses; invitational language achieves the same goal without the threat
+
+Teacher section included: The generated content will contain a private teacher-only section explaining every adaptation made and the evidence-based rationale for why it helps students with Anxiety / Mental Health.
+
+Advanced Options
+Retrieval topic, exam board & more
+📝
+Additional Requirements
+(optional)
+
+Any specific instructions or requirements for the worksheet. These will be applied as a priority override during generation.
+
+📌
+Class Presets
++ Save current as preset
+
+Save your current settings as a preset for quick re-use with the same class.
+
+📋
+
+Revision Mat
+
+Science only
+
+No Revision Map available for this topic
+
+Generate Worksheet
+Generate Diagnostic Starter

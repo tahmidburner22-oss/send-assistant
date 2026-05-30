@@ -1,0 +1,155 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Gen
+Upload
+Exam Bank
+History
+142
+Manual
+Auto from class
+Worksheet Generator
+
+Create differentiated, curriculum-aligned worksheets in seconds.
+
+What do you want to create today?
+Generate
+
+💡 The more information you provide the better — include topic, year group, SEND need, difficulty and time for best results.
+
+AI Generation (Groq · Llama 4 Scout)
+
+High-quality AI for rich, curriculum-aligned content
+
+Core Settings
+How to use this generator
+Subject *
+Science
+Year Group *
+Year 10
+Topic *
+Energy Transfers and Resources
+(Year 7)
+
+32 curriculum topics for Year 10 Science (Years 7–10)
+
+Subtopic
+(optional — narrows the worksheet focus)
+Whole topic (no subtopic)
+Lesson archetype
+(optional)
+Pick an archetype
+Real-world context
+(optional)
+No specific context
+SEND Need
+Dyscalculia
+Tier
+Foundation
+Mixed
+Higher
+Sections
+Estimated 8 pages
+Learning Objective
+Retrieval Topic
+Key Vocabulary
+Common Mistakes
+Worked Example
+Diagram A — Full Page Spread
+Section 1 — True & False
+Section 1 — Multiple Choice (MCQ)
+Section 1 — Word Bank Gap Fill
+Section 2 — Foundation Questions
+Diagram B — Full Page Spread
+Section 3 — Core Practice
+Challenge Question
+Examiner Tips
+Self Reflection
+
+All sections selected by default except Retrieval. Untick any you don't want included.
+
+Reading Age
+Auto (match year group)
+5
+17+
+Auto
+KS1
+KS2
+KS3
+GCSE
+A-Level
+
+Controls vocabulary complexity and sentence length. Academic difficulty stays the same.
+
+Dyscalculia
+Cognition & Learning
+
+HOW IT PRESENTS
+
+Pupils often lose track of where they are in a multi-step calculation, rely on counting rather than number bonds, reverse digits, and find it hard to retrieve times-table facts quickly. They may understand the conceptual question but be blocked by the arithmetic machinery.
+
+BARRIERS ON A STANDARD WORKSHEET
+
+Questions written as dense prose, worked examples that skip method steps, implicit knowledge of times-tables or formulas, and abstract 'a number is chosen…' contexts all compound the difficulty and hide what the pupil actually understands.
+
+WHAT THE GENERATOR CHANGES
+
+Every Section A question is broken into explicit sub-steps with blanks, a number line or place-value chart sits before Section A, a Key Facts box (times-tables, number bonds, formulas) sits at the top of Section B, and all word problems use real-world concrete contexts. Reflection uses a Great / OK / Struggling tick-box.
+
+WHAT WILL CHANGE IN YOUR WORKSHEET
+
+Section A questions broken into numbered sub-steps with blanks; number line and key facts box included; every arithmetic step shown in worked example with 'why' annotation.
+
+Every Section A question split into sub-steps: 'Step 1: ___ Step 2: ___ Step 3: ___'
+
+Why: Dyscalculia affects number sense and the ability to hold multiple steps in working memory; sub-steps externalise the process
+
+Number line or place value chart reference included
+
+Why: Dyscalculia involves difficulty with the mental number line; a visible reference compensates for this specific deficit
+
+Every arithmetic step shown in worked example with 'why' annotation
+
+Why: Students with dyscalculia often understand the procedure but lose the meaning; annotating why each step is done builds conceptual understanding
+
+Key Facts box at top of Section B (multiplication facts, formulas)
+
+Why: Retrieval of number facts is impaired in dyscalculia; a reference box removes this barrier so the student can demonstrate reasoning
+
+Real-world contexts for all word problems
+
+Why: Concrete contexts make abstract numbers meaningful, which is a core principle of dyscalculia intervention (concrete-pictorial-abstract approach)
+
+Teacher section included: The generated content will contain a private teacher-only section explaining every adaptation made and the evidence-based rationale for why it helps students with Dyscalculia.
+
+Advanced Options
+Retrieval topic, exam board & more
+📝
+Additional Requirements
+(optional)
+
+Any specific instructions or requirements for the worksheet. These will be applied as a priority override during generation.
+
+📌
+Class Presets
++ Save current as preset
+
+Save your current settings as a preset for quick re-use with the same class.
+
+📋
+
+Revision Mat
+
+Science only
+
+No Revision Map available for this topic
+
+Generate Worksheet
+Generate Diagnostic Starter
