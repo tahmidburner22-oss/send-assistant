@@ -6122,31 +6122,17 @@ ${s.content}`).join("\n\n"),
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-3.5 h-3.5 mr-1.5" /> Print</Button>
             <Button variant="outline" size="sm" onClick={handleSave}><Save className="w-3.5 h-3.5 mr-1.5" /> Save</Button>
+            {/* Option-1 consolidation — a SINGLE "Differentiate" entry
+                point. The one-at-a-time SEND/tier flow AND the
+                whole-class LA/MA/HA batch now both live inside the
+                One-Click Differentiation dialog (see <Dialog
+                open={showDiffDialog}> below). The separate
+                "Differentiate (LA / MA / HA)" toolbar button was
+                removed to end the naming collision and free a toolbar
+                slot. */}
             <Button variant="outline" size="sm" onClick={() => setShowDiffDialog(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
               <Sparkles className="w-3.5 h-3.5" /> Differentiate
             </Button>
-            {/* PR-B (W8 / G9) — one-click three-tier differentiation. Runs LA / MA /
-                HA concurrently. We adapt G9's tier alphabet (LA/MA/HA) onto the
-                existing 'foundation' | 'higher' API; the MA tier is the
-                untransformed sheet. */}
-            {generated && (
-              <ThreeTierButton
-                worksheet={generated}
-                differentiate={async (ws, tier) => {
-                  if (tier === "MA") return ws;
-                  const apiTier = tier === "LA" ? "foundation" : "higher";
-                  const out = await aiDifferentiateExistingWorksheet({
-                    sections: (ws as { sections?: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }> }).sections || [],
-                    tier: apiTier,
-                    subject: (ws as { metadata?: { subject?: string } }).metadata?.subject,
-                    topic: (ws as { metadata?: { topic?: string } }).metadata?.topic,
-                    yearGroup: (ws as { metadata?: { yearGroup?: string } }).metadata?.yearGroup,
-                    title: (ws as { title?: string }).title,
-                  });
-                  return { ...ws, sections: out.sections } as typeof ws;
-                }}
-              />
-            )}
 
             {/* User-requested promotion — Sections, Overlay and Assign
                 are pulled back out of the More menu onto the primary
@@ -7415,9 +7401,52 @@ ${s.content}`).join("\n\n"),
               <Sparkles className="h-5 w-5 text-indigo-600" />
               One-Click Differentiation
             </DialogTitle>
-            <p className="text-sm text-muted-foreground">Choose one version to generate and apply immediately to the worksheet.</p>
+            <p className="text-sm text-muted-foreground">Generate all three ability tiers for a whole class, or pick one version to apply to this worksheet now.</p>
           </DialogHeader>
           <div className="space-y-4 mt-2">
+            {/* Option-1 consolidation — the whole-class LA / MA / HA batch
+                (previously a separate toolbar button) now lives at the
+                top of this dialog. Generates Lower / Middle / Higher
+                ability versions together with a tabbed preview. The
+                differentiate fn is the same one the old toolbar button
+                used: MA = untransformed sheet, LA → 'foundation',
+                HA → 'higher' via aiDifferentiateExistingWorksheet. */}
+            {generated && (
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-blue-700" />
+                  <span className="font-semibold text-sm text-blue-800">Whole class — all three tiers at once</span>
+                </div>
+                <p className="text-xs text-blue-700">
+                  Generates Lower, Middle and Higher ability versions together (LA / MA / HA) and shows them in a tabbed preview. Best for prepping a mixed-ability class in one go.
+                </p>
+                <ThreeTierButton
+                  worksheet={generated}
+                  differentiate={async (ws, tier) => {
+                    if (tier === "MA") return ws;
+                    const apiTier = tier === "LA" ? "foundation" : "higher";
+                    const out = await aiDifferentiateExistingWorksheet({
+                      sections: (ws as { sections?: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }> }).sections || [],
+                      tier: apiTier,
+                      subject: (ws as { metadata?: { subject?: string } }).metadata?.subject,
+                      topic: (ws as { metadata?: { topic?: string } }).metadata?.topic,
+                      yearGroup: (ws as { metadata?: { yearGroup?: string } }).metadata?.yearGroup,
+                      title: (ws as { title?: string }).title,
+                    });
+                    return { ...ws, sections: out.sections } as typeof ws;
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Divider between the whole-class batch and the
+                one-at-a-time / SEND-scaffolded picker below. */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              or pick one version to apply now
+              <span className="h-px flex-1 bg-border" />
+            </div>
+
             {/* Tier cards — show the 3 options that are NOT the current difficulty */}
             {(() => {
               // Determine which tiers to show based on the current difficulty and library availability
