@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-05-30T14:30:56.350Z",
+  "updatedAt": "2026-05-30T15:49:07.464Z",
   "counts": {
     "total": 5975,
     "done": 0,
     "svg-rendered": 44,
-    "pending": 5838,
-    "ai-failed": 44,
+    "pending": 5837,
+    "ai-failed": 45,
     "provider-out": 49,
     "skipped": 0
   },
@@ -14,8 +14,8 @@
       "phase": "GCSE",
       "total": 1988,
       "done": 0,
-      "pending": 1899,
-      "failed": 89
+      "pending": 1898,
+      "failed": 90
     },
     {
       "phase": "KS3",
@@ -1158,8 +1158,8 @@
       "id": "dlc-00919",
       "title": "Quadratic formula worked — 2x² + 3x − 5 = 0",
       "subject": "Mathematics",
-      "status": "provider-out",
-      "lastError": "All providers exhausted: [{\"provider\":\"deapi\",\"ok\":false,\"error\":\"deapi: HTTP 404: <!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n    <head>\\n        <meta charset=\\\"utf-8\\\">\\n        <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\">\\n\\n        <title>Not Found</title>\\n\\n        <style>\\n            /*! normalize.css v8.0.1 \"},{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+      "status": "ai-failed",
+      "lastError": "qa-rejected-after-retries"
     },
     {
       "id": "dlc-00920",
@@ -1542,6 +1542,13 @@
     {
       "id": "dlc-00974",
       "title": "Pythagoras — find the hypotenuse (5, 12, ?)",
+      "subject": "Mathematics",
+      "status": "provider-out",
+      "lastError": "All providers exhausted: [{\"provider\":\"deapi\",\"ok\":false,\"error\":\"deapi: HTTP 404: <!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n    <head>\\n        <meta charset=\\\"utf-8\\\">\\n        <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\">\\n\\n        <title>Not Found</title>\\n\\n        <style>\\n            /*! normalize.css v8.0.1 \"},{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
+    },
+    {
+      "id": "dlc-00975",
+      "title": "Pythagoras — find a shorter side (?, 8, 17)",
       "subject": "Mathematics",
       "status": "provider-out",
       "lastError": "All providers exhausted: [{\"provider\":\"deapi\",\"ok\":false,\"error\":\"deapi: HTTP 404: <!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n    <head>\\n        <meta charset=\\\"utf-8\\\">\\n        <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1\\\">\\n\\n        <title>Not Found</title>\\n\\n        <style>\\n            /*! normalize.css v8.0.1 \"},{\"provider\":\"gemini\",\"ok\":false,\"error\":\"gemini: HTTP 429 — daily free-tier quota exhausted (~500 requests/day). Wait until UTC midnight for the quota to reset, or enable billing on the Google Cloud project that owns this key (~$0.039 per image).\"},{\"provider\":\"pollinations\",\"ok\":false,\"error\":\"pollinations: HTTP 402 — free anonymous tier is no longer sufficient. Add a paid provider key (Gemini / Together / Cloudflare) — see HOW-TO-USE.md.\"}]"
