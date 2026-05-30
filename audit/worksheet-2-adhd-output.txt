@@ -1,0 +1,233 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+
+UK CURRICULUM PROGRESSION — FORCES AND MOTION
+
+Step 1 of 4: Types of Forces
+
+Identify contact and non-contact forces; describe gravity, friction, air resistance and tension
+
+First step — no prerequisite.
+EXTENSION
+Balanced and Unbalanced Forces
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Forces and Motion — Year 10 Science Worksheet
+Year 10 | Science | higher
+NAME
+DATE
+30/05/2026
+CLASS
+
+By the end of this lesson, students will be able to analyse the relationship between force, mass, and acceleration, and apply Newton's laws of motion to solve problems in familiar and unfamiliar contexts.
+
+Force:
+A push or pull on an object, measured in Newtons (N).nMass — The amount of matter in an object, measured in kilograms (kg).nAcceleration — The rate of change of velocity, measured in metres per secon
+𝑑
+2
+d
+2
+ (m/
+𝑠
+2
+s
+2
+).nInertia — The tendency of an object to resist changes in its state of motion.nNewton's Second Law — The acceleration of an object is directly proportional to the net force acting on it and inversely proportional to its mass (
+𝐹
+=
+𝑚
+𝑎
+F=ma).
+Watch out for these common errors:
+MISTAKE 1: CONFUSING MASS AND WEIGHT. → MASS IS THE AMOUNT OF MATTER (IN KG), WHILE WEIGHT IS THE FORCE OF GRAVITY ACTING ON THAT MASS (IN N). REMEMBER 
+𝑊
+=
+𝑚
+𝑔
+W=MG.
+MISTAKE 2: ASSUMING FORCE IS ALWAYS NEEDED FOR MOTION. → AN OBJECT IN MOTION WILL STAY IN MOTION WITH CONSTANT VELOCITY IF THE NET FORCE IS ZERO (NEWTON'S FIRST LAW).
+MISTAKE 3: INCORRECTLY APPLYING SUCCESSIVE PERCENTAGE CHANGES. → A 20% INCREASE FOLLOWED BY A 20% DECREASE DOES NOT RETURN TO THE ORIGINAL VALUE. THE SECOND PERCENTAGE CHANGE IS APPLIED TO THE NEW, ALTERED VALUE.
+WORKED EXAMPLE
+— A car of mass 1200 kg is acted upon by a net force of 3600 N. Calculate its acceleration.
+1
+nStep 1: Identify the knowns: mass 
+𝑚
+=
+1200
+m=1200 kg, net force 
+𝐹
+=
+3600
+F=3600 N.nStep 2: Identify the unknown: acceleration 
+𝑎
+a.nStep 3: Recall Newton's Second Law: 
+𝐹
+=
+𝑚
+𝑎
+F=ma.nStep 4: Rearrange the formula to solve for acceleration: 
+𝑎
+=
+𝐹
+𝑚
+a=
+m
+F
+	​
+
+.nStep 5: Substitute values and calculate: 
+𝑎
+=
+3600
+𝑁
+1200
+𝑘
+𝑔
+=
+3.0
+𝑚
+/
+𝑠
+2
+𝑠
+2
+s
+2
+a=
+1200kg
+3600N
+	​
+
+=3.0m/s
+2
+. ✓ Key point: Ensure units are consistent (Newtons for force, kilograms for mass) before substituting into the formula.
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+[ ] Circle TRUE or FALSE for each statement.
+[ ] An object will accelerate if a constant net force acts upon it
+TRUE
+FALSE
+[ ] Mass and weight are the same physical quantity
+TRUE
+FALSE
+[ ] If no net force acts on an object, it must be stationary
+TRUE
+FALSE
+[ ] Inertia is a measure of an object's mass
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+[ ] Which of the following statements best describes Newton's First Law of Motion? [ ]nA An object's acceleration is directly proportional to the net force acting on it.nB For every action, there is an equal and opposite reaction.nC An object at rest stays at rest and an object in motion stays in motion with the same speed and in the same direction unless acted upon by an unbalanced force. ✓nD The greater the mass of an object, the greater the force required to change its motion.
+3
+GAP FILL
+
+[ ] Complete the paragraph using words from the word bank below.nAn object's  is a measure of its resistance to changes in motion. This property is directly related to the object's . According to Newton's Second Law, the  of an object is proportional to the net force applied to it. If a net force is applied to an object, it will  in the direction of the force. The greater the  acting on an object, the greater its acceleration will be, assuming its mass remains constant. Conversely, if the  of an object increases, its acceleration will decrease for the same applied force. This relationship is summarised by the equation 
+𝐹
+=
+𝑚
+𝑎
+F=ma, where 
+𝐹
+F represents the net .nWORD BANK: force | mass | acceleration | inertia | velocity | friction | weight | push | pull | speed [force] | [mass] | [acceleration] | [inertia] | [velocity] | [friction] | [weight] | [push] | [pull] | [speed]
+
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[ ] 1. State the unit of force.
+[6 marks total]
+2.
+Identify the force that opposes motion between two surfaces in contact.
+[2 marks]
+3.
+A student pushes a box with a force of 50 N. The box has a mass of 10 kg. Calculate the acceleration of the box if there is no friction.
+[2 marks]
+4.
+Describe the effect of air resistance on a falling object.
+[2 marks]
+★ BRAIN BREAK
+•
+🧠 BRAIN BREAK — stand up and stretch for 30 seconds before continuing!
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[ ] 1. What is the name given to the force of gravity acting on an object? [ ] 2. Identify two examples of non-contact forces. [ ] 3. A cyclist and their bicycle have a combined mass of 75 kg. They are travelling at a constant speed. A braking force of 150 N is applied. Calculate the deceleration of the cyclist.
+[12 marks total]
+4.
+Explain why a spacecraft travelling in deep space, far from any gravitational influence, will continue to move at a constant velocity even if its engines are not firing.
+[4 marks]
+5.
+A car of mass 1000 kg accelerates from rest to 20 m/s in 10 seconds. Calculate the average resultant force acting on the car during this time. Your answer should include: • Calculation of acceleration. • Application of Newton's Second Law. • Final answer with correct units.
+[4 marks]
+6.
+A tug-of-war team pulls on a rope with a force of 5000 N. The opposing team pulls back with a force of 4800 N. Describe the motion of the rope and explain why this happens, referring to the forces involved.
+[4 marks]
+Challenge yourself!
+A skydiver of mass 70 kg is falling at terminal velocity. Explain what terminal velocity is and why the skydiver's acceleration is zero at this point.
+A rocket engine produces a constant thrust of 1.5 × 10⁶ N. The rocket has a total mass of 50
+kg. Calculate the initial acceleration of the rocket when it launches. State any assumptions you have made.
+Show your working:
+Top tips before you start.\nTIPS:
+1
+VOCABULARY
+Re-read the Key Vocabulary box for Forces and Motion.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory.
+3
+COMMON MISTAKE
+Pupils most often lose marks on Forces and Motion by writing the right idea in everyday language.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on Forces and Motion and attempt it under timed conditions.
+5
+RETRIEVAL
+In your next study session, list everything you remember about Forces and Motion on a blank sheet WITHOUT looking at this worksheet.
+How did you get on?
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about Forces and Motion.
+I can Explain the key ideas in Forces and Motion using the right vocabulary.
+I can Calculate a question about Forces and Motion with a worked answer.
+I can Compare what I have learned about Forces and Motion to a new problem.
+I can Evaluate my own answer about Forces and Motion and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing I now understand about Forces and Motion that I did not before is …
+One question I still want to ask about Forces and Motion is …
+Exit Ticket: Write ONE thing you learned today about Forces and Motion in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Forces and Motion
+· Higher
+· Adapted for ADHD
+30/05/2026
+Rate this lesson:
+← Generate Another Lesson
