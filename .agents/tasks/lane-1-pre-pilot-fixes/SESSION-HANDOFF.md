@@ -367,7 +367,7 @@ and make the eval gate PR-blocking.
 
 | # | Item | Files | Status |
 |---|---|---|---|
-| 3.1 | Six-bucket primary reading age (per-year) | `ai.ts:1455` primary path | ☐ queued |
+| 3.1 | Six-bucket primary reading age (per-year) | `ai.ts:1455` primary path | ✅ shipped (PR #147 — `feat/lane-3-1-primary-reading-age`) |
 | 3.2 | Per-year vocabulary blocklist with re-prompt loop | NEW `client/src/lib/primaryVocabBlocklist.ts` + post-validator | ☐ queued |
 | 3.3 | ~180 primary topic keys in `CANONICAL_TOPIC_MAP` | `server/lib/topicNormalizer.ts` | ☐ queued |
 | 3.4 | Pull diagram catalogue (5,975 briefs) into live DB | `tools/diagram-catalogue/` + image pipeline + `diagram_library` table | ☐ queued |
