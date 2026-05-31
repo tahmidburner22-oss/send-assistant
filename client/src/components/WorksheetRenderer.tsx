@@ -91,8 +91,40 @@ const STUDENT_LEAKED_INSTRUCTION_LINE_RE = /^\s*(?:(?:CRITICAL\s+)?(?:FORMATTING
 const STUDENT_LEAKED_BRACKET_BLOCK_RE = /\[[^\]\n]*(?:EXACTLY|MUST|Do NOT|continue for|correct answers|plausible distractors|word\d+|Result:)[^\]\n]*\]/gi;
 const STUDENT_LEAKED_INLINE_INSTRUCTION_RE = /\b(?:(?:CRITICAL\s+)?FORMATTING\s+RULE|CRITICAL\s+RULE|RULE|INSTRUCTION|OUTPUT\s+RULE)\s*:\s*(?:You\s+MUST|MUST|EXACTLY|Do\s+NOT|Return|Write|Use|Include|Only)[^\n.!?]*(?:[.!?]|$)/gi;
 
-function stripStudentFacingGeneratorLeaks(content: string): string {
+// ── IMP-01 / IMP-03 / IMP-17 — internal-marker safety net ────────────────────
+// Live audits found two internal markers reaching the rendered student page:
+//   • `TEACHER_DIAGNOSES: A=s-mass-01` (answer-key / misconception codes)
+//   • `RULE: EXACTLY 7 sentences …`     (prompt/schema instruction leak)
+// The post-validator already tries to strip these, but its line-anchored
+// regexes silently miss them when the AI emits literal "\n" escape sequences
+// (two characters: backslash + n) instead of real newlines — the whole block
+// then collapses onto one physical line and `^…$` never matches. These
+// markers must NEVER render in EITHER view, so this safety net runs
+// view-independently and is robust to literal-escape encoding: it normalises
+// "\n" to real newlines first, then strips globally (not line-anchored).
+const TEACHER_DIAGNOSES_MARKER_RE = /TEACHER[_\s]?DIAGNOSES\s*:[^\n]*/gi;
+// Anchored to a (normalised) line start. The leak always begins a logical line
+// ("…word bank.\nRULE: EXACTLY …"); anchoring avoids false positives on
+// legitimate prose such as "the octet rule: electrons must …" mid-sentence.
+const RULE_LEAK_MARKER_RE = /^[^\S\r\n]*(?:CRITICAL\s+)?(?:FORMATTING\s+)?(?:RULE|INSTRUCTION|SCHEMA|CONSTRAINT)\s*:\s*(?:EXACTLY|You\s+MUST|MUST|Do\s+NOT|Return|Write|Use|Include|Only)[^\n]*/gim;
+
+function stripInternalGeneratorMarkers(content: string): string {
+  if (typeof content !== "string" || !content) return content;
+  // Normalise literal "\n" escapes (but preserve LaTeX commands like \nabla,
+  // \neq, \nu) so line/segment stripping is reliable regardless of encoding.
   return content
+    .replace(/\\n(?![a-zA-Z])/g, "\n")
+    .replace(TEACHER_DIAGNOSES_MARKER_RE, "")
+    .replace(RULE_LEAK_MARKER_RE, "")
+    // Collapse any double-spaces / dangling spaces the strips left behind.
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/[ \t]+\n/g, "\n");
+}
+
+function stripStudentFacingGeneratorLeaks(content: string): string {
+  // Run the view-independent internal-marker net first (also normalises any
+  // literal "\n" escapes) so the line-based passes below see real newlines.
+  return stripInternalGeneratorMarkers(content)
     .split("\n")
     .filter((line) => !STUDENT_LEAKED_INSTRUCTION_LINE_RE.test(line.trim()))
     .map((line) => line
@@ -1651,6 +1683,31 @@ function formatContent(
       return;
     }
 
+    // NUMBERS-IN-THIS-QUESTION cue (Dyscalculia) — render as a distinct
+    // support box. IMP-02: handled explicitly so the cue is NEVER parsed as
+    // numbered question content (its digits used to trigger the numbered-line
+    // splitter, inflating question counts and duplicating numbers).
+    if (/^Numbers in this question\b/i.test(trimmed)) {
+      if (listItems.length) flushList(`list-${idx}`);
+      elements.push(
+        <div key={idx} style={{
+          background: "#fffbeb",
+          border: "1.5px solid #fcd34d",
+          borderLeft: "4px solid #f59e0b",
+          borderRadius: "6px",
+          padding: "8px 12px",
+          margin: "8px 0",
+          fontSize: `${textSize - 1}px`,
+          fontFamily,
+          color: "#92400e",
+        }}>
+          <span style={{ fontWeight: 700, marginRight: "6px" }} aria-hidden="true">#</span>
+          <span dangerouslySetInnerHTML={{ __html: renderMath(trimmed) }} />
+        </div>
+      );
+      return;
+    }
+
     // TIP / NOTE box
     if (/^(TIP|Note|NOTE|HINT|Top Tip|Quick Tip):/i.test(trimmed)) {
       if (listItems.length) flushList(`list-${idx}`);
@@ -1837,7 +1894,7 @@ function formatContent(
             <span
               aria-hidden="true"
               style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700, flexShrink: 0 }}
-            >{markMatch[2]}</span>
+            >{(markMatch[2] || "").replace(/\[(\d+)\s*(marks?)\]/i, "($1 $2)")}</span>
           </div>
           {/* Per-question answer affordances — suppressed in Book Mode */}
           {!bookMode && (
@@ -5685,6 +5742,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         // In student view, strip any "Answer: ..." lines that the AI embedded in the content string.
         // Also strip mark scheme lines and "[X marks]" labels that reveal answers.
         let content = rawContent as string;
+        // IMP-01 / IMP-03 / IMP-17 — internal answer-key / prompt-instruction
+        // markers (TEACHER_DIAGNOSES:, RULE: EXACTLY …) must never render in
+        // EITHER view. Runs view-independently and is robust to literal "\n"
+        // escape encoding (see stripInternalGeneratorMarkers).
+        if (typeof content === 'string') {
+          content = stripInternalGeneratorMarkers(content);
+        }
         if (!isTeacherView && typeof content === 'string') {
           content = stripStudentFacingGeneratorLeaks(content)
           
@@ -5698,9 +5762,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               // following a question — handled by the Answer: filter above
               return true;
             })
-            // Strip inline "[X marks]" badges that reveal total mark allocations hinting at answers
-            // but keep them if teacher view
-            .map(line => line.replace(/\s*\[\d+\s*marks?\]/gi, ''))
+            // Strip inline mark badges that reveal total mark allocations hinting at answers
+            // but keep them if teacher view. Handles both [N marks] and (N marks) (IMP-06).
+            .map(line => line.replace(/\s*[\[(]\d+\s*marks?[\])]/gi, ''))
             .join('\n');
         }
         const style = isPrimary
