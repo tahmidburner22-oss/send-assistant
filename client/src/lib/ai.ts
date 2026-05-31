@@ -1438,6 +1438,7 @@ BLOCKS 4–${sec1TargetCount} — continue with varied formats (Short Answer, Ma
   const sectionBPrompt =
     yearNum >= 9 ? `SECTION 2 — UNDERSTANDING (${sec2TargetCount} questions, Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}):
 Generate exactly ${sec2TargetCount} understanding questions. These must be HARDER than Section 1 and test deeper comprehension, application of concepts, and explanation. Use varied formats (Short Answer, Structured Response, Stimulus/Data Response, Table). Each question must have its OWN answer space with lines appropriate to the mark allocation. Mark allocation MUST be shown for each question.
+⚠️ COUNT IS MANDATORY: You MUST generate AT LEAST 6 and EXACTLY ${sec2TargetCount} separate questions for Section 2. Put each question on its OWN numbered line (Q${sec1TargetCount + 1}, Q${sec1TargetCount + 2}, …). Do NOT stop before Q${sec1TargetCount + sec2TargetCount}. A Section 2 with fewer than 6 questions is INVALID and will be rejected.
 Q${sec1TargetCount + 1} — ${blockInstructions[variantB[0]]}
 Q${sec1TargetCount + 2} — ${blockInstructions[variantB[1]]}
 Q${sec1TargetCount + 3} — ${blockInstructions[variantB[2]]}
@@ -1452,8 +1453,9 @@ BLOCKS 4–${sec2TargetCount} — continue with harder understanding questions.`
 For Diagram A: Use the marker [[DIAGRAM:{"type":"labeled","title":"Diagram A — ${params.topic}","labels":[{"text":"Label 1","x":20,"y":30},{"text":"Label 2","x":80,"y":30}]}]].
 For Diagram B: Use the marker [[DIAGRAM:{"type":"labeled","title":"Diagram B — ${params.topic}","labels":[{"text":"Label 1","x":20,"y":30},{"text":"Label 2","x":80,"y":30}]}]].
 ${yearNum >= 9 ? `MANDATORY FOR YEAR 9-11: Section 3 MUST be titled 'SECTION 3 — EXAM STYLE QUESTIONS'. Every question in Section 3 (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}) MUST be a multi-step exam-style question with realistic mark allocations and exam-board phrasing. Do NOT include simple recall or fluency questions in Section 3.
+⚠️ COUNT IS MANDATORY: Section 3 MUST contain EXACTLY ${sec3TargetCount} questions (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}). You MUST NOT generate more than ${sec3TargetCount}. STOP after question ${sec1TargetCount + sec2TargetCount + sec3TargetCount}. Do NOT add a 6th exam-style question — the Challenge question is separate and is NOT part of Section 3's count.
 
-⚠️ MARK FORMAT — Section 3 ONLY uses round brackets to match real GCSE paper convention: write '(3 marks)', '(4 marks)', '(6 marks)' etc. for every Section 3 question. Sections 1 and 2 keep square brackets '[N marks]'. The Challenge question keeps square brackets '[N marks]'. The renderer accepts both forms, but Section 3 MUST use round brackets so the worksheet looks like a real exam paper at the back end.` : ""}`;
+⚠️ MARK FORMAT — Every mark allocation across the WHOLE worksheet (Sections 1, 2, 3 and the Challenge) MUST use ROUND brackets to match real GCSE paper convention: write '(1 mark)', '(2 marks)', '(4 marks)', '(6 marks)' etc. Do NOT use square brackets '[N marks]' anywhere. A real exam paper never uses square brackets for marks.` : ""}`;
 
   // ── Primary (KS1/KS2) layout enhancement ──────────────────────────────────
   const isPrimary = yearNum <= 6;
