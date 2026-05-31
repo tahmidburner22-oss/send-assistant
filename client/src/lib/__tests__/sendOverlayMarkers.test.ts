@@ -134,7 +134,7 @@ describe("enforceSendOverlayMarkers — HI (Lane 1.6)", () => {
     expect(summaryIdx + 1).toBe(firstQIdx);
   });
 
-  it("is a no-op when a Topic Summary already exists", () => {
+  it("does not insert a second Topic Summary when one already exists", () => {
     const ws = makeWs("hi", [
       {
         id: "ts-existing",
@@ -147,7 +147,8 @@ describe("enforceSendOverlayMarkers — HI (Lane 1.6)", () => {
     const { worksheet, warnings } = enforceSendOverlayMarkers(ws, { sendNeed: "hi" });
     const summaries = worksheet.sections!.filter(s => s.type === "topic-summary");
     expect(summaries).toHaveLength(1);
-    expect(warnings).toHaveLength(0);
+    // Core intent: no duplicate Topic Summary inserted.
+    expect(warnings.some(w => /Topic Summary block was missing/i.test(w))).toBe(false);
   });
 
   it("is idempotent", () => {
@@ -279,7 +280,7 @@ describe("enforceSendOverlayMarkers — MLD (Lane 2.2)", () => {
     expect(warnings.some(w => /Phase 4 — MLD/i.test(w))).toBe(true);
   });
 
-  it("does not double-insert if HI's topic-summary is already present", () => {
+  it("does not double-insert the context block if HI's topic-summary is already present", () => {
     const ws = makeWs("mld", [
       {
         id: "ts",
@@ -291,7 +292,11 @@ describe("enforceSendOverlayMarkers — MLD (Lane 2.2)", () => {
     ]);
     const { worksheet, warnings } = enforceSendOverlayMarkers(ws, { sendNeed: "mld" });
     expect(worksheet.sections!.filter(s => s.type === "topic-context")).toHaveLength(0);
-    expect(warnings).toHaveLength(0);
+    // Core intent: no duplicate context block is inserted.
+    expect(warnings.some(w => /Topic-context block was missing/i.test(w))).toBe(false);
+    // IMP-14 still applies independently: the calculation question (q5) gets a HELP BOX.
+    const q5 = worksheet.sections!.find(s => s.id === "q5");
+    expect(String(q5!.content)).toMatch(/HELP BOX/);
   });
 
   it("is idempotent", () => {

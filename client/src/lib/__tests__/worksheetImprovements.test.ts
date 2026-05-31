@@ -20,6 +20,7 @@ import {
   runWorksheetPostValidators,
   type PostValidatorWorksheet,
 } from "../worksheetPostValidator";
+import { isAnxietySendProfile, toInvitationalSectionLabel } from "../sendSectionLabels";
 
 function ws(sections: any[], metadata: Record<string, unknown> = {}): PostValidatorWorksheet {
   return { sections, metadata } as PostValidatorWorksheet;
@@ -248,5 +249,228 @@ describe("IMP-17 — fixes propagate through runWorksheetPostValidators", () => 
     expect(allContent).not.toMatch(/RULE:\s*EXACTLY/i);
     expect(allContent).not.toMatch(/\[\d+\s*marks?\]/i); // square brackets gone
     expect(allContent).toContain("(2 marks)"); // round brackets present
+  });
+});
+
+
+// ════════════════════════════════════════════════════════════════════════════
+// Sprint 2 — SEND overlay fixes (IMP-10 through IMP-16)
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── IMP-10 — Anxiety invitational section labels ─────────────────────────────
+describe("IMP-10 — anxiety invitational section labels", () => {
+  it("detects anxiety / SEMH profiles and ignores others", () => {
+    expect(isAnxietySendProfile("anxiety")).toBe(true);
+    expect(isAnxietySendProfile("Anxiety")).toBe(true);
+    expect(isAnxietySendProfile("semh")).toBe(true);
+    expect(isAnxietySendProfile("mental-health")).toBe(true);
+    expect(isAnxietySendProfile("adhd")).toBe(false);
+    expect(isAnxietySendProfile(null)).toBe(false);
+  });
+
+  it("remaps Section 1 → WARM-UP and Challenge → OPTIONAL BONUS", () => {
+    expect(toInvitationalSectionLabel("SECTION 1 — RECALL")).toContain("WARM-UP");
+    expect(toInvitationalSectionLabel("SECTION 2 — UNDERSTANDING")).toContain("BUILDING YOUR UNDERSTANDING");
+    expect(toInvitationalSectionLabel("SECTION 3 — APPLICATION & ANALYSIS")).toContain("STRETCH YOURSELF");
+    expect(toInvitationalSectionLabel("CHALLENGE QUESTION")).toMatch(/OPTIONAL/);
+  });
+
+  it("leaves unknown labels unchanged", () => {
+    expect(toInvitationalSectionLabel("TEACHER NOTES")).toBe("TEACHER NOTES");
+  });
+});
+
+// Shared HI fixture: Learning Objective + Key Vocabulary + questions using the terms.
+function hiSheet(): PostValidatorWorksheet {
+  return ws([
+    { id: "lo", type: "objective", title: "Learning objective", content: "Describe aerobic respiration." },
+    {
+      id: "vocab",
+      type: "key-vocabulary",
+      title: "Key Vocabulary",
+      content:
+        "aerobic respiration — using oxygen to release energy from glucose\nanaerobic respiration — releasing energy without oxygen\nATP — the energy-carrying molecule",
+    },
+    { id: "q1", type: "q-short-answer", title: "Q1", content: "State one product of aerobic respiration. (2 marks)" },
+    { id: "q2", type: "q-extended", title: "Q2", content: "Explain how aerobic respiration releases energy using ATP. (4 marks)" },
+    { id: "q3", type: "q-mcq", title: "Q3", content: "Which process is anaerobic respiration? (1 mark)\nA Uses oxygen\nB No oxygen" },
+  ]);
+}
+
+// ── IMP-16 — HI TOPIC SUMMARY heading ────────────────────────────────────────
+describe("IMP-16 — HI 'TOPIC SUMMARY' heading", () => {
+  it("synthesises a topic-summary whose title contains the literal 'TOPIC SUMMARY'", () => {
+    const r = enforceSendOverlayMarkers(hiSheet(), { sendNeed: "hi", topic: "Respiration" });
+    const summary = r.worksheet.sections!.find((s) => s.type === "topic-summary");
+    expect(summary).toBeDefined();
+    expect(String(summary!.title)).toContain("TOPIC SUMMARY");
+  });
+
+  it("normalises a pre-existing topic-summary title to include 'TOPIC SUMMARY'", () => {
+    const sheet = ws([
+      { id: "ts", type: "topic-summary", title: "Topic: Respiration", content: "Some summary." },
+      { id: "q1", type: "q-short-answer", title: "Q1", content: "State X. (2 marks)" },
+    ]);
+    const r = enforceSendOverlayMarkers(sheet, { sendNeed: "hi" });
+    const summary = r.worksheet.sections!.find((s) => s.type === "topic-summary");
+    expect(r.worksheet.sections!.filter((s) => s.type === "topic-summary")).toHaveLength(1);
+    expect(String(summary!.title)).toContain("TOPIC SUMMARY");
+  });
+});
+
+// ── IMP-11 — HI inline (= definition) annotations ────────────────────────────
+describe("IMP-11 — HI inline definitions", () => {
+  it("annotates the first use of a key term with (= definition)", () => {
+    const r = enforceSendOverlayMarkers(hiSheet(), { sendNeed: "hi" });
+    const qText = r.worksheet
+      .sections!.filter((s) => String(s.type).startsWith("q-"))
+      .map((s) => String(s.content))
+      .join("\n");
+    expect(qText).toMatch(/aerobic respiration \(= [^)]+\)/i);
+    expect((qText.match(/\(= [^)]+\)/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("does not double-annotate the same term in a question", () => {
+    const r = enforceSendOverlayMarkers(hiSheet(), { sendNeed: "hi" });
+    const q2 = r.worksheet.sections!.find((s) => s.id === "q2");
+    // "ATP" appears once in q2 and should be annotated at most once.
+    expect((String(q2!.content).match(/ATP \(=/g) || []).length).toBeLessThanOrEqual(1);
+  });
+
+  it("is idempotent", () => {
+    const r1 = enforceSendOverlayMarkers(hiSheet(), { sendNeed: "hi" });
+    const r2 = enforceSendOverlayMarkers(r1.worksheet, { sendNeed: "hi" });
+    expect(JSON.stringify(r2.worksheet)).toBe(JSON.stringify(r1.worksheet));
+  });
+});
+
+// ── IMP-12 — ADHD brain-break scaling ────────────────────────────────────────
+describe("IMP-12 — ADHD brain-break scaling", () => {
+  const sheetWithQuestions = (n: number) =>
+    ws(
+      Array.from({ length: n }, (_, i) => ({
+        id: `q${i + 1}`,
+        type: "q-short-answer",
+        title: `Q${i + 1}`,
+        content: `Question ${i + 1}: state a fact. (2 marks)`,
+      })),
+    );
+  const countBreaks = (w: PostValidatorWorksheet) =>
+    (w.sections || []).filter((s) => typeof s.content === "string" && /brain\s*break/i.test(s.content)).length;
+
+  it("inserts 3 spaced brain breaks for a 16-question sheet", () => {
+    const r = enforceSendOverlayMarkers(sheetWithQuestions(16), { sendNeed: "adhd" });
+    expect(countBreaks(r.worksheet)).toBe(3);
+  });
+
+  it("inserts 2 brain breaks for a 12-question sheet", () => {
+    const r = enforceSendOverlayMarkers(sheetWithQuestions(12), { sendNeed: "adhd" });
+    expect(countBreaks(r.worksheet)).toBe(2);
+  });
+
+  it("inserts a single brain break for a short 6-question sheet", () => {
+    const r = enforceSendOverlayMarkers(sheetWithQuestions(6), { sendNeed: "adhd" });
+    expect(countBreaks(r.worksheet)).toBe(1);
+  });
+
+  it("is idempotent (does not keep adding breaks)", () => {
+    const r1 = enforceSendOverlayMarkers(sheetWithQuestions(16), { sendNeed: "adhd" });
+    const r2 = enforceSendOverlayMarkers(r1.worksheet, { sendNeed: "adhd" });
+    expect(countBreaks(r2.worksheet)).toBe(3);
+  });
+});
+
+// ── IMP-13 — Dyscalculia 5-step recipe on science calculation questions ──────
+describe("IMP-13 — dyscalculia 5-step calculation recipe", () => {
+  const sheet = () =>
+    ws([
+      {
+        id: "calc",
+        type: "q-extended",
+        title: "Q1",
+        content: "Calculate the number of neutrons in an atom with mass number 23 and atomic number 11. (3 marks)",
+      },
+      { id: "prose", type: "q-extended", title: "Q2", content: "Explain why metals conduct electricity. (4 marks)" },
+    ]);
+
+  it("adds the 5-step recipe to a calculation question but NOT a prose question", () => {
+    const r = enforceSendOverlayMarkers(sheet(), { sendNeed: "dyscalculia", subject: "Science" });
+    const calc = r.worksheet.sections!.find((s) => s.id === "calc");
+    const prose = r.worksheet.sections!.find((s) => s.id === "prose");
+    expect(String(calc!.content)).toContain("Step 1");
+    expect(String(calc!.content)).toContain("Calculation steps to follow");
+    expect(String(prose!.content)).not.toContain("Step 1");
+  });
+
+  it("is idempotent", () => {
+    const r1 = enforceSendOverlayMarkers(sheet(), { sendNeed: "dyscalculia", subject: "Science" });
+    const r2 = enforceSendOverlayMarkers(r1.worksheet, { sendNeed: "dyscalculia", subject: "Science" });
+    expect(JSON.stringify(r2.worksheet)).toBe(JSON.stringify(r1.worksheet));
+  });
+});
+
+// ── IMP-14 — MLD formula HELP BOX on calculation questions ───────────────────
+describe("IMP-14 — MLD formula HELP BOX", () => {
+  const sheet = () =>
+    ws([
+      { id: "lo", type: "objective", title: "Learning objective", content: "Work with atoms." },
+      {
+        id: "calc",
+        type: "q-extended",
+        title: "Q1",
+        content: "Calculate the number of neutrons (mass number 23, atomic number 11). (3 marks)",
+      },
+      { id: "prose", type: "q-short-answer", title: "Q2", content: "Name the parts of an atom. (2 marks)" },
+    ]);
+
+  it("adds a HELP BOX to calculation questions only", () => {
+    const r = enforceSendOverlayMarkers(sheet(), { sendNeed: "mld", topic: "Atomic Structure" });
+    const calc = r.worksheet.sections!.find((s) => s.id === "calc");
+    const prose = r.worksheet.sections!.find((s) => s.id === "prose");
+    expect(String(calc!.content)).toMatch(/HELP BOX/);
+    expect(String(prose!.content)).not.toMatch(/HELP BOX/);
+  });
+
+  it("is idempotent", () => {
+    const r1 = enforceSendOverlayMarkers(sheet(), { sendNeed: "mld", topic: "Atomic Structure" });
+    const r2 = enforceSendOverlayMarkers(r1.worksheet, { sendNeed: "mld", topic: "Atomic Structure" });
+    expect(JSON.stringify(r2.worksheet)).toBe(JSON.stringify(r1.worksheet));
+  });
+});
+
+
+// ── IMP-15 — EAL support (sentence frames + command-word decoder) ────────────
+describe("IMP-15 — EAL support", () => {
+  const ealSheet = () =>
+    ws([
+      { id: "lo", type: "objective", title: "Learning objective", content: "Understand respiration." },
+      { id: "q1", type: "q-extended", title: "Q1", content: "Explain why aerobic respiration releases more energy. (4 marks)" },
+      { id: "q2", type: "q-short-answer", title: "Q2", content: "Compare aerobic and anaerobic respiration. (3 marks)" },
+    ]);
+
+  it("appends command-word-aware sentence frames to written questions", () => {
+    const r = enforceSendOverlayMarkers(ealSheet(), { sendNeed: "eal" });
+    const q1 = r.worksheet.sections!.find((s) => s.id === "q1");
+    const q2 = r.worksheet.sections!.find((s) => s.id === "q2");
+    expect(String(q1!.content)).toMatch(/Sentence frame:/);
+    expect(String(q1!.content)).toMatch(/because/i); // "Explain" frame
+    expect(String(q2!.content)).toMatch(/similar|different/i); // "Compare" frame
+  });
+
+  it("inserts a command-word decoder box before the first question", () => {
+    const r = enforceSendOverlayMarkers(ealSheet(), { sendNeed: "eal" });
+    const decoder = r.worksheet.sections!.find((s) => /command\s*word/i.test(String(s.title || "")));
+    expect(decoder).toBeDefined();
+    expect(String(decoder!.content)).toMatch(/Explain —/);
+    expect(String(decoder!.content)).toMatch(/Compare —/);
+    const decoderIdx = r.worksheet.sections!.findIndex((s) => /command\s*word/i.test(String(s.title || "")));
+    const firstQIdx = r.worksheet.sections!.findIndex((s) => String(s.type).startsWith("q-"));
+    expect(decoderIdx).toBeLessThan(firstQIdx);
+  });
+
+  it("is idempotent", () => {
+    const r1 = enforceSendOverlayMarkers(ealSheet(), { sendNeed: "eal" });
+    const r2 = enforceSendOverlayMarkers(r1.worksheet, { sendNeed: "eal" });
+    expect(JSON.stringify(r2.worksheet)).toBe(JSON.stringify(r1.worksheet));
   });
 });
