@@ -1,0 +1,21 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Install Playwright and Chromium in the audit directory, verify the environment can launch a headless browser and reach adaptly.co.uk",
+  "status": "in_progress",
+  "steps": [
+    "cd /projects/sandbox/send-assistant/audit && npm install playwright",
+    "npx playwright install chromium (installs the Chromium browser binary)",
+    "Create a minimal smoke-test script that launches Chromium, navigates to https://adaptly.co.uk/login, confirms the page loads (title or body contains relevant text), then closes the browser",
+    "Run the smoke test and confirm it exits cleanly"
+  ],
+  "acceptance_criteria": [
+    "playwright and chromium are installed and importable",
+    "A headless Chromium instance can navigate to adaptly.co.uk without error"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/send-assistant/audit && node -e \"import('playwright').then(p => p.chromium.launch({headless:true}).then(b => b.close().then(() => console.log('OK'))))\" and see 'OK'"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
