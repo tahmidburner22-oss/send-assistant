@@ -1454,6 +1454,7 @@ For Diagram A: Use the marker [[DIAGRAM:{"type":"labeled","title":"Diagram A —
 For Diagram B: Use the marker [[DIAGRAM:{"type":"labeled","title":"Diagram B — ${params.topic}","labels":[{"text":"Label 1","x":20,"y":30},{"text":"Label 2","x":80,"y":30}]}]].
 ${yearNum >= 9 ? `MANDATORY FOR YEAR 9-11: Section 3 MUST be titled 'SECTION 3 — EXAM STYLE QUESTIONS'. Every question in Section 3 (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}) MUST be a multi-step exam-style question with realistic mark allocations and exam-board phrasing. Do NOT include simple recall or fluency questions in Section 3.
 ⚠️ COUNT IS MANDATORY: Section 3 MUST contain EXACTLY ${sec3TargetCount} questions (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}). You MUST NOT generate more than ${sec3TargetCount}. STOP after question ${sec1TargetCount + sec2TargetCount + sec3TargetCount}. Do NOT add a 6th exam-style question — the Challenge question is separate and is NOT part of Section 3's count.
+⚠️ MARK VARIETY IS MANDATORY: Allocate marks by command-word demand — they MUST NOT all be the same tariff. Use this mapping: State / Name / Give / Identify = 1 mark; Define / Label = 1-2 marks; Describe / Explain = 2-4 marks; Calculate (multi-step) / Compare / Analyse = 4-5 marks; Evaluate / Justify / Discuss = 6 marks. Across Section 3 include a spread (at least one low-tariff 1-2 mark question AND at least one high-tariff 5-6 mark question); total Section 3 ≈ 20-25 marks.
 
 ⚠️ MARK FORMAT — Every mark allocation across the WHOLE worksheet (Sections 1, 2, 3 and the Challenge) MUST use ROUND brackets to match real GCSE paper convention: write '(1 mark)', '(2 marks)', '(4 marks)', '(6 marks)' etc. Do NOT use square brackets '[N marks]' anywhere. A real exam paper never uses square brackets for marks.` : ""}`;
 
@@ -1546,7 +1547,7 @@ Every piece of content you generate MUST be anchored to the UK curriculum and ex
 - Questions must reflect the actual style, difficulty, and command words used in past papers for this specification
 - Do NOT generate content that contradicts the specification or uses out-of-date terminology
 - The worked example MUST show a method that would score full marks on the actual exam
-- Common mistakes listed MUST be genuine misconceptions identified in examiner reports for this topic
+- Common mistakes listed MUST be genuine misconceptions identified in examiner reports for this topic. All mistakes MUST be directly about "${params.topic}" — do NOT reference concepts, formulae or skills from a different subject or topic (e.g. no "successive percentage changes" on a Forces sheet). Every mistake must name or clearly relate to "${params.topic}".
 - For science: use the correct chemical equations, formulae, and units as specified by the exam board
 - For maths: use the correct notation and methods as specified in the GCSE maths specification
 - For English/Humanities: use the correct critical terminology and assessment objectives (AO1, AO2, AO3, AO4)
