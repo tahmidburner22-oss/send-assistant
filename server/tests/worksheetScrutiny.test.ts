@@ -4008,10 +4008,12 @@ describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-re
     "year-group-lock",
     "cap-worked-example-steps",
     "strip-leaked-generator-instructions",
+    "marks-bracket-style",
     "strip-visible-placeholders-and-answer-leakage",
     "reinforce-dyscalculia-maths-scaffolding",
     "reconcile-mark-scheme",
     "extract-misconception-links",
+    "application-question-cap",
     "section-question-counts",
     "spec-anchor-presence",
     // Lane 1.6 + 1.7 — Phase 4 SEND-overlay marker enforcer (HI Topic

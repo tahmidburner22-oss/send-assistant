@@ -534,6 +534,24 @@ const LEAKED_INLINE_INSTRUCTION_RE = /\b(?:(?:CRITICAL\s+)?FORMATTING\s+RULE|CRI
 
 function cleanLeakedGeneratorInstructions(content: string): { content: string; changed: boolean } {
   let changed = false;
+
+  // IMP-03 — robust pre-pass. Strip RULE/INSTRUCTION/SCHEMA segments even when
+  // they sit MID-LINE because the AI emitted literal "\n" escapes (backslash +
+  // n) rather than real newlines — the gap-fill word bank leak
+  // ("WORD BANK: …\nRULE: EXACTLY 7 sentences…") is exactly this shape, and the
+  // line-anchored filters below never see it at a physical line start. Anchored
+  // to a logical line boundary (string start, real newline, or a literal "\n"
+  // escape — captured and preserved) so it never fires on legitimate prose such
+  // as "the octet rule: electrons must …". The lazy match is bounded by a
+  // literal "\n" escape OR a real end-of-line so it never swallows the
+  // following sentence.
+  const beforePre = content;
+  content = content.replace(
+    /(^|\n|\\n)([^\S\r\n]*)(?:(?:CRITICAL\s+)?(?:FORMATTING\s+)?(?:RULE|INSTRUCTION|SCHEMA|OUTPUT\s+RULE)\s*:\s*(?:EXACTLY|You\s+MUST|MUST|Do\s+NOT|Return|Write|Use|Include|Only)[^\n]*?)(?=\\n|$)/gim,
+    "$1",
+  );
+  if (content !== beforePre) changed = true;
+
   const lines = content.split("\n");
   const kept: string[] = [];
 
@@ -608,6 +626,67 @@ export function stripLeakedGeneratorInstructions(
   return { worksheet: { ...ws, sections }, warnings };
 }
 
+// ─── 6b. Mark-allocation bracket style (IMP-06) ──────────────────────────────
+// GCSE papers write mark allocations in ROUND brackets — "(2 marks)" — but the
+// LLM almost always emits SQUARE brackets — "[2 marks]" — despite the prompt.
+// This deterministic rewrite guarantees the convention regardless of model
+// output. Pure / idempotent: a second pass finds nothing left to convert
+// because the output no longer contains a "[N marks]" token. The renderer
+// accepts both forms, so this never changes which questions render a mark
+// badge / answer-line ramp — it only normalises the visible glyph.
+const MARKS_SQUARE_BRACKET_RE = /\[(\d+)\s*(marks?)\]/gi;
+
+function convertMarksBrackets(value: unknown): { value: unknown; changed: boolean } {
+  if (typeof value !== "string" || !value) return { value, changed: false };
+  MARKS_SQUARE_BRACKET_RE.lastIndex = 0;
+  if (!MARKS_SQUARE_BRACKET_RE.test(value)) return { value, changed: false };
+  const next = value.replace(MARKS_SQUARE_BRACKET_RE, (_m, n, word) => `(${n} ${String(word).toLowerCase()})`);
+  return { value: next, changed: next !== value };
+}
+
+export function enforceMarksBracketStyle(
+  ws: PostValidatorWorksheet,
+): PostValidatorResult {
+  const warnings: string[] = [];
+  let changedCount = 0;
+
+  const sections = (ws.sections || []).map((s): PostValidatorSection => {
+    let changed = false;
+    const next: any = { ...s };
+    for (const key of ["title", "subtitle", "content", "prompt", "question", "text", "stem", "caption"]) {
+      const r = convertMarksBrackets(next[key]);
+      if (r.changed) { next[key] = r.value; changed = true; }
+    }
+    if (Array.isArray(next.questions)) {
+      next.questions = next.questions.map((q: any) => {
+        if (!q || typeof q !== "object") return q;
+        const nq = { ...q };
+        for (const key of ["text", "prompt", "question", "stem", "content", "answer", "feedback"]) {
+          const r = convertMarksBrackets(nq[key]);
+          if (r.changed) { nq[key] = r.value; changed = true; }
+        }
+        if (Array.isArray(nq.options)) {
+          nq.options = nq.options.map((o: any) => {
+            const r = convertMarksBrackets(o);
+            if (r.changed) changed = true;
+            return r.value;
+          });
+        }
+        return nq;
+      });
+    }
+    if (changed) changedCount++;
+    return changed ? (next as PostValidatorSection) : s;
+  });
+
+  if (changedCount > 0) {
+    warnings.push(
+      `[IMP-06] Normalised mark allocations to GCSE round-bracket style "(N marks)" in ${changedCount} section${changedCount === 1 ? "" : "s"}.`,
+    );
+  }
+  return { worksheet: { ...ws, sections }, warnings };
+}
+
 // ─── 7. Dyscalculia maths scaffold reinforcement ─────────────────────────────
 // Generic "show your working" is too vague for dyscalculia. Add a short,
 // concrete checklist to maths questions when a dyscalculia profile is selected.
@@ -663,7 +742,17 @@ export function reinforceDyscalculiaMathsScaffolding(
 // content string on the second pass.
 
 const TEACHER_DIAGNOSES_LINE_RE = /^\s*TEACHER[_\s]?DIAGNOSES\s*:\s*(.+?)\s*$/im;
-const TEACHER_DIAGNOSES_PAIR_RE = /\b([A-Da-d])\s*=\s*(m-[a-z0-9-]{2,})\b/g;
+// IMP-01 — broadened to capture BOTH maths (`m-…`) and science (`s-…`) and
+// any other short subject-prefixed misconception IDs. The previous pattern
+// only matched `m-…`, so science MCQ markers (e.g. `A=s-mass-01`) were never
+// parsed — they fell through as "malformed" and only the line-strip saved us.
+const TEACHER_DIAGNOSES_PAIR_RE = /\b([A-Da-d])\s*=\s*([a-z]{1,4}-[a-z0-9-]{2,})\b/g;
+// IMP-01 / IMP-17 — robust marker strip. `[^\n]*?` plus a lookahead for a
+// literal "\n" escape (backslash + n) OR a real end-of-line means the marker
+// is removed whether the AI emitted real newlines or literal "\n" escapes
+// (which collapse the whole block onto one physical line and defeat the
+// line-anchored TEACHER_DIAGNOSES_LINE_RE above).
+const TEACHER_DIAGNOSES_STRIP_RE = /TEACHER[_\s]?DIAGNOSES\s*:[^\n]*?(?=\\n|$)/gim;
 
 export function extractMisconceptionLinks(
   ws: PostValidatorWorksheet,
@@ -687,14 +776,22 @@ export function extractMisconceptionLinks(
     if (!content) return s;
 
     const lineMatch = content.match(TEACHER_DIAGNOSES_LINE_RE);
-    if (!lineMatch) return s;
+    // Also detect markers that sit mid-line because the AI emitted literal
+    // "\n" escapes rather than real newlines (the line-anchored match misses
+    // those). Either signal means we must parse + strip.
+    TEACHER_DIAGNOSES_STRIP_RE.lastIndex = 0;
+    const hasMarker = !!lineMatch || TEACHER_DIAGNOSES_STRIP_RE.test(content);
+    if (!hasMarker) return s;
 
-    // Parse pairs from the marker line. Reset the regex state because it has
-    // the `g` flag.
+    // Parse pairs from anywhere a marker appears (covers both real-newline and
+    // literal-escape encodings). Reset regex state because of the `g` flag.
+    const markerText = lineMatch
+      ? lineMatch[1]
+      : (content.match(/TEACHER[_\s]?DIAGNOSES\s*:[^\n]*?(?=\\n|$)/im)?.[0] ?? "");
     TEACHER_DIAGNOSES_PAIR_RE.lastIndex = 0;
     let pair: RegExpExecArray | null;
     let foundAny = false;
-    while ((pair = TEACHER_DIAGNOSES_PAIR_RE.exec(lineMatch[1])) !== null) {
+    while ((pair = TEACHER_DIAGNOSES_PAIR_RE.exec(markerText)) !== null) {
       foundAny = true;
       const link: PostValidatorMisconceptionLink = {
         sectionIndex: idx,
@@ -715,13 +812,18 @@ export function extractMisconceptionLinks(
       warnings.push(`Stripped malformed TEACHER_DIAGNOSES line from MCQ at section ${idx}.`);
     }
 
-    // Strip the marker line from student-visible content regardless. It is
+    // Strip the marker from student-visible content regardless. It is
     // teacher-only data; the parsed links live on metadata.misconceptionLinks
-    // and are surfaced by the renderer's teacher view.
+    // and are surfaced by the renderer's teacher view. The robust global strip
+    // (TEACHER_DIAGNOSES_STRIP_RE) handles both real-newline and literal-"\n"
+    // encodings; the trailing line filter cleans up the common own-line case.
+    TEACHER_DIAGNOSES_STRIP_RE.lastIndex = 0;
     const cleaned = content
+      .replace(TEACHER_DIAGNOSES_STRIP_RE, "")
       .split("\n")
       .filter((ln) => !TEACHER_DIAGNOSES_LINE_RE.test(ln))
       .join("\n")
+      .replace(/[ \t]{2,}/g, " ")
       .trimEnd();
     return { ...s, content: cleaned };
   });
@@ -901,6 +1003,80 @@ export function enforceSectionQuestionCounts(
     }
   }
   return { worksheet: ws, warnings };
+}
+
+/**
+ * IMP-04 — enforce the GCSE Section 3 (Application & Analysis) cap.
+ *
+ * The audit found Section 3 reliably generating 6 exam-style questions when
+ * the spec / SECTION_QUESTION_TARGETS both fix it at exactly 5. The original
+ * `enforceSectionQuestionCounts` is warnings-only (a deliberate invariant), so
+ * this companion validator does the deterministic trimming the audit asks for:
+ * when more than `application.max` (5) question SECTIONS classify as the
+ * application group, it drops the highest-numbered extras until exactly 5
+ * remain. Conservative by design — it only ever acts on sections that
+ * `inferSectionGroup` confidently labels "application", and it is a no-op when
+ * the count is already ≤ 5 (so a well-formed sheet, and a malformed sheet whose
+ * earlier sections under-generated, are both left untouched here — the prompt
+ * constraints handle those cases).
+ *
+ * Pure / idempotent: a second pass finds ≤ 5 application sections and returns
+ * the worksheet unchanged.
+ */
+function sectionQuestionNumber(section: PostValidatorSection): number {
+  const explicitN = (section as any).questionNumber;
+  if (typeof explicitN === "number" && Number.isFinite(explicitN)) return explicitN;
+  const title = typeof section.title === "string" ? section.title : "";
+  const m = title.match(/Q(\d+)/i);
+  return m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER;
+}
+
+export function enforceApplicationQuestionCap(
+  ws: PostValidatorWorksheet,
+  _opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+  const max = SECTION_QUESTION_TARGETS.application.max;
+  // Anything past the Understanding range that is a question section (but NOT
+  // the separate Challenge) is a Section 3 (application / exam-style) question.
+  // Using the cutoff rather than the fixed application range is deliberate: a
+  // 6th exam question is numbered just past the range and would otherwise be
+  // misread as a second "challenge" — so the cap would never fire.
+  const cutoff = getSectionQuestionRange("understanding", false).lastQ;
+
+  const isApplicationQuestion = (s: PostValidatorSection): boolean => {
+    const type = String(s.type || "").toLowerCase();
+    if (type === "challenge" || type === "q-challenge") return false;
+    const isQuestion =
+      type.startsWith("q-") ||
+      type === "extended-answer" ||
+      type === "lor" ||
+      type === "exam-question";
+    if (!isQuestion) return false;
+    const qn = sectionQuestionNumber(s);
+    return Number.isFinite(qn) && qn !== Number.MAX_SAFE_INTEGER && qn > cutoff;
+  };
+
+  const applicationIdx = sections
+    .map((s, i) => ({ i, qn: sectionQuestionNumber(s), keep: isApplicationQuestion(s) }))
+    .filter((x) => x.keep);
+
+  if (applicationIdx.length <= max) {
+    return { worksheet: ws, warnings };
+  }
+
+  // Keep the `max` lowest-numbered application questions; drop the rest.
+  const keepIdx = new Set(
+    [...applicationIdx].sort((a, b) => a.qn - b.qn).slice(0, max).map((x) => x.i),
+  );
+  const dropCount = applicationIdx.length - keepIdx.size;
+  const nextSections = sections.filter((s, i) => !isApplicationQuestion(s) || keepIdx.has(i));
+
+  warnings.push(
+    `[IMP-04] Trimmed ${dropCount} excess Section 3 (application) question${dropCount === 1 ? "" : "s"} to enforce the GCSE cap of ${max} exam-style questions.`,
+  );
+  return { worksheet: { ...ws, sections: nextSections }, warnings };
 }
 
 /**
@@ -1741,7 +1917,20 @@ function enforceDyscalculiaMarkers(
     const numbers = content.match(/-?\d+(?:\.\d+)?/g);
     if (!numbers || numbers.length === 0) return s;
     const uniqueNumbers = Array.from(new Set(numbers)).slice(0, 6);
-    const cue = `\n\nNumbers in this question: ${uniqueNumbers.join(", ")}. Underline each one as you read so you do not lose them.`;
+    // IMP-02 — preprocessor-safe cue format. The renderer's numbered-question
+    // pre-processor splits on "<delimiter><number><.)/space>" patterns to
+    // separate bunched questions. The previous cue ("…: 1, 2, 3. Underline…")
+    // put bare numbers straight after a colon / comma, so the trailing
+    // "3. Underline" was rewritten into a spurious numbered item — duplicating
+    // question numbers and inflating section counts. We now (a) keep the
+    // numbers AFTER the explanatory text and (b) wrap each in single quotes so
+    // no number is ever immediately preceded by a split delimiter or followed
+    // by a "."/")"/space. The renderer also renders this line as a dedicated
+    // callout (see WorksheetRenderer formatContent) so it is never treated as
+    // question content. The literal substring "Numbers in this question" is
+    // preserved for downstream detection / idempotency.
+    const numberList = uniqueNumbers.map((n) => `'${n}'`).join(", ");
+    const cue = `\n\nNumbers in this question to underline as you read so you do not lose them: ${numberList}`;
     cuedCount++;
     mutated = true;
     return { ...s, content: content + cue };
