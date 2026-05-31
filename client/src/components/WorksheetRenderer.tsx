@@ -11,6 +11,7 @@
 import React, { forwardRef, useState, useCallback } from "react";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 import { getSendFormatting, sendNeeds } from "@/lib/send-data";
+import { isAnxietySendProfile, toInvitationalSectionLabel } from "@/lib/sendSectionLabels";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
 import { findMisconceptionById } from "@/lib/misconception-bank";
 import { getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
@@ -136,6 +137,14 @@ function stripStudentFacingGeneratorLeaks(content: string): string {
     .filter((line) => line.trim().length > 0)
     .join("\n");
 }
+
+// ── IMP-10 — Anxiety / SEMH invitational section labels ──────────────────────
+// The Section 1/2/3 group dividers are RENDERER-generated from a fixed label
+// table (not from section.title), which is why the post-validator's anxiety
+// title rewrite never reached the live page. The remap helpers live in
+// `sendSectionLabels.ts` so they can be unit-tested without rendering this
+// (very large) component; re-exported here for callers/back-compat.
+export { isAnxietySendProfile, toInvitationalSectionLabel };
 
 function normalizeWorksheetTitleForDisplay(title: unknown, difficulty?: unknown): string {
   const rawTitle = typeof title === "string" ? title.trim() : String(title || "").trim();
@@ -5961,7 +5970,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
               }}>
-                {groupInfo.label} — Questions {groupInfo.qStart}–{groupInfo.qEnd}
+                {(() => {
+                  // IMP-10 — anxiety/SEMH pupils get invitational divider text.
+                  // Non-anxiety output is unchanged.
+                  if (!isAnxietySendProfile(sendNeedId)) {
+                    return `${groupInfo.label} — Questions ${groupInfo.qStart}–${groupInfo.qEnd}`;
+                  }
+                  const displayLabel = toInvitationalSectionLabel(groupInfo.label);
+                  // The bonus/challenge reads better without a clinical range.
+                  return /OPTIONAL BONUS/i.test(displayLabel)
+                    ? displayLabel
+                    : `${displayLabel} — Questions ${groupInfo.qStart}–${groupInfo.qEnd}`;
+                })()}
               </div>
               <div style={{ borderTop: "1px solid #d1d5db", marginTop: "5px" }} />
             </div>

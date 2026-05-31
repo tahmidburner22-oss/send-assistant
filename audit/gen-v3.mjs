@@ -24,9 +24,21 @@ async function clickDrop(page, hint, value) {
   }, hint.toLowerCase());
   await page.waitForTimeout(1200);
   const picked = await page.evaluate((v) => {
-    const items = document.querySelectorAll('[role="option"], [data-radix-collection-item], [cmdk-item]');
-    for (const it of items) {
-      if (it.textContent?.toLowerCase().includes(v.toLowerCase())) { it.click(); return it.textContent?.trim().slice(0,50); }
+    const items = Array.from(document.querySelectorAll('[role="option"], [data-radix-collection-item], [cmdk-item]'));
+    const target = v.toLowerCase().trim();
+    const text = (el) => (el.textContent || "").toLowerCase().trim();
+    // IMP-15 — match precisely so "EAL" can never resolve to a different option
+    // (e.g. the old fuzzy `includes` could click the first partial match).
+    // Priority: exact equality → starts-with → word-boundary includes.
+    let match =
+      items.find((it) => text(it) === target) ||
+      items.find((it) => text(it).startsWith(target)) ||
+      items.find((it) => new RegExp(`(^|[^a-z])${target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z]|$)`).test(text(it))) ||
+      items.find((it) => text(it).includes(target));
+    if (match) {
+      match.scrollIntoView({ block: "center" });
+      match.click();
+      return match.textContent?.trim().slice(0, 50);
     }
     return null;
   }, value);
