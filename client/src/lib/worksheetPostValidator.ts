@@ -699,6 +699,19 @@ const MATHS_QUESTION_TYPES = new Set([
   "q-short-answer", "q-extended", "q-data-table", "q-challenge", "q-graph", "q-mcq", "q-gap-fill",
 ]);
 
+// Shared calculation-question detector (IMP-13 / IMP-14). Conservative on
+// purpose: only fires on explicit calculation command words so prose / recall
+// questions are never scaffolded as if they were numeric.
+function isCalculationQuestionText(text: string): boolean {
+  return /\bcalculat(?:e|ion|ing)\b|\bwork(?:ing)? out\b|\bhow (?:much|many|far|fast|long)\b|\bdetermine the\b|\bcompute\b/i.test(
+    String(text || ""),
+  );
+}
+
+function escapeRegExpLiteral(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function reinforceDyscalculiaMathsScaffolding(
   ws: PostValidatorWorksheet,
   opts: PostValidatorOptions = {},
@@ -1330,7 +1343,13 @@ export function enforceSendOverlayMarkers(
 
   // ── HI — Topic Summary block ─────────────────────────────────────────────
   if (sendKey === "hi" || sendKey === "hearing-impairment" || sendKey === "deaf") {
-    return enforceHiTopicSummary(ws, sections, warnings, opts);
+    const summary = enforceHiTopicSummary(ws, sections, warnings, opts);
+    return enforceHiInlineDefinitions(
+      summary.worksheet,
+      summary.worksheet.sections || [],
+      summary.warnings,
+      opts,
+    );
   }
 
   // ── Anxiety / SEMH — section title rewrites ──────────────────────────────
@@ -1396,11 +1415,28 @@ function enforceHiTopicSummary(
   warnings: string[],
   opts: PostValidatorOptions,
 ): PostValidatorResult {
-  // Already present? No-op.
-  const hasExisting = sections.some(
+  // IMP-16 — a Topic Summary may already exist (AI-generated). If so, do NOT
+  // synthesise a second one, but DO guarantee it carries the explicit
+  // "TOPIC SUMMARY" heading the audit requires (the AI often titles it
+  // "Topic: <subject>" or similar). Normalise the title in place.
+  const existingIdx = sections.findIndex(
     s => String(s.type || "").toLowerCase() === "topic-summary" && !s.teacherOnly,
   );
-  if (hasExisting) return { worksheet: ws, warnings };
+  if (existingIdx >= 0) {
+    const existing = sections[existingIdx];
+    const title = typeof existing.title === "string" ? existing.title : "";
+    if (/topic\s*summary/i.test(title)) return { worksheet: ws, warnings };
+    const newTitle = title.trim()
+      ? `TOPIC SUMMARY — ${title.trim()}`
+      : "TOPIC SUMMARY — read first";
+    const nextSections = sections.map((s, i) =>
+      i === existingIdx ? { ...s, title: newTitle } : s,
+    );
+    warnings.push(
+      `[Phase 4 — HI] Added the explicit "TOPIC SUMMARY" heading to an existing summary block (was "${title || "(untitled)"}") so a Hearing-Impairment pupil can locate it at a glance.`,
+    );
+    return { worksheet: { ...ws, sections: nextSections }, warnings };
+  }
 
   // Find the first pupil-facing question section.
   const firstQIdx = sections.findIndex(s => {
@@ -1460,7 +1496,7 @@ function enforceHiTopicSummary(
   const newSection: PostValidatorSection = {
     id: `topic-summary-hi-${firstQIdx}`,
     type: "topic-summary",
-    title: "Topic Summary — read first",
+    title: "TOPIC SUMMARY — read first",
     content: lines.join("\n"),
     teacherOnly: false,
   };
@@ -1476,6 +1512,100 @@ function enforceHiTopicSummary(
       "has the same starting knowledge as a hearing peer.",
   );
   return { worksheet: { ...ws, sections: nextSections }, warnings };
+}
+
+/**
+ * IMP-11 — HI inline definitions.
+ *
+ * Hearing-impaired pupils may have missed the teacher's spoken gloss of a
+ * technical term, so the Key Vocabulary box at the top is not enough: they
+ * need the definition at point of use. This injects a short `(= plain
+ * definition)` annotation on the FIRST occurrence of each Key-Vocabulary term
+ * within each pupil-facing question, sourced from the worksheet's own
+ * vocabulary box (never the AI). Idempotent (skips a term already annotated)
+ * and preprocessor-safe (definitions are short prose with no leading digits).
+ * Skips structured items (gap-fill / true-false) whose fixed layout would be
+ * cluttered by inline glosses.
+ */
+function extractVocabularyDefinitions(content: string): Array<{ term: string; definition: string }> {
+  return content
+    .split(/\n+/)
+    .map(line => line.replace(/^[-•*\d.)\s]+/, "").trim())
+    .filter(Boolean)
+    .map(line => {
+      const m = line.match(/^([^:|–—-]{2,60})\s*[:|–—-]\s*(.+)$/);
+      if (!m) return null;
+      const term = m[1].trim();
+      // Keep the gloss short so the inline annotation stays readable; trim a
+      // trailing full stop and any "(unit)" tail.
+      let definition = m[2].trim().replace(/\s*\([^)]*\)\s*$/, "").replace(/[.;]+$/, "").trim();
+      if (definition.length > 70) definition = definition.slice(0, 67).trimEnd() + "…";
+      return term.length > 1 && definition.length > 1 ? { term, definition } : null;
+    })
+    .filter((d): d is { term: string; definition: string } => d !== null);
+}
+
+function enforceHiInlineDefinitions(
+  ws: PostValidatorWorksheet,
+  sections: PostValidatorSection[],
+  warnings: string[],
+  _opts: PostValidatorOptions,
+): PostValidatorResult {
+  const vocabRaw = findFirstSectionContent(sections, [
+    "vocabulary",
+    "key-vocabulary",
+    "key-terms",
+    "key-vocab",
+    "glossary",
+  ]);
+  if (!vocabRaw) return { worksheet: ws, warnings };
+
+  // Longest term first so "aerobic respiration" is matched before "respiration".
+  const defs = extractVocabularyDefinitions(vocabRaw).sort(
+    (a, b) => b.term.length - a.term.length,
+  );
+  if (defs.length === 0) return { worksheet: ws, warnings };
+
+  let annotatedTotal = 0;
+  let questionsTouched = 0;
+  const ANNOTATABLE_TYPES = new Set([
+    "q-short-answer", "q-extended", "exam-question", "extended-answer", "q-mcq", "challenge", "q-challenge",
+  ]);
+
+  const next = sections.map(s => {
+    if (s.teacherOnly) return s;
+    const type = String(s.type || "").toLowerCase();
+    if (!ANNOTATABLE_TYPES.has(type)) return s;
+    let content = typeof s.content === "string" ? s.content : "";
+    if (!content.trim()) return s;
+
+    let changedHere = false;
+    for (const { term, definition } of defs) {
+      const escaped = escapeRegExpLiteral(term);
+      // Already annotated for this term in the section? Skip. Word-boundaried
+      // so "aerobic respiration" is not considered annotated just because
+      // "anaerobic respiration (= …)" contains it as a substring.
+      if (new RegExp(`\\b${escaped}\\b\\s*\\(=`, "i").test(content)) continue;
+      const firstOccurrence = new RegExp(`\\b${escaped}\\b`, "i");
+      if (!firstOccurrence.test(content)) continue;
+      // Inject on the FIRST occurrence only. Function replacement avoids any
+      // `$` in the definition being treated as a back-reference.
+      content = content.replace(firstOccurrence, (m) => `${m} (= ${definition})`);
+      changedHere = true;
+      annotatedTotal++;
+    }
+    if (!changedHere) return s;
+    questionsTouched++;
+    return { ...s, content };
+  });
+
+  if (annotatedTotal > 0) {
+    warnings.push(
+      `[Phase 4 — HI] Injected ${annotatedTotal} inline "(= definition)" annotation${annotatedTotal === 1 ? "" : "s"} across ${questionsTouched} question${questionsTouched === 1 ? "" : "s"} so a deaf pupil meets each key term's meaning at the point of use (IMP-11).`,
+    );
+  }
+  if (annotatedTotal === 0) return { worksheet: ws, warnings };
+  return { worksheet: { ...ws, sections: next }, warnings };
 }
 
 /**
@@ -1623,48 +1753,79 @@ function enforceAdhdMarkers(
     return updated;
   });
 
-  // (c) Brain-break section: insert mid-flow if missing.
-  const hasBrainBreak = next.some(
-    s =>
-      typeof s.content === "string" &&
-      /brain\s*break/i.test(s.content),
-  );
-  if (!hasBrainBreak) {
-    // Find pupil-facing question sections and insert AFTER the median
-    // index. We use the median rather than a fixed Q-number so the
-    // break lands roughly halfway through whatever the AI emitted.
-    const questionIndices: number[] = [];
-    next.forEach((s, idx) => {
-      if (s.teacherOnly) return;
-      const t = String(s.type || "").toLowerCase();
-      if (
-        t.startsWith("q-") ||
-        t === "challenge" ||
-        t === "extended-answer" ||
-        t === "exam-question" ||
-        t === "lor"
-      ) {
-        questionIndices.push(idx);
-      }
-    });
-    if (questionIndices.length >= 4) {
-      const insertAfter = questionIndices[Math.floor(questionIndices.length / 2)];
-      const breakSection: PostValidatorSection = {
-        id: `brain-break-adhd-${insertAfter}`,
-        type: "send-support",
-        title: "Brain break",
-        content: ADHD_BRAIN_BREAK_LINE,
-        teacherOnly: false,
-      };
-      next = [
-        ...next.slice(0, insertAfter + 1),
-        breakSection,
-        ...next.slice(insertAfter + 1),
-      ];
+  // (c) Brain-break sections: IMP-12 — scale the number of movement breaks to
+  // the worksheet length and space them evenly. A single fixed break is not
+  // enough for a 15+ question sheet; ADHD attention benefits from a break
+  // roughly every quarter. Targets: <10 Qs → 1 break, 10-15 → 2, 16+ → 3
+  // (and none for very short sheets of <4 Qs). Existing breaks are honoured —
+  // we only top up to the target and never place a new break within 3
+  // questions of an existing one.
+  const questionIndices: number[] = [];
+  next.forEach((s, idx) => {
+    if (s.teacherOnly) return;
+    const t = String(s.type || "").toLowerCase();
+    if (
+      t.startsWith("q-") ||
+      t === "challenge" ||
+      t === "extended-answer" ||
+      t === "exam-question" ||
+      t === "lor"
+    ) {
+      questionIndices.push(idx);
+    }
+  });
+  const nQuestions = questionIndices.length;
+  const targetBreaks = nQuestions < 4 ? 0 : nQuestions < 10 ? 1 : nQuestions <= 15 ? 2 : 3;
+
+  // Ordinal (1-based position in the question stream) of every existing break,
+  // approximated by how many question sections precede it.
+  const existingBreakOrdinals: number[] = [];
+  next.forEach((s, idx) => {
+    if (typeof s.content === "string" && /brain\s*break/i.test(s.content)) {
+      const ordinal = questionIndices.filter((qi) => qi < idx).length;
+      existingBreakOrdinals.push(ordinal);
+    }
+  });
+
+  if (targetBreaks > 0 && existingBreakOrdinals.length < targetBreaks) {
+    // Evenly spaced desired ordinals: e.g. target 3 over 16 Qs → after Q4, Q8, Q12.
+    const desiredOrdinals = Array.from({ length: targetBreaks }, (_, j) =>
+      Math.max(1, Math.min(nQuestions - 1, Math.round((nQuestions * (j + 1)) / (targetBreaks + 1)))),
+    );
+    const chosenOrdinals: number[] = [];
+    const tooClose = (o: number) =>
+      existingBreakOrdinals.some((e) => Math.abs(e - o) < 3) ||
+      chosenOrdinals.some((c) => Math.abs(c - o) < 3);
+    for (const o of desiredOrdinals) {
+      if (existingBreakOrdinals.length + chosenOrdinals.length >= targetBreaks) break;
+      if (!tooClose(o)) chosenOrdinals.push(o);
+    }
+
+    if (chosenOrdinals.length > 0) {
+      // Map each chosen ordinal to the section index it should follow, then
+      // rebuild the array in one pass so shifting indices never corrupt
+      // placement.
+      const insertAfterSectionIdx = new Set(
+        chosenOrdinals.map((o) => questionIndices[o - 1]),
+      );
+      const rebuilt: PostValidatorSection[] = [];
+      next.forEach((s, idx) => {
+        rebuilt.push(s);
+        if (insertAfterSectionIdx.has(idx)) {
+          rebuilt.push({
+            id: `brain-break-adhd-${idx}`,
+            type: "send-support",
+            title: "Brain break",
+            content: ADHD_BRAIN_BREAK_LINE,
+            teacherOnly: false,
+          });
+        }
+      });
+      next = rebuilt;
       mutated = true;
       warnings.push(
-        "[Phase 4 — ADHD] Brain-break section was missing for an ADHD worksheet; " +
-          "inserted mid-flow so the pupil has a movement-break checkpoint to restore attention.",
+        `[Phase 4 — ADHD] Inserted ${chosenOrdinals.length} brain-break${chosenOrdinals.length === 1 ? "" : "s"} ` +
+          `(target ${targetBreaks} for ${nQuestions} questions) so an ADHD pupil gets a movement checkpoint roughly every quarter.`,
       );
     }
   }
@@ -1814,14 +1975,17 @@ function enforceMldMarkers(
   warnings: string[],
   opts: PostValidatorOptions,
 ): PostValidatorResult {
+  let working = sections;
+  let mutated = false;
+
+  // (a) Topic-context working-memory anchor — insert if missing.
   const hasContextBlock = sections.some(s => {
     if (s.teacherOnly) return false;
     const t = String(s.type || "").toLowerCase();
     return t === "topic-context" || t === "topic-summary";
   });
-  if (hasContextBlock) return { worksheet: ws, warnings };
 
-  const firstQIdx = sections.findIndex(s => {
+  const firstQIdx = working.findIndex(s => {
     if (s.teacherOnly) return false;
     const t = String(s.type || "").toLowerCase();
     return (
@@ -1832,49 +1996,84 @@ function enforceMldMarkers(
       t === "lor"
     );
   });
-  if (firstQIdx < 0) return { worksheet: ws, warnings };
 
-  const topic =
-    (opts.topic && opts.topic.trim()) ||
-    opts_topic_or_metadata(ws) ||
-    "this topic";
-  const lo = findFirstSectionContent(sections, [
-    "objective",
-    "learning-objective",
-    "learning_objective",
-    "lo",
-  ]);
+  if (!hasContextBlock && firstQIdx >= 0) {
+    const topic =
+      (opts.topic && opts.topic.trim()) ||
+      opts_topic_or_metadata(ws) ||
+      "this topic";
+    const lo = findFirstSectionContent(sections, [
+      "objective",
+      "learning-objective",
+      "learning_objective",
+      "lo",
+    ]);
 
-  const lines: string[] = [];
-  lines.push(`Remember: in this worksheet we are working on ${topic}.`);
-  if (lo && lo.trim()) {
+    const lines: string[] = [];
+    lines.push(`Remember: in this worksheet we are working on ${topic}.`);
+    if (lo && lo.trim()) {
+      lines.push("");
+      lines.push(`What we are learning today: ${lo.trim()}`);
+    }
     lines.push("");
-    lines.push(`What we are learning today: ${lo.trim()}`);
+    lines.push("Tips while you work:");
+    lines.push("- Take your time on each question.");
+    lines.push("- Check the word bank or worked example if you get stuck.");
+    lines.push("- It is OK to ask your teacher if a word is unfamiliar.");
+
+    const newSection: PostValidatorSection = {
+      id: `topic-context-mld-${firstQIdx}`,
+      type: "topic-context",
+      title: "What we are working on",
+      content: lines.join("\n"),
+      teacherOnly: false,
+    };
+
+    working = [
+      ...working.slice(0, firstQIdx),
+      newSection,
+      ...working.slice(firstQIdx),
+    ];
+    mutated = true;
+    warnings.push(
+      "[Phase 4 — MLD] Topic-context block was missing for an MLD worksheet; " +
+        "inserted deterministically so the pupil has a working-memory anchor while answering.",
+    );
   }
-  lines.push("");
-  lines.push("Tips while you work:");
-  lines.push("- Take your time on each question.");
-  lines.push("- Check the word bank or worked example if you get stuck.");
-  lines.push("- It is OK to ask your teacher if a word is unfamiliar.");
 
-  const newSection: PostValidatorSection = {
-    id: `topic-context-mld-${firstQIdx}`,
-    type: "topic-context",
-    title: "What we are working on",
-    content: lines.join("\n"),
-    teacherOnly: false,
-  };
+  // (b) IMP-14 — formula HELP BOX on calculation questions. MLD pupils carry a
+  // smaller working-memory load, so a dedicated reminder to write the formula
+  // before substituting numbers offloads the method. Idempotent (skips a
+  // question that already shows a HELP BOX). Preprocessor-safe (no bare
+  // numbers).
+  let helpBoxCount = 0;
+  working = working.map(s => {
+    if (s.teacherOnly) return s;
+    const type = String(s.type || "").toLowerCase();
+    const isQuestion =
+      type.startsWith("q-") ||
+      type === "challenge" ||
+      type === "extended-answer" ||
+      type === "exam-question";
+    if (!isQuestion) return s;
+    const content = typeof s.content === "string" ? s.content : "";
+    if (!content.trim()) return s;
+    if (/HELP BOX/i.test(content)) return s;
+    if (!isCalculationQuestionText(content)) return s;
+    const helpBox =
+      "\n\nHELP BOX: write the formula you need at the top, then put in the numbers from the question one at a time. Check the worked example if you are not sure which formula to use.";
+    helpBoxCount++;
+    return { ...s, content: content + helpBox };
+  });
+  if (helpBoxCount > 0) {
+    mutated = true;
+    warnings.push(
+      `[Phase 4 — MLD] Added a formula HELP BOX to ${helpBoxCount} calculation question${helpBoxCount === 1 ? "" : "s"} so the pupil does not have to hold the method in working memory (IMP-14).`,
+    );
+  }
 
-  const next = [
-    ...sections.slice(0, firstQIdx),
-    newSection,
-    ...sections.slice(firstQIdx),
-  ];
-  warnings.push(
-    "[Phase 4 — MLD] Topic-context block was missing for an MLD worksheet; " +
-      "inserted deterministically so the pupil has a working-memory anchor while answering.",
-  );
-  return { worksheet: { ...ws, sections: next }, warnings };
+  if (!mutated) return { worksheet: ws, warnings };
+  return { worksheet: { ...ws, sections: working }, warnings };
 }
 
 /**
@@ -1899,6 +2098,24 @@ function enforceDyscalculiaMarkers(
 ): PostValidatorResult {
   let mutated = false;
   let cuedCount = 0;
+  let recipeCount = 0;
+  // IMP-13 — science-adapted 5-step calculation recipe. The maths-only
+  // `reinforceDyscalculiaMathsScaffolding` never touched Science sheets, so a
+  // dyscalculic pupil tackling a Physics/Chemistry calculation had no method
+  // scaffold. We add one ONLY to calculation questions (so prose/recall
+  // questions stay uncluttered). Format is preprocessor-safe: every step
+  // number sits after "Step " (a space, not a split delimiter) and is followed
+  // by ":" (not "."/")"/space), so the renderer never mis-reads a step as a
+  // new numbered question.
+  const DYSCALCULIA_CALC_RECIPE = [
+    "Calculation steps to follow:",
+    "Step 1: write down the formula you need.",
+    "Step 2: find the values given in the question.",
+    "Step 3: put the values into the formula.",
+    "Step 4: work it out, one line of working at a time.",
+    "Step 5: write your answer with the correct units.",
+  ].join("\n");
+  const isCalculationQuestion = (text: string): boolean => isCalculationQuestionText(text);
   const next = sections.map(s => {
     if (s.teacherOnly) return s;
     const type = String(s.type || "").toLowerCase();
@@ -1910,35 +2127,47 @@ function enforceDyscalculiaMarkers(
     if (!isQuestion) return s;
     const content = typeof s.content === "string" ? s.content : "";
     if (!content.trim()) return s;
-    // Skip if a sibling Number Steps / Numbers cue already exists.
-    if (/numbers\s+in\s+this\s+question|number\s+steps/i.test(content)) return s;
-    // Detect any digit (decimal, fraction, integer). Skip if no
-    // numbers — this is a no-op for prose-only questions.
+    // Skip if a sibling Number Steps / Numbers cue / recipe already exists.
+    if (/numbers\s+in\s+this\s+question|number\s+steps|calculation steps to follow/i.test(content)) return s;
+    const isCalc = isCalculationQuestion(content);
+    // Detect any digit (decimal, fraction, integer).
     const numbers = content.match(/-?\d+(?:\.\d+)?/g);
-    if (!numbers || numbers.length === 0) return s;
-    const uniqueNumbers = Array.from(new Set(numbers)).slice(0, 6);
-    // IMP-02 — preprocessor-safe cue format. The renderer's numbered-question
-    // pre-processor splits on "<delimiter><number><.)/space>" patterns to
-    // separate bunched questions. The previous cue ("…: 1, 2, 3. Underline…")
-    // put bare numbers straight after a colon / comma, so the trailing
-    // "3. Underline" was rewritten into a spurious numbered item — duplicating
-    // question numbers and inflating section counts. We now (a) keep the
-    // numbers AFTER the explanatory text and (b) wrap each in single quotes so
-    // no number is ever immediately preceded by a split delimiter or followed
-    // by a "."/")"/space. The renderer also renders this line as a dedicated
-    // callout (see WorksheetRenderer formatContent) so it is never treated as
-    // question content. The literal substring "Numbers in this question" is
-    // preserved for downstream detection / idempotency.
-    const numberList = uniqueNumbers.map((n) => `'${n}'`).join(", ");
-    const cue = `\n\nNumbers in this question to underline as you read so you do not lose them: ${numberList}`;
-    cuedCount++;
+    let addition = "";
+    if (numbers && numbers.length > 0) {
+      const uniqueNumbers = Array.from(new Set(numbers)).slice(0, 6);
+      // IMP-02 — preprocessor-safe cue format. The renderer's numbered-question
+      // pre-processor splits on "<delimiter><number><.)/space>" patterns to
+      // separate bunched questions. The previous cue ("…: 1, 2, 3. Underline…")
+      // put bare numbers straight after a colon / comma, so the trailing
+      // "3. Underline" was rewritten into a spurious numbered item — duplicating
+      // question numbers and inflating section counts. We now (a) keep the
+      // numbers AFTER the explanatory text and (b) wrap each in single quotes so
+      // no number is ever immediately preceded by a split delimiter or followed
+      // by a "."/")"/space. The renderer also renders this line as a dedicated
+      // callout (see WorksheetRenderer formatContent) so it is never treated as
+      // question content. The literal substring "Numbers in this question" is
+      // preserved for downstream detection / idempotency.
+      const numberList = uniqueNumbers.map((n) => `'${n}'`).join(", ");
+      addition += `\n\nNumbers in this question to underline as you read so you do not lose them: ${numberList}`;
+      cuedCount++;
+    }
+    if (isCalc) {
+      addition += `\n\n${DYSCALCULIA_CALC_RECIPE}`;
+      recipeCount++;
+    }
+    if (!addition) return s;
     mutated = true;
-    return { ...s, content: content + cue };
+    return { ...s, content: content + addition };
   });
 
   if (cuedCount > 0) {
     warnings.push(
       `[Phase 4 — Dyscalculia] Appended a "Numbers in this question" cue to ${cuedCount} question${cuedCount === 1 ? "" : "s"} so the pupil can anchor each digit before reasoning about it.`,
+    );
+  }
+  if (recipeCount > 0) {
+    warnings.push(
+      `[Phase 4 — Dyscalculia] Added a 5-step calculation recipe to ${recipeCount} calculation question${recipeCount === 1 ? "" : "s"} so a dyscalculic pupil has an explicit method scaffold (IMP-13).`,
     );
   }
 
@@ -1970,7 +2199,7 @@ function enforceEalMarkers(
 ): PostValidatorResult {
   let mutated = false;
   let framedCount = 0;
-  const next = sections.map(s => {
+  let next = sections.map(s => {
     if (s.teacherOnly) return s;
     const type = String(s.type || "").toLowerCase();
     // Only frame extended / short-answer questions — MCQs / matching /
@@ -2012,6 +2241,51 @@ function enforceEalMarkers(
   if (framedCount > 0) {
     warnings.push(
       `[Phase 4 — EAL] Appended a sentence frame to ${framedCount} written-response question${framedCount === 1 ? "" : "s"} so the pupil has scaffolding to express what they know.`,
+    );
+  }
+
+  // IMP-15 — command-word decoder. EAL pupils may know the content but not the
+  // exam verb. Insert a compact decoder box before the first question if one is
+  // not already present. (The bilingual glossary is intentionally NOT
+  // synthesised here — it needs the pupil's home language, which the
+  // post-validator does not have; it remains an additive, data-driven feature.)
+  const hasDecoder = next.some(
+    s => /command\s*word/i.test(String(s.title || "")) || /command words —/i.test(String(s.content || "")),
+  );
+  const firstQIdx = next.findIndex(s => {
+    if (s.teacherOnly) return false;
+    const t = String(s.type || "").toLowerCase();
+    return (
+      t.startsWith("q-") ||
+      t === "challenge" ||
+      t === "extended-answer" ||
+      t === "exam-question" ||
+      t === "lor"
+    );
+  });
+  if (!hasDecoder && firstQIdx >= 0) {
+    const decoder: PostValidatorSection = {
+      id: `command-word-decoder-eal-${firstQIdx}`,
+      type: "send-support",
+      title: "Command words — what the question is asking you to do",
+      content: [
+        "Command words — what the question is asking you to do:",
+        "Describe — say what something is like, using details.",
+        "Explain — say how or why something happens.",
+        "Compare — say what is the same and what is different.",
+        "Calculate — work out a number and show your working.",
+        "Evaluate — give both sides, then say what you think and why.",
+      ].join("\n"),
+      teacherOnly: false,
+    };
+    next = [
+      ...next.slice(0, firstQIdx),
+      decoder,
+      ...next.slice(firstQIdx),
+    ];
+    mutated = true;
+    warnings.push(
+      "[Phase 4 — EAL] Inserted a command-word decoder box so the pupil can translate the exam verb before answering (IMP-15).",
     );
   }
 
