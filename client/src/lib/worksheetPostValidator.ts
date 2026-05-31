@@ -1093,6 +1093,118 @@ export function enforceApplicationQuestionCap(
 }
 
 /**
+ * IMP-09 — Mark-allocation variety (warn-only).
+ *
+ * The audit found every Section 3 question carrying the same tariff (always
+ * "[4 marks]") regardless of command-word demand — a "State" (1-mark) question
+ * marked the same as an "Evaluate" (6-mark) one. We can't deterministically
+ * re-tariff a question (that needs the mark scheme), so this is a visible
+ * warning: if Section 3 has ≥3 exam-style questions and they ALL carry an
+ * identical mark tariff, flag it. Pure; never mutates content.
+ */
+function sectionMarkTariff(section: PostValidatorSection): number | null {
+  const explicit = (section as PostValidatorSection & { marks?: number }).marks;
+  if (typeof explicit === "number" && explicit > 0) return explicit;
+  const content = typeof section.content === "string" ? section.content : "";
+  // First tariff on the stem. Accept both "[N marks]" and "(N marks)" (IMP-06).
+  const m = content.match(/[[(](\d+)\s*marks?[\])]/i);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
+
+export function enforceMarkAllocationVariety(
+  ws: PostValidatorWorksheet,
+  _opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+  const cutoff = getSectionQuestionRange("understanding", false).lastQ;
+
+  const applicationMarks: number[] = [];
+  for (const s of sections) {
+    if (s.teacherOnly) continue;
+    const type = String(s.type || "").toLowerCase();
+    if (type === "challenge" || type === "q-challenge") continue;
+    const isQuestion =
+      type.startsWith("q-") ||
+      type === "extended-answer" ||
+      type === "lor" ||
+      type === "exam-question";
+    if (!isQuestion) continue;
+    const qn = sectionQuestionNumber(s);
+    if (!Number.isFinite(qn) || qn === Number.MAX_SAFE_INTEGER || qn <= cutoff) continue;
+    const tariff = sectionMarkTariff(s);
+    if (tariff !== null) applicationMarks.push(tariff);
+  }
+
+  if (applicationMarks.length >= 3 && new Set(applicationMarks).size === 1) {
+    warnings.push(
+      `[IMP-09] All ${applicationMarks.length} Section 3 (application) questions carry an identical tariff of (${applicationMarks[0]} marks). GCSE exam papers vary marks by command-word demand (State/Name 1-2, Describe/Explain 2-4, Compare/Analyse 4-5, Evaluate/Discuss 6). Review the mark allocations.`,
+    );
+  }
+  // Never mutates — this is a diagnostic signal only.
+  return { worksheet: ws, warnings };
+}
+
+/**
+ * IMP-22 — Common Mistakes topic relevance (warn-only).
+ *
+ * The audit found a Forces (Physics) worksheet whose "Common Mistakes" block
+ * referenced "successive percentage changes" — a Maths concept with nothing to
+ * do with the topic. We can't deterministically rewrite a mistake (it needs
+ * subject knowledge), so this flags drift: if the Common Mistakes section
+ * shares NO keyword with the worksheet's own topic noun-phrase or Key
+ * Vocabulary, it is almost certainly off-topic. Pure; never mutates content.
+ */
+export function enforceCommonMistakesTopicRelevance(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+
+  const mistakes = sections.find(s => {
+    if (s.teacherOnly) return false;
+    const t = String(s.type || "").toLowerCase();
+    if (t === "common-mistakes" || t === "common_mistakes") return true;
+    const title = String(s.title || "").toLowerCase();
+    return /common mistakes|mistakes to avoid/.test(title);
+  });
+  if (!mistakes) return { worksheet: ws, warnings };
+  const content = String(mistakes.content || "").toLowerCase();
+  if (!content.trim()) return { worksheet: ws, warnings };
+
+  // Build the keyword set: significant words from the topic + vocabulary terms.
+  const topic = (opts.topic || String(ws.metadata?.topic || "")).toLowerCase();
+  const vocab = collectVocabularyTerms(ws).map(v => v.toLowerCase());
+  const STOP = new Set([
+    "the", "and", "for", "with", "this", "that", "from", "into", "your", "are",
+    "use", "using", "what", "how", "why", "a", "an", "of", "to", "in", "on",
+  ]);
+  const keywords = new Set<string>();
+  for (const src of [topic, ...vocab]) {
+    for (const w of src.split(/[^a-z0-9]+/)) {
+      if (w.length >= 4 && !STOP.has(w)) keywords.add(w);
+    }
+  }
+  if (keywords.size === 0) return { worksheet: ws, warnings };
+
+  // Does the mistakes content mention ANY topic/vocab keyword (whole word)?
+  const mentionsTopic = [...keywords].some(k =>
+    new RegExp(`\\b${k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(content),
+  );
+  if (!mentionsTopic) {
+    warnings.push(
+      `[IMP-22] The "Common Mistakes" section does not mention "${topic || "the topic"}" or any of its key vocabulary — it may reference an unrelated subject/topic (the audit saw "successive percentage changes" on a Forces sheet). Review for topic relevance.`,
+    );
+  }
+  return { worksheet: ws, warnings };
+}
+
+/**
  * Phase 1 — Curriculum + GCSE spec lock.
  *
  * For every question section (type starts with "q-", or is "challenge" /
@@ -2809,7 +2921,9 @@ function collectMarksUsed(ws: PostValidatorWorksheet): number[] {
       continue;
     }
     const content = typeof s.content === "string" ? s.content : "";
-    const m = content.match(/\[(\d+)\s*marks?\]/i);
+    // Accept BOTH "[N marks]" and "(N marks)" — IMP-06 normalises mark tariffs
+    // to GCSE round brackets, and this collector runs AFTER that pass.
+    const m = content.match(/[[(](\d+)\s*marks?[\])]/i);
     if (m) {
       const n = parseInt(m[1], 10);
       if (Number.isFinite(n) && n > 0) out.push(n);
