@@ -47,10 +47,12 @@ import {
   enforceYearGroupLock,
   capWorkedExampleSteps,
   stripLeakedGeneratorInstructions,
+  enforceMarksBracketStyle,
   stripVisiblePlaceholdersAndAnswerLeakage,
   reinforceDyscalculiaMathsScaffolding,
   extractMisconceptionLinks,
   enforceSectionQuestionCounts,
+  enforceApplicationQuestionCap,
   enforceSpecAnchorPresence,
   enforceSelfReflectionTopicAnchor,
   enforceRevisionTipsPresence,
@@ -195,6 +197,12 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
       name: "strip-leaked-generator-instructions",
       fn: (ws, _opts) => stripLeakedGeneratorInstructions(ws),
     },
+    // IMP-06 — GCSE round-bracket mark style. Runs right after the leak
+    // sanitiser so every later validator + the renderer see "(N marks)".
+    {
+      name: "marks-bracket-style",
+      fn: (ws, _opts) => enforceMarksBracketStyle(ws),
+    },
     {
       name: "strip-visible-placeholders-and-answer-leakage",
       fn: (ws, _opts) => stripVisiblePlaceholdersAndAnswerLeakage(ws),
@@ -212,6 +220,13 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     {
       name: "extract-misconception-links",
       fn: (ws, _opts) => extractMisconceptionLinks(ws),
+    },
+    // IMP-04 — trim Section 3 (application) to the GCSE cap of 5 BEFORE the
+    // count contract runs, so the final warning surface is clean once excess
+    // exam-style questions have been removed.
+    {
+      name: "application-question-cap",
+      fn: (ws, opts) => enforceApplicationQuestionCap(ws, opts),
     },
     // Phase 1 — section-count contract (7-7-5 + 1).
     {
