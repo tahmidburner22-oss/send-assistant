@@ -53,6 +53,8 @@ import {
   extractMisconceptionLinks,
   enforceSectionQuestionCounts,
   enforceApplicationQuestionCap,
+  enforceMarkAllocationVariety,
+  enforceCommonMistakesTopicRelevance,
   enforceSpecAnchorPresence,
   enforceSelfReflectionTopicAnchor,
   enforceRevisionTipsPresence,
@@ -232,6 +234,16 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     {
       name: "section-question-counts",
       fn: (ws, opts) => enforceSectionQuestionCounts(ws, opts),
+    },
+    // IMP-09 — flag uniform Section 3 mark tariffs (warn-only).
+    {
+      name: "mark-allocation-variety",
+      fn: (ws, opts) => enforceMarkAllocationVariety(ws, opts),
+    },
+    // IMP-22 — flag a Common Mistakes block that drifts off-topic (warn-only).
+    {
+      name: "common-mistakes-topic-relevance",
+      fn: (ws, opts) => enforceCommonMistakesTopicRelevance(ws, opts),
     },
     // Phase 1 — curriculum + GCSE spec lock.
     { name: "spec-anchor-presence", fn: (ws, opts) => enforceSpecAnchorPresence(ws, opts) },

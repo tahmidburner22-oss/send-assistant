@@ -4015,6 +4015,8 @@ describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-re
     "extract-misconception-links",
     "application-question-cap",
     "section-question-counts",
+    "mark-allocation-variety",
+    "common-mistakes-topic-relevance",
     "spec-anchor-presence",
     // Lane 1.6 + 1.7 — Phase 4 SEND-overlay marker enforcer (HI Topic
     // Summary insertion + Anxiety section title rewrites).
