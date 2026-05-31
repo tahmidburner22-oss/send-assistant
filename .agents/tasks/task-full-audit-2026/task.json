@@ -1,0 +1,7 @@
+{
+  "task_id": "task-full-audit-2026",
+  "task_description": "Run a full Playwright + Chromium automated audit of the adaptly.co.uk worksheet generator. Generate 7 worksheets (KS3 and KS4 only) with different subjects, topics, SEND overlays, and reading ages. Rate each worksheet out of 10 and verify whether the 3 sprints of improvements (IMP-01 through IMP-22) have been applied.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}
