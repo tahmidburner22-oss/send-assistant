@@ -1,0 +1,185 @@
+Skip to main content
+Worksheet generated but could not be saved to history. Please download it now.
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Energy — Year 10 Science Worksheet
+Year 10 | Science | foundation
+NAME
+DATE
+01/06/2026
+CLASS
+
+By the end of this lesson, students will be able to describe different energy stores and transfers, and apply the principle of conservation of energy.
+
+Energy:
+the ability to do work or cause change.nStore — a place where energy is kept.nTransfer — to move energy from one store to another.nWork — when a force moves an object over a distance.nConservation of energy — the principle that energy cannot be created or destroyed, only transferred or changed from one form to another.
+Watch out for these common errors:
+MISTAKE 1: THINKING ENERGY IS 'USED UP'. → ENERGY IS CONSERVED. IT IS TRANSFERRED FROM ONE STORE TO ANOTHER, OR TRANSFORMED INTO DIFFERENT FORMS, BUT THE TOTAL AMOUNT OF ENERGY STAYS THE SAME.
+MISTAKE 2: CONFUSING MASS AND WEIGHT. → MASS IS THE AMOUNT OF 'STUFF' IN AN OBJECT (MEASURED IN KG). WEIGHT IS THE FORCE OF GRAVITY ON AN OBJECT (MEASURED IN N).
+MISTAKE 3: FORGETTING TO INCLUDE UNITS. → ALWAYS WRITE THE CORRECT UNIT AFTER YOUR ANSWER (E.G., JOULES (J) FOR ENERGY, NEWTONS (N) FOR FORCE).
+WORKED EXAMPLE
+— Study this example carefully.
+1
+nA student pushes a box across the floor with a force of 50 N. The box moves 2 metres.
+nStep 1: Identify the force and distance: Force = 50 N, Distance = 2 m.nStep 2: Recall the formula for work done: Work done = Force × distance.nStep 3: Calculate the work done: Work done = 50 N × 2 m = 100 J.nStep 4: State the answer with units: The work done is 100 J. ✓ Key point: Work is done when a force causes movement, and it represents a transfer of energy.
+
+Remember: in this worksheet we are working on Energy.
+
+What we are learning today: By the end of this lesson, students will be able to describe different energy stores and transfers, and apply the principle of conservation of energy.
+
+Tips while you work:
+
+Take your time on each question.
+Check the word bank or worked example if you get stuck.
+It is OK to ask your teacher if a word is unfamiliar.
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+Circle TRUE or FALSE for each statement.
+Energy can be created or destroyed
+TRUE
+FALSE
+Pushing a wall that doesn't move does work
+TRUE
+FALSE
+A stretched rubber band stores elastic potential energy
+TRUE
+FALSE
+Heat is a form of energy
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+Which of the following is the best description of energy transfer? nA Energy is lost to space.nB Energy is converted into mass.nC Energy moves from one store to another. ✓nD Energy is used up by doing work.
+3
+GAP FILL
+
+Complete the paragraph using words from the word bank below.nEnergy is the ability to do . When we do work, we are transferring . For example, when a car engine burns fuel, chemical energy is transferred into heat and  energy. This energy transfer is often not perfect, and some energy is always transferred to the surroundings as . The principle of conservation of energy states that energy cannot be created or destroyed, it can only be  from one form to another. This means the total amount of energy in a closed system remains . Energy can be stored in many different , such as gravitational potential energy or kinetic energy.nWORD BANK: work | kinetic | heat | transferred | sound | stored | constant | electrical | potential | mass
+
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[8 marks total]
+1.
+State the main energy store in a battery.
+[2 marks]
+2.
+Describe one way energy is transferred when a ball is dropped from a height.
+[2 marks]
+3.
+A cyclist uses 500 J of energy to pedal their bike. If 100 J of this energy is transferred to the wheels as movement, how much energy is wasted as heat and sound?
+[2 marks]
+4.
+Explain why a light bulb gets hot as well as producing light. HELP BOX: write the formula you need at the top, then put in the numbers from the question one at a time. Check the worked example if you are not sure which formula to use.
+[2 marks]
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[24 marks total]
+1.
+Identify two examples of energy stores.
+[4 marks]
+2.
+Describe the energy transfers that happen when a person jumps up in the air and then falls back down.
+[4 marks]
+3.
+A kettle uses 2000 W of power to heat water. Calculate the energy transferred by the kettle in 3 minutes.
+[4 marks]
+4.
+Explain the energy transfers that occur when a pendulum swings.
+[4 marks]
+5.
+A solar panel converts light energy into electrical energy. It receives 1000 J of light energy and produces 200 J of electrical energy. Calculate the efficiency of the solar panel. Explain why the efficiency is not 100%. Your answer should include: • The formula for efficiency. • The calculation of efficiency. • Reasons for energy loss.
+[4 marks]
+6.
+A student drops a ball from a height of 5 metres. The ball has a mass of 0.2 kg. Calculate the gravitational potential energy of the ball at this height. (Assume 
+𝑔
+=
+9.8
+ 
+𝑚
+/
+𝑠
+2
+𝑠
+2
+s
+2
+g=9.8m/s
+2
+). HELP BOX: write the formula you need at the top, then put in the numbers from the question one at a time. Check the worked example if you are not sure which formula to use.
+[4 marks]
+
+Challenge yourself!
+
+1.
+A car engine is 25% efficient. It produces 150 MJ of useful energy. Calculate the total energy input to the engine. Explain why engines are not 100% efficient, referring to at least two specific energy transfers.
+2.
+A wind turbine converts the kinetic energy of the wind into electrical energy. Describe the energy transfers involved from the wind hitting the blades to the electricity reaching a house.
+
+HELP BOX: write the formula you need at the top, then put in the numbers from the question one at a time. Check the worked example if you are not sure which formula to use.
+
+Top tips before you start.\nTIPS:
+1
+VOCABULARY
+Re-read the Key Vocabulary box for energy.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory.
+3
+COMMON MISTAKE
+Pupils most often lose marks on energy by writing the right idea in everyday language.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on energy and attempt it under timed conditions.
+5
+RETRIEVAL
+In your next study session, list everything you remember about energy on a blank sheet WITHOUT looking at this worksheet.
+How did you get on?
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about energy.
+I can Explain the key ideas in energy using the right vocabulary.
+I can Calculate a question about energy with a worked answer.
+I can Compare what I have learned about energy to a new problem.
+I can Evaluate my own answer about energy and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing I now understand about energy that I did not before is …
+One question I still want to ask about energy is …
+Exit Ticket: Write ONE thing you learned today about energy in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Energy
+· Foundation
+· Adapted for Moderate Learning Difficulties (MLD)
+01/06/2026
+Rate this lesson:
+← Generate Another Lesson

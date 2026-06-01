@@ -1,0 +1,164 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Atomic Structure and the Periodic Table — Year 10 Science Worksheet
+Year 10 | Science | higher
+NAME
+DATE
+31/05/2026
+CLASS
+
+By the end of this lesson, students will be able to explain the structure of atoms, the arrangement of electrons in shells, and the relationship between atomic structure and the position of elements in the periodic table.
+
+Atom:
+The basic unit of a chemical element.nProton — A stable subatomic particle with a positive electric charge.nNeutron — A subatomic particle with no net electric charge.nElectron — A stable subatomic particle with a negative electric charge.nAtomic Number — The number of protons in the nucleus of an atom, which determines its chemical properties.
+Watch out for these common errors:
+MISTAKE 1: CONFUSING ATOMIC NUMBER AND MASS NUMBER. → THE ATOMIC NUMBER IS THE NUMBER OF PROTONS ONLY. THE MASS NUMBER IS THE TOTAL NUMBER OF PROTONS AND NEUTRONS IN THE NUCLEUS.
+MISTAKE 2: INCORRECTLY FILLING ELECTRON SHELLS. → ELECTRONS FILL SHELLS IN A SPECIFIC ORDER: 2 IN THE FIRST SHELL, 8 IN THE SECOND, AND 8 IN THE THIRD (FOR THE FIRST 20 ELEMENTS). DO NOT FILL THE SECOND SHELL BEFORE THE FIRST IS FULL.
+MISTAKE 3: ASSUMING ALL ATOMS OF AN ELEMENT HAVE THE SAME MASS. → ISOTOPES ARE ATOMS OF THE SAME ELEMENT WITH DIFFERENT NUMBERS OF NEUTRONS, AND THEREFORE DIFFERENT MASS NUMBERS. FOR EXAMPLE, CARBON-12 AND CARBON-14 ARE ISOTOPES OF CARBON.
+WORKED EXAMPLE
+— Study this example carefully.
+1
+nCalculate the number of neutrons in an atom of Magnesium-25.
+nStep 1: Identify the atomic number and mass number from the periodic table or given information. Magnesium (Mg) has an atomic number of 12 and a mass number of 25.nStep 2: Recall the relationship: Mass Number = Number of Protons + Number of Neutrons.nStep 3: Rearrange the formula to find the number of neutrons: Number of Neutrons = Mass Number - Number of Protons. Substitute the values: Number of Neutrons = 25 − 12 = 13. ✓ Key point: The atomic number always equals the number of protons, which is constant for a given element.
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+Circle TRUE or FALSE for each statement.
+All atoms of the same element have the same mass number
+TRUE
+FALSE
+The nucleus of an atom contains protons and electrons
+TRUE
+FALSE
+The periodic table organises elements by their atomic number
+TRUE
+FALSE
+Isotopes have the same number of protons but different numbers of neutrons
+TRUE
+FALSE
+Numbers in this question to underline as you read so you do not lose them: '4', '1', '2', '3'
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+What is the maximum number of electrons that can occupy the second electron shell? nA 2nB 8 ✓nC 18nD 10 Numbers in this question to underline as you read so you do not lose them: '1', '2', '8', '18', '10'
+3
+GAP FILL
+
+Complete the paragraph using words from the word bank below.nAn atom is made up of a central  containing protons and neutrons.nElectrons orbit the nucleus in specific energy .nThe number of  in an atom determines which element it is.nAtoms of the same element with different numbers of neutrons are called .nIn a neutral atom, the number of electrons is equal to the number of .nElements are arranged in the periodic table in order of increasing  number.nNoble gases are unreactive because they have a full outer .nWORD BANK: shells | nucleus | protons | electrons | isotopes | atomic | mass | compounds | ions | energy Numbers in this question to underline as you read so you do not lose them: '7'
+
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[8 marks total]
+1.
+State the charge of a proton.
+[2 marks]
+2.
+Identify the element with atomic number 11.
+[2 marks]
+3.
+Calculate the number of neutrons in an atom of Carbon-14. Show your working.
+[2 marks]
+4.
+Describe the arrangement of electrons in a sodium atom (atomic number 11). Numbers in this question to underline as you read so you do not lose them: '1', '2', '11', '3', '-14', '4' Calculation steps to follow: Step 1: write down the formula you need. Step 2: find the values given in the question. Step 3: put the values into the formula. Step 4: work it out, one line of working at a time. Step 5: write your answer with the correct units.
+[2 marks]
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[28 marks total]
+1.
+What is the mass number of an atom?
+[4 marks]
+2.
+Explain why isotopes have the same chemical properties.
+[4 marks]
+3.
+An atom has 17 protons and 18 neutrons. Determine its atomic number and mass number. State the element it represents.
+[4 marks]
+4.
+Describe the structure of an atom, including the location and charge of its subatomic particles.
+[4 marks]
+5.
+Explain how the electronic configuration of an element determines its position in the periodic table and its reactivity. Use examples of an alkali metal and a halogen in your answer. Your answer should include: • The relationship between outer shell electrons and reactivity. • How electronic configuration relates to group number. • How electronic configuration relates to period number. • Specific examples of an alkali metal and a halogen.
+[4 marks]
+6.
+The electronic configuration of an element is 2, 8,
+[4 marks]
+5.
+Identify the element and explain why it is likely to form covalent bonds rather than ionic bonds. Numbers in this question to underline as you read so you do not lose them: '1', '2', '3', '17', '18', '4'
+[4 marks]
+
+Challenge yourself!
+
+1.
+Analyse the trend in reactivity down Group 1 and Group 7 of the periodic table. Explain these trends in terms of atomic structure and electron behaviour.
+2.
+Some elements exist as radioactive isotopes. Explain what makes an isotope radioactive and discuss one application of radioactive isotopes in medicine or industry.
+#Numbers in this question to underline as you read so you do not lose them: '8', '1', '7', '4', '2'
+Show your working:
+Top tips before you start.\nTIPS:
+1
+VOCABULARY
+Re-read the Key Vocabulary box for atomic structure and the periodic table.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory.
+3
+COMMON MISTAKE
+Pupils most often lose marks on atomic structure and the periodic table by writing the right idea in everyday language.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on atomic structure and the periodic table and attempt it under timed conditions.
+5
+RETRIEVAL
+In your next study session, list everything you remember about atomic structure and the periodic table on a blank sheet WITHOUT looking at your notes.
+How did you get on?
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about atomic structure and the periodic table.
+I can Explain the key ideas in atomic structure and the periodic table using the right vocabulary.
+I can Calculate a question about atomic structure and the periodic table with a worked answer.
+I can Compare what I have learned about atomic structure and the periodic table to a new problem.
+I can Evaluate my own answer about atomic structure and the periodic table and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing I now understand about atomic structure and the periodic table that I did not before is …
+One question I still want to ask about atomic structure and the periodic table is …
+Exit Ticket: Write ONE thing you learned today about atomic structure and the periodic table in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Atomic Structure and the Periodic Table
+· Higher
+· Adapted for Dyscalculia
+31/05/2026
+Rate this lesson:
+← Generate Another Lesson

@@ -1,0 +1,186 @@
+Skip to main content
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+
+UK CURRICULUM PROGRESSION — FORCES AND MOTION
+
+Step 1 of 4: Types of Forces
+
+Identify contact and non-contact forces; describe gravity, friction, air resistance and tension
+
+First step — no prerequisite.
+EXTENSION
+Balanced and Unbalanced Forces
+ADAPTLY
+SCIENCE · YEAR 10
+SCIENCE · YEAR 10
+Forces — Year 10 Science Worksheet
+Year 10 | Science | foundation
+NAME
+DATE
+31/05/2026
+CLASS
+
+By the end of this lesson, students will be able to identify and describe different types of forces and their effects on objects.
+
+Force:
+A push or pull on an object.nMass — The amount of matter in an object, measured in kilograms (kg).nWeight — The force of gravity acting on an object, measured in Newtons (N).nFriction — A force that opposes motion between two surfaces in contact.nGravity — The force of attraction between any two objects with mass.
+Watch out for these common errors:
+MISTAKE 1: CONFUSING MASS AND WEIGHT. → MASS IS THE AMOUNT OF 'STUFF' IN AN OBJECT (MEASURED IN KG), WHILE WEIGHT IS THE FORCE OF GRAVITY PULLING ON THAT MASS (MEASURED IN N). WEIGHT CHANGES WITH GRAVITY, MASS DOES NOT.
+MISTAKE 2: THINKING FRICTION ALWAYS STOPS THINGS. → FRICTION IS A FORCE THAT OPPOSES MOTION. IT CAN BE USEFUL (E.G. BRAKES) OR UNHELPFUL (E.G. AIR RESISTANCE). IT ACTS IN THE OPPOSITE DIRECTION TO MOVEMENT.
+MISTAKE 3: ASSUMING FORCES ARE ALWAYS BALANCED. → IF AN OBJECT IS ACCELERATING (SPEEDING UP, SLOWING DOWN, OR CHANGING DIRECTION), THE FORCES ACTING ON IT ARE UNBALANCED. BALANCED FORCES MEAN CONSTANT SPEED OR STATIONARY.
+WORKED EXAMPLE
+— Study this example carefully.
+1
+nA book with a mass of 0.5 kg rests on a table. Calculate its weight.
+nStep 1: Identify the formula for weight.nWeight = mass × gravitational field strength
+𝑊
+=
+𝑚
+×
+𝑔
+W=m×gnStep 2: Identify the values given.nMass (
+𝑚
+m) = 0.5 kgnGravitational field strength (
+𝑔
+g) on Earth is approximately 9.8 N/kg.nStep 3: Substitute the values into the formula.
+𝑊
+=
+0.5
+𝑘
+𝑔
+×
+9.8
+𝑁
+/
+𝑘
+𝑔
+W=0.5kg×9.8N/kgnStep 4: Calculate the result.
+𝑊
+=
+4.9
+𝑁
+W=4.9N ✓ Key point: Always include the correct units in your final answer.
+SECTION 1 — RECALL — QUESTIONS 1–9
+1
+TRUE / FALSE
+[ ] Circle TRUE or FALSE for each statement.
+[ ] A push is a type of force
+TRUE
+FALSE
+[ ] Mass and weight are the same thing
+TRUE
+FALSE
+[ ] Friction helps objects move faster
+TRUE
+FALSE
+[ ] Gravity pulls objects towards the centre of the Earth
+TRUE
+FALSE
+2
+MULTIPLE CHOICE
+[ ] Which of the following is a non-contact force?nA The force of friction between a shoe and the groundnB The force of gravity between the Earth and the Moon ✓nC The push on a door to open itnD The pull of a rope on a weight
+3
+GAP FILL
+
+[ ] Complete the paragraph using words from the word bank below.nA force is a  or a pull that can cause an object to change its motion. Forces can be contact forces, like  between surfaces, or non-contact forces, such as . When an object is stationary, the forces acting on it are . If an object is accelerating, the forces are . The  of an object is a measure of the matter it contains, while its  is the force of gravity acting on it.nWORD BANK: unbalanced | gravity | mass | push | friction | balanced | weight | pull | contact | reaction
+
+★ BRAIN BREAK
+•
+🧠 BRAIN BREAK — stand up and stretch for 30 seconds before continuing!
+SECTION 2 — UNDERSTANDING — QUESTIONS 10–15
+4
+[ ] 1. State the SI unit for force.
+[6 marks total]
+2.
+Identify two examples of contact forces.
+[2 marks]
+3.
+Describe what happens to the forces acting on a skydiver as they fall and reach terminal velocity.
+[2 marks]
+4.
+Explain why a car needs friction to move.
+[2 marks]
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 16–20
+5
+[ ] 1. What is the name of the force that opposes motion?
+[16 marks total]
+2.
+Describe the difference between mass and weight.
+[4 marks]
+3.
+A box is pushed with a force of 50 N, and friction opposes this with a force of 15 N. Calculate the resultant force acting on the box.
+[4 marks]
+4.
+Explain why astronauts in space experience apparent weightlessness, even though gravity is still present.
+[4 marks]
+5.
+Evaluate the importance of friction in everyday life. Discuss at least two examples where friction is beneficial and one where it is a problem. Your answer should include: • [Benefit 1 with explanation] • [Benefit 2 with explanation] • [Problem with explanation] 6. A cyclist is travelling at a constant speed. Explain what this tells you about the forces acting on the cyclist and their bicycle.
+[4 marks]
+Challenge yourself!
+A car of mass 1200 kg is travelling at 20 m/s. The engine provides a driving force of 800 N, and air resistance and friction together provide a total opposing force of 300 N. Calculate the acceleration of the car.
+Explain how the concept of forces is relevant to the design of a Formula 1 car's aerodynamic features, such as spoilers and wings.
+Show your working:
+Top tips before you start.\nTIPS:
+1
+VOCABULARY
+Re-read the Key Vocabulary box for forces.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory.
+3
+COMMON MISTAKE
+Pupils most often lose marks on forces by writing the right idea in everyday language.
+4
+PAST PAPERS
+Find a real AQA / Edexcel / OCR science past-paper question on forces and attempt it under timed conditions.
+5
+RETRIEVAL
+In your next study session, list everything you remember about forces on a blank sheet WITHOUT looking at this worksheet.
+How did you get on?
+A   How confident do you feel? Tick the column that best describes you.
+TOPIC
+NOT YET
+GETTING THERE
+CONFIDENT
+I can Describe confidently when the question is about forces.
+I can Explain the key ideas in forces using the right vocabulary.
+I can Calculate a question about forces with a worked answer.
+I can Compare what I have learned about forces to a new problem.
+I can Evaluate my own answer about forces and spot mistakes.
+B   Written reflection — complete each prompt below.
+One thing I now understand about forces that I did not before is …
+One question I still want to ask about forces is …
+Exit Ticket: Write ONE thing you learned today about forces in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Science
+· Forces
+· Foundation
+· Adapted for ADHD
+31/05/2026
+Rate this lesson:
+← Generate Another Lesson

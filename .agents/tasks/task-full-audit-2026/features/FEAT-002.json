@@ -1,0 +1,38 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Write and run the full Playwright audit script that generates 7 worksheets with varied KS3/KS4 combinations, captures all output, rates each worksheet, checks sprint improvements, and produces the final FULL-AUDIT-REPORT-2026.md",
+  "status": "completed",
+  "steps": [
+    "Create /projects/sandbox/send-assistant/audit/full-audit-2026.mjs with the following structure:",
+    "Step 1: Define 7 worksheet test configurations covering KS3 and KS4 with different subjects, topics, SEND overlays, and reading ages. Suggested combinations: (1) KS4 Science/Bioenergetics/Hearing Impairment/Higher/Reading Age 11, (2) KS4 Maths/Algebra/ADHD/Foundation/Reading Age 9, (3) KS3 Science/Cell Biology/Anxiety/Reading Age 10, (4) KS4 Science/Atomic Structure/Dyscalculia/Higher/Reading Age 12, (5) KS3 English/Shakespeare/MLD/Reading Age 9, (6) KS4 Science/Electricity/EAL/Foundation/Reading Age 8, (7) KS4 Science/Forces/None (baseline)/Higher/Reading Age 14. Adjust subjects/topics based on what is actually available in the dropdowns.",
+    "Step 2: Implement login flow following the pattern in gen-v3.mjs - navigate to /login, dismiss cookie banners, fill email/password, click submit, wait for /home redirect.",
+    "Step 3: Implement the clickDrop helper from gen-v3.mjs for Radix UI dropdown interaction. Also implement reading age slider/input interaction if present.",
+    "Step 4: For each of the 7 worksheets: navigate to /worksheets, select subject/year/topic/SEND/tier using clickDrop, set reading age if available, click Generate Worksheet, poll for completion (check for SECTION markers + marks + body length > 5000, up to 240 seconds at 5-second intervals).",
+    "Step 5: After each generation completes, capture the full page innerText and save to /projects/sandbox/send-assistant/audit/audit-2026-outputs/WS-N-<id>.txt",
+    "Step 6: For each captured worksheet, run Sprint 1 checks: (a) no TEACHER_DIAGNOSES in text, (b) no RULE: lines in text, (c) marks format is (N marks) not [N marks], (d) count Section 3 questions - should be exactly 5, (e) count Section 2 questions - should be 6-8.",
+    "Step 7: For each captured worksheet, run Sprint 2 checks based on the SEND overlay chosen: (a) Anxiety worksheets should have invitational titles like WARM-UP, (b) HI worksheets should have inline (= definition) annotations, (c) ADHD worksheets should have 2-3 brain-breaks, (d) Dyscalculia worksheets should have 5-step calculation recipe, (e) MLD worksheets should have formula/help boxes, (f) EAL should have command-word decoder and sentence frames.",
+    "Step 8: For each captured worksheet, run Sprint 3 checks: (a) mark allocations vary by command word (not all identical), (b) per-question working-out boxes present in Section 3.",
+    "Step 9: For each worksheet, produce a rating out of 10 for: (a) Content quality / GCSE spec alignment - check presence of correct command words, appropriate difficulty progression, topic-relevant content, mark scheme alignment, (b) SEND overlay effectiveness - check whether the specific adaptations are present and meaningful for the chosen need.",
+    "Step 10: Compile all results into /projects/sandbox/send-assistant/audit/FULL-AUDIT-REPORT-2026.md with: executive summary table, per-worksheet detailed sections (full text excerpt, ratings, sprint check results), overall sprint verification summary showing which IMP-XX items pass/fail.",
+    "Run the script: cd /projects/sandbox/send-assistant/audit && node full-audit-2026.mjs (this will take 15-25 minutes due to generation times)",
+    "If any worksheet fails to generate (timeout/error), log the failure and continue to the next one. The report should document failures too.",
+    "After the script completes, verify FULL-AUDIT-REPORT-2026.md exists and contains meaningful content for all attempted worksheets."
+  ],
+  "acceptance_criteria": [
+    "The script full-audit-2026.mjs exists and is runnable with node",
+    "The script successfully logs in to adaptly.co.uk",
+    "At least 5 of 7 worksheets are successfully generated (some may timeout)",
+    "Each generated worksheet's full text is saved to audit-2026-outputs/",
+    "FULL-AUDIT-REPORT-2026.md contains: executive summary, per-worksheet ratings (content/10 and SEND/10), sprint 1/2/3 verification results for each worksheet",
+    "The report clearly identifies which IMP-XX items pass and which fail across all generated worksheets"
+  ],
+  "verification": [
+    "Run: cd /projects/sandbox/send-assistant/audit && node full-audit-2026.mjs",
+    "Verify: ls /projects/sandbox/send-assistant/audit/FULL-AUDIT-REPORT-2026.md exists",
+    "Verify: the report contains ratings for at least 5 worksheets",
+    "Verify: the report contains sprint verification sections"
+  ],
+  "blocked_reason": null,
+  "findings": "5/7 worksheets generated successfully. WS6 (EAL) and WS7 (baseline) failed because the site went down (502 Bad Gateway) after the first 5 generations completed. The script has retry logic and falls back to cached outputs. Key audit findings: IMP-01/02/03 all pass (critical bugs fixed), IMP-04/05/06/09 all fail systemically (structural issues remain), SEND overlays (IMP-10/11/12/13/14) all pass for their respective profiles. IMP-16 (HI Topic Summary label) still fails. IMP-15 (EAL) could not be tested due to site downtime during WS6 generation attempt."
+}

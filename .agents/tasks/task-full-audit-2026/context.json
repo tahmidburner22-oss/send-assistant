@@ -1,0 +1,21 @@
+{
+  "project_type": "Playwright automated audit of a live web application (adaptly.co.uk worksheet generator)",
+  "language": "JavaScript (ESM / Node.js)",
+  "build_system": "npm with Playwright + Chromium",
+  "test_framework": "Not a test suite per se - this is a Playwright automation script that generates worksheets and produces a markdown audit report",
+  "build_command": "cd /projects/sandbox/send-assistant/audit && node full-audit-2026.mjs",
+  "test_command": "n/a - the script IS the test, its success is determined by whether it runs to completion and produces the report",
+  "verification_instructions": "1. Run the audit script with: cd /projects/sandbox/send-assistant/audit && node full-audit-2026.mjs 2. Check that /projects/sandbox/send-assistant/audit/FULL-AUDIT-REPORT-2026.md exists and contains all 7 worksheet evaluations",
+  "snapshot_or_generated_files": "Output file: /projects/sandbox/send-assistant/audit/FULL-AUDIT-REPORT-2026.md plus individual worksheet captures in /projects/sandbox/send-assistant/audit/audit-2026-outputs/",
+  "setup_instructions": "cd /projects/sandbox/send-assistant/audit && npm install playwright && npx playwright install chromium",
+  "environment_constraints": "OPEN_INTERNET - full network access. Node.js v22 via nvm. Site is live and worksheets take 30-200 seconds to generate. Must handle timeouts gracefully.",
+  "contribution_requirements": "Output a single comprehensive markdown report at /projects/sandbox/send-assistant/audit/FULL-AUDIT-REPORT-2026.md",
+  "key_patterns": "The existing gen-v3.mjs shows: (1) clickDrop helper for Radix dropdowns, (2) login flow with cookie dismissal, (3) polling loop that checks for SECTION markers + marks + body length > 5000 chars, (4) 5-second polling intervals with 200s max wait. The live-audit.mjs shows a more comprehensive pattern with selectDropdown and generateWorksheet helpers.",
+  "relevant_files": [
+    "/projects/sandbox/send-assistant/audit/gen-v3.mjs",
+    "/projects/sandbox/send-assistant/audit/live-audit.mjs",
+    "/projects/sandbox/send-assistant/audit/IMPROVEMENTS.md",
+    "/projects/sandbox/send-assistant/audit/package.json"
+  ],
+  "directory_structure": "/projects/sandbox/send-assistant/audit/ - contains all audit scripts and outputs. audit/retest-outputs/ - contains previous worksheet captures as .txt files"
+}
