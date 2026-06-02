@@ -6596,7 +6596,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           marginBottom: "12px",
                         }} dangerouslySetInnerHTML={{ __html: renderMath(questionText) }} />
                         <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px", fontFamily: fmt.fontFamily }}>
-                          [{marks} mark{marks !== 1 ? "s" : ""}]
+                          ({marks} mark{marks !== 1 ? "s" : ""})
                         </div>
                         {isMathsSubject ? (
                           /* Maths: clean working area (no surrounding border) + single answer line.
@@ -6988,7 +6988,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       <div>
                         <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
                           dangerouslySetInnerHTML={{ __html: renderMath(challengeText) }} />
-                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px" }}>[{challengeMarks} marks]</div>
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px" }}>({challengeMarks} marks)</div>
                         {isMathsSubject ? (
                           <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "6px", background: "#fafafa", padding: "8px" }}>
                             <div style={{ fontSize: "10px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.04em" }}>WORKING OUT</div>
@@ -7607,7 +7607,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontFamily: fmt.fontFamily, color: "#1d4ed8", background: "#eff6ff", borderLeft: "3px solid #3b82f6", padding: "6px 10px", borderRadius: "3px", marginBottom: "8px" }}
                             dangerouslySetInnerHTML={{ __html: renderMath(supportText) }} />
                         )}
-                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "6px" }}>[{marks} mark{marks !== 1 ? "s" : ""}]</div>
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "6px" }}>({marks} mark{marks !== 1 ? "s" : ""})</div>
                         {/* Per-question ruled answer lines — suppressed in Book Mode (steering) */}
                         {!bookMode && Array.from({ length: lineCount }).map((_: unknown, li: number) => (
                           <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "30px", width: "100%", marginBottom: "3px" }} />
