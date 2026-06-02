@@ -634,13 +634,22 @@ export function stripLeakedGeneratorInstructions(
 // because the output no longer contains a "[N marks]" token. The renderer
 // accepts both forms, so this never changes which questions render a mark
 // badge / answer-line ramp — it only normalises the visible glyph.
-const MARKS_SQUARE_BRACKET_RE = /\[(\d+)\s*(marks?)\]/gi;
+//
+// Extended patterns handled:
+//   [2 marks]        → (2 marks)
+//   [2 marks total]  → (2 marks)
+//   [2m]             → (2 marks)
+//   [2M]             → (2 marks)
+const MARKS_SQUARE_BRACKET_RE = /\[(\d+)\s*(marks?(?:\s+total)?)\]/gi;
+const MARKS_SHORT_BRACKET_RE  = /\[(\d+)[Mm]\]/g;
 
 function convertMarksBrackets(value: unknown): { value: unknown; changed: boolean } {
   if (typeof value !== "string" || !value) return { value, changed: false };
-  MARKS_SQUARE_BRACKET_RE.lastIndex = 0;
-  if (!MARKS_SQUARE_BRACKET_RE.test(value)) return { value, changed: false };
-  const next = value.replace(MARKS_SQUARE_BRACKET_RE, (_m, n, word) => `(${n} ${String(word).toLowerCase()})`);
+  let next = value;
+  // Handle [Nm] / [NM] shorthand first
+  next = next.replace(MARKS_SHORT_BRACKET_RE, (_m, n) => `(${n} marks)`);
+  // Handle [N marks] / [N marks total]
+  next = next.replace(MARKS_SQUARE_BRACKET_RE, (_m, n, _word) => `(${n} marks)`);
   return { value: next, changed: next !== value };
 }
 
