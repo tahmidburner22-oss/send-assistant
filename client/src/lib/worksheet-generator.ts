@@ -2316,11 +2316,11 @@ FIXED SECTION ORDER \u2014 you must follow this exactly:
 5. Common Mistakes \u2014 these MUST be tested later in the worksheet questions
 6. Worked Example (question, numbered method steps ONLY on main steps \u2014 sub-steps must be indented with two spaces and NOT numbered, final answer, why it works, common mistake note)
 7. Diagram A \u2014 reference/stimulus. Student uses it to answer questions. Include alt text.
-8. Section 1 \u2014 Recall (low-load, questions 1\u20133, mark tariff 1\u20132 marks each)
-9. Section 2 \u2014 Understanding (questions 4\u20136, multi-step, 2\u20134 marks each)
+8. Section 1 \u2014 Recall (low-load, 6-8 questions Q1-Q7, mark tariff 1-2 marks each; target 7 questions)
+9. Section 2 \u2014 Understanding (6-8 questions Q8-Q14, multi-step, 2-4 marks each; target 7 questions)
 10. Diagram B \u2014 completion/annotation/interpretation task. Student must do something with it.
-11. Section 3 \u2014 Application (exam-style, questions 7\u20139, 3\u20136 marks each)
-12. Challenge Question (stretch/proof/evaluation, 6\u20138 marks, always present)
+11. Section 3 \u2014 Application (exam-style, exactly 5 questions Q15-Q19, 3-6 marks each; NEVER more than 5)
+12. Challenge Question (stretch/proof/evaluation, 6-8 marks, always present; 1 question only)
 13. Self-Reflection (RAG rating, confidence check, linked to learning objective)
 14. Teacher\u2019s Key (answers, method marks, acceptable alternatives, common wrong answers, SEND support notes)
 

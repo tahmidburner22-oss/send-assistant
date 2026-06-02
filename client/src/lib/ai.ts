@@ -1587,13 +1587,16 @@ Every worksheet SHOULD include a second diagram called "Diagram B" as its own fu
 
 ⚠️ Diagram A MUST appear in EVERY worksheet. Diagram B should appear unless the topic genuinely has no second visual. NEITHER diagram should contain questions — questions come only from Sections 1, 2, and 3.
 
-SECTION 1 — RECALL (Q1–Q3):
+SECTION 1 — RECALL (Q1–Q${sec1TargetCount}, ${sec1TargetCount} questions):
 ${sectionAPrompt}
 
-SECTION 2 — UNDERSTANDING (Q4–Q6):
-  Q4 — SHORT EXPLANATION / CALCULATION [5 marks]: ${isMaths ? 'A multi-step calculation question appropriate to the topic.' : 'A focused short-answer question requiring genuine understanding.'}
-  Q5 — EXTRACT/STIMULUS RESPONSE [5 marks]: ${isSTEM ? 'Provide a scenario or data set (readings from an experiment, a word problem). Ask sub-questions: (a) Identify the relevant formula/law [1 mark] (b) Full worked calculation showing method [2 marks] (c) Explain what the result means in context [2 marks]' : 'Provide a 4–8 line extract from the primary text. Label with Act/Chapter/Section and speaker. Ask: (a) Identify ONE language/literary technique [1 mark] (b) What does this reveal about character/theme/author intent? [2 marks] (c) What does the key image/phrase/symbol represent? [2 marks]'}
-  Q6 — SEQUENCING/STRUCTURED RESPONSE [4 marks]: ${isSTEM ? 'Generate a structured question appropriate to the topic. IMPORTANT: Only use a formula triangle if the topic genuinely has a triangular formula relationship (e.g. speed/distance/time, V=IR, P=IV, pressure=force/area, density=mass/volume). For all other topics, use a method scaffold: present a worked scenario and ask (a) Identify the key rule or principle [1 mark] (b) Apply it to a given scenario with full working [2 marks] (c) State the unit or explain the result [1 mark].' : 'Provide 6 events/plot points/key moments from the topic in a scrambled order. Ask students to number boxes 1–6 in the correct chronological or logical sequence. [3 marks: all correct = 3, 4–5 correct = 2, 2–3 correct = 1]'}
+SECTION 2 — UNDERSTANDING (Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}, ${sec2TargetCount} questions):
+${sectionBPrompt}
+
+ADDITIONAL SECTION 2 FORMATS (use for Q${sec1TargetCount + 4}–Q${sec1TargetCount + sec2TargetCount} when sec2TargetCount > 3):
+  SHORT EXPLANATION / CALCULATION (5 marks): ${isMaths ? 'A multi-step calculation question appropriate to the topic.' : 'A focused short-answer question requiring genuine understanding.'}
+  EXTRACT/STIMULUS RESPONSE (5 marks): ${isSTEM ? 'Provide a scenario or data set (readings from an experiment, a word problem). Ask sub-questions: (a) Identify the relevant formula/law (1 mark) (b) Full worked calculation showing method (2 marks) (c) Explain what the result means in context (2 marks)' : 'Provide a 4–8 line extract from the primary text. Label with Act/Chapter/Section and speaker. Ask: (a) Identify ONE language/literary technique (1 mark) (b) What does this reveal about character/theme/author intent? (2 marks) (c) What does the key image/phrase/symbol represent? (2 marks)'}
+  SEQUENCING/STRUCTURED RESPONSE (4 marks): ${isSTEM ? 'Generate a structured question appropriate to the topic. IMPORTANT: Only use a formula triangle if the topic genuinely has a triangular formula relationship (e.g. speed/distance/time, V=IR, P=IV, pressure=force/area, density=mass/volume). For all other topics, use a method scaffold: present a worked scenario and ask (a) Identify the key rule or principle (1 mark) (b) Apply it to a given scenario with full working (2 marks) (c) State the unit or explain the result (1 mark).' : 'Provide 6 events/plot points/key moments from the topic in a scrambled order. Ask students to number boxes 1–6 in the correct chronological or logical sequence. (3 marks: all correct = 3, 4–5 correct = 2, 2–3 correct = 1)'}
 
 DIAGRAM RULES — MANDATORY (apply to BOTH Diagram A and Diagram B):
 The diagram type MUST match the specific topic. Choose the BEST type from:

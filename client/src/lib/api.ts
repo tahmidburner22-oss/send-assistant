@@ -161,7 +161,25 @@ export const pupils = {
 export const data = {
   worksheets: {
     list: () => apiFetch<any[]>("/data/worksheets"),
-    create: (d: any) => apiFetch<any>("/data/worksheets", { method: "POST", body: JSON.stringify(d), noRedirect: true }),
+    create: (d: any) => {
+      // RC9: Strip SVG content from sections before saving to history to avoid
+      // 413 Request Entity Too Large errors. SVGs can be several hundred KB each.
+      // The renderer re-generates SVGs from diagramSpec at render time, so
+      // stripping them from the persisted payload is safe.
+      const stripped = d && d.sections ? {
+        ...d,
+        sections: (d.sections as any[]).map((s: any) => {
+          if (!s || typeof s !== "object") return s;
+          const next: any = { ...s };
+          // Strip the raw SVG string (can be 50-500 KB per section)
+          if (typeof next.svg === "string" && next.svg.length > 100) delete next.svg;
+          // Strip the imageUrl blob if it is a data: URI (can be several MB)
+          if (typeof next.imageUrl === "string" && next.imageUrl.startsWith("data:")) delete next.imageUrl;
+          return next;
+        }),
+      } : d;
+      return apiFetch<any>("/data/worksheets", { method: "POST", body: JSON.stringify(stripped), noRedirect: true });
+    },
     update: (id: string, d: any) => apiFetch<any>(`/data/worksheets/${id}`, { method: "PUT", body: JSON.stringify(d) }),
     delete: (id: string) => apiFetch<any>(`/data/worksheets/${id}`, { method: "DELETE" }),
   },
