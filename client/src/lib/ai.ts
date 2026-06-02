@@ -1665,7 +1665,7 @@ The Self-Reflection's confidence grid, written prompts and exit ticket all appea
 
 TEACHER COPY — ANSWER KEY: Provide answers for EVERY question. ${isMaths ? `MATHS MARK SCHEME FORMAT (MANDATORY):
 For every maths question, break the mark scheme down as:
-  Q[n] [X marks total]:
+  Q[n] (X marks total):
     Method (M marks): [show every working step as a separate line, one per method mark]
     Accuracy (A marks): [final numerical answer with correct units/form]
     Alternative methods accepted: [list any other valid methods]
