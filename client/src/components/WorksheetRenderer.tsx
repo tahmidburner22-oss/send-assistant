@@ -9,7 +9,28 @@
  * Supports KaTeX math rendering for proper fractions, symbols, and expressions.
  */
 import React, { forwardRef, useState, useCallback } from "react";
-import { Eye, EyeOff, Pencil } from "lucide-react";
+import {
+  Eye, EyeOff, Pencil,
+  // Visual language system icons
+  Target,          // Learning objective
+  BookOpen,        // Reading / passage
+  BookMarked,      // Key vocabulary
+  Lightbulb,       // Hint / reminder / revision tips
+  PenLine,         // Written response / independent
+  Users,           // Group / guided together
+  Star,            // Challenge / extension
+  Clock,           // Timed activity
+  CheckCircle,     // Self-assessment / check your work
+  AlertTriangle,   // Common mistakes
+  Search,          // Investigate / prior knowledge
+  MessageSquare,   // Discuss
+  FileText,        // Worked example
+  GraduationCap,   // Examiner tips / revision
+  UserCheck,       // Teacher notes
+  HelpCircle,      // Sentence starters
+  BarChart2,       // Data / diagram
+  Zap,             // Starter / warm-up
+} from "lucide-react";
 import { getSendFormatting, sendNeeds } from "@/lib/send-data";
 import { isAnxietySendProfile, toInvitationalSectionLabel } from "@/lib/sendSectionLabels";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
@@ -1305,54 +1326,201 @@ interface WorksheetRendererProps {
   bookMode?: boolean;
 }
 
-// Section type → visual config (clean white, dark navy accent, no gradients, no emojis)
-// Matches the reference PDF exactly: flat dark navy header bar, white text, no colour fills on body.
-const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string; headerBg: string; headerText: string }> = {
-  "objective":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Learning Objective",      headerBg: "#1a2744", headerText: "#ffffff" },
-  "success":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Success Criteria",        headerBg: "#1a2744", headerText: "#ffffff" },
-  "vocabulary":    { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Key Vocabulary",          headerBg: "#1a2744", headerText: "#ffffff" },
-  "starter":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Prior Knowledge Check",   headerBg: "#1a2744", headerText: "#ffffff" },
-  "example":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Worked Example",          headerBg: "#1a2744", headerText: "#ffffff" },
-  "reminder-box":  { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Key Steps",               headerBg: "#1a2744", headerText: "#ffffff" },
-  "guided":        { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Foundation",              headerBg: "#1a2744", headerText: "#ffffff" },
-  "independent":   { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Core Practice",           headerBg: "#1a2744", headerText: "#ffffff" },
-  "challenge":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Stretch & Challenge",     headerBg: "#1a2744", headerText: "#ffffff" },
-  "word-problems": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Real-Life Problems",      headerBg: "#1a2744", headerText: "#ffffff" },
-  "common-mistakes":{ border:"#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg:"#1a2744",  icon:"",  label: "Common Mistakes to Avoid",headerBg: "#1a2744", headerText: "#ffffff" },
-  "word-bank":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Word Bank",               headerBg: "#1a2744", headerText: "#ffffff" },
-  "wordbank":      { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Word Bank",               headerBg: "#1a2744", headerText: "#ffffff" },
-  "sentence-starters": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Sentence Starters",  headerBg: "#1a2744", headerText: "#ffffff" },
-  "self-assessment": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Self Assessment",       headerBg: "#1a2744", headerText: "#ffffff" },
-  "self-reflection": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "How Did I Do?",         headerBg: "#1a2744", headerText: "#ffffff" },
-  // Phase 3 — Revision Tips. Examiner-voice 5-tip panel rendered just
-  // before Self-Reflection. House style: same accent palette as the
-  // other student-facing panels; no icon.
-  "revision-tips": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Examiner Tips",          headerBg: "#1a2744", headerText: "#ffffff" },
-  "diagram":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Diagram",                 headerBg: "#1a2744", headerText: "#ffffff" },
-  "answers":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Answers",                 headerBg: "#1a2744", headerText: "#ffffff" },
-  "questions":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Exam Questions",          headerBg: "#1a2744", headerText: "#ffffff" },
-  "mark-scheme":   { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Mark Scheme",             headerBg: "#1a2744", headerText: "#ffffff" },
-  "teacher-notes": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Teacher Notes",           headerBg: "#1a2744", headerText: "#ffffff" },
-  "send-support":  { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#7c3aed", icon: "", label: "SEND Support",            headerBg: "#7c3aed", headerText: "#ffffff" },
-  "reading":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Reading Passage",         headerBg: "#1a2744", headerText: "#ffffff" },
-  "passage":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Reading Passage",         headerBg: "#1a2744", headerText: "#ffffff" },
-  "source-text":   { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Source Text",             headerBg: "#1a2744", headerText: "#ffffff" },
-  "comprehension": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Comprehension",           headerBg: "#1a2744", headerText: "#ffffff" },
-  "misconceptions":{ border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Common Mistakes to Avoid",headerBg: "#1a2744", headerText: "#ffffff" },
-  "revision-mat-box":{ border:"#1a2744",bg:"#ffffff",  badge:"#1a2744",  badgeBg:"#1a2744",  icon:"",  label: "",                        headerBg: "#1a2744", headerText: "#ffffff" },
-  "default":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "",                        headerBg: "#1a2744", headerText: "#ffffff" },
-  "section-header": { border: "#2a7f8f", bg: "#ffffff", badge: "#2a7f8f", badgeBg: "#2a7f8f", icon: "", label: "",                        headerBg: "#2a7f8f", headerText: "#ffffff" },
-  "q-challenge":    { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Challenge",               headerBg: "#1a2744", headerText: "#ffffff" },
-  // Overlay section types
-  "retrieval":      { border: "#1a2744", bg: "#f0f4ff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Retrieval Practice",       headerBg: "#1a2744", headerText: "#ffffff" },
-  "teacher-note":   { border: "#1a2744", bg: "#fffbeb", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Teacher Note",             headerBg: "#1a2744", headerText: "#ffffff" },
-  "question":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Question",                 headerBg: "#1a2744", headerText: "#ffffff" },
-  "prior-knowledge":{ border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Prior Knowledge Check",    headerBg: "#1a2744", headerText: "#ffffff" },
+// ─────────────────────────────────────────────────────────────────────────────
+// VISUAL LANGUAGE SYSTEM — Semantic colour mapping per section type
+// Rule: When an accessibility overlay is active, ALL section colours are
+// suppressed — the overlay colour becomes the background and headers use
+// the overlay colour with black text + black border (no colour at all).
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Semantic colour tokens (no overlay)
+const VL_COLOURS = {
+  blue:   { header: "#1d4ed8", headerText: "#ffffff", border: "#1d4ed8", bg: "#eff6ff" }, // Info / teaching point / objective
+  green:  { header: "#15803d", headerText: "#ffffff", border: "#15803d", bg: "#f0fdf4" }, // Main task / activity
+  yellow: { header: "#a16207", headerText: "#ffffff", border: "#a16207", bg: "#fefce8" }, // Hint / reminder / support
+  orange: { header: "#c2410c", headerText: "#ffffff", border: "#c2410c", bg: "#fff7ed" }, // Important vocabulary
+  red:    { header: "#b91c1c", headerText: "#ffffff", border: "#b91c1c", bg: "#fef2f2" }, // Challenge / extension
+  purple: { header: "#6d28d9", headerText: "#ffffff", border: "#6d28d9", bg: "#faf5ff" }, // Reflection / self-assessment
+  grey:   { header: "#374151", headerText: "#ffffff", border: "#374151", bg: "#f9fafb" }, // Teacher notes / optional
+  navy:   { header: "#1B2A4A", headerText: "#ffffff", border: "#1B2A4A", bg: "#ffffff" }, // Fallback / neutral
 };
-function getSectionStyle(type: string, _yearNum?: number) {
-  // All section types are now locked to the indigo/blue/violet palette —
-  // teal, sky, and slate have been removed from SECTION_STYLES entirely.
-  return SECTION_STYLES[type] || SECTION_STYLES["default"];
+
+// Map section type → semantic colour token
+const SECTION_COLOUR_MAP: Record<string, keyof typeof VL_COLOURS> = {
+  // Blue — information / teaching point
+  "objective":       "blue",
+  "success":         "blue",
+  "starter":         "blue",
+  "prior-knowledge": "blue",
+  "retrieval":       "blue",
+  "reading":         "blue",
+  "passage":         "blue",
+  "source-text":     "blue",
+  "comprehension":   "blue",
+  "diagram":         "blue",
+  "section-header":  "blue",
+  // Green — main task / activity
+  "guided":          "green",
+  "independent":     "green",
+  "word-problems":   "green",
+  "questions":       "green",
+  "question":        "green",
+  "q-true-false":    "green",
+  "q-mcq":           "green",
+  "q-gap-fill":      "green",
+  "q-short-answer":  "green",
+  "q-extended":      "green",
+  "q-data-table":    "green",
+  "q-label-diagram": "green",
+  "q-ordering":      "green",
+  "q-matching":      "green",
+  "q-circuit":       "green",
+  "q-draw":          "green",
+  "q-graph":         "green",
+  "q-primary-activity": "green",
+  // Yellow — hint / reminder / support
+  "reminder-box":    "yellow",
+  "example":         "yellow",
+  "word-bank":       "yellow",
+  "wordbank":        "yellow",
+  "sentence-starters": "yellow",
+  "revision-tips":   "yellow",
+  "revision-mat-box": "yellow",
+  // Orange — important vocabulary
+  "vocabulary":      "orange",
+  // Red — challenge / extension
+  "challenge":       "red",
+  "q-challenge":     "red",
+  // Purple — reflection / self-assessment
+  "self-reflection":  "purple",
+  "self-assessment":  "purple",
+  "send-support":     "purple",
+  // Grey — teacher notes / optional
+  "teacher-notes":   "grey",
+  "teacher-note":    "grey",
+  "mark-scheme":     "grey",
+  "answers":         "grey",
+  "common-mistakes": "grey",
+  "misconceptions":  "grey",
+};
+
+// Section type → label and border style
+const SECTION_LABELS: Record<string, { label: string; borderStyle?: "dashed" | "double" | "solid" }> = {
+  "objective":       { label: "Learning Objective" },
+  "success":         { label: "Success Criteria" },
+  "vocabulary":      { label: "Key Vocabulary" },
+  "starter":         { label: "Prior Knowledge Check" },
+  "example":         { label: "Worked Example" },
+  "reminder-box":    { label: "Key Steps" },
+  "guided":          { label: "Foundation" },
+  "independent":     { label: "Core Practice" },
+  "challenge":       { label: "Stretch & Challenge" },
+  "word-problems":   { label: "Real-Life Problems" },
+  "common-mistakes": { label: "Common Mistakes to Avoid" },
+  "word-bank":       { label: "Word Bank", borderStyle: "dashed" },
+  "wordbank":        { label: "Word Bank", borderStyle: "dashed" },
+  "sentence-starters":{ label: "Sentence Starters", borderStyle: "dashed" },
+  "self-assessment": { label: "Self Assessment", borderStyle: "double" },
+  "self-reflection": { label: "How Did I Do?", borderStyle: "double" },
+  "revision-tips":   { label: "Examiner Tips" },
+  "diagram":         { label: "Diagram" },
+  "answers":         { label: "Answers", borderStyle: "dashed" },
+  "questions":       { label: "Exam Questions" },
+  "mark-scheme":     { label: "Mark Scheme", borderStyle: "dashed" },
+  "teacher-notes":   { label: "Teacher Notes", borderStyle: "dashed" },
+  "send-support":    { label: "SEND Support" },
+  "reading":         { label: "Reading Passage" },
+  "passage":         { label: "Reading Passage" },
+  "source-text":     { label: "Source Text" },
+  "comprehension":   { label: "Comprehension" },
+  "misconceptions":  { label: "Common Mistakes to Avoid" },
+  "revision-mat-box":{ label: "" },
+  "default":         { label: "" },
+  "section-header":  { label: "" },
+  "q-challenge":     { label: "Challenge" },
+  "retrieval":       { label: "Retrieval Practice" },
+  "teacher-note":    { label: "Teacher Note", borderStyle: "dashed" },
+  "question":        { label: "Question" },
+  "prior-knowledge": { label: "Prior Knowledge Check" },
+};
+
+/**
+ * Returns the resolved visual style for a section.
+ * When overlayColor is active (not white/transparent), ALL section colours
+ * are suppressed — the overlay colour becomes the header background and
+ * black is used for text and borders.
+ */
+function getSectionStyle(
+  type: string,
+  _yearNum?: number,
+  overlayColor?: string,
+): { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string; headerBg: string; headerText: string; borderStyle: string } {
+  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const colourKey = SECTION_COLOUR_MAP[type] || "navy";
+  const colours = hasOverlay
+    ? { header: overlayColor!, headerText: "#111111", border: "#111111", bg: overlayColor! }
+    : VL_COLOURS[colourKey];
+  const meta = SECTION_LABELS[type] || { label: "" };
+  return {
+    border: colours.border,
+    bg: colours.bg,
+    badge: colours.header,
+    badgeBg: colours.bg,
+    icon: "",
+    label: meta.label,
+    headerBg: colours.header,
+    headerText: colours.headerText,
+    borderStyle: meta.borderStyle || "solid",
+  };
+}
+
+// ── Section type → Lucide icon component ────────────────────────────────────
+// Returns the React element for the icon, or null if no icon is assigned.
+function getSectionIcon(type: string, size = 16, color = "#ffffff"): React.ReactElement | null {
+  const props = { size, color, strokeWidth: 2.5, style: { flexShrink: 0 } };
+  switch (type) {
+    case "objective":        return <Target {...props} />;
+    case "success":          return <Target {...props} />;
+    case "starter":          return <Zap {...props} />;
+    case "prior-knowledge":  return <Search {...props} />;
+    case "retrieval":        return <Search {...props} />;
+    case "vocabulary":       return <BookMarked {...props} />;
+    case "example":          return <FileText {...props} />;
+    case "reminder-box":     return <Lightbulb {...props} />;
+    case "word-bank":        return <BookOpen {...props} />;
+    case "wordbank":         return <BookOpen {...props} />;
+    case "sentence-starters":return <HelpCircle {...props} />;
+    case "guided":           return <Users {...props} />;
+    case "independent":      return <PenLine {...props} />;
+    case "challenge":        return <Star {...props} />;
+    case "q-challenge":      return <Star {...props} />;
+    case "word-problems":    return <MessageSquare {...props} />;
+    case "common-mistakes":  return <AlertTriangle {...props} />;
+    case "misconceptions":   return <AlertTriangle {...props} />;
+    case "self-reflection":  return <CheckCircle {...props} />;
+    case "self-assessment":  return <CheckCircle {...props} />;
+    case "revision-tips":    return <GraduationCap {...props} />;
+    case "reading":          return <BookOpen {...props} />;
+    case "passage":          return <BookOpen {...props} />;
+    case "source-text":      return <BookOpen {...props} />;
+    case "comprehension":    return <Search {...props} />;
+    case "diagram":          return <BarChart2 {...props} />;
+    case "teacher-notes":    return <UserCheck {...props} />;
+    case "teacher-note":     return <UserCheck {...props} />;
+    case "mark-scheme":      return <CheckCircle {...props} />;
+    case "answers":          return <CheckCircle {...props} />;
+    case "send-support":     return <Users {...props} />;
+    default:                 return null;
+  }
+}
+
+// ── Difficulty dot indicator ─────────────────────────────────────────────────
+// Returns ● / ●● / ●●● for Foundation / Core / Challenge sections.
+function getDifficultyDots(type: string): string {
+  if (type === "guided")      return "●";
+  if (type === "independent") return "●●";
+  if (type === "challenge" || type === "q-challenge") return "●●●";
+  return "";
 }
 
 function stripLatexFromPlainText(text: string): string {
@@ -4321,7 +4489,18 @@ function PrimarySection({
    *  per-question Working-Out box can be gated to maths only. */
   subject?: string;
 }) {
+  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
   const palette = PRIMARY_BRIGHT_PALETTE[paletteIndex % PRIMARY_BRIGHT_PALETTE.length];
+  // When an accessibility overlay is active, suppress all palette colours.
+  // The section wrapper uses the overlay colour as background; the header
+  // uses the overlay colour with black text and a black border.
+  const effectivePalette = hasOverlay ? {
+    bg: overlayColor!,
+    border: "#111111",
+    header: overlayColor!,
+    text: "#111111",
+    label: "overlay",
+  } : palette;
   const titleText = (typeof section.title === "string" ? section.title : String(section.title || ""))
     .replace(/^\*{1,2}|\*{1,2}$/g, "").replace(/^_{1,2}|_{1,2}$/g, "").trim();
   const badgeText = getPrimaryBadge(section.type);
@@ -4388,19 +4567,19 @@ function PrimarySection({
       style={{
         marginBottom: "14px",
         borderRadius: "18px",
-        border: `3px solid ${palette.border}`,
-        background: palette.bg,
+        border: `3px solid ${effectivePalette.border}`,
+        background: effectivePalette.bg,
         overflow: "hidden",
         cursor: editMode ? "pointer" : "default",
-        outline: editMode && isEdited ? `3px solid ${palette.border}` : "none",
+        outline: editMode && isEdited ? `3px solid ${effectivePalette.border}` : "none",
         pageBreakInside: "avoid",
         breakInside: "avoid",
-        boxShadow: `0 4px 16px ${palette.border}33, 0 1px 4px rgba(0,0,0,0.06)`,
+        boxShadow: hasOverlay ? "none" : `0 4px 16px ${palette.border}33, 0 1px 4px rgba(0,0,0,0.06)`,
       }}
     >
       {/* ── Colourful Header Bar ── */}
       <div style={{
-        background: palette.header,
+        background: effectivePalette.header,
         padding: "10px 16px",
         display: "flex",
         alignItems: "center",
@@ -4464,8 +4643,8 @@ function PrimarySection({
         fontSize: `${fmt.fontSize + 2}px`,
         lineHeight: "2.0",
         fontFamily: fmt.fontFamily,
-        color: palette.text,
-        background: palette.bg,
+        color: effectivePalette.text,
+        background: effectivePalette.bg,
       }}>
         {formatContent(content, fmt, {
           bookMode,
@@ -4481,7 +4660,7 @@ function PrimarySection({
             bottom Writing-lines slider since each question now owns its
             answer space. */}
         {editMode && usePerQuestionAnswerLines && (
-          <div className="no-print" style={{ marginTop: "10px", fontSize: "11px", color: palette.border, fontFamily: fmt.fontFamily, fontStyle: "italic" }}>
+          <div className="no-print" style={{ marginTop: "10px", fontSize: "11px", color: effectivePalette.border, fontFamily: fmt.fontFamily, fontStyle: "italic" }}>
             Each numbered question above has {perQuestionLineCount} answer line{perQuestionLineCount === 1 ? "" : "s"} of its own.
           </div>
         )}
@@ -4496,12 +4675,12 @@ function PrimarySection({
             {/* Edit controls */}
             {editMode && (
               <div className="no-print" style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "11px", fontWeight: 600, color: palette.border, fontFamily: fmt.fontFamily }}>Writing lines:</span>
+                <span style={{ fontSize: "11px", fontWeight: 600, color: effectivePalette.border, fontFamily: fmt.fontFamily }}>Writing lines:</span>
                 <button onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(sectionIndex, Math.max(1, answerLines - 1)); }}
-                  style={{ width: "24px", height: "24px", borderRadius: "4px", border: `1px solid ${palette.border}`, background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: palette.text }}>−</button>
-                <span style={{ fontSize: "12px", color: palette.text, minWidth: "60px", textAlign: "center", fontFamily: fmt.fontFamily }}>{answerLines} line{answerLines !== 1 ? "s" : ""}</span>
+                  style={{ width: "24px", height: "24px", borderRadius: "4px", border: `1px solid ${effectivePalette.border}`, background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: effectivePalette.text }}>−</button>
+                <span style={{ fontSize: "12px", color: effectivePalette.text, minWidth: "60px", textAlign: "center", fontFamily: fmt.fontFamily }}>{answerLines} line{answerLines !== 1 ? "s" : ""}</span>
                 <button onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(sectionIndex, Math.min(20, answerLines + 1)); }}
-                  style={{ width: "24px", height: "24px", borderRadius: "4px", border: `1px solid ${palette.border}`, background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: palette.text }}>+</button>
+                  style={{ width: "24px", height: "24px", borderRadius: "4px", border: `1px solid ${effectivePalette.border}`, background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: effectivePalette.text }}>+</button>
                 <div style={{ width: "1px", height: "16px", background: "#e5e7eb" }} />
                 <button onClick={(e) => { e.stopPropagation(); onAnswerBoxRemove?.(sectionIndex); }}
                   style={{ padding: "2px 8px", borderRadius: "4px", border: "1px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: "11px", fontWeight: 600, color: "#dc2626" }}>✕ Remove</button>
@@ -4517,11 +4696,192 @@ function PrimarySection({
                 }} />
               ))}
             </div>
-            <div style={{ fontSize: `${fmt.fontSize - 3}px`, color: `${palette.border}bb`, marginTop: "4px", fontFamily: fmt.fontFamily, fontStyle: "italic", textAlign: "right" }}>
+            <div style={{ fontSize: `${fmt.fontSize - 3}px`, color: `${effectivePalette.border}bb`, marginTop: "4px", fontFamily: fmt.fontFamily, fontStyle: "italic", textAlign: "right" }}>
               {section.type === "challenge" ? "Show your working above" : "Write your answer above"}
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MathsCompactLayout — MathsGenie-style two-column numbered question grid
+// Activated for secondary Maths worksheets (Year 7+). SEND overlays take full
+// priority: when overlayColor is set the entire grid background becomes the
+// overlay colour and all palette colours are suppressed.
+// ─────────────────────────────────────────────────────────────────────────────
+function MathsCompactLayout({
+  worksheet,
+  fmt,
+  overlayColor,
+  isTeacherView,
+  bookMode,
+}: {
+  worksheet: any;
+  fmt: ReturnType<typeof getSendFormatting>;
+  overlayColor?: string;
+  isTeacherView: boolean;
+  bookMode: boolean;
+}) {
+  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const bgColor = hasOverlay ? overlayColor! : "#ffffff";
+  const borderColor = hasOverlay ? "#111111" : "#1a2744";
+  const headerBg = hasOverlay ? overlayColor! : "#1a2744";
+  const headerText = hasOverlay ? "#111111" : "#ffffff";
+  const sections = worksheet.sections || [];
+  const metadata = worksheet.metadata || {};
+
+  // Separate question sections from structural sections
+  const QUESTION_TYPES = new Set(["independent","guided","challenge","q-short-answer","q-extended","q-mcq","q-gap-fill","q-true-false","question","word-problems"]);
+  const NON_QUESTION_TYPES = new Set(["objective","success","vocabulary","example","reminder-box","starter","self-reflection","revision-tips","teacher-notes","mark-scheme","answers","send-support","word-bank","sentence-starters"]);
+
+  // Build a flat list of numbered questions from all question sections
+  const questionItems: Array<{ text: string; marks: number; type: string; sectionTitle: string }> = [];
+  const nonQuestionSections: any[] = [];
+
+  sections.forEach((sec: any) => {
+    const t = String(sec.type || "").toLowerCase();
+    const normalised = normalizeWorksheetSectionType(t);
+    if (QUESTION_TYPES.has(normalised)) {
+      const rawContent = typeof sec.content === "string" ? sec.content : JSON.stringify(sec.content || "");
+      // Strip teacher-only markers
+      const content = stripInternalGeneratorMarkers(rawContent);
+      // Each numbered line in the content becomes a question item
+      const lines = content.split("\n").filter((l: string) => l.trim());
+      const numberedLines: string[] = [];
+      let current = "";
+      lines.forEach((line: string) => {
+        if (/^\s*\d+[a-z]?[.):]/.test(line)) {
+          if (current) numberedLines.push(current.trim());
+          current = line;
+        } else {
+          current += " " + line;
+        }
+      });
+      if (current) numberedLines.push(current.trim());
+      if (numberedLines.length === 0 && content.trim()) numberedLines.push(content.trim());
+      numberedLines.forEach((q: string) => {
+        const marksMatch = q.match(/(\(\s*(\d+)\s*marks?\s*\)|\[\s*(\d+)\s*marks?\s*\])/i);
+        const marks = marksMatch ? parseInt(marksMatch[2] || marksMatch[3]) : 2;
+        const cleanQ = isTeacherView ? q : q.replace(/\s*[\[(]\d+\s*marks?[\])]/gi, "").trim();
+        questionItems.push({ text: cleanQ, marks, type: normalised, sectionTitle: String(sec.title || "") });
+      });
+    } else if (NON_QUESTION_TYPES.has(normalised) || !QUESTION_TYPES.has(normalised)) {
+      nonQuestionSections.push(sec);
+    }
+  });
+
+  // Split questions into two columns
+  const half = Math.ceil(questionItems.length / 2);
+  const col1 = questionItems.slice(0, half);
+  const col2 = questionItems.slice(half);
+
+  const renderQuestion = (q: { text: string; marks: number; type: string; sectionTitle: string }, globalIdx: number) => {
+    const lineCount = Math.max(q.marks + 1, 2);
+    const typeLabel = q.type === "q-mcq" ? "MCQ" : q.type === "q-true-false" ? "T/F" : q.type === "challenge" ? "★" : "";
+    return (
+      <div key={globalIdx} style={{
+        padding: "8px 10px",
+        borderBottom: `0.5px solid ${hasOverlay ? "#555" : "#d1d5db"}`,
+        background: bgColor,
+        breakInside: "avoid",
+        pageBreakInside: "avoid",
+      }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+          {/* Question number badge */}
+          <div style={{
+            minWidth: "22px", width: "22px", height: "22px",
+            background: hasOverlay ? "transparent" : "#1a2744",
+            border: hasOverlay ? `1.5px solid #111` : "none",
+            color: hasOverlay ? "#111" : "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "10px", fontWeight: 700,
+            flexShrink: 0,
+            fontFamily: fmt.fontFamily,
+          }}>{globalIdx + 1}</div>
+          <div style={{ flex: 1 }}>
+            {typeLabel && <span style={{ fontSize: "8px", fontWeight: 700, color: hasOverlay ? "#333" : "#6b7280", marginRight: "4px", textTransform: "uppercase" as const }}>{typeLabel}</span>}
+            <span
+              style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: hasOverlay ? "#111" : "#1e293b" }}
+              dangerouslySetInnerHTML={{ __html: renderMath(q.text) }}
+            />
+            {isTeacherView && <span style={{ fontSize: "9px", color: hasOverlay ? "#333" : "#6b7280", marginLeft: "6px", fontStyle: "italic" }}>({q.marks} mark{q.marks !== 1 ? "s" : ""})</span>}
+          </div>
+        </div>
+        {/* Working space lines */}
+        {!bookMode && (
+          <div style={{ marginTop: "6px", paddingLeft: "30px" }}>
+            {Array.from({ length: lineCount }).map((_: unknown, n: number) => (
+              <div key={n} style={{ borderBottom: `1px solid ${hasOverlay ? "#888" : "#9ca3af"}`, height: "24px", marginBottom: "2px" }} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ fontFamily: fmt.fontFamily, background: bgColor }}>
+      {/* ── Topic header bar (MathsGenie style) ── */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto 1fr",
+        alignItems: "center",
+        border: `1.5px solid ${borderColor}`,
+        borderBottom: "none",
+        background: headerBg,
+        padding: "6px 12px",
+        marginBottom: "0",
+      }}>
+        <div style={{ fontSize: "10px", fontWeight: 600, color: headerText, fontFamily: fmt.fontFamily }}>
+          {metadata.yearGroup || ""}
+        </div>
+        <div style={{ fontSize: "13px", fontWeight: 700, color: headerText, fontFamily: fmt.fontFamily, textAlign: "center" as const }}>
+          {metadata.topic || metadata.title || ""}
+        </div>
+        <div style={{ fontSize: "10px", fontWeight: 600, color: headerText, fontFamily: fmt.fontFamily, textAlign: "right" as const }}>
+          {metadata.examBoard && metadata.examBoard !== "General" && metadata.examBoard !== "none" ? metadata.examBoard.toUpperCase() : ""}
+        </div>
+      </div>
+
+      {/* ── Two-column question grid ── */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        border: `1.5px solid ${borderColor}`,
+        background: bgColor,
+      }}>
+        {/* Column 1 */}
+        <div style={{ borderRight: `1px solid ${hasOverlay ? "#555" : "#d1d5db"}` }}>
+          {col1.map((q, idx) => renderQuestion(q, idx))}
+        </div>
+        {/* Column 2 */}
+        <div>
+          {col2.map((q, idx) => renderQuestion(q, idx + half))}
+        </div>
+      </div>
+
+      {/* ── Footer bar ── */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto 1fr",
+        alignItems: "center",
+        border: `1.5px solid ${borderColor}`,
+        borderTop: "none",
+        background: headerBg,
+        padding: "4px 12px",
+      }}>
+        <div style={{ fontSize: "10px", fontWeight: 600, color: headerText, fontFamily: fmt.fontFamily }}>
+          {metadata.yearGroup || ""}
+        </div>
+        <div style={{ fontSize: "11px", fontWeight: 700, color: headerText, fontFamily: fmt.fontFamily, textAlign: "center" as const }}>
+          {metadata.topic || metadata.title || ""}
+        </div>
+        <div style={{ fontSize: "10px", fontWeight: 600, color: headerText, fontFamily: fmt.fontFamily, textAlign: "right" as const }}>
+          {isTeacherView ? `${questionItems.length} questions` : ""}
+        </div>
       </div>
     </div>
   );
@@ -5660,8 +6020,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         </div>
       )}
 
-      {/* ── Sections (normal portrait layout — hidden when revision mat active) ── */}
-      {!isRevisionMat && (worksheet.sections || []).map((section, i) => {
+      {/* ── MathsGenie-style compact layout for secondary Maths worksheets ── */}
+      {!isRevisionMat && isMathsSubject && !isPrimary && (
+        <MathsCompactLayout
+          worksheet={worksheet}
+          fmt={fmt}
+          overlayColor={overlayColor}
+          isTeacherView={isTeacherView}
+          bookMode={bookMode}
+        />
+      )}
+
+      {/* ── Sections (normal portrait layout — hidden when revision mat active or maths compact active) ── */}
+      {!isRevisionMat && !(isMathsSubject && !isPrimary) && (worksheet.sections || []).map((section, i) => {
         // Preserve the original type BEFORE normalisation so we can detect
         // "diagram-a" vs "diagram-b" for page-layout purposes (both normalise
         // to "diagram" but need different CSS classes).
@@ -5758,8 +6129,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             .join('\n');
         }
         const style = isPrimary
-          ? { ...(PRIMARY_SECTION_COLOURS[i % PRIMARY_SECTION_COLOURS.length]), icon: ["A","B","C","D","E","F","G","H"][i % 8], label: section.title as string || "", badgeText: "" }
-          : getSectionStyle(section.type, yrNum);
+          ? { ...(PRIMARY_SECTION_COLOURS[i % PRIMARY_SECTION_COLOURS.length]), icon: ["A","B","C","D","E","F","G","H"][i % 8], label: section.title as string || "", badgeText: "", headerBg: "#1B2A4A", headerText: "#ffffff", borderStyle: "solid" as const }
+          : getSectionStyle(section.type, yrNum, overlayColor);
         // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
         const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "teacher-note" || section.type === "mark-scheme" || section.type === "answers";
 
@@ -6098,9 +6469,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               marginTop: undefined,
               marginLeft: undefined,
               marginRight: undefined,
-              background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
-              border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
-              borderRadius: "0",
+              background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : style.bg,
+              border: fmt.theme === "high-contrast" ? "2px solid #111827" : style.borderStyle === "dashed" ? `1.5px dashed ${style.border}` : style.borderStyle === "double" ? `3px double ${style.border}` : `1.5px solid ${style.border}`,
+              borderRadius: "4px",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? "2px solid #2a7f8f" : "none",
               pageBreakInside: "avoid",
@@ -6153,32 +6524,48 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 </div>
               </div>
             ) : section.type === "diagram" ? null : section.type === "send-support" ? null : (
-              /* Section header: thick navy rule + teal label + thin grey rule — matches reference PDF */
-              <div style={{ marginBottom: "12px" }}>
-                <div style={{ borderTop: isTeacherHeader ? "1.5px solid #8b1a1a" : "1.5px solid #1B2A4A", marginBottom: "4px" }} />
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              /* Section header: semantic colour bar with Lucide icon + label + difficulty dots */
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                background: isTeacherHeader ? "#8b1a1a" : style.headerBg,
+                color: isTeacherHeader ? "#ffffff" : style.headerText,
+                padding: "5px 10px",
+                marginBottom: "10px",
+                marginLeft: "-12px",
+                marginRight: "-12px",
+                marginTop: "-12px",
+                borderRadius: "4px 4px 0 0",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  {getSectionIcon(isTeacherHeader ? "teacher-notes" : section.type, 13, isTeacherHeader ? "#ffffff" : style.headerText)}
                   <span style={{
                     fontSize: "8.5px",
                     fontWeight: 700,
-                    color: isTeacherHeader ? "#8b1a1a" : "#2A6F6F",
                     fontFamily: fmt.fontFamily,
                     textTransform: "uppercase",
                     letterSpacing: "0.12em",
+                    color: isTeacherHeader ? "#ffffff" : style.headerText,
                   }}>
                     {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : myGroupLabel}
                   </span>
-                  {isTeacherSection && !isTeacherHeader && (
-                    <span style={{ background: "#8b1a1a", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
+                  {getDifficultyDots(section.type) && (
+                    <span style={{ fontSize: "8px", letterSpacing: "1px", opacity: 0.85, color: isTeacherHeader ? "#ffffff" : style.headerText }}>
+                      {getDifficultyDots(section.type)}
+                    </span>
                   )}
                 </div>
-                <div style={{ borderTop: isTeacherHeader ? "0.4px solid #8b1a1a" : "0.4px solid #cccccc", marginTop: "4px" }} />
+                {isTeacherSection && !isTeacherHeader && (
+                  <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
+                )}
               </div>
             )}
 
             {/* Section content */}
             <div style={{
               padding: "0",
-              background: isTeacherHeader ? "#fff8f8" : (fmt.sectionBgColor || "#ffffff"),
+              background: isTeacherHeader ? "#fff8f8" : style.bg,
             }}>
               {/* Detect and render inline SVG diagram if content has [[DIAGRAM:{...}]] marker */}
               {(() => {
