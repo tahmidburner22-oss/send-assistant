@@ -223,6 +223,19 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
       name: "extract-misconception-links",
       fn: (ws, _opts) => extractMisconceptionLinks(ws),
     },
+    // RC6 — SEND-marker enforcer now runs BEFORE the section-count validators
+    // so that HI topic-summary insertions and Anxiety/SEMH section renames are
+    // already in place when the count and cap validators fire. Previously the
+    // SEND overlay ran AFTER the count checks, meaning the count validators
+    // saw the pre-SEND structure and could emit false positives (e.g. flagging
+    // a missing section that the SEND overlay was about to insert).
+    // Lane 1.6 + 1.7 — Phase 4 SEND-marker enforcer. Inserts a fresh section
+    // for HI worksheets when the AI omitted the Topic Summary block, and
+    // renames the Challenge / Section 1 titles for Anxiety/SEMH worksheets.
+    {
+      name: "send-overlay-markers",
+      fn: (ws, opts) => enforceSendOverlayMarkers(ws, opts),
+    },
     // IMP-04 — trim Section 3 (application) to the GCSE cap of 5 BEFORE the
     // count contract runs, so the final warning surface is clean once excess
     // exam-style questions have been removed.
@@ -247,16 +260,6 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     },
     // Phase 1 — curriculum + GCSE spec lock.
     { name: "spec-anchor-presence", fn: (ws, opts) => enforceSpecAnchorPresence(ws, opts) },
-    // Lane 1.6 + 1.7 — Phase 4 SEND-marker enforcer. Runs BEFORE
-    // self-reflection-topic-anchor so the reflection validator sees the
-    // post-rename Anxiety section titles. Inserts a fresh section for
-    // HI worksheets when the AI omitted the Topic Summary block, and
-    // renames the Challenge / Section 1 titles for Anxiety/SEMH
-    // worksheets to remove threat-language.
-    {
-      name: "send-overlay-markers",
-      fn: (ws, opts) => enforceSendOverlayMarkers(ws, opts),
-    },
     // Phase 2 — topic-specific Self-Reflection.
     {
       name: "self-reflection-topic-anchor",

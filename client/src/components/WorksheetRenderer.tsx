@@ -5815,36 +5815,70 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const sectionTitle = (typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim();
 
         // ── Section group dividers: inject "SECTION N — NAME — Questions X–Y" before first question in each group ──
-        // Updated question structure (Phase 1):
-        //   Section 1 — Recall:                Q1-Q3 (T/F, MCQ, Gap Fill) + Q4-Q9 (short recall)
-        //   Section 2 — Understanding:          Q10-Q15 (harder understanding questions)
-        //   Section 3 — Application & Analysis: Q16-Q20 (exam-style questions)
+        // RC7: Updated question structure to match SECTION_QUESTION_TARGETS (7-7-5+1):
+        //   Section 1 — Recall:                Q1–Q7  (6–8 questions, target 7)
+        //   Section 2 — Understanding:          Q8–Q14 (6–8 questions, target 7)
+        //   Section 3 — Application & Analysis: Q15–Q19 (exactly 5 questions)
+        //   Challenge:                           Q20+   (1 question)
+        //
+        // RC7: The divider label now prefers the actual section-header title from
+        // the worksheet data (set by the AI / SEND overlay) over hardcoded strings.
         const titleQNum = (() => {
           const t = typeof section.title === "string" ? section.title : "";
           const m = t.match(/Q(\d+)/i);
           return m ? parseInt(m[1]) : null;
         })();
+
+        // RC7: Derive the section group label from actual section-header titles in
+        // the worksheet data, falling back to Q-number ranges only when no explicit
+        // section-header is present. This makes the divider reflect the real title
+        // the AI generated (e.g. "SECTION 3 — EXAM STYLE QUESTIONS") rather than
+        // the hardcoded fallback ("SECTION 3 — APPLICATION & ANALYSIS").
+        const getActualSectionTitle = (groupPattern: RegExp): string | null => {
+          const headerSection = (worksheet.sections || []).find((s: any) => {
+            const normType = normalizeWorksheetSectionType(s.type);
+            if (normType !== "section-header") return false;
+            const t = (typeof s.title === "string" ? s.title : String(s.title || "")).toUpperCase();
+            const c = (typeof s.content === "string" ? s.content : String(s.content || "")).toUpperCase();
+            return groupPattern.test(t + " " + c);
+          });
+          return headerSection ? (typeof headerSection.title === "string" ? headerSection.title.toUpperCase() : null) : null;
+        };
+
         const getGroupByQNum = (qn: number | null, type: string): { label: string; qStart: number; qEnd: number } | undefined => {
           if (qn !== null) {
-            if (qn >= 1  && qn <= 9)  return { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  };
-            if (qn >= 10 && qn <= 15) return { label: "SECTION 2 — UNDERSTANDING",                  qStart: 10, qEnd: 15 };
-            if (qn >= 16 && qn <= 20) return { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 };
+            // RC7: Updated ranges to match SECTION_QUESTION_TARGETS 7-7-5+1 spec
+            if (qn >= 1  && qn <= 7)  {
+              const actual = getActualSectionTitle(/SECTION\s*1|RECALL|KNOWLEDGE.CHECK/i);
+              return { label: actual || "SECTION 1 — RECALL", qStart: 1, qEnd: 7 };
+            }
+            if (qn >= 8  && qn <= 14) {
+              const actual = getActualSectionTitle(/SECTION\s*2|UNDERSTANDING/i);
+              return { label: actual || "SECTION 2 — UNDERSTANDING", qStart: 8, qEnd: 14 };
+            }
+            if (qn >= 15 && qn <= 19) {
+              const actual = getActualSectionTitle(/SECTION\s*3|APPLICATION|EXAM.STYLE/i);
+              return { label: actual || "SECTION 3 — APPLICATION & ANALYSIS", qStart: 15, qEnd: 19 };
+            }
+            if (qn >= 20) {
+              return { label: "CHALLENGE QUESTION", qStart: 20, qEnd: 21 };
+            }
           }
           // Fallback by type
           const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
-            "q-true-false":   { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
-            "q-mcq":          { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
-            "q-gap-fill":     { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
-            "q-short-answer": { label: "SECTION 2 — UNDERSTANDING",                  qStart: 10, qEnd: 15 },
-            "q-extended":     { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 },
-            "q-circuit":      { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 },
-            "q-draw":         { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 },
-            "q-graph":        { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 },
-            "q-data-table":   { label: "SECTION 2 — UNDERSTANDING",                  qStart: 10, qEnd: 15 },
-            "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",                  qStart: 10, qEnd: 15 },
-            "q-ordering":     { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
-            "q-matching":     { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
-            "q-challenge":    { label: "CHALLENGE QUESTION",                              qStart: 21, qEnd: 23 },
+            "q-true-false":   { label: getActualSectionTitle(/SECTION\s*1|RECALL/i) || "SECTION 1 — RECALL",                 qStart: 1,  qEnd: 7  },
+            "q-mcq":          { label: getActualSectionTitle(/SECTION\s*1|RECALL/i) || "SECTION 1 — RECALL",                 qStart: 1,  qEnd: 7  },
+            "q-gap-fill":     { label: getActualSectionTitle(/SECTION\s*1|RECALL/i) || "SECTION 1 — RECALL",                 qStart: 1,  qEnd: 7  },
+            "q-short-answer": { label: getActualSectionTitle(/SECTION\s*2|UNDERSTANDING/i) || "SECTION 2 — UNDERSTANDING",   qStart: 8,  qEnd: 14 },
+            "q-extended":     { label: getActualSectionTitle(/SECTION\s*3|APPLICATION|EXAM.STYLE/i) || "SECTION 3 — APPLICATION & ANALYSIS", qStart: 15, qEnd: 19 },
+            "q-circuit":      { label: getActualSectionTitle(/SECTION\s*3|APPLICATION|EXAM.STYLE/i) || "SECTION 3 — APPLICATION & ANALYSIS", qStart: 15, qEnd: 19 },
+            "q-draw":         { label: getActualSectionTitle(/SECTION\s*3|APPLICATION|EXAM.STYLE/i) || "SECTION 3 — APPLICATION & ANALYSIS", qStart: 15, qEnd: 19 },
+            "q-graph":        { label: getActualSectionTitle(/SECTION\s*3|APPLICATION|EXAM.STYLE/i) || "SECTION 3 — APPLICATION & ANALYSIS", qStart: 15, qEnd: 19 },
+            "q-data-table":   { label: getActualSectionTitle(/SECTION\s*2|UNDERSTANDING/i) || "SECTION 2 — UNDERSTANDING",   qStart: 8,  qEnd: 14 },
+            "q-label-diagram":{ label: getActualSectionTitle(/SECTION\s*2|UNDERSTANDING/i) || "SECTION 2 — UNDERSTANDING",   qStart: 8,  qEnd: 14 },
+            "q-ordering":     { label: getActualSectionTitle(/SECTION\s*1|RECALL/i) || "SECTION 1 — RECALL",                 qStart: 1,  qEnd: 7  },
+            "q-matching":     { label: getActualSectionTitle(/SECTION\s*1|RECALL/i) || "SECTION 1 — RECALL",                 qStart: 1,  qEnd: 7  },
+            "q-challenge":    { label: "CHALLENGE QUESTION",                                                                   qStart: 20, qEnd: 21 },
           };
           return QUESTION_GROUP_MAP[type];
         };

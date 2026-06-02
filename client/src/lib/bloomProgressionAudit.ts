@@ -93,6 +93,45 @@ function isCalculationStem(s: Section): boolean {
   return /\b(calculate|work\s+out|determine|find\s+the\s+(value|mass|temperature|time))\b/.test(content);
 }
 
+// Mark band ranges per section group (GCSE convention, aligned with SECTION_QUESTION_TARGETS).
+// Used by the mark-band enforcement pass below.
+const MARK_BAND: Record<string, { min: number; max: number }> = {
+  recall:        { min: 1, max: 2 },  // Section 1 — Recall
+  understanding: { min: 2, max: 4 },  // Section 2 — Understanding
+  application:   { min: 3, max: 6 },  // Section 3 — Application
+  challenge:     { min: 6, max: 8 },  // Challenge Question
+};
+
+// Simple section-group inference: mirrors worksheetPostValidator.ts inferSectionGroup.
+function inferGroup(s: Section): keyof typeof MARK_BAND | null {
+  const t = (s.type || "").toLowerCase();
+  if (t === "q-challenge" || t === "challenge") return "challenge";
+  const title = (s.title || "").toLowerCase();
+  if (/section\s*3|application|exam.style|extended/i.test(title)) return "application";
+  if (/section\s*2|understanding/i.test(title)) return "understanding";
+  if (/section\s*1|recall|knowledge/i.test(title)) return "recall";
+  // Infer from question number in title (Q15+ = application, Q8-14 = understanding, Q1-7 = recall)
+  const qm = title.match(/q(\d+)/i);
+  if (qm) {
+    const n = parseInt(qm[1]);
+    if (n >= 20) return "challenge";
+    if (n >= 15) return "application";
+    if (n >= 8)  return "understanding";
+    if (n >= 1)  return "recall";
+  }
+  return null;
+}
+
+function extractMarkTariff(s: Section): number | null {
+  if (typeof s.marks === "number" && s.marks > 0) return s.marks;
+  const m = (s.content || "").match(/[[(](\d+)\s*marks?[\])]/i);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
+
 export function enforceBloomProgression(
   ws: Worksheet,
 ): { worksheet: Worksheet; warnings: string[] } {
@@ -109,11 +148,31 @@ export function enforceBloomProgression(
     if (rank == null) continue;
     if (lastRank != null && rank + 1 < lastRank) {
       warnings.push(
-        `[Phase PR-14 — Bloom progression] Question "${q.title || `Q${i + 1}`}" drops from rank ${lastRank} to rank ${rank}. ` +
+        `[PR-14 — Bloom progression] Question "${q.title || `Q${i + 1}`}" drops from rank ${lastRank} to rank ${rank}. ` +
         `Cognitive demand should rise (or hold) across a worksheet — check ordering.`,
       );
     }
     lastRank = rank;
+  }
+
+  // Mark-band range enforcement (Final Enforcement Pass).
+  // Warns when a question's mark tariff falls outside the expected band for its
+  // section group. This catches e.g. a 1-mark question in Section 3 (Application)
+  // or a 6-mark question in Section 1 (Recall).
+  for (let i = 0; i < questions.length; i += 1) {
+    const q = questions[i];
+    const group = inferGroup(q);
+    if (!group) continue;
+    const tariff = extractMarkTariff(q);
+    if (tariff === null) continue;
+    const band = MARK_BAND[group];
+    if (tariff < band.min || tariff > band.max) {
+      warnings.push(
+        `[Final Enforcement — Mark band] Question "${q.title || `Q${i + 1}`}" (${group}) has ${tariff} mark${tariff === 1 ? "" : "s"} ` +
+        `— outside the expected ${band.min}–${band.max} mark band for this section. ` +
+        `Adjust the tariff to match the cognitive demand.`,
+      );
+    }
   }
 
   // Science working-space stub.
@@ -126,7 +185,7 @@ export function enforceBloomProgression(
         /(working|space\s+for\s+working|show\s+your\s+working)/i.test(q.content || "");
       if (!hasSpace) {
         warnings.push(
-          `[Phase PR-14 — Science working space] Calculation question "${q.title || `Q${i + 1}`}" has no working-out space. ` +
+          `[PR-14 — Science working space] Calculation question "${q.title || `Q${i + 1}`}" has no working-out space. ` +
           `Add 2-4 ruled answer lines or include a "Show your working" cue.`,
         );
       }

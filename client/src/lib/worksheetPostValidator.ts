@@ -972,50 +972,82 @@ function inferSectionGroup(
 /**
  * Phase 1 — Enforce the 7-7-5 + 1 section question counts.
  *
- * Counts question sections per group via inferSectionGroup() and emits a
- * warning when a section is outside SECTION_QUESTION_TARGETS[group].{min,max}.
+ * DETERMINISTIC ENFORCEMENT (RC3):
+ *   - For the application group: trims excess questions beyond the max (5).
+ *     This is the most common failure mode (AI generates 6 exam-style Qs).
+ *     The companion `enforceApplicationQuestionCap` already handles this;
+ *     this function now also enforces it as a safety net.
+ *   - For recall / understanding: emits a warning when below minimum so the
+ *     teacher can see the shortfall. We do NOT pad these sections because
+ *     padding would require generating new question content — that is the
+ *     LLM’s job, not the post-validator’s.
+ *   - For challenge: warn-only (1 challenge is the target; 0 is flagged).
  *
- * Pure / idempotent. NEVER mutates content — warnings only — so an off-by-
- * one count never blocks a worksheet from rendering. The legacy 3-3-3
- * Q1-Q9 worksheet template will warn on every section here until the AI
- * has fully migrated; that is intentional and gives us an observability
- * signal in metadata.postValidatorWarnings to track migration progress.
+ * Pure / idempotent. The application trim is the only mutation; all other
+ * groups remain warnings-only.
  */
 export function enforceSectionQuestionCounts(
   ws: PostValidatorWorksheet,
   _opts: PostValidatorOptions = {},
 ): PostValidatorResult {
   const warnings: string[] = [];
+  const sections = ws.sections || [];
+
+  // Count per group
   const counts: Record<"recall" | "understanding" | "application" | "challenge", number> = {
     recall: 0,
     understanding: 0,
     application: 0,
     challenge: 0,
   };
-  for (const section of ws.sections || []) {
+  for (const section of sections) {
     const group = inferSectionGroup(section);
     if (group) counts[group]++;
   }
+
   // If every count is zero, this is almost certainly not a question-bearing
   // worksheet (e.g. a vocabulary-only library asset). Skip silently.
   const totalQuestionSections = counts.recall + counts.understanding + counts.application + counts.challenge;
   if (totalQuestionSections === 0) {
     return { worksheet: ws, warnings: [] };
   }
+
+  // Deterministic trim for application (exam-style) questions exceeding max.
+  // `enforceApplicationQuestionCap` also does this; this is a belt-and-braces
+  // safety net that fires when the cap validator was skipped or ran first.
+  let nextSections = sections;
+  const appMax = SECTION_QUESTION_TARGETS.application.max;
+  if (counts.application > appMax) {
+    const appSections = sections
+      .map((s, i) => ({ s, i, group: inferSectionGroup(s) }))
+      .filter(x => x.group === "application")
+      .sort((a, b) => sectionQuestionNumber(a.s) - sectionQuestionNumber(b.s));
+    const keepIdx = new Set(appSections.slice(0, appMax).map(x => x.i));
+    const dropCount = counts.application - appMax;
+    nextSections = sections.filter((s, i) => inferSectionGroup(s) !== "application" || keepIdx.has(i));
+    warnings.push(
+      `[RC3] Trimmed ${dropCount} excess application question${dropCount === 1 ? "" : "s"} to enforce the 5-question cap (was ${counts.application}).`,
+    );
+    counts.application = appMax;
+  }
+
+  // Warn-only for all groups (recall, understanding, challenge) where we
+  // cannot deterministically generate missing content.
   for (const group of ["recall", "understanding", "application", "challenge"] as const) {
     const got = counts[group];
     const targets = SECTION_QUESTION_TARGETS[group];
     if (got < targets.min) {
       warnings.push(
-        `Section "${group}" has ${got} question${got === 1 ? "" : "s"} — below the minimum of ${targets.min} (target ${targets.target}).`,
+        `[RC3] Section "${group}" has ${got} question${got === 1 ? "" : "s"} — below the minimum of ${targets.min} (target ${targets.target}). The AI prompt must be fixed to generate the correct count.`,
       );
     } else if (got > targets.max) {
       warnings.push(
-        `Section "${group}" has ${got} questions — above the maximum of ${targets.max} (target ${targets.target}).`,
+        `[RC3] Section "${group}" has ${got} questions — above the maximum of ${targets.max} (target ${targets.target}).`,
       );
     }
   }
-  return { worksheet: ws, warnings };
+
+  return { worksheet: { ...ws, sections: nextSections }, warnings };
 }
 
 /**
@@ -1093,15 +1125,42 @@ export function enforceApplicationQuestionCap(
 }
 
 /**
- * IMP-09 — Mark-allocation variety (warn-only).
+ * RC4 / IMP-09 — Command-word tariff table + deterministic mark variety.
  *
  * The audit found every Section 3 question carrying the same tariff (always
- * "[4 marks]") regardless of command-word demand — a "State" (1-mark) question
- * marked the same as an "Evaluate" (6-mark) one. We can't deterministically
- * re-tariff a question (that needs the mark scheme), so this is a visible
- * warning: if Section 3 has ≥3 exam-style questions and they ALL carry an
- * identical mark tariff, flag it. Pure; never mutates content.
+ * "[4 marks]") regardless of command-word demand. This upgrade:
+ *
+ *   1. Builds a command-word tariff table (the GCSE standard mapping).
+ *   2. Scans each Section 3 question stem for a leading command word.
+ *   3. When ALL Section 3 questions carry an identical tariff AND the
+ *      command words imply different tariffs, deterministically re-stamps
+ *      the mark allocation in the section content to match the tariff table.
+ *   4. Falls back to warn-only when no command word is detectable (safe).
+ *
+ * Pure / idempotent: a second pass finds the tariffs already correct and
+ * returns the worksheet unchanged.
  */
+
+// Command-word → canonical GCSE mark tariff (single value or range midpoint).
+// Source: AQA / Edexcel / OCR examiner reports and mark-scheme conventions.
+const COMMAND_WORD_TARIFF: ReadonlyMap<RegExp, number> = new Map([
+  [/^\b(state|name|give|identify|list|circle|tick|underline|shade|label)\b/i, 1],
+  [/^\b(define|recall|write(?:\s+down)?|complete|fill\s+in|match)\b/i, 2],
+  [/^\b(describe|outline|summarise|summarize|suggest)\b/i, 3],
+  [/^\b(explain|show(?:\s+that)?|justify|account\s+for|give\s+reasons?)\b/i, 4],
+  [/^\b(calculate|determine|work\s+out|find(?:\s+the)?|compute|solve)\b/i, 4],
+  [/^\b(compare|contrast|analyse|analyze|examine|assess|consider)\b/i, 5],
+  [/^\b(evaluate|discuss|to\s+what\s+extent|critically\s+assess|argue)\b/i, 6],
+]);
+
+function commandWordTariff(stem: string): number | null {
+  const trimmed = stem.trim();
+  for (const [re, tariff] of COMMAND_WORD_TARIFF) {
+    if (re.test(trimmed)) return tariff;
+  }
+  return null;
+}
+
 function sectionMarkTariff(section: PostValidatorSection): number | null {
   const explicit = (section as PostValidatorSection & { marks?: number }).marks;
   if (typeof explicit === "number" && explicit > 0) return explicit;
@@ -1123,8 +1182,12 @@ export function enforceMarkAllocationVariety(
   const sections = ws.sections || [];
   const cutoff = getSectionQuestionRange("understanding", false).lastQ;
 
-  const applicationMarks: number[] = [];
-  for (const s of sections) {
+  // Collect application question indices + their current tariffs + command-word tariffs.
+  type AppQ = { idx: number; currentTariff: number | null; commandTariff: number | null };
+  const appQuestions: AppQ[] = [];
+
+  for (let i = 0; i < sections.length; i++) {
+    const s = sections[i];
     if (s.teacherOnly) continue;
     const type = String(s.type || "").toLowerCase();
     if (type === "challenge" || type === "q-challenge") continue;
@@ -1136,17 +1199,72 @@ export function enforceMarkAllocationVariety(
     if (!isQuestion) continue;
     const qn = sectionQuestionNumber(s);
     if (!Number.isFinite(qn) || qn === Number.MAX_SAFE_INTEGER || qn <= cutoff) continue;
-    const tariff = sectionMarkTariff(s);
-    if (tariff !== null) applicationMarks.push(tariff);
+    const currentTariff = sectionMarkTariff(s);
+    const content = typeof s.content === "string" ? s.content : "";
+    const commandTariff = commandWordTariff(content);
+    appQuestions.push({ idx: i, currentTariff, commandTariff });
   }
 
-  if (applicationMarks.length >= 3 && new Set(applicationMarks).size === 1) {
+  if (appQuestions.length < 3) {
+    return { worksheet: ws, warnings };
+  }
+
+  const currentTariffs = appQuestions.map(q => q.currentTariff).filter((t): t is number => t !== null);
+  const allSame = currentTariffs.length >= 3 && new Set(currentTariffs).size === 1;
+
+  if (!allSame) {
+    // Already varied — nothing to do.
+    return { worksheet: ws, warnings };
+  }
+
+  // All questions share the same tariff. Check whether command words imply different tariffs.
+  const commandTariffs = appQuestions.map(q => q.commandTariff);
+  const hasCommandVariety = commandTariffs.filter(t => t !== null).length >= 2 &&
+    new Set(commandTariffs.filter(t => t !== null)).size > 1;
+
+  if (!hasCommandVariety) {
+    // No detectable command-word variety — warn only, cannot safely re-tariff.
     warnings.push(
-      `[IMP-09] All ${applicationMarks.length} Section 3 (application) questions carry an identical tariff of (${applicationMarks[0]} marks). GCSE exam papers vary marks by command-word demand (State/Name 1-2, Describe/Explain 2-4, Compare/Analyse 4-5, Evaluate/Discuss 6). Review the mark allocations.`,
+      `[RC4/IMP-09] All ${appQuestions.length} Section 3 questions carry an identical tariff of (${currentTariffs[0]} marks). ` +
+      `No command-word variety detected to auto-correct. GCSE convention: State/Name=1, Describe/Explain=2-4, Evaluate/Discuss=6. Review manually.`,
+    );
+    return { worksheet: ws, warnings };
+  }
+
+  // Deterministic re-stamp: replace the mark allocation in each question's content
+  // with the command-word-derived tariff. Only fires when command words are clear.
+  let nextSections = [...sections];
+  let reStampedCount = 0;
+  for (const q of appQuestions) {
+    if (q.commandTariff === null || q.commandTariff === q.currentTariff) continue;
+    const s = nextSections[q.idx];
+    const content = typeof s.content === "string" ? s.content : "";
+    const newTariff = q.commandTariff;
+    const wordLabel = newTariff === 1 ? "mark" : "marks";
+    // Replace the FIRST mark allocation token in the content.
+    const updated = content.replace(
+      /[[(](\d+)\s*marks?[\])]/i,
+      `(${newTariff} ${wordLabel})`,
+    );
+    if (updated !== content) {
+      nextSections[q.idx] = { ...s, content: updated };
+      reStampedCount++;
+    }
+  }
+
+  if (reStampedCount > 0) {
+    warnings.push(
+      `[RC4] Re-stamped mark allocations on ${reStampedCount} Section 3 question${reStampedCount === 1 ? "" : "s"} ` +
+      `to match command-word tariff table (was: all ${currentTariffs[0]} marks).`,
+    );
+  } else {
+    warnings.push(
+      `[RC4/IMP-09] All ${appQuestions.length} Section 3 questions carry an identical tariff of (${currentTariffs[0]} marks). ` +
+      `Command-word variety detected but mark tokens could not be updated. Review manually.`,
     );
   }
-  // Never mutates — this is a diagnostic signal only.
-  return { worksheet: ws, warnings };
+
+  return { worksheet: { ...ws, sections: nextSections }, warnings };
 }
 
 /**

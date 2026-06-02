@@ -156,24 +156,31 @@ export const WORKING_OUT_TRIGGER_RE =
 
 /**
  * Subjects whose questions default to having a working-out box on
- * calculation stems. Maths only — sciences use written method/formula
- * answer lines (per teacher steering: working-out boxes are a maths
- * affordance; physics/chemistry calculations get standard writing lines
- * sized by mark tariff via linesForMarks()).
+ * calculation stems.
+ *
+ * RC8: Extended to include sciences (physics, chemistry, biology) because
+ * GCSE science papers include multi-step calculations (e.g. F=ma, Q=mcT,
+ * V=IR) that require a working-out space just as much as maths questions.
+ * The box is only shown when the stem contains a calculation trigger word
+ * OR marks ≥ 3, so descriptive science questions are not affected.
  */
-const WORKING_OUT_SUBJECTS = ["math"];
+const WORKING_OUT_SUBJECTS = ["math", "physics", "chemistry", "biology", "science"];
 
 /**
- * Decide whether a question gets a working-out box. Maths only.
+ * Decide whether a question gets a working-out box.
+ *
+ * RC8: Now covers maths AND sciences (physics, chemistry, biology).
  *
  * Priority order:
  *   1. Explicit `workingOutBox` field on the section/question wins (true OR false).
- *   2. Layout `extended_answer_with_working` always gets one (used by maths-only).
- *   3. Subject is maths AND stem matches `WORKING_OUT_TRIGGER_RE`.
+ *   2. Layout `extended_answer_with_working` always gets one.
+ *   3. Subject is maths/science AND stem matches `WORKING_OUT_TRIGGER_RE`.
  *   4. Subject is maths AND marks ≥ 3 (multi-step calc) — default true.
+ *   5. Subject is science AND marks ≥ 4 (multi-step calc) — default true.
+ *      (Higher threshold for science so descriptive 3-mark questions don't
+ *       get a dot-grid box — only genuine calculation questions do.)
  *
- * Returns `false` for ALL non-maths subjects (including the sciences) so
- * the dot-grid affordance stays a maths-specific signal.
+ * Returns `false` for humanities subjects so the dot-grid stays a STEM signal.
  */
 export function shouldRenderWorkingOutBox(opts: {
   stem: string;
@@ -186,11 +193,16 @@ export function shouldRenderWorkingOutBox(opts: {
   const layout = String(opts.layout || "").toLowerCase();
   if (layout === "extended_answer_with_working") return true;
   const subject = String(opts.subject || "").toLowerCase();
-  // Maths-only gate. Sciences and humanities rely on standard writing lines.
-  const isMaths = WORKING_OUT_SUBJECTS.some(s => subject.includes(s));
-  if (!isMaths) return false;
+  const isMaths = subject.includes("math");
+  const isScience = !isMaths && WORKING_OUT_SUBJECTS.some(s => !s.includes("math") && subject.includes(s));
+  if (!isMaths && !isScience) return false;
+  // Both maths and science: stem trigger wins unconditionally.
   if (WORKING_OUT_TRIGGER_RE.test(opts.stem)) return true;
-  if (opts.marks >= 3) return true;
+  // Maths: any question ≥ 3 marks gets a working-out box.
+  if (isMaths && opts.marks >= 3) return true;
+  // Science: only questions ≥ 4 marks get a working-out box (avoids dot-grid
+  // on descriptive 3-mark "explain" questions).
+  if (isScience && opts.marks >= 4) return true;
   return false;
 }
 
