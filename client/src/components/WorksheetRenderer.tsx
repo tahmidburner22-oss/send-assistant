@@ -3485,33 +3485,11 @@ function SelfReflectionSection({
     topics = topicLines.map(l => l.replace(/^[•\-\*\d.)]\s*/, "").replace(/^I can\s*/i, "").trim()).filter(Boolean);
   }
 
-  // Phase 2 — pad-to-3 fallback. Pre-Phase-2 this pushed the literal
-  // string "I can apply what I have learned today" — generic, topic-free
-  // pedagogical noise. When the parent worksheet has a topic available
-  // we now pad with deterministic builder output so every visible row
-  // names the actual topic. Falls back to the legacy generic string only
-  // when topic is genuinely unknown (e.g. a stand-alone library asset
-  // rendered without worksheet metadata).
-  if (topics.length < 3) {
-    const t = (topic || "").trim();
-    if (t) {
-      const built = buildSelfReflection({ topic: t, subject });
-      // Skip statements already present (case-insensitive match on the
-      // verb-and-topic substring) so we don't duplicate the AI's lines.
-      const existingLower = topics.map(s => s.toLowerCase());
-      const isDuplicate = (s: string) =>
-        existingLower.some(e => e === s.toLowerCase() || e.includes(s.toLowerCase().slice(0, 12)));
-      for (const stmt of built.iCanStatements) {
-        if (topics.length >= 5) break;
-        if (!isDuplicate(stmt)) topics.push(stmt);
-      }
-    }
-    while (topics.length < 3) {
-      // Last-resort generic pad — preserved for backward compatibility
-      // with library worksheets that have no topic metadata.
-      topics.push("I can apply what I have learned today");
-    }
-  }
+  // Per scrutiny document: the confidence grid has been removed from new
+  // worksheets. The pad-to-3 fallback is intentionally disabled so that
+  // when the AI correctly returns no CONFIDENCE_TABLE block, no generic
+  // rows are injected. Legacy library worksheets that already contain
+  // topic rows will still render them (topics.length > 0 from the parser).
 
   return (
     <div style={{ fontFamily }}>
@@ -3521,7 +3499,9 @@ function SelfReflectionSection({
           {subtitle}
         </div>
       )}
-      {/* Part A: Confidence table */}
+      {/* Part A: Confidence table — only rendered for legacy worksheets that
+           already contain topic rows. New worksheets use exit-ticket-only format. */}
+      {topics.length > 0 && (
       <div style={{ marginBottom: "14px" }}>
         <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#374151", fontFamily, marginBottom: "8px", fontStyle: "italic" }}>
           A &nbsp; How confident do you feel? Tick the column that best describes you.
@@ -3564,6 +3544,7 @@ function SelfReflectionSection({
           );
         })}
       </div>
+      )}
       {/* Part B: Written reflection prompts */}
       {reflectionPrompts.length > 0 && (
         <div>
