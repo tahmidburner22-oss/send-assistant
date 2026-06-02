@@ -6431,7 +6431,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 <div style={{ flex: 1 }}>
                                   <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "4px" }}
                                     dangerouslySetInnerHTML={{ __html: renderMath(nq.text) }} />
-                                  <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{nq.marks} mark{nq.marks !== 1 ? "s" : ""}]</span>
+                                  <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>({nq.marks} mark{nq.marks !== 1 ? "s" : ""})</span>
                                 </div>
                               </div>
                               {/* Individual working out box for every question/sub-question */}
@@ -6547,7 +6547,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 }}>({sq.letter})</span>
                                 <div style={{ flex: 1, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
                                   dangerouslySetInnerHTML={{ __html: renderMath(sq.text) }} />
-                                <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
+                                <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>({sq.marks}m)</span>
                               </div>
                               {isMathsSubject ? (
                                 /* Maths sub-question: clean working area (no surrounding border) + single answer line.
@@ -6775,7 +6775,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             <span style={{ color: "#9ca3af", fontSize: "13px", fontStyle: "italic" }}>Circuit diagram space</span>
                           )}
                         </div>
-                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px" }}>[{(section.marks as number) || 4} marks]</div>
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px" }}>({(section.marks as number) || 4} marks)</div>
                         {Array.from({ length: (section.marks as number) || 4 }).map((_: unknown, li: number) => (
                           <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "32px", width: "100%", marginBottom: "4px" }} />
                         ))}
@@ -6791,7 +6791,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         <div style={{ border: "2px solid #1a2744", borderRadius: "6px", minHeight: "200px", background: "#fafafa", marginBottom: "8px", position: "relative" as const }}>
                           <span style={{ position: "absolute" as const, bottom: "8px", right: "12px", color: "#d1d5db", fontSize: "11px" }}>Draw here</span>
                         </div>
-                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{(section.marks as number) || 3} marks]</div>
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>({(section.marks as number) || 3} marks)</div>
                       </div>
                     );
                   }
@@ -6811,7 +6811,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             <line key={`h${ri}`} x1={0} y1={ri * gridSize} x2={cols * gridSize} y2={ri * gridSize} stroke="#e5e7eb" strokeWidth="1" />
                           ))}
                         </svg>
-                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{(section.marks as number) || 4} marks]</div>
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>({(section.marks as number) || 4} marks)</div>
                       </div>
                     );
                   }
@@ -6880,7 +6880,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         )}
                         <TableCompleteSection content={tableOnlyContent || content} fmt={fmt} isTeacher={isTeacherView} />
                         {!tableIntroText && (
-                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginTop: "6px" }}>[{tableMarks} marks]</div>
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginTop: "6px" }}>({tableMarks} marks)</div>
                         )}
                       </div>
                     );
@@ -6968,7 +6968,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1B2A4A", minWidth: "20px" }}>({sq.letter})</span>
                                 <div style={{ flex: 1, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
                                   dangerouslySetInnerHTML={{ __html: renderMath(sq.text) }} />
-                                <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
+                                <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>({sq.marks}m)</span>
                               </div>
                               {Array.from({ length: sq.marks <= 2 ? 3 : sq.marks <= 4 ? 5 : sq.marks <= 6 ? 8 : Math.min(Math.ceil(sq.marks * 1.5), 20) }).map((_: unknown, li: number) => (
                                 <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "28px", width: "100%", marginBottom: "3px" }} />
