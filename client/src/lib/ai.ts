@@ -1576,11 +1576,11 @@ PRINTED PAGE LAYOUT (MANDATORY ORDER — every worksheet INCLUDING MATHS must fo
 Emit sections IN THIS ORDER so printing matches the page layout. The intro block (LO, Retrieval if requested, Key Vocab, Common Mistakes, Worked Example) flows naturally — if it fits on one page it stays on one page; if it overflows it spans to a second page before Section 1 starts. Page breaks are CSS-driven: every Section divider, Diagram A, Diagram B, Self-Reflection, and Teacher-Key block starts a new printed page.
 
 DIAGRAM A — REFERENCE DIAGRAM (MANDATORY, placed BETWEEN Section 1 and Section 2):
-Every worksheet MUST include a REFERENCE diagram called "Diagram A" as its own full-page spread. This is a fully-labelled visual the student can refer back to while answering questions — it is NOT a task. Place it immediately AFTER the last question of Section 1 (Q3) and BEFORE the first question of Section 2 (Q4). Use format:
+Every worksheet MUST include a REFERENCE diagram called "Diagram A" as its own full-page spread. This is a fully-labelled visual the student can refer back to while answering questions — it is NOT a task. Place it immediately AFTER the last question of Section 1 (Q${sec1TargetCount}) and BEFORE the first question of Section 2 (Q${sec1TargetCount + 1}). Use format:
   {"type":"diagram-a","title":"Diagram A — [brief title e.g. 'The Water Cycle']","content":"Diagram A — Reference. Refer back to this diagram as you work through Section 2 and Section 3.\n[[DIAGRAM:{"type":"...","title":"...","labels":[...]}]]","altText":"..."}
 
 DIAGRAM B — VISUAL REFERENCE (place BETWEEN Section 2 and Section 3):
-Every worksheet SHOULD include a second diagram called "Diagram B" as its own full-page spread between Section 2 (Q6) and Section 3 (Q7). This is a VISUAL REFERENCE ONLY — it contains NO questions. If the topic has no genuinely valuable second diagram (e.g. pure algebra topics), emit a diagram-b section with content "[skipped — topic does not require a second visual]" so it can be dropped. Use format:
+Every worksheet SHOULD include a second diagram called "Diagram B" as its own full-page spread between Section 2 (Q${sec1TargetCount + sec2TargetCount}) and Section 3 (Q${sec1TargetCount + sec2TargetCount + 1}). This is a VISUAL REFERENCE ONLY — it contains NO questions. If the topic has no genuinely valuable second diagram (e.g. pure algebra topics), emit a diagram-b section with content "[skipped — topic does not require a second visual]" so it can be dropped. Use format:
   {"type":"diagram-b","title":"Diagram B — [brief title]","content":"Diagram B — Visual Reference.\n[[DIAGRAM:...]]","altText":"..."}
 
 ⚠️ CRITICAL: Diagram A and Diagram B are VISUAL AIDS ONLY. They MUST NOT contain any questions, sub-questions, or tasks. All questions come ONLY from Section 1 (Q1–Q${sec1TargetCount}), Section 2 (Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}), and Section 3 (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}). No extra questions should exist anywhere else in the worksheet.
@@ -1707,7 +1707,13 @@ QUALITY STANDARDS — every question must meet professional UK teacher standards
    RULE: Section A (guided) must use at least 2 different formats. Section B (independent) must use at least 2 different formats. No adjacent questions may use the same format.
 
 STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.
-MARK ALLOCATION RULE (mandatory): Every question section MUST include an explicit mark allocation in the format [X marks] or [X mark] at the end of the question text. This applies to ALL question types: Short Answer, MCQ, True/False, Gap Fill, Matching, Ordering, Table, and Extended Answer. Only exception: if the section already has a numeric "marks" field set. Never omit mark allocations.`;
+MARK ALLOCATION RULE (mandatory): Every question section MUST include an explicit mark allocation in ROUND brackets — (X marks) or (X mark) — at the end of the question text. NEVER use square brackets [X marks]. This applies to ALL question types: Short Answer, MCQ, True/False, Gap Fill, Matching, Ordering, Table, and Extended Answer. Only exception: if the section already has a numeric "marks" field set. Never omit mark allocations.
+
+⚠️ QUESTION COUNT IS ABSOLUTE — DO NOT DEVIATE:
+- Section 1 (RECALL): EXACTLY ${sec1TargetCount} questions (Q1–Q${sec1TargetCount}). You MUST number them Q1, Q2, Q3, Q4, Q5, Q6, Q7 — do not stop at Q3.
+- Section 2 (UNDERSTANDING): EXACTLY ${sec2TargetCount} questions (Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}). First question is Q${sec1TargetCount + 1}, last is Q${sec1TargetCount + sec2TargetCount}.
+- Section 3 (APPLICATION): EXACTLY ${sec3TargetCount} questions (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}).
+- If you generate fewer questions than required, the worksheet is INVALID and will be rejected.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
     ? (() => {
@@ -1841,12 +1847,12 @@ Rules:
     lengthMins <= 10
       ? `Length: 10 min. Include ONLY: Learning Objective, Key Vocabulary, Q1 (True/False, 3 statements), Q2 (MCQ). No challenge, no self-reflection.`
       : lengthMins <= 20
-      ? `Length: 20 min. Include: Learning Objective, Key Vocabulary, Common Mistakes, Worked Example, Q1 (True/False), Q2 (MCQ), Q3 (Gap Fill), Q4 (Short Answer, 3 marks), Q5 (Short Answer, 3 marks). No Q6-Q9. No challenge. Include Self Reflection.`
+      ? `Length: 20 min. Include: Learning Objective, Key Vocabulary, Common Mistakes, Worked Example, Q1 (True/False), Q2 (MCQ), Q3 (Gap Fill), Q${sec1TargetCount + 1} (Short Answer, 3 marks), Q${sec1TargetCount + 2} (Short Answer, 3 marks). No further questions beyond Section 2 Q2. No challenge. Include Self Reflection.`
       : lengthMins >= 60
-      ? `Length: 60 min. Full worksheet: Q1-Q9 plus 2 extra questions Q10 (extended, 5 marks) and Q11 (evaluation, 4 marks). Challenge question (8 marks). Full self-reflection.`
+      ? `Length: 60 min. Full worksheet: Q1-Q${sec1TargetCount + sec2TargetCount + sec3TargetCount} (all three sections, ${sec1TargetCount} recall + ${sec2TargetCount} understanding + ${sec3TargetCount} application questions) plus 2 extra application questions Q${sec1TargetCount + sec2TargetCount + sec3TargetCount + 1} (extended, 5 marks) and Q${sec1TargetCount + sec2TargetCount + sec3TargetCount + 2} (evaluation, 4 marks). Challenge question (8 marks). Full self-reflection.`
       : lengthMins >= 45
-      ? `Length: 45 min. Full worksheet: Q1-Q9 plus one extra question Q10 (extended answer, 5 marks). Challenge question. Full self-reflection.`
-      : `Length: 30 min (BASE). Full worksheet: Q1-Q3 (Knowledge Check section), Q4-Q6 (Understanding section), Q7-Q9 (Application & Analysis section). Challenge question. Self Reflection.`;
+      ? `Length: 45 min. Full worksheet: Q1-Q${sec1TargetCount + sec2TargetCount + sec3TargetCount} (all three sections, ${sec1TargetCount} recall + ${sec2TargetCount} understanding + ${sec3TargetCount} application questions) plus one extra application question Q${sec1TargetCount + sec2TargetCount + sec3TargetCount + 1} (extended answer, 5 marks). Challenge question. Full self-reflection.`
+      : `Length: 30 min (BASE). Full worksheet: Q1-Q${sec1TargetCount} (Knowledge Check / Recall section, ${sec1TargetCount} questions), Q${sec1TargetCount + 1}-Q${sec1TargetCount + sec2TargetCount} (Understanding section, ${sec2TargetCount} questions), Q${sec1TargetCount + sec2TargetCount + 1}-Q${sec1TargetCount + sec2TargetCount + sec3TargetCount} (Application & Analysis section, ${sec3TargetCount} questions). Challenge question. Self Reflection.`;
 
   // ── Target page count ──────────────────────────────────────────────────────
   const targetPages = params.targetPages || 0; // 0 = auto (no constraint)
@@ -2076,7 +2082,7 @@ ABSOLUTE RULES:
 4. Use LaTeX \\(...\\) for ALL expressions: \\(\\dfrac{3}{4}\\) NOT 3/4; \\(x^{2}\\) NOT x²; \\(\\sqrt{16}\\) NOT √16; \\(\\times\\) NOT ×; \\(\\div\\) NOT ÷; \\(\\pi\\) NOT π. STRICT LATEX RULE: NEVER write x^2, x**2, x squared as plain text — even inside the Common Mistakes section, Teacher Notes, or any prose block. The ONLY accepted form for "x squared" anywhere on the worksheet is \\(x^{2}\\). Same for cubes (\\(x^{3}\\)), square roots (\\(\\sqrt{x}\\)), fractions (\\(\\dfrac{a}{b}\\)) and the quadratic-formula discriminant (\\(b^{2}-4ac\\)). Treat any caret (^) outside math delimiters as a generation error.
 5. NEVER use \\text{} or \\mathrm{} — write units as plain text OUTSIDE math delimiters (e.g. "\\(F = ma\\) where F is in N, m in kg, a in m/s²").
 6. Every answer must be a NUMBER, EXACT FRACTION, SURD, ALGEBRAIC EXPRESSION or COORDINATE — NOT a paragraph of prose. (Reasoning answers are short sentences anchored to a calculation, not free essay.)
-7. Progression: Section 1 (Q1–3) uses single-step calculations with simple numbers; Section 2 (Q4–6) uses multi-step calculations in context; Section 3 (Q7–9) uses exam-style multi-step problems with worded context.
+7. Progression: Section 1 (Q1–Q${sec1TargetCount}, ${sec1TargetCount} questions) uses single-step calculations with simple numbers; Section 2 (Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}, ${sec2TargetCount} questions) uses multi-step calculations in context; Section 3 (Q${sec1TargetCount + sec2TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount + sec3TargetCount}, ${sec3TargetCount} questions) uses exam-style multi-step problems with worded context.
 8. Every mark-scheme entry must show the FULL method (M marks) and the correct final answer (A marks). Award method marks separately from accuracy marks.
 9. Context in word problems: use realistic UK contexts (shopping, distances, time, recipes, sports scores, surveys, building, travel) — make numbers genuinely meaningful, not arbitrary.
 10. Worked example MUST show step-by-step calculation with annotations explaining each step — no prose, just clearly numbered calculation steps.${mathsLayoutContract}`
