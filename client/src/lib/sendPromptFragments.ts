@@ -240,7 +240,7 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Use one word per concept. Never mix synonyms (pick either 'calculate' OR 'work out' — stick to it everywhere).",
       "Use literal, unambiguous language. No idioms, no figurative language (write 'calculate the value of x', not 'find x').",
       "Contexts must be neutral and factual. No social scenarios, no emotions.",
-      "Reflection is a tick-box checklist: '[ ] I completed Section A   [ ] I completed Section B   [ ] I tried the Challenge'. Plus ONE exit question: 'Write one thing you learned today.'",
+      "Reflection is a SINGLE exit ticket question only. Do NOT include a confidence grid, I-can statements, or written reflection prompts. Format: SUBTITLE: Quick exit question:\nEXIT_TICKET: Write ONE thing you learned today about [topic] in a single sentence.",
       "Use identical layout across every section — predictable is the goal.",
     ],
     worksheetRulesContent: [
@@ -285,7 +285,7 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Every subject term the question uses must be defined in plain English at first use, either in-line or in the Key Vocabulary box.",
       "Every multi-step instruction is broken into numbered steps (1. 2. 3.) on separate lines — no embedded clauses.",
       "Each section opens with ONE 'What you need to do:' box that lists the exact numbered steps.",
-      "Reflection is a tick-box checklist ONLY. One exit question: 'Write one fact you learned today.'",
+      "Reflection is a SINGLE exit ticket question only. Do NOT include a confidence grid, I-can statements, or written reflection prompts. Format: SUBTITLE: Quick exit question:\nEXIT_TICKET: Write ONE thing you learned today about [topic] in a single sentence.",
     ],
     worksheetRulesContent: [
       "Strip every question of social inference. Replace 'what does the character feel' / 'how does the team react' with 'identify which sentence shows X' or 'match each line to a feature'. The skill assessed is unchanged; the theory-of-mind step is removed.",
@@ -322,7 +322,7 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Rename Section A to 'Explore — choose where to start'. Section B to 'Investigate'. Challenge to 'Secret Mission — if you choose to accept it'.",
       "Insert a horizontal rule + 'Take a break here if you need to — come back when you are ready.' after every 3 questions.",
       "No checkboxes, no progress bars, no 'Questions completed: x/y' — remove any visible progress tracker.",
-      "Reflection is a single invitation: 'If you would like to, write one thing you noticed today.' — not a tick-box.",
+      "Reflection is a SINGLE exit ticket question only. Do NOT include a confidence grid, I-can statements, or written reflection prompts. Format: SUBTITLE: Quick exit question:\nEXIT_TICKET: If you would like to, write ONE thing you noticed today about [topic].",
     ],
     worksheetRulesContent: [
       "Frame the worksheet content as a series of choices, not a sequence. Each section opens with two equivalent practice questions on the same skill and the pupil picks one ('You might like to try Question 1A or 1B — both teach the same idea').",
@@ -360,7 +360,7 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Every section uses identical layout — same title position, same spacing, same question numbering style.",
       "Every diagram has a plain-text description alongside it the pupil can use instead.",
       "Each section opens with ONE calm 'What you need to do:' box in neutral grey, not coloured.",
-      "Reflection is a minimal tick-box checklist — no large emotional scale, no colour-coded confidence grid.",
+      "Reflection is a SINGLE exit ticket question only. Do NOT include a confidence grid, I-can statements, or written reflection prompts. Format: SUBTITLE: Quick exit question:\nEXIT_TICKET: Write ONE thing you learned today about [topic] in a single sentence.",
     ],
     worksheetRulesContent: [
       "Use calm, neutral subject contexts only. No descriptions of busy, loud, crowded, or strong-smelling settings (avoid markets, festivals, fairgrounds, sports crowds). Pick still-life or single-actor contexts (a library, a workshop, a single tree, one cell under a microscope).",
@@ -397,7 +397,7 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Every question follows the identical structure: [verb] [object] [context]. No 'For the next 4 questions, …' re-framing.",
       "Optional / bonus items are placed in their own clearly labelled 'Optional' section, never hidden inside Section A / B / C.",
       "Each section opens with ONE 'What you need to do' box whose steps match the worked example one-to-one.",
-      "Reflection is a tick-box checklist only.",
+      "Reflection is a SINGLE exit ticket question only. Do NOT include a confidence grid, I-can statements, or written reflection prompts. Format: SUBTITLE: Quick exit question:\nEXIT_TICKET: Write ONE thing you learned today about [topic] in a single sentence.",
     ],
     worksheetRulesContent: [
       "Lock the question schema for the whole worksheet to the structure of the worked example: same number of given values, same order of given values, same ask. Never invert the schema mid-worksheet (don't ask for the input given the output if the worked example asked for the output given the input).",
@@ -433,7 +433,7 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Use one word per concept. Never swap synonyms (pick either 'calculate' OR 'work out').",
       "Identical layout across every section — predictable is the goal.",
       "Where the pupil's interest (e.g. trains, a sport, computing) is known, use that as the real-world context.",
-      "Reflection is a tick-box checklist.",
+      "Reflection is a SINGLE exit ticket question only. Do NOT include a confidence grid, I-can statements, or written reflection prompts. Format: SUBTITLE: Quick exit question:\nEXIT_TICKET: Write ONE thing you learned today about [topic] in a single sentence.",
     ],
     worksheetRulesContent: [
       "Anchor every section's contexts to one coherent real-world domain (one worksheet's word problems are all train timetables, another all space exploration, another all chess positions). Depth-over-breadth on a real-world domain leverages the special-interest strength.",
@@ -843,7 +843,7 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Include a visible word bank or key facts box at the top of every section.",
       "Place a fully worked example immediately before every practice section.",
       "One instruction per line only — never combine two instructions in one sentence.",
-      "Reflection uses a tick-box checklist — no open writing.",
+      "Reflection is a SINGLE exit ticket question only. Do NOT include a confidence grid, I-can statements, or written reflection prompts. Format: SUBTITLE: Quick exit question:\nEXIT_TICKET: Write ONE thing you learned today about [topic] in a single sentence.",
     ],
     worksheetRulesContent: [
       "Carry forward — every question keeps visible the values from the previous question so the pupil never has to retain unspoken information across items. Repeat the relevant values in the new question stem rather than referring to 'as in question 2'.",

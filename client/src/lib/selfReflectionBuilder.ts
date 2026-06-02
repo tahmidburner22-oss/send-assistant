@@ -372,10 +372,14 @@ export function classifySendRegister(sendKey: string | undefined): SendRegister 
 /**
  * Build a topic-anchored Self-Reflection content surface for a worksheet.
  *
- * Always returns:
- *   - exactly 5 "I can …" statements, each containing the topic noun phrase
- *   - exactly 2 written-reflection prompts, each containing the topic noun
- *   - an exit-ticket sentence containing the topic noun
+ * Scrutiny document requirement: Reduce the self-reflection section to
+ * exactly ONE quick exit ticket question. The confidence grid and written
+ * reflection prompts have been removed as they make the worksheet too long.
+ *
+ * Returns:
+ *   - an empty iCanStatements array (confidence grid removed)
+ *   - an empty writtenPrompts array (written reflection removed)
+ *   - a single exit-ticket sentence containing the topic noun
  *   - a subtitle appropriate for the SEND register
  *
  * Pure: identical inputs always produce identical output.
@@ -383,58 +387,19 @@ export function classifySendRegister(sendKey: string | undefined): SendRegister 
 export function buildSelfReflection(inputs: SelfReflectionInputs): SelfReflectionOutput {
   const topicRaw = (inputs.topic || "").trim();
   const noun = extractTopicNounPhrase(topicRaw) || "this topic";
-  const verbs = pickCommandWords(inputs.subject, inputs.commandWordsUsed, 5);
   const register = classifySendRegister(inputs.sendKey);
 
   // ── Confidence-table I can statements ──────────────────────────────────
-  // Five generic-but-topic-anchored statement frames. The verb varies; the
-  // topic stays constant so every statement is provably about THIS topic.
-  // The sentence-starter SEND register strips the verb stem and drops the
-  // topic in directly so beginners are scaffolded with a uniform frame.
-  const iCanStatements: string[] =
-    register === "sentenceStarter"
-      ? [
-          `I can talk about ${noun} in a sentence.`,
-          `I can name one key word from ${noun}.`,
-          `I can give an example linked to ${noun}.`,
-          `I can ask a question about ${noun}.`,
-          `I can explain what I learned today about ${noun}.`,
-        ]
-      : [
-          `I can ${verbs[0]} confidently when the question is about ${noun}.`,
-          `I can ${verbs[1]} the key ideas in ${noun} using the right vocabulary.`,
-          `I can ${verbs[2]} a question about ${noun} with a worked answer.`,
-          `I can ${verbs[3]} what I have learned about ${noun} to a new problem.`,
-          `I can ${verbs[4]} my own answer about ${noun} and spot mistakes.`,
-        ];
+  // REMOVED per scrutiny document: confidence grid is too long for a worksheet.
+  const iCanStatements: string[] = [];
 
   // ── Written prompts ─────────────────────────────────────────────────────
-  // Two prompts. Both topic-anchored. Sentence-starter register is more
-  // heavily scaffolded; emotional / older registers are tuned for tone.
-  const writtenPrompts: string[] =
-    register === "sentenceStarter"
-      ? [
-          `One thing I now understand about ${noun} is …`,
-          `One thing I still want to ask about ${noun} is …`,
-        ]
-      : register === "emotional"
-        ? [
-            `One thing about ${noun} I felt confident about today was …`,
-            `One thing about ${noun} I would like more time on is …`,
-          ]
-        : register === "older"
-          ? [
-              `The most useful thing I learned about ${noun} today is …`,
-              `One way I will use what I learned about ${noun} is …`,
-            ]
-          : [
-              `One thing I now understand about ${noun} that I did not before is …`,
-              `One question I still want to ask about ${noun} is …`,
-            ];
+  // REMOVED per scrutiny document: written reflection prompts are too long.
+  const writtenPrompts: string[] = [];
 
   // ── Exit ticket ─────────────────────────────────────────────────────────
-  // Always names the topic. Phrasing varies by register but the topic noun
-  // is non-negotiable.
+  // Single exit ticket only — always names the topic. Phrasing varies by
+  // register but the topic noun is non-negotiable.
   const exitTicket: string =
     register === "tickBoxOnly"
       ? `Write ONE thing you learned today about ${noun} in a single sentence:`
@@ -449,14 +414,14 @@ export function buildSelfReflection(inputs: SelfReflectionInputs): SelfReflectio
   // ── Subtitle ────────────────────────────────────────────────────────────
   const subtitle: string =
     register === "tickBoxOnly"
-      ? "How did you get on?"
+      ? "Quick exit question:"
       : register === "sentenceStarter"
-        ? "Review your understanding."
+        ? "Quick exit question:"
         : register === "emotional"
-          ? "How are you feeling?"
+          ? "Quick exit question:"
           : register === "older"
-            ? "Review your learning."
-            : "Review your understanding before moving on.";
+            ? "Quick exit question:"
+            : "Quick exit question:";
 
   return { iCanStatements, writtenPrompts, exitTicket, subtitle };
 }
@@ -494,15 +459,16 @@ export function renderSelfReflectionAsMarkerBlock(out: SelfReflectionOutput): st
  * placeholder text — i.e. the AI failed to anchor it to the topic. This is
  * the trigger for the post-validator to swap in builder output.
  *
- * Heuristics (any one trips):
+ * Updated per scrutiny document: the reflection section now contains ONLY
+ * an exit ticket. The heuristics have been updated accordingly:
  *   - Contains the literal placeholder `I can ___` (any number of underscores).
  *   - Contains `apply what I have learned` (the long-standing generic fallback).
- *   - Has fewer than 5 `I can …` statements.
  *   - The exit ticket exists but does not mention the topic noun.
+ *   - The content contains a CONFIDENCE_TABLE or WRITTEN_PROMPTS block
+ *     (these should no longer appear — if they do, the AI ignored the prompt).
  *
- * Returns `false` (i.e. content is OK, no rewrite) when the AI emitted ≥5
- * `I can …` statements, all containing the topic noun or its lemma, and
- * the exit ticket also contains the topic noun.
+ * Returns `false` (i.e. content is OK, no rewrite) when the content contains
+ * an EXIT_TICKET that mentions the topic noun and no confidence grid.
  */
 export function isGenericSelfReflection(content: string, topic: string): boolean {
   const text = (content || "").toString();
@@ -550,32 +516,13 @@ export function isGenericSelfReflection(content: string, topic: string): boolean
     return nounWords.some(w => containsNeedle(lower, w));
   };
 
-  // Find the I-can statement region (CONFIDENCE_TABLE: marker, or all
-  // lines starting with "I can").
-  const ctMatch = text.match(/CONFIDENCE_TABLE:\s*([\s\S]*?)(?=WRITTEN_PROMPTS:|EXIT_TICKET:|$)/i);
-  let iCanLines: string[] = [];
-  if (ctMatch) {
-    iCanLines = ctMatch[1].split("\n")
-      .map(l => l.replace(/^[•\-\*\d.)\s]+/, "").trim())
-      .filter(Boolean);
-  } else {
-    iCanLines = text.split("\n")
-      .map(l => l.trim())
-      .filter(l => /^I can\b/i.test(l));
-  }
+  // Per scrutiny document: the reflection section now contains ONLY an exit
+  // ticket. If the AI emitted a CONFIDENCE_TABLE or WRITTEN_PROMPTS block,
+  // the content is considered non-compliant and should be replaced.
+  if (/CONFIDENCE_TABLE:/i.test(text)) return true;
+  if (/WRITTEN_PROMPTS:/i.test(text)) return true;
 
-  if (iCanLines.length > 0) {
-    if (iCanLines.length < 5) return true;
-    // Every one of the first 5 should mention the topic noun.
-    const anchored = iCanLines.slice(0, 5).every(mentionsTopic);
-    if (!anchored) return true;
-  } else {
-    // No I-can statements at all — generic by construction.
-    return true;
-  }
-
-  // Exit ticket: only check it if present; if it's there but topic-free,
-  // count the worksheet as generic.
+  // Exit ticket: must be present and must mention the topic noun.
   const etMatch = text.match(/EXIT_TICKET:\s*([^\n]+)/i);
   if (etMatch) {
     if (!mentionsTopic(etMatch[1])) return true;
@@ -585,6 +532,8 @@ export function isGenericSelfReflection(content: string, topic: string): boolean
     if (/exit\s*ticket|one thing you learned|key point you will take/i.test(trailing) && !mentionsTopic(trailing)) {
       return true;
     }
+    // No exit ticket at all — generic.
+    if (!trailing || !mentionsTopic(trailing)) return true;
   }
 
   // Lastly: if the literal pad-to-3 fallback string survived through the
