@@ -1408,7 +1408,7 @@ function formatContent(
         if (typeof item === 'object' && item !== null) {
           const q = item.q || item.question || item.text || item.content || '';
           const a = item.a || item.answer || '';
-          const marks = item.marks ? ` [${item.marks} mark${item.marks > 1 ? 's' : ''}]` : '';
+          const marks = item.marks ? ` (${item.marks} mark${item.marks > 1 ? 's' : ''})` : '';
           if (q && a) return `${q}${marks}\n   Answer: ${a}`;
           if (q) return `${q}${marks}`;
           return JSON.stringify(item);
@@ -5728,7 +5728,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               if (typeof item === 'object' && item !== null) {
                 const q = item.q || item.question || item.text || item.content || '';
                 const a = item.a || item.answer || '';
-                const marks = item.marks ? ` [${item.marks} mark${item.marks > 1 ? 's' : ''}]` : '';
+                const marks = item.marks ? ` (${item.marks} mark${item.marks > 1 ? 's' : ''})` : '';
                 // Only embed answers when in teacher view — student view shows blank answer lines
                 if (q && a && isTeacherView) return `${q}${marks}\n   Answer: ${a}`;
                 if (q) return `${q}${marks}`;
@@ -6411,7 +6411,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               fontStyle: "italic",
                             }} dangerouslySetInnerHTML={{ __html: renderMath(headerText) }} />
                           )}
-                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>[{totalMarks} marks total]</div>
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>({totalMarks} marks total)</div>
                           {numQBlocks.map((nq, ni) => {
                               // Maths subjects get a working-out box; writing subjects get ruled lines
                               const isMathsQ = isMathsSubject;
@@ -6530,7 +6530,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               color: "#1e293b",
                             }} dangerouslySetInnerHTML={{ __html: renderMath(introText) }} />
                           )}
-                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>[{totalMarks} marks total]</div>
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>({totalMarks} marks total)</div>
                           {subQBlocks.map((sq, si) => {
                               const sqLineCount = sq.marks <= 2 ? 3 : sq.marks <= 4 ? 5 : sq.marks <= 6 ? 8 : Math.min(Math.ceil(sq.marks * 1.5), 20);
                               const sqLineH = fmt.answerLineHeight || 30;
@@ -6961,7 +6961,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderLeft: "4px solid #1B2A4A", borderRadius: "4px", padding: "10px 14px", marginBottom: "14px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
                               dangerouslySetInnerHTML={{ __html: renderMath(challengeIntroText) }} />
                           )}
-                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>[{challengeTotalMarks} marks total]</div>
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>({challengeTotalMarks} marks total)</div>
                           {challengeSubQs.map((sq, si) => (
                             <div key={si} style={{ marginBottom: "16px" }}>
                               <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "6px" }}>
