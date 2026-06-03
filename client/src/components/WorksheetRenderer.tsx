@@ -148,7 +148,7 @@ function stripInternalGeneratorMarkers(content: string): string {
   // Normalise literal "\n" escapes (but preserve LaTeX commands like \nabla,
   // \neq, \nu) so line/segment stripping is reliable regardless of encoding.
   return content
-    .replace(/\\n(?![a-zA-Z])/g, "\n")
+    .replace(/\\n(?![a-z])/g, "\n")
     .replace(TEACHER_DIAGNOSES_MARKER_RE, "")
     .replace(RULE_LEAK_MARKER_RE, "")
     // Collapse any double-spaces / dangling spaces the strips left behind.
@@ -236,7 +236,7 @@ export function renderMath(text: string | any): string {
   // \theta, \tau, \tilde — so the slash-then-letter pattern survives intact
   // for KaTeX. Without the lookahead these regexes mangle the math (this is
   // what produced the "ightarrow" / "abla" rendering bugs).
-  text = text.replace(/\\n(?![a-zA-Z])/g, '\n').replace(/\\t(?![a-zA-Z])/g, '\t');
+  text = text.replace(/\\n(?![a-z])/g, '\n').replace(/\\t(?![a-z])/g, '\t');
 
   // Strip legacy decorative pre-amble lines — "Study/Look at/Examine the diagram
   // carefully, then answer the questions" (any capitalisation, with or without
@@ -1456,6 +1456,17 @@ const SECTION_LABELS: Record<string, { label: string; borderStyle?: "dashed" | "
   "question":        { label: "Question" },
   "prior-knowledge": { label: "Prior Knowledge Check" },
 };
+// Converts ALL-CAPS text to sentence case, preserving proper nouns and abbreviations
+function toSentenceCase(text: string): string {
+  // Only convert if the text is predominantly uppercase (more than 60% uppercase letters)
+  const letters = text.replace(/[^a-zA-Z]/g, '');
+  if (letters.length === 0) return text;
+  const upperCount = (text.match(/[A-Z]/g) || []).length;
+  if (upperCount / letters.length < 0.6) return text; // Already mixed case
+  // Convert to sentence case: lowercase everything, then capitalise after . ! ? and at start
+  return text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+}
+
 
 /**
  * Returns the resolved visual style for a section.
@@ -1629,7 +1640,7 @@ function formatContent(
   // Convert literal \n / \t escape sequences (from JSON serialisation) to real
   // newline / tab characters. Negative-lookahead preserves LaTeX commands like
   // \nabla, \neq, \nu, \times, \text, \theta. See renderMath() above for context.
-  content = content.replace(/\\n(?![a-zA-Z])/g, '\n').replace(/\\t(?![a-zA-Z])/g, '\t');
+  content = content.replace(/\\n(?![a-z])/g, '\n').replace(/\\t(?![a-z])/g, '\t');
 
   const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
   // Strip [[DIAGRAM:{...}]] markers — handled by the outer section renderer.
@@ -4117,7 +4128,7 @@ function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnTy
   //       The digit 6 is in the ten-thousands column
   // Sub-lines must render un-numbered under their parent step.
 
-  const normalised = content.replace(/\\n(?![a-zA-Z])/g, '\n');
+  const normalised = content.replace(/\\n(?![a-z])/g, '\n');
   // Keep original indentation so we can detect sub-steps
   const rawLines = normalised.split('\n').filter(l => l.trim().length > 0);
 
@@ -4383,7 +4394,7 @@ function WordProblemsSection({ content, fmt, overlayColor = "white", bookMode = 
   // The AI sometimes outputs problems separated by " . " (space-period-space)
   // without numbering, e.g. ". Problem one . Problem two . Problem three"
   // Step 1: Normalise \n escape sequences (lookahead protects LaTeX commands like \nabla)
-  let normalised = content.replace(/\\n(?![a-zA-Z])/g, '\n').replace(/\\t(?![a-zA-Z])/g, '\t');
+  let normalised = content.replace(/\\n(?![a-z])/g, '\n').replace(/\\t(?![a-z])/g, '\t');
   // Step 2: Strip leading ". " artifact (AI sometimes starts content with a period)
   normalised = normalised.replace(/^[.\s]+/, '');
   // Step 3: Split on " . " (space-period-space) which the AI uses as a problem separator
@@ -6687,7 +6698,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,
               alignItems: section.type === "diagram" ? "stretch" : undefined,
-              padding: section.type === "diagram" ? "0" : undefined,
+              padding: section.type === "diagram" ? "0" : "14px 16px",
               overflow: section.type === "diagram" ? "hidden" : "visible",
             }}
           >
@@ -6720,42 +6731,51 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 </div>
               </div>
             ) : section.type === "diagram" ? null : section.type === "send-support" ? null : (
-              /* Section header: semantic colour bar with Lucide icon + label + difficulty dots */
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                background: isTeacherHeader ? "#8b1a1a" : style.headerBg,
-                color: isTeacherHeader ? "#ffffff" : style.headerText,
-                padding: "5px 10px",
-                marginBottom: "10px",
-                marginLeft: "-12px",
-                marginRight: "-12px",
-                marginTop: "-12px",
-                borderRadius: "4px 4px 0 0",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  {getSectionIcon(isTeacherHeader ? "teacher-notes" : section.type, 13, isTeacherHeader ? "#ffffff" : style.headerText)}
-                  <span style={{
-                    fontSize: "8.5px",
-                    fontWeight: 700,
-                    fontFamily: fmt.fontFamily,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.12em",
+              /* Section header: clean text label bar — no icon, readable section name */
+              {(() => {
+                // Determine the section label: prefer explicit title, then SECTION_LABELS lookup
+                const sectionLabel = isTeacherHeader
+                  ? "TEACHER COPY — ANSWER KEY"
+                  : (style.label || (section.title ? String(section.title).replace(/^[*_]+|[*_]+$/g, '').trim() : ""));
+                if (!sectionLabel) return null; // No label — don't render a header bar
+                return (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: isTeacherHeader ? "#8b1a1a" : style.headerBg,
                     color: isTeacherHeader ? "#ffffff" : style.headerText,
+                    padding: "7px 14px",
+                    marginBottom: "0",
+                    marginLeft: "-16px",
+                    marginRight: "-16px",
+                    marginTop: "-14px",
+                    borderRadius: "2px 2px 0 0",
+                    borderBottom: `1px solid ${isTeacherHeader ? "rgba(0,0,0,0.2)" : style.border}`,
                   }}>
-                    {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : myGroupLabel}
-                  </span>
-                  {getDifficultyDots(section.type) && (
-                    <span style={{ fontSize: "8px", letterSpacing: "1px", opacity: 0.85, color: isTeacherHeader ? "#ffffff" : style.headerText }}>
-                      {getDifficultyDots(section.type)}
+                    <span style={{
+                      fontSize: "9.5px",
+                      fontWeight: 700,
+                      fontFamily: fmt.fontFamily,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.10em",
+                      color: isTeacherHeader ? "#ffffff" : style.headerText,
+                    }}>
+                      {sectionLabel}
                     </span>
-                  )}
-                </div>
-                {isTeacherSection && !isTeacherHeader && (
-                  <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
-                )}
-              </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {getDifficultyDots(section.type) && (
+                        <span style={{ fontSize: "8px", letterSpacing: "1px", opacity: 0.85, color: isTeacherHeader ? "#ffffff" : style.headerText }}>
+                          {getDifficultyDots(section.type)}
+                        </span>
+                      )}
+                      {isTeacherSection && !isTeacherHeader && (
+                        <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             )}
 
             {/* Section content */}
@@ -6918,7 +6938,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     // lines, matching the teacher steering ("questions should never be
                     // bunched together; every question must have its own answer lines").
                     content = String(content || "")
-                      .replace(/\\n(?![a-zA-Z])/g, "\n")
+                      .replace(/\\n(?![a-z])/g, "\n")
                       // ". 2." or "? 2." etc → newline before the numeral
                       .replace(/([.?!])\s+(?=\d{1,2}[.)]\s+\S)/g, "$1\n")
                       // Comma- or semicolon-separated numbered prefixes
@@ -7214,7 +7234,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     // Parse content into mistake blocks with labelled parts
                     const rawCM = content || "";
                     const normCM = rawCM
-                      .replace(/\\n(?![a-zA-Z])/g, "\n")
+                      .replace(/\\n(?![a-z])/g, "\n")
                       .replace(/(Mistake\s*\d+\s*:)/gi, "\n$1")
                       .replace(/(What pupils often write\s*:)/gi, "\n$1")
                       .replace(/(Why that'?s wrong[^:]*:)/gi, "\n$1")
@@ -7773,7 +7793,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
                       // Normalise the content: ensure each Mistake N: header starts on its own line
                       const normalizedContent = rawContent
-                        .replace(/\\n(?![a-zA-Z])/g, "\n")
+                        .replace(/\\n(?![a-z])/g, "\n")
                         .replace(/(Mistake\s*\d+\s*:)/gi, "\n$1")
                         .replace(/(What pupils often write\s*:)/gi, "\n$1")
                         .replace(/(Why that'?s wrong[^:]*:)/gi, "\n$1")
@@ -7875,7 +7895,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                       letterSpacing: "0.03em",
                                       marginTop: bi > 0 ? "0" : "0",
                                     }}>
-                                      <span dangerouslySetInnerHTML={{ __html: renderMath(headerPart.label + (headerPart.text ? " " + headerPart.text : "")) }} />
+                                      <span dangerouslySetInnerHTML={{ __html: renderMath(headerPart.label + (headerPart.text ? " " + toSentenceCase(headerPart.text) : "")) }} />
                                     </div>
                                   )}
                                   {/* Body parts */}
@@ -7906,7 +7926,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                           borderLeft: part.key === "wrong" ? "3px solid #dc2626" : part.key === "right" ? "3px solid #166534" : part.key === "check" ? "3px solid #1a2744" : "none",
                                         }}>
                                           {part.text.split("\n").map((tline, tli) => (
-                                            <div key={tli} dangerouslySetInnerHTML={{ __html: renderMath(tline) }} />
+                                            <div key={tli} dangerouslySetInnerHTML={{ __html: renderMath(toSentenceCase(tline)) }} />
                                           ))}
                                         </div>
                                       </div>
