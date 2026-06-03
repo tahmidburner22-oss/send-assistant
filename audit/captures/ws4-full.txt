@@ -1,0 +1,268 @@
+Skip to main content
+Worksheet generated but could not be saved to history. Please download it now.
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 13 (default)
+ADAPTLY
+PHYSICS · YEAR 9
+PHYSICS · YEAR 9
+Forces and Motion — Year 9 Physics Worksheet
+Year 9 | Physics | mixed
+NAME
+DATE
+03/06/2026
+CLASS
+LEARNING OBJECTIVE
+
+By the end of this lesson, you will be able to explain the relationship between force, mass, and acceleration, and apply Newton's Second Law of Motion.
+
+KEY VOCABULARY
+Force:
+A push or pull on an object, measured in Newtons (N).
+Mass:
+The amount of matter in an object, measured in kilograms (kg).
+Acceleration:
+The rate of change of velocity, measured in metres per secon
+𝑑
+2
+d
+2
+ (m/
+𝑠
+2
+s
+2
+).
+Newton's Second Law:
+The acceleration of an object is directly proportional to the net force acting on it and inversely proportional to its mass.
+Resultant force:
+The overall force acting on an object when all individual forces are combined.
+COMMON MISCONCEPTIONS
+Watch out for these common errors:
+Mistake 1: Confusing mass and weight. → Mass is the amount of 'stuff' in an object (measured in kg), while weight is the force of gravity acting on that mass (measured in N). They are not the same.
+Mistake 2: Thinking force and acceleration are always proportional. → While force causes acceleration, the acceleration also depends on the mass. A larger mass requires a larger force to achieve the same acceleration.
+Mistake 3: Assuming a moving object has no forces acting on it. → An object can move at a constant velocity if the resultant force is zero (e.g. balanced forces). Forces are still acting, but they cancel each other out.
+WORKED EXAMPLE
+Study this example carefully.
+1
+A car of mass 1200 kg is acted upon by a resultant force of 6000 N. Calculate its acceleration.
+2
+Identify the knowns: mass (m) = 1200 kg, resultant force (F) = 6000 N.
+3
+Identify the unknown: acceleration (a).
+4
+State the relevant formula: 
+𝐹
+=
+𝑚
+𝑎
+F=ma.
+5
+Rearrange the formula to solve for acceleration: 
+𝑎
+=
+𝐹
+𝑚
+a=
+m
+F
+	​
+
+.
+6
+Substitute the values and calculate: 
+𝑎
+=
+6000
+𝑁
+1200
+𝑘
+𝑔
+=
+5
+𝑚
+/
+𝑠
+2
+𝑠
+2
+s
+2
+a=
+1200kg
+6000N
+	​
+
+=5m/s
+2
+. ✓ Key point: Always ensure your units are consistent before substituting into the formula.
+TOPIC SUMMARY — READ FIRST
+
+Topic: Forces and Motion
+
+Learning objective: By the end of this lesson, you will be able to explain the relationship between force, mass, and acceleration, and apply Newton's Second Law of Motion.
+
+Key terms used in this worksheet:
+
+Force
+
+This information is here because you may not have heard all of the teacher's spoken explanation. Read it carefully before you start the questions — every detail you need is on the page.
+
+SECTION 1 — RECALL — QUESTIONS 1–7
+1
+○
+TRUE / FALSE
+●
+Circle TRUE or FALSE for each statement.
+Mass is a force measured in Newtons
+TRUE
+FALSE
+If the resultant force on an object is zero, it will accelerate
+TRUE
+FALSE
+Acceleration is the rate of change of velocity
+TRUE
+FALSE
+A heavier object will accelerate more than a lighter object if the same force is applied
+TRUE
+FALSE
+2
+○
+MULTIPLE CHOICE
+●
+What is the unit of force (= A push or pull on an object, measured in Newtons (N). Mass — The a…)?
+A
+kilograms
+B
+metres per secon
+𝑑
+2
+d
+2
+C
+Newtons
+D
+joules
+3
+✎
+GAP FILL
+●
+
+Complete the paragraph using words from the word bank below. Force is a push or pull that can cause an object to change its . According to Newton's Second Law, the  of an object is directly proportional to the resultant force acting on it. This means that if you increase the force, the acceleration will . However, the acceleration is also inversely proportional to the object's . Therefore, a larger mass will result in a smaller  for the same force. We measure force in units called . An object's  is the force of gravity acting upon its mass.
+
+WORD BANK:accelerationincreasemassdecreaseNewtonsweightvelocityfrictionspeedpush
+SECTION 2 — UNDERSTANDING — QUESTIONS 8–14
+4
+✎
+●●
+(8 marks total)
+1.
+State the formula that links force (= A push or pull on an object, measured in Newtons (N). Mass — The a…), mass, and acceleration.
+(2 marks)
+2.
+Describe what happens to the acceleration of a bicycle if a cyclist applies more force to the pedals, assuming the mass remains constant.
+(2 marks)
+3.
+A box has a mass of 5 kg. A resultant force of 20 N is applied to it. Calculate the acceleration of the box. Show your working.
+(2 marks)
+4.
+Explain the difference between mass and weight, including their units.
+(2 marks)
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 15–19
+5
+✎
+●●●
+(24 marks total)
+1.
+Identify the SI unit for mass.
+(4 marks)
+2.
+A force (= A push or pull on an object, measured in Newtons (N). Mass — The a…) of 100 N is applied to an object. If the object's mass is 20 kg, what is its acceleration?
+(4 marks)
+3.
+A car accelerates from rest at 2 m/
+𝑠
+2
+s
+2
+ for 5 seconds. Calculate the resultant force acting on the car if its mass is 1500 kg. Show your working.
+(4 marks)
+4.
+Describe how friction affects the motion of a moving object. Give an example.
+(4 marks)
+5.
+Evaluate the statement: 'To make a car go faster, you just need to increase the engine power.' Your answer should include: • The role of mass in acceleration. • The effect of other forces like air resistance. • How power relates to force and velocity.
+(4 marks)
+6.
+A rocket has a mass of 5000 kg. Its engines produce a thrust force of 25,000 N. Calculate the resultant force acting on the rocket and its initial acceleration.
+(4 marks)
+STRETCH & CHALLENGE
+●●●
+
+Challenge yourself!
+
+1.
+A cyclist and their bicycle have a combined mass of 75 kg. They are travelling at a constant speed of 10 m/s. If they apply the brakes, a braking force (= A push or pull on an object, measured in Newtons (N).
+
+Mass — The a…) of 150 N is applied. Calculate the deceleration of the cyclist.
+
+2.
+Explain why astronauts in orbit around the Earth do not feel weightless, even though they are far from Earth and appear to be floating.
+Show your working:
+EXAMINER TIPS
+Read these examiner tips before you start.
+1
+VOCABULARY
+Re-read the Key Vocabulary box for Forces and Motion. If you cannot define each term in your own words, you are not ready for the questions yet.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory. If you slip on a step, that step is your weakest link — drill it first before attempting the questions on Forces and Motion.
+3
+PAST PAPERS
+Find a real AQA / Edexcel / OCR physics past-paper question on Forces and Motion and attempt it under timed conditions. Mark it with the official mark scheme — examiner phrasing matters as much as the final answer.
+4
+RETRIEVAL
+In your next study session, list everything you remember about Forces and Motion on a blank sheet WITHOUT looking at this worksheet. Then check what you missed — those gaps are what to revise next.
+5
+LEARNING OBJECTIVE
+Re-state today's learning objective in one short sentence. Tick it off only when you can answer every question on Forces and Motion without help.
+HOW DID I DO?
+Quick exit question:
+Exit Ticket: Write ONE thing you learned today about Forces and Motion in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 9
+· Physics
+· Forces and Motion
+· Adapted for Hearing Impairment
+03/06/2026
+Rate this lesson:
+← Generate Another Lesson
+Cookie Preferences
+
+We use essential cookies to make this site work. We'd also like to set optional analytics cookies to help us improve it. Learn more
+
+Accept All
+Customise
+Reject optional

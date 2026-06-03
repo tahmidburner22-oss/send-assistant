@@ -1,0 +1,185 @@
+Skip to main content
+Worksheet generated but could not be saved to history. Please download it now.
+Command Palette
+
+Search for a command to run...
+
+Worksheets
+No pupil scoped
+£0.00
+Search tools & pages…
+⌘K
+Teacher
+Student
+14px
+Print Preview
+Edit with AI
+Edit Manually
+PDF
+Print
+Save
+Differentiate
+Differentiate (LA / MA / HA)
+More
+Reading Level:
+5
+17+
+Age 14 (default)
+ADAPTLY
+BIOLOGY · YEAR 10
+BIOLOGY · YEAR 10
+Cells and Organisation — Year 10 Biology Worksheet
+Year 10 | Biology | mixed
+NAME
+DATE
+03/06/2026
+CLASS
+LEARNING OBJECTIVE
+
+By the end of this lesson, you will be able to explain the structure and function of different cell types and their organisation into tissues, organs, and organ systems.
+
+KEY VOCABULARY
+Cell:
+The basic structural and functional unit of all known living organisms.
+Tissue:
+A group of similar cells that perform a specific function.
+Organ:
+A structure made up of a group of tissues that work together to perform a specific function.
+Organelle:
+A specialised subunit within a cell that has a specific function.
+Eukaryotic cell:
+A cell that contains a nucleus and other membrane-bound organelles.
+COMMON MISCONCEPTIONS
+Watch out for these common errors:
+Mistake 1: Confusing cell parts with whole cells. → Remember that organelles like the nucleus or mitochondria are parts within a cell, not the cell itself.
+Mistake 2: Assuming all cells are the same. → Different cell types (e.g., nerve cells, root hair cells) have specialised structures that relate directly to their specific jobs.
+Mistake 3: Misunderstanding the hierarchy of organisation. → Cells form tissues, tissues form organs, and organs form organ systems. Do not reverse this order.
+WORKED EXAMPLE
+Study this example carefully. Question: Calculate the magnification of a microscope image of a mitochondrion that is 50 mm long, when the actual mitochondrion is 25 µm long.
+1
+Ensure units are consistent. Convert 25 µm to mm: 25 µm = 0.025 mm.
+2
+Use the formula: Magnification = Image size / Actual size.
+3
+Substitute values: Magnification = 50 mm / 0.025 mm.
+4
+Calculate the result: Magnification = 2000. ✓ Key point: Always convert units to be the same before calculating magnification.
+SECTION 1 — RECALL — QUESTIONS 1–7
+1
+○
+TRUE / FALSE
+●
+[ ] Circle TRUE or FALSE for each statement.
+[ ] Animal cells have a cell wall and chloroplasts
+TRUE
+FALSE
+[ ] The nucleus contains the genetic material of a eukaryotic cell
+TRUE
+FALSE
+[ ] Tissues are made up of organs
+TRUE
+FALSE
+[ ] Phloem cells transport water from the roots to the leaves
+TRUE
+FALSE
+2
+○
+MULTIPLE CHOICE
+●
+[ ] Which of the following is a function of the cell membrane? [ ]
+A
+Controlling cell growth and reproduction
+B
+Regulating the passage of substances into and out of the cell
+C
+Carrying out photosynthesis
+D
+Storing genetic information
+3
+✎
+GAP FILL
+●
+
+[ ] Complete the paragraph using words from the word bank below. All living organisms are made up of cells, which are the basic units of life. Eukaryotic cells, found in plants and animals, contain a  which houses the cell's DNA. Plant cells also have a rigid  made of cellulose, which provides structural support. Within the cytoplasm, specialised  carry out specific functions, such as  in chloroplasts or cellular respiration in mitochondria. Cells are organised into  which perform specific roles, and these tissues then form  such as the stomach or heart.
+
+WORD BANK:nucleuscell wallorganellephotosynthesistissueorgancytoplasmvacuolechromosomemembrane
+★ BRAIN BREAK
+•
+🧠 BRAIN BREAK — stand up and stretch for 30 seconds before continuing!
+SECTION 2 — UNDERSTANDING — QUESTIONS 8–14
+4
+✎
+●●
+[ ] 1. Identify one sub-cellular structure found in both plant and animal cells.
+(6 marks total)
+2.
+Describe the function of the cytoplasm in a cell.
+(2 marks)
+3.
+Explain why a root hair cell is specialised for its function.
+(2 marks)
+4.
+Describe the difference between a cell and a tissue.
+(2 marks)
+SECTION 3 — APPLICATION & ANALYSIS — QUESTIONS 15–19
+5
+✎
+●●●
+[ ] 1. State the function of xylem tissue in plants.
+(20 marks total)
+2.
+Identify two sub-cellular structures found in a plant cell but not in an animal cell.
+(4 marks)
+3.
+Explain how the structure of a sperm cell is adapted for its function.
+(4 marks)
+4.
+Describe the process of diffusion and explain how a high surface area to volume ratio can increase its rate.
+(4 marks)
+5.
+Evaluate the importance of stem cells in medicine. Your answer should include: • Examples of conditions stem cells can treat. • The difference between embryonic and adult stem cells. • Potential ethical considerations.
+(4 marks)
+6.
+Explain how the structure of a nerve cell (neurone) is adapted for transmitting electrical impulses.
+(4 marks)
+STRETCH & CHALLENGE
+●●●
+Challenge yourself!
+Analyse the advantages and disadvantages of using electron microscopes compared to light microscopes for studying cell structure.
+Explain how the organisation of cells into tissues, organs, and organ systems allows for efficient functioning in multicellular organisms.
+Show your working:
+EXAMINER TIPS
+Top tips before you start.
+1
+VOCABULARY
+Re-read the Key Vocabulary box for Cells and Organisation.
+2
+WORKED EXAMPLE
+Cover the worked example with your hand and re-do it from memory.
+3
+PAST PAPERS
+Find a real AQA / Edexcel / OCR biology past-paper question on Cells and Organisation and attempt it under timed conditions.
+4
+RETRIEVAL
+In your next study session, list everything you remember about Cells and Organisation on a blank sheet WITHOUT looking at this worksheet.
+5
+LEARNING OBJECTIVE
+Re-state today's learning objective in one short sentence.
+HOW DID I DO?
+Quick exit question:
+Exit Ticket: Write ONE thing you learned today about Cells and Organisation in a single sentence:
+Generated by Adaptly · adaptly.co.uk
+Year 10
+· Biology
+· Cells and Organisation
+· Adapted for ADHD
+03/06/2026
+Rate this lesson:
+← Generate Another Lesson
+Cookie Preferences
+
+We use essential cookies to make this site work. We'd also like to set optional analytics cookies to help us improve it. Learn more
+
+Accept All
+Customise
+Reject optional
