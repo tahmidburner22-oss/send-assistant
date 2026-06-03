@@ -192,6 +192,60 @@ router.get("/test-ai/:provider", requireAuth, requireAdmin, async (req: Request,
       if (r.ok) return res.json({ ok: true });
       return res.json({ ok: false, error: `HTTP ${r.status}` });
     }
+    if (provider === "cerebras") {
+      const r = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "llama3.1-8b", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+      });
+      if (r.ok) return res.json({ ok: true });
+      return res.json({ ok: false, error: `HTTP ${r.status}` });
+    }
+    if (provider === "nvidia_nim") {
+      const r = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "nvidia/llama-3.1-nemotron-ultra-253b-v1", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+      });
+      if (r.ok) return res.json({ ok: true });
+      return res.json({ ok: false, error: `HTTP ${r.status}` });
+    }
+    if (provider === "sambanova") {
+      const r = await fetch("https://api.sambanova.ai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "Meta-Llama-3.3-70B-Instruct", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+      });
+      if (r.ok) return res.json({ ok: true });
+      return res.json({ ok: false, error: `HTTP ${r.status}` });
+    }
+    if (provider === "cohere") {
+      const r = await fetch("https://api.cohere.com/v2/chat", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "command-a-03-2025", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+      });
+      if (r.ok) return res.json({ ok: true });
+      return res.json({ ok: false, error: `HTTP ${r.status}` });
+    }
+    if (provider === "huggingface") {
+      const r = await fetch("https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "Qwen/Qwen2.5-72B-Instruct", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+      });
+      if (r.ok) return res.json({ ok: true });
+      return res.json({ ok: false, error: `HTTP ${r.status}` });
+    }
+    if (provider === "mistral") {
+      const r = await fetch("https://api.mistral.ai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "mistral-small-latest", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+      });
+      if (r.ok) return res.json({ ok: true });
+      return res.json({ ok: false, error: `HTTP ${r.status}` });
+    }
 
     res.json({ ok: false, error: "Unknown provider" });
   } catch (err: any) {
