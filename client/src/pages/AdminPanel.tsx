@@ -101,10 +101,10 @@ function buildLibraryGroups(entries: any[]) {
 
 const AI_PROVIDERS = [
   { id: "groq",        label: "Groq (Llama 4 Scout)",       icon: Zap,      color: "text-orange-500",  description: "Ultra-fast, free tier — 43,200 RPD combined" },
-  { id: "cerebras",   label: "Cerebras (Llama 3.1 8B)",    icon: Zap,      color: "text-yellow-500",  description: "Wafer-scale inference — 43,200 RPD combined" },
+  { id: "cerebras",   label: "Cerebras (GPT-OSS 120B)",    icon: Zap,      color: "text-yellow-500",  description: "Wafer-scale inference — 43,200 RPD combined" },
   { id: "gemini",     label: "Google Gemini 2.5 Flash",     icon: Globe,    color: "text-blue-500",    description: "Google flagship — 250 RPD free" },
-  { id: "nvidia_nim", label: "NVIDIA NIM (Nemotron 253B)",  icon: Cpu,      color: "text-green-700",   description: "High-quality inference — ~40 RPM free" },
-  { id: "sambanova",  label: "SambaNova (Llama 3.3 70B)",   icon: Cpu,      color: "text-teal-600",    description: "Good quality — 2,000 RPD combined" },
+  { id: "nvidia_nim", label: "NVIDIA NIM (Llama 4 Maverick)",icon: Cpu,      color: "text-green-700",   description: "High-quality inference — ~40 RPM free" },
+  { id: "sambanova",  label: "SambaNova (Llama 4 Maverick)", icon: Cpu,      color: "text-teal-600",    description: "Good quality — 2,000 RPD combined" },
   { id: "cohere",     label: "Cohere Command A (111B)",     icon: Globe,    color: "text-cyan-600",    description: "No daily cap — 20 RPM" },
   { id: "huggingface",label: "HuggingFace (Qwen 2.5 72B)", icon: Globe,    color: "text-yellow-600",  description: "Good backup provider" },
   { id: "openrouter", label: "OpenRouter",                  icon: Globe,    color: "text-purple-500",  description: "Multi-model routing — 400 RPD combined" },

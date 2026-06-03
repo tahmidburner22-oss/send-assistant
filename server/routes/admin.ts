@@ -196,7 +196,7 @@ router.get("/test-ai/:provider", requireAuth, requireAdmin, async (req: Request,
       const r = await fetch("https://api.cerebras.ai/v1/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "llama3.1-8b", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+        body: JSON.stringify({ model: "gpt-oss-120b", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),  // llama3.1-8b retired Jun 2026
       });
       if (r.ok) return res.json({ ok: true });
       return res.json({ ok: false, error: `HTTP ${r.status}` });
@@ -205,7 +205,7 @@ router.get("/test-ai/:provider", requireAuth, requireAdmin, async (req: Request,
       const r = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "nvidia/llama-3.1-nemotron-ultra-253b-v1", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+        body: JSON.stringify({ model: "meta/llama-4-maverick-17b-128e-instruct", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),  // nemotron-ultra-253b-v1 retired Jun 2026
       });
       if (r.ok) return res.json({ ok: true });
       return res.json({ ok: false, error: `HTTP ${r.status}` });
@@ -214,7 +214,7 @@ router.get("/test-ai/:provider", requireAuth, requireAdmin, async (req: Request,
       const r = await fetch("https://api.sambanova.ai/v1/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "Meta-Llama-3.3-70B-Instruct", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),
+        body: JSON.stringify({ model: "Llama-4-Maverick-17B-128E-Instruct", messages: [{ role: "user", content: "Say OK" }], max_tokens: 5 }),  // Meta-Llama-3.3-70B deprecated Jun 2026
       });
       if (r.ok) return res.json({ ok: true });
       return res.json({ ok: false, error: `HTTP ${r.status}` });

@@ -59,19 +59,22 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 
 // ── Provider priority order — 18 providers, ~130,000+ RPD combined ──────────────
 //
-// Priority rationale (May 2026):
-//   1. Groq (×3 keys, Llama 4 Scout) — fastest inference, 43,200 RPD combined
-//   2. Cerebras (×3 keys, llama3.1-8b) — same speed as Groq, 43,200 RPD combined
+// Priority rationale (Jun 2026):
+//   1. Groq (×3 keys, Llama 4 Scout 17B) — fastest inference, 43,200 RPD combined
+//   2. Cerebras (×3 keys, gpt-oss-120b) — wafer-scale speed, 43,200 RPD combined
+//      NOTE: llama3.1-8b was retired; gpt-oss-120b is the current fast model
 //   3. Gemini 2.5 Flash — high quality, 250 RPD free
 //   4. Gemini 2.5 Flash-Lite — fast, 1,000 RPD free
 //   5. Gemini 3.1 Flash-Lite — newest Google model, 500 RPD free
-//   6. NVIDIA NIM — ~40 RPM, Llama 405B / Nemotron 253B quality
-//   7. SambaNova (×2 keys) — good quality, 2,000 RPD combined
+//   6. NVIDIA NIM — ~40 RPM, Llama 4 Maverick 17B (nemotron-ultra-253b retired)
+//   7. SambaNova (×2 keys) — Llama 4 Maverick 17B, 2,000 RPD combined
+//      NOTE: Meta-Llama-3.3-70B-Instruct deprecated; Llama-4-Maverick-17B is current
 //   8. Cohere Command A — 111B model, 20 RPM, no daily cap
 //   9. HuggingFace — variable quality, good backup
 //  10. OpenRouter (×2 keys) — 400 RPD combined (last resort before Mistral)
+//      NOTE: gemma-4-31b-it:free retired; openai/gpt-oss-120b:free is current
 //  11. Mistral — unlimited RPD but only ~1 RPS, last resort
-//  12. DeepSeek — paid; only consulted when DEEPSEEK_API_KEY is configured
+//  12. DeepSeek — paid; only consulted when DEEPSEEK_API_KEY has balance
 //      (the fallback walker silently skips providers with no resolved key, so
 //      adding it here is opt-in by virtue of the env var being unset).
 //  13. OpenAI — paid; final fallback before failure.
@@ -302,20 +305,20 @@ async function getAdminModel(provider: string, schoolId?: string): Promise<strin
     groq_1:       "meta-llama/llama-4-scout-17b-16e-instruct",
     groq_2:       "meta-llama/llama-4-scout-17b-16e-instruct",
     groq_3:       "meta-llama/llama-4-scout-17b-16e-instruct",
-    cerebras:     "llama3.1-8b",  // Cerebras wafer-scale — llama3.1-8b is fast and reliable
-    cerebras_1:   "llama3.1-8b",
-    cerebras_2:   "llama3.1-8b",
-    cerebras_3:   "llama3.1-8b",
+    cerebras:     "gpt-oss-120b",  // Cerebras wafer-scale — gpt-oss-120b (llama3.1-8b retired Jun 2026)
+    cerebras_1:   "gpt-oss-120b",
+    cerebras_2:   "gpt-oss-120b",
+    cerebras_3:   "gpt-oss-120b",
     gemini:       "gemini-2.5-flash",
     gemini_lite:  "gemini-2.5-flash-lite",
     gemini_3lite: "gemini-3.1-flash-lite-preview",
-    nvidia_nim:   "nvidia/llama-3.1-nemotron-ultra-253b-v1",   // Best free NVIDIA NIM model
-    sambanova:    "Meta-Llama-3.3-70B-Instruct",
-    sambanova_1:  "Meta-Llama-3.3-70B-Instruct",
-    sambanova_2:  "Meta-Llama-3.3-70B-Instruct",
-    openrouter:   "google/gemma-4-31b-it:free",  // Gemma 4 31B — reliable free model on OpenRouter
-    openrouter_1: "google/gemma-4-31b-it:free",
-    openrouter_2: "google/gemma-4-31b-it:free",
+    nvidia_nim:   "meta/llama-4-maverick-17b-128e-instruct",   // Best free NVIDIA NIM model (nemotron-ultra-253b-v1 retired Jun 2026)
+    sambanova:    "Llama-4-Maverick-17B-128E-Instruct",  // Llama 4 Maverick (Meta-Llama-3.3-70B deprecated Jun 2026)
+    sambanova_1:  "Llama-4-Maverick-17B-128E-Instruct",
+    sambanova_2:  "Llama-4-Maverick-17B-128E-Instruct",
+    openrouter:   "openai/gpt-oss-120b:free",  // GPT-OSS 120B free — gemma-4-31b-it:free retired Jun 2026
+    openrouter_1: "openai/gpt-oss-120b:free",
+    openrouter_2: "openai/gpt-oss-120b:free",
     deepseek:    "deepseek-chat",
     cohere:      "command-a-03-2025",                         // Cohere Command A 111B — best free
     huggingface: "Qwen/Qwen2.5-72B-Instruct",
@@ -400,7 +403,7 @@ async function callProvider(
         break;
       case "nvidia_nim":
         // NVIDIA NIM — ~40 RPM free, access to Llama 3.1 Nemotron Ultra 253B and others
-        result = await callNvidiaNim(system, user, key, model || "nvidia/llama-3.1-nemotron-ultra-253b-v1", maxTokens, controller.signal, responseFormat);
+        result = await callNvidiaNim(system, user, key, model || "meta/llama-4-maverick-17b-128e-instruct", maxTokens, controller.signal, responseFormat);
         break;
       case "openai":
         result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal, undefined, responseFormat);
@@ -414,13 +417,13 @@ async function callProvider(
       case "cerebras_3":
         // Cerebras wafer-scale inference — 14,400 RPD, 30 RPM free tier per key
         // With 3 keys in round-robin we get 43,200 RPD combined
-        result = await callCerebras(system, user, key, model || "llama3.1-8b", maxTokens, controller.signal, responseFormat);
+        result = await callCerebras(system, user, key, model || "gpt-oss-120b", maxTokens, controller.signal, responseFormat);
         break;
       case "sambanova":
       case "sambanova_1":
       case "sambanova_2":
         // SambaNova Cloud — 1,000 RPD, 30 RPM free tier per key, OpenAI-compatible
-        result = await callSambaNova(system, user, key, model || "Meta-Llama-3.3-70B-Instruct", maxTokens, controller.signal, responseFormat);
+        result = await callSambaNova(system, user, key, model || "Llama-4-Maverick-17B-128E-Instruct", maxTokens, controller.signal, responseFormat);
         break;
       case "openrouter":
       case "openrouter_1":
@@ -1196,7 +1199,7 @@ async function callCerebras(system: string, user: string, key: string, model: st
 // Free tier: 1,000 RPD, 30 RPM — OpenAI-compatible API.
 async function callSambaNova(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
   const body: Record<string, unknown> = {
-    model: model || "Meta-Llama-3.3-70B-Instruct",
+    model: model || "Llama-4-Maverick-17B-128E-Instruct",
     messages: [
       { role: "system", content: system || "You are a helpful SEND education assistant." },
       { role: "user", content: user },
@@ -1475,10 +1478,10 @@ async function callCohere(system: string, user: string, key: string, model: stri
 async function callNvidiaNim(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
   const fallbackModels = [
     model,
-    "nvidia/llama-3.1-nemotron-ultra-253b-v1",  // Best quality — 253B params
-    "meta/llama-3.1-405b-instruct",              // Meta Llama 405B
-    "nvidia/nemotron-3-super-120b-a12b",         // Nemotron Super 120B — fast
-    "qwen/qwen2.5-72b-instruct",                 // Qwen 72B fallback
+    "meta/llama-4-maverick-17b-128e-instruct",  // Llama 4 Maverick 17B — best available Jun 2026
+    "meta/llama-3.3-70b-instruct",               // Llama 3.3 70B — reliable fallback
+    "meta/llama-3.1-70b-instruct",               // Llama 3.1 70B — stable fallback
+    "meta/llama-3.1-8b-instruct",                // Llama 3.1 8B — fast lightweight fallback
   ].filter(Boolean);
   for (const m of fallbackModels) {
     try {
