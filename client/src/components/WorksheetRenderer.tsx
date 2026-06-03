@@ -1458,13 +1458,20 @@ const SECTION_LABELS: Record<string, { label: string; borderStyle?: "dashed" | "
 };
 // Converts ALL-CAPS text to sentence case, preserving proper nouns and abbreviations
 function toSentenceCase(text: string): string {
-  // Only convert if the text is predominantly uppercase (more than 60% uppercase letters)
-  const letters = text.replace(/[^a-zA-Z]/g, '');
-  if (letters.length === 0) return text;
-  const upperCount = (text.match(/[A-Z]/g) || []).length;
-  if (upperCount / letters.length < 0.6) return text; // Already mixed case
+  // Always convert ALL-CAPS label prefixes like "MISTAKE 1:", "ERROR 2:", "POINT 3:"
+  // to title case regardless of the overall case ratio of the string.
+  // This handles the case where the body text is already in sentence case but the
+  // label prefix is still ALL-CAPS (e.g. "MISTAKE 1: Confusing mass and weight.").
+  let result = text.replace(/\b([A-Z]{2,})(\s+\d+):/g, (m, word, num) => {
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() + num + ':';
+  });
+  // Only do full sentence-case conversion if the text is predominantly uppercase (more than 60% uppercase letters)
+  const letters = result.replace(/[^a-zA-Z]/g, '');
+  if (letters.length === 0) return result;
+  const upperCount = (result.match(/[A-Z]/g) || []).length;
+  if (upperCount / letters.length < 0.6) return result; // Already mixed case
   // Convert to sentence case: lowercase everything, then capitalise after . ! ? and at start
-  return text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+  return result.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
 }
 
 
