@@ -4235,7 +4235,7 @@ function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnTy
   const answers = steps.filter(s => s.kind === 'answer').map(s => s.text);
 
   return (
-    <div style={{ fontFamily, border: '2px solid #1a2744', borderRadius: '8px', overflow: 'hidden' }}>
+    <div style={{ fontFamily, overflow: 'hidden' }}>
       {/* Coloured header bar */}
       <div style={{
         background: '#1a2744',
@@ -7264,7 +7264,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         { re: /^(Quick check\s*:)/i, key: "check" },
                       ];
                       return (
-                        <div style={{ border: "1.5px solid #1a2744", borderRadius: "6px", background: "#ffffff", padding: "0" }}>
+                        <div style={{ background: "#ffffff", padding: "0" }}>
                           {cmIntro && (
                             <div style={{ padding: "10px 14px 0 14px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", fontStyle: "italic" }}
                               dangerouslySetInnerHTML={{ __html: renderMath(cmIntro) }} />
@@ -7331,7 +7331,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     }
                     if (cmCurrent) cmMistakes.push(cmCurrent);
                     return (
-                      <div style={{ border: "1.5px solid #1a2744", borderRadius: "6px", background: "#ffffff", padding: "12px 14px", display: "flex", flexDirection: "column" as const, gap: "12px" }}>
+                      <div style={{ background: "#ffffff", padding: "12px 14px", display: "flex", flexDirection: "column" as const, gap: "12px" }}>
                         {cmMistakes.map((m, mi) => (
                           <div key={mi} style={{ paddingBottom: mi < cmMistakes.length - 1 ? "12px" : "0", borderBottom: mi < cmMistakes.length - 1 ? "1px dashed #e2e8f0" : "none" }}>
                             <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "4px" }} dangerouslySetInnerHTML={{ __html: renderMath(m.title) }} />
@@ -7788,7 +7788,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       dangerouslySetInnerHTML={{ __html: renderMath(content) }} />
                   </div>
                 ) : section.type === "common-mistakes" ? (
-                  <div style={{ background: "#ffffff", border: "1.5px solid #1a2744", borderRadius: "6px", padding: "0" }}>
+                  <div style={{ background: "#ffffff", padding: "0" }}>
                     {(() => {
                       // Split content into individual mistake blocks for structured rendering
                       const rawContent = content || "";
