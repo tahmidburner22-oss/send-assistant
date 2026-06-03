@@ -297,7 +297,11 @@ export function enforceQuestionWordingBrevity(
   }
 
   let longStemCount = 0;
-  const MAX_WORDS_KS3 = 30;
+  // Maths uses a tighter 25-word cap (matching the prompt's QUESTION WORDING CAP);
+  // other subjects use 30 words (still tight for younger years).
+  const subject = (opts.subject || String(ws.metadata?.subject || "")).toLowerCase();
+  const isMaths = /math/.test(subject);
+  const MAX_WORDS_KS3 = isMaths ? 25 : 30;
 
   for (const s of (ws.sections || [])) {
     if (s.teacherOnly) continue;

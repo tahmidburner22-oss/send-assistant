@@ -290,14 +290,30 @@ export function enforceMathsInstructionBrevity(
   }
 
   let fixCount = 0;
-  const INSTRUCTION_SECTION_TYPES = new Set([
-    "reminder-box", "send-support", "reading",
+  // Expanded from just "reminder-box/send-support/reading" — teacher feedback
+  // is that ALL non-question sections have too much text on maths worksheets.
+  // We now trim any non-question, non-core section type that exceeds 3 lines.
+  const EXEMPT_TYPES = new Set([
+    // Core content sections that should NOT be trimmed
+    "recall", "understanding", "application", "guided", "independent",
+    "challenge", "q-short-answer", "q-extended", "q-challenge",
+    "q-free-response", "q-mcq", "q-gap-fill", "q-true-false",
+    "q-label-diagram", "q-data-table", "q-graph", "q-circuit",
+    "q-draw", "q-ordering", "q-matching", "q-primary-activity",
+    "q-worked-example", "example", "worked-example",
+    // Core metadata sections
+    "objective", "success", "learning-objective",
+    "vocabulary", "key-terms", "key-vocab", "glossary",
+    "teacher-key", "teacher-notes", "diagram", "diagram-a", "diagram-b",
+    // SEND sections (managed by the overlay engine)
+    "send-adaptation", "send-support",
   ]);
 
   const sections = (ws.sections || []).map((s): PostValidatorSection => {
+    if (s.teacherOnly) return s;
     const type = String(s.type || "").toLowerCase();
-    // Only trim instruction/hint/guidance sections, not questions
-    if (!INSTRUCTION_SECTION_TYPES.has(type)) return s;
+    // Only trim non-exempt sections (instruction boxes, reminder panels, etc.)
+    if (EXEMPT_TYPES.has(type)) return s;
 
     const content = String(s.content || "");
     if (!content) return s;
@@ -317,7 +333,7 @@ export function enforceMathsInstructionBrevity(
 
   if (fixCount > 0) {
     warnings.push(
-      `[Sprint 2] Trimmed ${fixCount} maths instruction block(s) to max 3 lines for reduced text load.`
+      `[Sprint 2] Trimmed ${fixCount} maths instruction/guidance block(s) to max 3 lines for reduced text load. Teacher feedback: "Less text, more practice space."`
     );
   }
 

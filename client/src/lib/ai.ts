@@ -2062,7 +2062,13 @@ DIAGRAM SUBJECT-LOCK (CRITICAL — this is the bug the teacher flagged):
 - FORBIDDEN diagram types on a science worksheet: anything that belongs to a different subject. In particular, do NOT emit "computer-architecture", "big-o-notation", "binary-representation", or any other computing / algorithm / programming diagram on a biology / chemistry / physics / combined-science sheet. If a topic does not have a relevant second diagram, emit Diagram B with content "[skipped — topic does not require a second visual]".
 
 REFLECTION + EXIT TICKET + REVISION TIPS — MANDATORY:
-- Every science worksheet must end with a Self-Reflection block containing ONLY a single EXIT_TICKET line (no confidence grid, no written prompts — these have been removed as they make the worksheet too long), followed by a separate Revision Tips block (5 examiner-voice tips: command-word, watch-out, method, mark-scheme, time). Both must appear on the pupil-facing page (NOT teacher-only). Sciences method-tip = "include units before rounding"; for combined-science calculation topics, also remind pupils to convert to SI units before substituting.` : "";
+- Every science worksheet must end with a Self-Reflection block containing ONLY a single EXIT_TICKET line (no confidence grid, no written prompts — these have been removed as they make the worksheet too long), followed by a separate Revision Tips block (5 examiner-voice tips: command-word, watch-out, method, mark-scheme, time). Both must appear on the pupil-facing page (NOT teacher-only). Sciences method-tip = "include units before rounding"; for combined-science calculation topics, also remind pupils to convert to SI units before substituting.
+
+KS3 LANGUAGE REGISTER (Year 7–9 ONLY — MANDATORY):
+- For Year 7–9 science worksheets, ALL instructions, explanations and question stems must use SHORT, SIMPLE SENTENCES. Maximum 15 words per sentence. Never write paragraphs of instruction — write a single sentence per line.
+- Use age-appropriate vocabulary: "gets bigger" not "increases proportionally"; "force" not "unbalanced resultant force" (save precise terminology for the vocabulary strip where definitions sit alongside).
+- Every question must be ONE sentence. If a question needs context (e.g. a scenario), give it as a separate preceding sentence, then the question itself on the next line.
+- Example for Year 7: "A book sits on a table. What forces act on the book?" — NOT: "Consider a book that is resting on a table. Identify all the forces acting upon the book, naming their direction and type, and explain whether the forces are balanced or unbalanced."` : "";
 
   const mathsNote = isMaths
     ? `MATHS — SPECIFICATION-ALIGNED CALCULATION PRACTICE (MANDATORY):
