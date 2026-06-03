@@ -247,7 +247,7 @@ export default function StoryStudio() {
                 <p className="text-lg leading-relaxed text-center">{page.text}</p>
                 {symbols && page.keyWords && page.keyWords.length > 0 && (
                   <div className="flex justify-center">
-                    <SymbolSupportedWords terms={page.keyWords} size={48} />
+                    <SymbolSupportedWords terms={page.keyWords} size={48} asDataUrl />
                   </div>
                 )}
               </CardContent>
