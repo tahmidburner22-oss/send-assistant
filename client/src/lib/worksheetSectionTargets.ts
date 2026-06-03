@@ -66,6 +66,20 @@ export const TOTAL_QUESTIONS_TARGET =
 /** Acceptable upper-bound used by `validateWorksheetPlan` to fail-fast. */
 export const TOTAL_QUESTIONS_HARD_CAP = 25;
 
+/**
+ * June 2026 — KS3-specific reduced targets. Year 7–9 worksheets are
+ * shorter than KS4 to match the shorter attention spans and reading
+ * levels. This produces 5+5+3+1 = 14 questions total for KS3, versus
+ * 7+7+5+1 = 20 for KS4. Teacher feedback: "Worksheets too long for
+ * Year 7, need to be a lot less writing. Make sentences, not paragraphs."
+ */
+export const KS3_SECTION_QUESTION_TARGETS = {
+  recall:        { min: 4, target: 5, max: 6 },
+  understanding: { min: 4, target: 5, max: 6 },
+  application:   { min: 2, target: 3, max: 4 },
+  challenge:     { min: 1, target: 1, max: 1 },
+} as const;
+
 /** Section keys in canonical order. */
 export const SECTION_ORDER: Array<keyof typeof SECTION_QUESTION_TARGETS> = [
   "recall",
