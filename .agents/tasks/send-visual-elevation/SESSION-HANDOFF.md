@@ -4,11 +4,12 @@ This file is the **resume point** for any fresh chat picking up this
 work. Read this first, then `PHASE-PLAN.md`, then `LEDGER.md`, then
 `docs/SEND-Website-Elevation-Plan.md` for the full strategy.
 
-Last updated: 2026-06-03 — PR #162 (`feat/visual-relevance-arasaac-symbols`)
-is **MERGED into main** (merge commit `f507ab7`). It shipped the first
-four work units (V1-V4). This docs/handoff bundle ships on a separate
-branch `docs/send-visual-elevation-handoff` as a new PR (PR #162 was
-already merged, so it could not be reused).
+Last updated: 2026-06-03 — PR #162 (code) and PR #163 (docs) are MERGED.
+PR #162 shipped V1-V4. PR #163 shipped the in-repo plan + handoff docs.
+The CURRENT branch `feat/v5-word-bank-symbol-support` ships V5 — the
+PRESENTATION half of word-bank symbol support (screen + PPTX). The
+WORKSHEET half is split to V5b (next) because the worksheet renderer has
+four tangled vocabulary render paths that warrant their own focused PR.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -21,7 +22,9 @@ Phase:   .agents/tasks/send-visual-elevation/PHASE-PLAN.md
 Ledger:  .agents/tasks/send-visual-elevation/LEDGER.md
 Shipped: PR #162 (MERGED) — V1 image relevance, V2 ARASAAC proxy+resolver,
          V3 Communication Board, V4 Gemini auth cooldown.
-Next:    V5 — wire symbol-resolver into worksheet + presentation word banks.
+         PR #163 (MERGED) — in-repo plan + handoff docs.
+         PR (this branch) — V5 presentation word-bank symbols (screen+PPTX).
+Next:    V5b — wire symbol support into WORKSHEET word banks / vocabulary.
 Constraints: FREE + child-safe; Gemini-independent (Groq priority-1);
          npm install needs --legacy-peer-deps; ~146 pre-existing tsc
          errors (verify ZERO net-new); don't read big files in full.
@@ -78,22 +81,53 @@ Goal: implement the next un-shipped work unit, update LEDGER +
   retried at the FRONT of every heavy request (`reorderForHeavyRequest`
   prioritises Gemini for long prompts). Groq stays priority-1.
 
+### V5 — Presentation word-bank symbol support (this branch)
+- `client/src/components/SymbolSupportedWords.tsx` (NEW) — `TermSymbol`
+  (one pictogram for a card; renders null until resolved / if none),
+  `SymbolSupportedWords` (chip row), `extractVocabTerms` (parses a
+  worksheet vocabulary string → terms, for V5b). ADDITIVE + graceful.
+- `client/src/pages/tools/PresentationMaker.tsx`:
+  - `symbolSupport` deck-level `useState` (default false) + a Switch in
+    the options panel under the SEND Needs picker.
+  - `FullSlideView` gained a `symbolSupport` prop; renders `<TermSymbol>`
+    in the `word-bank`, `key-terms` and `vocab-reference` cases. Threaded
+    to ALL 5 call sites incl. `PresenterMode` (fullscreen) + comparison.
+  - `exportToPptx` gained a `symbolSupport` param; pre-resolves ARASAAC
+    pictograms to base64 (mirrors the image dataURL pattern) into
+    `symbolDataByTerm`, then `addImage`s them on the same 3 painters.
+    Text x/width shift right ONLY when a symbol exists → byte-identical
+    PPTX when off.
+- Worksheet half deliberately NOT done here → V5b.
+
 ## What is next (pick the top un-shipped item)
 
-1. **V5 — Wire `symbol-resolver` into the worksheet + presentation word
-   banks.** Highest leverage: puts symbol support into the flagship
-   generators, not just the Communication Board. Likely surfaces:
-   - Presentation `word-bank` slide type + SEND `wordBank` field
-     (PresentationMaker.tsx — grep `// ` / `wordBank`; render symbols
-     above each term). Use `resolveSymbolsForWords`.
-   - Worksheet `vocab-reference` / word-bank sections
-     (WorksheetRenderer.tsx). Add a teacher toggle "symbol support".
-   - Keep it additive + opt-in; print-safe; embed via
-     `fetchSymbolAsDataUrl` for PDF/PPTX.
-2. **V6 — Server-side CLIP re-ranking** for even sharper stock
-   relevance (free on Cloudflare Workers AI). Adds an embedding score
-   on top of V1's lexical score. Run server-side (SEND devices are
-   low-spec).
+1. **V5b — Wire symbol support into the WORKSHEET word banks / vocabulary.**
+   The presentation half shipped in V5; this is the worksheet half. The
+   reusable pieces already exist: `<SymbolSupportedWords>` and
+   `extractVocabTerms` in `client/src/components/SymbolSupportedWords.tsx`.
+   Plan:
+   - Add `symbolSupport?: boolean` to `UserPreferences`
+     (`contexts/UserPreferencesContext.tsx` interface L37-82 + default at
+     L140) so worksheet + presentation can share one opt-in later.
+   - Add a "Symbol support" `<Switch>` in `Worksheets.tsx` next to the
+     Book Mode switch (~L4856), bound to `updatePreference("symbolSupport", v)`.
+   - Add `symbolSupport?: boolean` prop to `WorksheetRenderer`; pass
+     `symbolSupport={preferences.symbolSupport}` at the main render
+     (~L6664) — it already reads `preferences`.
+   - Render `<SymbolSupportedWords terms={extractVocabTerms(content)} />`
+     for `section.type === "vocabulary"`. NB the renderer has FOUR vocab
+     paths — PrimarySection, the secondary section-body renderer (the
+     `formatContent` call ~L4715), MathsCompactLayout, exam-style. Thread
+     `symbolSupport` into the secondary section-body renderer (cleanest
+     single injection) and PrimarySection. Keep additive + gated.
+   - Print/PDF: symbols are remote `<img>` (print fine via window.print).
+     Confirm the custom PDF path (`pdf-generator-v2.ts serialiseElement`)
+     embeds remote images; if not, switch the component to data URLs via
+     `fetchSymbolAsDataUrl`.
+
+2. **V6 — Server-side CLIP re-ranking** for even sharper stock relevance
+   (free on Cloudflare Workers AI). Adds an embedding score on top of
+   V1's lexical score. Run server-side (SEND devices are low-spec).
 3. **V7 — Cloudflare FLUX generative endpoint** for unique story
    illustrations only. New `/api/image-proxy/generate` (or a new
    `generation-proxy`), teacher-initiated, safety-gated, cached.
