@@ -1394,6 +1394,8 @@ const SECTION_COLOUR_MAP: Record<string, keyof typeof VL_COLOURS> = {
   "comprehension":   "blue",
   "diagram":         "blue",
   "section-header":  "blue",
+  // Blue — SEND adaptation note (information about how the sheet is adapted)
+  "send-adaptation": "blue",
   // Green — main task / activity
   "guided":          "green",
   "independent":     "green",
@@ -1464,6 +1466,7 @@ const SECTION_LABELS: Record<string, { label: string; borderStyle?: "dashed" | "
   "mark-scheme":     { label: "Mark Scheme", borderStyle: "dashed" },
   "teacher-notes":   { label: "Teacher Notes", borderStyle: "dashed" },
   "send-support":    { label: "SEND Support" },
+  "send-adaptation": { label: "How this worksheet is adapted", borderStyle: "solid" },
   "reading":         { label: "Reading Passage" },
   "passage":         { label: "Reading Passage" },
   "source-text":     { label: "Source Text" },
@@ -4936,6 +4939,32 @@ function MathsCompactLayout({
 
   return (
     <div style={{ fontFamily: fmt.fontFamily, background: bgColor }}>
+      {/* ── SEND adaptation note (scrutiny: every SEND sheet states how it is
+          adapted). Rendered here because the compact maths layout otherwise
+          shows questions only. ── */}
+      {(() => {
+        const sendNote = sections.find(
+          (s: any) =>
+            s?.id === "send-adaptation-note" ||
+            String(s?.type || "").toLowerCase() === "send-adaptation",
+        );
+        if (!sendNote || !sendNote.content) return null;
+        return (
+          <div style={{
+            border: `1.5px solid ${borderColor}`,
+            borderBottom: "none",
+            background: bgColor,
+            padding: "8px 12px",
+          }}>
+            <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: hasOverlay ? "#000" : "#1a2744", marginBottom: "3px" }}>
+              {sendNote.title || "How this worksheet is adapted"}
+            </div>
+            <div style={{ fontSize: `${Math.max(fmt.fontSize - 1, 9)}px`, lineHeight: String(fmt.lineHeight), color: hasOverlay ? "#000" : "#1e293b", fontFamily: fmt.fontFamily }}>
+              {String(sendNote.content)}
+            </div>
+          </div>
+        );
+      })()}
       {/* ── Header bar: Adaptly branding | Topic | Year Group ── */}
       <div style={{
         display: "grid",
@@ -5303,7 +5332,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   // margins. Pupil legend (B13) and the repeating vocabulary footer (item 5)
   // are also opt-in via metadata flags stamped by the generator/post-validators.
   const examStyle = shouldUseExamStyleLayout(metadata as Record<string, unknown>);
-  const showLegend = (metadata as Record<string, unknown>).showLegend === true;
+  // Worksheet scrutiny — "Legend (include on every worksheet)". The pupil
+  // legend is now ON BY DEFAULT for every worksheet so pupils learn the one
+  // consistent visual language. Only an explicit `showLegend === false`
+  // suppresses it (plus the exam-style + revision-mat exceptions in the JSX
+  // gate below — an unassisted exam paper and a revision mat have their own
+  // formats).
+  const showLegend = (metadata as Record<string, unknown>).showLegend !== false;
   const vocabularyRepeatEnabled = (metadata as Record<string, unknown>).vocabularyRepeatEnabled === true;
   const vocabularyRepeatTerms: string[] = Array.isArray((metadata as Record<string, unknown>).vocabularyRepeatTerms)
     ? ((metadata as Record<string, unknown>).vocabularyRepeatTerms as unknown[]).map(t => String(t)).filter(Boolean)
@@ -6404,8 +6439,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         />
       )}
 
-      {/* ── Part B / Sprint 7 (B13): Pupil legend on the first page (opt-in) ── */}
-      {!isRevisionMat && !(isMathsSubject && !isPrimary) && showLegend && !examStyle && (
+      {/* ── Part B / Sprint 7 (B13): Pupil legend on the first page (now on by
+          default; suppressed only for exam-style papers + revision mats) ── */}
+      {!isRevisionMat && showLegend && !examStyle && (
         <PupilLegend fmt={fmt} overlayColor={overlayColor} />
       )}
 
