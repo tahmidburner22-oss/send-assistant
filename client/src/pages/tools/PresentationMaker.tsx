@@ -27,6 +27,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { callAI, callAIMessages, type AIChatMessage } from "@/lib/ai";
 import { useApp } from "@/contexts/AppContext";
 import { useLocation } from "wouter";
@@ -44,6 +45,9 @@ import { runAllValidators, type ValidationFinding } from "@/lib/presentation-val
 import { recordTelemetry } from "@/lib/presentation-telemetry";
 import { readSchoolIdentity, writeSchoolIdentity, fileToDataUrl, type SchoolIdentity } from "@/lib/school-identity";
 import { resolveDeckImages, bestImageUrl, fetchImageAsDataUrl } from "@/lib/presentation-image-resolver";
+// V5 — opt-in ARASAAC symbol support for word banks / key terms (SEND USP).
+import { TermSymbol } from "@/components/SymbolSupportedWords";
+import { resolveSymbolsForWords, fetchSymbolAsDataUrl } from "@/lib/symbol-resolver";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
@@ -2510,6 +2514,7 @@ function FullSlideView({
   total,
   revealLevel = Infinity,
   branding,
+  symbolSupport = false,
 }: {
   slide: SlideContent;
   theme: ComposedTheme;
@@ -2519,6 +2524,9 @@ function FullSlideView({
   /** Per-school branding watermark — applied to title slide always, and to
    *  every slide when `branding.showOnEverySlide` is true. */
   branding?: SchoolIdentity;
+  /** V5 — when true, render an ARASAAC pictogram above each word-bank /
+   *  key-terms / vocab-reference term (opt-in SEND symbol support). */
+  symbolSupport?: boolean;
 }) {
   const Icon = SLIDE_ICONS[slide.type] || BookOpen;
   const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
@@ -2679,9 +2687,12 @@ function FullSlideView({
             <SlideHeader slide={slide} theme={theme} Icon={List} />
             <div className="flex-1 px-10 pb-7 grid grid-cols-2 gap-2 overflow-hidden">
               {slide.terms?.slice(0, 8).map((item, i) => (
-                <div key={i} className="rounded-lg p-2.5 border" style={{ background: theme.light, borderColor: badgeColour + "40" }}>
-                  <div className="text-xs font-bold mb-1" style={{ color: badgeColour }}>{item.term}</div>
-                  <div className="text-xs text-gray-600 leading-relaxed">{item.definition}</div>
+                <div key={i} className="rounded-lg p-2.5 border flex items-start gap-2" style={{ background: theme.light, borderColor: badgeColour + "40" }}>
+                  {symbolSupport && <TermSymbol term={item.term} size={40} />}
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold mb-1" style={{ color: badgeColour }}>{item.term}</div>
+                    <div className="text-xs text-gray-600 leading-relaxed">{item.definition}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -3279,7 +3290,10 @@ function FullSlideView({
                 <div className="max-h-[360px] overflow-y-auto">
                   {rows.slice(0, 12).map((r, i) => (
                     <div key={i} className="grid grid-cols-[160px_1fr_180px] text-[11px]" style={{ background: i % 2 ? "white" : theme.light }}>
-                      <div className="px-2 py-1.5 font-bold" style={{ color: badgeColour }}>{r.term}</div>
+                      <div className="px-2 py-1.5 font-bold flex items-center gap-1.5" style={{ color: badgeColour }}>
+                        {symbolSupport && <TermSymbol term={r.term} size={28} />}
+                        <span>{r.term}</span>
+                      </div>
                       <div className="px-2 py-1.5" style={{ color: theme.text }}>{r.definition}</div>
                       <div className="px-2 py-1.5 italic text-gray-600">{r.example || "—"}</div>
                     </div>
@@ -3440,9 +3454,12 @@ function FullSlideView({
             <div className="flex-1 px-10 pb-7 flex flex-col justify-center">
               <div className="grid grid-cols-2 gap-2">
                 {(slide.wordBank || slide.terms || []).slice(0, 8).map((w, i) => (
-                  <div key={i} className="rounded-lg border-2 p-2" style={{ background: "#ecfeff", borderColor: "#06b6d4" }}>
-                    <div className="text-[13px] font-black text-cyan-900">{w.term}</div>
-                    <div className="text-[11px] text-cyan-800 leading-tight">{w.definition}</div>
+                  <div key={i} className="rounded-lg border-2 p-2 flex items-center gap-2" style={{ background: "#ecfeff", borderColor: "#06b6d4" }}>
+                    {symbolSupport && <TermSymbol term={w.term} size={44} />}
+                    <div className="min-w-0">
+                      <div className="text-[13px] font-black text-cyan-900">{w.term}</div>
+                      <div className="text-[11px] text-cyan-800 leading-tight">{w.definition}</div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -3800,6 +3817,7 @@ async function exportToPptx(
   presentation: PresentationData,
   themeKey: ThemeKey,
   sendNeedIds: string[] = [],
+  symbolSupport = false,
 ): Promise<void> {
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
@@ -3833,6 +3851,37 @@ async function exportToPptx(
   });
   if (imageFetches.length > 0) {
     await Promise.all(imageFetches);
+  }
+
+  // ── V5 — Symbol data URLs for word banks / key terms / vocab tables ──────
+  // When symbol support is on, pre-resolve an ARASAAC pictogram for every term
+  // on word-bank / key-terms / vocab-reference slides into a base64 data URL
+  // (pptxgenjs addImage needs base64; the proxy /fetch?format=base64 bypasses
+  // CORS). Keyed by lowercased term so the synchronous painters can look up an
+  // image without async work. Best-effort: missing symbols simply paint text.
+  const symbolDataByTerm = new Map<string, string>();
+  if (symbolSupport) {
+    const termSet = new Set<string>();
+    presentation.slides.forEach((slide) => {
+      if (slide.type !== "word-bank" && slide.type !== "key-terms" && slide.type !== "vocab-reference") return;
+      const rows = slide.wordBank || slide.vocabTable || slide.terms || [];
+      rows.forEach((r: { term?: string }) => {
+        const t = (r?.term || "").trim();
+        if (t) termSet.add(t);
+      });
+    });
+    const terms = Array.from(termSet);
+    if (terms.length > 0) {
+      try {
+        const symbolMap = await resolveSymbolsForWords(terms, { lang: "en" });
+        await Promise.all(
+          Object.entries(symbolMap).map(async ([term, sym]) => {
+            const dataUrl = await fetchSymbolAsDataUrl(sym.thumbUrl);
+            if (dataUrl) symbolDataByTerm.set(term.toLowerCase(), dataUrl);
+          }),
+        );
+      } catch { /* best-effort — fall back to text-only */ }
+    }
   }
 
   // Helper: hex to RGB
@@ -4203,13 +4252,17 @@ async function exportToPptx(
           line: { color: secondaryClean + "40", width: 1 },
           rectRadius: 0.08,
         });
+        const symKt = symbolSupport ? symbolDataByTerm.get((item.term || "").toLowerCase()) : undefined;
+        const ktX = symKt ? x + 0.85 : x + 0.1;
+        const ktW = symKt ? 3.55 : 4.3;
+        if (symKt) pSlide.addImage({ data: symKt, x: x + 0.1, y: y + 0.12, w: 0.6, h: 0.6 });
         pSlide.addText(item.term, {
-          x: x + 0.1, y: y + 0.05, w: 4.3, h: 0.3,
+          x: ktX, y: y + 0.05, w: ktW, h: 0.3,
           fontSize: 11, bold: true, color: secondaryClean,
           fontFace: pptxFont,
         });
         pSlide.addText(item.definition, {
-          x: x + 0.1, y: y + 0.38, w: 4.3, h: 0.42,
+          x: ktX, y: y + 0.38, w: ktW, h: 0.42,
           fontSize: 10, color: slideTextClean,
           fontFace: pptxFont, wrap: true,
         });
@@ -4414,7 +4467,11 @@ async function exportToPptx(
       rows.slice(0, 10).forEach((r, i) => {
         const ry = 1.47 + i * rowH;
         pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: ry, w: 9, h: rowH, fill: { type: "solid", color: i % 2 ? "FFFFFF" : lightClean } });
-        pSlide.addText(r.term,       { x: 0.6, y: ry + 0.04, w: 2.0, h: rowH - 0.08, fontSize: 10, bold: true, color: accent, fontFace: pptxFont, wrap: true });
+        const symVr = symbolSupport ? symbolDataByTerm.get((r.term || "").toLowerCase()) : undefined;
+        const vrX = symVr ? 0.92 : 0.6;
+        const vrW = symVr ? 1.68 : 2.0;
+        if (symVr) pSlide.addImage({ data: symVr, x: 0.58, y: ry + 0.04, w: 0.28, h: 0.28 });
+        pSlide.addText(r.term,       { x: vrX, y: ry + 0.04, w: vrW, h: rowH - 0.08, fontSize: 10, bold: true, color: accent, fontFace: pptxFont, wrap: true });
         pSlide.addText(r.definition, { x: 2.7, y: ry + 0.04, w: 4.0, h: rowH - 0.08, fontSize: 10, color: slideTextClean, fontFace: pptxFont, wrap: true });
         pSlide.addText(r.example || "—", { x: 6.8, y: ry + 0.04, w: 2.6, h: rowH - 0.08, fontSize: 10, italic: true, color: "6B7280", fontFace: pptxFont, wrap: true });
       });
@@ -4478,8 +4535,12 @@ async function exportToPptx(
         const x = col === 0 ? 0.5 : 5.15;
         const y = 1.2 + row * 0.95;
         pSlide.addShape(pptx.ShapeType.rect, { x, y, w: 4.35, h: 0.85, fill: { type: "solid", color: "ECFEFF" }, line: { color: "06B6D4", width: 1.5 }, rectRadius: 0.08 });
-        pSlide.addText(w.term, { x: x + 0.1, y: y + 0.05, w: 4.15, h: 0.3, fontSize: 13, bold: true, color: "155E75", fontFace: pptxFont });
-        pSlide.addText(w.definition, { x: x + 0.1, y: y + 0.38, w: 4.15, h: 0.42, fontSize: 11, color: "164E63", fontFace: pptxFont, wrap: true });
+        const sym = symbolSupport ? symbolDataByTerm.get((w.term || "").toLowerCase()) : undefined;
+        const tX = sym ? x + 0.85 : x + 0.1;
+        const tW = sym ? 3.4 : 4.15;
+        if (sym) pSlide.addImage({ data: sym, x: x + 0.1, y: y + 0.12, w: 0.6, h: 0.6 });
+        pSlide.addText(w.term, { x: tX, y: y + 0.05, w: tW, h: 0.3, fontSize: 13, bold: true, color: "155E75", fontFace: pptxFont });
+        pSlide.addText(w.definition, { x: tX, y: y + 0.38, w: tW, h: 0.42, fontSize: 11, color: "164E63", fontFace: pptxFont, wrap: true });
       });
     } else if (slide.type === "take-a-break") {
       // ─── Take a Break — soft teal page ──────────────────────────────────
@@ -4706,6 +4767,7 @@ function PresenterMode({
   presentation, theme, activeSlide, revealLevel,
   timerSeconds, timerPaused, blackout, showNotes, branding,
   onKeyDown, onSetActive, onExit, onTogglePause, onClearBlackout,
+  symbolSupport = false,
 }: {
   presentation: PresentationData;
   theme: ComposedTheme;
@@ -4721,6 +4783,7 @@ function PresenterMode({
   onExit: () => void;
   onTogglePause: () => void;
   onClearBlackout: () => void;
+  symbolSupport?: boolean;
 }) {
   const slide = presentation.slides[activeSlide];
   const next = presentation.slides[activeSlide + 1];
@@ -4768,7 +4831,7 @@ function PresenterMode({
       <div className="flex-1 flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-6xl" style={{ aspectRatio: "16/9" }}>
-            <FullSlideView slide={slide} theme={theme} index={activeSlide} total={total} revealLevel={revealLevel} branding={branding} />
+            <FullSlideView slide={slide} theme={theme} index={activeSlide} total={total} revealLevel={revealLevel} branding={branding} symbolSupport={symbolSupport} />
           </div>
         </div>
         {/* Bottom control strip ───────────────────────────────────────────── */}
@@ -4807,7 +4870,7 @@ function PresenterMode({
           {next ? (
             <div className="rounded-md overflow-hidden border border-slate-700 bg-white" style={{ aspectRatio: "16/9" }}>
               <div className="w-full h-full transform scale-[0.4] origin-top-left" style={{ width: "250%", height: "250%" }}>
-                <FullSlideView slide={next} theme={theme} index={activeSlide + 1} total={total} />
+                <FullSlideView slide={next} theme={theme} index={activeSlide + 1} total={total} symbolSupport={symbolSupport} />
               </div>
             </div>
           ) : (
@@ -4856,6 +4919,10 @@ export default function PresentationMaker() {
   // the structured ids when the prompt is built.
   const [sendNeedIds, setSendNeedIds] = useState<string[]>([]);
   const [sendNeedsNotes, setSendNeedsNotes] = useState("");
+  // V5 — opt-in ARASAAC symbol support for word-bank / key-terms / vocab
+  // slides (SEND USP). Deck-level toggle; off by default so existing decks
+  // render identically until a teacher turns it on.
+  const [symbolSupport, setSymbolSupport] = useState(false);
   // Compose the sendNeeds string used by buildSlidePrompt (structured ids +
   // optional free-text notes, comma-separated).
   const sendNeeds = [...sendNeedIds, sendNeedsNotes.trim()].filter(Boolean).join(",");
@@ -5286,7 +5353,7 @@ No markdown, no code fences, JSON only.`;
     if (!presentation) return;
     setExporting(true);
     try {
-      await exportToPptx(presentation, selectedTheme, sendNeedIds);
+      await exportToPptx(presentation, selectedTheme, sendNeedIds, symbolSupport);
       recordTelemetry("export-pptx", { slides: presentation.slides.length, theme: selectedTheme });
       toast.success("PowerPoint downloaded!");
     } catch (err: any) {
@@ -6125,6 +6192,17 @@ Return JSON only.`;
                   </div>
                 </div>
 
+                {/* Symbol Support — opt-in ARASAAC pictograms on word banks */}
+                <div className="flex items-start gap-2 rounded-lg border border-cyan-200 bg-cyan-50/50 p-2">
+                  <Switch checked={symbolSupport} onCheckedChange={setSymbolSupport} id="symbol-support-sw" className="mt-0.5" />
+                  <Label htmlFor="symbol-support-sw" className="text-xs text-gray-700 cursor-pointer">
+                    <span className="font-semibold">Symbol support (SEND)</span>
+                    <span className="block text-[11px] text-gray-500 font-normal mt-0.5">
+                      Add a picture symbol above each Word Bank, Key Terms and Vocabulary term (ARASAAC). Shows on screen and in the PowerPoint export.
+                    </span>
+                  </Label>
+                </div>
+
                 {/* Additional Notes */}
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold text-gray-700">Additional Instructions (optional)</Label>
@@ -6354,6 +6432,7 @@ Return JSON only.`;
                       index={activeSlide}
                       total={presentation.slides.length}
                       branding={identity}
+                      symbolSupport={symbolSupport}
                     />
                     {/* Navigation */}
                     <div className="flex items-center justify-between mt-3">
@@ -6545,6 +6624,7 @@ Return JSON only.`;
           onExit={() => setIsFullscreen(false)}
           onTogglePause={() => setTimerPaused(p => !p)}
           onClearBlackout={() => setBlackout("none")}
+          symbolSupport={symbolSupport}
         />
       )}
 
@@ -6926,7 +7006,7 @@ Return JSON only.`;
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-semibold">Original</span>
               </div>
-              <FullSlideView slide={presentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={presentation.slides.length} />
+              <FullSlideView slide={presentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={presentation.slides.length} symbolSupport={symbolSupport} />
               {presentation.slides[comparisonActiveSlide]?.speakerNotes && (
                 <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
                   <strong>Notes:</strong> {presentation.slides[comparisonActiveSlide].speakerNotes}
@@ -6938,7 +7018,7 @@ Return JSON only.`;
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-semibold">SEND Adapted</span>
               </div>
-              <FullSlideView slide={adaptedPresentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={adaptedPresentation.slides.length} />
+              <FullSlideView slide={adaptedPresentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={adaptedPresentation.slides.length} symbolSupport={symbolSupport} />
               {adaptedPresentation.slides[comparisonActiveSlide]?.speakerNotes && (
                 <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-700">
                   <strong>Notes:</strong> {adaptedPresentation.slides[comparisonActiveSlide].speakerNotes}
