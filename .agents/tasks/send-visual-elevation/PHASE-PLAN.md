@@ -55,10 +55,10 @@ relevant AND cheaper:
 | V3  | Communication Board tool (uses V2 end-to-end)                | 1    | M      | ✅ PR #162    | V2         |
 | V4  | Dead-key (Gemini) auth cooldown resilience                   | 2    | XS     | ✅ PR #162    | —          |
 | V5  | Symbol support in PRESENTATION word banks (screen + PPTX)    | 1    | M      | ✅ this PR    | V2         |
-| V5b | Symbol support in WORKSHEET word banks / vocabulary          | 1    | M      | ⛔ next       | V2         |
-| V6  | Server-side CLIP re-ranking for stock photos (sharper relevance) | 2 | M  | ⛔ planned    | V1, Cloudflare |
-| V7  | Cloudflare FLUX generative endpoint (story illustrations)    | 2    | M      | ⛔ planned    | safety gate |
-| V8  | Demote `gemini*` in PROVIDER_ORDER + heavy[] (if key stays dead) | 3 | XS  | ⛔ optional   | V4         |
+| V5b | Symbol support in WORKSHEET word banks / vocabulary          | 1    | M      | ✅ PR-A       | V2         |
+| V6  | Server-side CLIP re-ranking for stock photos (sharper relevance) | 2 | M  | ✅ PR-A       | V1, Cloudflare |
+| V7  | Cloudflare FLUX generative endpoint (story illustrations)    | 2    | M      | ✅ PR-A       | safety gate |
+| V8  | Demote `gemini*` in PROVIDER_ORDER + heavy[] (if key stays dead) | 3 | XS  | ✅ PR-A       | V4         |
 
 Effort key: XS ≈ <50 LoC; S ≈ 100-300; M ≈ 300-800.
 

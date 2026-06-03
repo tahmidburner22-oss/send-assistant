@@ -37,6 +37,7 @@
 
 import { Router, Request, Response } from "express";
 import { requireAuth } from "../middleware/auth.js";
+import { hasCloudflareAI, clipImageQueryScore } from "../lib/cloudflare-ai.js";
 
 const router = Router();
 
@@ -63,6 +64,9 @@ interface ResolvedImage {
    *  match to the query/concept. Surfaced so the client can show confidence
    *  and so low-confidence matches can be suppressed. */
   relevance?: number;
+  /** V6 — CLIP zero-shot relevance (0..1) from Cloudflare Workers AI, when the
+   *  re-ranker is enabled. Higher = the photo visually matches the query. */
+  clipScore?: number;
 }
 
 interface SearchCacheEntry {
@@ -262,6 +266,85 @@ function rankByRelevance(
     .map((x) => x.img);
 }
 
+// ── V6: server-side CLIP re-ranking (free, Cloudflare Workers AI) ────────────
+// The lexical re-rank above only knows the provider's text metadata. CLIP looks
+// at the PIXELS, so it catches cases where the caption is misleading or absent
+// ("half-matching"). We layer it ON TOP of the lexical score rather than
+// replacing it: lexical is free + instant and a good prior; CLIP sharpens the
+// final order. Runs server-side (SEND devices are low-spec) and only on the top
+// lexical candidates to bound free-tier "neuron" usage. Degrades to lexical-only
+// whenever Cloudflare is not configured or a call fails.
+const CLIP_CANDIDATE_POOL = 8;   // only CLIP-score the top-N lexical candidates
+const CLIP_CONCURRENCY = 3;
+const CLIP_WEIGHT = 0.6;         // CLIP dominates; lexical is the tie-breaking prior
+const LEX_WEIGHT = 0.4;
+
+function clipRerankEnabled(): boolean {
+  return hasCloudflareAI() && process.env.IMAGE_CLIP_RERANK !== "off";
+}
+
+/** Fetch a (small) image's bytes server-side for CLIP. Null on failure. */
+async function fetchImageBytes(url?: string): Promise<Uint8Array | null> {
+  if (!url) return null;
+  try {
+    const r = await fetch(url, {
+      headers: { "User-Agent": "Adaptly-SEND-Platform/1.0 (clip rerank)" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) return null;
+    return new Uint8Array(await r.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Re-rank a lexically-ordered candidate list with CLIP. Returns the top
+ * `limit` images (CLIP scores attached), or null to signal "fall back to the
+ * lexical order" (CF disabled, every CLIP call failed, etc.).
+ */
+async function clipReRank(
+  lexRanked: ResolvedImage[],
+  queryText: string,
+  limit: number,
+): Promise<ResolvedImage[] | null> {
+  if (lexRanked.length === 0 || !queryText.trim()) return null;
+  const head = lexRanked.slice(0, Math.min(lexRanked.length, CLIP_CANDIDATE_POOL));
+  const tail = lexRanked.slice(head.length);
+
+  // Score head with bounded concurrency.
+  const scores = new Array<number | null>(head.length).fill(null);
+  let cursor = 0;
+  async function worker() {
+    while (cursor < head.length) {
+      const idx = cursor++;
+      const bytes = await fetchImageBytes(head[idx].thumbUrl || head[idx].url);
+      if (!bytes) continue;
+      scores[idx] = await clipImageQueryScore(bytes, queryText);
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(CLIP_CONCURRENCY, head.length) }, () => worker()),
+  );
+
+  if (!scores.some((s) => s != null)) return null; // CLIP gave us nothing usable
+
+  // Normalise lexical relevance across the head to 0..1 so it blends with CLIP.
+  const lexVals = head.map((img) => img.relevance ?? 0);
+  const lexMax = Math.max(1e-6, ...lexVals);
+  const blended = head.map((img, i) => {
+    const lexNorm = (img.relevance ?? 0) / lexMax;
+    const clip = scores[i];
+    const score = clip == null
+      ? lexNorm // no CLIP signal → rank by lexical alone
+      : LEX_WEIGHT * lexNorm + CLIP_WEIGHT * clip;
+    return { img: { ...img, clipScore: clip ?? undefined }, score, i };
+  });
+  blended.sort((a, b) => (b.score - a.score) || (a.i - b.i)); // stable on ties
+
+  return [...blended.map((b) => b.img), ...tail].slice(0, limit);
+}
+
 // ── GET /api/image-proxy/search ─────────────────────────────────────────────
 router.get("/search", requireAuth, async (req: Request, res: Response) => {
   const q = String(req.query.q || "").trim().slice(0, 200);
@@ -283,7 +366,12 @@ router.get("/search", requireAuth, async (req: Request, res: Response) => {
   const cached = searchCache.get(cacheKey);
   if (cached && Date.now() - cached.cachedAt < SEARCH_TTL_MS) {
     res.setHeader("X-Cache", "HIT");
-    return res.json({ results: cached.results, cached: true, relevanceRanked: true });
+    return res.json({
+      results: cached.results,
+      cached: true,
+      relevanceRanked: true,
+      clipRanked: cached.results.some((r) => typeof r.clipScore === "number"),
+    });
   }
 
   // Probe key presence so the client can disable the panel gracefully.
@@ -315,13 +403,33 @@ router.get("/search", requireAuth, async (req: Request, res: Response) => {
       pool = [...px, ...us];
     }
 
-    // Re-rank the whole pool by relevance to (query + concept) and keep the top N.
-    const results = rankByRelevance(pool, q, concept, perPage);
+    // Re-rank the whole pool by relevance to (query + concept).
+    const lexRanked = rankByRelevance(pool, q, concept, pool.length);
+    let results = lexRanked.slice(0, perPage);
+    let clipRanked = false;
+
+    // V6 — sharpen the top results with CLIP (free, server-side) when enabled.
+    // Layered on top of the lexical prior; falls back to lexical on any failure.
+    if (clipRerankEnabled()) {
+      try {
+        const reranked = await clipReRank(
+          lexRanked,
+          `${q} ${concept}`.trim(),
+          perPage,
+        );
+        if (reranked && reranked.length > 0) {
+          results = reranked;
+          clipRanked = results.some((r) => typeof r.clipScore === "number");
+        }
+      } catch (e: any) {
+        console.warn("[image-proxy] CLIP rerank failed, using lexical:", e?.message);
+      }
+    }
 
     searchCache.set(cacheKey, { results, cachedAt: Date.now() });
     pruneSearchCache();
     res.setHeader("X-Cache", "MISS");
-    res.json({ results, cached: false, relevanceRanked: true });
+    res.json({ results, cached: false, relevanceRanked: true, clipRanked });
   } catch (err: any) {
     console.error("[image-proxy] search error:", err?.message);
     res.status(502).json({ error: "search_failed" });

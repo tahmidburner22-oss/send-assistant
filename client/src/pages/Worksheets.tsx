@@ -4868,6 +4868,26 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       </TooltipProvider>
                     </Label>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={preferences.symbolSupport === true}
+                      onCheckedChange={(v) => updatePreference("symbolSupport", v)}
+                      id="symbol-support-sw"
+                    />
+                    <Label htmlFor="symbol-support-sw" className="text-xs flex items-center gap-1">
+                      Symbol support
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-3 h-3 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs max-w-[220px]">Adds free ARASAAC pictograms above the words in Key Vocabulary / word-bank sections (for AAC &amp; emerging readers). Off by default; only affects vocabulary sections.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Label>
+                  </div>
                 </div>
 
                 {/* ── Pillar A — Exam paper / calculator (Y9+ only) ──────── */}
@@ -5225,6 +5245,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                           editedSections={{}}
                           schoolLogoUrl={preferences.schoolLogoUrl}
                           schoolName={preferences.schoolName}
+                          symbolSupport={preferences.symbolSupport === true}
                         />
                       </div>
                       <div className="flex gap-2 flex-wrap">
@@ -5409,6 +5430,7 @@ ${s.content}`).join("\n\n"),
                               editedSections={{}}
                               schoolLogoUrl={preferences.schoolLogoUrl}
                               schoolName={preferences.schoolName}
+                              symbolSupport={preferences.symbolSupport === true}
                             />
                           </div>
                           <div className="flex gap-2 flex-wrap">
@@ -6692,6 +6714,7 @@ ${s.content}`).join("\n\n"),
                     schoolName={preferences.schoolName}
                     isRevisionMat={isRevisionMat}
                     bookMode={bookMode}
+                    symbolSupport={preferences.symbolSupport === true}
                     paginated={true}
                     onDiagramChange={(sectionIndex, newImageUrl, newCaption) => {
                       const newSections = (generated.sections || []).map((s: any, idx: number) => {
@@ -7040,6 +7063,7 @@ ${s.content}`).join("\n\n"),
                         schoolLogoUrl={preferences.schoolLogoUrl}
                         schoolName={preferences.schoolName}
                         isRevisionMat={historyIsRM}
+                        symbolSupport={preferences.symbolSupport === true}
                       />
                     </div>
                   );

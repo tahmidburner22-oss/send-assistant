@@ -29,6 +29,23 @@ Verification: tsc net-new errors = 0 (baseline 146 → 146); server esbuild
 bundle clean. Branched off the same `main` as PR-A (independent) — T2's
 illustration call degrades gracefully until PR-A's generation endpoint merges.
 
+## PR-A — `feat/visual-polish-symbols-generation` — MERGED (#165, merge commit e96ec3e)
+
+"Visual polish + symbols + generation" = V5b + V6 + V7 + V8. All opt-in /
+default-off (or inert without optional Cloudflare creds), so existing
+output is byte-identical until switched on.
+
+| ID | Title | Status | Files |
+| --- | --- | --- | --- |
+| V5b | Opt-in ARASAAC symbol support in WORKSHEET vocabulary/word-banks | ✅ this PR | `client/src/contexts/UserPreferencesContext.tsx` (+`symbolSupport`), `client/src/pages/Worksheets.tsx` (Switch by Book Mode + 4 renderer call sites), `client/src/components/WorksheetRenderer.tsx` (`symbolSupport` prop; `VocabSection` + `PrimarySection` pictogram strips), `client/src/components/SymbolSupportedWords.tsx` (+`asDataUrl` mode for PDF), `server/routes/symbol-proxy.ts` (CDN size fix: url=500/thumb=300 — 150px now 404s) |
+| V6 | Server-side CLIP re-ranking on `/api/image-proxy/search` | ✅ this PR | `server/lib/cloudflare-ai.ts` (new — shared free Workers AI wrapper), `server/routes/image-proxy.ts` (lexical → CLIP blend on top-8; opt-in via CF creds; degrades to lexical) |
+| V7 | Free, safety-gated FLUX endpoint for story illustrations | ✅ this PR | `server/routes/generation-proxy.ts` (new — `/status` + `/illustrate`, requireAuth, contentFilter gate, child-safe style, 24h cache), `server/index.ts` (register), `client/src/lib/illustration-generator.ts` (new client helper) |
+| V8 | Gemini-independent provider chain (dead key) | ✅ this PR | `server/routes/ai.ts` (remove `gemini*` from `PROVIDER_ORDER` + `heavy[]`; heavy[] now `sambanova_1/_2`) |
+
+Verification: tsc net-new errors = 0 (baseline 146 → 146); server esbuild
+bundle clean (1017kb). V6/V7 are inert unless `CLOUDFLARE_ACCOUNT_ID` +
+`CLOUDFLARE_API_TOKEN` are set — no regression to the current free path.
+
 ## PR #162 — `feat/visual-relevance-arasaac-symbols` — MERGED (merge commit f507ab7)
 
 | ID | Title | Status | Files |
@@ -68,8 +85,4 @@ Verification: tsc net-new errors = 0 (baseline 146 → 146); new component
 
 | ID | Title | Notes |
 | --- | --- | --- |
-| V5b | Symbol support in WORKSHEET word banks / vocabulary | NEXT. Renderer (`WorksheetRenderer.tsx`, 9.5k lines) has 4 vocab render paths: PrimarySection, secondary section body (~L4715 `formatContent`), MathsCompactLayout, exam-style. Use `extractVocabTerms` + `<SymbolSupportedWords>` (already built). Add `symbolSupport` prop to renderer; pass from `Worksheets.tsx` via the shared `UserPreferences.symbolSupport` pref (ADD this field) + a toggle next to the Book Mode switch (Worksheets.tsx ~L4856). Symbols already print-safe via remote `<img>`; confirm the custom PDF path (`pdf-generator-v2.ts`) embeds them or switch to data URLs. |
-| V6 | Server-side CLIP re-ranking for stock photos | planned |
-| V7 | Cloudflare FLUX generative endpoint (story illustrations) | planned |
-| V8 | Demote `gemini*` in PROVIDER_ORDER + heavy[] | optional |
-| T1-T6 | The six SEND tools (see PHASE-PLAN + plan) | planning only |
+| — | All planned work units (V1-V8, T1-T6) are shipped or in an open PR | V1-V8 merged (#162/#164/#165); T1-T6 in open PR-B (`feat/six-send-tools`) |
