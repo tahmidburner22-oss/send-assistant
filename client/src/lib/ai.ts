@@ -90,6 +90,15 @@ import { renderPrimaryReadingProfilePrompt } from './primaryReadingProfile';
 // pupil's SEND profile and emits a per-rule pass/fail report so teachers can
 // see at a glance which adaptations actually landed.
 import { applySendFidelityAudit } from './sendFidelityAudit';
+// Worksheet scrutiny (June 2026) — "SEND Description Requirement". Guarantees a
+// named + 2–3 sentence "How this worksheet is adapted" block (incl. the
+// specific autism sub-profile) on every SEND-tagged worksheet. Pure/idempotent.
+import { enforceSendDescription } from './sendDescriptionEnforcer';
+// PR-4 — Quality scorecard. Imported here so the structured path can RE-RUN it
+// as the genuine last step (after the SEND fidelity audit + maths/coverage
+// passes have stamped their reports + warnings), correcting the SEND-blind
+// score the in-registry run produces before sendFidelityReport exists.
+import { applyQaScore, type QaScorableWorksheet } from './qaScoreBuilder';
 
 // FEAT-PC8 — Maths Fluency / Reasoning / Problem-Solving (FRP) strand tagger.
 // Runs after generation on maths worksheets only; classifies each question
@@ -1564,7 +1573,7 @@ ${(() => {
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
 
 PRINTED PAGE LAYOUT (MANDATORY ORDER — every worksheet INCLUDING MATHS must follow this exactly):
-  Page 1 (may span 1–2 pages if content is long): Learning Objective → ${params.recallTopic ? 'Retrieval → ' : ''}Key Vocabulary → Common Mistakes → Worked Example
+  Page 1 (may span 1–2 pages if content is long): Learning Objective → Do Now (Retrieval) → Key Vocabulary → Common Mistakes → Worked Example
   Section 1 — Recall (Q1–Q${sec1TargetCount}, ${sec1TargetCount} questions) — starts on its own fresh page
   DIAGRAM A (full-page reference spread, own page)
   Section 2 — Understanding (Q${sec1TargetCount + 1}–Q${sec1TargetCount + sec2TargetCount}, ${sec2TargetCount} questions) — starts on its own fresh page
@@ -2867,6 +2876,16 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
 - "bloomLevel": "remember" | "understand" | "apply" | "analyse" | "evaluate" | "create".
 - "expectedReadingAge": integer 5–18 matched to ${params.yearGroup || 'the year group'} (Y9 ≈ 13, Y10 ≈ 14, Y11 ≈ 15) unless a SEND overlay lowers it.`,
       `QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate. Questions must be traceable to the NC Programme-of-Study + the named exam-board specification — do not invent content the curriculum does not assess. Every question is bound to the CURRICULUM AUTHORITY preamble above and the NON-NEGOTIABLES block — UK English, SI units, awarding-body command words, no fabricated AO codes (AO1–AO4 only), no US drift, no softeners. The post-validator will warn on every drift it detects.`,
+      // Worksheet scrutiny (June 2026) — pedagogy completeness. Additive
+      // framing only: it does NOT change the 1..N question numbering or the
+      // section-count contract above. The Do Now sits in the intro block (like
+      // the optional recallTopic retrieval) and is NOT one of the numbered
+      // Section 1–3 questions; the real-world requirement is satisfied inside
+      // the existing Section 3 / Challenge questions.
+      `PEDAGOGY COMPLETENESS (every worksheet):
+- DO NOW / RETRIEVAL STARTER: open the intro block (immediately after the Learning Objective) with a short "Do Now" of 2–3 quick, low-stakes questions that recap PRIOR / prerequisite knowledge needed for "${params.topic}". No new content; ≤5 minutes. Emit it as a "retrieval" section. These are warm-up questions — do NOT include them in the numbered 1..${TOTAL_QUESTIONS_TARGET} Section 1–3 count.
+- REAL-WORLD APPLICATION: Section 3 MUST include at least one real-world application question written in short, precise sentences with the key numbers and operation clear — e.g. "A jacket costs £75. It has 20% off. Work out the sale price." No long narrative preamble.
+- REASONING: at least one Section 2/3 question must ask pupils to explain or justify ("Explain why…", "Justify…", "Convince me…", "Compare…") rather than only recall a fact.`,
       specExamples,
     ].map(s => (typeof s === 'string' ? s.trim() : '')).filter(Boolean);
 
@@ -3397,9 +3416,18 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         enforcedStructured.worksheet as typeof structuredJson,
         params.sendNeed,
       );
+      // Worksheet scrutiny — SEND Description Requirement. Guarantee a
+      // "How this worksheet is adapted" block that NAMES the specific
+      // adaptation (incl. the autism sub-profile) and describes it in 2–3
+      // sentences. Pure/idempotent; no-op when no SEND need is set. Runs
+      // AFTER the fidelity audit so the block is present for the final score.
+      const describedStructured = enforceSendDescription(
+        auditedStructured as typeof structuredJson,
+        params.sendNeed,
+      );
       // FEAT-PC8 — non-blocking maths FRP strand audit (no-op for non-maths).
       const strandTaggedStructured = applyMathsStrandTagging(
-        auditedStructured as typeof structuredJson,
+        describedStructured as typeof structuredJson,
         { subject: params.subject, yearGroup: params.yearGroup },
       );
       // PR-M2 — non-blocking maths progression audit (Section A/B/C mark
@@ -3490,7 +3518,19 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
       const casTaggedStructured = applyMathsVerification(provenanceTaggedStructured, {
         subject: params.subject,
       });
-      return { ...casTaggedStructured, isAI: true, provider: structuredProvider };
+      // PR-4 (ordering fix) — re-run the QA scorecard as the genuine LAST
+      // step. The in-registry score (inside runWorksheetPostValidators above)
+      // runs BEFORE applySendFidelityAudit stamps metadata.sendFidelityReport,
+      // so for every SEND-tagged worksheet `sendAdaptationQuality` lost a flat
+      // 6/15 against a report that did not yet exist. applyQaScore is pure +
+      // idempotent, so re-running it here — now that the SEND fidelity report,
+      // the SEND description block, and all maths/coverage/pillar-A warnings
+      // are present — simply replaces the earlier SEND-blind score with the
+      // fully-informed one.
+      const rescoredStructured = applyQaScore(
+        casTaggedStructured as unknown as QaScorableWorksheet,
+      ) as unknown as typeof casTaggedStructured;
+      return { ...rescoredStructured, isAI: true, provider: structuredProvider };
     }
     // If structured generation failed, fall through to legacy path
   }
