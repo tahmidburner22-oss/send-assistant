@@ -60,23 +60,35 @@ const inFlight = new Map<string, Promise<ProxySearchResult | null>>();
 const memo = new Map<string, ProxySearchResult | null>();
 
 /**
- * Resolve a single keyword to one image record (the first hit from /search).
+ * Resolve a single keyword to one image record (the best-ranked hit from
+ * /search). The server now fetches a wide candidate pool and re-ranks by
+ * relevance to (prompt + concept), so results[0] is the BEST match, not just
+ * the most popular photo. Pass `concept` (e.g. the slide title) to sharpen
+ * disambiguation — "cycle" + concept "water cycle" beats a bicycle photo.
+ *
  * Returns null when the proxy is degraded (no API keys) or returns nothing
  * useful — the caller treats this as "leave the slide alone".
  */
-export async function resolveImage(prompt: string): Promise<ProxySearchResult | null> {
-  const key = prompt.trim().toLowerCase();
-  if (!key) return null;
+export async function resolveImage(prompt: string, concept = ""): Promise<ProxySearchResult | null> {
+  const promptKey = prompt.trim().toLowerCase();
+  if (!promptKey) return null;
+  const conceptKey = concept.trim().toLowerCase();
+  const key = conceptKey ? `${promptKey}|${conceptKey}` : promptKey;
   if (memo.has(key)) return memo.get(key) ?? null;
   const existing = inFlight.get(key);
   if (existing) return existing;
 
   const p = (async () => {
     try {
-      const res = await fetch(
-        `/api/image-proxy/search?q=${encodeURIComponent(key)}&perPage=1&source=auto`,
-        { credentials: "include" },
-      );
+      const params = new URLSearchParams({
+        q: promptKey,
+        perPage: "1",
+        source: "auto",
+      });
+      if (conceptKey) params.set("concept", conceptKey);
+      const res = await fetch(`/api/image-proxy/search?${params.toString()}`, {
+        credentials: "include",
+      });
       if (!res.ok) return null;
       const json = (await res.json()) as ProxySearchResponse;
       if (json.degraded || !Array.isArray(json.results) || json.results.length === 0) {
@@ -110,11 +122,16 @@ export async function resolveImage(prompt: string): Promise<ProxySearchResult | 
  */
 export async function resolveDeckImages<S extends SlideForResolution>(slides: S[]): Promise<S[]> {
   const out: S[] = slides.map((s) => ({ ...s }));
-  const tasks: Array<{ index: number; prompt: string }> = [];
+  const tasks: Array<{ index: number; prompt: string; concept: string }> = [];
   out.forEach((s, i) => {
     if (s.image && s.image.url) return; // already resolved
     if (typeof s.image_prompt === "string" && s.image_prompt.trim().length > 0) {
-      tasks.push({ index: i, prompt: s.image_prompt.trim() });
+      // The slide title is a strong disambiguating signal for relevance
+      // ranking (e.g. prompt "cycle" + title "The Water Cycle").
+      const concept = typeof (s as Record<string, unknown>).title === "string"
+        ? ((s as Record<string, unknown>).title as string)
+        : "";
+      tasks.push({ index: i, prompt: s.image_prompt.trim(), concept });
     }
   });
   if (tasks.length === 0) return out;
@@ -125,7 +142,7 @@ export async function resolveDeckImages<S extends SlideForResolution>(slides: S[
     while (cursor < tasks.length) {
       const my = cursor++;
       const t = tasks[my];
-      const hit = await resolveImage(t.prompt);
+      const hit = await resolveImage(t.prompt, t.concept);
       if (hit) {
         out[t.index] = {
           ...out[t.index],

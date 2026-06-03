@@ -21,7 +21,7 @@ import {
   IdCard, CheckSquare, Heart, Mail, BarChart3, CalendarDays, ScrollText,
   ScanSearch, Calendar, ExternalLink, Layers, Table2, Map as MapIcon,
   BookMarked, Gauge, Presentation, Ticket, HelpCircle, ShieldCheck,
-  Pencil, MessageSquare, BookOpenCheck,
+  Pencil, MessageSquare, BookOpenCheck, LayoutGrid,
 } from "lucide-react";
 
 export type HubId =
@@ -158,6 +158,17 @@ export const TOOLS: ToolEntry[] = [
     description: "Wellbeing check-ins, plans + interventions.",
     sendTo: ["behaviour-plan", "scheduler", "parent-newsletter"],
     writeBack: true,
+  },
+  {
+    id: "communication-board",
+    label: "Communication Board",
+    path: "/tools/communication-board",
+    hub: "send",
+    icon: LayoutGrid,
+    colour: "text-sky-600 bg-sky-50",
+    description: "Printable AAC symbol boards (ARASAAC) for choice-making + communication.",
+    sendTo: ["visual-timetable", "social-stories", "pupil-passport"],
+    writeBack: false,
   },
   {
     id: "parent-newsletter",

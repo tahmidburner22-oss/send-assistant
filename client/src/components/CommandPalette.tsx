@@ -60,6 +60,7 @@ const sendItems = [
   { path: "/tools/smart-targets",       label: "SMART Targets",           icon: CheckSquare, group: "SEND Tools", keywords: ["smart targets", "goals", "objectives", "iep targets"] },
   { path: "/tools/behaviour-plan",      label: "Behaviour Support Plan",  icon: ShieldAlert, group: "SEND Tools", keywords: ["behaviour", "support plan", "bsp", "conduct", "intervention"] },
   { path: "/tools/wellbeing-support",   label: "Wellbeing Support",       icon: Heart,       group: "SEND Tools", keywords: ["wellbeing", "mental health", "support", "pastoral"] },
+  { path: "/tools/communication-board", label: "Communication Board",     icon: Table2,      group: "SEND Tools", keywords: ["communication board", "aac", "symbols", "pecs", "arasaac", "choice", "non-verbal", "pre-verbal", "widgit"] },
 ];
 
 const planningItems = [

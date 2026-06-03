@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Shield, BookOpen, IdCard, CheckSquare, ShieldAlert, Heart,
   ScanSearch, Calendar, ArrowRight, Brain, Users, Star,
-  ChevronRight, FileText, Sparkles, FileCheck, ShieldCheck,
+  ChevronRight, FileText, Sparkles, FileCheck, ShieldCheck, LayoutGrid,
 } from "lucide-react";
 
 interface Tool {
@@ -111,6 +111,16 @@ const supportTools: Tool[] = [
     color: "bg-sky-50 text-sky-600",
     border: "border-sky-100",
     description: "Build visual daily timetables to support pupils with autism, ADHD or anxiety around transitions.",
+  },
+  {
+    path: "/tools/communication-board",
+    label: "Communication Board",
+    icon: LayoutGrid,
+    color: "bg-cyan-50 text-cyan-600",
+    border: "border-cyan-100",
+    description: "Build printable AAC symbol boards (ARASAAC) for choice-making and symbol-supported communication. Words can be suggested by AI or typed in.",
+    badge: "New",
+    badgeColor: "bg-cyan-100 text-cyan-700",
   },
   {
     path: "/tools/risk-assessment",

@@ -58,6 +58,7 @@ const ReportComments = lazy(() => import("./pages/tools/ReportComments"));
 const PupilPassport = lazy(() => import("./pages/tools/PupilPassport"));
 const SmartTargets = lazy(() => import("./pages/tools/SmartTargets"));
 const BehaviourPlan = lazy(() => import("./pages/tools/BehaviourPlan"));
+const CommunicationBoard = lazy(() => import("./pages/tools/CommunicationBoard"));
 const QuizGenerator = lazy(() => import("./pages/tools/QuizGenerator"));
 const RubricGenerator = lazy(() => import("./pages/tools/RubricGenerator"));
 const TextRewriter = lazy(() => import("./pages/tools/TextRewriter"));
@@ -271,6 +272,7 @@ function ProtectedRoutes() {
             <Route path="/tools/smart-targets" component={SmartTargets} />
             <Route path="/tools/behaviour-plan" component={BehaviourPlan} />
             <Route path="/tools/wellbeing-support" component={WellbeingSupport} />
+            <Route path="/tools/communication-board" component={CommunicationBoard} />
 
             {/* Planning & Assessment */}
             <Route path="/tools/lesson-planner" component={LessonPlanner} />
