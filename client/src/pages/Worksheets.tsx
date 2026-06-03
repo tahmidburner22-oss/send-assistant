@@ -3063,12 +3063,17 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           .ws-section { margin-bottom:10px!important; border-radius:4px!important;
             -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
           /* Keep section group divider attached to the next question block — fixes
-             "SECTION 3 header alone on a page" bug that produced blank pages. */
+             "SECTION 3 header alone on a page" bug that produced blank pages.
+             Also override page-break-before: always that is set inline on the
+             divider element — the JS page-packing already handles page breaks,
+             so the CSS page-break causes a spurious blank page in the PDF. */
           .ws-section-group-divider {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
             page-break-after: avoid !important;
             break-after: avoid !important;
+            page-break-before: auto !important;
+            break-before: auto !important;
           }
           .ws-section-group-divider + .ws-section {
             page-break-before: avoid !important;
