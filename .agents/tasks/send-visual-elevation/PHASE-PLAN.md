@@ -46,6 +46,15 @@ relevant AND cheaper:
 - **SEND-first.** Symbol support, differentiation, sensory-aware
   defaults, print-first.
 
+## PR consolidation (per user — fewest PRs possible)
+
+All outstanding work ships in **two PRs only**:
+- **PR-A** = **V5b + V6 + V7 + V8** (branch e.g. `feat/visual-elevation-rest`).
+- **PR-B** = **T1-T6** (branch e.g. `feat/send-tools-suite`).
+
+Shipped already: V1-V4 (#162), docs (#163), V5 (#164). See RESUME.md for the
+copy/paste new-chat continuation prompt.
+
 ## Work units
 
 | ID  | Title                                                        | Tier | Effort | Status        | Depends on |
@@ -65,7 +74,7 @@ Effort key: XS ≈ <50 LoC; S ≈ 100-300; M ≈ 300-800.
 ## The bigger roadmap (the 6 SEND tools — planning only, NOT built)
 
 These are fully specced in `docs/SEND-Website-Elevation-Plan.md`
-(Tools 1-6). Each is a candidate combined PR:
+(Tools 1-6). **All six ship together in PR-B (a single PR):**
 
 | ID  | Tool                              | Inspired by      | Notes |
 | --- | --------------------------------- | ---------------- | ----- |

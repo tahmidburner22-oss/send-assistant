@@ -99,9 +99,12 @@ Goal: implement the next un-shipped work unit, update LEDGER +
     PPTX when off.
 - Worksheet half deliberately NOT done here → V5b.
 
-## What is next (pick the top un-shipped item)
+## What is next — TWO PRs only (per user)
 
-1. **V5b — Wire symbol support into the WORKSHEET word banks / vocabulary.**
+**PR-A = V5b + V6 + V7 + V8** (one branch). **PR-B = T1-T6** (one branch).
+The full copy/paste new-chat continuation prompt lives in `RESUME.md`.
+
+1. **V5b — symbol support in WORKSHEET word banks / vocabulary.**
    The presentation half shipped in V5; this is the worksheet half. The
    reusable pieces already exist: `<SymbolSupportedWords>` and
    `extractVocabTerms` in `client/src/components/SymbolSupportedWords.tsx`.
