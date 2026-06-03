@@ -4,12 +4,10 @@ This file is the **resume point** for any fresh chat picking up this
 work. Read this first, then `PHASE-PLAN.md`, then `LEDGER.md`, then
 `docs/SEND-Website-Elevation-Plan.md` for the full strategy.
 
-Last updated: 2026-06-03 — PR #162 (code) and PR #163 (docs) are MERGED.
-PR #162 shipped V1-V4. PR #163 shipped the in-repo plan + handoff docs.
-The CURRENT branch `feat/v5-word-bank-symbol-support` ships V5 — the
-PRESENTATION half of word-bank symbol support (screen + PPTX). The
-WORKSHEET half is split to V5b (next) because the worksheet renderer has
-four tangled vocabulary render paths that warrant their own focused PR.
+Last updated: 2026-06-03 — PR #162/#163/#164 are MERGED (V1-V5 + docs).
+PR-A `feat/visual-polish-symbols-generation` (OPEN) ships V5b + V6 + V7 +
+V8. PR-B (next) is the six SEND tools (T1-T6). Read this first, then
+`PHASE-PLAN.md`, then `LEDGER.md`, then `docs/SEND-Website-Elevation-Plan.md`.
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -99,42 +97,42 @@ Goal: implement the next un-shipped work unit, update LEDGER +
     PPTX when off.
 - Worksheet half deliberately NOT done here → V5b.
 
-## What is next (pick the top un-shipped item)
+## What is next (PR-B — the six SEND tools)
 
-1. **V5b — Wire symbol support into the WORKSHEET word banks / vocabulary.**
-   The presentation half shipped in V5; this is the worksheet half. The
-   reusable pieces already exist: `<SymbolSupportedWords>` and
-   `extractVocabTerms` in `client/src/components/SymbolSupportedWords.tsx`.
-   Plan:
-   - Add `symbolSupport?: boolean` to `UserPreferences`
-     (`contexts/UserPreferencesContext.tsx` interface L37-82 + default at
-     L140) so worksheet + presentation can share one opt-in later.
-   - Add a "Symbol support" `<Switch>` in `Worksheets.tsx` next to the
-     Book Mode switch (~L4856), bound to `updatePreference("symbolSupport", v)`.
-   - Add `symbolSupport?: boolean` prop to `WorksheetRenderer`; pass
-     `symbolSupport={preferences.symbolSupport}` at the main render
-     (~L6664) — it already reads `preferences`.
-   - Render `<SymbolSupportedWords terms={extractVocabTerms(content)} />`
-     for `section.type === "vocabulary"`. NB the renderer has FOUR vocab
-     paths — PrimarySection, the secondary section-body renderer (the
-     `formatContent` call ~L4715), MathsCompactLayout, exam-style. Thread
-     `symbolSupport` into the secondary section-body renderer (cleanest
-     single injection) and PrimarySection. Keep additive + gated.
-   - Print/PDF: symbols are remote `<img>` (print fine via window.print).
-     Confirm the custom PDF path (`pdf-generator-v2.ts serialiseElement`)
-     embeds remote images; if not, switch the component to data URLs via
-     `fetchSymbolAsDataUrl`.
+V5b/V6/V7/V8 shipped in PR-A. The remaining roadmap is **PR-B: the six SEND
+tools (T1-T6)**, fully specced in `docs/SEND-Website-Elevation-Plan.md`
+(Part 3, Tools 1-6) and summarised in `PHASE-PLAN.md`:
 
-2. **V6 — Server-side CLIP re-ranking** for even sharper stock relevance
-   (free on Cloudflare Workers AI). Adds an embedding score on top of
-   V1's lexical score. Run server-side (SEND devices are low-spec).
-3. **V7 — Cloudflare FLUX generative endpoint** for unique story
-   illustrations only. New `/api/image-proxy/generate` (or a new
-   `generation-proxy`), teacher-initiated, safety-gated, cached.
-4. **V8 — (optional)** demote `gemini*` in `PROVIDER_ORDER` + the
-   `heavy[]` list if the key stays dead long-term.
+1. **T1 Connected Resource Generator** (EasyClass) — flagship: one topic →
+   differentiated worksheet + slides + reading + quiz + comms board.
+2. **T2 Reading & Story Studio + published e-book** (BuildMyStory) — uses the
+   V7 illustration endpoint (`client/src/lib/illustration-generator.ts`).
+3. **T3 Interactive Activity Generator** (ToolsEdu) — REUSE
+   `client/src/lib/proceduralActivities/` (wordsearch/crossword/matching/cloze).
+4. **T4 Visual Learning Studio** (MyLens) — extend
+   `client/src/components/PresentationDiagram.tsx` (free SVG engine).
+5. **T5 Resource Sharing & Adaptation Hub** (TeachShare) — "Adapt for SEND",
+   YouTube→activity.
+6. **T6 SEND AI Teaching Agent** (Canvas IgniteAI) — EHCP-linked rubrics,
+   provision maps, review prep.
 
-Then the bigger roadmap (T1-T6 in PHASE-PLAN) — each its own combined PR.
+Each new tool registers in SIX places: `App.tsx`, `lib/tool-registry.ts`, the
+hub page, `components/CommandPalette.tsx`, `lib/prefetch.ts`, `AppLayout.tsx`.
+
+### Shipped in PR-A (`feat/visual-polish-symbols-generation`)
+- **V5b** — opt-in ARASAAC symbols in worksheet vocabulary/word-banks
+  (`UserPreferences.symbolSupport` + Switch by Book Mode; `symbolSupport` prop
+  on `WorksheetRenderer`; pictogram strips in `VocabSection` + `PrimarySection`;
+  `SymbolSupportedWords` `asDataUrl` mode so symbols embed in the html2canvas
+  PDF path). Also fixed the ARASAAC CDN size (150px now 404s → use 500/300).
+- **V6** — server-side CLIP re-ranking on `/api/image-proxy/search`
+  (`server/lib/cloudflare-ai.ts` + image-proxy blend). Opt-in via Cloudflare
+  creds; degrades to the existing lexical re-rank.
+- **V7** — free, safety-gated FLUX endpoint (`server/routes/generation-proxy.ts`)
+  for unique story illustrations only; teacher-initiated, cached, never
+  pupil-direct. Client helper: `client/src/lib/illustration-generator.ts`.
+- **V8** — removed dead `gemini*` from `PROVIDER_ORDER` + `reorderForHeavyRequest`
+  heavy[] (Groq priority-1). `callGemini` retained for easy restore.
 
 ## How to verify (this repo does NOT pass tsc cleanly)
 

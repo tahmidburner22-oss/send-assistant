@@ -63,9 +63,16 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 //   1. Groq (×3 keys, Llama 4 Scout 17B) — fastest inference, 43,200 RPD combined
 //   2. Cerebras (×3 keys, gpt-oss-120b) — wafer-scale speed, 43,200 RPD combined
 //      NOTE: llama3.1-8b was retired; gpt-oss-120b is the current fast model
-//   3. Gemini 2.5 Flash — high quality, 250 RPD free
-//   4. Gemini 2.5 Flash-Lite — fast, 1,000 RPD free
-//   5. Gemini 3.1 Flash-Lite — newest Google model, 500 RPD free
+//   -- Gemini (2.5 Flash / 2.5 Flash-Lite / 3.1 Flash-Lite) REMOVED (V8) --
+//      The Google key is dead (401/invalid). PR #162 (V4) parked it on a
+//      10-min auth cooldown, but a permanently-dead key was still re-probed at
+//      the FRONT of every heavy request (reorderForHeavyRequest), adding
+//      latency to long generations. The platform is Gemini-independent (Groq is
+//      priority-1), so gemini/gemini_lite/gemini_3lite are removed from the
+//      fallback order and the heavy-request list entirely. To restore when a
+//      valid GEMINI_API_KEY is available, re-add the three ids below and to the
+//      `heavy` array in reorderForHeavyRequest. (callGemini + model mapping are
+//      retained, so re-adding is a one-line change.)
 //   6. NVIDIA NIM — ~40 RPM, Llama 4 Maverick 17B (nemotron-ultra-253b retired)
 //   7. SambaNova (×2 keys) — Llama 4 Maverick 17B, 2,000 RPD combined
 //      NOTE: Meta-Llama-3.3-70B-Instruct deprecated; Llama-4-Maverick-17B is current
@@ -82,7 +89,7 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 const PROVIDER_ORDER = [
   "groq_1", "groq_2", "groq_3",
   "cerebras_1", "cerebras_2", "cerebras_3",
-  "gemini", "gemini_lite", "gemini_3lite",
+  // gemini, gemini_lite, gemini_3lite removed (V8) — dead key; Groq is priority-1.
   "nvidia_nim",
   "sambanova_1", "sambanova_2",
   "cohere",
@@ -478,8 +485,9 @@ async function callProvider(
 // This ensures Groq quota isn't burned on 6,000-token batch calls.
 function reorderForHeavyRequest(providers: string[], promptLength: number): string[] {
   if (promptLength < 3000) return providers; // short request — no reorder needed
-  // Move high-context providers to front, keep rest of order
-  const heavy = ["gemini", "gemini_lite", "gemini_3lite", "sambanova"];
+  // Move high-context providers to front, keep rest of order.
+  // V8: gemini* removed (dead key) — SambaNova is now the heavy-request lead.
+  const heavy = ["sambanova_1", "sambanova_2"];
   const prioritised = heavy.filter(p => providers.includes(p));
   const rest = providers.filter(p => !heavy.includes(p));
   console.log(`[AI] Heavy request (${promptLength} chars) — prioritising: ${prioritised.join(", ")}`);

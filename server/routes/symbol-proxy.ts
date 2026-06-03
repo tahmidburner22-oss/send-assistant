@@ -131,8 +131,12 @@ async function searchArasaac(q: string, lang: string, limit: number): Promise<Re
       return {
         id,
         keyword,
-        url: symbolImageUrl(id, 300),
-        thumbUrl: symbolImageUrl(id, 150),
+        // ARASAAC's static CDN only pre-generates the 300px and 500px PNG
+        // variants — 100/150/200/250 now 404. Use 500 for the full image and
+        // 300 for the thumbnail so pictograms actually load (previously 150px
+        // thumbUrl 404'd everywhere it was used: boards, presentation + V5b).
+        url: symbolImageUrl(id, 500),
+        thumbUrl: symbolImageUrl(id, 300),
         source: "arasaac",
         attribution: ARASAAC_ATTRIBUTION,
         licence: ARASAAC_LICENCE,

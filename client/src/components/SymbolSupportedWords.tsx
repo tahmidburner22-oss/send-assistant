@@ -12,7 +12,12 @@
  *     cheap and a 8-term board makes at most 8 (cached) lookups.
  */
 import { useEffect, useState } from "react";
-import { resolveSymbol, resolveSymbolsForWords, type SymbolResult } from "@/lib/symbol-resolver";
+import {
+  resolveSymbol,
+  resolveSymbolsForWords,
+  fetchSymbolAsDataUrl,
+  type SymbolResult,
+} from "@/lib/symbol-resolver";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TermSymbol — a single pictogram for one word. Renders an <img> once resolved,
@@ -88,17 +93,30 @@ export function SymbolSupportedWords({
   lang = "en",
   size = 56,
   className,
+  asDataUrl = false,
 }: {
   terms: string[];
   lang?: string;
   size?: number;
   className?: string;
+  /**
+   * V5b — when true, each pictogram is rendered as an inlined data: URL
+   * (fetched via the symbol-proxy /fetch endpoint) instead of a remote ARASAAC
+   * CDN URL. This is required for the worksheet PDF export path, which uses
+   * html2canvas: a remote (cross-origin) <img> can taint the canvas, whereas a
+   * data: URL always renders. On-screen + native-print work either way, so the
+   * presentation surface leaves this off (default) and keeps using remote URLs.
+   * Symbols only appear once their data URL has resolved, so the captured PDF
+   * never contains a half-loaded remote image.
+   */
+  asDataUrl?: boolean;
 }) {
   const clean = Array.from(
     new Set(terms.map((t) => t.trim()).filter(Boolean)),
   );
   const termsKey = clean.map((t) => t.toLowerCase()).join("|");
   const [symbols, setSymbols] = useState<Record<string, SymbolResult>>({});
+  const [dataUrls, setDataUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -120,6 +138,34 @@ export function SymbolSupportedWords({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [termsKey, lang]);
 
+  // When asDataUrl is on, inline each resolved pictogram as a data: URL so the
+  // worksheet's html2canvas PDF export can capture it. Runs after symbols
+  // resolve; degrades gracefully (a term whose data URL fails just falls back
+  // to its text-only chip).
+  useEffect(() => {
+    if (!asDataUrl) return;
+    let cancelled = false;
+    const entries = Object.entries(symbols);
+    if (entries.length === 0) {
+      setDataUrls({});
+      return;
+    }
+    (async () => {
+      const out: Record<string, string> = {};
+      await Promise.all(
+        entries.map(async ([term, sym]) => {
+          const durl = await fetchSymbolAsDataUrl(sym.url);
+          if (durl) out[term] = durl;
+        }),
+      );
+      if (!cancelled) setDataUrls(out);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asDataUrl, symbols]);
+
   if (clean.length === 0) return null;
 
   return (
@@ -129,6 +175,13 @@ export function SymbolSupportedWords({
     >
       {clean.map((term) => {
         const sym = symbols[term];
+        // In data-URL mode, only treat a symbol as available once its inlined
+        // data URL is ready — so the PDF capture never sees a remote <img>.
+        const imgSrc = sym
+          ? asDataUrl
+            ? dataUrls[term] ?? null
+            : sym.thumbUrl
+          : null;
         return (
           <div
             key={term}
@@ -139,9 +192,9 @@ export function SymbolSupportedWords({
               className="flex items-center justify-center rounded-lg border bg-white"
               style={{ width: size, height: size }}
             >
-              {sym ? (
+              {imgSrc ? (
                 <img
-                  src={sym.thumbUrl}
+                  src={imgSrc}
                   alt={term}
                   loading="lazy"
                   className="max-h-full max-w-full object-contain"
