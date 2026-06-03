@@ -7895,7 +7895,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                       letterSpacing: "0.03em",
                                       marginTop: bi > 0 ? "0" : "0",
                                     }}>
-                                      <span dangerouslySetInnerHTML={{ __html: renderMath(headerPart.label + (headerPart.text ? " " + toSentenceCase(headerPart.text) : "")) }} />
+                                      <span dangerouslySetInnerHTML={{ __html: renderMath(toSentenceCase(headerPart.label + (headerPart.text ? " " + headerPart.text : ""))) }} />
                                     </div>
                                   )}
                                   {/* Body parts */}
