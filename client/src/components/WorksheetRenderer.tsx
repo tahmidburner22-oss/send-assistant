@@ -7294,14 +7294,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               // background; every worksheet should have slight dividers".
                               <div key={bi} style={{ borderTop: bi > 0 ? "1px solid #e5e7eb" : undefined }}>
                                 {hdrPart && (
-                                  <div style={{ background: "#ffffff", color: "#1a2744", padding: "8px 14px 4px 14px", fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, fontFamily: fmt.fontFamily, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
-                                    <span dangerouslySetInnerHTML={{ __html: renderMath(hdrPart.label + (hdrPart.text ? " " + hdrPart.text : "")) }} />
+                                  <div style={{ background: "#ffffff", color: "#1a2744", padding: "8px 14px 4px 14px", fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.04em" }}>
+                                    <span dangerouslySetInnerHTML={{ __html: renderMath(toSentenceCase(hdrPart.label + (hdrPart.text ? " " + hdrPart.text : ""))) }} />
                                   </div>
                                 )}
                                 <div style={{ padding: "4px 14px 10px 14px" }}>
                                   {bodyParts.map((bp, bpi) => (
                                     <div key={bpi} style={{ marginBottom: bpi < bodyParts.length - 1 ? "8px" : "0", paddingBottom: bpi < bodyParts.length - 1 ? "8px" : "0", borderBottom: bpi < bodyParts.length - 1 ? "1px dashed #e2e8f0" : "none" }}>
-                                      <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, marginBottom: "2px", letterSpacing: "0.02em" }}>{bp.label}</div>
+                                      <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, marginBottom: "2px", letterSpacing: "0.02em" }}>{toSentenceCase(bp.label)}</div>
                                       <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: bp.key === "wrong" ? "#dc2626" : bp.key === "right" ? "#166534" : "#374151", fontWeight: bp.key === "wrong" ? 600 : 400, lineHeight: "1.5", paddingLeft: "8px", borderLeft: bp.key === "wrong" ? "3px solid #dc2626" : bp.key === "right" ? "3px solid #166534" : bp.key === "check" ? "3px solid #1a2744" : "none" }}>
                                         {bp.text.split("\n").map((tl, tli) => (<div key={tli} dangerouslySetInnerHTML={{ __html: renderMath(tl) }} />))}
                                       </div>
