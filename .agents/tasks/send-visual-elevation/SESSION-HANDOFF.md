@@ -4,12 +4,17 @@ This file is the **resume point** for any fresh chat picking up this
 work. Read this first, then `PHASE-PLAN.md`, then `LEDGER.md`, then
 `docs/SEND-Website-Elevation-Plan.md` for the full strategy.
 
-Last updated: 2026-06-03 — PR #162 (code) and PR #163 (docs) are MERGED.
-PR #162 shipped V1-V4. PR #163 shipped the in-repo plan + handoff docs.
-The CURRENT branch `feat/v5-word-bank-symbol-support` ships V5 — the
-PRESENTATION half of word-bank symbol support (screen + PPTX). The
-WORKSHEET half is split to V5b (next) because the worksheet renderer has
-four tangled vocabulary render paths that warrant their own focused PR.
+Last updated: 2026-06-03 — PR #162/#163/#164 MERGED (V1-V5 + docs). TWO open
+PRs complete the roadmap:
+- **PR-A** `feat/visual-polish-symbols-generation` — V5b + V6 + V7 + V8.
+- **PR-B** `feat/six-send-tools` (this branch) — the six SEND tools T1-T6
+  (Connected Resource Generator, Reading & Story Studio, Interactive Activity
+  Generator, Visual Learning Studio, Resource Adaptation Hub, SEND Teaching
+  Agent), each registered in all six conventional places. FREE + Gemini-
+  independent; reuses `proceduralActivities/` (T3) and `PresentationDiagram`
+  (T4); T2 uses PR-A's `/api/generation-proxy` (graceful until PR-A merges).
+  See LEDGER for the full table. PR-A and PR-B were both branched off `main`
+  and are independent.
 
 ## Quick-resume header (paste into a fresh chat)
 
