@@ -4236,25 +4236,14 @@ function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnTy
 
   return (
     <div style={{ fontFamily, overflow: 'hidden' }}>
-      {/* Coloured header bar */}
-      <div style={{
-        background: '#1a2744',
-        padding: '8px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-      }}>
-        <span style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: '#ffffff', fontFamily, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          Worked Example
-        </span>
-        {title && (
-          <span style={{ fontSize: `${textSize}px`, color: 'rgba(255,255,255,0.85)', fontFamily, fontWeight: 400 }}>
-            — {title}
-          </span>
-        )}
-      </div>
+      {/* Title subtitle line — shown below the outer section card header bar */}
+      {title && (
+        <div style={{ padding: '8px 16px 0 16px', fontSize: `${textSize}px`, color: '#374151', fontFamily, fontWeight: 500, fontStyle: 'italic' }}>
+          {title}
+        </div>
+      )}
       {/* Steps */}
-      <div style={{ padding: '14px 16px', background: '#f8fafc' }}>
+      <div style={{ padding: '10px 16px 14px 16px', background: 'transparent' }}>
         {/* Question line(s) — sit above numbered steps */}
         {questions.map((q, i) => (
           <div key={`q-${i}`} style={{
@@ -6749,12 +6738,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   background: isTeacherHeader ? "#8b1a1a" : style.headerBg,
                   color: isTeacherHeader ? "#ffffff" : style.headerText,
                   padding: "7px 14px",
-                  marginBottom: "0",
+                  marginBottom: "10px",
                   marginLeft: "-16px",
                   marginRight: "-16px",
                   marginTop: "-14px",
                   borderRadius: "2px 2px 0 0",
-                  borderBottom: `1px solid ${isTeacherHeader ? "rgba(0,0,0,0.2)" : style.border}`,
                 }}>
                   <span style={{
                     fontSize: "9.5px",
@@ -7264,7 +7252,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         { re: /^(Quick check\s*:)/i, key: "check" },
                       ];
                       return (
-                        <div style={{ background: "#ffffff", padding: "0" }}>
+                        <div style={{ padding: "0" }}>
                           {cmIntro && (
                             <div style={{ padding: "10px 14px 0 14px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", fontStyle: "italic" }}
                               dangerouslySetInnerHTML={{ __html: renderMath(cmIntro) }} />
@@ -7788,7 +7776,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       dangerouslySetInnerHTML={{ __html: renderMath(content) }} />
                   </div>
                 ) : section.type === "common-mistakes" ? (
-                  <div style={{ background: "#ffffff", padding: "0" }}>
+                  <div style={{ padding: "0" }}>
                     {(() => {
                       // Split content into individual mistake blocks for structured rendering
                       const rawContent = content || "";
