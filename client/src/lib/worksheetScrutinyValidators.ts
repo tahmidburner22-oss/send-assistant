@@ -370,6 +370,25 @@ export function enforcePedagogyStructurePresence(
 // Assessment: misconception check, exit ticket
 // Design: no large text walls, good spacing, consistent formatting
 
+/**
+ * Part B / Sprint 10 (item B12) — Learning Impact metadata.
+ * Answers the four "Learning Impact" questions from the June 2026 scrutiny:
+ *   - Where will students get stuck?      → stuckPoints (from misconception bank)
+ *   - What misconceptions might occur?    → anticipatedMisconceptions (common-mistakes section)
+ *   - Can low-attaining students access?  → accessibilityGate (Foundation can complete Section A)
+ *   - Can high-attaining students stretch?→ stretchOpportunities (challenge section exists)
+ */
+export interface LearningImpact {
+  /** Known stuck points, sourced from the per-MCQ misconception bank links. */
+  stuckPoints: string[];
+  /** Misconceptions surfaced in the Common Misconceptions section. */
+  anticipatedMisconceptions: string[];
+  /** True when a Foundation pupil can access Section A (recall/guided present + a worked example or vocabulary support). */
+  accessibilityGate: boolean;
+  /** True when a challenge / extension section exists to stretch high-attainers. */
+  stretchOpportunities: boolean;
+}
+
 export interface QualityCheckReport {
   send: {
     vocabularySupport: boolean;
@@ -402,6 +421,8 @@ export interface QualityCheckReport {
   total: number; // 0-100
   status: "publish-ready" | "good" | "needs-revision" | "do-not-publish";
   missingElements: string[];
+  /** Part B / Sprint 10 (B12) — explicit learning-impact metadata. */
+  learningImpact: LearningImpact;
 }
 
 export function runFullQualityCheck(
@@ -490,6 +511,46 @@ export function runFullQualityCheck(
   if (!noTextWalls) missingElements.push("Text walls detected (needs breaking up)");
   if (!hasDiagrams) missingElements.push("Diagrams / visual learning support");
 
+  // ── Part B / Sprint 10 (B12): Learning Impact metadata ─────────────────
+  // stuckPoints: drawn from the per-MCQ misconception bank links the
+  // post-validator chain stamped earlier (metadata.misconceptionLinks).
+  const misconceptionLinks = Array.isArray((ws.metadata as Record<string, unknown> | undefined)?.misconceptionLinks)
+    ? ((ws.metadata as Record<string, unknown>).misconceptionLinks as Array<Record<string, unknown>>)
+    : [];
+  const stuckPoints = Array.from(new Set(
+    misconceptionLinks
+      .map(link => String(link.misconceptionText || link.misconceptionId || "").trim())
+      .filter(Boolean),
+  ));
+
+  // anticipatedMisconceptions: parsed from the Common Misconceptions section.
+  const commonMistakesSection = (ws.sections || []).find(s => {
+    const t = String(s.type || "").toLowerCase();
+    return t === "common-mistakes" || t === "misconceptions" || t === "common_mistakes";
+  });
+  const anticipatedMisconceptions = commonMistakesSection
+    ? String(commonMistakesSection.content || "")
+        .split("\n")
+        .map(l => l.replace(/^[-•*]\s*/, "").replace(/^(?:common\s+)?misconception\s*\d*\s*:\s*/i, "").trim())
+        .filter(l => l.length > 3)
+        .slice(0, 8)
+    : [];
+
+  // accessibilityGate: can a Foundation pupil complete Section A (recall /
+  // guided practice)? True when that section exists AND it is supported by a
+  // worked example or vocabulary support so a low-attainer can access it.
+  const accessibilityGate = hasGuided && (hasWorkedExample || hasVocab);
+
+  // stretchOpportunities: a challenge / extension section is present.
+  const stretchOpportunities = hasChallenge;
+
+  const learningImpact: LearningImpact = {
+    stuckPoints,
+    anticipatedMisconceptions,
+    accessibilityGate,
+    stretchOpportunities,
+  };
+
   const report: QualityCheckReport = {
     send: { vocabularySupport: hasVocab, workedExample: hasWorkedExample, clearInstructions: hasClearInstructions, visualSupport: hasVisualSupport, score: Math.round(sendScore) },
     pedagogy: { retrievalPresent: hasRetrieval, guidedPractice: hasGuided, independentPractice: hasIndependent, reasoningPresent: hasReasoning, challengePresent: hasChallenge, score: Math.round(pedagogyScore) },
@@ -498,6 +559,7 @@ export function runFullQualityCheck(
     total,
     status,
     missingElements,
+    learningImpact,
   };
 
   // Stamp report onto metadata
@@ -508,6 +570,7 @@ export function runFullQualityCheck(
       qualityCheckReport: report,
       qualityCheckScore: total,
       qualityCheckStatus: status,
+      learningImpact,
     },
   };
 

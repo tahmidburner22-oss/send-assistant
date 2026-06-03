@@ -54,6 +54,8 @@ import {
   DIFFICULTY_INDICATORS,
   FLOW_SYMBOLS,
   shouldUseExamStyleLayout,
+  PUPIL_LEGEND,
+  EXAM_STYLE_CONFIG,
 } from "@/lib/visualLanguageSystem";
 // June 2026 — Enhanced SEND Descriptions
 import { getSendDescription, buildAdaptationRationale } from "@/lib/sendDescriptionsEnhanced";
@@ -1577,12 +1579,21 @@ function getSectionIcon(type: string, size = 16, color = "#ffffff"): React.React
 }
 
 // ── Difficulty dot indicator ─────────────────────────────────────────────────
-// Returns ● / ●● / ●●● for Foundation / Core / Challenge sections.
+// Returns ● / ●● / ●●● for Core / Intermediate / Advanced sections.
+// Single source of truth is visualLanguageSystem.getDifficultyForSection, so
+// the dots stay consistent with the legend and the rest of the visual language.
+// Only genuinely graded question/practice sections show dots — informational
+// sections (vocabulary, objective, worked example…) never do.
+const DIFFICULTY_BEARING_TYPES = new Set<string>([
+  "guided", "recall", "q-true-false", "q-mcq", "q-gap-fill", "q-matching", "q-ordering",
+  "independent", "understanding", "q-short-answer", "q-data-table", "application",
+  "challenge", "q-challenge", "q-extended", "extension",
+]);
 function getDifficultyDots(type: string): string {
-  if (type === "guided")      return "●";
-  if (type === "independent") return "●●";
-  if (type === "challenge" || type === "q-challenge") return "●●●";
-  return "";
+  const t = (type || "").toLowerCase();
+  if (!DIFFICULTY_BEARING_TYPES.has(t)) return "";
+  const level = getDifficultyForSection(t);
+  return DIFFICULTY_INDICATORS[level]?.dots || "";
 }
 
 function stripLatexFromPlainText(text: string): string {
@@ -5083,6 +5094,80 @@ function VisualLanguageLegend({ fmt, overlayColor }: { fmt: ReturnType<typeof ge
   );
 }
 
+// ── Part B / Sprint 7 (B13): Pupil Legend ──────────────────────────────────
+// A clean, pupil-facing key rendered at the top of the first page when
+// `metadata.showLegend === true`. Explains the icons, difficulty dots and
+// colour meanings so pupils can navigate the worksheet independently.
+// Sourced from visualLanguageSystem.PUPIL_LEGEND (single source of truth).
+function PupilLegend({ fmt, overlayColor }: { fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
+  const hasOverlay = isOverlayActive(overlayColor);
+  const bg = hasOverlay ? overlayColor! : "#f8fafc";
+  const borderCol = hasOverlay ? "#000000" : "#cbd5e1";
+  const textCol = hasOverlay ? "#000000" : "#374151";
+  const labelCol = hasOverlay ? "#000000" : "#1B2A4A";
+  return (
+    <div
+      className="ws-pupil-legend"
+      style={{
+        border: `1px solid ${borderCol}`,
+        borderRadius: "4px",
+        background: bg,
+        padding: "8px 12px",
+        marginBottom: "16px",
+        pageBreakInside: "avoid",
+        breakInside: "avoid",
+      }}
+    >
+      <div style={{ fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.1em", color: labelCol, marginBottom: "6px", borderBottom: `1px solid ${borderCol}`, paddingBottom: "4px" }}>
+        How to read this worksheet
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "4px 14px" }}>
+        {PUPIL_LEGEND.map((item, idx) => (
+          <div key={idx} style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+            <span style={{ fontSize: "11px", color: labelCol, flexShrink: 0, minWidth: "16px", textAlign: "center" }}>{item.icon}</span>
+            <span style={{ fontSize: "8.5px", fontFamily: fmt.fontFamily, color: textCol, lineHeight: 1.35 }}>
+              <strong style={{ color: labelCol }}>{item.label}</strong>
+              {" — "}
+              {item.description}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Part B / Sprint 7 (item 5): Vocabulary footer strip ────────────────────
+// When `metadata.vocabularyRepeatEnabled === true`, a slim strip of the key
+// vocabulary terms is repeated at the bottom of EVERY printed page (via the
+// `position: fixed` print rule on `.ws-vocab-footer`). This keeps working
+// memory load low — a core SEND adaptation.
+function VocabularyFooterStrip({ terms, fmt, overlayColor }: { terms: string[]; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
+  if (!terms || terms.length === 0) return null;
+  const hasOverlay = isOverlayActive(overlayColor);
+  const bg = hasOverlay ? overlayColor! : "#f1f5f9";
+  const borderCol = hasOverlay ? "#000000" : "#94a3b8";
+  const textCol = hasOverlay ? "#000000" : "#334155";
+  return (
+    <div
+      className="ws-vocab-footer"
+      aria-label="Key vocabulary"
+      style={{
+        borderTop: `1.5px solid ${borderCol}`,
+        background: bg,
+        padding: "3px 10px",
+        fontSize: "8px",
+        fontFamily: fmt.fontFamily,
+        color: textCol,
+        lineHeight: 1.4,
+      }}
+    >
+      <strong style={{ textTransform: "uppercase", letterSpacing: "0.06em", marginRight: "6px" }}>Key words:</strong>
+      {terms.join("  ·  ")}
+    </div>
+  );
+}
+
 const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(function WorksheetRendererInner(
   {
   worksheet,
@@ -5172,6 +5257,24 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   const sendNeedId = metadata.sendNeedId || metadata.sendNeed;
   const fmt = getSendFormatting(sendNeedId, textSize);
 
+  // ── Part B / Sprint 7 — Visual language driven layout flags ─────────────
+  // Exam-style mode (B2): Maths Genie minimal layout — suppress section colour
+  // headers, icons, difficulty dots and scaffolding sections, with wide print
+  // margins. Pupil legend (B13) and the repeating vocabulary footer (item 5)
+  // are also opt-in via metadata flags stamped by the generator/post-validators.
+  const examStyle = shouldUseExamStyleLayout(metadata as Record<string, unknown>);
+  const showLegend = (metadata as Record<string, unknown>).showLegend === true;
+  const vocabularyRepeatEnabled = (metadata as Record<string, unknown>).vocabularyRepeatEnabled === true;
+  const vocabularyRepeatTerms: string[] = Array.isArray((metadata as Record<string, unknown>).vocabularyRepeatTerms)
+    ? ((metadata as Record<string, unknown>).vocabularyRepeatTerms as unknown[]).map(t => String(t)).filter(Boolean)
+    : [];
+  // Scaffolding section types suppressed entirely under exam conditions.
+  const EXAM_SUPPRESSED_SECTION_TYPES = new Set<string>([
+    "word-bank", "wordbank", "sentence-starters", "send-support", "reminder-box",
+    "example", "worked-example", "vocabulary", "key-terms", "revision-tips",
+    "starter", "retrieval", "prior-knowledge",
+  ]);
+
   // Detect primary (KS1/KS2: Reception – Year 6)
   const yg = (metadata.yearGroup || "").toLowerCase();
   const isPrimary = /reception|year [1-6]\b|yr [1-6]\b|ks1|ks2|key stage 1|key stage 2/.test(yg);
@@ -5244,10 +5347,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   const worksheetCard = (
     <div
       ref={ref}
-      className={`worksheet-print-root ws-a11y-${a11yProfileId}`}
+      className={`worksheet-print-root ws-a11y-${a11yProfileId}${examStyle ? " ws-exam-style" : ""}`}
       style={{
         backgroundColor: a11yProfile?.background || overlayColor || "white",
-        fontFamily: fmt.fontFamily,
+        fontFamily: examStyle ? EXAM_STYLE_CONFIG.fontFamily : fmt.fontFamily,
         fontSize: `${fmt.fontSize}px`,
         lineHeight: fmt.lineHeight,
         letterSpacing: fmt.letterSpacing,
@@ -5257,7 +5360,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         ...(paginated ? {
           maxWidth: "794px",
           margin: "0 auto",
-          padding: "40px 48px",
+          padding: examStyle ? "56px 64px" : "40px 48px",
           boxShadow: "0 4px 24px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.08)",
           borderRadius: "2px",
           minHeight: "1123px",
@@ -5285,6 +5388,41 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           [data-diagram-section] img[src^="data:image/jpeg"] {
             image-rendering: -webkit-optimize-contrast;
           }
+        }
+      `}</style>
+      {/* ── Part B / Sprint 10 (B11) — Commercial print polish ──────────────
+          Wide 2.5cm margins on every printed page, no footer branding/clutter,
+          questions never split across a page boundary, and the challenge
+          section always starts on a fresh page. Plus (Sprint 7, item 5) the
+          vocabulary footer strip is fixed to the bottom of EVERY printed page.
+          When exam-style mode is active, even wider working margins apply. */}
+      <style>{`
+        @media print {
+          @page { margin: 2.5cm; }
+          /* No footer branding / clutter on the pupil print. */
+          .worksheet-print-root .ws-footer { display: none !important; }
+          /* Questions and section blocks never split across a page boundary. */
+          .worksheet-print-root .ws-section { page-break-inside: avoid; break-inside: avoid; }
+          /* The challenge / stretch section always starts on a new page. */
+          .worksheet-print-root .ws-section-challenge,
+          .worksheet-print-root .ws-section-q-challenge {
+            page-break-before: always; break-before: page;
+          }
+          /* Repeat the key-vocabulary strip at the bottom of every printed page. */
+          .worksheet-print-root .ws-vocab-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          ${examStyle ? `.worksheet-print-root.ws-exam-style { /* exam booklet margins */ }
+          .worksheet-print-root.ws-exam-style .ws-section { page-break-inside: avoid; }` : ``}
+        }
+        /* On screen, the vocabulary footer sits inline as a slim strip. */
+        @media screen {
+          .worksheet-print-root .ws-vocab-footer { position: static; margin-top: 18px; }
         }
       `}</style>
       {/* Colour overlay — sits above all section backgrounds, covers all text boxes */}
@@ -6226,8 +6364,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         />
       )}
 
+      {/* ── Part B / Sprint 7 (B13): Pupil legend on the first page (opt-in) ── */}
+      {!isRevisionMat && !(isMathsSubject && !isPrimary) && showLegend && !examStyle && (
+        <PupilLegend fmt={fmt} overlayColor={overlayColor} />
+      )}
+
       {/* ── VL-FEAT-01: Visual Language Legend — shown on teacher view only, not on revision mats or maths compact ── */}
-      {!isRevisionMat && !(isMathsSubject && !isPrimary) && isTeacherView && (
+      {!isRevisionMat && !(isMathsSubject && !isPrimary) && isTeacherView && !examStyle && (
         <VisualLanguageLegend fmt={fmt} overlayColor={overlayColor} />
       )}
       {/* ── Sections (normal portrait layout — hidden when revision mat active or maths compact active) ── */}
@@ -6241,6 +6384,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const normalizedSectionType = normalizeWorksheetSectionType(section.type);
         if (normalizedSectionType !== section.type) {
           section = { ...section, type: normalizedSectionType };
+        }
+        // ── Part B / Sprint 7 (B2): exam-style mode suppresses scaffolding ──
+        // Under exam conditions the worksheet shows only questions (no word
+        // banks, sentence starters, SEND support boxes, worked examples,
+        // vocabulary, revision tips or warm-up retrieval). Returning null keeps
+        // the section's original index intact so question numbering is stable.
+        if (examStyle && EXAM_SUPPRESSED_SECTION_TYPES.has(normalizedSectionType)) {
+          return null;
         }
         // Hide teacher sections in student view
         // self-reflection, objective, vocabulary, and revision-tips are
@@ -6329,7 +6480,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         }
         const style = isPrimary
           ? { ...(PRIMARY_SECTION_COLOURS[i % PRIMARY_SECTION_COLOURS.length]), icon: ["A","B","C","D","E","F","G","H"][i % 8], label: section.title as string || "", badgeText: "", headerBg: "#1B2A4A", headerText: "#ffffff", borderStyle: "solid" as const }
-          : getSectionStyle(section.type, yrNum, overlayColor);
+          : (examStyle
+              // Exam-style mode (B2): neutral monochrome — no semantic colour.
+              ? { ...getSectionStyle(section.type, yrNum, overlayColor), bg: "#ffffff", headerBg: "#ffffff", headerText: "#111111", border: "#333333", badge: "#111111", badgeBg: "#ffffff" }
+              : getSectionStyle(section.type, yrNum, overlayColor));
         // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
         const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "teacher-note" || section.type === "mark-scheme" || section.type === "answers";
 
@@ -6491,6 +6645,17 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               INDIVIDUAL_QUESTION_TYPES.has(normalizeWorksheetSectionType(s.type))
             ).length + 1
           : null;
+        // ── Part B / Sprint 7 (item 2): response-type icon + (item 1) difficulty
+        // dots for the individual question header badge. Both are suppressed in
+        // exam-style mode. Sourced from visualLanguageSystem.
+        const responseType = isIndividualQuestion
+          ? getResponseTypeForSection(section.type, typeof content === "string" ? content : "")
+          : null;
+        const responseSymbol = responseType ? RESPONSE_TYPES[responseType].symbol : "";
+        const responseLabel = responseType ? RESPONSE_TYPES[responseType].label : "";
+        const questionDifficultyDots = isIndividualQuestion
+          ? getDifficultyDots(normalizeWorksheetSectionType(section.type))
+          : "";
         return (
           <React.Fragment key={i}>
           {/* ── TEACHER COPY — ANSWER KEY full-width crimson page header ── */}
@@ -6529,7 +6694,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               Section 1, Section 2 and Section 3 boundaries per the spec layout.
               Page 1 (intro) flows naturally across 1 or 2 pages; Section 1
               always starts on a fresh page AFTER the intro is complete. */}
-          {isFirstOfGroupSection && groupInfo && (
+          {!examStyle && isFirstOfGroupSection && groupInfo && (
             <div
               className="ws-section-group-divider"
               data-section={groupInfo.label.includes("SECTION 1") ? "1" : groupInfo.label.includes("SECTION 2") ? "2" : groupInfo.label.includes("SECTION 3") ? "3" : "other"}
@@ -6718,33 +6883,72 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             {section.type === "send-support" ? null : isIndividualQuestion ? (
               /* Individual question: dark navy square badge + question text — matches reference PDF */
               <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
-                <div style={{
-                  width: "22px", height: "22px", minWidth: "22px",
-                  background: "#1B2A4A",
-                  color: "#ffffff",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "11px", fontWeight: 700,
-                  borderRadius: "0",
-                  fontFamily: fmt.fontFamily,
-                  flexShrink: 0,
-                  marginTop: "1px",
-                }}>{questionNumber}</div>
+                {examStyle ? (
+                  /* Exam-style (B2): bold left-aligned number, no colour badge. */
+                  <div style={{
+                    minWidth: "22px",
+                    color: "#111111",
+                    fontSize: "13px", fontWeight: 800,
+                    fontFamily: EXAM_STYLE_CONFIG.fontFamily,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}>{questionNumber}</div>
+                ) : (
+                  <div style={{
+                    width: "22px", height: "22px", minWidth: "22px",
+                    background: "#1B2A4A",
+                    color: "#ffffff",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "11px", fontWeight: 700,
+                    borderRadius: "0",
+                    fontFamily: fmt.fontFamily,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}>{questionNumber}</div>
+                )}
+                {/* Part B / Sprint 7 (item 2): response-type icon next to the
+                    question number — tells pupils HOW to respond. Hidden in
+                    exam mode and when an overlay suppresses decorative glyphs. */}
+                {!examStyle && responseSymbol && (
+                  <span
+                    title={responseLabel}
+                    aria-label={responseLabel}
+                    style={{
+                      fontSize: "14px",
+                      lineHeight: "22px",
+                      flexShrink: 0,
+                      width: "16px",
+                      textAlign: "center",
+                      color: isOverlayActive(overlayColor) ? "#000000" : "#1B2A4A",
+                    }}
+                  >{responseSymbol}</span>
+                )}
                 <div style={{ flex: 1 }}>
-                  {/* Question type label in small teal above the question text */}
-                  <div style={{ fontSize: "9px", fontWeight: 700, color: "#2a7f8f", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "3px" }}>
-                    {section.type === "q-true-false" ? "TRUE / FALSE" :
-                     section.type === "q-mcq" ? "MULTIPLE CHOICE" :
-                     section.type === "q-gap-fill" ? "GAP FILL" :
-                     section.type === "q-short-answer" ? "" :
-                     section.type === "q-extended" ? "" :
-                     section.type === "q-data-table" ? "DATA TABLE" :
-                     section.type === "q-label-diagram" ? "LABEL DIAGRAM" : ""}
+                  {/* Question type label (teal) + difficulty dots, above the question text */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "3px" }}>
+                    <span style={{ fontSize: "9px", fontWeight: 700, color: examStyle ? "#555555" : "#2a7f8f", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                      {section.type === "q-true-false" ? "TRUE / FALSE" :
+                       section.type === "q-mcq" ? "MULTIPLE CHOICE" :
+                       section.type === "q-gap-fill" ? "GAP FILL" :
+                       section.type === "q-short-answer" ? "" :
+                       section.type === "q-extended" ? "" :
+                       section.type === "q-data-table" ? "DATA TABLE" :
+                       section.type === "q-label-diagram" ? "LABEL DIAGRAM" : ""}
+                    </span>
+                    {/* Part B / Sprint 7 (item 1): difficulty dots on the question badge. */}
+                    {!examStyle && questionDifficultyDots && (
+                      <span
+                        title={`Difficulty: ${DIFFICULTY_INDICATORS[getDifficultyForSection(normalizeWorksheetSectionType(section.type))].label}`}
+                        style={{ fontSize: "8px", letterSpacing: "1px", flexShrink: 0, color: isOverlayActive(overlayColor) ? "#000000" : "#1B2A4A" }}
+                      >{questionDifficultyDots}</span>
+                    )}
                   </div>
                 </div>
               </div>
             ) : section.type === "diagram" ? null : section.type === "send-support" ? null : (
-              /* Section header: clean text label bar — no icon, readable section name */
-              sectionHeaderLabel ? (
+              /* Section header: clean text label bar — no icon, readable section name.
+                 Suppressed entirely in exam-style mode (B2). */
+              (sectionHeaderLabel && !examStyle) ? (
                 <div style={{
                   display: "flex",
                   alignItems: "center",
@@ -9175,6 +9379,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             ).toLocaleDateString("en-GB")}
           </span>
         </div>
+      )}
+
+      {/* ── Part B / Sprint 7 (item 5): repeating vocabulary footer strip ──
+          Rendered once in the DOM; the print CSS fixes it to the bottom of
+          every printed page. Opt-in via metadata.vocabularyRepeatEnabled. */}
+      {vocabularyRepeatEnabled && !examStyle && vocabularyRepeatTerms.length > 0 && (
+        <VocabularyFooterStrip terms={vocabularyRepeatTerms} fmt={fmt} overlayColor={overlayColor} />
       )}
 
       {/* ── Footer ── */}

@@ -100,6 +100,16 @@ import {
   enforceKs3LengthBudget,
 } from "./worksheetScrutinyValidators";
 
+// June 2026 — Sprint 8 Validators (V2 plan items B3–B9)
+import {
+  enforceVocabTableFormat,
+  enforceWorkedExampleBrevity,
+  enforceInstructionBoxDedup,
+  enforceDiagramPresence,
+  enforceQuestionWordingBrevity,
+  enforceEnhancedQualityChecks,
+} from "./worksheetScrutinyValidatorsV2";
+
 // PR-19 to PR-27 (combined) — additional validators behind the same
 // adapt() pattern. Every entry is pure / idempotent / warn-only.
 import { enforceSpVocabularyLibrary } from "./spVocabularyLibraryAudit";
@@ -389,6 +399,37 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     {
       name: "full-quality-check",
       fn: (ws, _opts) => runFullQualityCheck(ws),
+    },
+    // ─── June 2026 — Sprint 8 Validators (V2 plan items B3–B9) ────────
+    // B3: Vocabulary table format (clean 2-column "Term — Definition")
+    {
+      name: "vocab-table-format",
+      fn: (ws, _opts) => enforceVocabTableFormat(ws),
+    },
+    // B4: Worked example brevity (warn on narrative steps >20 words)
+    {
+      name: "worked-example-brevity",
+      fn: (ws, _opts) => enforceWorkedExampleBrevity(ws),
+    },
+    // B5: Instruction box dedup (max 3 "What you need to do" globally)
+    {
+      name: "instruction-box-dedup",
+      fn: (ws, _opts) => enforceInstructionBoxDedup(ws),
+    },
+    // B6: Diagram presence (science/geo must have at least 1 diagram)
+    {
+      name: "diagram-presence",
+      fn: (ws, opts) => enforceDiagramPresence(ws, opts),
+    },
+    // B9: Question wording brevity (KS3: ≤30 words per stem)
+    {
+      name: "question-wording-brevity",
+      fn: (ws, opts) => enforceQuestionWordingBrevity(ws, opts),
+    },
+    // B7: Enhanced quality checks (real-world, variety, smoothness)
+    {
+      name: "enhanced-quality-checks",
+      fn: (ws, _opts) => enforceEnhancedQualityChecks(ws),
     },
   ]);
 
