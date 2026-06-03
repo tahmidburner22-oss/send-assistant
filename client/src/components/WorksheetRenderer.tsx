@@ -37,6 +37,7 @@ import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
 import { findMisconceptionById } from "@/lib/misconception-bank";
 import { getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import SVGDiagram from "@/components/SVGDiagram";
+import { SymbolSupportedWords, extractVocabTerms } from "@/components/SymbolSupportedWords";
 import {
   linesForMarks,
   shouldRenderWorkingOutBox,
@@ -1353,6 +1354,11 @@ interface WorksheetRendererProps {
   onRegenerateQuestion?: (sectionIndex: number, reason: string) => void;
   /** When true, hides the SEND label footer and optimises layout for exercise book use. */
   bookMode?: boolean;
+  /** V5b — opt-in ARASAAC symbol support for vocabulary / word-bank sections.
+   *  When true, a strip of free pictograms is rendered above the terms in both
+   *  the primary (KS1/KS2) and secondary section layouts. Default false →
+   *  worksheet output is byte-identical until a teacher switches it on. */
+  symbolSupport?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3541,7 +3547,7 @@ function ConstraintProblemSection({
   );
 }
 
-function VocabSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
+function VocabSection({ content, fmt, overlayColor = "white", symbolSupport = false }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string; symbolSupport?: boolean }) {
   const { fontSize: textSize, fontFamily, lineHeight, letterSpacing } = fmt;
   // Filter out pure header/separator rows: lines whose trimmed content (after stripping outer pipes)
   // consists only of "Term", "Word", "Keyword", dashes, or similar header patterns.
@@ -3582,17 +3588,39 @@ function VocabSection({ content, fmt, overlayColor = "white" }: { content: strin
   }).filter(Boolean) as { term: string; def: string }[];
 
   if (entries.length === 0) {
-    return <div style={{ fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }}>{content}</div>;
+    // No parseable term/definition pairs — fall back to plain content, but
+    // still offer a symbol strip (parsed independently) when symbol support is on.
+    const fallbackTerms = symbolSupport ? extractVocabTerms(content) : [];
+    return (
+      <div style={{ fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }}>
+        {symbolSupport && fallbackTerms.length > 0 && (
+          <div style={{ marginBottom: "10px" }}>
+            <SymbolSupportedWords terms={fallbackTerms} size={48} asDataUrl />
+          </div>
+        )}
+        {content}
+      </div>
+    );
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 24px" }}>
-      {entries.map((e, i) => (
-        <div key={i} style={{ display: "flex", gap: "4px", padding: "5px 0", borderBottom: "1px solid #e5e7eb" }}>
-          <span style={{ fontWeight: 700, color: "#1a2744", fontSize: `${textSize}px`, fontFamily, letterSpacing, flexShrink: 0, minWidth: "90px" }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) + ":" }} />
-          <span style={{ color: "#374151", fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
+    <div>
+      {/* V5b — opt-in ARASAAC pictogram strip above the term/definition grid.
+          Pictograms are inlined as data URLs (asDataUrl) so they survive the
+          html2canvas PDF export; terms with no symbol degrade to a text chip. */}
+      {symbolSupport && (
+        <div style={{ marginBottom: "12px" }}>
+          <SymbolSupportedWords terms={entries.map((e) => e.term)} size={48} asDataUrl />
         </div>
-      ))}
+      )}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 24px" }}>
+        {entries.map((e, i) => (
+          <div key={i} style={{ display: "flex", gap: "4px", padding: "5px 0", borderBottom: "1px solid #e5e7eb" }}>
+            <span style={{ fontWeight: 700, color: "#1a2744", fontSize: `${textSize}px`, fontFamily, letterSpacing, flexShrink: 0, minWidth: "90px" }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) + ":" }} />
+            <span style={{ color: "#374151", fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -4536,6 +4564,7 @@ function PrimarySection({
   isTeacherSection,
   bookMode = false,
   subject = "",
+  symbolSupport = false,
 }: {
   section: any;
   sectionIndex: number;
@@ -4554,6 +4583,8 @@ function PrimarySection({
   /** Phase 1 — parent worksheet subject; threaded into formatContent so the
    *  per-question Working-Out box can be gated to maths only. */
   subject?: string;
+  /** V5b — opt-in ARASAAC symbol strip for vocabulary sections (KS1/KS2). */
+  symbolSupport?: boolean;
 }) {
   const hasOverlay = isOverlayActive(overlayColor);
   const palette = PRIMARY_BRIGHT_PALETTE[paletteIndex % PRIMARY_BRIGHT_PALETTE.length];
@@ -4712,6 +4743,14 @@ function PrimarySection({
         color: effectivePalette.text,
         background: effectivePalette.bg,
       }}>
+        {/* V5b — opt-in ARASAAC pictogram strip for vocabulary/key-terms
+            sections in the primary (KS1/KS2) layout. Inlined as data URLs so
+            the worksheet PDF export captures them; gated + default off. */}
+        {symbolSupport && normalizeWorksheetSectionType(section.type) === "vocabulary" && (
+          <div style={{ marginBottom: "10px" }}>
+            <SymbolSupportedWords terms={extractVocabTerms(content)} size={52} asDataUrl />
+          </div>
+        )}
         {formatContent(content, fmt, {
           bookMode,
           // Each numbered question gets its own writing space inline when the
@@ -5195,6 +5234,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   onHeaderEdit,
   onRegenerateQuestion,
   bookMode = false,
+  symbolSupport = false,
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
@@ -6508,6 +6548,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               isTeacherSection={isTeacherSection}
               bookMode={bookMode}
               subject={worksheet.metadata?.subject || ""}
+              symbolSupport={symbolSupport}
             />
             </React.Fragment>
           );
@@ -7001,7 +7042,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       {textContent && (
                         <div style={{ marginBottom: "10px" }}>
                           {section.type === "vocabulary" ? (
-                            <VocabSection content={textContent} fmt={fmt} overlayColor={overlayColor} />
+                            <VocabSection content={textContent} fmt={fmt} overlayColor={overlayColor} symbolSupport={symbolSupport} />
                           ) : (
                             formatContent(textContent, fmt, { bookMode, subject: worksheet.metadata?.subject || "" })
                           )}
@@ -7986,7 +8027,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   // No layout tag matched — fall through to existing type-based handlers below
                   return undefined;
                 })() ?? (section.type === "vocabulary" ? (
-                  <VocabSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                  <VocabSection content={content} fmt={fmt} overlayColor={overlayColor} symbolSupport={symbolSupport} />
                 ) : section.type === "diagnostic" ? (
                   <div style={{ background: "#fefce8", border: "1.5px solid #facc15", borderRadius: "6px", padding: "14px 16px" }}>
                     <div style={{ fontSize: "11px", fontWeight: 700, color: "#854d0e", letterSpacing: "0.05em", marginBottom: "8px", fontFamily: fmt.fontFamily, textTransform: "uppercase" }}>Check for Understanding</div>

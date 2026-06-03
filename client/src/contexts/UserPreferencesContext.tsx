@@ -60,6 +60,12 @@ export interface UserPreferences {
   schoolName?: string;
   // Feature toggles
   show11Plus?: boolean;
+  // V5b — opt-in ARASAAC symbol support for word banks / vocabulary, shared
+  // by the worksheet renderer and the presentation maker. Default OFF (and
+  // undefined is treated as off) so existing output is byte-identical until a
+  // teacher switches it on. When true, vocabulary/word-bank sections render a
+  // strip of free, CC-licensed ARASAAC pictograms above the terms.
+  symbolSupport?: boolean;
   // Phase A · PR-2 — last-used worksheet generator mode (manual form vs.
   // auto-from-class). Persists per-user so a teacher who prefers Auto
   // doesn't have to re-toggle on every visit.
