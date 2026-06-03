@@ -88,6 +88,18 @@ import { enforceBloomProgression } from "./bloomProgressionAudit";
 import { enforcePastPaperFingerprint } from "./pastPaperFingerprint";
 import { enforceAccessibilityAudit } from "./accessibilityAudit";
 
+// June 2026 — Worksheet Scrutiny Validators (Sprint 1–5)
+import {
+  enforceLearningObjectiveWording,
+  enforceCommonMistakesSentenceCase,
+  enforceReflectionCap,
+  enforceMathsInstructionBrevity,
+  enforcePedagogyStructurePresence,
+  runFullQualityCheck,
+  enforceVocabularyRepeat,
+  enforceKs3LengthBudget,
+} from "./worksheetScrutinyValidators";
+
 // PR-19 to PR-27 (combined) — additional validators behind the same
 // adapt() pattern. Every entry is pure / idempotent / warn-only.
 import { enforceSpVocabularyLibrary } from "./spVocabularyLibraryAudit";
@@ -337,6 +349,47 @@ export const WORKSHEET_POST_VALIDATORS: ReadonlyArray<PostValidatorRegistration>
     // Higher: AO1≈40/AO2≈40/AO3≈20). p1 warning when off-target by more
     // than ±15pp on any AO. No-ops when tier or aoHistogram is missing.
     { name: "tier-ao-histogram", fn: (ws, _opts) => enforceTierAoHistogram(ws) },
+    // ─── June 2026 — Worksheet Scrutiny Improvements ──────────────────
+    // Sprint 1: L.O. wording enforcement
+    {
+      name: "learning-objective-wording",
+      fn: (ws, _opts) => enforceLearningObjectiveWording(ws),
+    },
+    // Sprint 1: Common Mistakes → Misconceptions + sentence case
+    {
+      name: "common-mistakes-sentence-case",
+      fn: (ws, _opts) => enforceCommonMistakesSentenceCase(ws),
+    },
+    // Sprint 2: Reflection section cap (single exit question only)
+    {
+      name: "reflection-cap",
+      fn: (ws, _opts) => enforceReflectionCap(ws),
+    },
+    // Sprint 2: Maths instruction brevity (max 3 lines per guidance block)
+    {
+      name: "maths-instruction-brevity",
+      fn: (ws, opts) => enforceMathsInstructionBrevity(ws, opts),
+    },
+    // Sprint 2: KS3 length budget (warn when Year 7–9 worksheets are too long)
+    {
+      name: "ks3-length-budget",
+      fn: (ws, opts) => enforceKs3LengthBudget(ws, opts),
+    },
+    // Sprint 3: Vocabulary repeat marker (enables footer on every page)
+    {
+      name: "vocabulary-repeat",
+      fn: (ws, _opts) => enforceVocabularyRepeat(ws),
+    },
+    // Sprint 3: Pedagogy structure presence (warns if missing Do Now/Example/etc.)
+    {
+      name: "pedagogy-structure-presence",
+      fn: (ws, _opts) => enforcePedagogyStructurePresence(ws),
+    },
+    // Sprint 5: Full AI quality checker (SEND + pedagogy + assessment + design)
+    {
+      name: "full-quality-check",
+      fn: (ws, _opts) => runFullQualityCheck(ws),
+    },
   ]);
 
 /**

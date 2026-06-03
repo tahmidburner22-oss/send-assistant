@@ -43,6 +43,20 @@ import {
   workingOutRowsForMarks,
 } from "@/lib/worksheetSectionTargets";
 import { buildSelfReflection } from "@/lib/selfReflectionBuilder";
+// June 2026 — Visual Language System (response types, difficulty dots, progress markers)
+import {
+  getResponseTypeForSection,
+  getDifficultyForSection,
+  getActivityIcon,
+  getFlowArrow,
+  getBorderStyleForSection,
+  RESPONSE_TYPES,
+  DIFFICULTY_INDICATORS,
+  FLOW_SYMBOLS,
+  shouldUseExamStyleLayout,
+} from "@/lib/visualLanguageSystem";
+// June 2026 — Enhanced SEND Descriptions
+import { getSendDescription, buildAdaptationRationale } from "@/lib/sendDescriptionsEnhanced";
 // Phase 3 — Revision Tips. The pupil-facing pad-fallback in
 // RevisionTipsSection routes through buildRevisionTips so the panel
 // always renders a five-tip examiner-voice surface even when the AI
@@ -1429,7 +1443,7 @@ const SECTION_LABELS: Record<string, { label: string; borderStyle?: "dashed" | "
   "independent":     { label: "Core Practice" },
   "challenge":       { label: "Stretch & Challenge" },
   "word-problems":   { label: "Real-Life Problems" },
-  "common-mistakes": { label: "Common Mistakes to Avoid" },
+  "common-mistakes": { label: "Common Misconceptions" },
   "word-bank":       { label: "Word Bank", borderStyle: "dashed" },
   "wordbank":        { label: "Word Bank", borderStyle: "dashed" },
   "sentence-starters":{ label: "Sentence Starters", borderStyle: "dashed" },
@@ -1446,7 +1460,7 @@ const SECTION_LABELS: Record<string, { label: string; borderStyle?: "dashed" | "
   "passage":         { label: "Reading Passage" },
   "source-text":     { label: "Source Text" },
   "comprehension":   { label: "Comprehension" },
-  "misconceptions":  { label: "Common Mistakes to Avoid" },
+  "misconceptions":  { label: "Common Misconceptions" },
   "revision-mat-box":{ label: "" },
   "default":         { label: "" },
   "section-header":  { label: "" },
