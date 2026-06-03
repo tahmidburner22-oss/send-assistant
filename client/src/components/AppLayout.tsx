@@ -108,6 +108,7 @@ const allKnownPaths: { path: string; label: string }[] = [
   { path: "/tools/smart-targets", label: "SMART Targets" },
   { path: "/tools/behaviour-plan", label: "Behaviour Support Plan" },
   { path: "/tools/wellbeing-support", label: "Wellbeing Support" },
+  { path: "/tools/communication-board", label: "Communication Board" },
   { path: "/send-screener", label: "SEND Needs Screener" },
   { path: "/visual-timetable", label: "Visual Timetable" },
   { path: "/past-papers", label: "Past Papers" },

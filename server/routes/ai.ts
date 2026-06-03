@@ -126,6 +126,12 @@ function getNextCerebrasKey(): string {
 // During cooldown it is skipped entirely so other providers can serve requests.
 // This prevents cascading failures where every provider gets exhausted at once.
 const COOLDOWN_MS = 30_000; // 30 seconds per provider — shorter cooldown since we now have 6 providers + quick retry
+// A dead/invalid/quota-exhausted key (401/403/invalid-key) will not recover
+// within a request cycle. Parking it for 10 minutes stops the fallback walker
+// (and especially reorderForHeavyRequest, which moves Gemini to the FRONT for
+// long prompts) from re-trying the same broken key on every single heavy
+// request. It is still re-probed after the window in case the key is fixed.
+const AUTH_COOLDOWN_MS = 10 * 60_000; // 10 minutes for auth/invalid-key failures
 const providerCooldowns = new Map<string, number>(); // provider → timestamp when cooldown expires
 // Improvement 7 & 11: Track consecutive failures per provider for health monitoring and alerts
 const providerFailureCounts = new Map<string, number>(); // provider → consecutive failure count
@@ -141,10 +147,10 @@ function isOnCooldown(provider: string): boolean {
   return false;
 }
 
-function setCooldown(provider: string, reason = "rate limited (429)"): void {
-  const expiresAt = Date.now() + COOLDOWN_MS;
+function setCooldown(provider: string, reason = "rate limited (429)", durationMs: number = COOLDOWN_MS): void {
+  const expiresAt = Date.now() + durationMs;
   providerCooldowns.set(provider, expiresAt);
-  console.warn(`[AI] ${provider} put on cooldown for ${COOLDOWN_MS / 1000}s (until ${new Date(expiresAt).toISOString()})`);
+  console.warn(`[AI] ${provider} put on cooldown for ${durationMs / 1000}s (until ${new Date(expiresAt).toISOString()})`);
   // Improvement 7 & 11: Track consecutive failures and send health alert if threshold exceeded
   const failures = (providerFailureCounts.get(provider) || 0) + 1;
   providerFailureCounts.set(provider, failures);
@@ -623,11 +629,18 @@ export async function callWithFallback(
         errors.push(`${provider}: rate limited (429) — on cooldown for ${COOLDOWN_MS / 1000}s`);
         continue;
       }
-      // Auth error (401/403) — skip silently (do NOT put on cooldown — may be a bad key, not a rate limit)
+      // Auth error (401/403) / invalid key / exhausted quota — park the
+      // provider for a long window. A bad or quota-dead key (e.g. a broken
+      // Gemini key) will NOT recover inside a request cycle, and because
+      // reorderForHeavyRequest moves Gemini to the front for long prompts,
+      // leaving it un-cooled means every worksheet/presentation request
+      // wastes 1–3 failed calls on it first. The 10-min cooldown is still
+      // re-probed afterwards, so a fixed key recovers automatically.
       const isAuthError = msg.includes("401") || msg.includes("403") || msg.toLowerCase().includes("unauthorized") || msg.toLowerCase().includes("invalid api key");
       if (isAuthError) {
-        console.warn(`[AI] ${provider} auth error — trying next provider`);
-        errors.push(`${provider}: auth error — skipped`);
+        setCooldown(provider, "auth/invalid key (401/403)", AUTH_COOLDOWN_MS);
+        console.warn(`[AI] ${provider} auth error — parking for ${AUTH_COOLDOWN_MS / 60000}min, trying next provider`);
+        errors.push(`${provider}: auth error — on cooldown for ${AUTH_COOLDOWN_MS / 60000}min`);
         continue;
       }
       console.warn(`[AI] ${provider} failed: ${msg.slice(0, 120)}`);

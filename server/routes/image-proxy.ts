@@ -55,6 +55,14 @@ interface ResolvedImage {
   licence: string;
   /** Provider's canonical landing page so teachers can verify the image. */
   sourceUrl?: string;
+  /** Provider-supplied descriptive text (Pexels alt / Unsplash
+   *  alt_description + description + tags). Used ONLY to score relevance
+   *  so we return the best-matching photo, not just the most popular one. */
+  description?: string;
+  /** Relevance score (0+) assigned by scoreImageRelevance. Higher = better
+   *  match to the query/concept. Surfaced so the client can show confidence
+   *  and so low-confidence matches can be suppressed. */
+  relevance?: number;
 }
 
 interface SearchCacheEntry {
@@ -139,6 +147,7 @@ async function searchPexels(q: string, perPage: number): Promise<ResolvedImage[]
       ? `Photo by ${p.photographer} on Pexels`
       : "Photo from Pexels",
     licence: "Pexels Licence — free for commercial and non-commercial use, attribution appreciated",
+    description: typeof p?.alt === "string" ? p.alt : undefined,
   })).filter((img: ResolvedImage) => Boolean(img.url));
 }
 
@@ -163,6 +172,12 @@ async function searchUnsplash(q: string, perPage: number): Promise<ResolvedImage
   return photos.map((p: any): ResolvedImage => {
     const photographer = p?.user?.name || p?.user?.username;
     const photographerUrl = p?.user?.links?.html;
+    const tagText = Array.isArray(p?.tags)
+      ? p.tags.map((t: any) => (typeof t?.title === "string" ? t.title : "")).filter(Boolean).join(" ")
+      : "";
+    const description = [p?.alt_description, p?.description, tagText]
+      .filter((s: any) => typeof s === "string" && s.trim().length > 0)
+      .join(" ") || undefined;
     return {
       url: p?.urls?.regular || p?.urls?.full,
       thumbUrl: p?.urls?.small || p?.urls?.thumb || p?.urls?.regular,
@@ -176,24 +191,99 @@ async function searchUnsplash(q: string, perPage: number): Promise<ResolvedImage
         ? `Photo by ${photographer} on Unsplash`
         : "Photo from Unsplash",
       licence: "Unsplash Licence — free to use, no attribution required (credit appreciated)",
+      description,
     };
   }).filter((img: ResolvedImage) => Boolean(img.url));
+}
+
+// ── Relevance scoring ────────────────────────────────────────────────────────
+// The core fix for "random / half-matching" photos. Stock APIs rank by
+// popularity/aesthetics, NOT by how well a photo matches THIS slide. We fetch
+// a wider candidate pool, then re-rank by lexical overlap between the search
+// terms (+ the slide's concept/title) and each photo's provider-supplied
+// description/tags. Zero extra API cost, no new infra, fully free.
+const REL_STOPWORDS = new Set([
+  "the", "a", "an", "and", "or", "of", "in", "on", "for", "to", "with", "at",
+  "by", "is", "are", "this", "that", "into", "from", "as", "it", "its", "be",
+  "your", "you", "our", "their", "his", "her", "they", "we", "i", "about",
+  "what", "how", "why", "when", "where", "which", "lesson", "slide", "ks", "year",
+]);
+
+function relTokenize(s: string | undefined): string[] {
+  if (!s) return [];
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length >= 3 && !REL_STOPWORDS.has(w));
+}
+
+/**
+ * Score one image against the query tokens (weighted ×2) and the optional
+ * concept tokens (weighted ×1). Landscape images get a small bonus because
+ * slides are wide. Returns 0+ — higher means a better match. An image with
+ * no usable description gets a small non-zero floor so it can still be used
+ * as a fallback when nothing scores, preserving today's behaviour.
+ */
+function scoreImageRelevance(
+  img: ResolvedImage,
+  queryTokens: string[],
+  conceptTokens: string[],
+): number {
+  const hay = new Set(relTokenize(img.description));
+  if (hay.size === 0) return 0.1; // no metadata → low floor, never negative
+  let score = 0;
+  for (const t of new Set(queryTokens)) if (hay.has(t)) score += 2;
+  for (const t of new Set(conceptTokens)) if (hay.has(t)) score += 1;
+  if (img.width && img.height && img.width >= img.height) score += 0.25; // prefer landscape
+  return score;
+}
+
+/**
+ * Re-rank a candidate pool by relevance and return the top `limit`.
+ * Stable: equal scores keep the provider's original (popularity) order, so
+ * when scoring can't separate candidates we fall back to today's behaviour.
+ */
+function rankByRelevance(
+  candidates: ResolvedImage[],
+  q: string,
+  concept: string,
+  limit: number,
+): ResolvedImage[] {
+  const queryTokens = relTokenize(q);
+  const conceptTokens = relTokenize(concept);
+  return candidates
+    .map((img, i) => ({
+      img: { ...img, relevance: scoreImageRelevance(img, queryTokens, conceptTokens) },
+      i,
+    }))
+    .sort((a, b) => (b.img.relevance! - a.img.relevance!) || (a.i - b.i))
+    .slice(0, limit)
+    .map((x) => x.img);
 }
 
 // ── GET /api/image-proxy/search ─────────────────────────────────────────────
 router.get("/search", requireAuth, async (req: Request, res: Response) => {
   const q = String(req.query.q || "").trim().slice(0, 200);
+  // Optional concept/title (e.g. the slide title) — extra relevance signal so
+  // a keyword like "cycle" is disambiguated by a concept like "water cycle".
+  const concept = String(req.query.concept || "").trim().slice(0, 200);
   const sourceParam = String(req.query.source || "auto").toLowerCase();
   const perPageParam = parseInt(String(req.query.perPage || "6"), 10);
   const perPage = Math.min(Math.max(isNaN(perPageParam) ? 6 : perPageParam, 1), 12);
 
   if (!q) return res.status(400).json({ error: "missing_q" });
 
-  const cacheKey = `${sourceParam}:${perPage}:${q.toLowerCase()}`;
+  // Always fetch a wider candidate pool than requested so the relevance
+  // re-ranker has something to choose from — even when the caller asks for
+  // perPage=1 (the deck resolver does), we pull ~12 and return the BEST one.
+  const candidateCount = Math.min(Math.max(perPage, 12), 15);
+
+  const cacheKey = `${sourceParam}:${perPage}:${q.toLowerCase()}|${concept.toLowerCase()}`;
   const cached = searchCache.get(cacheKey);
   if (cached && Date.now() - cached.cachedAt < SEARCH_TTL_MS) {
     res.setHeader("X-Cache", "HIT");
-    return res.json({ results: cached.results, cached: true });
+    return res.json({ results: cached.results, cached: true, relevanceRanked: true });
   }
 
   // Probe key presence so the client can disable the panel gracefully.
@@ -209,31 +299,29 @@ router.get("/search", requireAuth, async (req: Request, res: Response) => {
   }
 
   try {
-    let results: ResolvedImage[] = [];
+    let pool: ResolvedImage[] = [];
     if (sourceParam === "pexels") {
-      results = await searchPexels(q, perPage);
+      pool = await searchPexels(q, candidateCount);
     } else if (sourceParam === "unsplash") {
-      results = await searchUnsplash(q, perPage);
+      pool = await searchUnsplash(q, candidateCount);
     } else {
-      // Auto: query both in parallel and interleave so the teacher always
-      // sees a mix of sources for variety.
+      // Auto: query both in parallel and combine into one candidate pool.
+      // Relevance ranking (not interleaving) then decides the final order, so
+      // the best-matching photo wins regardless of which provider it came from.
       const [px, us] = await Promise.all([
-        hasPexels ? searchPexels(q, perPage).catch(() => []) : Promise.resolve([]),
-        hasUnsplash ? searchUnsplash(q, perPage).catch(() => []) : Promise.resolve([]),
+        hasPexels ? searchPexels(q, candidateCount).catch(() => []) : Promise.resolve([]),
+        hasUnsplash ? searchUnsplash(q, candidateCount).catch(() => []) : Promise.resolve([]),
       ]);
-      const interleaved: ResolvedImage[] = [];
-      const max = Math.max(px.length, us.length);
-      for (let i = 0; i < max && interleaved.length < perPage; i++) {
-        if (i < px.length) interleaved.push(px[i]);
-        if (i < us.length && interleaved.length < perPage) interleaved.push(us[i]);
-      }
-      results = interleaved;
+      pool = [...px, ...us];
     }
+
+    // Re-rank the whole pool by relevance to (query + concept) and keep the top N.
+    const results = rankByRelevance(pool, q, concept, perPage);
 
     searchCache.set(cacheKey, { results, cachedAt: Date.now() });
     pruneSearchCache();
     res.setHeader("X-Cache", "MISS");
-    res.json({ results, cached: false });
+    res.json({ results, cached: false, relevanceRanked: true });
   } catch (err: any) {
     console.error("[image-proxy] search error:", err?.message);
     res.status(502).json({ error: "search_failed" });

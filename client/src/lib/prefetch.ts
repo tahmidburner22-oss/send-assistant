@@ -63,6 +63,7 @@ const ROUTE_IMPORTS: Record<string, Importer> = {
   "/tools/exit-ticket": () => import("../pages/tools/ExitTicket"),
   "/tools/vocabulary-builder": () => import("../pages/tools/VocabularyBuilder"),
   "/tools/wellbeing-support": () => import("../pages/tools/WellbeingSupport"),
+  "/tools/communication-board": () => import("../pages/tools/CommunicationBoard"),
   "/tools/risk-assessment": () => import("../pages/tools/RiskAssessment"),
   "/tools/parent-newsletter": () => import("../pages/tools/ParentNewsletter"),
   "/tools/presentation-maker": () => import("../pages/tools/PresentationMaker"),
