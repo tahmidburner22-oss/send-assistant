@@ -5,6 +5,7 @@ import {
   Shield, BookOpen, IdCard, CheckSquare, ShieldAlert, Heart,
   ScanSearch, Calendar, ArrowRight, Brain, Users, Star,
   ChevronRight, FileText, Sparkles, FileCheck, ShieldCheck, LayoutGrid,
+  Layers, Gamepad2, Network, Recycle, Bot,
 } from "lucide-react";
 
 interface Tool {
@@ -132,8 +133,71 @@ const supportTools: Tool[] = [
   },
 ];
 
+const studioTools: Tool[] = [
+  {
+    path: "/tools/connected-resource",
+    label: "Connected Resource Generator",
+    icon: Layers,
+    color: "bg-indigo-50 text-indigo-600",
+    border: "border-indigo-100",
+    description: "One topic → a whole connected pack: differentiated worksheet, slides, reading at 3 levels, quiz, comms-board vocabulary and a TA guide.",
+    badge: "Flagship",
+    badgeColor: "bg-indigo-100 text-indigo-700",
+  },
+  {
+    path: "/tools/story-studio",
+    label: "Reading & Story Studio",
+    icon: BookOpen,
+    color: "bg-emerald-50 text-emerald-600",
+    border: "border-emerald-100",
+    description: "Pupils become published authors — accessible, illustrated, symbol-supported e-books with read-aloud, printed with their name on the cover.",
+    badge: "New",
+    badgeColor: "bg-emerald-100 text-emerald-700",
+  },
+  {
+    path: "/tools/activity-generator",
+    label: "Interactive Activity Generator",
+    icon: Gamepad2,
+    color: "bg-yellow-50 text-yellow-600",
+    border: "border-yellow-100",
+    description: "Accessible word searches, crosswords, matching and fill-the-gap activities from any vocabulary — print or play on screen, adjustable difficulty.",
+    badge: "New",
+    badgeColor: "bg-yellow-100 text-yellow-700",
+  },
+  {
+    path: "/tools/visual-learning",
+    label: "Visual Learning Studio",
+    icon: Network,
+    color: "bg-sky-50 text-sky-600",
+    border: "border-sky-100",
+    description: "Accessible mind maps, cycles and timelines drawn in code (always relevant, free) with progressive disclosure so learners aren't overwhelmed.",
+    badge: "New",
+    badgeColor: "bg-sky-100 text-sky-700",
+  },
+  {
+    path: "/tools/adaptation-hub",
+    label: "Resource Adaptation Hub",
+    icon: Recycle,
+    color: "bg-teal-50 text-teal-600",
+    border: "border-teal-100",
+    description: "Adapt any text for a specific SEND profile, or turn a video into accessible comprehension activities.",
+    badge: "New",
+    badgeColor: "bg-teal-100 text-teal-700",
+  },
+  {
+    path: "/tools/teaching-agent",
+    label: "SEND Teaching Agent",
+    icon: Bot,
+    color: "bg-purple-50 text-purple-600",
+    border: "border-purple-100",
+    description: "EHCP-linked assessment rubrics, costed provision maps and annual-review prep packs — aligned to UK SEND frameworks.",
+    badge: "New",
+    badgeColor: "bg-purple-100 text-purple-700",
+  },
+];
+
 const stats = [
-  { label: "SEND Tools", value: String(creationTools.length + supportTools.length), icon: Brain, color: "text-indigo-600" },
+  { label: "SEND Tools", value: String(creationTools.length + supportTools.length + studioTools.length), icon: Brain, color: "text-indigo-600" },
   { label: "Pupils Supported", value: "1,200+", icon: Users, color: "text-blue-600" },
   { label: "Time Saved / Tool", value: "~20 min", icon: Star, color: "text-amber-600" },
 ];
@@ -173,7 +237,7 @@ function ToolCard({ tool }: { tool: Tool }) {
 }
 
 export default function SENDHub() {
-  const totalTools = creationTools.length + supportTools.length;
+  const totalTools = creationTools.length + supportTools.length + studioTools.length;
 
   return (
     <div className="px-4 py-6 max-w-4xl mx-auto space-y-7">
@@ -278,6 +342,23 @@ export default function SENDHub() {
         <p className="text-xs text-muted-foreground mb-3 -mt-1">Plans, passports, targets and support documents for SEND pupils.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {supportTools.map(tool => <ToolCard key={tool.path} tool={tool} />)}
+        </div>
+      </motion.div>
+
+      {/* ── Section 3: Connected Studios ──────────────────────────────── */}
+      <motion.div variants={container} initial="hidden" animate="show">
+        <div className="flex items-center gap-2 mb-3 mt-2">
+          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-500 flex items-center justify-center shadow-sm">
+            <Layers className="w-3.5 h-3.5 text-white" />
+          </div>
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Connected Studios</h2>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-auto">
+            {studioTools.length} tools
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3 -mt-1">Flagship SEND-first studios: one input → connected, accessible, differentiated resources.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {studioTools.map(tool => <ToolCard key={tool.path} tool={tool} />)}
         </div>
       </motion.div>
 
