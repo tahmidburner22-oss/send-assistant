@@ -2963,7 +2963,7 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
 
     // 1. Learning Objective
     if (wantLO) {
-      structuredSections.push(`{"title": "Learning Objective", "type": "objective", "content": "By the end of this lesson, students will be able to [one clear, specific learning objective for ${params.topic}]"}`);
+      structuredSections.push(`{"title": "Learning Objective", "type": "objective", "content": "By the end of this lesson, you will be able to [one clear, specific learning objective for ${params.topic}]"}`);
     }
 
     // 2. Retrieval Practice (if selected and topic provided)

@@ -1456,10 +1456,27 @@ function getSectionStyle(
   overlayColor?: string,
 ): { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string; headerBg: string; headerText: string; borderStyle: string } {
   const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  // When an accessibility overlay is active, it overrides ONLY background colours
+  // and text colours — structural formatting (borders, icons, pills, layout) is
+  // kept intact. Section bg and header bg become the overlay colour; all text
+  // becomes black. Border colour becomes black but border style (dashed/double)
+  // is preserved so the layout language remains readable.
+  if (hasOverlay) {
+    const meta = SECTION_LABELS[type] || { label: "" };
+    return {
+      border: "#000000",
+      bg: overlayColor!,
+      badge: "#000000",
+      badgeBg: overlayColor!,
+      icon: "",
+      label: meta.label,
+      headerBg: overlayColor!,
+      headerText: "#000000",
+      borderStyle: meta.borderStyle || "solid",
+    };
+  }
   const colourKey = SECTION_COLOUR_MAP[type] || "navy";
-  const colours = hasOverlay
-    ? { header: overlayColor!, headerText: "#111111", border: "#111111", bg: overlayColor! }
-    : VL_COLOURS[colourKey];
+  const colours = VL_COLOURS[colourKey];
   const meta = SECTION_LABELS[type] || { label: "" };
   return {
     border: colours.border,
@@ -2247,8 +2264,9 @@ function TrueFalseSection({
   // Fallback: if nothing parsed, show all numbered or bullet lines without TRUE/FALSE
   const displayLines = statements.length > 0 ? statements :
     allLines.filter(l => /^\d+[.)\s].{8,}/.test(l) || /^[-*]\s+.{8,}/.test(l)).map(l => ({ text: l.replace(/^(\d+[.)\s]+|[-*]\s+)/, "").trim(), answer: undefined }));
-  const accentColor = fmt.accentColor || "#2A6F6F";
-  const RED = "#8B0000";
+  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const accentColor = hasOverlay ? "#000000" : (fmt.accentColor || "#2A6F6F");
+  const RED = hasOverlay ? "#000000" : "#8B0000";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: fmt.lineHeight > 1.7 ? "14px" : "10px" }}>
@@ -2257,7 +2275,7 @@ function TrueFalseSection({
           fontSize: `${fmt.fontSize}px`,
           fontFamily: fmt.fontFamily,
           lineHeight: String(fmt.lineHeight),
-          color: "#374151",
+          color: hasOverlay ? "#000000" : "#374151",
           fontStyle: "italic",
           marginBottom: "4px",
         }} dangerouslySetInnerHTML={{ __html: renderMath(instr) }} />
@@ -2273,8 +2291,8 @@ function TrueFalseSection({
             gap: "12px",
             padding: "8px 10px",
             borderRadius: "6px",
-            background: i % 2 === 0 ? overlayColor : `${overlayColor}cc`,
-            border: `1px solid ${accentColor}22`,
+            background: hasOverlay ? overlayColor : (i % 2 === 0 ? overlayColor : `${overlayColor}cc`),
+            border: hasOverlay ? `1px solid #000000` : `1px solid ${accentColor}22`,
           }}>
             <span style={{
               flex: 1,
@@ -2282,15 +2300,16 @@ function TrueFalseSection({
               fontFamily: fmt.fontFamily,
               lineHeight: String(fmt.lineHeight),
               letterSpacing: fmt.letterSpacing,
-              color: "#1e293b",
+              color: hasOverlay ? "#000000" : "#1e293b",
             }} dangerouslySetInnerHTML={{ __html: renderMath(stmtText) }} />
             <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+              {/* TRUE pill — keeps pill shape; overlay replaces colour with black-on-overlay */}
               <div style={{
                 padding: "5px 18px",
                 borderRadius: "999px",
                 border: `1.5px solid ${accentColor}`,
-                background: isTeacher && answer === "TRUE" ? accentColor : "white",
-                color: isTeacher && answer === "TRUE" ? "white" : accentColor,
+                background: isTeacher && answer === "TRUE" ? accentColor : (hasOverlay ? overlayColor : "white"),
+                color: isTeacher && answer === "TRUE" ? (hasOverlay ? "#000000" : "white") : accentColor,
                 fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
                 fontFamily: fmt.fontFamily,
                 fontWeight: 700,
@@ -2299,12 +2318,13 @@ function TrueFalseSection({
                 textAlign: "center" as const,
                 userSelect: "none" as const,
               }}>TRUE</div>
+              {/* FALSE pill — keeps pill shape; overlay replaces colour with black-on-overlay */}
               <div style={{
                 padding: "5px 18px",
                 borderRadius: "999px",
                 border: `1.5px solid ${RED}`,
-                background: isTeacher && answer === "FALSE" ? RED : "white",
-                color: isTeacher && answer === "FALSE" ? "white" : RED,
+                background: isTeacher && answer === "FALSE" ? RED : (hasOverlay ? overlayColor : "white"),
+                color: isTeacher && answer === "FALSE" ? (hasOverlay ? "#000000" : "white") : RED,
                 fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
                 fontFamily: fmt.fontFamily,
                 fontWeight: 700,
@@ -2331,8 +2351,9 @@ function MCQSection({
   isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
-  const accentColor = fmt.accentColor || "#1B2A4A";
-  const GREEN = "#166534";
+  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const accentColor = hasOverlay ? "#000000" : (fmt.accentColor || "#1B2A4A");
+  const GREEN = hasOverlay ? "#000000" : "#166534";
   const OPTION_LABELS = ["A", "B", "C", "D", "E", "F"];
 
   // ── Parse multiple numbered questions from a single content block ──────────
@@ -2444,29 +2465,29 @@ function MCQSection({
                   gap: "10px",
                   padding: "8px 12px",
                   borderRadius: "6px",
-                  border: `1.5px solid ${correct ? GREEN : `${accentColor}33`}`,
-                  background: correct ? "#f0fdf4" : overlayColor,
+                  border: `1.5px solid ${correct ? GREEN : (hasOverlay ? "#000000" : `${accentColor}33`)}`,
+                  background: correct ? (hasOverlay ? overlayColor : "#f0fdf4") : overlayColor,
                 }}>
                   <div style={{
                     width: "24px",
                     height: "24px",
                     borderRadius: "50%",
                     border: `2px solid ${correct ? GREEN : accentColor}`,
-                    background: correct ? GREEN : "white",
+                    background: correct ? (hasOverlay ? overlayColor : GREEN) : (hasOverlay ? overlayColor : "white"),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     flexShrink: 0,
                     fontSize: `${Math.max(fmt.fontSize - 3, 9)}px`,
                     fontWeight: 700,
-                    color: correct ? "white" : accentColor,
+                    color: correct ? (hasOverlay ? "#000000" : "white") : accentColor,
                     fontFamily: fmt.fontFamily,
                   }}>{label}</div>
                   <span
                     style={{
                       fontSize: `${fmt.fontSize}px`,
                       fontFamily: fmt.fontFamily,
-                      color: correct ? GREEN : "#1e293b",
+                      color: hasOverlay ? "#000000" : (correct ? GREEN : "#1e293b"),
                       fontWeight: correct ? 600 : 400,
                     }}
                     dangerouslySetInnerHTML={{ __html: renderMath(text) }}
@@ -4790,31 +4811,38 @@ function MathsCompactLayout({
         pageBreakInside: "avoid",
       }}>
         <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-          {/* Question number badge */}
+          {/* Question number — plain number, Maths Genie style */}
           <div style={{
-            minWidth: "22px", width: "22px", height: "22px",
-            background: hasOverlay ? "transparent" : "#1a2744",
-            border: hasOverlay ? `1.5px solid #111` : "none",
-            color: hasOverlay ? "#111" : "#fff",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "10px", fontWeight: 700,
+            minWidth: "18px",
+            fontSize: `${fmt.fontSize}px`,
+            fontWeight: 700,
+            color: hasOverlay ? "#000" : "#1a2744",
             flexShrink: 0,
             fontFamily: fmt.fontFamily,
+            paddingTop: "1px",
           }}>{globalIdx + 1}</div>
           <div style={{ flex: 1 }}>
             {typeLabel && <span style={{ fontSize: "8px", fontWeight: 700, color: hasOverlay ? "#333" : "#6b7280", marginRight: "4px", textTransform: "uppercase" as const }}>{typeLabel}</span>}
             <span
-              style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: hasOverlay ? "#111" : "#1e293b" }}
+              style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: hasOverlay ? "#000" : "#1e293b" }}
               dangerouslySetInnerHTML={{ __html: renderMath(q.text) }}
             />
-            {isTeacherView && <span style={{ fontSize: "9px", color: hasOverlay ? "#333" : "#6b7280", marginLeft: "6px", fontStyle: "italic" }}>({q.marks} mark{q.marks !== 1 ? "s" : ""})</span>}
           </div>
+          {/* Marks in brackets — always shown, Maths Genie style */}
+          <div style={{
+            fontSize: `${Math.max(fmt.fontSize - 1, 9)}px`,
+            color: hasOverlay ? "#000" : "#374151",
+            fontFamily: fmt.fontFamily,
+            flexShrink: 0,
+            whiteSpace: "nowrap" as const,
+            paddingTop: "1px",
+          }}>({q.marks} mark{q.marks !== 1 ? "s" : ""})</div>
         </div>
         {/* Working space lines */}
         {!bookMode && (
-          <div style={{ marginTop: "6px", paddingLeft: "30px" }}>
+          <div style={{ marginTop: "6px", paddingLeft: "26px" }}>
             {Array.from({ length: lineCount }).map((_: unknown, n: number) => (
-              <div key={n} style={{ borderBottom: `1px solid ${hasOverlay ? "#888" : "#9ca3af"}`, height: "24px", marginBottom: "2px" }} />
+              <div key={n} style={{ borderBottom: `1px solid ${hasOverlay ? "#888" : "#9ca3af"}`, height: "22px", marginBottom: "2px" }} />
             ))}
           </div>
         )}
@@ -4824,7 +4852,7 @@ function MathsCompactLayout({
 
   return (
     <div style={{ fontFamily: fmt.fontFamily, background: bgColor }}>
-      {/* ── Topic header bar (MathsGenie style) ── */}
+      {/* ── Header bar: Adaptly branding | Topic | Year Group ── */}
       <div style={{
         display: "grid",
         gridTemplateColumns: "1fr auto 1fr",
@@ -4835,14 +4863,17 @@ function MathsCompactLayout({
         padding: "6px 12px",
         marginBottom: "0",
       }}>
-        <div style={{ fontSize: "10px", fontWeight: 600, color: headerText, fontFamily: fmt.fontFamily }}>
-          {metadata.yearGroup || ""}
+        {/* Left: Adaptly branding */}
+        <div style={{ fontSize: "10px", fontWeight: 700, color: headerText, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>
+          adaptly.co.uk
         </div>
+        {/* Centre: Topic name */}
         <div style={{ fontSize: "13px", fontWeight: 700, color: headerText, fontFamily: fmt.fontFamily, textAlign: "center" as const }}>
           {metadata.topic || metadata.title || ""}
         </div>
+        {/* Right: Year group */}
         <div style={{ fontSize: "10px", fontWeight: 600, color: headerText, fontFamily: fmt.fontFamily, textAlign: "right" as const }}>
-          {metadata.examBoard && metadata.examBoard !== "General" && metadata.examBoard !== "none" ? metadata.examBoard.toUpperCase() : ""}
+          {metadata.yearGroup || ""}
         </div>
       </div>
 
@@ -4863,7 +4894,7 @@ function MathsCompactLayout({
         </div>
       </div>
 
-      {/* ── Footer bar ── */}
+      {/* ── Footer bar: Year Group | Topic | Adaptly branding ── */}
       <div style={{
         display: "grid",
         gridTemplateColumns: "1fr auto 1fr",
@@ -4873,14 +4904,17 @@ function MathsCompactLayout({
         background: headerBg,
         padding: "4px 12px",
       }}>
+        {/* Left: Year group (mirrors header right) */}
         <div style={{ fontSize: "10px", fontWeight: 600, color: headerText, fontFamily: fmt.fontFamily }}>
           {metadata.yearGroup || ""}
         </div>
+        {/* Centre: Topic name */}
         <div style={{ fontSize: "11px", fontWeight: 700, color: headerText, fontFamily: fmt.fontFamily, textAlign: "center" as const }}>
           {metadata.topic || metadata.title || ""}
         </div>
-        <div style={{ fontSize: "10px", fontWeight: 600, color: headerText, fontFamily: fmt.fontFamily, textAlign: "right" as const }}>
-          {isTeacherView ? `${questionItems.length} questions` : ""}
+        {/* Right: Adaptly branding (mirrors header left) */}
+        <div style={{ fontSize: "10px", fontWeight: 700, color: headerText, fontFamily: fmt.fontFamily, textAlign: "right" as const, letterSpacing: "0.05em" }}>
+          adaptly.co.uk
         </div>
       </div>
     </div>
@@ -7085,7 +7119,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 <div style={{ padding: "4px 14px 10px 14px" }}>
                                   {bodyParts.map((bp, bpi) => (
                                     <div key={bpi} style={{ marginBottom: bpi < bodyParts.length - 1 ? "8px" : "0", paddingBottom: bpi < bodyParts.length - 1 ? "8px" : "0", borderBottom: bpi < bodyParts.length - 1 ? "1px dashed #e2e8f0" : "none" }}>
-                                      <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, marginBottom: "2px", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{bp.label}</div>
+                                      <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, marginBottom: "2px", letterSpacing: "0.02em" }}>{bp.label}</div>
                                       <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: bp.key === "wrong" ? "#dc2626" : bp.key === "right" ? "#166534" : "#374151", fontWeight: bp.key === "wrong" ? 600 : 400, lineHeight: "1.5", paddingLeft: "8px", borderLeft: bp.key === "wrong" ? "3px solid #dc2626" : bp.key === "right" ? "3px solid #166534" : bp.key === "check" ? "3px solid #1a2744" : "none" }}>
                                         {bp.text.split("\n").map((tl, tli) => (<div key={tli} dangerouslySetInnerHTML={{ __html: renderMath(tl) }} />))}
                                       </div>
@@ -7696,8 +7730,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                           color: "#1a2744",
                                           fontFamily: fmt.fontFamily,
                                           marginBottom: "3px",
-                                          textTransform: "uppercase" as const,
-                                          letterSpacing: "0.04em",
+                                          letterSpacing: "0.02em",
                                         }}>
                                           {part.label}
                                         </div>

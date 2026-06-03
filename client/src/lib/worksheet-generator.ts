@@ -2910,19 +2910,18 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     ? "\n\u2139\ufe0f Note: You do not need to share your answer aloud. Write your response in the space below.\n"
     : "";
 
+  // Per scrutiny document: confidence grid and written reflection prompts removed.
+  // Only the exit ticket remains on new worksheets.
+  const exitTicketText = sendOverlay.positiveFraming
+    ? `Write ONE thing you found interesting about ${topic} today in a single sentence:`
+    : `Write ONE thing you learned today about ${topic} in a single sentence:`;
   sections.push({
     title: "SELF REFLECTION",
-    type: "reflection",
+    type: "self-reflection",
     content: [
-      `${reflectionLabel}\n`,
-      `TOPIC | NOT YET | GETTING THERE | CONFIDENT`,
-      reflectionTopics.map(t => `${t} | □ | □ | □`).join("\n"),
-      "\nB  Written reflection:\n",
-      `One thing I now understand about ${topic} that I did not before is ...\n`,
-      `One part of ${topic} I still need to practise is ...\n`,
-      `A question I would like to ask my teacher about ${topic} is ...\n`,
+      `SUBTITLE: Quick exit question:`,
       hiNote,
-      `\n${exitTicketLabel}`,
+      `EXIT_TICKET: ${exitTicketText}`,
     ].join("\n"),
   });
 
