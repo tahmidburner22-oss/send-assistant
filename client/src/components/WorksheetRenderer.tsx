@@ -6350,9 +6350,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         }
 
         // ── SECONDARY: clean professional layout ──
-        // (style variable kept for potential future use; isSectionDivider inlined below)
-        void style; // suppress unused-variable warning — style used by primary branch above
         const isTeacherHeader = isTeacherSection && (section.type === "mark-scheme" || section.type === "answers");
+        // Pre-compute section label for the header bar (used in JSX below)
+        const sectionHeaderLabel = isTeacherHeader
+          ? "TEACHER COPY — ANSWER KEY"
+          : (style.label || (section.title ? String(section.title).replace(/^[*_]+|[*_]+$/g, '').trim() : ""));
         const sectionTitle = (typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim();
 
         // ── Section group dividers: inject "SECTION N — NAME — Questions X–Y" before first question in each group ──
@@ -6732,50 +6734,43 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               </div>
             ) : section.type === "diagram" ? null : section.type === "send-support" ? null : (
               /* Section header: clean text label bar — no icon, readable section name */
-              {(() => {
-                // Determine the section label: prefer explicit title, then SECTION_LABELS lookup
-                const sectionLabel = isTeacherHeader
-                  ? "TEACHER COPY — ANSWER KEY"
-                  : (style.label || (section.title ? String(section.title).replace(/^[*_]+|[*_]+$/g, '').trim() : ""));
-                if (!sectionLabel) return null; // No label — don't render a header bar
-                return (
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    background: isTeacherHeader ? "#8b1a1a" : style.headerBg,
+              sectionHeaderLabel ? (
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  background: isTeacherHeader ? "#8b1a1a" : style.headerBg,
+                  color: isTeacherHeader ? "#ffffff" : style.headerText,
+                  padding: "7px 14px",
+                  marginBottom: "0",
+                  marginLeft: "-16px",
+                  marginRight: "-16px",
+                  marginTop: "-14px",
+                  borderRadius: "2px 2px 0 0",
+                  borderBottom: `1px solid ${isTeacherHeader ? "rgba(0,0,0,0.2)" : style.border}`,
+                }}>
+                  <span style={{
+                    fontSize: "9.5px",
+                    fontWeight: 700,
+                    fontFamily: fmt.fontFamily,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.10em",
                     color: isTeacherHeader ? "#ffffff" : style.headerText,
-                    padding: "7px 14px",
-                    marginBottom: "0",
-                    marginLeft: "-16px",
-                    marginRight: "-16px",
-                    marginTop: "-14px",
-                    borderRadius: "2px 2px 0 0",
-                    borderBottom: `1px solid ${isTeacherHeader ? "rgba(0,0,0,0.2)" : style.border}`,
                   }}>
-                    <span style={{
-                      fontSize: "9.5px",
-                      fontWeight: 700,
-                      fontFamily: fmt.fontFamily,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.10em",
-                      color: isTeacherHeader ? "#ffffff" : style.headerText,
-                    }}>
-                      {sectionLabel}
-                    </span>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      {getDifficultyDots(section.type) && (
-                        <span style={{ fontSize: "8px", letterSpacing: "1px", opacity: 0.85, color: isTeacherHeader ? "#ffffff" : style.headerText }}>
-                          {getDifficultyDots(section.type)}
-                        </span>
-                      )}
-                      {isTeacherSection && !isTeacherHeader && (
-                        <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
-                      )}
-                    </div>
+                    {sectionHeaderLabel}
+                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    {getDifficultyDots(section.type) && (
+                      <span style={{ fontSize: "8px", letterSpacing: "1px", opacity: 0.85, color: isTeacherHeader ? "#ffffff" : style.headerText }}>
+                        {getDifficultyDots(section.type)}
+                      </span>
+                    )}
+                    {isTeacherSection && !isTeacherHeader && (
+                      <span style={{ background: "rgba(255,255,255,0.2)", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
+                    )}
                   </div>
-                );
-              })()}
+                </div>
+              ) : null
             )}
 
             {/* Section content */}
