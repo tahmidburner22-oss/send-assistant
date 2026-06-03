@@ -57,6 +57,19 @@ import "katex/dist/katex.min.css";
 import AuditTrailPanel, { type AuditTrailWorksheet } from "@/components/AuditTrailPanel";
 import WorksheetCostChip from "@/components/WorksheetCostChip";
 
+// ── VL-FIX-01: Case-insensitive overlay detection ────────────────────────────
+// The default "no overlay" colour is stored as "#FFFFFF" (uppercase) in
+// send-data.ts, but previous checks compared against "#ffffff" (lowercase).
+// JavaScript string comparison is case-sensitive, so "#FFFFFF" !== "#ffffff"
+// evaluated to TRUE — causing the renderer to mistakenly treat the default
+// white background as an active overlay and suppress all semantic VL colours.
+// This helper normalises the comparison to be case-insensitive.
+function isOverlayActive(overlayColor?: string): boolean {
+  if (!overlayColor) return false;
+  const norm = overlayColor.trim().toLowerCase();
+  return norm !== "white" && norm !== "#ffffff" && norm !== "transparent" && norm !== "";
+}
+
 const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
   // Legacy question type aliases
   "true-false": "q-true-false",
@@ -1455,7 +1468,7 @@ function getSectionStyle(
   _yearNum?: number,
   overlayColor?: string,
 ): { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string; headerBg: string; headerText: string; borderStyle: string } {
-  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const hasOverlay = isOverlayActive(overlayColor);
   // When an accessibility overlay is active, it overrides ONLY background colours
   // and text colours — structural formatting (borders, icons, pills, layout) is
   // kept intact. Section bg and header bg become the overlay colour; all text
@@ -2264,7 +2277,7 @@ function TrueFalseSection({
   // Fallback: if nothing parsed, show all numbered or bullet lines without TRUE/FALSE
   const displayLines = statements.length > 0 ? statements :
     allLines.filter(l => /^\d+[.)\s].{8,}/.test(l) || /^[-*]\s+.{8,}/.test(l)).map(l => ({ text: l.replace(/^(\d+[.)\s]+|[-*]\s+)/, "").trim(), answer: undefined }));
-  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const hasOverlay = isOverlayActive(overlayColor);
   const accentColor = hasOverlay ? "#000000" : (fmt.accentColor || "#2A6F6F");
   const RED = hasOverlay ? "#000000" : "#8B0000";
 
@@ -2351,7 +2364,7 @@ function MCQSection({
   isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
-  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const hasOverlay = isOverlayActive(overlayColor);
   const accentColor = hasOverlay ? "#000000" : (fmt.accentColor || "#1B2A4A");
   const GREEN = hasOverlay ? "#000000" : "#166534";
   const OPTION_LABELS = ["A", "B", "C", "D", "E", "F"];
@@ -4510,7 +4523,7 @@ function PrimarySection({
    *  per-question Working-Out box can be gated to maths only. */
   subject?: string;
 }) {
-  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const hasOverlay = isOverlayActive(overlayColor);
   const palette = PRIMARY_BRIGHT_PALETTE[paletteIndex % PRIMARY_BRIGHT_PALETTE.length];
   // When an accessibility overlay is active, suppress all palette colours.
   // The section wrapper uses the overlay colour as background; the header
@@ -4746,7 +4759,7 @@ function MathsCompactLayout({
   isTeacherView: boolean;
   bookMode: boolean;
 }) {
-  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff" && overlayColor !== "transparent";
+  const hasOverlay = isOverlayActive(overlayColor);
   const bgColor = hasOverlay ? overlayColor! : "#ffffff";
   const borderColor = hasOverlay ? "#111111" : "#1a2744";
   const headerBg = hasOverlay ? overlayColor! : "#1a2744";
@@ -4921,6 +4934,134 @@ function MathsCompactLayout({
   );
 }
 
+// ── VL-FEAT-01: Visual Language Legend ─────────────────────────────────────────────
+// A compact, print-ready legend that explains the semantic colour system,
+// difficulty indicators, and border conventions to teachers and students.
+// When a SEND overlay is active, the legend explains that colours are
+// overridden for accessibility while structural elements remain intact.
+function VisualLanguageLegend({ fmt, overlayColor }: { fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
+  const hasOverlay = isOverlayActive(overlayColor);
+  const bg = hasOverlay ? overlayColor! : "#f8fafc";
+  const borderCol = hasOverlay ? "#000000" : "#d1d5db";
+  const textCol = hasOverlay ? "#000000" : "#374151";
+  const labelCol = hasOverlay ? "#000000" : "#1B2A4A";
+  const fontFamily = fmt.fontFamily;
+
+  const colourItems = [
+    { colour: hasOverlay ? bg : VL_COLOURS.blue.header,   label: "Information / Teaching Point" },
+    { colour: hasOverlay ? bg : VL_COLOURS.green.header,  label: "Main Task / Activity" },
+    { colour: hasOverlay ? bg : VL_COLOURS.yellow.header, label: "Hint, Reminder or Support" },
+    { colour: hasOverlay ? bg : VL_COLOURS.orange.header, label: "Key Vocabulary" },
+    { colour: hasOverlay ? bg : VL_COLOURS.red.header,    label: "Challenge / Extension" },
+    { colour: hasOverlay ? bg : VL_COLOURS.purple.header, label: "Reflection / Self-Assessment" },
+    { colour: hasOverlay ? bg : VL_COLOURS.grey.header,   label: "Teacher Notes / Optional" },
+  ];
+
+  return (
+    <div
+      className="ws-vl-legend no-print-on-student"
+      style={{
+        border: `1px solid ${borderCol}`,
+        borderRadius: "4px",
+        background: bg,
+        padding: "8px 12px",
+        marginBottom: "16px",
+        pageBreakInside: "avoid",
+        breakInside: "avoid",
+      }}
+    >
+      {/* Legend header */}
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "7px", borderBottom: `1px solid ${borderCol}`, paddingBottom: "5px" }}>
+        <span style={{ fontSize: "8px", fontWeight: 700, fontFamily, textTransform: "uppercase", letterSpacing: "0.12em", color: labelCol }}>Worksheet Key</span>
+        {hasOverlay && (
+          <span style={{ fontSize: "7.5px", fontFamily, color: textCol, fontStyle: "italic", marginLeft: "4px" }}>
+            — Colour overlay active: backgrounds replaced for accessibility. Borders and icons remain as structural guides.
+          </span>
+        )}
+      </div>
+
+      {/* Three-column layout: colours | difficulty | borders */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px 16px" }}>
+
+        {/* Column 1: Colour key */}
+        <div>
+          <div style={{ fontSize: "7.5px", fontWeight: 700, fontFamily, color: labelCol, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Colour Coding</div>
+          {colourItems.map((item, idx) => (
+            <div key={idx} style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "3px" }}>
+              <div style={{
+                width: "10px", height: "10px", borderRadius: "2px",
+                background: item.colour,
+                border: hasOverlay ? `1px solid #000` : `1px solid ${item.colour}`,
+                flexShrink: 0,
+              }} />
+              <span style={{ fontSize: "7.5px", fontFamily, color: textCol, lineHeight: "1.3" }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Column 2: Difficulty indicators */}
+        <div>
+          <div style={{ fontSize: "7.5px", fontWeight: 700, fontFamily, color: labelCol, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Difficulty</div>
+          {[
+            { dots: "●",     label: "Core" },
+            { dots: "●●",   label: "Intermediate" },
+            { dots: "●●●", label: "Advanced" },
+          ].map((item, idx) => (
+            <div key={idx} style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "3px" }}>
+              <span style={{ fontSize: "8px", letterSpacing: "1px", color: hasOverlay ? "#000" : "#1B2A4A", flexShrink: 0 }}>{item.dots}</span>
+              <span style={{ fontSize: "7.5px", fontFamily, color: textCol }}>{item.label}</span>
+            </div>
+          ))}
+          {/* Response type icons */}
+          <div style={{ fontSize: "7.5px", fontWeight: 700, fontFamily, color: labelCol, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px", marginTop: "6px" }}>Response Type</div>
+          {[
+            { sym: "□", label: "Tick box" },
+            { sym: "○", label: "Circle answer" },
+            { sym: "✎", label: "Written response" },
+          ].map((item, idx) => (
+            <div key={idx} style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "3px" }}>
+              <span style={{ fontSize: "9px", color: hasOverlay ? "#000" : "#1B2A4A", flexShrink: 0, width: "12px", textAlign: "center" }}>{item.sym}</span>
+              <span style={{ fontSize: "7.5px", fontFamily, color: textCol }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Column 3: Border conventions */}
+        <div>
+          <div style={{ fontSize: "7.5px", fontWeight: 700, fontFamily, color: labelCol, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px" }}>Border Style</div>
+          {[
+            { borderStyle: "1.5px solid #374151",  label: "Essential task" },
+            { borderStyle: "1.5px dashed #374151", label: "Optional / support" },
+            { borderStyle: "3px double #374151",   label: "Assessment task" },
+          ].map((item, idx) => (
+            <div key={idx} style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "5px" }}>
+              <div style={{
+                width: "18px", height: "12px",
+                border: hasOverlay ? `1.5px solid #000` : item.borderStyle,
+                borderRadius: "2px",
+                flexShrink: 0,
+              }} />
+              <span style={{ fontSize: "7.5px", fontFamily, color: textCol }}>{item.label}</span>
+            </div>
+          ))}
+          {/* Progress markers */}
+          <div style={{ fontSize: "7.5px", fontWeight: 700, fontFamily, color: labelCol, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "4px", marginTop: "6px" }}>Progress</div>
+          {[
+            { sym: "✓", label: "Completed" },
+            { sym: "★", label: "Excellent work" },
+            { sym: "🚀", label: "Ready for next challenge" },
+          ].map((item, idx) => (
+            <div key={idx} style={{ display: "flex", alignItems: "center", gap: "5px", marginBottom: "3px" }}>
+              <span style={{ fontSize: "9px", color: hasOverlay ? "#000" : "#1B2A4A", flexShrink: 0, width: "12px", textAlign: "center" }}>{item.sym}</span>
+              <span style={{ fontSize: "7.5px", fontFamily, color: textCol }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(function WorksheetRendererInner(
   {
   worksheet,
@@ -5071,8 +5212,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
 
   // Overlay logic: only apply if a real colour is chosen (not white/transparent)
-  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff"
-    && overlayColor !== "transparent";
+  const hasOverlay = isOverlayActive(overlayColor);
 
   // ── Phase 4 / FEAT-010 — accessibility profile ──────────────────────────
   // Read from worksheet.metadata.accessibilityProfile if set; fall back to "standard".
@@ -6065,6 +6205,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         />
       )}
 
+      {/* ── VL-FEAT-01: Visual Language Legend — shown on teacher view only, not on revision mats or maths compact ── */}
+      {!isRevisionMat && !(isMathsSubject && !isPrimary) && isTeacherView && (
+        <VisualLanguageLegend fmt={fmt} overlayColor={overlayColor} />
+      )}
       {/* ── Sections (normal portrait layout — hidden when revision mat active or maths compact active) ── */}
       {!isRevisionMat && !(isMathsSubject && !isPrimary) && (worksheet.sections || []).map((section, i) => {
         // Preserve the original type BEFORE normalisation so we can detect
@@ -6381,29 +6525,47 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 pageBreakInside: "avoid",
                 breakInside: "avoid",
               }}>
-              <div style={{ borderTop: "2px solid #1a2744", marginBottom: "5px" }} />
-              <div style={{
-                fontSize: "10px",
-                fontWeight: 700,
-                color: "#2a7f8f",
-                fontFamily: fmt.fontFamily,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}>
-                {(() => {
-                  // IMP-10 — anxiety/SEMH pupils get invitational divider text.
-                  // Non-anxiety output is unchanged.
+              {/* VL-FIX-02: Section group dividers now use the semantic colour system.
+                  Section 1 (Recall) = blue, Section 2 (Understanding) = green, Section 3 (Application) = red.
+                  When a SEND overlay is active, the overlay colour is used with black text. */}
+              {(() => {
+                const dividerColour = isOverlayActive(overlayColor)
+                  ? { bg: overlayColor!, text: "#000000" }
+                  : groupInfo.label.includes("SECTION 1") || groupInfo.label.includes("RECALL")
+                    ? { bg: VL_COLOURS.blue.header,   text: VL_COLOURS.blue.headerText }
+                    : groupInfo.label.includes("SECTION 2") || groupInfo.label.includes("UNDERSTANDING")
+                      ? { bg: VL_COLOURS.green.header,  text: VL_COLOURS.green.headerText }
+                      : groupInfo.label.includes("SECTION 3") || groupInfo.label.includes("APPLICATION")
+                        ? { bg: VL_COLOURS.red.header,    text: VL_COLOURS.red.headerText }
+                        : { bg: VL_COLOURS.navy.header,   text: VL_COLOURS.navy.headerText };
+                const dividerText = (() => {
                   if (!isAnxietySendProfile(sendNeedId)) {
                     return `${groupInfo.label} — Questions ${groupInfo.qStart}–${groupInfo.qEnd}`;
                   }
                   const displayLabel = toInvitationalSectionLabel(groupInfo.label);
-                  // The bonus/challenge reads better without a clinical range.
                   return /OPTIONAL BONUS/i.test(displayLabel)
                     ? displayLabel
                     : `${displayLabel} — Questions ${groupInfo.qStart}–${groupInfo.qEnd}`;
-                })()}
-              </div>
-              <div style={{ borderTop: "1px solid #d1d5db", marginTop: "5px" }} />
+                })();
+                return (
+                  <div style={{
+                    background: dividerColour.bg,
+                    borderRadius: "3px",
+                    padding: "4px 10px",
+                    display: "flex",
+                    alignItems: "center",
+                  }}>
+                    <span style={{
+                      fontSize: "9px",
+                      fontWeight: 700,
+                      color: dividerColour.text,
+                      fontFamily: fmt.fontFamily,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}>{dividerText}</span>
+                  </div>
+                );
+              })()}
             </div>
           )}
           <div
