@@ -65,6 +65,12 @@ const ROUTE_IMPORTS: Record<string, Importer> = {
   "/tools/wellbeing-support": () => import("../pages/tools/WellbeingSupport"),
   "/tools/communication-board": () => import("../pages/tools/CommunicationBoard"),
   "/tools/risk-assessment": () => import("../pages/tools/RiskAssessment"),
+  "/tools/connected-resource": () => import("../pages/tools/ConnectedResourceGenerator"),
+  "/tools/story-studio": () => import("../pages/tools/StoryStudio"),
+  "/tools/activity-generator": () => import("../pages/tools/ActivityGenerator"),
+  "/tools/visual-learning": () => import("../pages/tools/VisualLearningStudio"),
+  "/tools/adaptation-hub": () => import("../pages/tools/AdaptationHub"),
+  "/tools/teaching-agent": () => import("../pages/tools/TeachingAgent"),
   "/tools/parent-newsletter": () => import("../pages/tools/ParentNewsletter"),
   "/tools/presentation-maker": () => import("../pages/tools/PresentationMaker"),
 

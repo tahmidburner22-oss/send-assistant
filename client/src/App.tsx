@@ -69,6 +69,14 @@ const ExitTicket = lazy(() => import("./pages/tools/ExitTicket"));
 const VocabularyBuilder = lazy(() => import("./pages/tools/VocabularyBuilder"));
 const WellbeingSupport = lazy(() => import("./pages/tools/WellbeingSupport"));
 const RiskAssessment = lazy(() => import("./pages/tools/RiskAssessment"));
+
+// SEND "Connected Studios" — six flagship SEND tools (T1-T6)
+const ConnectedResourceGenerator = lazy(() => import("./pages/tools/ConnectedResourceGenerator"));
+const StoryStudio = lazy(() => import("./pages/tools/StoryStudio"));
+const ActivityGenerator = lazy(() => import("./pages/tools/ActivityGenerator"));
+const VisualLearningStudio = lazy(() => import("./pages/tools/VisualLearningStudio"));
+const AdaptationHub = lazy(() => import("./pages/tools/AdaptationHub"));
+const TeachingAgent = lazy(() => import("./pages/tools/TeachingAgent"));
 const ParentNewsletter = lazy(() => import("./pages/tools/ParentNewsletter"));
 const PresentationMaker = lazy(() => import("./pages/tools/PresentationMaker"));
 const CreateExamPaper = lazy(() => import("./pages/tools/CreateExamPaper"));
@@ -273,6 +281,14 @@ function ProtectedRoutes() {
             <Route path="/tools/behaviour-plan" component={BehaviourPlan} />
             <Route path="/tools/wellbeing-support" component={WellbeingSupport} />
             <Route path="/tools/communication-board" component={CommunicationBoard} />
+
+            {/* SEND Connected Studios (T1-T6) */}
+            <Route path="/tools/connected-resource" component={ConnectedResourceGenerator} />
+            <Route path="/tools/story-studio" component={StoryStudio} />
+            <Route path="/tools/activity-generator" component={ActivityGenerator} />
+            <Route path="/tools/visual-learning" component={VisualLearningStudio} />
+            <Route path="/tools/adaptation-hub" component={AdaptationHub} />
+            <Route path="/tools/teaching-agent" component={TeachingAgent} />
 
             {/* Planning & Assessment */}
             <Route path="/tools/lesson-planner" component={LessonPlanner} />

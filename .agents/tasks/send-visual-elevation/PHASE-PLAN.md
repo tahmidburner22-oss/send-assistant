@@ -65,16 +65,16 @@ Effort key: XS ≈ <50 LoC; S ≈ 100-300; M ≈ 300-800.
 ## The bigger roadmap (the 6 SEND tools — planning only, NOT built)
 
 These are fully specced in `docs/SEND-Website-Elevation-Plan.md`
-(Tools 1-6). Each is a candidate combined PR:
+(Tools 1-6). Shipped in **PR-B** (`feat/six-send-tools`):
 
-| ID  | Tool                              | Inspired by      | Notes |
-| --- | --------------------------------- | ---------------- | ----- |
-| T1  | Connected Resource Generator      | EasyClass        | Flagship: 1 topic → differentiated worksheet + slides + reading + quiz + comms board |
-| T2  | Reading & Story Studio + e-book   | BuildMyStory     | Voice/symbol/choice creation; published-author output |
-| T3  | Interactive Activity Generator    | ToolsEdu         | Word search / crossword / matching / sequencing / bingo — switch + eye-gaze accessible. NB: PR #102/Phase G already shipped procedural wordsearch/crossword/matching/cloze libs — REUSE them. |
-| T4  | Visual Learning Studio            | MyLens           | Accessible mind maps, social-story flowcharts, progressive disclosure — extends `PresentationDiagram.tsx` |
-| T5  | Resource Sharing & Adaptation Hub | TeachShare       | "Adapt for SEND", YouTube→activity |
-| T6  | SEND AI Teaching Agent            | Canvas IgniteAI  | EHCP-linked rubrics, provision maps, annual-review prep |
+| ID  | Tool                              | Inspired by      | Status | Notes |
+| --- | --------------------------------- | ---------------- | ------ | ----- |
+| T1  | Connected Resource Generator      | EasyClass        | ✅ PR-B | `/tools/connected-resource` — one topic → differentiated worksheet + slides + reading + quiz + comms board + TA guide |
+| T2  | Reading & Story Studio + e-book   | BuildMyStory     | ✅ PR-B | `/tools/story-studio` — voice/symbol/choice creation; published-author output; optional FREE illustration via V7 endpoint |
+| T3  | Interactive Activity Generator    | ToolsEdu         | ✅ PR-B | `/tools/activity-generator` — REUSES `proceduralActivities/` (wordsearch/crossword/matching/cloze) |
+| T4  | Visual Learning Studio            | MyLens           | ✅ PR-B | `/tools/visual-learning` — extends `PresentationDiagram.tsx`; progressive disclosure |
+| T5  | Resource Sharing & Adaptation Hub | TeachShare       | ✅ PR-B | `/tools/adaptation-hub` — "Adapt for SEND", YouTube→activity |
+| T6  | SEND AI Teaching Agent            | Canvas IgniteAI  | ✅ PR-B | `/tools/teaching-agent` — EHCP-linked rubrics, provision maps, annual-review prep |
 
 ## Definition-of-done (per work unit)
 

@@ -18,6 +18,7 @@ import {
   Table2, BookMarked, Ticket, Layers, BookType, ClipboardList,
   Mail, AlignLeft, TrendingUp, MessageSquare, ExternalLink, FileCheck,
   Map, Gamepad2, UserCog, BarChart2, Lock, Workflow, Gauge,
+  Network, Recycle, Bot,
 } from "lucide-react";
 
 const hubItems = [
@@ -61,6 +62,12 @@ const sendItems = [
   { path: "/tools/behaviour-plan",      label: "Behaviour Support Plan",  icon: ShieldAlert, group: "SEND Tools", keywords: ["behaviour", "support plan", "bsp", "conduct", "intervention"] },
   { path: "/tools/wellbeing-support",   label: "Wellbeing Support",       icon: Heart,       group: "SEND Tools", keywords: ["wellbeing", "mental health", "support", "pastoral"] },
   { path: "/tools/communication-board", label: "Communication Board",     icon: Table2,      group: "SEND Tools", keywords: ["communication board", "aac", "symbols", "pecs", "arasaac", "choice", "non-verbal", "pre-verbal", "widgit"] },
+  { path: "/tools/connected-resource",  label: "Connected Resource Generator", icon: Layers,  group: "SEND Tools", keywords: ["connected", "resource pack", "one topic", "differentiated", "worksheet slides reading quiz", "easyclass", "flagship"] },
+  { path: "/tools/story-studio",        label: "Reading & Story Studio",   icon: BookOpen,    group: "SEND Tools", keywords: ["story", "ebook", "published author", "reading", "illustrated", "buildmystory", "write"] },
+  { path: "/tools/activity-generator",  label: "Interactive Activity Generator", icon: Gamepad2, group: "SEND Tools", keywords: ["activity", "word search", "crossword", "matching", "cloze", "fill the gaps", "game", "toolsedu", "puzzle"] },
+  { path: "/tools/visual-learning",     label: "Visual Learning Studio",   icon: Network,     group: "SEND Tools", keywords: ["mind map", "flowchart", "cycle", "timeline", "diagram", "visual", "mylens", "progressive disclosure"] },
+  { path: "/tools/adaptation-hub",      label: "Resource Adaptation Hub",  icon: Recycle,     group: "SEND Tools", keywords: ["adapt", "simplify", "send", "youtube", "video", "comprehension", "teachshare", "rewrite for send"] },
+  { path: "/tools/teaching-agent",      label: "SEND Teaching Agent",      icon: Bot,         group: "SEND Tools", keywords: ["rubric", "provision map", "annual review", "ehcp", "agent", "senco", "assessment", "ignite"] },
 ];
 
 const planningItems = [

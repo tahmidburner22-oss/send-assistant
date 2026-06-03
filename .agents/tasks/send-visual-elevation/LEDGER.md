@@ -3,7 +3,33 @@
 Chronological log of what shipped. Newest first. Each row maps a work
 unit to the files it touched and the PR it landed in.
 
-## PR-A — `feat/visual-polish-symbols-generation` — OPEN
+## PR-B — `feat/six-send-tools` — OPEN
+
+"Six SEND tools" = T1-T6 (PHASE-PLAN / plan Part 3). Six new flagship,
+SEND-first tools — all FREE + Gemini-independent (callAI → server fallback
+chain), print-first, accessibility built-in. Each registered in all six
+conventional places.
+
+| ID | Tool | Route | Reuses / notes |
+| --- | --- | --- | --- |
+| T1 | Connected Resource Generator (flagship) | `/tools/connected-resource` | one topic → connected pack (worksheet/slides/reading×3/quiz/comms vocab/TA guide) |
+| T2 | Reading & Story Studio + e-book | `/tools/story-studio` | AI story pages, symbol support, read-aloud, optional FREE illustration via `/api/generation-proxy` (graceful) |
+| T3 | Interactive Activity Generator | `/tools/activity-generator` | **REUSES** `lib/proceduralActivities/` (wordsearch/crossword/matching/cloze) |
+| T4 | Visual Learning Studio | `/tools/visual-learning` | **REUSES** `PresentationDiagram` SVG engine; progressive disclosure |
+| T5 | Resource Adaptation Hub | `/tools/adaptation-hub` | Adapt-for-SEND + Video→activity |
+| T6 | SEND Teaching Agent | `/tools/teaching-agent` | EHCP rubrics / provision maps / annual-review prep |
+
+New files: `client/src/pages/tools/{ConnectedResourceGenerator,StoryStudio,
+ActivityGenerator,VisualLearningStudio,AdaptationHub,TeachingAgent}.tsx`.
+Registration touch-points: `App.tsx`, `lib/tool-registry.ts`,
+`pages/hubs/SENDHub.tsx`, `components/CommandPalette.tsx`, `lib/prefetch.ts`,
+`components/AppLayout.tsx`.
+
+Verification: tsc net-new errors = 0 (baseline 146 → 146); server esbuild
+bundle clean. Branched off the same `main` as PR-A (independent) — T2's
+illustration call degrades gracefully until PR-A's generation endpoint merges.
+
+## PR-A — `feat/visual-polish-symbols-generation` — MERGED (#165, merge commit e96ec3e)
 
 "Visual polish + symbols + generation" = V5b + V6 + V7 + V8. All opt-in /
 default-off (or inert without optional Cloudflare creds), so existing
@@ -59,4 +85,4 @@ Verification: tsc net-new errors = 0 (baseline 146 → 146); new component
 
 | ID | Title | Notes |
 | --- | --- | --- |
-| T1-T6 | The six SEND tools (see PHASE-PLAN + plan) | PR-B (in progress / next) |
+| — | All planned work units (V1-V8, T1-T6) are shipped or in an open PR | V1-V8 merged (#162/#164/#165); T1-T6 in open PR-B (`feat/six-send-tools`) |

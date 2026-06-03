@@ -4,10 +4,17 @@ This file is the **resume point** for any fresh chat picking up this
 work. Read this first, then `PHASE-PLAN.md`, then `LEDGER.md`, then
 `docs/SEND-Website-Elevation-Plan.md` for the full strategy.
 
-Last updated: 2026-06-03 — PR #162/#163/#164 are MERGED (V1-V5 + docs).
-PR-A `feat/visual-polish-symbols-generation` (OPEN) ships V5b + V6 + V7 +
-V8. PR-B (next) is the six SEND tools (T1-T6). Read this first, then
-`PHASE-PLAN.md`, then `LEDGER.md`, then `docs/SEND-Website-Elevation-Plan.md`.
+Last updated: 2026-06-03 — PR #162/#163/#164 MERGED (V1-V5 + docs) and
+PR #165 (PR-A: V5b + V6 + V7 + V8) MERGED. The remaining open PR is:
+- **PR-B** `feat/six-send-tools` (this branch) — the six SEND tools T1-T6
+  (Connected Resource Generator, Reading & Story Studio, Interactive Activity
+  Generator, Visual Learning Studio, Resource Adaptation Hub, SEND Teaching
+  Agent), each registered in all six conventional places. FREE + Gemini-
+  independent; reuses `proceduralActivities/` (T3) and `PresentationDiagram`
+  (T4); T2 uses PR-A's now-merged `/api/generation-proxy`. Branched off `main`
+  independently of PR-A; merged up to the post-PR-A `main`.
+Read this first, then `PHASE-PLAN.md`, then `LEDGER.md`, then
+`docs/SEND-Website-Elevation-Plan.md`.
 
 ## Quick-resume header (paste into a fresh chat)
 
