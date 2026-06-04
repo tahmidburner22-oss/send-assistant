@@ -1080,13 +1080,6 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
     if (!entry) return res.json({ found: false });
 
     const sections: any[] = JSON.parse(entry.sections || "[]");
-    // If the entry has fewer than 5 non-header sections it was saved in an incomplete state.
-    // Return found:false so the client falls through to AI generation instead of serving a broken worksheet.
-    const nonHeaderSections = sections.filter((s: any) => s.type !== "header" && s.type !== "worksheet-header");
-    if (nonHeaderSections.length < 5) {
-      console.log(`[library/resolve] Entry for "${topic}" (${yearGroup}) has only ${nonHeaderSections.length} sections — treating as incomplete, falling back to AI`);
-      return res.json({ found: false, incomplete: true });
-    }
 
     const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
     let keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
@@ -1128,6 +1121,15 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
             && t !== "q-true-false" && t !== "q-mcq" && t !== "match-column" && t !== "gap-fill" && t !== "true-false";
         })
       : sections;
+
+    // If the entry has fewer than 5 non-header sections it was saved in an incomplete state.
+    // Return found:false so the client falls through to AI generation instead of serving a broken worksheet.
+    // This check runs AFTER the maths filter so that filtered-out sections don't inflate the count.
+    const nonHeaderSections = filteredSections.filter((s: any) => s.type !== "header" && s.type !== "worksheet-header");
+    if (nonHeaderSections.length < 5) {
+      console.log(`[library/resolve] Entry for "${topic}" (${yearGroup}) has only ${nonHeaderSections.length} sections — treating as incomplete, falling back to AI`);
+      return res.json({ found: false, incomplete: true });
+    }
 
     const assets = await resolveEntryAssets(entry.id);
     const sectionsWithAssets = injectAssetRefs(filteredSections, assets);
