@@ -125,6 +125,31 @@ interface Region {
 interface DocumentMap { docId: string; pages: { index: number; regions: Region[] }[]; }
 ```
 
+### Analysis tiers (vision LLM is optional — graceful degradation)
+
+Geometry (*where*) and semantics (*what/why*) can be sourced at three tiers that
+degrade gracefully. **Fidelity is tier-independent** — the base layer is never
+touched, so even Tier 0 fixes the content-loss bug; tiers only change how *smart*
+overlay placement is.
+
+| Tier | Geometry | Semantics | Privacy | Best for | In repo today |
+|---|---|---|---|---|---|
+| **0 — Rules only** | `pdfjs` text+coords (digital) / Tesseract word boxes (scans) | regex + heuristics: question numbering, command-word list, answer-lines = underscore/ruled-line runs, whitespace = margins | 100% local, nothing leaves | digital PDFs; max-privacy schools | `pdfjs-dist`, `tesseract.js` |
+| **1 — Text LLM** | as Tier 0 | send **text + coords** (not the image) to `callWithFallback` to tag regions & pick overlays | image never leaves; text does | smarter placement without sending pictures | `callWithFallback` (18 providers) |
+| **2 — Vision LLM** | OCR boxes for precise anchoring | VLM reads the **page image** | image leaves the building | photos, handwriting, complex multi-column layouts | vision-capable providers |
+
+**Why a vision LLM helps:** works on photos/scans with no text layer; understands
+pedagogy ("this blank is where the pupil writes", command words, tier-3 vocab);
+infers reading order in messy layouts. **Watch-outs:** VLMs return *imprecise*
+bounding boxes (so anchor to OCR geometry, use the VLM only for semantics);
+sending pupil work to a provider raises GDPR/LIA concerns; higher cost/latency
+and run-to-run variance.
+
+**Recommended:** hybrid + a **school-level consent toggle** tied to the existing
+Legitimate Interests Assessment — digital PDFs use Tier 0/1 (precise, private);
+photos/scans use Tier 1 or Tier 2 per the school's data-protection choice. When
+vision is used, anchor overlays to OCR boxes, never to VLM-reported coordinates.
+
 ---
 
 ## 5. Stage 3 — Adapt (the SEND brain → an Overlay Manifest)
