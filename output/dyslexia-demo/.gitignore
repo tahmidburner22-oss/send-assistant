@@ -1,0 +1,8 @@
+node_modules/
+libs/
+src/
+package.json
+package-lock.json
+test-chrome.mjs
+shot.mjs
+preview-page1.png
