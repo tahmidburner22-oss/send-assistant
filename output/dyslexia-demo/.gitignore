@@ -8,3 +8,8 @@ shot.mjs
 preview-page1.png
 
 pv-*.png
+science/*.html
+english/*.html
+**/pv-*.png
+measure*.mjs
+shot*.mjs
