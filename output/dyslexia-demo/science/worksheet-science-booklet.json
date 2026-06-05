@@ -1,0 +1,143 @@
+{
+  "title": "Photosynthesis",
+  "subtitle": "Science · Year 10 (KS4 Biology) · Learning Booklet",
+  "metadata": {
+    "subject": "Science (Biology)",
+    "topic": "Photosynthesis",
+    "yearGroup": "Year 10 / KS4",
+    "sendNeed": "dyslexia",
+    "accessibilityProfile": "dyslexia-opendyslexic",
+    "colorOverlay": "cream",
+    "colorOverlayHex": "#FFF8E7",
+    "layout": {
+      "orientation": "portrait",
+      "pages": "multi-page booklet",
+      "style": "explain → diagram → vocabulary → practise → extend (limiting factors)",
+      "diagrams": true
+    },
+    "lessonReady": true,
+    "adaptationsApplied": [
+      "Full-bleed cream #FFF8E7 overlay, black text",
+      "OpenDyslexic typeface embedded locally (SIL OFL)",
+      "16px base, line-height 1.6, letter-spacing 0.03em, word-spacing 0.14em",
+      "Ragged-right (left-aligned) text, never justified",
+      "Outlined section boxes (coloured border, no fill)",
+      "Key vocabulary box + plain-language common mistakes with examples"
+    ]
+  },
+  "cover": {
+    "subjectLine": "SCIENCE · YEAR 10 · KS4 BIOLOGY",
+    "title": "Photosynthesis",
+    "subtitle": "Learning Booklet",
+    "nameLine": "Name: __________________   Class: ________   Date: ________"
+  },
+  "objectives": [
+    "Say what photosynthesis is and where it happens.",
+    "Write the word equation (and the symbol equation).",
+    "Name what goes in (reactants) and what comes out (products).",
+    "Describe how light, carbon dioxide and temperature change the rate."
+  ],
+  "keyVocabulary": [
+    { "term": "Photosynthesis", "meaning": "how a plant makes its own food (glucose) using light energy" },
+    { "term": "Chlorophyll", "meaning": "the green pigment that absorbs (traps) light energy" },
+    { "term": "Chloroplast", "meaning": "the part of a plant cell where photosynthesis happens" },
+    { "term": "Glucose", "meaning": "the sugar the plant makes; used for energy and growth" },
+    { "term": "Reactants", "meaning": "what you start with: carbon dioxide and water" },
+    { "term": "Products", "meaning": "what is made: glucose and oxygen" },
+    { "term": "Stomata", "meaning": "tiny holes under the leaf that let gases in and out" },
+    { "term": "Limiting factor", "meaning": "the thing in shortest supply that slows the rate down" }
+  ],
+  "explain": [
+    "Plants cannot move to find food, so they make their own. They do this using light energy from the Sun.",
+    "Light energy is trapped by chlorophyll, the green pigment inside chloroplasts. The energy is used to join carbon dioxide (from the air) and water (from the soil) together.",
+    "This makes glucose, a sugar the plant uses for energy and growth. Oxygen is made as well and is released into the air."
+  ],
+  "wordEquation": "carbon dioxide + water  →(light + chlorophyll)→  glucose + oxygen",
+  "symbolEquation": "6CO₂ + 6H₂O  →  C₆H₁₂O₆ + 6O₂",
+  "glucoseUses": [
+    "Released in respiration to give the plant energy.",
+    "Used to make new cells for growth.",
+    "Stored as starch for later.",
+    "Turned into cellulose to build strong cell walls."
+  ],
+  "diagrams": [
+    { "id": "plant-io", "caption": "Diagram 1: What goes into and comes out of a plant" },
+    { "id": "leaf-chloroplast", "caption": "Diagram 2: Light is trapped by chlorophyll in the chloroplast" },
+    { "id": "limiting-factors", "caption": "Diagram 3: Rate of photosynthesis vs light intensity (it levels off)" }
+  ],
+  "limitingFactors": [
+    "Light intensity — more light means a faster rate, until something else runs short.",
+    "Carbon dioxide — more CO₂ means a faster rate, up to a point.",
+    "Temperature — warmth speeds it up, but too hot damages the enzymes and it slows down."
+  ],
+  "commonMistakes": [
+    "Mixing up the gases. A plant takes IN carbon dioxide and gives OUT oxygen — not the other way round.",
+    "Calling light a 'raw material'. The raw materials are water and carbon dioxide; light is the energy source.",
+    "Saying it happens 'in the leaf'. Be exact: it happens in the chloroplast inside the leaf cell.",
+    "Forgetting plants respire too. Plants photosynthesise AND respire (respiration never stops, day or night).",
+    "Writing the equation back to front. Reactants (CO₂ + water) are on the LEFT, products (glucose + oxygen) on the RIGHT."
+  ],
+  "reminders": {
+    "content": {
+      "title": "Remember (content)",
+      "lines": [
+        "IN: carbon dioxide + water.   OUT: glucose + oxygen.",
+        "Where: chloroplasts in the leaf.   Energy from: light, trapped by chlorophyll.",
+        "Plants photosynthesise AND respire — respiration never stops."
+      ]
+    },
+    "method": {
+      "title": "How to answer an 'explain' question",
+      "lines": [
+        "1  Say what happens (the fact).",
+        "2  Say WHY using a key word (light / chlorophyll / chloroplast / rate).",
+        "3  Link it back to the question (so... / this means...).",
+        "Example: 'No light, so chlorophyll cannot trap energy, so no glucose is made.'"
+      ]
+    }
+  },
+  "questions": [
+    { "number": 1, "marks": 1, "difficulty": 1, "skill": "Recall", "prompt": "Which gas does a plant take in for photosynthesis?", "lines": 1 },
+    { "number": 2, "marks": 1, "difficulty": 1, "skill": "Recall", "prompt": "Which gas does a plant release?", "lines": 1 },
+    { "number": 3, "marks": 1, "difficulty": 2, "skill": "Recall", "prompt": "Name the green pigment that traps light.", "lines": 1 },
+    { "number": 4, "marks": 2, "difficulty": 2, "skill": "Recall", "prompt": "Write the word equation for photosynthesis.", "lines": 2 },
+    { "number": 5, "marks": 2, "difficulty": 3, "skill": "Apply", "prompt": "Give two things a plant uses glucose for.", "lines": 2 },
+    { "number": 6, "marks": 3, "difficulty": 4, "skill": "Explain", "prompt": "A plant is left in a dark cupboard for a week. Explain why it cannot photosynthesise.", "lines": 3 },
+    { "number": 7, "marks": 4, "difficulty": 5, "skill": "Analyse (stretch)", "prompt": "A student shines a brighter light on some pondweed and counts more oxygen bubbles. Explain why the rate increases, then explain what could stop it increasing any further.", "lines": 5 }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with photosynthesis now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "One key word I want to remember:",
+      "The question I found hardest was ____ because:",
+      "One thing I will revise before the next lesson:"
+    ]
+  },
+  "teacherAssessment": {
+    "title": "Teacher assessment",
+    "successCriteria": [
+      "Names the gases correctly (in: CO₂, out: O₂)",
+      "Writes the word equation correctly",
+      "States where photosynthesis happens (chloroplast)",
+      "Explains using key words (light / chlorophyll / rate)",
+      "Explains a limiting factor (stretch)"
+    ],
+    "marksTotal": 14,
+    "rag": ["Red — needs re-teaching", "Amber — nearly there", "Green — secure"],
+    "feedback": ["What went well (WWW):", "Even better if (EBI):", "Next step / target:"]
+  },
+  "answers": {
+    "title": "Teacher answer key",
+    "rows": [
+      "Q1: Carbon dioxide.",
+      "Q2: Oxygen.",
+      "Q3: Chlorophyll.",
+      "Q4: carbon dioxide + water → glucose + oxygen (light + chlorophyll above the arrow).",
+      "Q5: Any two of: respiration/energy, growth, stored as starch, made into cellulose.",
+      "Q6: No light energy, so chlorophyll cannot trap energy; without light the reaction cannot run, so no glucose is made.",
+      "Q7: More light = more energy = faster rate, so more oxygen made. It stops increasing when another factor becomes limiting (carbon dioxide, temperature) or light is no longer the limiting factor."
+    ]
+  }
+}

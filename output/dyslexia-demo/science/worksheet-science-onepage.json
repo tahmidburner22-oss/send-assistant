@@ -1,0 +1,62 @@
+{
+  "title": "Photosynthesis",
+  "subtitle": "Science · Year 10 (KS4 Biology) · Fact Sheet A",
+  "metadata": {
+    "subject": "Science (Biology)",
+    "topic": "Photosynthesis",
+    "yearGroup": "Year 10 / KS4",
+    "sendNeed": "dyslexia",
+    "accessibilityProfile": "dyslexia-opendyslexic",
+    "colorOverlay": "cream",
+    "colorOverlayHex": "#FFF8E7",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 1,
+      "style": "poster / fact-sheet (header banner + info boxes + labelled diagrams + numbered questions)",
+      "differsFrom": "Maths (equation grid) and English (vocab cards + text) — this is a diagram-led poster",
+      "diagrams": true
+    },
+    "lessonReady": true,
+    "adaptationsApplied": [
+      "Full-bleed cream #FFF8E7 overlay, black text",
+      "OpenDyslexic typeface embedded locally (SIL OFL)",
+      "16px base, line-height 1.6, letter-spacing 0.03em, word-spacing 0.14em",
+      "Ragged-right (left-aligned) text, never justified",
+      "Outlined section boxes (coloured border, no fill)",
+      "Key vocabulary box + plain-language common mistakes with examples"
+    ]
+  },
+  "header": { "subjectLine": "SCIENCE · YEAR 10", "title": "PHOTOSYNTHESIS", "tag": "FACT SHEET A" },
+  "definition": "Photosynthesis is how green plants make their own food. They use light energy to turn carbon dioxide and water into glucose (a sugar) and oxygen. It happens in the leaves, inside tiny parts of the cell called chloroplasts.",
+  "wordEquation": "carbon dioxide + water  →(light + chlorophyll)→  glucose + oxygen",
+  "symbolEquation": "6CO₂ + 6H₂O  →  C₆H₁₂O₆ + 6O₂",
+  "keyVocabulary": [
+    { "term": "Photosynthesis", "meaning": "how a plant makes its own food using light" },
+    { "term": "Chlorophyll", "meaning": "the green colour that traps light energy" },
+    { "term": "Chloroplast", "meaning": "the part of the cell where it happens" },
+    { "term": "Glucose", "meaning": "the sugar (food) the plant makes" },
+    { "term": "Stomata", "meaning": "tiny holes under the leaf for gases" }
+  ],
+  "keyFacts": [
+    "Needs: light, carbon dioxide and water.",
+    "Makes: glucose and oxygen.",
+    "Happens in the chloroplasts in the leaf.",
+    "Glucose is used for energy, growth and stored as starch."
+  ],
+  "commonMistakes": [
+    "Mixing up the gases. A plant takes IN carbon dioxide and gives OUT oxygen — not the other way round.",
+    "Calling light a 'raw material'. The raw materials are water and carbon dioxide; light is the energy.",
+    "Saying it happens 'in the leaf'. Be exact: it happens in the chloroplast inside the cell.",
+    "Forgetting plants respire too. Plants photosynthesise AND respire (respiration never stops)."
+  ],
+  "diagrams": [
+    { "id": "plant-io", "caption": "Inputs and outputs of photosynthesis" },
+    { "id": "leaf-chloroplast", "caption": "Light is trapped by chlorophyll in the chloroplast" }
+  ],
+  "questions": [
+    { "number": 1, "prompt": "Which gas does a plant take IN for photosynthesis?" },
+    { "number": 2, "prompt": "Which gas does a plant give OUT?" },
+    { "number": 3, "prompt": "Name the part of the cell where photosynthesis happens." },
+    { "number": 4, "prompt": "Complete: carbon dioxide + ______ → glucose + ______" }
+  ]
+}

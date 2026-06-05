@@ -1,0 +1,60 @@
+{
+  "title": "Writing to Persuade",
+  "subtitle": "English Language · Year 10 · Writer's Toolkit",
+  "metadata": {
+    "subject": "English Language",
+    "topic": "Writing to Persuade (persuasive techniques)",
+    "yearGroup": "Year 10 / KS4",
+    "sendNeed": "dyslexia",
+    "accessibilityProfile": "dyslexia-opendyslexic",
+    "colorOverlay": "cream",
+    "colorOverlayHex": "#FFF8E7",
+    "layout": {
+      "orientation": "portrait",
+      "pages": 1,
+      "style": "writer's toolkit organiser — technique cards + annotated model text + writing checklist + scaffolded tasks",
+      "differsFrom": "Maths (equation grid) and Science (diagram poster) — this is text/technique-card led, no diagrams"
+    },
+    "lessonReady": true,
+    "adaptationsApplied": [
+      "Full-bleed cream #FFF8E7 overlay, black text",
+      "OpenDyslexic typeface embedded locally (SIL OFL)",
+      "16px base, line-height 1.6, letter-spacing 0.03em, word-spacing 0.14em",
+      "Ragged-right (left-aligned) text, never justified",
+      "Outlined section boxes (coloured border, no fill)",
+      "Key vocabulary box (technique cards) + plain-language common mistakes with examples"
+    ]
+  },
+  "header": { "subjectLine": "ENGLISH LANGUAGE · YEAR 10", "title": "WRITING TO PERSUADE", "tag": "TOOLKIT" },
+  "objective": "Persuasive writing makes the reader agree with you. You do this with techniques (AFOREST), a clear point, and writing that is aimed at your reader.",
+  "techniques": [
+    { "letter": "A", "term": "Alliteration", "meaning": "words near each other start with the same sound", "example": "bold, brave and brilliant" },
+    { "letter": "F", "term": "Facts", "meaning": "true information that is hard to argue with", "example": "Exercise is good for your heart." },
+    { "letter": "O", "term": "Opinion", "meaning": "what you believe, said with confidence", "example": "This is the best choice for everyone." },
+    { "letter": "R", "term": "Rhetorical question", "meaning": "a question that makes the reader think (no answer needed)", "example": "Is that really fair?" },
+    { "letter": "E", "term": "Emotive language", "meaning": "words that make the reader feel something", "example": "Imagine losing everything you love." },
+    { "letter": "S", "term": "Statistics", "meaning": "believable numbers that back you up", "example": "Over half of students agree." },
+    { "letter": "T", "term": "Triplet (rule of three)", "meaning": "three points in a row for power", "example": "We are tired, rushed and ignored." }
+  ],
+  "model": {
+    "title": "Model paragraph — longer lunch break",
+    "text": "Picture this: it is 1:15 and you have just five minutes left to eat. Is that really fair? A longer lunch would give us time to eat, move and reset. Over half of students say they feel rushed. We are tired, we are hungry, and we deserve better.",
+    "annotations": ["Opening hook", "Rhetorical question", "Triplet", "Statistic", "Emotive ending"]
+  },
+  "commonMistakes": [
+    "Naming a technique instead of using it. Don't write 'I will use emotive language' — show it: 'Imagine losing everything you love.'",
+    "Making up silly statistics. Keep them believable, e.g. 'Over half of students…' not '100% of everyone ever.'",
+    "One giant paragraph. Use short paragraphs — one point each.",
+    "Forgetting your reader. Match your tone to the audience (a head teacher is different from a friend)."
+  ],
+  "checklist": [
+    "Before: Who is my reader? What is my one main point?",
+    "As I write: Start with a hook. One point per paragraph. Use 2–3 techniques.",
+    "Check: Does every line push my argument? Have I ended strongly?"
+  ],
+  "tasks": [
+    { "number": 1, "level": "Spot it", "prompt": "Name the technique: 'We must act now, now, now!'", "lines": 1 },
+    { "number": 2, "level": "Improve it", "prompt": "Rewrite using emotive language: 'The park is closing.'", "lines": 2 },
+    { "number": 3, "level": "Write it", "prompt": "Write 2–3 persuasive sentences for a longer lunch break. Use at least two techniques and underline them.", "lines": 3 }
+  ]
+}
