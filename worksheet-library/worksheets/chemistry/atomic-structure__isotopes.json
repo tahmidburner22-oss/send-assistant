@@ -1,0 +1,81 @@
+{
+  "subject": "Chemistry",
+  "topic": "Atomic Structure",
+  "subtopic": "Isotopes",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Isotopes",
+  "subtitle": "Atomic Structure · GCSE Chemistry",
+  "learning_objective": "Define an isotope, work out the number of protons, neutrons and electrons in any isotope, and explain why isotopes of an element share chemical properties but differ in mass.",
+  "key_vocab": [
+    { "term": "Isotope", "definition": "Atoms of the same element that have the same number of protons but a different number of neutrons." },
+    { "term": "Atomic number (Z)", "definition": "The number of protons in the nucleus. It defines which element the atom is." },
+    { "term": "Mass number (A)", "definition": "The total number of protons and neutrons in the nucleus." },
+    { "term": "Neutron", "definition": "A neutral particle in the nucleus with a relative mass of 1 and no charge." },
+    { "term": "Relative atomic mass (Ar)", "definition": "The weighted mean mass of the atoms of an element, taking into account the abundance of each isotope." }
+  ],
+  "sections": [
+    {
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "By the end of this worksheet you will be able to:\n• Say what an isotope is in your own words.\n• Work out the number of protons, neutrons and electrons in an isotope from its mass number and atomic number.\n• Explain why two isotopes of the same element react in the same way but have different masses."
+    },
+    {
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Isotope — atoms of the same element with the same number of protons but a different number of neutrons.\nAtomic number (Z) — the number of protons; it tells you which element the atom is.\nMass number (A) — protons + neutrons added together.\nNeutron — a particle in the nucleus with mass 1 and no charge.\nRelative atomic mass (Ar) — the weighted average mass of all the isotopes of an element."
+    },
+    {
+      "title": "Before You Start — Quick Recall",
+      "type": "prior-knowledge",
+      "content": "1. Where in the atom are protons and neutrons found?\n2. What is the charge on a proton, a neutron and an electron?\n3. In a neutral atom, how does the number of protons compare to the number of electrons?"
+    },
+    {
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Carbon can be written as carbon-12 and carbon-14.\n\nFor carbon-14, the atomic number (Z) = 6 and the mass number (A) = 14.\n\n• Protons = atomic number = 6\n• Electrons = protons (neutral atom) = 6\n• Neutrons = mass number − atomic number = 14 − 6 = 8\n\nCarbon-12 and carbon-14 both have 6 protons, so they are the SAME element (carbon). They differ only in neutrons (6 vs 8), so they are isotopes."
+    },
+    {
+      "title": "Section A — Multiple Choice",
+      "type": "q-mcq",
+      "marks": 4,
+      "content": "1. Which statement best describes a pair of isotopes?\nA) Same number of protons, different number of neutrons\nB) Same number of neutrons, different number of protons\nC) Different number of protons and electrons\nD) Same number of protons and neutrons\n\n2. An atom has a mass number of 23 and an atomic number of 11. How many neutrons does it have?\nA) 11\nB) 12\nC) 23\nD) 34\n\n3. Which property is the SAME for two isotopes of the same element?\nA) Mass number\nB) Number of neutrons\nC) Chemical reactions\nD) Density\n\n4. Chlorine has isotopes chlorine-35 and chlorine-37. What is different between them?\nA) Number of protons\nB) Number of electrons\nC) Number of neutrons\nD) The element they belong to"
+    },
+    {
+      "title": "Section B — Fill in the Gaps",
+      "type": "q-gap-fill",
+      "marks": 5,
+      "content": "Use the word bank to complete the sentences.\n\nWord bank: protons · neutrons · mass number · atomic number · chemical\n\nIsotopes are atoms of the same element with the same number of ____ but a different number of ____. The number of protons is called the ____. The protons and neutrons added together give the ____. Because isotopes have the same electron arrangement, they have the same ____ properties."
+    },
+    {
+      "title": "Section C — Short Answer",
+      "type": "q-short-answer",
+      "marks": 6,
+      "content": "1. Oxygen-16 has an atomic number of 8.\n   (a) How many protons does it have? (1)\n   (b) How many neutrons does it have? (1)\n   (c) How many electrons does it have? (1)\n\n2. Magnesium-24 and magnesium-26 are isotopes.\n   (a) State one thing that is the same about them. (1)\n   (b) State one thing that is different about them. (1)\n\n3. Explain why isotopes of the same element react in exactly the same way. (1)"
+    },
+    {
+      "title": "Section D — Exam-Style Question",
+      "type": "q-extended",
+      "marks": 4,
+      "content": "Chlorine exists as two isotopes: chlorine-35 (about 75% of atoms) and chlorine-37 (about 25% of atoms).\n\n(a) Explain, in terms of protons and neutrons, why these are described as isotopes. (2)\n(b) The relative atomic mass of chlorine is 35.5, not a whole number. Explain why. (2)"
+    },
+    {
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ \"Isotopes have different numbers of protons.\" — No. Change the protons and you change the element. Isotopes differ only in NEUTRONS.\n✗ \"Neutrons = mass number.\" — No. Neutrons = mass number − atomic number.\n✗ \"Isotopes react differently.\" — No. They have the same electron arrangement, so their chemical reactions are identical; only the mass differs."
+    },
+    {
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "Rate yourself from 1 (not yet) to 3 (confident):\n• I can say what an isotope is. ___\n• I can work out protons, neutrons and electrons from A and Z. ___\n• I can explain why isotopes react the same but have different masses. ___\n\nOne thing I want to ask my teacher: ____________________"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "title": "Answer Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "SECTION A — Multiple Choice (4 marks, 1 each)\n1. A — same protons, different neutrons.\n2. B — neutrons = 23 − 11 = 12.\n3. C — chemical reactions (same electron arrangement).\n4. C — number of neutrons (35 vs 37).\n\nSECTION B — Fill in the Gaps (5 marks, 1 each)\nprotons / neutrons / atomic number / mass number / chemical.\n\nSECTION C — Short Answer (6 marks)\n1(a) 8 protons (1). 1(b) 16 − 8 = 8 neutrons (1). 1(c) 8 electrons (1).\n2(a) Same number of protons / same element / same atomic number (1).\n2(b) Different number of neutrons / different mass number (1).\n3. They have the same number of electrons in the same arrangement, and chemical reactions depend on electrons (1).\n\nSECTION D — Exam-Style (4 marks)\n(a) Both have the same number of protons (17) [1], but different numbers of neutrons (18 vs 20) [1].\n(b) Relative atomic mass is a weighted mean of the isotope masses [1]; because there is more chlorine-35 than chlorine-37, the average lies between 35 and 37 (35.5) [1].\n\nPRIOR-KNOWLEDGE recall answers: 1. In the nucleus. 2. Proton +1, neutron 0, electron −1. 3. Equal."
+    }
+  ]
+}
