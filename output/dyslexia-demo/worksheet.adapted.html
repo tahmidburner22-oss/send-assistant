@@ -4,122 +4,242 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link href="https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/font/css/opendyslexic.css" rel="stylesheet">
 <style>
-  @page { size: A4; margin: 16mm 16mm 18mm 16mm; }
+  @page { size: A4; margin: 0; }              /* full-bleed: cream reaches the edges */
   html, body { margin: 0; padding: 0; background: #FFF8E7; }
-  body { color: #1a1a1a; }
-  .sheet { background: #FFF8E7; padding: 4mm; }
-  /* base profile CSS (scoped) */
-  .ws-a11y-dyslexia-opendyslexic {
-  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
-  font-size: 16px !important;
-  line-height: 1.7 !important;
-  letter-spacing: 0.04em !important;
-  word-spacing: 0.16em !important;
-}
-.ws-a11y-dyslexia-opendyslexic *, .ws-a11y-dyslexia-opendyslexic *::before, .ws-a11y-dyslexia-opendyslexic *::after {
-  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
-  letter-spacing: 0.04em !important;
-  word-spacing: 0.16em !important;
-}
-.ws-a11y-dyslexia-opendyslexic p, .ws-a11y-dyslexia-opendyslexic li, .ws-a11y-dyslexia-opendyslexic td { text-align: left !important; text-justify: none !important; }
-.ws-a11y-dyslexia-opendyslexic .ws-section, .ws-a11y-dyslexia-opendyslexic .ws-section p, .ws-a11y-dyslexia-opendyslexic .ws-section li { font-size: 16px !important; }
-  /* reduced density + layout */
-  .ws-section { background: #fffdf6; border: 1px solid #e7dcc0; border-radius: 10px; padding: 16px 18px; margin: 0 0 20px 0; break-inside: avoid; }
-  h1 { font-size: 26px !important; margin: 0 0 10px; color: #5b3fa8; }
-  h2 { font-size: 19px !important; margin: 0 0 10px; color: #5b3fa8; }
-  h3 { font-size: 17px !important; margin: 0; color: #333; }
-  .cover { text-align: left; border: 2px solid #5b3fa8; background: #fffdf6; }
-  .cover-meta { margin-top: 8px; }
-  .badge { display:inline-block; background:#5b3fa8; color:#fff; border-radius:6px; padding:3px 9px; font-size:13px !important; margin-right:6px; }
-  .objective { border-left: 6px solid #5b3fa8; }
-  .method-box { background: #f3eefc; border: 2px dashed #7c5cd6; }
-  .method-head { margin: 0 0 8px; font-weight: 700; }
-  .method-list { margin: 0; padding-left: 22px; }
-  .method-list li { margin: 7px 0; }
-  .worked .example, .answers .example { white-space: pre-wrap; background:#fffaf0; border:1px solid #e7dcc0; border-radius:8px; padding:12px 14px; margin:0; }
-  .q-head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
-  .marks { color:#7c5cd6; font-weight:700; white-space:nowrap; }
-  .q-body { margin: 10px 0 14px; }
-  .answer-space { margin-top: 6px; }
-  .rule-line { height: 0; border-bottom: 1.5px solid #cbb98e; margin: 16px 0; }  /* 1.5x spaced answer lines */
-  .answers { border: 2px solid #2e7d32; background:#f3faf3; }
-  .page-break { break-after: page; }
-  .header-note { font-size: 12px !important; color:#6b6150; margin: 0 0 14px; }
+
+  .page {
+    box-sizing: border-box;
+    width: 210mm;
+    min-height: 296mm;                        /* fill the A4 page */
+    background: #FFF8E7;
+    color: #000000;                           /* black text on the overlay */
+    padding: 9mm 11mm;                         /* tight margins so page 1 fits */
+    display: flex;
+    flex-direction: column;
+    /* dyslexia profile */
+    font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    letter-spacing: 0.04em;
+    word-spacing: 0.16em;
+  }
+  .page *, .page *::before, .page *::after {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
+    letter-spacing: 0.04em;
+    word-spacing: 0.16em;
+  }
+  .page + .page { break-before: page; }        /* one page each, no trailing blank */
+  .page p, .page li, .page div { text-align: left; }   /* ragged-right */
+
+  .small-header { border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
+  .sh-title { font-size: 20px; font-weight: 700; }
+  .sh-sub { font-size: 14px; }
+  .sh-name { font-size: 14px; margin-top: 6px; }
+
+  h2 { font-size: 17px; font-weight: 700; margin: 0 0 5px; }
+  .block { margin: 0 0 10px; }
+  .intro .block { margin: 0 0 9px; }
+  ul, ol { margin: 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .steps li { margin: 4px 0; }
+  .worked .example { margin-top: 4px; }
+  .worked .example div { margin: 2px 0; }
+
+  /* question page */
+  .question .q-top { flex: 0 0 auto; }
+  .q-meta { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 18px; }
+  .q-num { font-size: 19px; font-weight: 700; }
+  .q-right { display: flex; align-items: center; gap: 12px; }
+  .marks { font-weight: 700; }
+  .difficulty { display: inline-flex; gap: 4px; align-items: center; }
+  .pip { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #000; display: inline-block; }
+  .pip.on { background: #000; }
+  .q-text { font-size: 18px; margin-top: 6px; }
+
+  .q-answer { margin-top: auto; align-self: flex-end; width: 78mm; }   /* bottom-right */
+  .ans-row { display: flex; align-items: flex-end; gap: 10px; margin-top: 16px; }
+  .ans-label { font-weight: 700; white-space: nowrap; font-size: 18px; }
+  .ans-line { flex: 1; border-bottom: 2px solid #000; height: 26px; }
+
+  /* reflection */
+  .confidence-q { font-weight: 700; }
+  .confidence { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 6px; }
+  .opt { display: inline-flex; align-items: center; gap: 8px; }
+  .tick { width: 16px; height: 16px; border: 2px solid #000; display: inline-block; border-radius: 3px; }
+  .reflect-prompt { margin-top: 14px; }
+  .write-line { border-bottom: 2px solid #000; height: 30px; margin-top: 14px; }
+
+  /* teacher key */
+  .key-list li { margin: 8px 0; }
 </style>
 </head>
 <body>
-  <div class="sheet ws-a11y-dyslexia-opendyslexic">
-    <p class="header-note">SEND profile: Dyslexia (OpenDyslexic) · Colour overlay: Cream #FFF8E7 · AQA Higher · Grade 8-9</p>
-    <section class="ws-section cover">
-      <h1>Quadratic Simultaneous Equations</h1>
-      <div class="cover-meta">AQA Higher · GCSE Grade 8–9<br>Exam Practice Booklet (Dyslexia-adapted)<br><br>Name: __________________________    Class: ____________    Date: ____________<br><br>Marks available: 33    My score: ______ / 33</div>
-    </section>
-<section class="ws-section objective"><h2>🎯 What you need to be able to do</h2><p>Solve a pair of simultaneous equations where one is linear (a straight line) and one is quadratic (a curve), using substitution. Each pair has two answer points — find both, and give each as an (x, y) pair.</p></section>
-<section class="ws-section method-box">
-      <h2>📋 Method steps — keep this in view</h2>
-      <p class="method-head">Method steps — refer back to this while you work:</p>
-      <ol class="method-list"><li>Step 1: Make y the subject of the straight-line (linear) equation.</li><li>Step 2: Substitute that into the curve (quadratic) equation.</li><li>Step 3: Move everything to one side so the equation equals 0.</li><li>Step 4: Solve the quadratic — factorise, or use the formula.</li><li>Step 5: Put each x back in to find its y. Write your answers in pairs and check them.</li></ol>
-    </section>
-<section class="ws-section worked"><h2>✏️ Worked example</h2><pre class="example">Solve:  y = x² − 2x + 3   and   y = x + 3
-
-Step 1–2: The line already gives y, so substitute:  x² − 2x + 3 = x + 3
-Step 3: Move to one side:  x² − 3x = 0
-Step 4: Factorise:  x(x − 3) = 0  →  x = 0 or x = 3
-Step 5: Find y from y = x + 3:  when x = 0, y = 3;  when x = 3, y = 6
-
-Answers:  (0, 3)  and  (3, 6)</pre></section>
-<section class="ws-section question">
-    <div class="q-head"><h3>Question 1</h3><span class="marks">[3 marks]</span></div>
-    <div class="q-body">Solve the simultaneous equations.<br><br>   y = x²            and            y = x + 12</div>
-    <div class="answer-space" aria-label="answer space"><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div></div>
-  </section>
-<section class="ws-section question">
-    <div class="q-head"><h3>Question 2</h3><span class="marks">[3 marks]</span></div>
-    <div class="q-body">Solve the simultaneous equations.<br><br>   y = x² + 2x        and        y = 3x + 6</div>
-    <div class="answer-space" aria-label="answer space"><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div></div>
-  </section>
-<section class="ws-section question">
-    <div class="q-head"><h3>Question 3</h3><span class="marks">[3 marks]</span></div>
-    <div class="q-body">Solve the simultaneous equations.<br><br>   y = x² − 5x + 6      and      y = x − 2</div>
-    <div class="answer-space" aria-label="answer space"><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div></div>
-  </section>
-<section class="ws-section question">
-    <div class="q-head"><h3>Question 4</h3><span class="marks">[4 marks]</span></div>
-    <div class="q-body">Solve the simultaneous equations.<br><br>   x² + y² = 25        and        y = x − 1</div>
-    <div class="answer-space" aria-label="answer space"><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div></div>
-  </section>
-<section class="ws-section question">
-    <div class="q-head"><h3>Question 5</h3><span class="marks">[4 marks]</span></div>
-    <div class="q-body">Solve the simultaneous equations.<br><br>   x² + y² = 10        and        x + y = 4</div>
-    <div class="answer-space" aria-label="answer space"><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div></div>
-  </section><div class="page-break"></div>
-<section class="ws-section question">
-    <div class="q-head"><h3>Question 6</h3><span class="marks">[4 marks]</span></div>
-    <div class="q-body">Solve the simultaneous equations.<br><br>   y = 2x² + 5x − 3      and      y = x − 3</div>
-    <div class="answer-space" aria-label="answer space"><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div></div>
-  </section>
-<section class="ws-section question">
-    <div class="q-head"><h3>Question 7</h3><span class="marks">[5 marks]</span></div>
-    <div class="q-body">Solve the simultaneous equations. Give your answers in surd form (leave √ in your answer).<br><br>   x² + y² = 9          and          y = x + 1</div>
-    <div class="answer-space" aria-label="answer space"><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div></div>
-  </section>
-<section class="ws-section question">
-    <div class="q-head"><h3>Question 8</h3><span class="marks">[5 marks]</span></div>
-    <div class="q-body">A rectangle has an area of 12 cm² and a perimeter of 14 cm.<br><br>By forming and solving a pair of simultaneous equations, find the length and width of the rectangle.</div>
-    <div class="answer-space" aria-label="answer space"><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div></div>
-  </section>
-<section class="ws-section answers"><h2>✅ Answers (teacher copy)</h2><pre class="example">Q1:  (4, 16) and (−3, 9)
-Q2:  (3, 15) and (−2, 0)
-Q3:  (2, 0) and (4, 2)
-Q4:  (4, 3) and (−3, −4)
-Q5:  (1, 3) and (3, 1)
-Q6:  (0, −3) and (−2, −5)
-Q7:  x = (−1 + √17)/2, y = (1 + √17)/2  and  x = (−1 − √17)/2, y = (1 − √17)/2
-Q8:  length 4 cm, width 3 cm  (from lw = 12 and l + w = 7)</pre></section>
-    <section class="ws-section" style="border-style:dashed;">
-      <h2>♿ Dyslexia adaptations applied to this booklet</h2>
-      <ul><li>OpenDyslexic typeface (Comic Sans MS fallback)</li><li>Base font-size 16px with proportional section sizing</li><li>Line-height 1.7 (reducedDensity)</li><li>Letter-spacing 0.04em, word-spacing 0.16em</li><li>Ragged-right (left-aligned) text, never justified</li><li>Cream #FFF8E7 colour overlay (COBS / BDA-aligned, reduces contrast glare)</li><li>Method-steps box pinned before the first question (working-memory reference)</li><li>Answer space expanded 1.5x (extraAnswerLinesMultiplier)</li><li>Maximum 5 questions per page (page breaks added)</li></ul>
-      <p style="font-size:12px !important; color:#6b6150;">Original questions authored for this booklet on the same AQA topic and at the same Grade 8–9 difficulty as the source on yesgenie.com. Not a copy of the source booklet's questions.</p>
-    </section>
+  
+<section class="page intro">
+  <div class="small-header">
+    <div class="sh-title">Quadratic Simultaneous Equations</div>
+    <div class="sh-sub">AQA Higher · GCSE Grade 8–9</div>
+    <div class="sh-name">Name: ____________________     Class: __________     Date: __________</div>
   </div>
+
+  <div class="block">
+    <h2>What you need to be able to do</h2>
+    <p>Solve a pair of equations where one is a straight line (linear) and one is a curve (quadratic), using substitution. Most pairs have two answer points — find both x values and the y that goes with each.</p>
+  </div>
+
+  <div class="block">
+    <h2>Common mistakes to avoid</h2>
+    <ul><li>Finding only one answer — most pairs have two solution points.</li><li>Forgetting to set the quadratic equal to 0 before factorising.</li><li>Sign slips when expanding brackets like (x − 1)² or moving terms across.</li><li>Solving for x but forgetting to find the matching y.</li></ul>
+  </div>
+
+  <div class="block">
+    <h2>Method steps</h2>
+    <ol class="steps"><li>Step 1: Make y (or x) the subject of the straight-line equation.</li><li>Step 2: Substitute that into the quadratic equation.</li><li>Step 3: Move everything to one side so it equals 0.</li><li>Step 4: Solve the quadratic — factorise or use the formula.</li><li>Step 5: Put each value back to find its pair. Write answers as (x, y).</li></ol>
+  </div>
+
+  <div class="block worked">
+    <h2>Worked example</h2>
+    <div class="example"><div>Solve:  y = x² − 2x + 3   and   y = x + 3</div><div>Substitute:  x² − 2x + 3 = x + 3</div><div>Rearrange:  x² − 3x = 0</div><div>Factorise:  x(x − 3) = 0  →  x = 0  or  x = 3</div><div>Find y:  x = 0 → y = 3;   x = 3 → y = 6</div><div>Answers:  (0, 3)  and  (3, 6)</div></div>
+  </div>
+</section>
+  
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 1</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text">Solve the simultaneous equations.<br><br>   y = x²            and            y = 2x + 3</div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 2</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text">Solve the simultaneous equations.<br><br>   y = x² + 1        and        y = x + 3</div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 3</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text">Solve the simultaneous equations.<br><br>   y = x² − 2x       and        y = x + 4</div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 4</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text">Solve the simultaneous equations.<br><br>   y = x² − 5x + 6     and     y = x − 2</div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 5</span>
+      <span class="q-right"><span class="marks">[4 marks]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text">Solve the simultaneous equations.<br><br>   x² + y² = 25       and       y = x − 1</div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 6</span>
+      <span class="q-right"><span class="marks">[4 marks]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text">Solve the simultaneous equations.<br><br>   x² + y² = 10       and       x + y = 4</div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 7</span>
+      <span class="q-right"><span class="marks">[5 marks]</span><span class="difficulty" title="Difficulty 4 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text">Solve the simultaneous equations. Give your answers in surd form.<br><br>   x² + y² = 9        and        y = x + 1</div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 8</span>
+      <span class="q-right"><span class="marks">[5 marks]</span><span class="difficulty" title="Difficulty 5 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></span></span>
+    </div>
+    <div class="q-text">A rectangle has an area of 12 cm² and a perimeter of 14 cm.<br><br>By forming and solving a pair of simultaneous equations, find the length and width of the rectangle.<br><br>(Let the length be x and the width be y.)</div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+</section>
+  
+<section class="page reflect">
+  <div class="small-header"><div class="sh-title">Self-reflection</div></div>
+  <div class="block">
+    <p class="confidence-q">How confident do you feel with this topic now? (tick one)</p>
+    <div class="confidence"><span class="opt"><span class="tick"></span>Not yet</span><span class="opt"><span class="tick"></span>Getting there</span><span class="opt"><span class="tick"></span>Confident</span><span class="opt"><span class="tick"></span>Really confident</span></div>
+  </div>
+  <div class="block reflect-prompt">
+    <p>Which question did you find the hardest, and why?</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div><div class="block reflect-prompt">
+    <p>One method step I want to remember next time:</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div><div class="block reflect-prompt">
+    <p>One thing I will practise before the next lesson:</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div>
+</section>
+  
+<section class="page key">
+  <div class="small-header"><div class="sh-title">Teacher key</div></div>
+  <div class="block">
+    <ol class="key-list"><li>Q1:  (3, 9) and (−1, 1)</li><li>Q2:  (2, 5) and (−1, 2)</li><li>Q3:  (4, 8) and (−1, 3)</li><li>Q4:  (4, 2) and (2, 0)</li><li>Q5:  (4, 3) and (−3, −4)</li><li>Q6:  (1, 3) and (3, 1)</li><li>Q7:  x = (−1 + √17)/2, y = (1 + √17)/2   and   x = (−1 − √17)/2, y = (1 − √17)/2</li><li>Q8:  length 4 cm, width 3 cm   (from xy = 12 and x + y = 7)</li></ol>
+  </div>
+</section>
 </body></html>
