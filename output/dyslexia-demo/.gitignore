@@ -6,3 +6,5 @@ package-lock.json
 test-chrome.mjs
 shot.mjs
 preview-page1.png
+
+pv-*.png
