@@ -25,10 +25,13 @@
       "OpenDyslexic typeface (Comic Sans MS fallback)",
       "Line-height 1.7, letter-spacing 0.04em, word-spacing 0.16em",
       "Ragged-right (left-aligned) text, never justified",
+      "Each section in an outlined box (coloured border, no fill) to define regions",
       "One question per page to reduce visual load",
       "Only two answer lines (x and y) per question, bottom-right",
+      "Mini method-reminder strip repeated at the bottom of every question page (working-memory support)",
+      "Worked 'how to start' frame on Q1–Q2 that fades out as difficulty rises",
       "Difficulty increases gradually from Q1 to Q8",
-      "Method-steps reference and common-mistakes box on the intro page",
+      "Common-mistakes box and method steps on the intro page",
       "Dedicated self-reflection page and teacher key"
     ],
     "provenance": "Original questions authored for this booklet on the same AQA topic and Grade 8–9 difficulty as the source on yesgenie.com. Not a copy of the source booklet's questions."
@@ -39,10 +42,10 @@
     "nameLine": "Name: ____________________     Class: __________     Date: __________",
     "objective": "Solve a pair of equations where one is a straight line (linear) and one is a curve (quadratic), using substitution. Most pairs have two answer points — find both x values and the y that goes with each.",
     "commonMistakes": [
-      "Finding only one answer — most pairs have two solution points.",
-      "Forgetting to set the quadratic equal to 0 before factorising.",
-      "Sign slips when expanding brackets like (x − 1)² or moving terms across.",
-      "Solving for x but forgetting to find the matching y."
+      "There are usually two answers, not one. Find both x values — for example x = 3 and x = −1.",
+      "Get everything on one side so it equals 0 first. For example: x² = 2x + 3 becomes x² − 2x − 3 = 0.",
+      "Watch the minus signs. (x − 1)² = x² − 2x + 1, not x² − 1.",
+      "Each x has its own y. After you find x, put it back in to work out y."
     ],
     "methodSteps": [
       "Step 1: Make y (or x) the subject of the straight-line equation.",
@@ -60,9 +63,26 @@
       "Answers:  (0, 3)  and  (3, 6)"
     ]
   },
+  "methodReminder": [
+    "1  Make y the subject of the straight line",
+    "2  Substitute into the quadratic",
+    "3  Rearrange so it = 0",
+    "4  Solve (factorise or formula)",
+    "5  Find each pair (x, y) and check"
+  ],
   "questions": [
-    { "id": "q1", "number": 1, "marks": 3, "difficulty": 1, "content": "Solve the simultaneous equations.\n\n   y = x²            and            y = 2x + 3" },
-    { "id": "q2", "number": 2, "marks": 3, "difficulty": 1, "content": "Solve the simultaneous equations.\n\n   y = x² + 1        and        y = x + 3" },
+    { "id": "q1", "number": 1, "marks": 3, "difficulty": 1, "content": "Solve the simultaneous equations.\n\n   y = x²            and            y = 2x + 3",
+      "frame": [
+        "First, both equations already give y, so set them equal:  x² = 2x + 3",
+        "Next, move everything to one side so it equals 0:  x² − 2x − 3 = 0",
+        "Then factorise and solve to find the two x values.",
+        "Finally, put each x back into y = 2x + 3 to find its y."
+      ] },
+    { "id": "q2", "number": 2, "marks": 3, "difficulty": 1, "content": "Solve the simultaneous equations.\n\n   y = x² + 1        and        y = x + 3",
+      "frame": [
+        "Set the two right-hand sides equal, then rearrange to = 0.",
+        "Factorise to find the two x values, then find each matching y."
+      ] },
     { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Solve the simultaneous equations.\n\n   y = x² − 2x       and        y = x + 4" },
     { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Solve the simultaneous equations.\n\n   y = x² − 5x + 6     and     y = x − 2" },
     { "id": "q5", "number": 5, "marks": 4, "difficulty": 3, "content": "Solve the simultaneous equations.\n\n   x² + y² = 25       and       y = x − 1" },
