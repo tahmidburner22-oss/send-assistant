@@ -27,7 +27,7 @@ Suggested batch size: **5–10 subtopics per session.**
 ## Progress
 
 ### Maths
-- [~] Simultaneous Equations → Non-linear simultaneous equations  *(exemplar; derived from dyslexia-demo gold standard, base/neutral)*
+- [~] Simultaneous Equations → Non-linear simultaneous equations  *(exemplar; derived from dyslexia-demo gold standard, base/neutral; includes a teacher-only graphical-solution SVG diagram for render testing)*
 
 ### Chemistry
 - [~] Atomic Structure → Isotopes  *(exemplar; + hand-authored Bohr-model SVG and a bar-chart DiagramSpec alongside the questions — proves all image paths)*
