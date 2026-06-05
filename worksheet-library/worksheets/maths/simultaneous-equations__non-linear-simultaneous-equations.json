@@ -8,33 +8,50 @@
   "subtitle": "Simultaneous Equations · GCSE Higher (Grade 8–9)",
   "learning_objective": "Solve a pair of equations where one is linear (a straight line) and one is non-linear (a quadratic or a circle), using substitution. Recognise that there are usually two solution points and find both x values with their matching y values.",
   "key_vocab": [
-    { "term": "Simultaneous equations", "definition": "Two or more equations that are true at the same time; the solution is the point(s) where they meet." },
-    { "term": "Substitution", "definition": "Replacing one variable using one equation so the other equation has a single unknown." },
-    { "term": "Non-linear", "definition": "An equation whose graph is a curve (e.g. a quadratic or a circle) rather than a straight line." },
-    { "term": "Surd form", "definition": "An exact answer left with a root sign, e.g. (−1 + √17)/2, rather than a rounded decimal." }
+    {
+      "term": "Simultaneous equations",
+      "definition": "Two or more equations that are true at the same time; the solution is the point(s) where they meet."
+    },
+    {
+      "term": "Substitution",
+      "definition": "Replacing one variable using one equation so the other equation has a single unknown."
+    },
+    {
+      "term": "Non-linear",
+      "definition": "An equation whose graph is a curve (e.g. a quadratic or a circle) rather than a straight line."
+    },
+    {
+      "term": "Surd form",
+      "definition": "An exact answer left with a root sign, e.g. (−1 + √17)/2, rather than a rounded decimal."
+    }
   ],
   "sections": [
     {
+      "id": "s1",
       "title": "Learning Objective",
       "type": "objective",
       "content": "Solve a pair of equations where one is a straight line (linear) and one is a curve (quadratic or circle) using substitution. Most pairs have two answer points — find both x values and the y that goes with each. Write each answer as a coordinate (x, y)."
     },
     {
+      "id": "s2",
       "title": "Key Words",
       "type": "vocabulary",
       "content": "Simultaneous equations — equations that are true at the same time; the solution is where the graphs meet.\nSubstitution — replacing y (or x) using one equation so the other has a single unknown.\nNon-linear — an equation whose graph is a curve (quadratic or circle).\nSurd form — an exact answer left with a root sign, e.g. (−1 + √17)/2."
     },
     {
+      "id": "s3",
       "title": "Method — Five Steps",
       "type": "example",
       "content": "Step 1: Make y (or x) the subject of the straight-line equation.\nStep 2: Substitute that into the non-linear equation.\nStep 3: Move everything to one side so it equals 0.\nStep 4: Solve the quadratic — factorise or use the formula.\nStep 5: Put each value back to find its pair. Write answers as (x, y) and check."
     },
     {
+      "id": "s4",
       "title": "Worked Example",
       "type": "example",
       "content": "Solve:  y = x² − 2x + 3   and   y = x + 3\n\nSubstitute:  x² − 2x + 3 = x + 3\nRearrange:   x² − 3x = 0\nFactorise:   x(x − 3) = 0  →  x = 0  or  x = 3\nFind y:      x = 0 → y = 3;   x = 3 → y = 6\nAnswers:     (0, 3)  and  (3, 6)"
     },
     {
+      "id": "s5",
       "title": "Question 1",
       "type": "q-extended",
       "marks": 3,
@@ -48,6 +65,7 @@
       "content": "Solve the simultaneous equations.\n\n   y = x²            and            y = 2x + 3"
     },
     {
+      "id": "s6",
       "title": "Question 2",
       "type": "q-extended",
       "marks": 3,
@@ -59,6 +77,7 @@
       "content": "Solve the simultaneous equations.\n\n   y = x² + 1        and        y = x + 3"
     },
     {
+      "id": "s7",
       "title": "Question 3",
       "type": "q-extended",
       "marks": 3,
@@ -66,6 +85,7 @@
       "content": "Solve the simultaneous equations.\n\n   y = x² − 2x       and        y = x + 4"
     },
     {
+      "id": "s8",
       "title": "Question 4",
       "type": "q-extended",
       "marks": 3,
@@ -73,6 +93,7 @@
       "content": "Solve the simultaneous equations.\n\n   y = x² − 5x + 6     and     y = x − 2"
     },
     {
+      "id": "s9",
       "title": "Question 5",
       "type": "q-extended",
       "marks": 4,
@@ -80,6 +101,7 @@
       "content": "Solve the simultaneous equations.\n\n   x² + y² = 25       and       y = x − 1"
     },
     {
+      "id": "s10",
       "title": "Question 6",
       "type": "q-extended",
       "marks": 4,
@@ -87,6 +109,7 @@
       "content": "Solve the simultaneous equations.\n\n   x² + y² = 10       and       x + y = 4"
     },
     {
+      "id": "s11",
       "title": "Question 7",
       "type": "q-extended",
       "marks": 5,
@@ -94,6 +117,7 @@
       "content": "Solve the simultaneous equations. Give your answers in surd form.\n\n   x² + y² = 9        and        y = x + 1"
     },
     {
+      "id": "s12",
       "title": "Question 8",
       "type": "q-extended",
       "marks": 5,
@@ -101,11 +125,13 @@
       "content": "A rectangle has an area of 12 cm² and a perimeter of 14 cm.\n\nBy forming and solving a pair of simultaneous equations, find the length and width of the rectangle.\n\n(Let the length be x and the width be y.)"
     },
     {
+      "id": "s13",
       "title": "Common Mistakes",
       "type": "common-mistakes",
       "content": "✗ There are usually TWO answers, not one — find both x values (e.g. x = 3 and x = −1).\n✗ Get everything on one side so it equals 0 first: x² = 2x + 3 becomes x² − 2x − 3 = 0.\n✗ Watch the minus signs: (x − 1)² = x² − 2x + 1, not x² − 1.\n✗ Each x has its own y — after finding x, substitute back to find the matching y."
     },
     {
+      "id": "s14",
       "title": "How Did I Do?",
       "type": "self-reflection",
       "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
@@ -113,6 +139,7 @@
   ],
   "teacher_sections": [
     {
+      "id": "ts1",
       "title": "Teacher Key & Mark Scheme",
       "type": "mark-scheme",
       "teacherOnly": true,

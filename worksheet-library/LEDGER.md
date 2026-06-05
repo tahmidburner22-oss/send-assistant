@@ -30,6 +30,6 @@ Suggested batch size: **5–10 subtopics per session.**
 - [~] Simultaneous Equations → Non-linear simultaneous equations  *(exemplar; derived from dyslexia-demo gold standard, base/neutral)*
 
 ### Chemistry
-- [~] Atomic Structure → Isotopes  *(exemplar)*
+- [~] Atomic Structure → Isotopes  *(exemplar; + hand-authored Bohr-model SVG and a bar-chart DiagramSpec alongside the questions — proves all image paths)*
 
 ### (remaining 905 subtopics across 176 topics — added per batch as we go)
