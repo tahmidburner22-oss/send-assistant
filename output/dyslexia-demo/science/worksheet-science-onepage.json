@@ -1,10 +1,12 @@
 {
   "title": "Photosynthesis",
-  "subtitle": "Science · Year 10 (KS4 Biology) · Fact Sheet A",
+  "subtitle": "Science · Year 10 (AQA GCSE Biology 4.4.1) · Fact Sheet A",
   "metadata": {
     "subject": "Science (Biology)",
     "topic": "Photosynthesis",
     "yearGroup": "Year 10 / KS4",
+    "examBoard": "AQA GCSE Biology",
+    "specRef": "4.4.1 Photosynthesis",
     "sendNeed": "dyslexia",
     "accessibilityProfile": "dyslexia-opendyslexic",
     "colorOverlay": "cream",
@@ -12,51 +14,50 @@
     "layout": {
       "orientation": "landscape",
       "pages": 1,
-      "style": "poster / fact-sheet (header banner + info boxes + labelled diagrams + numbered questions)",
-      "differsFrom": "Maths (equation grid) and English (vocab cards + text) — this is a diagram-led poster",
-      "diagrams": true
+      "style": "poster / fact-sheet; boxes flex to fill the whole page (no blank space)",
+      "diagrams": true,
+      "diagramWithQuestion": true,
+      "hintBox": true,
+      "applicationQuestion": true
     },
     "lessonReady": true,
+    "curriculumNote": "Questions written to AQA GCSE Biology spec 4.4.1 (reactants/products, endothermic reaction, uses of glucose, limiting factors). Original questions; not copied from any exam board paper.",
     "adaptationsApplied": [
       "Full-bleed cream #FFF8E7 overlay, black text",
       "OpenDyslexic typeface embedded locally (SIL OFL)",
       "16px base, line-height 1.6, letter-spacing 0.03em, word-spacing 0.14em",
       "Ragged-right (left-aligned) text, never justified",
-      "Outlined section boxes (coloured border, no fill)",
-      "Key vocabulary box + plain-language common mistakes with examples"
+      "Outlined section boxes (coloured border, no fill) that fill the page",
+      "Key vocabulary box + plain-language common mistakes with examples + hint box"
     ]
   },
-  "header": { "subjectLine": "SCIENCE · YEAR 10", "title": "PHOTOSYNTHESIS", "tag": "FACT SHEET A" },
-  "definition": "Photosynthesis is how green plants make their own food. They use light energy to turn carbon dioxide and water into glucose (a sugar) and oxygen. It happens in the leaves, inside tiny parts of the cell called chloroplasts.",
+  "header": { "subjectLine": "SCIENCE · YEAR 10 · AQA GCSE BIOLOGY", "title": "PHOTOSYNTHESIS", "tag": "FACT SHEET A" },
+  "definition": "Photosynthesis is how green plants make their own food. They use light energy to turn carbon dioxide and water into glucose and oxygen, inside the chloroplasts. It is endothermic (it takes in energy).",
   "wordEquation": "carbon dioxide + water  →(light + chlorophyll)→  glucose + oxygen",
   "symbolEquation": "6CO₂ + 6H₂O  →  C₆H₁₂O₆ + 6O₂",
   "keyVocabulary": [
-    { "term": "Photosynthesis", "meaning": "how a plant makes its own food using light" },
-    { "term": "Chlorophyll", "meaning": "the green colour that traps light energy" },
-    { "term": "Chloroplast", "meaning": "the part of the cell where it happens" },
-    { "term": "Glucose", "meaning": "the sugar (food) the plant makes" },
-    { "term": "Stomata", "meaning": "tiny holes under the leaf for gases" }
-  ],
-  "keyFacts": [
-    "Needs: light, carbon dioxide and water.",
-    "Makes: glucose and oxygen.",
-    "Happens in the chloroplasts in the leaf.",
-    "Glucose is used for energy, growth and stored as starch."
+    { "term": "Reactants", "meaning": "what you start with: carbon dioxide + water" },
+    { "term": "Products", "meaning": "what is made: glucose + oxygen" },
+    { "term": "Chlorophyll", "meaning": "green pigment that traps light energy" },
+    { "term": "Endothermic", "meaning": "a reaction that takes IN energy" },
+    { "term": "Limiting factor", "meaning": "the thing in short supply that slows the rate" }
   ],
   "commonMistakes": [
-    "Mixing up the gases. A plant takes IN carbon dioxide and gives OUT oxygen — not the other way round.",
-    "Calling light a 'raw material'. The raw materials are water and carbon dioxide; light is the energy.",
-    "Saying it happens 'in the leaf'. Be exact: it happens in the chloroplast inside the cell.",
-    "Forgetting plants respire too. Plants photosynthesise AND respire (respiration never stops)."
+    "Swapping the gases. The plant takes IN carbon dioxide and gives OUT oxygen — for example, the bubbles from pondweed are oxygen.",
+    "Calling light a raw material. The raw materials are water and carbon dioxide; light is the energy.",
+    "Saying 'in the leaf'. Be exact — it happens in the chloroplast inside the leaf cell.",
+    "Forgetting plants respire too — day and night, not just photosynthesise."
   ],
+  "hint": "Remember: light is the ENERGY source, not a raw material. The two raw materials (reactants) are carbon dioxide and water.",
   "diagrams": [
-    { "id": "plant-io", "caption": "Inputs and outputs of photosynthesis" },
-    { "id": "leaf-chloroplast", "caption": "Light is trapped by chlorophyll in the chloroplast" }
+    { "id": "plant-io", "caption": "Inputs and outputs of photosynthesis" }
   ],
   "questions": [
-    { "number": 1, "prompt": "Which gas does a plant take IN for photosynthesis?" },
-    { "number": 2, "prompt": "Which gas does a plant give OUT?" },
-    { "number": 3, "prompt": "Name the part of the cell where photosynthesis happens." },
-    { "number": 4, "prompt": "Complete: carbon dioxide + ______ → glucose + ______" }
+    { "number": 1, "prompt": "State the two reactants (raw materials) for photosynthesis.", "lines": 1 },
+    { "number": 2, "prompt": "Name the two products of photosynthesis.", "lines": 1 },
+    { "number": 3, "prompt": "Photosynthesis is endothermic. What does 'endothermic' mean?", "lines": 1 },
+    { "number": 4, "prompt": "Give two ways a plant uses the glucose it makes.", "lines": 1 },
+    { "number": 5, "diagram": "leaf-chloroplast", "prompt": "Look at the diagram. (a) Name structure A. (b) Name the green pigment it holds.", "lines": 2 },
+    { "number": 6, "application": true, "prompt": "A grower gives a plant more light, but the rate of photosynthesis does not increase. Suggest why.", "frame": "The rate does not increase because another factor (____ or ____) is now the limiting factor.", "lines": 2 }
   ]
 }
