@@ -4,8 +4,15 @@
   "subtopic": "Non-linear simultaneous equations",
   "yearGroup": "Year 11",
   "tier": "higher",
+  "examBoard": "AQA",
   "title": "Non-Linear Simultaneous Equations",
   "subtitle": "Simultaneous Equations · GCSE Higher (Grade 8–9)",
+  "branding": {
+    "schoolName": "Adaptly",
+    "schoolLogoUrl": "/logo.png",
+    "headerFields": ["Name", "Date", "Class"],
+    "_note": "Default header branding for the canonical base document. At serve time the live renderer overrides schoolName/schoolLogoUrl from the teacher's Settings (preferences.schoolName / preferences.schoolLogoUrl). The base-document PDF export uses these defaults."
+  },
   "learning_objective": "Solve a pair of equations where one is linear (a straight line) and one is non-linear (a quadratic or a circle), using substitution. Recognise that there are usually two solution points and find both x values with their matching y values.",
   "key_vocab": [
     {
