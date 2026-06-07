@@ -142,14 +142,14 @@ html, body {
 .worked-step.highlight { color: var(--accent); font-weight: 700; font-size: 10.5px; }
 
 /* Vocab panel */
-.vocab-item { margin-bottom: 2px; font-size: 8.5px; }
+.vocab-item { margin-bottom: 5px; font-size: 10px; line-height: 1.25; }
 .vocab-item strong { color: var(--accent); }
 
-/* Misconceptions panel */
+/* Misconceptions panel — crossed-out wrong above, correct below */
 .misconception-panel { background: var(--misconception-bg); border-color: var(--misconception-border); }
-.misconception-item { font-size: 8.5px; margin-bottom: 2px; }
-.misconception-item .wrong { color: #c62828; text-decoration: line-through; opacity: 0.8; }
-.misconception-item .right { color: #2e7d32; font-weight: 600; }
+.misconception-item { font-size: 9.5px; margin-bottom: 6px; line-height: 1.25; }
+.misconception-item .wrong { display: block; color: #c62828; text-decoration: line-through; opacity: 0.85; }
+.misconception-item .right { display: block; color: #2e7d32; font-weight: 600; margin-top: 1px; }
 
 /* Conversion reminder — yellow box */
 .conversion-box {
@@ -164,7 +164,7 @@ html, body {
 
 /* Diagram inside panel */
 .panel-diagram { text-align: center; margin: 3px 0; }
-.panel-diagram svg { max-height: 120px; width: auto; }
+.panel-diagram svg { max-height: 110px; max-width: 100%; width: auto; height: auto; }
 .panel-diagram-caption { font-size: 7.5px; color: #555; margin-top: 1px; }
 
 /* ─── Questions ─── */
@@ -245,9 +245,9 @@ html, body {
 }
 
 /* Diagram in question */
-.question-diagram { text-align: center; margin: 3px 0; flex: 1; }
-.question-diagram svg { max-height: 100%; width: auto; }
-.question-diagram-caption { font-size: 7.5px; color: #555; }
+.question-diagram { text-align: center; margin: 3px auto; width: 100%; display: flex; align-items: center; justify-content: center; }
+.question-diagram svg { max-width: 100%; max-height: 120px; height: auto; width: auto; display: block; }
+.question-diagram-caption { font-size: 7.5px; color: #555; text-align: center; }
 
 /* ─── ADHD Steps ─── */
 .steps { margin: 3px 0; padding-left: 2px; }
@@ -284,7 +284,7 @@ html, body {
 
   
   <div class="info-row cols-3"><div class="info-panel"><div class="info-panel-title">KEY VOCABULARY</div><div class="vocab-item"><strong>Metallic bond:</strong> the strong attraction between positive metal ions and delocalised electrons.</div><div class="vocab-item"><strong>Delocalised:</strong> electrons that are free to move through the whole structure.</div><div class="vocab-item"><strong>Lattice:</strong> a regular, repeating arrangement of ions.</div><div class="vocab-item"><strong>Malleable:</strong> can be hammered or bent into shape without breaking.</div></div>
-<div class="info-panel misconception-panel"><div class="info-panel-title">COMMON MISCONCEPTIONS</div><div class="misconception-item"><span class="wrong">✗ Metals are made of molecules.</span> → <span class="right">✓ Metals are a giant lattice of ions.</span></div><div class="misconception-item"><span class="wrong">✗ The electrons belong to one atom.</span> → <span class="right">✓ Electrons are delocalised (shared by all).</span></div><div class="misconception-item"><span class="wrong">✗ Metals conduct because ions move.</span> → <span class="right">✓ The delocalised electrons carry the charge.</span></div></div>
+<div class="info-panel misconception-panel"><div class="info-panel-title">COMMON MISCONCEPTIONS</div><div class="misconception-item"><span class="wrong">✗ Metals are made of molecules.</span><span class="right">✓ Metals are a giant lattice of ions.</span></div><div class="misconception-item"><span class="wrong">✗ The electrons belong to one atom.</span><span class="right">✓ Electrons are delocalised (shared by all).</span></div><div class="misconception-item"><span class="wrong">✗ Metals conduct because ions move.</span><span class="right">✓ The delocalised electrons carry the charge.</span></div></div>
 <div class="info-panel"><div class="info-panel-title">THE METALLIC LATTICE</div><div class="panel-diagram" style="width:100%">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 150" width="240" height="150">
   <defs>
@@ -330,7 +330,7 @@ html, body {
   <text x="168" y="90" font-family="Arial" font-size="8" font-weight="bold" fill="#1a237e">delocalised</text>
   <text x="168" y="100" font-family="Arial" font-size="8" font-weight="bold" fill="#1a237e">electrons</text>
 </svg></div><div class="info-panel-content" style="margin-top:3px;font-size:8.5px;">Positive <strong>metal ions</strong> sit in a 'sea' of <strong>delocalised electrons</strong>.</div></div></div>
-  <div class="questions-grid cols-2 rows-2"><div class="question-panel"><div class="question-header"><div class="question-badge">1</div><div class="question-title">DEFINE THE BOND</div></div><div class="question-text">Describe what is meant by <span class="command">metallic bonding</span>.</div><div class="question-secondary">Use the words 'positive metal ions' and 'delocalised electrons'.</div><div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div></div></div>
+  <div class="questions-grid cols-2 rows-3"><div class="question-panel"><div class="question-header"><div class="question-badge">1</div><div class="question-title">DEFINE THE BOND</div></div><div class="question-text">Describe what is meant by <span class="command">metallic bonding</span>.</div><div class="question-secondary">Use the words 'positive metal ions' and 'delocalised electrons'.</div><div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div></div></div>
 <div class="question-panel"><div class="question-header"><div class="question-badge">2</div><div class="question-title">ELECTRICAL CONDUCTIVITY</div></div><div class="question-text"><span class="command">Explain</span> why metals are good conductors of electricity.</div><div class="question-secondary">Think about which particles are free to move.</div><div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div></div></div>
 <div class="question-panel"><div class="question-header"><div class="question-badge">3</div><div class="question-title">MALLEABILITY</div></div><div class="question-text">The diagram shows the lattice before and after a force is applied. <span class="command">Explain</span> why the layers of ions can slide.</div><div class="question-diagram" style="width:100%">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" width="320" height="120">
@@ -379,7 +379,9 @@ html, body {
   <circle cx="298" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="298" y="104">+</text>
   </g>
 </svg></div><div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div></div></div>
-<div class="question-panel"><div class="question-header"><div class="question-badge">4</div><div class="question-title">MELTING POINT</div></div><div class="question-text">Complete the sentence using the word bank.</div><div class="question-secondary">Metals have ______ melting points because there is a ______ electrostatic ______ between the ions and the delocalised electrons.</div><div class="word-bank"><span class="word-bank-item">high</span><span class="word-bank-item">strong</span><span class="word-bank-item">attraction</span></div><div class="answer-lines"><div class="answer-line"></div></div></div></div>
+<div class="question-panel"><div class="question-header"><div class="question-badge">4</div><div class="question-title">MELTING POINT</div></div><div class="question-text">Complete the sentence using the word bank.</div><div class="question-secondary">Metals have ______ melting points because there is a ______ electrostatic ______ between the ions and the delocalised electrons.</div><div class="word-bank"><span class="word-bank-item">high</span><span class="word-bank-item">strong</span><span class="word-bank-item">attraction</span></div><div class="answer-lines"><div class="answer-line"></div></div></div>
+<div class="question-panel"><div class="question-header"><div class="question-badge">5</div><div class="question-title">LABEL THE PARTICLES</div></div><div class="question-text">In the lattice diagram, what do the <span class="command">large '+' circles</span> and the <span class="command">small '−' circles</span> represent?</div><div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div></div></div>
+<div class="question-panel"><div class="question-header"><div class="question-badge">6</div><div class="question-title">WHY SO STRONG?</div></div><div class="question-text"><span class="command">Suggest</span> why a metal with ions of charge 2+ has a higher melting point than one with 1+ ions.</div><div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div></div></div></div>
   <div class="footer"><span class="tip">💡 <strong>TIP:</strong> Positive metal ions are held in a 'sea' of delocalised electrons.</span><span class="think">✓ <strong>Think:</strong> Why does a bigger ionic charge give a stronger metallic bond?</span></div>
 </div>
 </body>

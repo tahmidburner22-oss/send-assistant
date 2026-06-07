@@ -12,7 +12,7 @@
     "mode": "info-grid",
     "infoCols": 3,
     "questionCols": 2,
-    "questionRows": 2
+    "questionRows": 3
   },
   "infoPanels": [
     {
@@ -80,6 +80,20 @@
       "wordBank": ["high", "strong", "attraction"],
       "secondaryText": "Metals have ______ melting points because there is a ______ electrostatic ______ between the ions and the delocalised electrons.",
       "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "LABEL THE PARTICLES",
+      "type": "short-answer",
+      "text": "In the lattice diagram, what do the <span class=\"command\">large '+' circles</span> and the <span class=\"command\">small '−' circles</span> represent?",
+      "answerLines": 2
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY SO STRONG?",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why a metal with ions of charge 2+ has a higher melting point than one with 1+ ions.",
+      "answerLines": 2
     }
   ],
   "footer": {

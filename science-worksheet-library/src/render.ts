@@ -193,14 +193,14 @@ html, body {
 .worked-step.highlight { color: var(--accent); font-weight: 700; font-size: 10.5px; }
 
 /* Vocab panel */
-.vocab-item { margin-bottom: 2px; font-size: 8.5px; }
+.vocab-item { margin-bottom: 5px; font-size: 10px; line-height: 1.25; }
 .vocab-item strong { color: var(--accent); }
 
-/* Misconceptions panel */
+/* Misconceptions panel — crossed-out wrong above, correct below */
 .misconception-panel { background: var(--misconception-bg); border-color: var(--misconception-border); }
-.misconception-item { font-size: 8.5px; margin-bottom: 2px; }
-.misconception-item .wrong { color: #c62828; text-decoration: line-through; opacity: 0.8; }
-.misconception-item .right { color: #2e7d32; font-weight: 600; }
+.misconception-item { font-size: 9.5px; margin-bottom: 6px; line-height: 1.25; }
+.misconception-item .wrong { display: block; color: #c62828; text-decoration: line-through; opacity: 0.85; }
+.misconception-item .right { display: block; color: #2e7d32; font-weight: 600; margin-top: 1px; }
 
 /* Conversion reminder — yellow box */
 .conversion-box {
@@ -215,7 +215,7 @@ html, body {
 
 /* Diagram inside panel */
 .panel-diagram { text-align: center; margin: 3px 0; }
-.panel-diagram svg { max-height: 120px; width: auto; }
+.panel-diagram svg { max-height: 110px; max-width: 100%; width: auto; height: auto; }
 .panel-diagram-caption { font-size: 7.5px; color: #555; margin-top: 1px; }
 
 /* ─── Questions ─── */
@@ -296,9 +296,9 @@ html, body {
 }
 
 /* Diagram in question */
-.question-diagram { text-align: center; margin: 3px 0; flex: 1; }
-.question-diagram svg { max-height: 100%; width: auto; }
-.question-diagram-caption { font-size: 7.5px; color: #555; }
+.question-diagram { text-align: center; margin: 3px auto; width: 100%; display: flex; align-items: center; justify-content: center; }
+.question-diagram svg { max-width: 100%; max-height: 120px; height: auto; width: auto; display: block; }
+.question-diagram-caption { font-size: 7.5px; color: #555; text-align: center; }
 
 /* ─── ADHD Steps ─── */
 .steps { margin: 3px 0; padding-left: 2px; }
@@ -439,7 +439,7 @@ function renderInfoPanel(panel: InfoPanel): string {
     case 'misconceptions':
       if (panel.misconceptions) {
         for (const m of panel.misconceptions) {
-          inner += `<div class="misconception-item"><span class="wrong">✗ ${m.wrong}</span> → <span class="right">✓ ${m.right}</span></div>`;
+          inner += `<div class="misconception-item"><span class="wrong">✗ ${m.wrong}</span><span class="right">✓ ${m.right}</span></div>`;
         }
       }
       break;
