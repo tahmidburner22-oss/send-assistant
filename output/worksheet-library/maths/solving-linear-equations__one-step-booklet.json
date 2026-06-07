@@ -1,0 +1,92 @@
+{
+  "title": "One-Step Equations",
+  "subtitle": "AQA · KS3 Year 8",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Solving Linear Equations",
+    "subtopic": "One-step equations",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "One-Step Equations",
+    "subheader": "AQA · KS3 Year 8",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Solve a linear equation that needs a single step. Use the inverse operation to undo what has been done to the unknown, doing the same to both sides to keep the equation balanced.",
+    "commonMistakes": [
+      "Only changing one side — whatever you do to one side you must do to the other.",
+      "Using the wrong inverse: the inverse of × 3 is ÷ 3, not − 3.",
+      "For x ÷ 4 = 3 you multiply both sides by 4; do not divide.",
+      "Sign slips with negatives — for example, x + 7 = 2 gives x = −5, not 5."
+    ],
+    "methodSteps": [
+      "Step 1: Look at what has been done to the unknown letter.",
+      "Step 2: Choose the inverse operation that undoes it.",
+      "Step 3: Apply that inverse to BOTH sides of the equation.",
+      "Step 4: Simplify each side to get the letter on its own.",
+      "Step 5: Check by substituting your answer back into the original equation."
+    ],
+    "workedExample": [
+      "Solve: x + 7 = 12",
+      "Step 1 — 7 has been added to x.",
+      "Step 2 — The inverse of + 7 is − 7.",
+      "Step 3 — x + 7 − 7 = 12 − 7",
+      "Step 4 — x = 5",
+      "Step 5 — Check: 5 + 7 = 12 ✓"
+    ]
+  },
+  "methodReminder": [
+    "1  See what was done to the letter",
+    "2  Choose the inverse operation",
+    "3  Do it to BOTH sides",
+    "4  Simplify to leave the letter alone",
+    "5  Check by substituting"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["A number has been added to the letter — undo it by subtracting the same number from both sides.", "For x + 5 = 12, subtract 5 from each side: x = 12 − 5."], "content": "Solve.\n\n   a) x + 5 = 12\n   b) y − 3 = 10\n   c) m + 8 = 8" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Here the letter has been multiplied or divided.", "For 4x = 20, the inverse of × 4 is ÷ 4: x = 20 ÷ 4.", "For x ÷ 3 = 6, the inverse of ÷ 3 is × 3: x = 6 × 3."], "content": "Solve.\n\n   a) 4x = 20\n   b) x ÷ 3 = 6\n   c) 7x = 56" },
+    { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Solve.\n\n   a) x − 9 = −2\n   b) x + 11 = 4\n   c) 6x = −30" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Solve.\n\n   a) x ÷ 5 = −4\n   b) −3x = 21\n   c) x + 2.5 = 6" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Solve. The letter is on the right this time.\n\n   a) 9 = x + 4\n   b) 20 = 5x\n   c) −8 = x − 3" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Form an equation and solve it.\n\n   a) A number n is multiplied by 4 to give 28. Find n.\n   b) When 5 is subtracted from a number p, the result is 12. Find p." },
+    { "id": "q7", "number": 7, "marks": 3, "difficulty": 4, "content": "A rectangle has width w cm and length 5w cm.\nThe length is 35 cm.\n\n   a) Write an equation in w. (1 mark)\n   b) Solve it to find the width w. (1 mark)\n   c) Work out the perimeter of the rectangle. (1 mark)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A delivery company charges the same fixed price £x for each parcel.\nFour parcels cost £26 in total.\n\n   a) Write an equation for the total cost. (1 mark)\n   b) Solve it to find the price of one parcel. (2 marks)\n   c) A customer has a £40 budget. What is the greatest number of whole parcels they can send? Show your working. (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "How do I decide which inverse operation to use?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) x = 7  b) y = 13  c) m = 0",
+      "Q2: a) x = 5  b) x = 18  c) x = 8",
+      "Q3: a) x = 7  b) x = −7  c) x = −5",
+      "Q4: a) x = −20  b) x = −7  c) x = 3.5",
+      "Q5: a) x = 5  b) x = 4  c) x = −5",
+      "Q6: a) 4n = 28 → n = 7  b) p − 5 = 12 → p = 17",
+      "Q7: a) 5w = 35  b) w = 7 cm  c) Perimeter = 2(7 + 35) = 84 cm",
+      "Q8: a) 4x = 26  b) x = £6.50  c) 40 ÷ 6.50 = 6.15… → 6 whole parcels (6 × £6.50 = £39 ≤ £40)"
+    ]
+  }
+}

@@ -21,8 +21,8 @@
 ## Summary
 
 - **Total sub-topics:** 100 (25 topics × 4 sub-topics each)
-- **Done:** 28 (topics 1, 2, 3, 4, 5, 10, 11)
-- **Remaining:** 72
+- **Done:** 32 (topics 1, 2, 3, 4, 5, 6, 10, 11)
+- **Remaining:** 68
 
 ---
 
@@ -50,10 +50,10 @@
 | 5.2 | Algebraic Expressions | Expanding single brackets | KS3 | 7-8 | ✅ |
 | 5.3 | Algebraic Expressions | Expanding double brackets | KS3 | 7-8 | ✅ |
 | 5.4 | Algebraic Expressions | Factorising expressions | KS3 | 7-8 | ✅ |
-| 6.1 | Solving Linear Equations | One-step equations | KS3 | 8 | 🔲 |
-| 6.2 | Solving Linear Equations | Two-step equations | KS3 | 8 | 🔲 |
-| 6.3 | Solving Linear Equations | Equations with unknowns on both sides | KS3 | 8 | 🔲 |
-| 6.4 | Solving Linear Equations | Equations with brackets | KS3 | 8 | 🔲 |
+| 6.1 | Solving Linear Equations | One-step equations | KS3 | 8 | ✅ |
+| 6.2 | Solving Linear Equations | Two-step equations | KS3 | 8 | ✅ |
+| 6.3 | Solving Linear Equations | Equations with unknowns on both sides | KS3 | 8 | ✅ |
+| 6.4 | Solving Linear Equations | Equations with brackets | KS3 | 8 | ✅ |
 | 7.1 | Linear Inequalities | Writing and solving linear inequalities | KS4 | 9-10 | 🔲 |
 | 7.2 | Linear Inequalities | Representing inequalities on a number line | KS4 | 9-10 | 🔲 |
 | 7.3 | Linear Inequalities | Double inequalities | KS4 | 9-10 | 🔲 |

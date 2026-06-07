@@ -1,0 +1,92 @@
+{
+  "title": "Equations with Brackets",
+  "subtitle": "AQA · KS3 Year 8",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Solving Linear Equations",
+    "subtopic": "Equations with brackets",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Equations with Brackets",
+    "subheader": "AQA · KS3 Year 8",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Solve linear equations that contain brackets. Expand the brackets first by multiplying every term inside, then collect like terms and solve as usual.",
+    "commonMistakes": [
+      "Only multiplying the first term inside the bracket: 3(x + 2) = 3x + 6, not 3x + 2.",
+      "Forgetting that a negative outside the bracket changes both signs inside.",
+      "Trying to divide by the number outside before expanding when other terms are present.",
+      "Sign errors when subtracting an expanded bracket such as − 2(x − 4)."
+    ],
+    "methodSteps": [
+      "Step 1: Expand each bracket — multiply the term outside by every term inside.",
+      "Step 2: Collect like terms on each side.",
+      "Step 3: If letters appear on both sides, move the smaller letter term across.",
+      "Step 4: Collect the numbers, then divide to find the letter.",
+      "Step 5: Check by substituting into the original (un-expanded) equation."
+    ],
+    "workedExample": [
+      "Solve: 3(x + 2) = 18",
+      "Step 1 — Expand: 3 × x + 3 × 2 = 3x + 6, so 3x + 6 = 18.",
+      "Step 2 — (Already collected.)",
+      "Step 3 — (No letters on the right.)",
+      "Step 4 — Subtract 6: 3x = 12; divide by 3: x = 4.",
+      "Step 5 — Check: 3(4 + 2) = 3 × 6 = 18 ✓"
+    ]
+  },
+  "methodReminder": [
+    "1  Expand every bracket fully",
+    "2  Collect like terms on each side",
+    "3  Move the smaller letter term across",
+    "4  Collect numbers, then divide",
+    "5  Check in the original equation"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Expand the bracket first: multiply the outside number by each term inside.", "For 2(x + 3) = 14, this gives 2x + 6 = 14, then 2x = 8, x = 4."], "content": "Solve.\n\n   a) 2(x + 3) = 14\n   b) 5(x − 1) = 20" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Expand, then undo the + or − , then the ×.", "For 4(2x − 1) = 28: 8x − 4 = 28, so 8x = 32, x = 4."], "content": "Solve.\n\n   a) 3(x + 4) = 18\n   b) 4(2x − 1) = 28" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Solve.\n\n   a) 2(3x + 1) = 26\n   b) 5(2x − 3) = 35\n   c) 3(x + 5) = 12" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Solve. Letters appear on both sides.\n\n   a) 2(x + 4) = x + 11\n   b) 4(x − 1) = 2(x + 3)\n   c) 3(2x + 1) = 4x + 11" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Expand, collect like terms, then solve.\n\n   a) 2(x + 1) + 3(x − 2) = 11\n   b) 5(x − 1) − 2(x − 4) = 18\n   c) 4(x + 2) − 3(x − 1) = 15" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "A rectangle has length (x + 5) cm and width 3 cm.\nThe perimeter is 28 cm.\n\n   a) Form an equation using 2(length + width). (1 mark)\n   b) Solve it to find x. (1 mark)\n   c) Work out the area of the rectangle. (1 mark)" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "A regular pentagon has five equal sides, each (2x − 1) cm long.\nThe perimeter is 45 cm.\n\n   a) Form an equation. (1 mark)\n   b) Solve it to find x. (2 marks)\n   c) Find the length of one side. (1 mark)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "a) Solve 3(2x − 1) = 2(x + 5) + 3. (2 marks)\n\nb) Show that the equation 4(x + 2) = 2(2x − 1) has no solution, and explain what this tells you. (3 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Why must I multiply every term inside the bracket?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 2x + 6 = 14 → 2x = 8 → x = 4  b) 5x − 5 = 20 → 5x = 25 → x = 5",
+      "Q2: a) 3x + 12 = 18 → 3x = 6 → x = 2  b) 8x − 4 = 28 → 8x = 32 → x = 4",
+      "Q3: a) 6x + 2 = 26 → 6x = 24 → x = 4  b) 10x − 15 = 35 → 10x = 50 → x = 5  c) 3x + 15 = 12 → 3x = −3 → x = −1",
+      "Q4: a) 2x + 8 = x + 11 → x = 3  b) 4x − 4 = 2x + 6 → 2x = 10 → x = 5  c) 6x + 3 = 4x + 11 → 2x = 8 → x = 4",
+      "Q5: a) 5x − 4 = 11 → 5x = 15 → x = 3  b) 3x + 3 = 18 → 3x = 15 → x = 5  c) x + 11 = 15 → x = 4",
+      "Q6: a) 2((x + 5) + 3) = 28  b) 2(x + 8) = 28 → x + 8 = 14 → x = 6  c) length = 11 cm, area = 11 × 3 = 33 cm²",
+      "Q7: a) 5(2x − 1) = 45  b) 10x − 5 = 45 → 10x = 50 → x = 5  c) side = 2(5) − 1 = 9 cm",
+      "Q8: a) 6x − 3 = 2x + 13 → 4x = 16 → x = 4  b) 4x + 8 = 4x − 2 → 8 = −2, which is impossible, so there is no value of x that works (no solution)."
+    ]
+  }
+}

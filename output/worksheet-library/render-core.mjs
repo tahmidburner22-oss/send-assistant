@@ -83,6 +83,19 @@ function topicVisual(ws) {
         <text x="40" y="100" ${F} font-size="13" fill="#15803d">same base &#8594; add indices</text>
       </svg>`;
     }
+  } else if (/linear equation/i.test(topic)) {
+    cap = 'An equation balances: do the same to both sides to keep it level.';
+    svg = `<svg viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+      <text x="20" y="50" ${F} font-size="24">2x + 3 = 11</text>
+      <text x="20" y="90" ${F} font-size="20" fill="#15803d">&#8722;3 both sides &#8594; 2x = 8</text>
+      <text x="20" y="125" ${F} font-size="20" fill="#15803d">&#247;2 both sides &#8594; x = 4</text>
+      <line x1="300" y1="120" x2="500" y2="120" stroke="#111" stroke-width="3"/>
+      <polygon points="400,120 380,150 420,150" fill="#111"/>
+      <rect x="312" y="92" width="56" height="26" fill="#bbf7d0" stroke="#15803d"/>
+      <rect x="432" y="92" width="56" height="26" fill="#bbf7d0" stroke="#15803d"/>
+      <text x="322" y="111" ${F} font-size="14">2x+3</text>
+      <text x="450" y="111" ${F} font-size="14">11</text>
+    </svg>`;
   } else if (/fraction|percent|decimal/i.test(topic)) {
     cap = 'One half shown three equivalent ways.';
     svg = `<svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg">

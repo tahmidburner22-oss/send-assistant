@@ -1,0 +1,59 @@
+{
+  "title": "Equations with Unknowns on Both Sides",
+  "subtitle": "AQA · KS3 Year 8 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Solving Linear Equations",
+    "subtopic": "Equations with unknowns on both sides",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Equations with Unknowns on Both Sides",
+    "subheader": "AQA · KS3 Year 8",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Choose the side to keep the letters",
+      "2  Subtract the smaller letter term (both sides)",
+      "3  Collect the numbers using inverses",
+      "4  Solve the simpler equation",
+      "5  Check both sides match"
+    ],
+    "commonMistakes": [
+      "Not doing the move to both sides.",
+      "Moving the larger letter term and creating a needless negative.",
+      "5x − 3x = 2x, not 8x.",
+      "Stopping at ax = c without the final division."
+    ],
+    "workedExample": [
+      "Solve 5x + 2 = 3x + 10.",
+      "Subtract 3x: 2x + 2 = 10. Subtract 2: 2x = 8. Divide by 2: x = 4.",
+      "Check: 5(4)+2 = 22 = 3(4)+10 ✓"
+    ],
+    "visualAid": "Balance scale with x-tiles and unit-tiles on both pans. Remove 3 x-tiles from each pan, then remove 2 units from each pan, leaving 2x = 8 → x = 4."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Solve: a) 5x = 2x + 9  b) 7x = 3x + 20" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Solve: a) 6x + 1 = 4x + 9  b) 8x − 5 = 6x + 7" },
+    { "number": 3, "marks": 2, "difficulty": 2, "content": "Solve: a) 9x − 4 = 4x + 11  b) 4x + 7 = x + 22" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Solve: a) 3x + 8 = 7x  b) 2x − 5 = 5x + 4  c) 10 − x = 4 + x" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Solve: a) 5x + 3 = 2x − 9  b) 7 − 2x = x + 1  c) 4x − 1 = 6x − 9" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Sara (4x+2) sweets = Tom (6x−8) sweets. a) Equation. b) Find x. c) How many each?" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Plan A: £10 + £2/GB. Plan B: £4 + £4/GB. a) Equation in g. b) GB where equal. c) That cost." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Rod A (5x−3) cm = Rod B (2x+9) cm. a) Find x. b) Length of each. c) Rod 5 cm less than twice Rod A." }
+  ]
+}
