@@ -21,7 +21,7 @@ await page.setContent(buildHtml(ws), { waitUntil: 'networkidle' });
 await page.pdf({
   path: outputFile,
   format: 'A4',
-  landscape: landscape,
+  landscape: false,
   margin: { top: '0', bottom: '0', left: '0', right: '0' },
   printBackground: true,
 });

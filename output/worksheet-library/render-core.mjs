@@ -140,10 +140,21 @@ const CSS2 = `
 .ans-row .lbl { min-width:12mm; font-weight:700; }
 .ans-row .eq { margin:0 2mm; }
 .ans-row .rule { flex:1; border-bottom:1pt solid #111; height:5mm; }
-.visual { margin-bottom:4mm; background:#f0fdf4; border:.75pt solid #86c79a; border-left:3pt solid #16a34a; padding:3mm; }
-.visual .box-title { color:#15803d; }
-.visual svg { display:block; width:100%; height:auto; max-height:46mm; }
-.visual .vcap { font-size:8.5pt; font-style:italic; color:#3f6b4e; margin-top:1.5mm; }
+.visual { margin-bottom:3mm; background:#f0fdf4; border:.75pt solid #86c79a; border-left:3pt solid #16a34a; padding:2mm 3mm; }
+.visual .box-title { color:#15803d; font-size:8pt; }
+.visual svg { display:block; width:70%; height:auto; max-height:28mm; margin:0 auto; }
+.visual .vcap { font-size:7.5pt; font-style:italic; color:#3f6b4e; margin-top:1mm; text-align:center; }
+.onepage .bk-title { font-size:16pt; margin-bottom:1mm; }
+.onepage .bk-sub { font-size:9.5pt; margin:0 0 2mm; }
+.onepage .objective { font-size:9pt; padding:2mm; margin-bottom:2mm; }
+.onepage .mistakes { margin-bottom:2mm; } .onepage .mistakes li { font-size:8.5pt; margin-bottom:.8mm; }
+.onepage .method { margin-bottom:2mm; } .onepage .method li { font-size:8.5pt; margin-bottom:.8mm; }
+.onepage .worked { padding:2mm; margin-bottom:2mm; } .onepage .worked p { font-size:8.5pt; line-height:1.4; }
+.onepage .ls-grid { column-count:2; column-gap:6mm; column-rule:.5pt solid #e0e0e0; }
+.onepage .ls-q { break-inside:avoid; margin-bottom:3mm; padding-bottom:2mm; border-bottom:.5pt solid #e0e0e0; }
+.onepage .ls-q-h { font-weight:800; font-size:9.5pt; margin-bottom:.5mm; }
+.onepage .ls-q-h .m { font-weight:400; color:#555; font-size:8.5pt; }
+.onepage .ls-q-c { font-size:8.5pt; line-height:1.35; white-space:pre-wrap; }
 .method-strip { border:.75pt solid #cbd2da; background:#f4f6f8; border-radius:1.5mm; padding:2mm 3mm; font-size:8pt; color:#2a2a2a; }
 .method-strip b { text-transform:uppercase; letter-spacing:.3px; margin-right:2mm; }
 .method-strip .sep { color:#9aa3ad; margin:0 1.5mm; }
@@ -238,19 +249,26 @@ function answersPage(ws) {
 }
 
 function landscapeQuestions(ws) {
-  let h = `<div class="page landscape">${introBlocks(ws, true)}</div>`;
-  h += `<div class="page landscape"><div class="ls-grid">`;
+  // Single portrait page: compact intro at top, then 2-column question grid below
+  let h = `<div class="page onepage">${introBlocks(ws, true)}</div>`;
+  return h;
+}
+
+// Builds the one-page question grid that goes INSIDE the single page (appended after intro)
+function onepageGrid(ws) {
+  let h = `<div class="ls-grid">`;
   for (const q of ws.questions) {
     h += `<div class="ls-q"><div class="ls-q-h">${q.number}. <span class="m">(${q.marks} mark${q.marks > 1 ? 's' : ''})</span></div>`;
     h += `<div class="ls-q-c">${esc(q.content)}</div></div>`;
   }
-  return h + `</div></div>`;
+  return h + `</div>`;
 }
 
 export function buildHtml(ws) {
   let body = '';
   if (isLandscapeWs(ws)) {
-    body = landscapeQuestions(ws);
+    // One portrait page: compact intro + visual at top, questions below in 2-col grid
+    body += `<div class="page onepage">${introBlocks(ws, true)}${onepageGrid(ws)}</div>`;
   } else {
     body += `<div class="page">${introBlocks(ws, false)}</div>`;
     ws.questions.forEach((q, i) => { body += questionPage(ws, q, i); });
