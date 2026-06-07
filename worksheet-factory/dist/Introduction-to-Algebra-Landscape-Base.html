@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+
+  .page {
+    box-sizing: border-box;
+    width: 297mm;
+    height: 209.7mm;                  /* exactly one landscape A4 page */
+    background: #ffffff;
+    color: #111111;
+    padding: 12mm 14mm;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+  .page *, .page *::before, .page *::after { font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .page + .page { break-before: page; }
+  .page p, .page li, .page div { text-align: left; }
+
+  .box {
+    border: 1.4px solid #333333;
+    border-radius: 8px;
+    background: transparent;
+    padding: 12px 16px;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; color: #111111; }
+
+  .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.4px solid #333333; padding-bottom: 8px; margin-bottom: 12px; flex: 0 0 auto; }
+  .h-title { font-size: 26px; font-weight: 700; }
+  .h-sub { font-size: 15px; }
+  .note { font-size: 15px; margin-bottom: 14px; flex: 0 0 auto; }
+
+  /* ---------- intro page ---------- */
+  .method { margin-bottom: 14px; flex: 0 0 auto; }
+  .m-steps { display: flex; flex-wrap: wrap; gap: 10px 30px; margin-top: 6px; font-size: 17px; }
+  .m-step { white-space: nowrap; }
+
+  /* stretched row that fills the rest of the page */
+  .lower { display: flex; gap: 14px; flex: 1 1 auto; align-items: stretch; min-height: 0; }
+  .lower > .box { display: flex; flex-direction: column; min-height: 0; }
+  .mistakes { flex: 1.15; }
+  .worked   { flex: 1.25; }
+  .visual   { flex: 1.05; }
+
+  ul { margin: 0; padding-left: 22px; }
+  li { margin: 9px 0; }
+  .worked .ex { display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+  .worked .ex div { margin: 4px 0; font-size: 16px; }
+
+  .visual .graph-svg { width: 100%; flex: 1 1 auto; min-height: 0; }
+  .visual .cap { font-size: 14px; margin: 8px 0 0; color: #333; }
+  .g-ax  { font-size: 13px; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .g-pt  { font-size: 13px; font-weight: 700; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .g-lbl { font-size: 13px; fill: #444; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .t-lbl { font-size: 12px; font-weight: 700; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .t-eq  { font-size: 15px; font-weight: 700; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .t-cell{ font-size: 15px; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+
+  /* ---------- questions page: 2×4 grid filling the page ---------- */
+  .questions .q-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 18px 26px;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .q-card { display: flex; flex-direction: column; justify-content: center; }
+  .q-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .q-num { font-size: 19px; font-weight: 700; color: #111111; }
+  .q-right { display: flex; align-items: center; gap: 12px; }
+  .marks { font-weight: 700; font-size: 17px; }
+  .difficulty { display: inline-flex; gap: 5px; align-items: center; }
+  .pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #333333; display: inline-block; }
+  .pip.on { background: #333333; }
+  .q-text { font-size: 21px; }
+</style>
+</head>
+<body>
+  
+<section class="page intro">
+  <div class="header">
+    <span class="h-title">Introduction to Algebra</span>
+    <span class="h-sub">AQA KS3 · Year 7 · Foundation</span>
+  </div>
+  <div class="note">A letter stands for a number we do not know yet. Simplify each expression by collecting like terms. Show your working in your workbook.</div>
+
+  <div class="method box">
+    <h2>Method</h2>
+    <div class="m-steps"><span class="m-step">1  Find the like terms (same letter)</span><span class="m-step">2  Group them, keeping each sign</span><span class="m-step">3  Add or subtract the number parts</span><span class="m-step">4  Letters first, then the number</span><span class="m-step">5  Check by substituting a value</span></div>
+  </div>
+
+  <div class="lower">
+    <div class="box mistakes">
+      <h2>Common mistakes</h2>
+      <ul><li>3x means 3 × x. It is not the digits 3 and x written side by side.</li><li>You can only collect like terms: 3x + 2x = 5x, but 3x + 2 stays as 3x + 2.</li><li>x on its own means 1x, so x + x = 2x — not x².</li><li>Multiplying is different from adding: x × x = x², but x + x = 2x.</li></ul>
+    </div>
+    <div class="box worked">
+      <h2>Worked example</h2>
+      <div class="ex"><div>Simplify:  2x + 3 + x + 1</div><div>Step 1 — Like terms:  2x and x are like;  3 and 1 are like.</div><div>Step 2 — Group them:  (2x + x) + (3 + 1)</div><div>Step 3 — Combine the x terms:  2x + x = 3x</div><div>Step 4 — Combine the numbers:  3 + 1 = 4</div><div>Answer:  3x + 4   (check x = 5:  2×5+3+5+1 = 19  and  3×5+4 = 19 ✓)</div></div>
+    </div>
+    <div class="box visual">
+      <h2>Visual aid — collecting like terms</h2>
+      
+  <svg viewBox="0 0 360 250" class="graph-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Algebra tiles: two x-tiles and three unit tiles, plus one x-tile and one unit tile, combine to make three x-tiles and four unit tiles.">
+    <rect x="40" y="26" width="24" height="18" rx="3" fill="#dfe6ef" stroke="#333333" stroke-width="1.4"/>
+        <text x="52" y="39" class="t-lbl" text-anchor="middle">x</text><rect x="70" y="26" width="24" height="18" rx="3" fill="#dfe6ef" stroke="#333333" stroke-width="1.4"/>
+        <text x="82" y="39" class="t-lbl" text-anchor="middle">x</text><rect x="108" y="27" width="15" height="15" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1.4"/>
+        <text x="115.5" y="37.5" class="t-lbl" text-anchor="middle">1</text><rect x="129" y="27" width="15" height="15" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1.4"/>
+        <text x="136.5" y="37.5" class="t-lbl" text-anchor="middle">1</text><rect x="150" y="27" width="15" height="15" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1.4"/>
+        <text x="157.5" y="37.5" class="t-lbl" text-anchor="middle">1</text><text x="300" y="40" class="t-eq" text-anchor="start">2x + 3</text><rect x="40" y="64" width="24" height="18" rx="3" fill="#dfe6ef" stroke="#333333" stroke-width="1.4"/>
+        <text x="52" y="77" class="t-lbl" text-anchor="middle">x</text><rect x="78" y="65" width="15" height="15" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1.4"/>
+        <text x="85.5" y="75.5" class="t-lbl" text-anchor="middle">1</text><text x="300" y="78" class="t-eq" text-anchor="start">x + 1</text><line x1="34" y1="104" x2="330" y2="104" stroke="#333333" stroke-width="1.6"/><rect x="40" y="122" width="24" height="18" rx="3" fill="#dfe6ef" stroke="#333333" stroke-width="1.4"/>
+        <text x="52" y="135" class="t-lbl" text-anchor="middle">x</text><rect x="70" y="122" width="24" height="18" rx="3" fill="#dfe6ef" stroke="#333333" stroke-width="1.4"/>
+        <text x="82" y="135" class="t-lbl" text-anchor="middle">x</text><rect x="100" y="122" width="24" height="18" rx="3" fill="#dfe6ef" stroke="#333333" stroke-width="1.4"/>
+        <text x="112" y="135" class="t-lbl" text-anchor="middle">x</text><rect x="138" y="123" width="15" height="15" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1.4"/>
+        <text x="145.5" y="133.5" class="t-lbl" text-anchor="middle">1</text><rect x="159" y="123" width="15" height="15" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1.4"/>
+        <text x="166.5" y="133.5" class="t-lbl" text-anchor="middle">1</text><rect x="180" y="123" width="15" height="15" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1.4"/>
+        <text x="187.5" y="133.5" class="t-lbl" text-anchor="middle">1</text><rect x="201" y="123" width="15" height="15" rx="2" fill="#ffffff" stroke="#333333" stroke-width="1.4"/>
+        <text x="208.5" y="133.5" class="t-lbl" text-anchor="middle">1</text><text x="300" y="136" class="t-eq" text-anchor="start">= 3x + 4</text>
+  </svg>
+      <p class="cap">Tiles of the same kind join together: 2x + 3 and x + 1 give 3x + 4.</p>
+    </div>
+  </div>
+</section>
+  
+<section class="page questions">
+  <div class="header">
+    <span class="h-title">Questions</span>
+    <span class="h-sub">Simplify each expression — show your working in your workbook</span>
+  </div>
+  <div class="q-grid">
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q1 of 8</span>
+        <span class="q-right"><span class="marks">[1]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Simplify:   a + a + a + a</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q2 of 8</span>
+        <span class="q-right"><span class="marks">[1]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Simplify:   5x + 2x</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q3 of 8</span>
+        <span class="q-right"><span class="marks">[2]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Simplify:   5x + 2x − 3x</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q4 of 8</span>
+        <span class="q-right"><span class="marks">[2]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Simplify:   7y + 4 + 2y + 5</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q5 of 8</span>
+        <span class="q-right"><span class="marks">[2]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Simplify:   8m + 3n − 2m + 5n</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q6 of 8</span>
+        <span class="q-right"><span class="marks">[2]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">A pencil costs p pence. Write an expression for the cost of 4 pencils and a 30p rubber.</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q7 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 4 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   3(x + 2) + 2x</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q8 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 5 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></span></span>
+      </div>
+      <div class="q-text">A rectangle has length (x + 3) and width x. Write a simplified expression for its perimeter.</div>
+    </div></div>
+</section>
+</body></html>

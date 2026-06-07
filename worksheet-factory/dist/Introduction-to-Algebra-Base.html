@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+
+  .page {
+    box-sizing: border-box;
+    width: 210mm;
+    min-height: 296mm;                        /* fill the A4 page */
+    background: #ffffff;
+    color: #111111;
+    padding: 8mm 10mm;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  .page *, .page *::before, .page *::after {
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  }
+  .page + .page { break-before: page; }
+  .page p, .page li, .page div { text-align: left; }
+
+  /* outlined box: neutral border (region structure preserved, no colour coding) */
+  .box {
+    border: 1px solid #333333;
+    border-radius: 6px;
+    background: transparent;
+    padding: 8px 12px;
+  }
+  .intro .box { margin-bottom: 9px; }
+
+  .small-header .sh-title { font-size: 20px; font-weight: 700; }
+  .sh-sub { font-size: 14px; }
+  .sh-name { font-size: 14px; margin-top: 6px; }
+
+  h2 { font-size: 17px; font-weight: 700; margin: 0 0 5px; color: #111111; }
+  ul, ol { margin: 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  .worked .example { margin-top: 2px; }
+  .worked .example div { margin: 2px 0; }
+
+  /* question page */
+  .question .q-top { flex: 0 0 auto; }
+  .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .q-num { font-size: 19px; font-weight: 700; }
+  .q-right { display: flex; align-items: center; gap: 12px; }
+  .marks { font-weight: 700; }
+  .difficulty { display: inline-flex; gap: 4px; align-items: center; }
+  .pip { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #333333; display: inline-block; }
+  .pip.on { background: #333333; }
+  .q-text { font-size: 18px; }
+
+  .frame { margin-top: 14px; border-style: dashed; }
+  .frame-title { font-weight: 700; color: #111111; margin-bottom: 4px; }
+  .frame-steps li { margin: 5px 0; }
+
+  .q-answer { margin-top: auto; align-self: flex-end; width: 78mm; }  /* bottom-right */
+  .ans-row { display: flex; align-items: flex-end; gap: 10px; margin-top: 16px; }
+  .ans-label { font-weight: 700; white-space: nowrap; font-size: 18px; }
+  .ans-line { flex: 1; border-bottom: 2px solid #000; height: 26px; }
+
+  /* method reminder strip (bottom of each question page) */
+  .reminder { margin-top: 16px; }
+  .rem-title { font-weight: 700; color: #111111; }
+  .rem-steps { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 4px; font-size: 14px; }
+  .rem-step { white-space: nowrap; }
+
+  /* reflection */
+  .confidence-q { font-weight: 700; }
+  .confidence { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 6px; }
+  .opt { display: inline-flex; align-items: center; gap: 8px; }
+  .tick { width: 16px; height: 16px; border: 2px solid #000; display: inline-block; border-radius: 3px; }
+  .reflect-prompt { margin-top: 12px; }
+  .write-line { border-bottom: 2px solid #000; height: 30px; margin-top: 14px; }
+
+  /* teacher key */
+  .key-list li { margin: 6px 0; }
+</style>
+</head>
+<body>
+  
+<section class="page intro">
+  <div class="small-header box">
+    <div class="sh-title">Introduction to Algebra</div>
+    <div class="sh-sub">AQA KS3 · Year 7 · Foundation</div>
+    <div class="sh-name">Name: ____________________     Class: __________     Date: __________</div>
+  </div>
+
+  <div class="block box">
+    <h2>What you need to be able to do</h2>
+    <p>Understand that a letter stands for a number we do not know yet. Write simple expressions, simplify them by collecting like terms, and substitute a number for a letter to find a value.</p>
+  </div>
+
+  <div class="block box">
+    <h2>Common mistakes to avoid</h2>
+    <ul><li>3x means 3 × x. It is not the digits 3 and x written next to each other.</li><li>You can only collect like terms. For example 3x + 2x = 5x, but 3x + 2 stays as 3x + 2.</li><li>x on its own means 1x, so x + x = 2x — not x².</li><li>Multiplying is different from adding: x × x = x², but x + x = 2x.</li></ul>
+  </div>
+
+  <div class="block box">
+    <h2>Method steps</h2>
+    <ol class="steps"><li>Step 1: Find the like terms — the ones with the same letter (and the plain numbers together).</li><li>Step 2: Group the like terms, keeping the + or − sign in front of each one.</li><li>Step 3: Add or subtract the number parts (the coefficients) of each group.</li><li>Step 4: Write the simplified expression — letters first, then the number.</li><li>Step 5: Check by substituting a number for the letter.</li></ol>
+  </div>
+
+  <div class="block box worked">
+    <h2>Worked example</h2>
+    <div class="example"><div>Simplify:  4x + 3 + 2x − 1</div><div>Step 1 — Find the like terms:  4x and 2x are like;  3 and −1 are like.</div><div>Step 2 — Group them:  (4x + 2x) + (3 − 1)</div><div>Step 3 — Combine the x terms:  4x + 2x = 6x</div><div>Step 4 — Combine the numbers:  3 − 1 = 2</div><div>Answer:  6x + 2   (check x = 5:  4×5+3+2×5−1 = 32  and  6×5+2 = 32 ✓)</div></div>
+  </div>
+</section>
+  
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 1 of 8</span>
+      <span class="q-right"><span class="marks">[1 mark]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Write an expression for a number, n, with 5 added to it.</div>
+    <div class="frame box">
+               <div class="frame-title">How to start</div>
+               <ol class="frame-steps"><li>A letter, n, stands for the number you do not know yet.</li><li>"5 added to it" means you do +5 after the n.</li><li>Write the letter, then the operation, then the number.</li></ol>
+             </div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">Answer:</span><span class="ans-line"></span></div><div class="ans-row"><span class="ans-label"></span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Find the like terms</span><span class="rem-step">2  Group them (keep each sign)</span><span class="rem-step">3  Add or subtract the number parts</span><span class="rem-step">4  Letters first, then the number</span><span class="rem-step">5  Check by substituting</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 2 of 8</span>
+      <span class="q-right"><span class="marks">[1 mark]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Simplify.<br><br>   a + a + a + a</div>
+    <div class="frame box">
+               <div class="frame-title">How to start</div>
+               <ol class="frame-steps"><li>Each a is one lot of a, so this is 1a + 1a + 1a + 1a.</li><li>Count how many a's there are altogether and write that number in front of the a.</li></ol>
+             </div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">Answer:</span><span class="ans-line"></span></div><div class="ans-row"><span class="ans-label"></span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Find the like terms</span><span class="rem-step">2  Group them (keep each sign)</span><span class="rem-step">3  Add or subtract the number parts</span><span class="rem-step">4  Letters first, then the number</span><span class="rem-step">5  Check by substituting</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 3 of 8</span>
+      <span class="q-right"><span class="marks">[2 marks]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Simplify.<br><br>   5x + 2x − 3x</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">Answer:</span><span class="ans-line"></span></div><div class="ans-row"><span class="ans-label"></span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Find the like terms</span><span class="rem-step">2  Group them (keep each sign)</span><span class="rem-step">3  Add or subtract the number parts</span><span class="rem-step">4  Letters first, then the number</span><span class="rem-step">5  Check by substituting</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 4 of 8</span>
+      <span class="q-right"><span class="marks">[2 marks]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Simplify.<br><br>   7y + 4 + 2y + 5</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">Answer:</span><span class="ans-line"></span></div><div class="ans-row"><span class="ans-label"></span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Find the like terms</span><span class="rem-step">2  Group them (keep each sign)</span><span class="rem-step">3  Add or subtract the number parts</span><span class="rem-step">4  Letters first, then the number</span><span class="rem-step">5  Check by substituting</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 5 of 8</span>
+      <span class="q-right"><span class="marks">[2 marks]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Simplify.<br><br>   8m + 3n − 2m + 5n</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">Answer:</span><span class="ans-line"></span></div><div class="ans-row"><span class="ans-label"></span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Find the like terms</span><span class="rem-step">2  Group them (keep each sign)</span><span class="rem-step">3  Add or subtract the number parts</span><span class="rem-step">4  Letters first, then the number</span><span class="rem-step">5  Check by substituting</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 6 of 8</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">A pencil costs p pence.<br><br>(a) Write an expression for the cost of 4 pencils and a 30p rubber.<br>(b) Work out the cost when p = 25.</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">Answer:</span><span class="ans-line"></span></div><div class="ans-row"><span class="ans-label"></span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Find the like terms</span><span class="rem-step">2  Group them (keep each sign)</span><span class="rem-step">3  Add or subtract the number parts</span><span class="rem-step">4  Letters first, then the number</span><span class="rem-step">5  Check by substituting</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 7 of 8</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 4 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Expand and simplify.<br><br>   3(x + 2) + 2x</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">Answer:</span><span class="ans-line"></span></div><div class="ans-row"><span class="ans-label"></span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Find the like terms</span><span class="rem-step">2  Group them (keep each sign)</span><span class="rem-step">3  Add or subtract the number parts</span><span class="rem-step">4  Letters first, then the number</span><span class="rem-step">5  Check by substituting</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 8 of 8</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 5 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></span></span>
+    </div>
+    <div class="q-text box">A rectangle has length (x + 3) and width x.<br><br>(a) Write a simplified expression for its perimeter.<br>(b) Work out the perimeter when x = 4.</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">Answer:</span><span class="ans-line"></span></div><div class="ans-row"><span class="ans-label"></span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Find the like terms</span><span class="rem-step">2  Group them (keep each sign)</span><span class="rem-step">3  Add or subtract the number parts</span><span class="rem-step">4  Letters first, then the number</span><span class="rem-step">5  Check by substituting</span></div>
+  </div>
+</section>
+  
+<section class="page reflect">
+  <div class="small-header box"><div class="sh-title">Self-reflection</div></div>
+  <div class="block box">
+    <p class="confidence-q">How confident do you feel with this topic now? (tick one)</p>
+    <div class="confidence"><span class="opt"><span class="tick"></span>Not yet</span><span class="opt"><span class="tick"></span>Getting there</span><span class="opt"><span class="tick"></span>Confident</span><span class="opt"><span class="tick"></span>Really confident</span></div>
+  </div>
+  <div class="block box reflect-prompt">
+    <p>Which question did you find the hardest, and why?</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div><div class="block box reflect-prompt">
+    <p>One thing I now understand about using letters in maths:</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div><div class="block box reflect-prompt">
+    <p>One thing I will practise before the next lesson:</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div>
+</section>
+  
+<section class="page key">
+  <div class="small-header box"><div class="sh-title">Teacher key</div></div>
+  <div class="block box">
+    <h2>Answers</h2>
+    <ol class="key-list"><li>Q1:  n + 5</li><li>Q2:  4a</li><li>Q3:  4x         (5x + 2x − 3x = 4x)</li><li>Q4:  9y + 9     (7y + 2y = 9y;  4 + 5 = 9)</li><li>Q5:  6m + 8n    (8m − 2m = 6m;  3n + 5n = 8n)</li><li>Q6:  (a) 4p + 30     (b) 4×25 + 30 = 130 pence = £1.30</li><li>Q7:  5x + 6     (3(x + 2) = 3x + 6;  3x + 6 + 2x = 5x + 6)</li><li>Q8:  (a) 4x + 6     [perimeter = 2((x + 3) + x) = 2(2x + 3) = 4x + 6]     (b) 4×4 + 6 = 22</li></ol>
+  </div>
+</section>
+</body></html>
