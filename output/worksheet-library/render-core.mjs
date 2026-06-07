@@ -1,0 +1,279 @@
+/**
+ * render-core.mjs — shared HTML builder for worksheet PDFs/PNGs.
+ * MathsGenie-style exam booklet, matching the structure described in each
+ * worksheet's metadata.layout.
+ *
+ * BOOKLET (portrait): p1 intro; one question per page (never grouped) with
+ *   number left + marks right, a "How to start" frame box on Q1 & Q2, a large
+ *   ruled working area, an "Answer = ___" line bottom-right, and a method
+ *   reminder strip at the very bottom; then self-reflection; then teacher key.
+ * LANDSCAPE: p1 intro (+ visual aid); p2 all questions in a 2-column grid.
+ */
+
+export function isLandscapeWs(ws) {
+  return ws.metadata?.layout?.orientation === 'landscape';
+}
+
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// Detect sub-parts like "a)", "(a)", "b)" in order so each gets its own answer line.
+function extractParts(content) {
+  const found = [...String(content).matchAll(/(?:^|\s|\()([a-h])\)/g)].map((m) => m[1]);
+  const seq = 'abcdefgh'.split('');
+  const seen = [];
+  for (const c of found) if (!seen.includes(c)) seen.push(c);
+  const parts = [];
+  for (let i = 0; i < seen.length; i++) {
+    if (seen[i] === seq[i]) parts.push(seen[i]);
+    else break;
+  }
+  return parts;
+}
+
+// One ruled answer line per sub-part (a)/(b)/..., or a single "Answer" line.
+function answerBlock(content) {
+  const parts = extractParts(content);
+  let h = `<div class="answer-block"><div class="ab-title">Answer${parts.length ? 's' : ''}</div>`;
+  if (parts.length) {
+    for (const p of parts)
+      h += `<div class="ans-row"><span class="lbl">(${p})</span><span class="eq">=</span><span class="rule"></span></div>`;
+  } else {
+    h += `<div class="ans-row"><span class="lbl">Answer</span><span class="eq">=</span><span class="rule"></span></div>`;
+  }
+  return h + `</div>`;
+}
+
+// A simple worked visual example per topic, drawn as scalable SVG.
+function topicVisual(ws) {
+  const topic = ws.metadata?.topic || '';
+  const sub = (ws.metadata?.subtopic || '').toLowerCase();
+  const F = 'font-family="DejaVu Sans, Arial, sans-serif"';
+  let svg = '', cap = '';
+  if (/surd/i.test(topic)) {
+    cap = 'Simplifying a surd: split off the largest square factor.';
+    svg = `<svg viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+      <text x="10" y="45" ${F} font-size="26">&#8730;72</text>
+      <line x1="95" y1="38" x2="150" y2="38" stroke="#16a34a" stroke-width="2"/>
+      <text x="160" y="45" ${F} font-size="26">= &#8730;(36 &#215; 2)</text>
+      <text x="160" y="95" ${F} font-size="26">= &#8730;36 &#215; &#8730;2</text>
+      <text x="160" y="140" ${F} font-size="26" font-weight="700">= 6&#8730;2</text>
+      <circle cx="300" cy="86" r="3" fill="#16a34a"/><circle cx="360" cy="86" r="3" fill="#16a34a"/>
+    </svg>`;
+  } else if (/indices|standard form/i.test(topic)) {
+    if (/standard form/i.test(sub)) {
+      cap = 'Standard form: A &#215; 10&#8319; with 1 &#8804; A &lt; 10.';
+      svg = `<svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="55" ${F} font-size="24">5 600 000</text>
+        <text x="200" y="55" ${F} font-size="24">=  5.6 &#215; 10</text>
+        <text x="372" y="40" ${F} font-size="16" font-weight="700">6</text>
+        <path d="M30 70 q70 40 150 0" fill="none" stroke="#16a34a" stroke-width="2"/>
+        <text x="70" y="120" ${F} font-size="13" fill="#15803d">move the point 6 places left</text>
+      </svg>`;
+    } else {
+      cap = 'Laws of indices: multiply &#8594; add the powers.';
+      svg = `<svg viewBox="0 0 520 120" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="55" ${F} font-size="24">x&#179; &#215; x&#8309;</text>
+        <text x="150" y="55" ${F} font-size="24">= x&#179;&#8314;&#8309;</text>
+        <text x="320" y="55" ${F} font-size="24" font-weight="700">= x&#8312;</text>
+        <text x="40" y="100" ${F} font-size="13" fill="#15803d">same base &#8594; add indices</text>
+      </svg>`;
+    }
+  } else if (/fraction|percent|decimal/i.test(topic)) {
+    cap = 'One half shown three equivalent ways.';
+    svg = `<svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="20" width="240" height="40" fill="#bbf7d0" stroke="#15803d"/>
+      <rect x="130" y="20" width="120" height="40" fill="#16a34a"/>
+      <text x="270" y="48" ${F} font-size="22">&#189;  =  0.5  =  50%</text>
+      <text x="10" y="95" ${F} font-size="13" fill="#15803d">shaded part = 1 of 2 equal parts = half</text>
+    </svg>`;
+  }
+  if (!svg) return '';
+  return `<div class="visual"><div class="box-title">Visual Example</div>${svg}<div class="vcap">${cap}</div></div>`;
+}
+
+
+const CSS = `
+@page { size: A4; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; color: #111; background:#fff; }
+.page { width:210mm; height:297mm; padding:11mm 12mm; page-break-after:always;
+  overflow:hidden; display:flex; flex-direction:column; background:#fff; }
+.page.landscape { width:297mm; height:210mm; }
+.page:last-child { page-break-after:auto; }
+
+.bk-title { font-size:19pt; font-weight:800; }
+.bk-sub { font-size:10.5pt; color:#555; margin:1mm 0 3mm; }
+.bk-name { font-size:9.5pt; border:0.75pt solid #222; padding:2.5mm 3mm; margin-bottom:4mm; }
+.box-title { font-size:9.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:1.5mm; }
+.objective { font-size:10pt; line-height:1.45; background:#eef4ff; border-left:3pt solid #1d4ed8; padding:3mm; margin-bottom:4mm; }
+.mistakes { margin-bottom:4mm; } .mistakes ul { list-style:none; }
+.mistakes li { font-size:9.5pt; line-height:1.4; padding-left:5mm; position:relative; margin-bottom:1.2mm; }
+.mistakes li::before { content:"\\2717"; position:absolute; left:0; color:#c0392b; font-weight:700; }
+.method { margin-bottom:4mm; } .method ol { list-style:none; counter-reset:m; }
+.method li { font-size:9.5pt; line-height:1.4; padding-left:7mm; position:relative; margin-bottom:1.2mm; counter-increment:m; }
+.method li::before { content:counter(m); position:absolute; left:0; top:0; width:4.5mm; height:4.5mm;
+  background:#1d4ed8; color:#fff; border-radius:50%; font-size:8pt; font-weight:700; text-align:center; line-height:4.5mm; }
+.worked { background:#fffaf0; border:.75pt solid #e0b15a; border-left:3pt solid #d97706; padding:3mm; }
+.worked .box-title { color:#92600a; } .worked p { font-size:9.5pt; line-height:1.5; }
+`;
+
+
+const CSS2 = `
+.q-top { display:flex; align-items:flex-start; gap:4mm; border-bottom:1.5pt solid #111; padding-bottom:2.5mm; }
+.q-num { font-size:15pt; font-weight:800; min-width:8mm; }
+.q-text { flex:1; font-size:11.5pt; line-height:1.55; white-space:pre-wrap; }
+.q-marks { font-size:10pt; color:#333; white-space:nowrap; }
+.frame { margin-top:3mm; background:#f0f7ff; border:.75pt dashed #6aa3e8; border-radius:1.5mm; padding:3mm; }
+.frame .box-title { color:#1e40af; font-size:8.5pt; } .frame ul { list-style:none; }
+.frame li { font-size:9pt; line-height:1.45; color:#1e3a8a; padding-left:4mm; position:relative; margin-bottom:.6mm; }
+.frame li::before { content:"\\2192"; position:absolute; left:0; }
+.work { flex:1 1 auto; margin-top:3mm; min-height:0;
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 8.4mm,#e9ebee 8.4mm,#e9ebee 8.5mm); }
+.answer-block { margin:3mm 0 2mm; }
+.answer-block .ab-title { font-size:8.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:#444; margin-bottom:1.5mm; }
+.ans-row { display:flex; align-items:flex-end; font-size:11pt; margin-bottom:2.6mm; }
+.ans-row .lbl { min-width:12mm; font-weight:700; }
+.ans-row .eq { margin:0 2mm; }
+.ans-row .rule { flex:1; border-bottom:1pt solid #111; height:5mm; }
+.visual { margin-bottom:3mm; background:#f0fdf4; border:.75pt solid #86c79a; border-left:3pt solid #16a34a; padding:2mm 3mm; }
+.visual .box-title { color:#15803d; font-size:8pt; }
+.visual svg { display:block; width:70%; height:auto; max-height:28mm; margin:0 auto; }
+.visual .vcap { font-size:7.5pt; font-style:italic; color:#3f6b4e; margin-top:1mm; text-align:center; }
+.onepage .bk-title { font-size:16pt; margin-bottom:1mm; }
+.onepage .bk-sub { font-size:9.5pt; margin:0 0 2mm; }
+.onepage .objective { font-size:9pt; padding:2mm; margin-bottom:2mm; }
+.onepage .mistakes { margin-bottom:2mm; } .onepage .mistakes li { font-size:8.5pt; margin-bottom:.8mm; }
+.onepage .method { margin-bottom:2mm; } .onepage .method li { font-size:8.5pt; margin-bottom:.8mm; }
+.onepage .worked { padding:2mm; margin-bottom:2mm; } .onepage .worked p { font-size:8.5pt; line-height:1.4; }
+.onepage .ls-grid { column-count:2; column-gap:6mm; column-rule:.5pt solid #e0e0e0; }
+.onepage .ls-q { break-inside:avoid; margin-bottom:3mm; padding-bottom:2mm; border-bottom:.5pt solid #e0e0e0; }
+.onepage .ls-q-h { font-weight:800; font-size:9.5pt; margin-bottom:.5mm; }
+.onepage .ls-q-h .m { font-weight:400; color:#555; font-size:8.5pt; }
+.onepage .ls-q-c { font-size:8.5pt; line-height:1.35; white-space:pre-wrap; }
+.method-strip { border:.75pt solid #cbd2da; background:#f4f6f8; border-radius:1.5mm; padding:2mm 3mm; font-size:8pt; color:#2a2a2a; }
+.method-strip b { text-transform:uppercase; letter-spacing:.3px; margin-right:2mm; }
+.method-strip .sep { color:#9aa3ad; margin:0 1.5mm; }
+.rf-title,.an-title { font-size:15pt; font-weight:800; border-bottom:1.5pt solid #111; padding-bottom:2mm; margin-bottom:4mm; }
+.rf-prompt { font-size:10.5pt; font-weight:600; margin-bottom:3mm; }
+.rf-opts { display:flex; gap:4mm; margin-bottom:7mm; }
+.rf-opt { border:.75pt solid #555; border-radius:1mm; padding:1.5mm 3.5mm; font-size:10pt; }
+.rf-q { font-size:10.5pt; margin-bottom:3mm; }
+.rf-rule { display:block; border-bottom:.5pt solid #bbb; height:7mm; }
+.an-row { font-size:9.5pt; line-height:1.4; padding:1.6mm 0; border-bottom:.5pt solid #e6e8eb; }
+.ls-grid { column-count:2; column-gap:8mm; column-rule:.5pt solid #e0e0e0; flex:1; }
+.ls-q { break-inside:avoid; margin-bottom:4mm; padding-bottom:3mm; border-bottom:.5pt solid #e0e0e0; }
+.ls-q-h { font-weight:800; font-size:10.5pt; margin-bottom:1mm; }
+.ls-q-h .m { font-weight:400; color:#555; font-size:9pt; }
+.ls-q-c { font-size:9.5pt; line-height:1.45; white-space:pre-wrap; }
+.ls-note { font-size:9.5pt; font-style:italic; color:#555; margin-bottom:3mm; }
+.visual-aid { margin-top:4mm; background:#f0fdf4; border:.75pt solid #86c79a; border-left:3pt solid #16a34a; padding:3mm; font-size:9pt; line-height:1.45; }
+.visual-aid .box-title { color:#15803d; }
+`;
+
+
+function introBlocks(ws, landscape) {
+  const intro = ws.intro;
+  let h = `<div class="bk-title">${esc(intro.header)}</div>`;
+  h += `<div class="bk-sub">${esc(intro.subheader)}</div>`;
+  if (!landscape && intro.nameLine) h += `<div class="bk-name">${esc(intro.nameLine)}</div>`;
+  if (landscape && intro.note) h += `<div class="ls-note">${esc(intro.note)}</div>`;
+  if (intro.objective) h += `<div class="objective">${esc(intro.objective)}</div>`;
+  h += topicVisual(ws);
+  if (intro.commonMistakes?.length) {
+    h += `<div class="mistakes"><div class="box-title">Common Mistakes</div><ul>`;
+    for (const m of intro.commonMistakes) h += `<li>${esc(m)}</li>`;
+    h += `</ul></div>`;
+  }
+  if (intro.methodSteps?.length) {
+    h += `<div class="method"><div class="box-title">Method</div><ol>`;
+    for (const s of intro.methodSteps)
+      h += `<li>${esc(s.replace(/^Step\s*\d+:\s*/i, '').replace(/^\d+\s+/, ''))}</li>`;
+    h += `</ol></div>`;
+  }
+  if (intro.workedExample?.length) {
+    h += `<div class="worked"><div class="box-title">Worked Example</div>`;
+    for (const l of intro.workedExample) h += `<p>${esc(l)}</p>`;
+    h += `</div>`;
+  }
+  if (landscape && intro.visualAid)
+    h += `<div class="visual-aid"><div class="box-title">Visual Aid</div>${esc(intro.visualAid)}</div>`;
+  return h;
+}
+
+function questionPage(ws, q, index) {
+  const reminder = ws.methodReminder || [];
+  const showFrame = index < 2 && Array.isArray(q.frame) && q.frame.length > 0;
+  let h = `<div class="page">`;
+  h += `<div class="q-top"><div class="q-num">${q.number}</div>`;
+  h += `<div class="q-text">${esc(q.content)}</div>`;
+  h += `<div class="q-marks">(${q.marks} mark${q.marks > 1 ? 's' : ''})</div></div>`;
+  if (showFrame) {
+    h += `<div class="frame"><div class="box-title">How to start</div><ul>`;
+    for (const f of q.frame) h += `<li>${esc(f)}</li>`;
+    h += `</ul></div>`;
+  }
+  h += `<div class="work"></div>`;
+  h += answerBlock(q.content);
+  if (reminder.length) {
+    h += `<div class="method-strip"><b>Method</b>`;
+    h += reminder.map((s) => `${esc(s)}`).join(`<span class="sep">|</span>`);
+    h += `</div>`;
+  }
+  return h + `</div>`;
+}
+
+
+function reflectionPage(ws) {
+  const sr = ws.selfReflection;
+  if (!sr) return '';
+  let h = `<div class="page"><div class="rf-title">${esc(sr.title || 'Self-Reflection')}</div>`;
+  h += `<div class="rf-prompt">${esc(sr.confidencePrompt)}</div><div class="rf-opts">`;
+  for (const o of sr.confidenceOptions || []) h += `<span class="rf-opt">\u2610 ${esc(o)}</span>`;
+  h += `</div>`;
+  for (const p of sr.prompts || [])
+    h += `<div class="rf-q">${esc(p)}<span class="rf-rule"></span><span class="rf-rule"></span></div>`;
+  return h + `</div>`;
+}
+
+function answersPage(ws) {
+  const a = ws.answers;
+  if (!a) return '';
+  let h = `<div class="page"><div class="an-title">${esc(a.title || 'Teacher Key')}</div>`;
+  for (const r of a.rows || []) h += `<div class="an-row">${esc(r)}</div>`;
+  return h + `</div>`;
+}
+
+function landscapeQuestions(ws) {
+  // Single portrait page: compact intro at top, then 2-column question grid below
+  let h = `<div class="page onepage">${introBlocks(ws, true)}</div>`;
+  return h;
+}
+
+// Builds the one-page question grid that goes INSIDE the single page (appended after intro)
+function onepageGrid(ws) {
+  let h = `<div class="ls-grid">`;
+  for (const q of ws.questions) {
+    h += `<div class="ls-q"><div class="ls-q-h">${q.number}. <span class="m">(${q.marks} mark${q.marks > 1 ? 's' : ''})</span></div>`;
+    h += `<div class="ls-q-c">${esc(q.content)}</div></div>`;
+  }
+  return h + `</div>`;
+}
+
+export function buildHtml(ws) {
+  let body = '';
+  if (isLandscapeWs(ws)) {
+    // One portrait page: compact intro + visual at top, questions below in 2-col grid
+    body += `<div class="page onepage">${introBlocks(ws, true)}${onepageGrid(ws)}</div>`;
+  } else {
+    body += `<div class="page">${introBlocks(ws, false)}</div>`;
+    ws.questions.forEach((q, i) => { body += questionPage(ws, q, i); });
+    body += reflectionPage(ws);
+    body += answersPage(ws);
+  }
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${CSS}${CSS2}</style></head><body>${body}</body></html>`;
+}

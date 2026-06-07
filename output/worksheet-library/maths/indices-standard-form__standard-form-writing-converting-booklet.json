@@ -1,0 +1,92 @@
+{
+  "title": "Standard Form — Writing and Converting",
+  "subtitle": "AQA · KS4 Year 9–10",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Indices and Standard Form",
+    "subtopic": "Standard form — writing and converting",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Foundation/Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Standard Form — Writing and Converting",
+    "subheader": "AQA · KS4 Year 9–10",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Write ordinary numbers in standard form (A × 10ⁿ where 1 ≤ A < 10). Convert from standard form to ordinary numbers. Understand when n is positive (large numbers) and when n is negative (small numbers).",
+    "commonMistakes": [
+      "A must be between 1 and 10 (1 ≤ A < 10). Writing 36 × 10⁴ is NOT standard form — it should be 3.6 × 10⁵.",
+      "Confusing the sign of the power — positive power = large number, negative power = small number.",
+      "Counting the wrong number of places when moving the decimal point.",
+      "Writing 0.003 as 3 × 10³ instead of 3 × 10⁻³."
+    ],
+    "methodSteps": [
+      "Step 1: Identify A — move the decimal so there is one non-zero digit before it (1 ≤ A < 10).",
+      "Step 2: Count how many places the decimal moved — this is the power n.",
+      "Step 3: If the original number is ≥ 1, n is POSITIVE.",
+      "Step 4: If the original number is < 1, n is NEGATIVE.",
+      "Step 5: Write as A × 10ⁿ. Check: multiply back to verify."
+    ],
+    "workedExample": [
+      "Write 0.000 47 in standard form.",
+      "Step 1 — Move decimal to get 4.7 (one non-zero digit before the point).",
+      "Step 2 — The decimal moved 4 places to the right.",
+      "Step 3 — Original is less than 1, so n is negative.",
+      "Step 4 — 0.000 47 = 4.7 × 10⁻⁴",
+      "Check: 4.7 × 10⁻⁴ = 4.7 ÷ 10000 = 0.000 47 ✓"
+    ]
+  },
+  "methodReminder": [
+    "1  Move decimal so 1 ≤ A < 10",
+    "2  Count places moved = power n",
+    "3  Big number → positive n",
+    "4  Small number → negative n",
+    "5  Check by converting back"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Put one non-zero digit before the decimal point (so 1 ≤ A < 10).", "Count how many places the point moves — that is the power.", "A big number gives a positive power, e.g. 5 000 = 5 × 10³."], "content": "Write in standard form:\n\n   a) 5,000       b) 340,000       c) 72,000,000       d) 810" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Move the point right until one non-zero digit is in front.", "A small number (less than 1) gives a negative power, e.g. 0.003 = 3 × 10⁻³."], "content": "Write in standard form:\n\n   a) 0.003       b) 0.00056       c) 0.0000012       d) 0.47" },
+    { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Convert to ordinary numbers:\n\n   a) 3.2 × 10⁴       b) 7.05 × 10⁶       c) 1.8 × 10⁻³       d) 9.1 × 10⁻⁵" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Which of these are NOT in correct standard form? Fix the ones that are wrong.\n\n   a) 5.6 × 10³       b) 36 × 10⁴       c) 0.8 × 10⁻²       d) 7 × 10⁹" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "The mass of a hydrogen atom is about 0.000 000 000 000 000 000 000 001 67 kg.\n\nWrite this in standard form." },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "The distance from the Earth to the Sun is approximately 1.5 × 10⁸ km.\n\n   a) Write this as an ordinary number.\n   b) The distance to Mars is about 2.3 × 10⁸ km. Which planet is closer?\n   c) How much further is Mars than the Sun? Give your answer in standard form." },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "Put in order, smallest first:\n\n   3.2 × 10⁻³       8.1 × 10⁻⁴       5.5 × 10⁻³       2.9 × 10⁻²\n\nExplain your strategy." },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A bacterium is 2 × 10⁻⁶ m long. A virus is 3 × 10⁻⁸ m long.\n\n   a) How many times longer is the bacterium than the virus? (2 marks)\n   b) 500 bacteria placed end to end. Total length in standard form? (1 mark)\n   c) How many viruses side by side fit in 1 mm? Give in standard form. (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Do I always get the sign of the power correct?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 5 × 10³  b) 3.4 × 10⁵  c) 7.2 × 10⁷  d) 8.1 × 10²",
+      "Q2: a) 3 × 10⁻³  b) 5.6 × 10⁻⁴  c) 1.2 × 10⁻⁶  d) 4.7 × 10⁻¹",
+      "Q3: a) 32,000  b) 7,050,000  c) 0.0018  d) 0.000091",
+      "Q4: b) Not standard form → 3.6 × 10⁵;  c) Not standard form → 8 × 10⁻³;  a) and d) are correct.",
+      "Q5: 1.67 × 10⁻²⁴ kg (decimal moves 24 places)",
+      "Q6: a) 150,000,000 km  b) The Sun (Earth) is closer (1.5 × 10⁸ < 2.3 × 10⁸)  c) 2.3 × 10⁸ − 1.5 × 10⁸ = 0.8 × 10⁸ = 8 × 10⁷ km",
+      "Q7: Compare powers first: 10⁻⁴ < 10⁻³ < 10⁻². Same power → compare A. Order: 8.1 × 10⁻⁴, 3.2 × 10⁻³, 5.5 × 10⁻³, 2.9 × 10⁻²",
+      "Q8: a) (2 × 10⁻⁶) ÷ (3 × 10⁻⁸) = (2/3) × 10² ≈ 66.7 times.  b) 500 × 2 × 10⁻⁶ = 1 × 10⁻³ m.  c) 1 mm = 1 × 10⁻³ m; 10⁻³ ÷ (3 × 10⁻⁸) = (1/3) × 10⁵ ≈ 3.33 × 10⁴."
+    ]
+  }
+}

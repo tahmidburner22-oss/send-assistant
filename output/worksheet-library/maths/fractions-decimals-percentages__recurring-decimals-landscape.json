@@ -1,0 +1,61 @@
+{
+  "title": "Recurring Decimals",
+  "subtitle": "AQA · KS3 Year 7 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Fractions, Decimals and Percentages",
+    "subtopic": "Recurring decimals",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Recurring Decimals",
+    "subheader": "AQA · KS3 Year 7",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Divide top by bottom — look for repeating remainders",
+      "2  If it repeats, use dot notation",
+      "3  One dot = single digit repeats; two dots = block repeats",
+      "4  To convert back: let x = decimal, multiply, subtract",
+      "5  Simplify the resulting fraction"
+    ],
+    "commonMistakes": [
+      "0.333… ≠ 0.3 — it goes on forever; use dot notation 0.3̇",
+      "0.166… = 0.16̇ — dot only above the repeating digit(s).",
+      "1/4 = 0.25 (terminates); 1/3 = 0.3̇ (recurs) — know the difference.",
+      "When converting back: multiply by 10ⁿ where n = number of repeating digits."
+    ],
+    "workedExample": [
+      "Convert 0.2̇7̇ to a fraction.",
+      "Step 1 — Let x = 0.272727…",
+      "Step 2 — 100x = 27.2727… (2 repeating digits → × 100)",
+      "Step 3 — 100x − x = 27 → 99x = 27",
+      "Step 4 — x = 27/99 = 3/11"
+    ],
+    "visualAid": "Table of common recurring decimals: 1/3 = 0.3̇; 1/6 = 0.16̇; 1/7 = 0.1̇4285̇7; 1/9 = 0.1̇; 1/11 = 0.0̇9̇; 2/3 = 0.6̇"
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Terminating or recurring? a) 1/4  b) 1/3  c) 3/8  d) 2/9" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Convert to decimals (dot notation): a) 1/6  b) 1/9  c) 5/6  d) 1/11" },
+    { "number": 3, "marks": 2, "difficulty": 2, "content": "Write in dot notation: a) 0.666…  b) 0.142857142857…  c) 0.8333…  d) 0.454545…" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Convert: a) 0.1̇  b) 0.3̇  c) 0.9̇ to fractions" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Convert 0.4̇5̇ to a fraction. Show 'let x = …' method." },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Convert 0.12̇ to a fraction. (Only the 2 recurs.)" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "a) Show 0.0̇9̇ = 1/11.  b) Write 0.6̇3̇ as a fraction.  c) Pattern for ninths?" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Prove 0.9̇ = 1 algebraically. Explain why it is not 'close to 1 but never reaches it'." }
+  ]
+}

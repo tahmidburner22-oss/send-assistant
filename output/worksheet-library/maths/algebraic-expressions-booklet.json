@@ -1,0 +1,91 @@
+{
+  "title": "Algebraic Expressions",
+  "subtitle": "AQA · KS3 Year 7–8",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Algebraic Expressions",
+    "yearGroup": "Year 7–8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Algebraic Expressions",
+    "subheader": "AQA · KS3 Year 7–8",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Write, simplify and evaluate algebraic expressions. Collect like terms, expand single brackets, and substitute numbers into expressions.",
+    "commonMistakes": [
+      "Writing 1x instead of just x, or 1y instead of y.",
+      "Adding unlike terms — for example, 3x + 2y cannot be simplified further.",
+      "Forgetting to multiply every term inside the bracket when expanding.",
+      "Mixing up the sign when substituting negative numbers — use brackets around negatives."
+    ],
+    "methodSteps": [
+      "Step 1: Identify the terms (parts separated by + or −).",
+      "Step 2: Group like terms together (same letter, same power).",
+      "Step 3: Combine the like terms by adding or subtracting their coefficients.",
+      "Step 4: To expand a bracket, multiply the term outside by every term inside.",
+      "Step 5: To substitute, replace each letter with its value and calculate."
+    ],
+    "workedExample": [
+      "Simplify: 3x + 5y − x + 2y",
+      "Step 1 — Identify terms: 3x, +5y, −x, +2y.",
+      "Step 2 — Group like terms: x-terms → 3x and −x; y-terms → 5y and 2y.",
+      "Step 3 — Combine: 3x − x = 2x;  5y + 2y = 7y.",
+      "Step 4 — (No bracket to expand here.)",
+      "Step 5 — Final answer: 2x + 7y."
+    ]
+  },
+  "methodReminder": [
+    "1  Identify the terms",
+    "2  Group like terms",
+    "3  Combine coefficients",
+    "4  Expand brackets (multiply each term inside)",
+    "5  Substitute and calculate"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify each expression.\n\n   a) 4a + 3a\n   b) 7b − 2b\n   c) 6c + c − 3c" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) 2x + 3y + 5x − y\n   b) 4m − 2n + m + 6n" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Expand the brackets.\n\n   a) 3(x + 4)\n   b) 5(2y − 1)\n   c) −2(3a + 5)" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Expand and simplify:\n\n   2(x + 3) + 3(x − 1)" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "If a = 4 and b = −2, find the value of:\n\n   a) 3a + b\n   b) a² − 2b\n   c) 5(a + b)" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Write an expression for the perimeter of a rectangle with length (2x + 1) and width (x − 3). Simplify your answer." },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "A mobile phone plan costs £(3n + 5) per month, where n is the number of GB used.\n\n   a) How much does it cost if n = 4?\n   b) Sam paid £23. How many GB did Sam use? Show your working." },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "Three friends share a prize of £P.\nAnya gets £(2x + 10), Ben gets £(x + 20), and Cara gets the rest.\n\n   a) Write an expression for Cara's share.\n   b) If x = 15 and P = 100, work out each person's share.\n   c) Is the sharing fair? Explain your answer." }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "One method step I want to remember next time:",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 7a  b) 5b  c) 4c",
+      "Q2: a) 7x + 2y  b) 5m + 4n",
+      "Q3: a) 3x + 12  b) 10y − 5  c) −6a − 10",
+      "Q4: 2x + 6 + 3x − 3 = 5x + 3",
+      "Q5: a) 3(4) + (−2) = 10  b) 16 − 2(−2) = 20  c) 5(4 + (−2)) = 10",
+      "Q6: 2(2x + 1) + 2(x − 3) = 4x + 2 + 2x − 6 = 6x − 4",
+      "Q7: a) 3(4) + 5 = £17  b) 3n + 5 = 23 → 3n = 18 → n = 6 GB",
+      "Q8: a) P − (2x + 10) − (x + 20) = P − 3x − 30  b) Anya = 40, Ben = 35, Cara = 25  c) Not equal shares — Anya gets the most, Cara the least."
+    ]
+  }
+}
