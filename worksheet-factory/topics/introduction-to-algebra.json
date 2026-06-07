@@ -1,0 +1,162 @@
+{
+  "meta": {
+    "title": "Introduction to Algebra",
+    "slug": "introduction-to-algebra",
+    "subject": "Maths",
+    "topic": "Introduction to Algebra",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "year": "7",
+    "tier": "Foundation",
+    "difficultyMode": "foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "note": "Base canonical version. No SEND overlay applied. Structure and layout are identical to the dyslexia-demo base editions; only the content has been changed for this topic. The generator layers SEND adaptations, difficulty and reading age on top of this base without altering structure.",
+    "provenance": "Original questions authored for this booklet on the AQA KS3 'Introduction to Algebra' topic. Not a copy of any exam-board paper."
+  },
+
+  "landscape": {
+    "questionsSubheader": "Simplify each expression — show your working in your workbook",
+    "intro": {
+      "header": "Introduction to Algebra",
+      "subheader": "AQA KS3 · Year 7 · Foundation",
+      "note": "A letter stands for a number we do not know yet. Simplify each expression by collecting like terms. Show your working in your workbook.",
+      "visual": {
+        "type": "tiles",
+        "title": "Visual aid — collecting like terms",
+        "caption": "Tiles of the same kind join together: 2x + 3 and x + 1 give 3x + 4.",
+        "params": {
+          "rows": [
+            { "x": 2, "units": 3, "label": "2x + 3" },
+            { "x": 1, "units": 1, "label": "x + 1" }
+          ],
+          "result": { "x": 3, "units": 4, "label": "3x + 4" },
+          "aria": "Algebra tiles: two x-tiles and three unit tiles, plus one x-tile and one unit tile, combine to make three x-tiles and four unit tiles."
+        }
+      },
+      "methodSteps": [
+        "1  Find the like terms (same letter)",
+        "2  Group them, keeping each sign",
+        "3  Add or subtract the number parts",
+        "4  Letters first, then the number",
+        "5  Check by substituting a value"
+      ],
+      "commonMistakes": [
+        "3x means 3 × x. It is not the digits 3 and x written side by side.",
+        "You can only collect like terms: 3x + 2x = 5x, but 3x + 2 stays as 3x + 2.",
+        "x on its own means 1x, so x + x = 2x — not x².",
+        "Multiplying is different from adding: x × x = x², but x + x = 2x."
+      ],
+      "workedExample": [
+        "Simplify:  2x + 3 + x + 1",
+        "Step 1 — Like terms:  2x and x are like;  3 and 1 are like.",
+        "Step 2 — Group them:  (2x + x) + (3 + 1)",
+        "Step 3 — Combine the x terms:  2x + x = 3x",
+        "Step 4 — Combine the numbers:  3 + 1 = 4",
+        "Answer:  3x + 4   (check x = 5:  2×5+3+5+1 = 19  and  3×5+4 = 19 ✓)"
+      ]
+    },
+    "questions": [
+      { "number": 1, "marks": 1, "difficulty": 1, "content": "Simplify:   a + a + a + a" },
+      { "number": 2, "marks": 1, "difficulty": 1, "content": "Simplify:   5x + 2x" },
+      { "number": 3, "marks": 2, "difficulty": 2, "content": "Simplify:   5x + 2x − 3x" },
+      { "number": 4, "marks": 2, "difficulty": 2, "content": "Simplify:   7y + 4 + 2y + 5" },
+      { "number": 5, "marks": 2, "difficulty": 3, "content": "Simplify:   8m + 3n − 2m + 5n" },
+      { "number": 6, "marks": 2, "difficulty": 3, "content": "A pencil costs p pence. Write an expression for the cost of 4 pencils and a 30p rubber." },
+      { "number": 7, "marks": 3, "difficulty": 4, "content": "Expand and simplify:   3(x + 2) + 2x" },
+      { "number": 8, "marks": 3, "difficulty": 5, "content": "A rectangle has length (x + 3) and width x. Write a simplified expression for its perimeter." }
+    ]
+  },
+
+  "booklet": {
+    "answerLabels": ["Answer:", ""],
+    "intro": {
+      "header": "Introduction to Algebra",
+      "subheader": "AQA KS3 · Year 7 · Foundation",
+      "nameLine": "Name: ____________________     Class: __________     Date: __________",
+      "objective": "Understand that a letter stands for a number we do not know yet. Write simple expressions, simplify them by collecting like terms, and substitute a number for a letter to find a value.",
+      "commonMistakes": [
+        "3x means 3 × x. It is not the digits 3 and x written next to each other.",
+        "You can only collect like terms. For example 3x + 2x = 5x, but 3x + 2 stays as 3x + 2.",
+        "x on its own means 1x, so x + x = 2x — not x².",
+        "Multiplying is different from adding: x × x = x², but x + x = 2x."
+      ],
+      "methodSteps": [
+        "Step 1: Find the like terms — the ones with the same letter (and the plain numbers together).",
+        "Step 2: Group the like terms, keeping the + or − sign in front of each one.",
+        "Step 3: Add or subtract the number parts (the coefficients) of each group.",
+        "Step 4: Write the simplified expression — letters first, then the number.",
+        "Step 5: Check by substituting a number for the letter."
+      ],
+      "workedExample": [
+        "Simplify:  4x + 3 + 2x − 1",
+        "Step 1 — Find the like terms:  4x and 2x are like;  3 and −1 are like.",
+        "Step 2 — Group them:  (4x + 2x) + (3 − 1)",
+        "Step 3 — Combine the x terms:  4x + 2x = 6x",
+        "Step 4 — Combine the numbers:  3 − 1 = 2",
+        "Answer:  6x + 2   (check x = 5:  4×5+3+2×5−1 = 32  and  6×5+2 = 32 ✓)"
+      ]
+    },
+    "methodReminder": [
+      "1  Find the like terms",
+      "2  Group them (keep each sign)",
+      "3  Add or subtract the number parts",
+      "4  Letters first, then the number",
+      "5  Check by substituting"
+    ],
+    "questions": [
+      {
+        "id": "q1", "number": 1, "marks": 1, "difficulty": 1,
+        "content": "Write an expression for a number, n, with 5 added to it.",
+        "frame": [
+          "A letter, n, stands for the number you do not know yet.",
+          "\"5 added to it\" means you do +5 after the n.",
+          "Write the letter, then the operation, then the number."
+        ]
+      },
+      {
+        "id": "q2", "number": 2, "marks": 1, "difficulty": 1,
+        "content": "Simplify.\n\n   a + a + a + a",
+        "frame": [
+          "Each a is one lot of a, so this is 1a + 1a + 1a + 1a.",
+          "Count how many a's there are altogether and write that number in front of the a."
+        ]
+      },
+      { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Simplify.\n\n   5x + 2x − 3x" },
+      { "id": "q4", "number": 4, "marks": 2, "difficulty": 2, "content": "Simplify.\n\n   7y + 4 + 2y + 5" },
+      { "id": "q5", "number": 5, "marks": 2, "difficulty": 3, "content": "Simplify.\n\n   8m + 3n − 2m + 5n" },
+      {
+        "id": "q6", "number": 6, "marks": 3, "difficulty": 3,
+        "content": "A pencil costs p pence.\n\n(a) Write an expression for the cost of 4 pencils and a 30p rubber.\n(b) Work out the cost when p = 25."
+      },
+      { "id": "q7", "number": 7, "marks": 3, "difficulty": 4, "content": "Expand and simplify.\n\n   3(x + 2) + 2x" },
+      {
+        "id": "q8", "number": 8, "marks": 3, "difficulty": 5,
+        "content": "A rectangle has length (x + 3) and width x.\n\n(a) Write a simplified expression for its perimeter.\n(b) Work out the perimeter when x = 4."
+      }
+    ],
+    "selfReflection": {
+      "title": "Self-reflection",
+      "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+      "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+      "prompts": [
+        "Which question did you find the hardest, and why?",
+        "One thing I now understand about using letters in maths:",
+        "One thing I will practise before the next lesson:"
+      ]
+    },
+    "answers": {
+      "title": "Teacher key",
+      "rows": [
+        "Q1:  n + 5",
+        "Q2:  4a",
+        "Q3:  4x         (5x + 2x − 3x = 4x)",
+        "Q4:  9y + 9     (7y + 2y = 9y;  4 + 5 = 9)",
+        "Q5:  6m + 8n    (8m − 2m = 6m;  3n + 5n = 8n)",
+        "Q6:  (a) 4p + 30     (b) 4×25 + 30 = 130 pence = £1.30",
+        "Q7:  5x + 6     (3(x + 2) = 3x + 6;  3x + 6 + 2x = 5x + 6)",
+        "Q8:  (a) 4x + 6     [perimeter = 2((x + 3) + x) = 2(2x + 3) = 4x + 6]     (b) 4×4 + 6 = 22"
+      ]
+    }
+  }
+}

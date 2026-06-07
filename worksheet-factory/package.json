@@ -1,0 +1,13 @@
+{
+  "name": "worksheet-factory",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Canonical SEND maths worksheet + booklet generator (1:1 base layout, content-per-topic).",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

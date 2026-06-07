@@ -1,0 +1,3 @@
+node_modules/
+package-lock.json
+# keep dist/ so example PDFs are downloadable from the branch
