@@ -1,0 +1,59 @@
+{
+  "title": "Quadratic Simultaneous Equations",
+  "subtitle": "AQA Higher · GCSE Grade 8–9 · Landscape (intro + questions)",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Quadratic Simultaneous Equations",
+    "examBoard": "AQA",
+    "tier": "Higher",
+    "gradeBand": "8-9",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "higher",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "teacherAnswers": "removed",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied. Same structure, layout and questions as the dyslexia-adapted edition; the generator layers SEND adaptations, difficulty (foundation/mixed/higher) and reading age on top of this base without altering structure."
+  },
+  "intro": {
+    "header": "Quadratic Simultaneous Equations",
+    "subheader": "AQA Higher · Grade 8–9",
+    "note": "Solve each pair. Show your working and answers in your workbook.",
+    "methodSteps": [
+      "1  Make y the subject of the straight line",
+      "2  Substitute into the quadratic",
+      "3  Rearrange so it = 0",
+      "4  Solve (factorise or formula)",
+      "5  Find each pair (x, y) and check"
+    ],
+    "commonMistakes": [
+      "There are usually two answers, not one — find both x values, e.g. x = 3 and x = −1.",
+      "Get everything on one side so it = 0 first, e.g. x² = 2x + 3 becomes x² − 2x − 3 = 0.",
+      "Watch minus signs: (x − 1)² = x² − 2x + 1, not x² − 1.",
+      "Each x has its own y — put x back in to find y."
+    ],
+    "workedExample": [
+      "Solve:  y = x² − 2x + 3  and  y = x + 3",
+      "Set equal:  x² − 2x + 3 = x + 3",
+      "Rearrange:  x² − 3x = 0",
+      "Factorise:  x(x − 3) = 0  →  x = 0 or x = 3",
+      "Find y:  (0, 3)  and  (3, 6)"
+    ]
+  },
+  "questions": [
+    { "number": 1, "marks": 3, "difficulty": 1, "content": "y = x²   and   y = 2x + 3" },
+    { "number": 2, "marks": 3, "difficulty": 1, "content": "y = x² + 1   and   y = x + 3" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "y = x² − 2x   and   y = x + 4" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "y = x² − 5x + 6   and   y = x − 2" },
+    { "number": 5, "marks": 4, "difficulty": 3, "content": "x² + y² = 25   and   y = x − 1" },
+    { "number": 6, "marks": 4, "difficulty": 3, "content": "x² + y² = 10   and   x + y = 4" },
+    { "number": 7, "marks": 5, "difficulty": 4, "content": "x² + y² = 9   and   y = x + 1   (give answers in surd form)" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "A rectangle has area 12 cm² and perimeter 14 cm. Form and solve a pair of equations to find its length (x) and width (y)." }
+  ]
+}
