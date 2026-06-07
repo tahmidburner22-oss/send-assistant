@@ -1,0 +1,60 @@
+{
+  "title": "Algebraic Expressions",
+  "subtitle": "AQA · KS3 Year 7–8 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Algebraic Expressions",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Algebraic Expressions",
+    "subheader": "AQA · KS3 Year 7–8",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Identify the terms",
+      "2  Group like terms",
+      "3  Combine coefficients",
+      "4  Expand brackets (multiply each term inside)",
+      "5  Substitute and calculate"
+    ],
+    "commonMistakes": [
+      "Writing 1x instead of x.",
+      "Adding unlike terms — 3x + 2y cannot be simplified.",
+      "Forgetting to multiply every term inside the bracket.",
+      "Not using brackets around negative substitutions."
+    ],
+    "workedExample": [
+      "Simplify: 3x + 5y − x + 2y",
+      "Step 1 — Identify terms: 3x, +5y, −x, +2y.",
+      "Step 2 — Group like terms: x → 3x, −x; y → 5y, 2y.",
+      "Step 3 — Combine: 3x − x = 2x; 5y + 2y = 7y.",
+      "Step 4 — No bracket to expand.",
+      "Step 5 — Answer: 2x + 7y."
+    ],
+    "visualAid": "Bar model showing 3x + 5y − x + 2y: two groups of bars labelled x-terms and y-terms being combined, resulting bar = 2x + 7y."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify: a) 4a + 3a  b) 7b − 2b  c) 6c + c − 3c" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify: a) 2x + 3y + 5x − y  b) 4m − 2n + m + 6n" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Expand: a) 3(x + 4)  b) 5(2y − 1)  c) −2(3a + 5)" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Expand and simplify: 2(x + 3) + 3(x − 1)" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "a = 4, b = −2. Find: a) 3a + b  b) a² − 2b  c) 5(a + b)" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Write and simplify an expression for the perimeter of a rectangle: length (2x + 1), width (x − 3)." },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Phone plan costs £(3n + 5)/month (n = GB). a) Cost if n = 4?  b) Sam paid £23 — how many GB?" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Prize £P split: Anya £(2x+10), Ben £(x+20), Cara gets rest. a) Expression for Cara. b) x=15, P=100: find each share. c) Fair? Explain." }
+  ]
+}

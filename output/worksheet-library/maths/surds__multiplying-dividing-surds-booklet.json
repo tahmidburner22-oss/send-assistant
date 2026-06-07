@@ -1,0 +1,91 @@
+{
+  "title": "Multiplying and Dividing Surds",
+  "subtitle": "AQA · KS4 Year 10–11",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Surds",
+    "subtopic": "Multiplying and dividing surds",
+    "yearGroup": "Year 10-11",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Multiplying and Dividing Surds",
+    "subheader": "AQA · KS4 Year 10–11",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Multiply surds using √a × √b = √(ab). Divide surds using √a ÷ √b = √(a/b). Expand brackets involving surds and simplify the result. Recognise the difference of two squares pattern with surds.",
+    "commonMistakes": [
+      "(√3)² = 3, not √9 or 9². The square and the root cancel.",
+      "2√3 × 4√5: multiply BOTH coefficients (2×4 = 8) AND surds (√3 × √5 = √15) → 8√15.",
+      "(1 + √2)² ≠ 1 + 2. You must expand: (1+√2)(1+√2) = 1 + √2 + √2 + 2 = 3 + 2√2.",
+      "When dividing: √18 ÷ √2 = √(18/2) = √9 = 3. It often becomes a whole number!"
+    ],
+    "methodSteps": [
+      "Step 1: √a × √b = √(ab) — multiply numbers under the root.",
+      "Step 2: √a × √a = a — a surd times itself gives the number.",
+      "Step 3: √a ÷ √b = √(a/b) — divide numbers under the root.",
+      "Step 4: Expand brackets using FOIL: (a + √b)(c + √d) = ac + a√d + c√b + √b×√d.",
+      "Step 5: Simplify — collect like surds and simplify any resulting surds."
+    ],
+    "workedExample": [
+      "Expand and simplify (2 + √3)(4 − √3).",
+      "Step 1 — FOIL: 2×4 = 8;  2×(−√3) = −2√3;  √3×4 = 4√3;  √3×(−√3) = −3",
+      "Step 2 — Combine: 8 − 2√3 + 4√3 − 3",
+      "Step 3 — Collect: (8 − 3) + (−2√3 + 4√3) = 5 + 2√3",
+      "Answer: 5 + 2√3"
+    ]
+  },
+  "methodReminder": [
+    "1  √a × √b = √(ab)",
+    "2  √a × √a = a",
+    "3  √a ÷ √b = √(a/b)",
+    "4  Expand with FOIL",
+    "5  Simplify the result"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) √3 × √5       b) √2 × √8       c) √6 × √6       d) (√7)²" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) √20 ÷ √5       b) √18 ÷ √2       c) √75 ÷ √3       d) √48 ÷ √12" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify:\n\n   a) 2√3 × 5√3       b) 3√2 × 4√5       c) 2√6 × 3√2       d) (3√5)²" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Expand:\n\n   a) √2(3 + √2)       b) √5(√5 − 2)       c) 3√3(√3 + 4)" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Expand and simplify:\n\n   a) (1 + √3)(2 + √3)       b) (4 − √2)(3 + √2)       c) (√5 + 1)(√5 − 1)" },
+    { "id": "q6", "number": 6, "marks": 4, "difficulty": 3, "content": "Expand and simplify:\n\n   a) (2 + √3)²       b) (√7 − 1)²       c) (3 + √2)(3 − √2)" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "a) Show that (√a + √b)(√a − √b) = a − b.  (2 marks)\n\nb) Hence simplify (√11 + √3)(√11 − √3).  (2 marks)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A rectangle has length (3 + √5) cm and width (3 − √5) cm.\n\n   a) Find the exact area.  (2 marks)\n   b) Find the exact perimeter.  (1 mark)\n   c) The area of a different rectangle is 4 cm². The sides are (a + √b) and (a − √b). If b = 5, find a.  (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Can I spot the difference of two squares pattern with surds?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) √15  b) √16 = 4  c) 6  d) 7",
+      "Q2: a) √4 = 2  b) √9 = 3  c) √25 = 5  d) √4 = 2",
+      "Q3: a) 10×3 = 30  b) 12√10  c) 6√12 = 12√3  d) 9×5 = 45",
+      "Q4: a) 3√2 + 2  b) 5 − 2√5  c) 9 + 12√3",
+      "Q5: a) 2 + √3 + 2√3 + 3 = 5 + 3√3  b) 12 + 4√2 − 3√2 − 2 = 10 + √2  c) 5 − 1 = 4",
+      "Q6: a) 4 + 4√3 + 3 = 7 + 4√3  b) 7 − 2√7 + 1 = 8 − 2√7  c) 9 − 2 = 7",
+      "Q7: a) √a×√a − √a×√b + √b×√a − √b×√b = a − b ✓  b) 11 − 3 = 8",
+      "Q8: a) (3+√5)(3−√5) = 9 − 5 = 4 cm²  b) 2(3+√5) + 2(3−√5) = 12 cm  c) (a+√5)(a−√5) = a²−5 = 4 → a² = 9 → a = 3"
+    ]
+  }
+}

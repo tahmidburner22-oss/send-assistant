@@ -1,0 +1,91 @@
+{
+  "title": "Adding and Subtracting Surds",
+  "subtitle": "AQA · KS4 Year 10–11",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Surds",
+    "subtopic": "Adding and subtracting surds",
+    "yearGroup": "Year 10-11",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Adding and Subtracting Surds",
+    "subheader": "AQA · KS4 Year 10–11",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Add and subtract surds by simplifying first so they share the same root. Collect 'like surds' the same way you collect like terms in algebra.",
+    "commonMistakes": [
+      "Adding unlike surds: √2 + √3 ≠ √5. You can ONLY add surds with the same number under the root.",
+      "Forgetting to simplify first — √12 + √27 looks impossible, but simplify: 2√3 + 3√3 = 5√3.",
+      "Adding the numbers under the root: √8 + √2 ≠ √10. Instead √8 = 2√2, so 2√2 + √2 = 3√2.",
+      "Subtracting coefficients wrongly: 5√3 − 2√3 = 3√3, not 3√0."
+    ],
+    "methodSteps": [
+      "Step 1: Simplify each surd individually (find largest square factor).",
+      "Step 2: Identify 'like surds' — same number under the root.",
+      "Step 3: Collect like surds by adding/subtracting the coefficients.",
+      "Step 4: Unlike surds cannot be combined — leave them as separate terms.",
+      "Step 5: Write final answer in simplest form."
+    ],
+    "workedExample": [
+      "Simplify √75 − √12 + √27.",
+      "Step 1 — Simplify each: √75 = 5√3;  √12 = 2√3;  √27 = 3√3",
+      "Step 2 — All are multiples of √3 (like surds).",
+      "Step 3 — Collect: 5√3 − 2√3 + 3√3 = 6√3",
+      "Answer: 6√3"
+    ]
+  },
+  "methodReminder": [
+    "1  Simplify each surd first",
+    "2  Identify like surds (same root)",
+    "3  Collect like surds: add/subtract coefficients",
+    "4  Unlike surds stay separate",
+    "5  Simplest form"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) 3√5 + 2√5       b) 7√2 − 4√2       c) √3 + 5√3       d) 8√7 − √7" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "State which CAN be collected (combined) and which CANNOT:\n\n   a) 2√3 + 5√3       b) √2 + √5       c) 4√6 − √6       d) 3√2 + 3√7" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify fully:\n\n   a) √8 + √2       b) √12 + √3       c) √50 − √2       d) √20 + √5" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Simplify fully:\n\n   a) √48 + √12       b) √75 − √27       c) √98 − √50       d) √72 + √18" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Simplify:\n\n   a) 2√12 + 3√27       b) 5√8 − 2√32       c) 3√50 + 2√18 − √72" },
+    { "id": "q6", "number": 6, "marks": 4, "difficulty": 3, "content": "Simplify fully:\n\n   a) √45 + √80 − √20       b) 2√63 − √28 + 3√7       c) √200 − 3√8 + √50" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "a) Show that √48 − √12 + √75 = 7√3.  (2 marks)\n\nb) The perimeter of a triangle is (2√3 + 5√3 + √12) cm. Find the exact simplified perimeter.  (2 marks)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "a) Simplify (3 + √5) + (2 − √5) + (1 + 3√5).  (2 marks)\n\nb) Show that √a + √(4a) + √(9a) = 6√a for all a > 0.  (3 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Do I always remember to simplify BEFORE collecting?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 5√5  b) 3√2  c) 6√3  d) 7√7",
+      "Q2: a) CAN → 7√3  b) CANNOT  c) CAN → 3√6  d) CANNOT",
+      "Q3: a) 2√2 + √2 = 3√2  b) 2√3 + √3 = 3√3  c) 5√2 − √2 = 4√2  d) 2√5 + √5 = 3√5",
+      "Q4: a) 4√3 + 2√3 = 6√3  b) 5√3 − 3√3 = 2√3  c) 7√2 − 5√2 = 2√2  d) 6√2 + 3√2 = 9√2",
+      "Q5: a) 4√3 + 9√3 = 13√3  b) 10√2 − 8√2 = 2√2  c) 15√2 + 6√2 − 6√2 = 15√2",
+      "Q6: a) 3√5 + 4√5 − 2√5 = 5√5  b) 6√7 − 2√7 + 3√7 = 7√7  c) 10√2 − 6√2 + 5√2 = 9√2",
+      "Q7: a) √48 = 4√3, √12 = 2√3, √75 = 5√3; 4√3 − 2√3 + 5√3 = 7√3 ✓  b) 2√3 + 5√3 + 2√3 = 9√3 cm",
+      "Q8: a) (3+2+1) + (−√5+√5+3√5)… wait: (3+√5)+(2−√5)+(1+3√5) = 6+3√5  b) √a + √(4a) + √(9a) = √a + 2√a + 3√a = 6√a ✓"
+    ]
+  }
+}

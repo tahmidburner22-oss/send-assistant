@@ -1,0 +1,102 @@
+{
+  "title": "Quadratic Simultaneous Equations",
+  "subtitle": "AQA Higher · GCSE Grade 8–9",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Quadratic Simultaneous Equations",
+    "yearGroup": "GCSE (Higher)",
+    "examBoard": "AQA",
+    "tier": "Higher",
+    "gradeBand": "8-9",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "higher",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "two ruled lines (x and y) in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied. Same structure, layout and questions as the dyslexia-adapted edition; the generator layers SEND adaptations, difficulty (foundation/mixed/higher) and reading age on top of this base without altering structure.",
+    "provenance": "Original questions authored for this booklet on the AQA topic and Grade 8–9 difficulty. Not a copy of any exam-board paper."
+  },
+  "intro": {
+    "header": "Quadratic Simultaneous Equations",
+    "subheader": "AQA Higher · GCSE Grade 8–9",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Solve a pair of equations where one is a straight line (linear) and one is a curve (quadratic), using substitution. Most pairs have two answer points — find both x values and the y that goes with each.",
+    "commonMistakes": [
+      "There are usually two answers, not one. Find both x values — for example x = 3 and x = −1.",
+      "Get everything on one side so it equals 0 first. For example: x² = 2x + 3 becomes x² − 2x − 3 = 0.",
+      "Watch the minus signs. (x − 1)² = x² − 2x + 1, not x² − 1.",
+      "Each x has its own y. After you find x, put it back in to work out y."
+    ],
+    "methodSteps": [
+      "Step 1: Make y (or x) the subject of the straight-line equation.",
+      "Step 2: Substitute that into the quadratic equation.",
+      "Step 3: Move everything to one side so it equals 0.",
+      "Step 4: Solve the quadratic — factorise or use the formula.",
+      "Step 5: Put each value back to find its pair. Write answers as (x, y)."
+    ],
+    "workedExample": [
+      "Solve:  y = x² − 2x + 3   and   y = x + 3",
+      "Step 1 — Make y the subject of the line:  y = x + 3 (already done)",
+      "Step 2 — Substitute into the quadratic:  x² − 2x + 3 = x + 3",
+      "Step 3 — Move everything to one side so it = 0:  x² − 3x = 0",
+      "Step 4 — Solve (factorise):  x(x − 3) = 0  →  x = 0 or x = 3",
+      "Step 5 — Put each value back to find its pair:  (0, 3)  and  (3, 6)"
+    ]
+  },
+  "methodReminder": [
+    "1  Make y the subject of the straight line",
+    "2  Substitute into the quadratic",
+    "3  Rearrange so it = 0",
+    "4  Solve (factorise or formula)",
+    "5  Find each pair (x, y) and check"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 3, "difficulty": 1, "content": "Solve the simultaneous equations.\n\n   y = x²            and            y = 2x + 3",
+      "frame": [
+        "First, both equations already give y, so set them equal:  x² = 2x + 3",
+        "Next, move everything to one side so it equals 0:  x² − 2x − 3 = 0",
+        "Then factorise and solve to find the two x values.",
+        "Finally, put each x back into y = 2x + 3 to find its y."
+      ] },
+    { "id": "q2", "number": 2, "marks": 3, "difficulty": 1, "content": "Solve the simultaneous equations.\n\n   y = x² + 1        and        y = x + 3",
+      "frame": [
+        "Set the two right-hand sides equal, then rearrange to = 0.",
+        "Factorise to find the two x values, then find each matching y."
+      ] },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Solve the simultaneous equations.\n\n   y = x² − 2x       and        y = x + 4" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Solve the simultaneous equations.\n\n   y = x² − 5x + 6     and     y = x − 2" },
+    { "id": "q5", "number": 5, "marks": 4, "difficulty": 3, "content": "Solve the simultaneous equations.\n\n   x² + y² = 25       and       y = x − 1" },
+    { "id": "q6", "number": 6, "marks": 4, "difficulty": 3, "content": "Solve the simultaneous equations.\n\n   x² + y² = 10       and       x + y = 4" },
+    { "id": "q7", "number": 7, "marks": 5, "difficulty": 4, "content": "Solve the simultaneous equations. Give your answers in surd form.\n\n   x² + y² = 9        and        y = x + 1" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A rectangle has an area of 12 cm² and a perimeter of 14 cm.\n\nBy forming and solving a pair of simultaneous equations, find the length and width of the rectangle.\n\n(Let the length be x and the width be y.)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "One method step I want to remember next time:",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1:  (3, 9) and (−1, 1)",
+      "Q2:  (2, 5) and (−1, 2)",
+      "Q3:  (4, 8) and (−1, 3)",
+      "Q4:  (4, 2) and (2, 0)",
+      "Q5:  (4, 3) and (−3, −4)",
+      "Q6:  (1, 3) and (3, 1)",
+      "Q7:  x = (−1 + √17)/2, y = (1 + √17)/2   and   x = (−1 − √17)/2, y = (1 − √17)/2",
+      "Q8:  length 4 cm, width 3 cm   (from xy = 12 and x + y = 7)"
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "title": "Percentage Change",
+  "subtitle": "AQA · KS3 Year 7 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Fractions, Decimals and Percentages",
+    "subtopic": "Percentage change",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Percentage Change",
+    "subheader": "AQA · KS3 Year 7",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Find the percentage of the original value",
+      "2  Increase: add it on",
+      "3  Decrease: take it off",
+      "4  Percentage change = (change ÷ original) × 100",
+      "5  State increase or decrease"
+    ],
+    "commonMistakes": [
+      "Dividing by the NEW value — always divide by the ORIGINAL.",
+      "Adding the percentage of the wrong amount.",
+      "20% increase → new value is 120% of original, not 20% of original.",
+      "15% off then 15% on does NOT get back to the start."
+    ],
+    "workedExample": [
+      "A coat costs £80, reduced by 15%. Find the sale price.",
+      "Step 1 — 15% of £80 = £12",
+      "Step 2 — Decrease: £80 − £12 = £68",
+      "Sale price = £68"
+    ],
+    "visualAid": "Bar model: Full bar = original amount (100%). Shaded portion = percentage kept. Unshaded portion = amount removed. Formula: Percentage change = (change ÷ original) × 100."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Find: a) 10% of £50  b) 25% of £120  c) 5% of £200  d) 1% of £350" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Increase: a) £40 by 10%  b) £60 by 25%  c) £200 by 50%" },
+    { "number": 3, "marks": 2, "difficulty": 2, "content": "Decrease: a) £80 by 20%  b) £150 by 10%  c) £500 by 35%" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "TV price rises from £450 to £495. a) How much increase? b) Percentage increase?" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Bicycle £320, 15% off. a) Discount? b) Sale price? c) +15% back on — is it £320? Explain." },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Factory: Jan 250 units, Feb 300 units. Calculate percentage increase." },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Mo: buys £60, sells £78. Abi: buys £45, sells £54. a) Mo's % profit. b) Abi's %. c) Who did better?" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "House £200k. +12% Year 1, −8% Year 2. a) Value after Y1? b) After Y2? c) Overall % change?" }
+  ]
+}

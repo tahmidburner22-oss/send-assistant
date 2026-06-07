@@ -1,0 +1,92 @@
+{
+  "title": "Simplifying Surds",
+  "subtitle": "AQA · KS4 Year 10–11",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Surds",
+    "subtopic": "Simplifying surds",
+    "yearGroup": "Year 10-11",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Simplifying Surds",
+    "subheader": "AQA · KS4 Year 10–11",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Simplify surds by finding the largest square factor. Express surds in their simplest form a√b. Understand why surds are 'exact' values and when to leave answers in surd form.",
+    "commonMistakes": [
+      "Not finding the LARGEST square factor — √72 = √(36 × 2) = 6√2, not √(4 × 18) = 2√18 (not fully simplified).",
+      "Thinking √(a + b) = √a + √b — this is WRONG. √(9 + 16) ≠ √9 + √16.",
+      "Writing √4 × √3 = √12 is correct, but the point of simplifying is to go the OTHER way: √12 = √4 × √3 = 2√3.",
+      "Forgetting that √a × √a = a (not √a²)."
+    ],
+    "methodSteps": [
+      "Step 1: Find the largest perfect square that is a factor of the number under the √.",
+      "Step 2: Split: √n = √(square factor × remainder).",
+      "Step 3: Use √(a × b) = √a × √b.",
+      "Step 4: Take the square root of the perfect square factor out.",
+      "Step 5: Write answer as k√m where m has no square factors."
+    ],
+    "workedExample": [
+      "Simplify √72.",
+      "Step 1 — Largest square factor of 72: 36 (since 36 × 2 = 72).",
+      "Step 2 — √72 = √(36 × 2)",
+      "Step 3 — = √36 × √2",
+      "Step 4 — = 6√2",
+      "Check: 6² × 2 = 36 × 2 = 72 ✓"
+    ]
+  },
+  "methodReminder": [
+    "1  Find largest square factor",
+    "2  Split under the root: √(square × rest)",
+    "3  Use √(a × b) = √a × √b",
+    "4  Square-root the square factor",
+    "5  Answer: k√m (m has no square factors)"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) √12       b) √18       c) √20       d) √50" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) √8       b) √32       c) √45       d) √75" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify:\n\n   a) √98       b) √200       c) √128       d) √300" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Simplify:\n\n   a) √(4 × 7)       b) 3√12       c) 2√50       d) 5√8" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Simplify fully:\n\n   a) √48 + √12       b) √75 − √27       c) 2√18 + 3√2" },
+    { "id": "q6", "number": 6, "marks": 4, "difficulty": 3, "content": "Show that:\n\n   a) √80 = 4√5       b) 3√28 = 6√7       c) √180 = 6√5" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "A square has area 72 cm².\n\n   a) Find the exact side length.  (1 mark)\n   b) Find the exact perimeter.  (1 mark)\n   c) A second square has side length 3√2 cm. Which square is larger? Show working.  (2 marks)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "a) Show that √(a²b) = a√b for any positive a and b.  (1 mark)\n\nb) Simplify √(50x⁴y²) where x, y > 0.  (2 marks)\n\nc) A right-angled triangle has shorter sides √18 cm and √32 cm. Find the exact hypotenuse in simplest surd form.  (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Do I always find the LARGEST square factor first time?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 2√3  b) 3√2  c) 2√5  d) 5√2",
+      "Q2: a) 2√2  b) 4√2  c) 3√5  d) 5√3",
+      "Q3: a) 7√2  b) 10√2  c) 8√2  d) 10√3",
+      "Q4: a) 2√7  b) 3 × 2√3 = 6√3  c) 2 × 5√2 = 10√2  d) 5 × 2√2 = 10√2",
+      "Q5: a) 4√3 + 2√3 = 6√3  b) 5√3 − 3√3 = 2√3  c) 6√2 + 3√2 = 9√2",
+      "Q6: a) √80 = √(16×5) = 4√5 ✓  b) 3√28 = 3√(4×7) = 3×2√7 = 6√7 ✓  c) √180 = √(36×5) = 6√5 ✓",
+      "Q7: a) √72 = 6√2 cm  b) 4 × 6√2 = 24√2 cm  c) Second square side = 3√2, first = 6√2. 6√2 > 3√2, so first is larger.",
+      "Q8: a) √(a²b) = √(a²) × √b = a√b ✓  b) √(50x⁴y²) = √(25 × 2 × x⁴ × y²) = 5x²y√2  c) Hyp² = 18 + 32 = 50; hyp = √50 = 5√2 cm"
+    ]
+  }
+}

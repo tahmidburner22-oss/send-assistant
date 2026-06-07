@@ -1,0 +1,15 @@
+node_modules/
+libs/
+src/
+package.json
+package-lock.json
+test-chrome.mjs
+shot.mjs
+preview-page1.png
+
+pv-*.png
+science/*.html
+english/*.html
+**/pv-*.png
+measure*.mjs
+shot*.mjs

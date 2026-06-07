@@ -1,0 +1,59 @@
+{
+  "title": "Simplifying Surds",
+  "subtitle": "AQA · KS4 Year 10–11 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Surds",
+    "subtopic": "Simplifying surds",
+    "yearGroup": "Year 10-11",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Simplifying Surds",
+    "subheader": "AQA · KS4 Year 10–11",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Find the largest square factor of the number",
+      "2  Split: √n = √(square × rest)",
+      "3  Use √(a × b) = √a × √b",
+      "4  Square-root the perfect square out",
+      "5  Answer: k√m (m has no square factors)"
+    ],
+    "commonMistakes": [
+      "Not using the LARGEST square factor — do it in one step, not several.",
+      "√(a + b) ≠ √a + √b. The rule only works for multiplication.",
+      "3√12 = 3 × 2√3 = 6√3, not 3√12.",
+      "√a × √a = a, not √(a²) left unsimplified."
+    ],
+    "workedExample": [
+      "Simplify √72.",
+      "Step 1 — Largest square factor: 36",
+      "Step 2 — √72 = √(36 × 2) = √36 × √2 = 6√2"
+    ],
+    "visualAid": "Factor tree: 72 → 36 × 2 → √36 = 6 → answer 6√2. Common square numbers reference: 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify: a) √12  b) √18  c) √20  d) √50" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify: a) √8  b) √32  c) √45  d) √75" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify: a) √98  b) √200  c) √128  d) √300" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Simplify: a) √(4×7)  b) 3√12  c) 2√50  d) 5√8" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Simplify fully: a) √48 + √12  b) √75 − √27  c) 2√18 + 3√2" },
+    { "number": 6, "marks": 4, "difficulty": 3, "content": "Show: a) √80 = 4√5  b) 3√28 = 6√7  c) √180 = 6√5" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Square area = 72 cm². a) Exact side? b) Perimeter? c) Compare with square of side 3√2." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "a) Show √(a²b) = a√b. b) Simplify √(50x⁴y²). c) Right triangle sides √18, √32 — exact hypotenuse?" }
+  ]
+}

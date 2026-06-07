@@ -1,0 +1,93 @@
+{
+  "title": "Recurring Decimals",
+  "subtitle": "AQA · KS3 Year 7",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Fractions, Decimals and Percentages",
+    "subtopic": "Recurring decimals",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Recurring Decimals",
+    "subheader": "AQA · KS3 Year 7",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Identify terminating and recurring decimals. Write recurring decimals using dot notation. Convert fractions to recurring decimals and convert recurring decimals back to fractions.",
+    "commonMistakes": [
+      "Writing 0.333… as 0.3 — it's recurring, so use dot notation: 0.3̇",
+      "Putting dots on the wrong digits — 0.166666… = 0.16̇ (dot only above the 6).",
+      "Confusing terminating with recurring — 1/4 = 0.25 (terminates), 1/3 = 0.333… (recurs).",
+      "When converting back: forgetting to subtract the equations properly."
+    ],
+    "methodSteps": [
+      "Step 1: Divide numerator by denominator using long/short division.",
+      "Step 2: If the remainder repeats, the decimal recurs — note which digits repeat.",
+      "Step 3: Write using dot notation — one dot over a single repeating digit, two dots over the first and last of a repeating block.",
+      "Step 4: To convert recurring decimal → fraction: let x = the decimal, multiply to shift digits, subtract.",
+      "Step 5: Simplify the fraction."
+    ],
+    "workedExample": [
+      "Convert 0.2̇7̇ to a fraction.",
+      "Step 1 — Let x = 0.272727…",
+      "Step 2 — Multiply by 100 (two repeating digits): 100x = 27.2727…",
+      "Step 3 — Subtract: 100x − x = 27.2727… − 0.2727… = 27",
+      "Step 4 — 99x = 27",
+      "Step 5 — x = 27/99 = 3/11",
+      "Answer: 0.2̇7̇ = 3/11"
+    ]
+  },
+  "methodReminder": [
+    "1  Divide top by bottom — look for repeating remainders",
+    "2  If it repeats, use dot notation",
+    "3  One dot = single digit repeats; two dots = block repeats",
+    "4  To convert back: let x = decimal, multiply, subtract",
+    "5  Simplify the resulting fraction"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "State whether each fraction gives a terminating or recurring decimal.\n\n   a) 1/4       b) 1/3       c) 3/8       d) 2/9" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Convert to decimals. Write using dot notation if they recur.\n\n   a) 1/6       b) 1/9       c) 5/6       d) 1/11" },
+    { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Write these using dot notation:\n\n   a) 0.666…       b) 0.142857142857…       c) 0.8333…       d) 0.454545…" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Convert to fractions (no working required for these common ones):\n\n   a) 0.1̇       b) 0.3̇       c) 0.9̇" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Convert 0.4̇5̇ (0.454545…) to a fraction.\nShow all working using the 'let x = …' method." },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Convert 0.12̇ (0.1222…) to a fraction.\nHint: this is trickier — the 1 doesn't recur, only the 2 does." },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "a) Show that 0.0̇9̇ = 1/11.\n   b) Hence write 0.6̇3̇ as a fraction.\n   c) Is there a pattern for ninths? Complete: 1/9 = ___, 2/9 = ___, 3/9 = ___, …, 8/9 = ___" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "Prove algebraically that 0.9̇ = 1.\n\nA student says 'it is close to 1 but never reaches it.' Explain why the algebraic proof shows they are equal." }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "One method step I want to remember next time:",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) Terminating (0.25)  b) Recurring (0.333…)  c) Terminating (0.375)  d) Recurring (0.222…)",
+      "Q2: a) 0.16̇  b) 0.1̇  c) 0.83̇  d) 0.0̇9̇",
+      "Q3: a) 0.6̇  b) 0.1̇4285̇7  c) 0.83̇  d) 0.4̇5̇",
+      "Q4: a) 1/9  b) 1/3  c) 1 (accept 9/9 with explanation)",
+      "Q5: x = 0.4545…; 100x = 45.4545…; 99x = 45; x = 45/99 = 5/11",
+      "Q6: x = 0.1222…; 10x = 1.222…; also 100x = 12.22…; 100x − 10x = 11; 90x = 11; x = 11/90",
+      "Q7: a) x = 0.0909…; 100x = 9.0909…; 99x = 9; x = 9/99 = 1/11. b) 0.6363… = 7 × 0.0909… = 7/11. c) 1/9=0.1̇, 2/9=0.2̇, 3/9=0.3̇, 4/9=0.4̇, 5/9=0.5̇, 6/9=0.6̇, 7/9=0.7̇, 8/9=0.8̇",
+      "Q8: x = 0.999…; 10x = 9.999…; 10x − x = 9; 9x = 9; x = 1. The proof uses valid algebra — there is no gap between 0.999… and 1; they represent the same number."
+    ]
+  }
+}

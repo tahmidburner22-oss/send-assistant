@@ -1,0 +1,60 @@
+{
+  "title": "Multiplying and Dividing Surds",
+  "subtitle": "AQA · KS4 Year 10–11 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Surds",
+    "subtopic": "Multiplying and dividing surds",
+    "yearGroup": "Year 10-11",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Multiplying and Dividing Surds",
+    "subheader": "AQA · KS4 Year 10–11",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  √a × √b = √(ab)",
+      "2  √a × √a = a",
+      "3  √a ÷ √b = √(a/b)",
+      "4  Expand brackets: use FOIL for (a + √b)(c + √d)",
+      "5  Simplify the result"
+    ],
+    "commonMistakes": [
+      "(√3)² = 3, not √9.",
+      "2√3 × 4√5 = 8√15 — multiply coefficients AND multiply surds.",
+      "(1 + √2)² ≠ 1 + 2. Expand: 1 + 2√2 + 2 = 3 + 2√2.",
+      "When dividing, simplify the fraction under the root."
+    ],
+    "workedExample": [
+      "Expand and simplify (2 + √3)(4 − √3).",
+      "Step 1 — FOIL: 2×4 + 2×(−√3) + √3×4 + √3×(−√3)",
+      "Step 2 — = 8 − 2√3 + 4√3 − 3",
+      "Step 3 — = 5 + 2√3"
+    ],
+    "visualAid": "Key rules summary box: √a × √b = √(ab) | √a × √a = a | √a ÷ √b = √(a/b) | k√a × m√b = km√(ab)"
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify: a) √3 × √5  b) √2 × √8  c) √6 × √6  d) (√7)²" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify: a) √20 ÷ √5  b) √18 ÷ √2  c) √75 ÷ √3  d) √48 ÷ √12" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify: a) 2√3 × 5√3  b) 3√2 × 4√5  c) 2√6 × 3√2  d) (3√5)²" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Expand: a) √2(3 + √2)  b) √5(√5 − 2)  c) 3√3(√3 + 4)" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Expand and simplify: a) (1 + √3)(2 + √3)  b) (4 − √2)(3 + √2)  c) (√5 + 1)(√5 − 1)" },
+    { "number": 6, "marks": 4, "difficulty": 3, "content": "Expand and simplify: a) (2 + √3)²  b) (√7 − 1)²  c) (3 + √2)(3 − √2)" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Show: a) (√a + √b)(√a − √b) = a − b. b) Use to simplify (√11 + √3)(√11 − √3)." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Rectangle: length (3+√5), width (3−√5). a) Exact area. b) Exact perimeter. c) If area = 4, find a+b for (a+√b)(a−√b) = 4." }
+  ]
+}

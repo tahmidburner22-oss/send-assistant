@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+
+  .page {
+    box-sizing: border-box;
+    width: 210mm;
+    min-height: 296mm;                        /* fill the A4 page */
+    background: #ffffff;
+    color: #111111;
+    padding: 8mm 10mm;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  .page *, .page *::before, .page *::after {
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  }
+  .page + .page { break-before: page; }
+  .page p, .page li, .page div { text-align: left; }
+
+  /* outlined box: neutral border (region structure preserved, no colour coding) */
+  .box {
+    border: 1px solid #333333;
+    border-radius: 6px;
+    background: transparent;
+    padding: 8px 12px;
+  }
+  .intro .box { margin-bottom: 9px; }
+
+  .small-header .sh-title { font-size: 20px; font-weight: 700; }
+  .sh-sub { font-size: 14px; }
+  .sh-name { font-size: 14px; margin-top: 6px; }
+
+  h2 { font-size: 17px; font-weight: 700; margin: 0 0 5px; color: #111111; }
+  ul, ol { margin: 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  .worked .example { margin-top: 2px; }
+  .worked .example div { margin: 2px 0; }
+
+  /* question page */
+  .question .q-top { flex: 0 0 auto; }
+  .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .q-num { font-size: 19px; font-weight: 700; }
+  .q-right { display: flex; align-items: center; gap: 12px; }
+  .marks { font-weight: 700; }
+  .difficulty { display: inline-flex; gap: 4px; align-items: center; }
+  .pip { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #333333; display: inline-block; }
+  .pip.on { background: #333333; }
+  .q-text { font-size: 18px; }
+
+  .frame { margin-top: 14px; border-style: dashed; }
+  .frame-title { font-weight: 700; color: #111111; margin-bottom: 4px; }
+  .frame-steps li { margin: 5px 0; }
+
+  .q-answer { margin-top: auto; align-self: flex-end; width: 78mm; }  /* bottom-right */
+  .ans-row { display: flex; align-items: flex-end; gap: 10px; margin-top: 16px; }
+  .ans-label { font-weight: 700; white-space: nowrap; font-size: 18px; }
+  .ans-line { flex: 1; border-bottom: 2px solid #000; height: 26px; }
+
+  /* method reminder strip (bottom of each question page) */
+  .reminder { margin-top: 16px; }
+  .rem-title { font-weight: 700; color: #111111; }
+  .rem-steps { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 4px; font-size: 14px; }
+  .rem-step { white-space: nowrap; }
+
+  /* reflection */
+  .confidence-q { font-weight: 700; }
+  .confidence { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 6px; }
+  .opt { display: inline-flex; align-items: center; gap: 8px; }
+  .tick { width: 16px; height: 16px; border: 2px solid #000; display: inline-block; border-radius: 3px; }
+  .reflect-prompt { margin-top: 12px; }
+  .write-line { border-bottom: 2px solid #000; height: 30px; margin-top: 14px; }
+
+  /* teacher key */
+  .key-list li { margin: 6px 0; }
+</style>
+</head>
+<body>
+  
+<section class="page intro">
+  <div class="small-header box">
+    <div class="sh-title">Quadratic Simultaneous Equations</div>
+    <div class="sh-sub">AQA Higher · GCSE Grade 8–9</div>
+    <div class="sh-name">Name: ____________________     Class: __________     Date: __________</div>
+  </div>
+
+  <div class="block box">
+    <h2>What you need to be able to do</h2>
+    <p>Solve a pair of equations where one is a straight line (linear) and one is a curve (quadratic), using substitution. Most pairs have two answer points — find both x values and the y that goes with each.</p>
+  </div>
+
+  <div class="block box">
+    <h2>Common mistakes to avoid</h2>
+    <ul><li>There are usually two answers, not one. Find both x values — for example x = 3 and x = −1.</li><li>Get everything on one side so it equals 0 first. For example: x² = 2x + 3 becomes x² − 2x − 3 = 0.</li><li>Watch the minus signs. (x − 1)² = x² − 2x + 1, not x² − 1.</li><li>Each x has its own y. After you find x, put it back in to work out y.</li></ul>
+  </div>
+
+  <div class="block box">
+    <h2>Method steps</h2>
+    <ol class="steps"><li>Step 1: Make y (or x) the subject of the straight-line equation.</li><li>Step 2: Substitute that into the quadratic equation.</li><li>Step 3: Move everything to one side so it equals 0.</li><li>Step 4: Solve the quadratic — factorise or use the formula.</li><li>Step 5: Put each value back to find its pair. Write answers as (x, y).</li></ol>
+  </div>
+
+  <div class="block box worked">
+    <h2>Worked example</h2>
+    <div class="example"><div>Solve:  y = x² − 2x + 3   and   y = x + 3</div><div>Step 1 — Make y the subject of the line:  y = x + 3 (already done)</div><div>Step 2 — Substitute into the quadratic:  x² − 2x + 3 = x + 3</div><div>Step 3 — Move everything to one side so it = 0:  x² − 3x = 0</div><div>Step 4 — Solve (factorise):  x(x − 3) = 0  →  x = 0 or x = 3</div><div>Step 5 — Put each value back to find its pair:  (0, 3)  and  (3, 6)</div></div>
+  </div>
+</section>
+  
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 1 of 8</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Solve the simultaneous equations.<br><br>   y = x²            and            y = 2x + 3</div>
+    <div class="frame box">
+             <div class="frame-title">How to start</div>
+             <ol class="frame-steps"><li>First, both equations already give y, so set them equal:  x² = 2x + 3</li><li>Next, move everything to one side so it equals 0:  x² − 2x − 3 = 0</li><li>Then factorise and solve to find the two x values.</li><li>Finally, put each x back into y = 2x + 3 to find its y.</li></ol>
+           </div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Make y the subject of the straight line</span><span class="rem-step">2  Substitute into the quadratic</span><span class="rem-step">3  Rearrange so it = 0</span><span class="rem-step">4  Solve (factorise or formula)</span><span class="rem-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 2 of 8</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Solve the simultaneous equations.<br><br>   y = x² + 1        and        y = x + 3</div>
+    <div class="frame box">
+             <div class="frame-title">How to start</div>
+             <ol class="frame-steps"><li>Set the two right-hand sides equal, then rearrange to = 0.</li><li>Factorise to find the two x values, then find each matching y.</li></ol>
+           </div>
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Make y the subject of the straight line</span><span class="rem-step">2  Substitute into the quadratic</span><span class="rem-step">3  Rearrange so it = 0</span><span class="rem-step">4  Solve (factorise or formula)</span><span class="rem-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 3 of 8</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Solve the simultaneous equations.<br><br>   y = x² − 2x       and        y = x + 4</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Make y the subject of the straight line</span><span class="rem-step">2  Substitute into the quadratic</span><span class="rem-step">3  Rearrange so it = 0</span><span class="rem-step">4  Solve (factorise or formula)</span><span class="rem-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 4 of 8</span>
+      <span class="q-right"><span class="marks">[3 marks]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Solve the simultaneous equations.<br><br>   y = x² − 5x + 6     and     y = x − 2</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Make y the subject of the straight line</span><span class="rem-step">2  Substitute into the quadratic</span><span class="rem-step">3  Rearrange so it = 0</span><span class="rem-step">4  Solve (factorise or formula)</span><span class="rem-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 5 of 8</span>
+      <span class="q-right"><span class="marks">[4 marks]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Solve the simultaneous equations.<br><br>   x² + y² = 25       and       y = x − 1</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Make y the subject of the straight line</span><span class="rem-step">2  Substitute into the quadratic</span><span class="rem-step">3  Rearrange so it = 0</span><span class="rem-step">4  Solve (factorise or formula)</span><span class="rem-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 6 of 8</span>
+      <span class="q-right"><span class="marks">[4 marks]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Solve the simultaneous equations.<br><br>   x² + y² = 10       and       x + y = 4</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Make y the subject of the straight line</span><span class="rem-step">2  Substitute into the quadratic</span><span class="rem-step">3  Rearrange so it = 0</span><span class="rem-step">4  Solve (factorise or formula)</span><span class="rem-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 7 of 8</span>
+      <span class="q-right"><span class="marks">[5 marks]</span><span class="difficulty" title="Difficulty 4 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span></span></span>
+    </div>
+    <div class="q-text box">Solve the simultaneous equations. Give your answers in surd form.<br><br>   x² + y² = 9        and        y = x + 1</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Make y the subject of the straight line</span><span class="rem-step">2  Substitute into the quadratic</span><span class="rem-step">3  Rearrange so it = 0</span><span class="rem-step">4  Solve (factorise or formula)</span><span class="rem-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+</section>
+
+<section class="page question">
+  <div class="q-top">
+    <div class="q-meta">
+      <span class="q-num">Question 8 of 8</span>
+      <span class="q-right"><span class="marks">[5 marks]</span><span class="difficulty" title="Difficulty 5 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></span></span>
+    </div>
+    <div class="q-text box">A rectangle has an area of 12 cm² and a perimeter of 14 cm.<br><br>By forming and solving a pair of simultaneous equations, find the length and width of the rectangle.<br><br>(Let the length be x and the width be y.)</div>
+    
+  </div>
+  <div class="q-answer">
+    <div class="ans-row"><span class="ans-label">x =</span><span class="ans-line"></span></div>
+    <div class="ans-row"><span class="ans-label">y =</span><span class="ans-line"></span></div>
+  </div>
+  
+  <div class="reminder box">
+    <span class="rem-title">Remember the method:</span>
+    <div class="rem-steps"><span class="rem-step">1  Make y the subject of the straight line</span><span class="rem-step">2  Substitute into the quadratic</span><span class="rem-step">3  Rearrange so it = 0</span><span class="rem-step">4  Solve (factorise or formula)</span><span class="rem-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+</section>
+  
+<section class="page reflect">
+  <div class="small-header box"><div class="sh-title">Self-reflection</div></div>
+  <div class="block box">
+    <p class="confidence-q">How confident do you feel with this topic now? (tick one)</p>
+    <div class="confidence"><span class="opt"><span class="tick"></span>Not yet</span><span class="opt"><span class="tick"></span>Getting there</span><span class="opt"><span class="tick"></span>Confident</span><span class="opt"><span class="tick"></span>Really confident</span></div>
+  </div>
+  <div class="block box reflect-prompt">
+    <p>Which question did you find the hardest, and why?</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div><div class="block box reflect-prompt">
+    <p>One method step I want to remember next time:</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div><div class="block box reflect-prompt">
+    <p>One thing I will practise before the next lesson:</p>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div>
+</section>
+  
+<section class="page key">
+  <div class="small-header box"><div class="sh-title">Teacher key</div></div>
+  <div class="block box">
+    <h2>Answers</h2>
+    <ol class="key-list"><li>Q1:  (3, 9) and (−1, 1)</li><li>Q2:  (2, 5) and (−1, 2)</li><li>Q3:  (4, 8) and (−1, 3)</li><li>Q4:  (4, 2) and (2, 0)</li><li>Q5:  (4, 3) and (−3, −4)</li><li>Q6:  (1, 3) and (3, 1)</li><li>Q7:  x = (−1 + √17)/2, y = (1 + √17)/2   and   x = (−1 − √17)/2, y = (1 − √17)/2</li><li>Q8:  length 4 cm, width 3 cm   (from xy = 12 and x + y = 7)</li></ol>
+  </div>
+</section>
+</body></html>

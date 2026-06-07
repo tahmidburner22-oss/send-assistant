@@ -1,0 +1,125 @@
+{
+  "title": "Writing to Persuade",
+  "subtitle": "English Language · Year 10 · Writing Booklet",
+  "metadata": {
+    "subject": "English Language",
+    "topic": "Writing to Persuade (persuasive techniques)",
+    "yearGroup": "Year 10 / KS4",
+    "sendNeed": "dyslexia",
+    "accessibilityProfile": "dyslexia-opendyslexic",
+    "colorOverlay": "cream",
+    "colorOverlayHex": "#FFF8E7",
+    "layout": {
+      "orientation": "portrait",
+      "pages": "multi-page booklet",
+      "style": "learn techniques -> reminders (content + structure) -> annotated model -> guided write (identify -> improve -> write) -> self-reflection -> teacher assessment",
+      "differsFrom": "Maths (method practice grid) and Science (explain+diagram). This is a writing-process booklet."
+    },
+    "lessonReady": true,
+    "adaptationsApplied": [
+      "Full-bleed cream #FFF8E7 overlay, black text",
+      "OpenDyslexic typeface embedded locally (SIL OFL)",
+      "16px base, line-height 1.6, letter-spacing 0.03em, word-spacing 0.14em",
+      "Ragged-right (left-aligned) text, never justified",
+      "Outlined section boxes (coloured border, no fill)",
+      "Key vocabulary box (technique cards) + plain-language common mistakes with examples"
+    ]
+  },
+  "cover": {
+    "subjectLine": "ENGLISH LANGUAGE · YEAR 10 · KS4",
+    "title": "Writing to Persuade",
+    "subtitle": "Writing Booklet",
+    "nameLine": "Name: __________________   Class: ________   Date: ________"
+  },
+  "objectives": [
+    "Name the main persuasive techniques (AFOREST).",
+    "Spot techniques in a piece of writing.",
+    "Use techniques in your own sentences.",
+    "Plan and write a short persuasive piece for a clear reader."
+  ],
+  "keyVocabulary": [
+    { "term": "Persuade", "meaning": "to make someone agree with you or do something" },
+    { "term": "Audience", "meaning": "the person or people you are writing for" },
+    { "term": "Purpose", "meaning": "the reason you are writing (here: to persuade)" },
+    { "term": "Technique", "meaning": "a tool a writer uses, like a rhetorical question" },
+    { "term": "Rhetorical question", "meaning": "a question to make the reader think (no answer needed)" },
+    { "term": "Emotive language", "meaning": "words chosen to make the reader feel something" },
+    { "term": "Triplet", "meaning": "three points in a row for power (the rule of three)" },
+    { "term": "Statistic", "meaning": "a believable number used as evidence" }
+  ],
+  "techniques": [
+    { "letter": "A", "term": "Alliteration", "meaning": "words near each other start with the same sound", "example": "bold, brave and brilliant" },
+    { "letter": "F", "term": "Facts", "meaning": "true information that is hard to argue with", "example": "Exercise is good for your heart." },
+    { "letter": "O", "term": "Opinion", "meaning": "what you believe, said with confidence", "example": "This is the best choice for everyone." },
+    { "letter": "R", "term": "Rhetorical question", "meaning": "a question that makes the reader think", "example": "Is that really fair?" },
+    { "letter": "E", "term": "Emotive language", "meaning": "words that make the reader feel something", "example": "Imagine losing everything you love." },
+    { "letter": "S", "term": "Statistics", "meaning": "believable numbers that back you up", "example": "Over half of students agree." },
+    { "letter": "T", "term": "Triplet (rule of three)", "meaning": "three points in a row for power", "example": "We are tired, rushed and ignored." }
+  ],
+  "reminders": {
+    "content": {
+      "title": "Remember (techniques)",
+      "lines": [
+        "AFOREST = Alliteration, Facts, Opinion, Rhetorical question, Emotive language, Statistics, Triplet.",
+        "Use the technique — don't just name it.",
+        "2–3 strong techniques beat ten weak ones."
+      ]
+    },
+    "method": {
+      "title": "How to structure a persuasive piece",
+      "lines": [
+        "1  Hook — grab the reader (question, picture, bold line).",
+        "2  Point — make one clear point per paragraph.",
+        "3  Proof — back it up (fact, statistic or example).",
+        "4  Punch — end with a strong, emotive line."
+      ]
+    }
+  },
+  "model": {
+    "title": "Model paragraph (annotated)",
+    "text": "Picture this: it is 1:15 and you have just five minutes left to eat. Is that really fair? A longer lunch would give us time to eat, move and reset. Over half of students say they feel rushed. We are tired, we are hungry, and we deserve better.",
+    "annotations": [
+      "'Picture this' = opening hook",
+      "'Is that really fair?' = rhetorical question",
+      "'eat, move and reset' = triplet",
+      "'Over half of students' = statistic",
+      "'tired… hungry… deserve better' = emotive ending"
+    ]
+  },
+  "commonMistakes": [
+    "Naming a technique instead of using it. Don't write 'I will use emotive language' — show it: 'Imagine losing everything you love.'",
+    "Making up silly statistics. Keep them believable, e.g. 'Over half of students…' not '100% of everyone ever.'",
+    "One giant paragraph. Use short paragraphs — one point each.",
+    "Forgetting your reader. Match your tone to the audience (a head teacher is different from a friend)."
+  ],
+  "tasks": [
+    { "number": 1, "marks": 2, "difficulty": 1, "skill": "Spot it", "prompt": "Name the technique in each line:\n(a) 'We must act now, now, now!'\n(b) 'Is this the future we want?'", "lines": 2 },
+    { "number": 2, "marks": 3, "difficulty": 2, "skill": "Match it", "prompt": "Match each technique to its meaning: Rhetorical question · Triplet · Statistic. (Write them next to the correct meaning.)", "lines": 3 },
+    { "number": 3, "marks": 3, "difficulty": 3, "skill": "Improve it", "prompt": "Rewrite this plain sentence to be persuasive. Use emotive language: 'The park is closing next month.'", "lines": 3 },
+    { "number": 4, "marks": 4, "difficulty": 4, "skill": "Build it", "prompt": "Write a strong opening (hook) for a speech about why your school should recycle more. Use a rhetorical question.", "lines": 4 },
+    { "number": 5, "marks": 6, "difficulty": 5, "skill": "Write it (stretch)", "prompt": "Write a full persuasive paragraph (4–6 sentences) arguing for a longer lunch break. Use the structure: Hook → Point → Proof → Punch, and at least three techniques. Underline each technique you use.", "lines": 8 }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel about persuasive writing now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Two techniques I used well:",
+      "The task I found hardest was ____ because:",
+      "One thing I will improve next time:"
+    ]
+  },
+  "teacherAssessment": {
+    "title": "Teacher assessment",
+    "successCriteria": [
+      "Identifies techniques correctly (Task 1–2)",
+      "Uses emotive language to improve a sentence (Task 3)",
+      "Writes a clear hook with a rhetorical question (Task 4)",
+      "Structures a paragraph: Hook → Point → Proof → Punch (Task 5)",
+      "Uses at least three techniques accurately (Task 5)"
+    ],
+    "marksTotal": 18,
+    "rag": ["Red — needs re-teaching", "Amber — nearly there", "Green — secure"],
+    "feedback": ["What went well (WWW):", "Even better if (EBI):", "Next step / target:"]
+  }
+}

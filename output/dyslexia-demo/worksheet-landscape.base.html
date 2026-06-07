@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+
+  .page {
+    box-sizing: border-box;
+    width: 297mm;
+    height: 209.7mm;                  /* exactly one landscape A4 page */
+    background: #ffffff;
+    color: #111111;
+    padding: 12mm 14mm;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+  .page *, .page *::before, .page *::after { font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .page + .page { break-before: page; }
+  .page p, .page li, .page div { text-align: left; }
+
+  .box {
+    border: 1.4px solid #333333;
+    border-radius: 8px;
+    background: transparent;
+    padding: 12px 16px;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; color: #111111; }
+
+  .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.4px solid #333333; padding-bottom: 8px; margin-bottom: 12px; flex: 0 0 auto; }
+  .h-title { font-size: 26px; font-weight: 700; }
+  .h-sub { font-size: 15px; }
+  .note { font-size: 15px; margin-bottom: 14px; flex: 0 0 auto; }
+
+  /* ---------- intro page ---------- */
+  .method { margin-bottom: 14px; flex: 0 0 auto; }
+  .m-steps { display: flex; flex-wrap: wrap; gap: 10px 30px; margin-top: 6px; font-size: 17px; }
+  .m-step { white-space: nowrap; }
+
+  /* stretched row that fills the rest of the page */
+  .lower { display: flex; gap: 14px; flex: 1 1 auto; align-items: stretch; min-height: 0; }
+  .lower > .box { display: flex; flex-direction: column; min-height: 0; }
+  .mistakes { flex: 1.15; }
+  .worked   { flex: 1.25; }
+  .visual   { flex: 1.05; }
+
+  ul { margin: 0; padding-left: 22px; }
+  li { margin: 9px 0; }
+  .worked .ex { display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+  .worked .ex div { margin: 4px 0; font-size: 16px; }
+
+  .visual .graph-svg { width: 100%; flex: 1 1 auto; min-height: 0; }
+  .visual .cap { font-size: 14px; margin: 8px 0 0; color: #333; }
+  .g-ax  { font-size: 13px; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .g-pt  { font-size: 13px; font-weight: 700; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .g-lbl { font-size: 13px; fill: #444; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+
+  /* ---------- questions page: 2×4 grid filling the page ---------- */
+  .questions .q-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 18px 26px;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .q-card { display: flex; flex-direction: column; justify-content: center; }
+  .q-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .q-num { font-size: 19px; font-weight: 700; color: #111111; }
+  .q-right { display: flex; align-items: center; gap: 12px; }
+  .marks { font-weight: 700; font-size: 17px; }
+  .difficulty { display: inline-flex; gap: 5px; align-items: center; }
+  .pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #333333; display: inline-block; }
+  .pip.on { background: #333333; }
+  .q-text { font-size: 21px; }
+</style>
+</head>
+<body>
+  
+<section class="page intro">
+  <div class="header">
+    <span class="h-title">Quadratic Simultaneous Equations</span>
+    <span class="h-sub">AQA Higher · Grade 8–9</span>
+  </div>
+  <div class="note">Solve each pair. Show your working and answers in your workbook.</div>
+
+  <div class="method box">
+    <h2>Method</h2>
+    <div class="m-steps"><span class="m-step">1  Make y the subject of the straight line</span><span class="m-step">2  Substitute into the quadratic</span><span class="m-step">3  Rearrange so it = 0</span><span class="m-step">4  Solve (factorise or formula)</span><span class="m-step">5  Find each pair (x, y) and check</span></div>
+  </div>
+
+  <div class="lower">
+    <div class="box mistakes">
+      <h2>Common mistakes</h2>
+      <ul><li>There are usually two answers, not one — find both x values, e.g. x = 3 and x = −1.</li><li>Get everything on one side so it = 0 first, e.g. x² = 2x + 3 becomes x² − 2x − 3 = 0.</li><li>Watch minus signs: (x − 1)² = x² − 2x + 1, not x² − 1.</li><li>Each x has its own y — put x back in to find y.</li></ul>
+    </div>
+    <div class="box worked">
+      <h2>Worked example</h2>
+      <div class="ex"><div>Solve:  y = x² − 2x + 3  and  y = x + 3</div><div>Step 1 — Make y the subject of the line:  y = x + 3</div><div>Step 2 — Substitute into the quadratic:  x² − 2x + 3 = x + 3</div><div>Step 3 — Rearrange so it = 0:  x² − 3x = 0</div><div>Step 4 — Solve (factorise):  x(x − 3) = 0 → x = 0 or x = 3</div><div>Step 5 — Find each pair (x, y) and check:  (0, 3) and (3, 6)</div></div>
+    </div>
+    <div class="box visual">
+      <h2>Visual aid — two solutions</h2>
+      
+  <svg viewBox="0 0 360 250" class="graph-svg" preserveAspectRatio="xMidYMid meet" role="img"
+       aria-label="Line y = x + 3 crossing the curve y = x squared minus 2x + 3 at (0, 3) and (3, 6)">
+    <!-- axes -->
+    <line x1="34" y1="226" x2="352" y2="226" stroke="#333333" stroke-width="1"/>
+    <line x1="132.3" y1="10" x2="132.3" y2="236" stroke="#333333" stroke-width="1"/>
+    <text x="350" y="240.0" class="g-ax">x</text>
+    <text x="138.3" y="16" class="g-ax">y</text>
+    <!-- curve and line -->
+    <polyline points="46.0,33.5 56.8,58.7 67.6,81.6 78.4,102.4 89.1,121.0 99.9,137.4 110.7,151.6 121.5,163.7 132.3,173.5 143.1,181.2 153.9,186.6 164.6,189.9 175.4,191.0 186.2,189.9 197.0,186.6 207.8,181.2 218.6,173.5 229.4,163.7 240.1,151.6 250.9,137.4 261.7,121.0 272.5,102.4 283.3,81.6 294.1,58.7 304.9,33.5" fill="none" stroke="#111111" stroke-width="2.4"/>
+    <polyline points="46.0,208.5 326.4,94.8" fill="none" stroke="#555" stroke-width="2.2" stroke-dasharray="6 4"/>
+    <!-- solution points -->
+    <circle cx="132.3" cy="173.5" r="4.5" fill="#111111"/>
+    <circle cx="261.7" cy="121.0" r="4.5" fill="#111111"/>
+    <text x="128.3" y="191.5" class="g-pt" text-anchor="end">(0, 3)</text>
+    <text x="269.7" y="115.0" class="g-pt">(3, 6)</text>
+    <!-- curve / line labels -->
+    <text x="300" y="44" class="g-lbl" text-anchor="end">y = x² − 2x + 3</text>
+    <text x="316" y="120" class="g-lbl">y = x + 3</text>
+  </svg>
+      <p class="cap">The straight line meets the curve at the two answer points.</p>
+    </div>
+  </div>
+</section>
+  
+<section class="page questions">
+  <div class="header">
+    <span class="h-title">Questions</span>
+    <span class="h-sub">Solve each pair — show working in your workbook</span>
+  </div>
+  <div class="q-grid">
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q1 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">y = x²   and   y = 2x + 3</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q2 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">y = x² + 1   and   y = x + 3</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q3 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">y = x² − 2x   and   y = x + 4</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q4 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">y = x² − 5x + 6   and   y = x − 2</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q5 of 8</span>
+        <span class="q-right"><span class="marks">[4]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">x² + y² = 25   and   y = x − 1</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q6 of 8</span>
+        <span class="q-right"><span class="marks">[4]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">x² + y² = 10   and   x + y = 4</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q7 of 8</span>
+        <span class="q-right"><span class="marks">[5]</span><span class="difficulty" title="Difficulty 4 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">x² + y² = 9   and   y = x + 1   (give answers in surd form)</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q8 of 8</span>
+        <span class="q-right"><span class="marks">[5]</span><span class="difficulty" title="Difficulty 5 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></span></span>
+      </div>
+      <div class="q-text">A rectangle has area 12 cm² and perimeter 14 cm. Form and solve a pair of equations to find its length (x) and width (y).</div>
+    </div></div>
+</section>
+</body></html>

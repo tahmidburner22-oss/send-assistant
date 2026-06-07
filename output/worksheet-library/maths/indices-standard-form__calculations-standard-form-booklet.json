@@ -1,0 +1,92 @@
+{
+  "title": "Calculations in Standard Form",
+  "subtitle": "AQA · KS4 Year 9–10",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Indices and Standard Form",
+    "subtopic": "Calculations in standard form",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Foundation/Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Calculations in Standard Form",
+    "subheader": "AQA · KS4 Year 9–10",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Multiply and divide numbers in standard form. Add and subtract numbers in standard form. Give answers in correct standard form.",
+    "commonMistakes": [
+      "Forgetting to adjust A back into standard form — (4 × 10³) × (5 × 10²) = 20 × 10⁵ → must be rewritten as 2 × 10⁶.",
+      "Subtracting powers when you should add (multiply → add powers; divide → subtract powers).",
+      "For addition/subtraction: you MUST have the same power of 10 before combining.",
+      "Losing the 10ⁿ part when doing the calculation with just the A values."
+    ],
+    "methodSteps": [
+      "Step 1: Multiplication — multiply A values, ADD powers of 10.",
+      "Step 2: Division — divide A values, SUBTRACT powers of 10.",
+      "Step 3: Check A is in range 1 ≤ A < 10. If not, adjust.",
+      "Step 4: Addition/subtraction — rewrite both numbers with the SAME power of 10, then combine A values.",
+      "Step 5: Give final answer in correct standard form."
+    ],
+    "workedExample": [
+      "Calculate (3 × 10⁴) × (6 × 10⁵). Give your answer in standard form.",
+      "Step 1 — Multiply A values: 3 × 6 = 18",
+      "Step 2 — Add powers: 10⁴ × 10⁵ = 10⁹",
+      "Step 3 — Combined: 18 × 10⁹",
+      "Step 4 — Adjust (18 not in range): 1.8 × 10¹⁰",
+      "Answer: 1.8 × 10¹⁰"
+    ]
+  },
+  "methodReminder": [
+    "1  Multiply: A₁ × A₂, then 10^(m+n)",
+    "2  Divide: A₁ ÷ A₂, then 10^(m−n)",
+    "3  Adjust A to be 1 ≤ A < 10",
+    "4  Add/subtract: same power first",
+    "5  Final answer in standard form"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Multiply. Give answers in standard form.\n\n   a) (2 × 10³) × (3 × 10²)\n   b) (4 × 10⁵) × (2 × 10⁴)" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Divide. Give answers in standard form.\n\n   a) (8 × 10⁷) ÷ (2 × 10³)\n   b) (9 × 10⁶) ÷ (3 × 10²)" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Calculate. Give answers in standard form.\n\n   a) (5 × 10⁴) × (7 × 10³)\n   b) (6 × 10⁻²) × (4 × 10⁵)\n   c) (1.2 × 10⁶) ÷ (4 × 10²)" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Add. Give answers in standard form.\n\n   a) (3 × 10⁴) + (5 × 10⁴)\n   b) (2.4 × 10⁵) + (6 × 10⁴)\n   c) (7 × 10³) + (3 × 10²)" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Subtract. Give answers in standard form.\n\n   a) (8 × 10⁵) − (3 × 10⁵)\n   b) (5.2 × 10⁴) − (8 × 10³)\n   c) (1.5 × 10⁻²) − (3 × 10⁻³)" },
+    { "id": "q6", "number": 6, "marks": 4, "difficulty": 3, "content": "Calculate:\n\n   a) (3.5 × 10⁴) × (2 × 10⁻²)\n   b) (4.8 × 10⁻³) ÷ (1.6 × 10⁻⁵)\n   c) (2 × 10⁻⁴)²" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "The Sun is 1.5 × 10⁸ km from Earth. Light travels at 3 × 10⁵ km/s.\n\n   a) How long does sunlight take to reach Earth? Give answer in standard form.  (2 marks)\n   b) Convert your answer to minutes.  (2 marks)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A grain of sand has mass 6.5 × 10⁻⁵ kg. A bag contains 2 × 10⁶ grains.\n\n   a) Total mass of sand in the bag? Standard form.  (2 marks)\n   b) How many bags to make 1 tonne (1 × 10³ kg)? Standard form.  (3 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Do I remember to adjust A back into standard form?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 6 × 10⁵  b) 8 × 10⁹",
+      "Q2: a) 4 × 10⁴  b) 3 × 10⁴",
+      "Q3: a) 35 × 10⁷ = 3.5 × 10⁸  b) 24 × 10³ = 2.4 × 10⁴  c) 3 × 10³",
+      "Q4: a) 8 × 10⁴  b) 2.4 × 10⁵ + 0.6 × 10⁵ = 3 × 10⁵  c) 7 × 10³ + 0.3 × 10³ = 7.3 × 10³",
+      "Q5: a) 5 × 10⁵  b) 5.2 × 10⁴ − 0.8 × 10⁴ = 4.4 × 10⁴  c) 1.5 × 10⁻² − 0.3 × 10⁻² = 1.2 × 10⁻²",
+      "Q6: a) 7 × 10²  b) 3 × 10²  c) 4 × 10⁻⁸",
+      "Q7: a) (1.5 × 10⁸) ÷ (3 × 10⁵) = 5 × 10² seconds  b) 500 ÷ 60 = 8.33 minutes (≈ 8 min 20 sec)",
+      "Q8: a) 6.5 × 10⁻⁵ × 2 × 10⁶ = 13 × 10¹ = 1.3 × 10² = 130 kg  b) 1000 ÷ 130 = 7.69… → 8 bags (round up). In standard form: ≈ 7.7 × 10⁰ bags needed (accept 8)."
+    ]
+  }
+}

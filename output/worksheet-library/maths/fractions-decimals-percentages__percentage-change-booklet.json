@@ -1,0 +1,90 @@
+{
+  "title": "Percentage Change",
+  "subtitle": "AQA · KS3 Year 7",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Fractions, Decimals and Percentages",
+    "subtopic": "Percentage change",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Percentage Change",
+    "subheader": "AQA · KS3 Year 7",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Calculate percentage increase and decrease. Find the percentage change between two values. Solve real-life problems involving percentage profit, loss and change.",
+    "commonMistakes": [
+      "Dividing by the NEW value instead of the ORIGINAL when calculating percentage change.",
+      "Adding/subtracting the percentage of the new amount instead of the original.",
+      "Confusing percentage increase with the new total — an increase of 20% means the new value is 120%.",
+      "Forgetting to check if the change is an increase or a decrease."
+    ],
+    "methodSteps": [
+      "Step 1: Find the percentage of the original: (percentage ÷ 100) × original.",
+      "Step 2: Percentage INCREASE: add the amount to the original.",
+      "Step 3: Percentage DECREASE: subtract the amount from the original.",
+      "Step 4: Percentage CHANGE: (actual change ÷ original) × 100.",
+      "Step 5: Check — state if the change is an increase or decrease."
+    ],
+    "workedExample": [
+      "A coat costs £80. It is reduced by 15%. Find the sale price.",
+      "Step 1 — Find 15% of £80: 15 ÷ 100 × 80 = £12",
+      "Step 2 — It's a decrease: £80 − £12 = £68",
+      "Answer: The sale price is £68."
+    ]
+  },
+  "methodReminder": [
+    "1  Find the percentage of the original value",
+    "2  Increase: add it on",
+    "3  Decrease: take it off",
+    "4  Percentage change = (change ÷ original) × 100",
+    "5  State increase or decrease"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Find:\n\n   a) 10% of £50       b) 25% of £120       c) 5% of £200       d) 1% of £350" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Increase each amount by the given percentage.\n\n   a) £40 by 10%       b) £60 by 25%       c) £200 by 50%" },
+    { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Decrease each amount by the given percentage.\n\n   a) £80 by 20%       b) £150 by 10%       c) £500 by 35%" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "A shop increases the price of a TV from £450 to £495.\n\n   a) How much did the price increase by?\n   b) What is the percentage increase?" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "A bicycle cost £320. In a sale there is 15% off.\n\n   a) How much is the discount?\n   b) What is the sale price?\n   c) After the sale, the price goes back up by 15%. Is it £320 again? Show why or why not." },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "A factory produced 250 units in January and 300 units in February.\n\nCalculate the percentage increase from January to February." },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "Mo buys trainers for £60 and sells them for £78.\n   Abi buys a bag for £45 and sells it for £54.\n\n   a) Calculate Mo's percentage profit.\n   b) Calculate Abi's percentage profit.\n   c) Who made the better deal? Explain." },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A house was worth £200,000. Its value increased by 12% in Year 1, then decreased by 8% in Year 2.\n\n   a) What was the value after Year 1?\n   b) What was the value after Year 2?\n   c) What is the overall percentage change from the original price? Is it an increase or decrease?" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "One method step I want to remember next time:",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) £5  b) £30  c) £10  d) £3.50",
+      "Q2: a) £44  b) £75  c) £300",
+      "Q3: a) £64  b) £135  c) £325",
+      "Q4: a) £45  b) (45 ÷ 450) × 100 = 10%",
+      "Q5: a) 15% of 320 = £48  b) 320 − 48 = £272  c) 15% of 272 = £40.80; 272 + 40.80 = £312.80 ≠ £320. No — the 15% increase is on a smaller amount.",
+      "Q6: Change = 50; (50 ÷ 250) × 100 = 20% increase",
+      "Q7: a) (18 ÷ 60) × 100 = 30%  b) (9 ÷ 45) × 100 = 20%  c) Mo — higher percentage profit",
+      "Q8: a) 200,000 × 1.12 = £224,000  b) 224,000 × 0.92 = £206,080  c) Change = £6,080; (6,080 ÷ 200,000) × 100 = 3.04% increase"
+    ]
+  }
+}
