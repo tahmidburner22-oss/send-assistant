@@ -21,8 +21,8 @@
 ## Summary
 
 - **Total sub-topics:** 100 (25 topics × 4 sub-topics each)
-- **Done:** 32 (topics 1, 2, 3, 4, 5, 6, 10, 11)
-- **Remaining:** 68
+- **Done:** 36 (topics 1, 2, 3, 4, 5, 6, 7, 10, 11)
+- **Remaining:** 64
 
 ---
 
@@ -54,10 +54,10 @@
 | 6.2 | Solving Linear Equations | Two-step equations | KS3 | 8 | ✅ |
 | 6.3 | Solving Linear Equations | Equations with unknowns on both sides | KS3 | 8 | ✅ |
 | 6.4 | Solving Linear Equations | Equations with brackets | KS3 | 8 | ✅ |
-| 7.1 | Linear Inequalities | Writing and solving linear inequalities | KS4 | 9-10 | 🔲 |
-| 7.2 | Linear Inequalities | Representing inequalities on a number line | KS4 | 9-10 | 🔲 |
-| 7.3 | Linear Inequalities | Double inequalities | KS4 | 9-10 | 🔲 |
-| 7.4 | Linear Inequalities | Inequalities in two variables | KS4 | 9-10 | 🔲 |
+| 7.1 | Linear Inequalities | Writing and solving linear inequalities | KS4 | 9-10 | ✅ |
+| 7.2 | Linear Inequalities | Representing inequalities on a number line | KS4 | 9-10 | ✅ |
+| 7.3 | Linear Inequalities | Double inequalities | KS4 | 9-10 | ✅ |
+| 7.4 | Linear Inequalities | Inequalities in two variables | KS4 | 9-10 | ✅ |
 | 8.1 | Sequences | Arithmetic sequences — nth term | KS3 | 7-8 | 🔲 |
 | 8.2 | Sequences | Geometric sequences | KS3 | 7-8 | 🔲 |
 | 8.3 | Sequences | Quadratic sequences | KS3 | 7-8 | 🔲 |

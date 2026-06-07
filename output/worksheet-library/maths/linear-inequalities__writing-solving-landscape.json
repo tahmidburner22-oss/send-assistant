@@ -1,0 +1,59 @@
+{
+  "title": "Writing and Solving Linear Inequalities",
+  "subtitle": "AQA · KS4 Year 9–10 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Linear Inequalities",
+    "subtopic": "Writing and solving linear inequalities",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Writing and Solving Linear Inequalities",
+    "subheader": "AQA · KS4 Year 9–10",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Balance both sides like an equation",
+      "2  Undo +/− first, then ×/÷",
+      "3  Flip the sign if × or ÷ by a negative",
+      "4  Write the answer as an inequality",
+      "5  Check with a value from the solution"
+    ],
+    "commonMistakes": [
+      "Not reversing the sign when ÷ or × by a negative.",
+      "Reversing when only adding or subtracting.",
+      "< and ≤ are not the same: ≤ includes the end value.",
+      "Writing x = … instead of x < …"
+    ],
+    "workedExample": [
+      "Solve 3x + 4 < 19.",
+      "Subtract 4: 3x < 15. Divide by 3: x < 5.",
+      "Check x = 4: 16 < 19 ✓"
+    ],
+    "visualAid": "Number line for x < 5: an open circle at 5 (5 not included) with the line shaded to the left to show every value less than 5."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Solve: a) x + 3 > 7  b) x − 2 ≤ 5" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Solve: a) 2x < 10  b) 5x ≥ 20" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Solve: a) 2x + 1 > 9  b) 3x − 4 ≤ 11  c) 4x + 5 < 5" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Solve (reverse the sign when ÷ by a negative): a) −x > 3  b) −2x ≤ 8  c) 5 − x < 2" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Solve: a) 3(x − 2) ≤ 9  b) 2(x + 1) > x + 5  c) 4x − 7 ≥ 2x + 3" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Form and solve: a) Sam has £x; after spending £12 has less than £20.  b) Taxi £4 + £2/mile, cost ≤ £20 — most whole miles?" },
+    { "number": 7, "marks": 3, "difficulty": 4, "content": "a) Solve 4x + 3 ≥ 19; smallest integer x?  b) Solve 2x − 5 < 7; largest integer x?" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Rectangle width x, length (x+4), perimeter < 36 cm, x a positive integer. a) Inequality. b) Solve. c) List possible x." }
+  ]
+}

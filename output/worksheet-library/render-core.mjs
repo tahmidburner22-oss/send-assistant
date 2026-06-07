@@ -96,6 +96,22 @@ function topicVisual(ws) {
       <text x="322" y="111" ${F} font-size="14">2x+3</text>
       <text x="450" y="111" ${F} font-size="14">11</text>
     </svg>`;
+  } else if (/inequalit/i.test(topic)) {
+    cap = 'x &lt; 5 on a number line: open circle at 5, shade everything to the left.';
+    svg = `<svg viewBox="0 0 520 120" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="60" x2="500" y2="60" stroke="#111" stroke-width="2"/>
+      <polygon points="500,60 488,54 488,66" fill="#111"/>
+      <polygon points="20,60 32,54 32,66" fill="#111"/>
+      <line x1="20" y1="60" x2="380" y2="60" stroke="#16a34a" stroke-width="5"/>
+      <circle cx="380" cy="60" r="8" fill="#fff" stroke="#16a34a" stroke-width="3"/>
+      <g ${F} font-size="14" fill="#333">
+        <text x="56" y="86">2</text><text x="136" y="86">3</text>
+        <text x="216" y="86">4</text><text x="372" y="86">5</text><text x="452" y="86">6</text>
+      </g>
+      <line x1="60" y1="55" x2="60" y2="65" stroke="#111"/><line x1="140" y1="55" x2="140" y2="65" stroke="#111"/>
+      <line x1="220" y1="55" x2="220" y2="65" stroke="#111"/><line x1="300" y1="55" x2="300" y2="65" stroke="#111"/>
+      <line x1="380" y1="55" x2="380" y2="65" stroke="#111"/><line x1="460" y1="55" x2="460" y2="65" stroke="#111"/>
+    </svg>`;
   } else if (/fraction|percent|decimal/i.test(topic)) {
     cap = 'One half shown three equivalent ways.';
     svg = `<svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg">

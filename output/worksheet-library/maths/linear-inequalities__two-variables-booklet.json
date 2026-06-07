@@ -1,0 +1,92 @@
+{
+  "title": "Inequalities in Two Variables",
+  "subtitle": "AQA · KS4 Year 9–10",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Linear Inequalities",
+    "subtopic": "Inequalities in two variables",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Inequalities in Two Variables",
+    "subheader": "AQA · KS4 Year 9–10",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Represent linear inequalities in two variables on a graph. Draw the boundary line, decide whether it is solid or dashed, and shade the correct region. Identify the region that satisfies several inequalities together.",
+    "commonMistakes": [
+      "Using a solid line for < or > — these need a DASHED line (boundary not included).",
+      "Using a dashed line for ≤ or ≥ — these need a SOLID line (boundary included).",
+      "Shading the wrong side — always test a point such as (0, 0) to decide.",
+      "Choosing a test point that lies on the line, which cannot tell you which side to shade."
+    ],
+    "methodSteps": [
+      "Step 1: Replace the inequality sign with = and draw that straight line.",
+      "Step 2: Use a dashed line for < or >, and a solid line for ≤ or ≥.",
+      "Step 3: Choose a test point not on the line (usually (0, 0)) and substitute it in.",
+      "Step 4: If the point makes the inequality true, shade its side; if not, shade the other side.",
+      "Step 5: For several inequalities, the required region is where all the shaded areas overlap."
+    ],
+    "workedExample": [
+      "Show the region for: y ≤ x + 2",
+      "Step 1 — Draw the line y = x + 2.",
+      "Step 2 — ≤ means the line is included, so draw it SOLID.",
+      "Step 3 — Test (0, 0): is 0 ≤ 0 + 2? Yes, 0 ≤ 2.",
+      "Step 4 — (0, 0) works, so shade the side that contains (0, 0) (below the line).",
+      "Step 5 — (Single inequality, so the shaded region is the answer.)"
+    ]
+  },
+  "methodReminder": [
+    "1  Draw the boundary line (sign → =)",
+    "2  Dashed for </>, solid for ≤/≥",
+    "3  Test a point not on the line",
+    "4  Shade the side that works",
+    "5  Several inequalities → shade the overlap"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["< and > use a dashed line; ≤ and ≥ use a solid line.", "Look only at the inequality sign to decide."], "content": "State whether the boundary line should be solid or dashed.\n\n   a) y > 2x\n   b) y ≤ x + 1" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Substitute the point's x and y values into the inequality.", "If the statement is true, the point is in the region."], "content": "Decide whether each point satisfies the inequality.\n\n   a) Is (1, 4) in the region y > x + 2?\n   b) Is (2, 1) in the region y ≤ 2x − 1?" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "On separate axes, draw the boundary line and shade the region for each.\n\n   a) x > 2\n   b) y ≤ 3\n   c) y < x" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "By testing the point (0, 0), state whether (0, 0) lies in each region.\n\n   a) y < x + 1\n   b) y ≥ 2x − 3\n   c) y > x" },
+    { "id": "q5", "number": 5, "marks": 4, "difficulty": 3, "content": "On one set of axes, shade the region R that satisfies all three inequalities.\n\n   x ≥ 0,   y ≥ 0,   x + y ≤ 4\n\nState the coordinates of the three corners of the region." },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "A region is bounded by the lines x = 1, y = 1 and y = 5 − x, and lies above y = 1, to the right of x = 1 and below y = 5 − x.\n\nWrite the three inequalities that describe this region." },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "The region R satisfies y ≥ 1, y ≤ 2x − 1 and x ≤ 4.\n\n   a) State which boundary lines should be solid. (1 mark)\n   b) The point (3, 2) — is it inside region R? Show your working. (3 marks)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A delivery van carries x small parcels and y large parcels.\nThe rules are:  x + y ≤ 10,   x ≥ 2,   y ≥ 3.\n\n   a) Write what each inequality means in words. (2 marks)\n   b) Give one possible combination (x, y) that satisfies all three rules. (1 mark)\n   c) What is the greatest total number of parcels the van can carry, and give an (x, y) that achieves it. (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "How do I decide which side of the line to shade?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) dashed (>)  b) solid (≤)",
+      "Q2: a) 4 > 1 + 2 = 3, true → yes  b) 1 ≤ 2(2) − 1 = 3, true → yes",
+      "Q3: a) dashed vertical line x = 2, shade right  b) solid horizontal line y = 3, shade below  c) dashed line y = x, shade below it",
+      "Q4: a) 0 < 0 + 1 = 1, true → yes  b) 0 ≥ 2(0) − 3 = −3, true → yes  c) 0 > 0 is false → no",
+      "Q5: triangle with corners (0, 0), (4, 0) and (0, 4); lines x = 0, y = 0, x + y = 4 all solid; shade inside",
+      "Q6: x ≥ 1,  y ≥ 1,  y ≤ 5 − x",
+      "Q7: a) all three are solid (≥, ≤, ≤)  b) y ≥ 1: 2 ≥ 1 ✓; y ≤ 2x − 1: 2 ≤ 2(3) − 1 = 5 ✓; x ≤ 4: 3 ≤ 4 ✓ — all true, so (3, 2) is inside R",
+      "Q8: a) total parcels at most 10; at least 2 small; at least 3 large  b) e.g. (3, 4) since 3 + 4 = 7 ≤ 10, 3 ≥ 2, 4 ≥ 3  c) greatest total = 10, e.g. (2, 8) or (7, 3) [x + y = 10 with x ≥ 2, y ≥ 3]"
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "title": "Writing and Solving Linear Inequalities",
+  "subtitle": "AQA · KS4 Year 9–10",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Linear Inequalities",
+    "subtopic": "Writing and solving linear inequalities",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Writing and Solving Linear Inequalities",
+    "subheader": "AQA · KS4 Year 9–10",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Write inequalities from descriptions and solve linear inequalities. Use the same balancing steps as for equations, but remember to reverse the inequality sign whenever you multiply or divide both sides by a negative number.",
+    "commonMistakes": [
+      "Forgetting to reverse the sign when multiplying or dividing by a negative number.",
+      "Reversing the sign when only adding or subtracting — the sign only flips for × or ÷ by a negative.",
+      "Treating < and ≤ as the same: ≤ includes the end value, < does not.",
+      "Writing the answer as an equation (x = …) instead of an inequality (x < …)."
+    ],
+    "methodSteps": [
+      "Step 1: Treat the inequality like an equation — keep both sides balanced.",
+      "Step 2: Use inverse operations to undo +/− first, then ×/÷.",
+      "Step 3: If you multiply or divide both sides by a negative, REVERSE the inequality sign.",
+      "Step 4: Write the solution as an inequality, e.g. x > 4.",
+      "Step 5: Check by testing a value from your solution set in the original inequality."
+    ],
+    "workedExample": [
+      "Solve: 3x + 4 < 19",
+      "Step 1 — Subtract 4 from both sides: 3x < 15.",
+      "Step 2 — Divide both sides by 3 (positive, so sign stays): x < 5.",
+      "Step 3 — No negative division, so no flip needed.",
+      "Step 4 — Solution: x < 5.",
+      "Step 5 — Check x = 4: 3(4) + 4 = 16, and 16 < 19 ✓"
+    ]
+  },
+  "methodReminder": [
+    "1  Balance both sides like an equation",
+    "2  Undo +/− first, then ×/÷",
+    "3  Flip the sign if × or ÷ by a negative",
+    "4  Write the answer as an inequality",
+    "5  Check with a value from the solution"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Solve like an equation: do the same to both sides.", "For x + 3 > 7, subtract 3 from both sides: x > 4."], "content": "Solve.\n\n   a) x + 3 > 7\n   b) x − 2 ≤ 5" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Divide both sides by the number in front of x.", "For 2x < 10, divide by 2: x < 5. The sign stays the same (dividing by a positive)."], "content": "Solve.\n\n   a) 2x < 10\n   b) 5x ≥ 20" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Solve.\n\n   a) 2x + 1 > 9\n   b) 3x − 4 ≤ 11\n   c) 4x + 5 < 5" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Solve. Remember to reverse the sign when dividing by a negative.\n\n   a) −x > 3\n   b) −2x ≤ 8\n   c) 5 − x < 2" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Solve.\n\n   a) 3(x − 2) ≤ 9\n   b) 2(x + 1) > x + 5\n   c) 4x − 7 ≥ 2x + 3" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Form an inequality and solve it.\n\n   a) Sam has £x. After spending £12, Sam has less than £20 left. (Write and solve.)\n   b) A taxi ride costs £4 plus £2 per mile and must cost no more than £20. What is the greatest number of whole miles?" },
+    { "id": "q7", "number": 7, "marks": 3, "difficulty": 4, "content": "a) Solve 4x + 3 ≥ 19 and write the smallest integer value of x. (2 marks)\n\nb) Solve 2x − 5 < 7 and write the largest integer value of x. (1 mark)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A rectangle has width x cm and length (x + 4) cm, where x is a positive integer.\nThe perimeter is less than 36 cm.\n\n   a) Form an inequality in x. (1 mark)\n   b) Solve it. (2 marks)\n   c) List all the possible integer values of x. (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "When exactly do I reverse the inequality sign?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) x > 4  b) x ≤ 7",
+      "Q2: a) x < 5  b) x ≥ 4",
+      "Q3: a) 2x > 8 → x > 4  b) 3x ≤ 15 → x ≤ 5  c) 4x < 0 → x < 0",
+      "Q4: a) −x > 3 → x < −3  b) −2x ≤ 8 → x ≥ −4 (sign flips)  c) 5 − x < 2 → −x < −3 → x > 3",
+      "Q5: a) 3x − 6 ≤ 9 → 3x ≤ 15 → x ≤ 5  b) 2x + 2 > x + 5 → x > 3  c) 2x ≥ 10 → x ≥ 5",
+      "Q6: a) x − 12 < 20 → x < 32  b) 4 + 2m ≤ 20 → 2m ≤ 16 → m ≤ 8, so 8 whole miles",
+      "Q7: a) 4x ≥ 16 → x ≥ 4, smallest integer = 4  b) 2x < 12 → x < 6, largest integer = 5",
+      "Q8: a) 2(x + x + 4) < 36, i.e. 4x + 8 < 36  b) 4x < 28 → x < 7  c) x = 1, 2, 3, 4, 5, 6"
+    ]
+  }
+}
