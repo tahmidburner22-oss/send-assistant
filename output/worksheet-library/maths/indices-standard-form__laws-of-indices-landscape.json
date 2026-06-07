@@ -1,0 +1,59 @@
+{
+  "title": "Laws of Indices",
+  "subtitle": "AQA · KS4 Year 9–10 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Indices and Standard Form",
+    "subtopic": "Laws of indices",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Foundation/Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Laws of Indices",
+    "subheader": "AQA · KS4 Year 9–10",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Multiply same base → ADD powers: aᵐ × aⁿ = aᵐ⁺ⁿ",
+      "2  Divide same base → SUBTRACT powers: aᵐ ÷ aⁿ = aᵐ⁻ⁿ",
+      "3  Power of a power → MULTIPLY: (aᵐ)ⁿ = aᵐⁿ",
+      "4  Zero index: a⁰ = 1",
+      "5  Handle coefficients separately from letters"
+    ],
+    "commonMistakes": [
+      "(aᵐ)ⁿ = aᵐⁿ — MULTIPLY, not add.",
+      "aᵐ × aⁿ = aᵐ⁺ⁿ — ADD, not multiply.",
+      "(3x²)³ = 27x⁶, not 3x⁶ — raise the coefficient too.",
+      "a⁰ = 1, not 0."
+    ],
+    "workedExample": [
+      "Simplify (2x³)² × 3x⁴",
+      "Step 1 — (2x³)² = 4x⁶",
+      "Step 2 — 4x⁶ × 3x⁴ = 12x¹⁰"
+    ],
+    "visualAid": "Summary table: Operation → Rule → Example. Multiply → add powers → x² × x³ = x⁵. Divide → subtract powers → x⁵ ÷ x² = x³. Power of power → multiply → (x²)³ = x⁶. Zero → equals 1 → x⁰ = 1."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify: a) x⁴ × x³  b) y⁷ × y²  c) a × a⁵  d) m³ × m³" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify: a) p⁸ ÷ p³  b) q¹⁰ ÷ q⁶  c) n⁹ ÷ n  d) t⁵ ÷ t⁵" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify: a) (b³)⁴  b) (c⁵)²  c) (d²)⁶  d) (e⁴)³" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Simplify fully: a) 3a² × 5a⁴  b) 12b⁷ ÷ 4b³  c) 2c³ × 6c² × c" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Simplify: a) (2x²)³  b) (3y⁴)²  c) (5m³)²" },
+    { "number": 6, "marks": 4, "difficulty": 3, "content": "Simplify fully: a) x⁵ × x² ÷ x³  b) (y²)³ × y⁴  c) 6a⁴ × 3a² ÷ 9a³" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Simplify: a) (4x³y²)²  b) (2a²b)³ × 3ab²  c) 20p⁶q⁴ ÷ (5p²q)²" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "a) Show (2x²)³ ÷ x⁴ = 8x². b) Rectangle area = 24x⁷y⁵, width = 6x³y². Find length." }
+  ]
+}

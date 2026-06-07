@@ -1,0 +1,60 @@
+{
+  "title": "Ordering Fractions, Decimals and Percentages",
+  "subtitle": "AQA · KS3 Year 7 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Fractions, Decimals and Percentages",
+    "subtopic": "Ordering FDP",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Ordering Fractions, Decimals and Percentages",
+    "subheader": "AQA · KS3 Year 7",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Convert to the same form (decimals best)",
+      "2  Line up decimal points, compare left to right",
+      "3  Use < or >",
+      "4  Write originals in order",
+      "5  Check it makes sense"
+    ],
+    "commonMistakes": [
+      "Comparing fractions without converting — 3/8 vs 2/5 needs converting first.",
+      "Bigger denominator does NOT mean bigger fraction — 1/8 < 1/4.",
+      "0.333… (recurring) ≠ 0.3 exactly.",
+      "35% looks bigger than 0.4 but 35% = 0.35 < 0.4."
+    ],
+    "workedExample": [
+      "Order smallest first: 3/8,  0.4,  35%",
+      "Step 1 — Convert: 3/8 = 0.375;  0.4 = 0.4;  35% = 0.35",
+      "Step 2 — Compare: 0.35 < 0.375 < 0.4",
+      "Answer: 35%, 3/8, 0.4"
+    ],
+    "visualAid": "Number line from 0 to 1 marked with common equivalences: 0 = 0%, 1/4 = 0.25 = 25%, 1/3 ≈ 0.33, 1/2 = 0.5 = 50%, 2/3 ≈ 0.67, 3/4 = 0.75 = 75%, 1 = 100%."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Order smallest to largest: 0.3,  0.31,  0.29,  0.305" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Use < or >: a) 0.6 ___ 0.58  b) 1/4 ___ 0.3  c) 70% ___ 3/4" },
+    { "number": 3, "marks": 2, "difficulty": 2, "content": "Order smallest first: 1/2,  45%,  0.48,  2/5" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Convert to decimals and order largest to smallest: 7/10,  0.68,  72%,  3/4" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Test scores — Ali: 17/20, Beth: 82%, Carl: 0.88, Dee: 4/5. Order highest to lowest." },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Write a fraction, a decimal and a percentage that are all between 0.6 and 0.7 (all different values)." },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Offers: A = 1/3 off, B = 30% off, C = 0.35 off. a) Biggest discount? b) Smallest? c) Save on £60 with Offer A?" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Sam: 'Bigger numerator = bigger fraction.' a) Give a counter-example. b) Correct method. c) Order: 5/12, 3/7, 2/5." }
+  ]
+}

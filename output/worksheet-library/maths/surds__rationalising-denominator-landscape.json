@@ -1,0 +1,61 @@
+{
+  "title": "Rationalising the Denominator",
+  "subtitle": "AQA · KS4 Year 10–11 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Surds",
+    "subtopic": "Rationalising the denominator",
+    "yearGroup": "Year 10-11",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Rationalising the Denominator",
+    "subheader": "AQA · KS4 Year 10–11",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Simple: multiply top and bottom by √a",
+      "2  √a × √a = a → denominator rational",
+      "3  Complex: multiply by the conjugate (a ∓ √b)",
+      "4  (a+√b)(a−√b) = a² − b",
+      "5  Simplify the fraction"
+    ],
+    "commonMistakes": [
+      "Must multiply BOTH top and bottom by the same thing.",
+      "For (a + √b) use conjugate (a − √b), not just √b.",
+      "(√3)² = 3, not √3.",
+      "Don't forget to simplify at the end."
+    ],
+    "workedExample": [
+      "Rationalise 5/(3 + √2).",
+      "Conjugate: (3 − √2)",
+      "Top: 5(3 − √2) = 15 − 5√2",
+      "Bottom: (3+√2)(3−√2) = 9 − 2 = 7",
+      "Answer: (15 − 5√2)/7"
+    ],
+    "visualAid": "Decision tree: Is the denominator just √a? → Yes → multiply by √a/√a. No → Is it (a ± √b)? → Yes → multiply by conjugate (a ∓ √b)/(a ∓ √b)."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Rationalise: a) 1/√3  b) 1/√5  c) 1/√7  d) 1/√2" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Rationalise: a) 4/√2  b) 6/√3  c) 10/√5  d) 3/√6" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Rationalise and simplify: a) 12/√6  b) √2/√8  c) √5/√20  d) (2√3)/√12" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Rationalise: a) 1/(1+√2)  b) 1/(3−√5)  c) 2/(4+√3)" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Rationalise and simplify: a) 6/(√3+1)  b) 10/(√5−√3)  c) (1+√2)/(1−√2)" },
+    { "number": 6, "marks": 4, "difficulty": 3, "content": "Rationalise: a) (3+√5)/(2−√5)  b) (√7+2)/(√7−2)" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "a) Show 1/(√5−2) − 1/(√5+2) = 4. b) Express (2+√3)/(2−√3) as a+b√3." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "a) Rationalise (√3+√2)/(√3−√2) fully. b) Rectangle area 6 cm², width (√3−1). Exact length?" }
+  ]
+}

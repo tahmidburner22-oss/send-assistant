@@ -1,0 +1,91 @@
+{
+  "title": "Ordering Fractions, Decimals and Percentages",
+  "subtitle": "AQA · KS3 Year 7",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Fractions, Decimals and Percentages",
+    "subtopic": "Ordering FDP",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Ordering Fractions, Decimals and Percentages",
+    "subheader": "AQA · KS3 Year 7",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Compare and order fractions, decimals and percentages by converting them to the same form. Use inequality symbols correctly.",
+    "commonMistakes": [
+      "Comparing fractions without a common denominator — 3/8 looks smaller than 2/5 until you convert them both to decimals (0.375 vs 0.4).",
+      "Thinking bigger denominator means bigger fraction — 1/8 is smaller than 1/4.",
+      "Forgetting that 0.3 recurring (0.333…) is not the same as 0.3 exactly.",
+      "Comparing a percentage to a decimal without converting first — 35% looks bigger than 0.4, but it is not."
+    ],
+    "methodSteps": [
+      "Step 1: Convert everything to the SAME form (decimals are usually easiest).",
+      "Step 2: Line up the decimal points and compare digit by digit from the left.",
+      "Step 3: Use < or > to show the order.",
+      "Step 4: Write the original values in the correct order.",
+      "Step 5: Check — does the order make sense?"
+    ],
+    "workedExample": [
+      "Put in order, smallest first: 3/8,  0.4,  35%",
+      "Step 1 — Convert all to decimals: 3/8 = 0.375;  0.4 = 0.4;  35% = 0.35",
+      "Step 2 — Compare: 0.35, 0.375, 0.4",
+      "Step 3 — Order: 35% < 3/8 < 0.4",
+      "Step 4 — Write original forms: 35%, 3/8, 0.4"
+    ]
+  },
+  "methodReminder": [
+    "1  Convert to the same form (decimals best)",
+    "2  Line up decimal points, compare left to right",
+    "3  Use < or >",
+    "4  Write originals in order",
+    "5  Check it makes sense"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Put these in order from smallest to largest.\n\n   0.3       0.31       0.29       0.305" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Use < or > to make each statement correct.\n\n   a) 0.6 ___ 0.58\n   b) 1/4 ___ 0.3\n   c) 70% ___ 3/4" },
+    { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Put in order, smallest first:\n\n   1/2       45%       0.48       2/5" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Convert each to a decimal and order from largest to smallest.\n\n   7/10       0.68       72%       3/4" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Here are four pupils' test scores:\n   Ali: 17/20     Beth: 82%     Carl: 0.88     Dee: 4/5\n\nWho came first? Put them in order, highest score to lowest." },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Write a fraction, a decimal and a percentage that are all between 0.6 and 0.7.\nThey must all be DIFFERENT values." },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "A shop has three offers:\n   Offer A: 1/3 off\n   Offer B: 30% off\n   Offer C: 0.35 off the price\n\n   a) Which offer gives the biggest discount?\n   b) Which gives the smallest?\n   c) How much would you save on a £60 item with Offer A?" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "Sam says: 'I can always tell which fraction is bigger by looking at the numerators.'\n\n   a) Give an example that shows Sam is wrong.\n   b) Explain the correct method for comparing fractions with different denominators.\n   c) Put these in order, smallest first: 5/12,  3/7,  2/5. Show all working." }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "One method step I want to remember next time:",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: 0.29, 0.3, 0.305, 0.31",
+      "Q2: a) >  b) <  c) <",
+      "Q3: 2/5 = 0.4; 45% = 0.45; 0.48; 1/2 = 0.5 → Order: 2/5, 45%, 0.48, 1/2",
+      "Q4: 7/10 = 0.7; 0.68; 72% = 0.72; 3/4 = 0.75 → Largest to smallest: 3/4, 72%, 7/10, 0.68",
+      "Q5: Ali = 0.85; Beth = 0.82; Carl = 0.88; Dee = 0.8 → Carl, Ali, Beth, Dee",
+      "Q6: Accept any three distinct values between 0.6 and 0.7, e.g. 13/20 = 0.65; 0.63; 67%",
+      "Q7: a) Offer C (0.35) b) Offer B (0.30) c) 1/3 × 60 = £20. [1/3 ≈ 0.333, 30% = 0.30, 0.35]",
+      "Q8: a) e.g. 3/4 vs 2/3 — 3 > 2 but 3/4 > 2/3 only works here; try 1/2 vs 3/8 — numerator 3 > 1 but 3/8 < 1/2. b) Convert to common denominator or decimals and compare. c) 5/12 = 0.4167; 3/7 = 0.4286; 2/5 = 0.4 → Order: 2/5, 5/12, 3/7"
+    ]
+  }
+}

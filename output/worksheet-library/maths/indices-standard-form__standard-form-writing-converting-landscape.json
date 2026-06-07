@@ -1,0 +1,60 @@
+{
+  "title": "Standard Form — Writing and Converting",
+  "subtitle": "AQA · KS4 Year 9–10 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Indices and Standard Form",
+    "subtopic": "Standard form — writing and converting",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Foundation/Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Standard Form — Writing and Converting",
+    "subheader": "AQA · KS4 Year 9–10",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Move decimal so 1 ≤ A < 10",
+      "2  Count places moved = power n",
+      "3  Big number (≥ 1) → positive n",
+      "4  Small number (< 1) → negative n",
+      "5  Check by converting back"
+    ],
+    "commonMistakes": [
+      "A must satisfy 1 ≤ A < 10. So 36 × 10⁴ is wrong; correct: 3.6 × 10⁵.",
+      "Positive power = big; negative power = small.",
+      "Count places carefully — 0.00047 needs 4 moves → 4.7 × 10⁻⁴.",
+      "0.003 = 3 × 10⁻³, NOT 3 × 10³."
+    ],
+    "workedExample": [
+      "Write 0.000 47 in standard form.",
+      "Step 1 — Move decimal 4 places: 4.7",
+      "Step 2 — Original < 1, so n = −4",
+      "Answer: 4.7 × 10⁻⁴"
+    ],
+    "visualAid": "Place-value slide showing the decimal point moving left for big numbers (positive power) and right for small numbers (negative power). Arrow diagram: 5,600,000 → 5.6 (6 places left) = 5.6 × 10⁶. And 0.0034 → 3.4 (3 places right) = 3.4 × 10⁻³."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Standard form: a) 5,000  b) 340,000  c) 72,000,000  d) 810" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Standard form: a) 0.003  b) 0.00056  c) 0.0000012  d) 0.47" },
+    { "number": 3, "marks": 2, "difficulty": 2, "content": "To ordinary: a) 3.2 × 10⁴  b) 7.05 × 10⁶  c) 1.8 × 10⁻³  d) 9.1 × 10⁻⁵" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Not standard form? Fix: a) 5.6 × 10³  b) 36 × 10⁴  c) 0.8 × 10⁻²  d) 7 × 10⁹" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Hydrogen atom mass ≈ 0.00000000000000000000000167 kg. Standard form?" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Earth–Sun = 1.5 × 10⁸ km; Earth–Mars = 2.3 × 10⁸ km. a) Sun distance ordinary. b) Closer? c) Difference in standard form." },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Order smallest first: 3.2 × 10⁻³, 8.1 × 10⁻⁴, 5.5 × 10⁻³, 2.9 × 10⁻². Strategy?" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Bacterium = 2 × 10⁻⁶ m; virus = 3 × 10⁻⁸ m. a) How many times longer? b) 500 bacteria end-to-end? c) Viruses in 1 mm?" }
+  ]
+}

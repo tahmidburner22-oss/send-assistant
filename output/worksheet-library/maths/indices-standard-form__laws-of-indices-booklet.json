@@ -1,0 +1,92 @@
+{
+  "title": "Laws of Indices",
+  "subtitle": "AQA · KS4 Year 9–10",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Indices and Standard Form",
+    "subtopic": "Laws of indices",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Foundation/Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Laws of Indices",
+    "subheader": "AQA · KS4 Year 9–10",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Apply the laws of indices to simplify expressions involving multiplication, division and powers of powers. Use the zero-index rule (a⁰ = 1). Simplify multi-term expressions with numerical and algebraic bases.",
+    "commonMistakes": [
+      "Adding indices when you should multiply them — (aᵐ)ⁿ = aᵐˣⁿ, NOT aᵐ⁺ⁿ.",
+      "Multiplying indices instead of adding for multiplication — aᵐ × aⁿ = aᵐ⁺ⁿ, NOT aᵐˣⁿ.",
+      "Forgetting to raise the coefficient — (3x²)³ = 27x⁶, not 3x⁶.",
+      "Thinking a⁰ = 0 — any non-zero base to the power 0 equals 1."
+    ],
+    "methodSteps": [
+      "Step 1: Multiplication law — same base, ADD the powers: aᵐ × aⁿ = aᵐ⁺ⁿ.",
+      "Step 2: Division law — same base, SUBTRACT the powers: aᵐ ÷ aⁿ = aᵐ⁻ⁿ.",
+      "Step 3: Power of a power — MULTIPLY the powers: (aᵐ)ⁿ = aᵐⁿ.",
+      "Step 4: Zero index — a⁰ = 1 (for any a ≠ 0).",
+      "Step 5: Coefficients — handle numbers separately from letters."
+    ],
+    "workedExample": [
+      "Simplify: (2x³)² × 3x⁴",
+      "Step 1 — Apply power of a power: (2x³)² = 2² × x³ˣ² = 4x⁶",
+      "Step 2 — Now multiply: 4x⁶ × 3x⁴",
+      "Step 3 — Coefficients: 4 × 3 = 12",
+      "Step 4 — Letters: x⁶ × x⁴ = x⁶⁺⁴ = x¹⁰",
+      "Answer: 12x¹⁰"
+    ]
+  },
+  "methodReminder": [
+    "1  Same base, multiply → ADD powers",
+    "2  Same base, divide → SUBTRACT powers",
+    "3  Power of a power → MULTIPLY powers",
+    "4  a⁰ = 1",
+    "5  Handle coefficients separately"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) x⁴ × x³       b) y⁷ × y²       c) a × a⁵       d) m³ × m³" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) p⁸ ÷ p³       b) q¹⁰ ÷ q⁶       c) n⁹ ÷ n       d) t⁵ ÷ t⁵" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify:\n\n   a) (b³)⁴       b) (c⁵)²       c) (d²)⁶       d) (e⁴)³" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Simplify fully:\n\n   a) 3a² × 5a⁴       b) 12b⁷ ÷ 4b³       c) 2c³ × 6c² × c" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Simplify:\n\n   a) (2x²)³       b) (3y⁴)²       c) (5m³)²" },
+    { "id": "q6", "number": 6, "marks": 4, "difficulty": 3, "content": "Simplify fully:\n\n   a) x⁵ × x² ÷ x³       b) (y²)³ × y⁴       c) 6a⁴ × 3a² ÷ 9a³" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "Simplify:\n\n   a) (4x³y²)²       b) (2a²b)³ × 3ab²\n\n   c) 20p⁶q⁴ ÷ (5p²q)²" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "a) Show that (2x²)³ ÷ x⁴ simplifies to 8x².  (2 marks)\n\nb) A rectangle has area 24x⁷y⁵ and width 6x³y².  Find the length in its simplest form.  (3 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Which law do I still confuse — add, subtract or multiply?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) x⁷  b) y⁹  c) a⁶  d) m⁶",
+      "Q2: a) p⁵  b) q⁴  c) n⁸  d) t⁰ = 1",
+      "Q3: a) b¹²  b) c¹⁰  c) d¹²  d) e¹²",
+      "Q4: a) 15a⁶  b) 3b⁴  c) 12c⁶",
+      "Q5: a) 8x⁶  b) 9y⁸  c) 25m⁶",
+      "Q6: a) x⁴  b) y¹⁰  c) 2a³",
+      "Q7: a) 16x⁶y⁴  b) 8a⁶b³ × 3ab² = 24a⁷b⁵  c) 20p⁶q⁴ ÷ 25p⁴q² = (4/5)p²q²",
+      "Q8: a) (2x²)³ = 8x⁶; 8x⁶ ÷ x⁴ = 8x² ✓  b) Length = 24x⁷y⁵ ÷ 6x³y² = 4x⁴y³"
+    ]
+  }
+}

@@ -21,8 +21,8 @@
 ## Summary
 
 - **Total sub-topics:** 100 (25 topics × 4 sub-topics each)
-- **Done:** 16 (topics 1, 5, 10, 11)
-- **Remaining:** 84
+- **Done:** 28 (topics 1, 2, 3, 4, 5, 10, 11)
+- **Remaining:** 72
 
 ---
 
@@ -34,18 +34,18 @@
 | 1.2 | Place Value and Ordering Integers | Ordering positive and negative integers | KS3 | 7 | ✅ |
 | 1.3 | Place Value and Ordering Integers | Rounding to significant figures | KS3 | 7 | ✅ |
 | 1.4 | Place Value and Ordering Integers | Estimating calculations | KS3 | 7 | ✅ |
-| 2.1 | Fractions, Decimals and Percentages | Converting between fractions, decimals and percentages | KS3 | 7 | 🔲 |
-| 2.2 | Fractions, Decimals and Percentages | Ordering FDP | KS3 | 7 | 🔲 |
-| 2.3 | Fractions, Decimals and Percentages | Recurring decimals | KS3 | 7 | 🔲 |
-| 2.4 | Fractions, Decimals and Percentages | Percentage change | KS3 | 7 | 🔲 |
-| 3.1 | Indices and Standard Form | Laws of indices | KS4 | 9-10 | 🔲 |
-| 3.2 | Indices and Standard Form | Negative and fractional indices | KS4 | 9-10 | 🔲 |
-| 3.3 | Indices and Standard Form | Standard form — writing and converting | KS4 | 9-10 | 🔲 |
-| 3.4 | Indices and Standard Form | Calculations in standard form | KS4 | 9-10 | 🔲 |
-| 4.1 | Surds | Simplifying surds | KS4 | 10-11 | 🔲 |
-| 4.2 | Surds | Adding and subtracting surds | KS4 | 10-11 | 🔲 |
-| 4.3 | Surds | Multiplying and dividing surds | KS4 | 10-11 | 🔲 |
-| 4.4 | Surds | Rationalising the denominator | KS4 | 10-11 | 🔲 |
+| 2.1 | Fractions, Decimals and Percentages | Converting between fractions, decimals and percentages | KS3 | 7 | ✅ |
+| 2.2 | Fractions, Decimals and Percentages | Ordering FDP | KS3 | 7 | ✅ |
+| 2.3 | Fractions, Decimals and Percentages | Recurring decimals | KS3 | 7 | ✅ |
+| 2.4 | Fractions, Decimals and Percentages | Percentage change | KS3 | 7 | ✅ |
+| 3.1 | Indices and Standard Form | Laws of indices | KS4 | 9-10 | ✅ |
+| 3.2 | Indices and Standard Form | Negative and fractional indices | KS4 | 9-10 | ✅ |
+| 3.3 | Indices and Standard Form | Standard form — writing and converting | KS4 | 9-10 | ✅ |
+| 3.4 | Indices and Standard Form | Calculations in standard form | KS4 | 9-10 | ✅ |
+| 4.1 | Surds | Simplifying surds | KS4 | 10-11 | ✅ |
+| 4.2 | Surds | Adding and subtracting surds | KS4 | 10-11 | ✅ |
+| 4.3 | Surds | Multiplying and dividing surds | KS4 | 10-11 | ✅ |
+| 4.4 | Surds | Rationalising the denominator | KS4 | 10-11 | ✅ |
 | 5.1 | Algebraic Expressions | Simplifying expressions | KS3 | 7-8 | ✅ |
 | 5.2 | Algebraic Expressions | Expanding single brackets | KS3 | 7-8 | ✅ |
 | 5.3 | Algebraic Expressions | Expanding double brackets | KS3 | 7-8 | ✅ |

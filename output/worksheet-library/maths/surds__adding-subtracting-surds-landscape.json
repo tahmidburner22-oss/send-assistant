@@ -1,0 +1,59 @@
+{
+  "title": "Adding and Subtracting Surds",
+  "subtitle": "AQA · KS4 Year 10–11 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Surds",
+    "subtopic": "Adding and subtracting surds",
+    "yearGroup": "Year 10-11",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Adding and Subtracting Surds",
+    "subheader": "AQA · KS4 Year 10–11",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Simplify each surd first",
+      "2  Identify like surds (same root)",
+      "3  Collect like surds: add/subtract coefficients",
+      "4  Unlike surds stay separate",
+      "5  Simplest form"
+    ],
+    "commonMistakes": [
+      "√2 + √3 ≠ √5 — ONLY collect like surds (same root).",
+      "Simplify first! √12 + √27 = 2√3 + 3√3 = 5√3.",
+      "√8 + √2 ≠ √10. Instead: 2√2 + √2 = 3√2.",
+      "5√3 − 2√3 = 3√3, not 3√0 or 3."
+    ],
+    "workedExample": [
+      "Simplify √75 − √12 + √27.",
+      "Step 1 — √75 = 5√3; √12 = 2√3; √27 = 3√3",
+      "Step 2 — All √3: 5√3 − 2√3 + 3√3 = 6√3"
+    ],
+    "visualAid": "Analogy: collecting like terms. Just as 3x + 2x = 5x, so 3√5 + 2√5 = 5√5. You can't add 3x + 2y, and you can't add 3√5 + 2√3."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify: a) 3√5 + 2√5  b) 7√2 − 4√2  c) √3 + 5√3  d) 8√7 − √7" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Can/Cannot combine? a) 2√3 + 5√3  b) √2 + √5  c) 4√6 − √6  d) 3√2 + 3√7" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify: a) √8 + √2  b) √12 + √3  c) √50 − √2  d) √20 + √5" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Simplify: a) √48 + √12  b) √75 − √27  c) √98 − √50  d) √72 + √18" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Simplify: a) 2√12 + 3√27  b) 5√8 − 2√32  c) 3√50 + 2√18 − √72" },
+    { "number": 6, "marks": 4, "difficulty": 3, "content": "Simplify: a) √45 + √80 − √20  b) 2√63 − √28 + 3√7  c) √200 − 3√8 + √50" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "a) Show √48 − √12 + √75 = 7√3. b) Triangle perimeter = (2√3 + 5√3 + √12) cm. Simplify." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "a) Simplify (3+√5)+(2−√5)+(1+3√5). b) Show √a + √(4a) + √(9a) = 6√a for all a > 0." }
+  ]
+}
