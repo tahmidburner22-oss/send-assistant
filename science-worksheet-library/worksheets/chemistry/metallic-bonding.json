@@ -1,0 +1,54 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "yearGroup": "Year 10",
+    "title": "METALLIC BONDING – DIAGRAM B",
+    "diagramLabel": "Diagram B",
+    "subtitle": "Interpretation & Practice"
+  },
+  "layout": {
+    "mode": "panel-pair",
+    "infoCols": 1,
+    "questionCols": 2,
+    "questionRows": 1
+  },
+  "infoPanels": [
+    {
+      "type": "definition",
+      "title": "",
+      "content": "Metallic bonding is the strong electrostatic attraction between <strong>positive metal ions</strong> and <strong>delocalised electrons</strong>.",
+      "fullWidth": true
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "LABEL THE STRUCTURE",
+      "type": "label-diagram",
+      "text": "Label the diagram using the terms in the box below.",
+      "wordBank": ["delocalised electrons", "positive metal ions", "layers can slide"],
+      "diagram": {
+        "id": "metal-lattice-label",
+        "width": "100%"
+      }
+    },
+    {
+      "number": 2,
+      "sectionTitle": "MALLEABILITY",
+      "type": "explain",
+      "text": "The diagram shows layers of metal ions. When a force is applied, the layers can slide over each other.",
+      "diagram": {
+        "id": "metal-lattice-malleability",
+        "width": "100%"
+      },
+      "secondaryText": "Explain why the layers of ions can slide over each other.",
+      "answerLines": 4
+    }
+  ],
+  "footer": {
+    "tip": "Positive metal ions are held in a 'sea' of delocalised electrons.",
+    "thinkPrompt": "What property of metals does this structure explain?"
+  }
+}

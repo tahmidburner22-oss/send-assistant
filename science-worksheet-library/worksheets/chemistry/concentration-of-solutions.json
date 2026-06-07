@@ -1,0 +1,86 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "yearGroup": "Year 10",
+    "title": "QUANTITATIVE CHEMISTRY 2 – CONCENTRATION OF SOLUTIONS",
+    "diagramLabel": "Diagram A"
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 2
+  },
+  "infoPanels": [
+    {
+      "type": "diagram",
+      "title": "SOLUTION: A SOLUTE DISSOLVED IN A SOLVENT",
+      "diagram": {
+        "id": "beaker-solution-labelled",
+        "width": "100%"
+      }
+    },
+    {
+      "type": "formula",
+      "title": "CONCENTRATION FORMULA",
+      "formulaLines": [
+        "concentration (g/dm³) = <span class=\"formula-fraction\"><span class=\"formula-num\">mass of solute (g)</span><span class=\"formula-den\">volume of solution (dm³)</span></span>"
+      ],
+      "content": "1000 cm³ = 1 dm³"
+    },
+    {
+      "type": "worked-example",
+      "title": "WORKED EXAMPLE",
+      "workedSteps": [
+        "A solution is made by dissolving 12 g of sodium chloride in 0.75 dm³ of water.",
+        "!Calculate the concentration.",
+        "concentration = <span class=\"formula-fraction\"><span class=\"formula-num\">mass</span><span class=\"formula-den\">volume</span></span>",
+        "= <span class=\"formula-fraction\"><span class=\"formula-num\">12 g</span><span class=\"formula-den\">0.75 dm³</span></span>",
+        "!= 16 g/dm³"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CONVERSION",
+      "type": "conversion",
+      "text": "Convert 250 cm³ to dm³.",
+      "secondaryText": "(Use the conversion reminder above.)",
+      "answerUnit": "dm³"
+    },
+    {
+      "number": 2,
+      "sectionTitle": "CALCULATE CONCENTRATION",
+      "type": "calculation",
+      "text": "A student dissolves 5.0 g of copper sulfate in 0.50 dm³ of water.",
+      "secondaryText": "<span class=\"command\">Calculate the concentration of the solution in g/dm³.</span>",
+      "answerUnit": "g/dm³"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "CALCULATE MASS",
+      "type": "calculation",
+      "text": "A solution has a concentration of 24 g/dm³. The volume of the solution is 0.40 dm³.",
+      "secondaryText": "<span class=\"command\">Calculate the mass of solute in the solution.</span>",
+      "answerUnit": "g"
+    },
+    {
+      "number": 4,
+      "sectionTitle": "COMPARE SOLUTIONS",
+      "type": "compare",
+      "text": "Two solutions are made.",
+      "table": {
+        "headers": ["Solution", "Mass of solute (g)", "Volume of solution (dm³)"],
+        "rows": [
+          ["A", "8.0", "0.40"],
+          ["B", "12.0", "0.75"]
+        ]
+      },
+      "circleOptions": ["A", "B"],
+      "workingBox": true
+    }
+  ]
+}

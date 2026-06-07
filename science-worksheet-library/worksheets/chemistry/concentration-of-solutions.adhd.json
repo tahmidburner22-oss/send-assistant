@@ -1,0 +1,126 @@
+{
+  "version": "2.0",
+  "variant": "adhd",
+  "header": {
+    "subject": "Chemistry",
+    "yearGroup": "Year 10",
+    "title": "QUANTITATIVE CHEMISTRY 2 – CONCENTRATION OF SOLUTIONS",
+    "diagramLabel": "Diagram A"
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 2
+  },
+  "adhd": {
+    "progressTracker": true,
+    "simplifiedLanguage": true,
+    "chunkedSteps": true,
+    "palette": {
+      "--accent": "#4a6fa5",
+      "--accent-light": "#e8f4ed",
+      "--border": "#4a6fa5",
+      "--header-bg": "#4a6fa5",
+      "--panel-border": "#4a6fa5",
+      "--badge-bg": "#4a6fa5",
+      "--formula-bg": "#f0f7f4",
+      "--word-bank-border": "#4a6fa5"
+    }
+  },
+  "infoPanels": [
+    {
+      "type": "diagram",
+      "title": "WHAT IS A SOLUTION?",
+      "diagram": {
+        "id": "beaker-solution-labelled",
+        "width": "100%"
+      }
+    },
+    {
+      "type": "formula",
+      "title": "THE FORMULA YOU NEED",
+      "formulaLines": [
+        "concentration (g/dm³) = <span class=\"formula-fraction\"><span class=\"formula-num\">mass of solute (g)</span><span class=\"formula-den\">volume of solution (dm³)</span></span>"
+      ],
+      "content": "1000 cm³ = 1 dm³"
+    },
+    {
+      "type": "worked-example",
+      "title": "WORKED EXAMPLE (FOLLOW THIS!)",
+      "workedSteps": [
+        "12 g of sodium chloride is dissolved in 0.75 dm³ of water.",
+        "!Find the concentration.",
+        "Step 1: Write the formula:",
+        "concentration = mass ÷ volume",
+        "Step 2: Put in the numbers:",
+        "= 12 g ÷ 0.75 dm³",
+        "!Step 3: Answer = 16 g/dm³"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CONVERT THE UNITS",
+      "type": "conversion",
+      "text": "Convert 250 cm³ to dm³.",
+      "secondaryText": "(Look at the conversion reminder above.)",
+      "answerUnit": "dm³",
+      "steps": [
+        "Remember: to go from cm³ to dm³, you divide by 1000.",
+        "250 ÷ 1000 = ?"
+      ],
+      "checkboxes": true
+    },
+    {
+      "number": 2,
+      "sectionTitle": "FIND THE CONCENTRATION",
+      "type": "calculation",
+      "text": "A student dissolves 5.0 g of copper sulfate in 0.50 dm³ of water.",
+      "secondaryText": "<span class=\"command\">Work out the concentration in g/dm³.</span>",
+      "answerUnit": "g/dm³",
+      "steps": [
+        "Write the formula: concentration = mass ÷ volume",
+        "Put in the numbers: 5.0 ÷ 0.50",
+        "Calculate and write the unit (g/dm³)"
+      ],
+      "checkboxes": true
+    },
+    {
+      "number": 3,
+      "sectionTitle": "FIND THE MASS",
+      "type": "calculation",
+      "text": "A solution has a concentration of 24 g/dm³. The volume is 0.40 dm³.",
+      "secondaryText": "<span class=\"command\">Work out the mass of solute.</span>",
+      "answerUnit": "g",
+      "steps": [
+        "Rearrange: mass = concentration × volume",
+        "Put in the numbers: 24 × 0.40",
+        "Calculate and write the unit (g)"
+      ],
+      "checkboxes": true
+    },
+    {
+      "number": 4,
+      "sectionTitle": "WHICH IS STRONGER?",
+      "type": "compare",
+      "text": "Two solutions are made.",
+      "table": {
+        "headers": ["Solution", "Mass of solute (g)", "Volume of solution (dm³)"],
+        "rows": [
+          ["A", "8.0", "0.40"],
+          ["B", "12.0", "0.75"]
+        ]
+      },
+      "circleOptions": ["A", "B"],
+      "workingBox": true,
+      "steps": [
+        "Calculate concentration of A: 8.0 ÷ 0.40 = ?",
+        "Calculate concentration of B: 12.0 ÷ 0.75 = ?",
+        "Which number is bigger? Circle that one."
+      ],
+      "checkboxes": true
+    }
+  ]
+}
