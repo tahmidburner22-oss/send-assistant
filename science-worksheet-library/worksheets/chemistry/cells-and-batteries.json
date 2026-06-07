@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ENERGY CHANGES – CELLS & BATTERIES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Cell", "definition": "two different electrodes in an electrolyte producing a voltage." },
+        { "term": "Battery", "definition": "two or more cells connected together." },
+        { "term": "Electrode", "definition": "a metal that reacts to release or accept electrons." },
+        { "term": "Rechargeable", "definition": "a cell whose reaction can be reversed by electricity." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "A single cell is a battery.", "right": "A battery is two or more cells joined." },
+        { "wrong": "Any two metals give the same voltage.", "right": "Voltage depends on the difference in reactivity." },
+        { "wrong": "All cells can be recharged.", "right": "Only some — non-rechargeable cells run out." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "A SIMPLE CELL",
+      "diagram": {
+        "id": "simple-cell",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "MAKE A VOLTAGE",
+      "type": "short-answer",
+      "text": "State what is needed to make a simple cell produce a voltage. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "BIGGER VOLTAGE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how to increase the voltage of a cell using the metals chosen. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "BATTERY",
+      "type": "short-answer",
+      "text": "State the difference between a <span class=\"command\">cell</span> and a <span class=\"command\">battery</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 4,
+      "sectionTitle": "RECHARGEABLE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a rechargeable cell can be used many times. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["reactivity", "larger", "electrolyte", "voltage"],
+      "secondaryText": "A bigger difference in metal ______ gives a ______ voltage.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY IT STOPS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a non-rechargeable cell eventually stops working. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Voltage depends on how far apart the two electrodes are in the reactivity series.",
+    "thinkPrompt": "Why does a cell stop once one of the reactants is used up?"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ORGANIC CHEMISTRY – CRACKING & ALKENES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Cracking", "definition": "breaking long hydrocarbons into shorter, useful ones." },
+        { "term": "Thermal decomposition", "definition": "breaking down using heat." },
+        { "term": "Alkene", "definition": "an unsaturated hydrocarbon with a C=C bond." },
+        { "term": "Catalytic cracking", "definition": "uses a hot catalyst to crack vapour." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Cracking makes only one product.", "right": "It makes a shorter alkane AND an alkene." },
+        { "wrong": "Cracking creates atoms.", "right": "It just rearranges the same atoms into smaller molecules." },
+        { "wrong": "Alkenes are saturated.", "right": "Alkenes are unsaturated (have a C=C)." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "ALKANE vs ALKENE",
+      "diagram": {
+        "id": "alkane-alkene",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE CRACKING",
+      "type": "short-answer",
+      "text": "State what is meant by <span class=\"command\">cracking</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "WHY CRACK",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why long-chain hydrocarbons are cracked. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "TEST FOR ALKENE",
+      "type": "short-answer",
+      "text": "Describe the <span class=\"command\">bromine water test</span> and its result for an alkene. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "BALANCE CRACKING",
+      "type": "short-answer",
+      "text": "Complete: C₁₀H₂₂ → C₈H₁₈ + ___ . <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["alkene", "alkane", "saturated", "unsaturated"],
+      "secondaryText": "Cracking produces a shorter ______ and an ______ that is unsaturated.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "USES OF ALKENES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Give</span> one use of alkenes. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Bromine water goes orange → colourless with an alkene (the C=C reacts).",
+    "thinkPrompt": "Why does industry crack the surplus of long-chain fractions?"
+  }
+}

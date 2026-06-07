@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ORGANIC CHEMISTRY – ALKANES & COMBUSTION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Alkane", "definition": "saturated hydrocarbon, CₙH₂ₙ₊₂." },
+        { "term": "Saturated", "definition": "only single C–C bonds." },
+        { "term": "Complete combustion", "definition": "burning in plenty of oxygen → CO₂ + H₂O." },
+        { "term": "Incomplete combustion", "definition": "limited oxygen → CO and/or carbon (soot)." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Alkanes have a C=C double bond.", "right": "Alkanes only have single bonds (saturated)." },
+        { "wrong": "Complete combustion makes carbon monoxide.", "right": "Complete combustion makes carbon dioxide and water." },
+        { "wrong": "Soot is produced with plenty of oxygen.", "right": "Soot forms in incomplete combustion (limited O₂)." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "ETHANE (an alkane)",
+      "diagram": {
+        "id": "alkane-alkene",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "GENERAL FORMULA",
+      "type": "short-answer",
+      "text": "Give the <span class=\"command\">general formula</span> of an alkane. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "COMPLETE COMBUSTION",
+      "type": "short-answer",
+      "text": "Write the products of the <span class=\"command\">complete combustion</span> of methane. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "INCOMPLETE COMBUSTION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why incomplete combustion is dangerous. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "BALANCE COMBUSTION",
+      "type": "short-answer",
+      "text": "Complete: CH₄ + ___ O₂ → CO₂ + ___ H₂O. <strong>[2 marks]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["carbon dioxide", "carbon monoxide", "water", "soot"],
+      "secondaryText": "Complete combustion of a hydrocarbon makes ______ and ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY OXIDATION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why combustion is an oxidation reaction. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Complete combustion → CO₂ + H₂O. Incomplete → CO + C (soot) + H₂O.",
+    "thinkPrompt": "Why is carbon monoxide called a 'silent killer'?"
+  }
+}

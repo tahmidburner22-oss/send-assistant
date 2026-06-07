@@ -1,0 +1,98 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "PROPERTIES OF METALS & ALLOYS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Alloy", "definition": "a mixture of a metal with one or more other elements." },
+        { "term": "Delocalised electrons", "definition": "free electrons that carry charge and heat." },
+        { "term": "Malleable", "definition": "can be bent and shaped — layers slide." },
+        { "term": "Conductor", "definition": "allows electricity/heat to pass through easily." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Alloys are compounds.", "right": "Alloys are mixtures, not compounds." },
+        { "wrong": "Alloys are softer than pure metals.", "right": "Alloys are usually harder than pure metals." },
+        { "wrong": "Metal ions carry the current.", "right": "Delocalised electrons carry the current." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "METALLIC STRUCTURE",
+      "diagram": {
+        "id": "metal-lattice-compact",
+        "width": "100%"
+      },
+      "secondaryContent": "Different sized atoms in an <strong>alloy</strong> stop the layers sliding, making it harder."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CONDUCTIVITY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why metals are good conductors of electricity. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "DEFINE ALLOY",
+      "type": "short-answer",
+      "text": "State what an <span class=\"command\">alloy</span> is. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "WHY HARDER",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why an alloy is harder than the pure metal. <strong>[3 marks]</strong>",
+      "secondaryText": "Think about the size of the atoms and the sliding layers.",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "MALLEABILITY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why pure metals are malleable. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["different", "harder", "same", "softer"],
+      "secondaryText": "An alloy contains atoms of ______ sizes, which makes it ______ than the pure metal.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "CHOOSE AN ALLOY",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Name</span> an alloy and state one use linked to its properties. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Alloys are harder because different-sized atoms stop the layers sliding.",
+    "thinkPrompt": "Why is pure gold too soft for everyday jewellery?"
+  }
+}

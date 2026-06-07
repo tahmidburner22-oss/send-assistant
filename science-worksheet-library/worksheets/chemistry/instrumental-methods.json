@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL ANALYSIS – INSTRUMENTAL METHODS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Instrumental method", "definition": "uses machines to analyse substances." },
+        { "term": "Flame emission spectroscopy", "definition": "identifies metal ions from a light spectrum." },
+        { "term": "Accurate", "definition": "results are close to the true value." },
+        { "term": "Sensitive", "definition": "can detect very small amounts." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Instruments are slower than test tubes.", "right": "They are usually faster and more accurate." },
+        { "wrong": "They need large samples.", "right": "They are sensitive — tiny samples work." },
+        { "wrong": "Flame tests are more reliable for mixtures.", "right": "Instruments handle mixtures far better." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "WHY USE INSTRUMENTS",
+      "workedSteps": [
+        "Faster than manual chemical tests.",
+        "!More accurate and more sensitive.",
+        "Can analyse very small samples.",
+        "!Can tell apart ions a flame test confuses.",
+        "Flame emission spectroscopy → metal ions."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE",
+      "type": "short-answer",
+      "text": "State what is meant by an <span class=\"command\">instrumental method</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "ADVANTAGES",
+      "type": "explain",
+      "text": "<span class=\"command\">Give</span> three advantages of instrumental methods over chemical tests. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "SPECTROSCOPY",
+      "type": "short-answer",
+      "text": "Name the instrumental method used to identify <span class=\"command\">metal ions</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 4,
+      "sectionTitle": "WHEN USEFUL",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why instruments are useful for analysing a tiny crime-scene sample. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["accurate", "sensitive", "slow", "large"],
+      "secondaryText": "Instrumental methods are fast, ______ and very ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "INTERPRET",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how flame emission spectroscopy identifies an ion. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Instrumental methods: fast, accurate, sensitive — great for tiny or mixed samples.",
+    "thinkPrompt": "Why has instrumental analysis largely replaced manual tests in industry?"
+  }
+}

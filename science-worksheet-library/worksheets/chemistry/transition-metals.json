@@ -1,0 +1,106 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "THE TRANSITION METALS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Transition metal", "definition": "a metal in the central block of the periodic table." },
+        { "term": "Catalyst", "definition": "a substance that speeds up a reaction unchanged." },
+        { "term": "Variable charge", "definition": "transition metals can form ions of different charges." },
+        { "term": "Coloured compound", "definition": "many transition metal compounds are coloured." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Transition metals react like Group 1 metals.", "right": "They are much less reactive than Group 1." },
+        { "wrong": "They always form ions with charge 1+.", "right": "They can form ions of several different charges." },
+        { "wrong": "Their compounds are all white.", "right": "Many of their compounds are brightly coloured." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "GROUP 1 vs TRANSITION METALS",
+      "workedSteps": [
+        "Group 1: soft, low density, very reactive.",
+        "!Transition: hard, dense, high melting points.",
+        "Group 1: form only 1+ ions, white compounds.",
+        "!Transition: variable charges (e.g. Fe²⁺ / Fe³⁺), coloured.",
+        "Transition metals are often used as catalysts."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "LOCATE THEM",
+      "type": "short-answer",
+      "text": "State where the <span class=\"command\">transition metals</span> are found in the periodic table. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "TYPICAL PROPERTIES",
+      "type": "short-answer",
+      "text": "Give <span class=\"command\">three</span> typical properties of transition metals. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "VARIABLE CHARGE",
+      "type": "short-answer",
+      "text": "Iron can form Fe²⁺ and Fe³⁺. State what this property is called. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 4,
+      "sectionTitle": "COMPARE GROUP 1",
+      "type": "compare",
+      "text": "Compare a transition metal with a Group 1 metal. <strong>[3 marks]</strong>",
+      "table": {
+        "headers": ["Property", "Group 1", "Transition"],
+        "rows": [
+          ["Hardness", "", ""],
+          ["Reactivity", "", ""],
+          ["Ion charge", "", ""]
+        ]
+      }
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["catalysts", "coloured", "white", "soft"],
+      "secondaryText": "Transition metals form ______ compounds and are often used as ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "USES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Name</span> a transition metal used as a catalyst in a named industrial process. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Transition metals: hard, dense, less reactive, coloured compounds, good catalysts.",
+    "thinkPrompt": "Why does iron form two different coloured chlorides?"
+  }
+}

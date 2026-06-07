@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ORGANIC CHEMISTRY – CARBOXYLIC ACIDS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Carboxylic acid", "definition": "organic acid with the –COOH functional group." },
+        { "term": "Ethanoic acid", "definition": "the acid in vinegar, CH₃COOH." },
+        { "term": "Weak acid", "definition": "only partially ionises in water." },
+        { "term": "Salt", "definition": "carboxylic acids form ‑anoate salts (e.g. ethanoate)." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Carboxylic acids are strong acids.", "right": "They are weak acids — only partly ionised." },
+        { "wrong": "Their functional group is –OH only.", "right": "Their functional group is –COOH." },
+        { "wrong": "They don't react with carbonates.", "right": "They fizz with carbonates, releasing CO₂." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "REACTIONS",
+      "workedSteps": [
+        "Functional group: –COOH",
+        "Dissolve in water → weakly acidic (low [H⁺]).",
+        "!+ carbonate → salt + water + CO₂",
+        "+ metal → salt + hydrogen.",
+        "!Ethanoic acid → ethanoate salts."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "FUNCTIONAL GROUP",
+      "type": "short-answer",
+      "text": "Give the <span class=\"command\">functional group</span> of a carboxylic acid. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "WEAK ACID",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why carboxylic acids are weak acids. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "WITH CARBONATE",
+      "type": "short-answer",
+      "text": "Name the products of ethanoic acid + sodium carbonate. <strong>[3 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "NAME THE SALT",
+      "type": "short-answer",
+      "text": "Name the salt made by ethanoic acid. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["weak", "strong", "partially", "fully"],
+      "secondaryText": "Carboxylic acids are ______ acids because they only ______ ionise.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "COMPARE pH",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why ethanoic acid has a higher pH than hydrochloric acid of the same concentration. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "–COOH only partly ionises, so carboxylic acids are weak acids.",
+    "thinkPrompt": "Why does a weak acid still react fully with a carbonate, just more slowly?"
+  }
+}

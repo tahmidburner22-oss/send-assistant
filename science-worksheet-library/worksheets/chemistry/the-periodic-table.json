@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "THE PERIODIC TABLE",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Group", "definition": "a vertical column — same number of outer electrons." },
+        { "term": "Period", "definition": "a horizontal row — same number of shells." },
+        { "term": "Metals", "definition": "found on the left and centre; lose electrons." },
+        { "term": "Non-metals", "definition": "found on the right; gain or share electrons." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Elements are arranged by mass number.", "right": "They are arranged by atomic (proton) number." },
+        { "wrong": "Most elements are non-metals.", "right": "Most elements are metals (left of the staircase)." },
+        { "wrong": "Group 0 elements are very reactive.", "right": "Group 0 (noble gases) are very unreactive." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "LAYOUT OF THE TABLE",
+      "diagram": {
+        "id": "periodic-table-blocks",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "HOW IT IS ORDERED",
+      "type": "short-answer",
+      "text": "State the property used to <span class=\"command\">order</span> the elements. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "GROUPS & PERIODS",
+      "type": "short-answer",
+      "text": "Explain what the <span class=\"command\">group</span> and <span class=\"command\">period</span> of an element tell you. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "METAL OR NON-METAL",
+      "type": "short-answer",
+      "text": "State where <span class=\"command\">metals</span> are found in the periodic table. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 4,
+      "sectionTitle": "PREDICT PROPERTIES",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why elements in the same group react in similar ways. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["group", "period", "left", "right"],
+      "secondaryText": "A vertical column is a ______. Non-metals are found on the ______ of the table.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "USE THE TABLE",
+      "type": "short-answer",
+      "text": "Sodium is in Group 1, Period 3. <span class=\"command\">State</span> its number of outer electrons and shells. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Group number = outer electrons; period number = number of shells.",
+    "thinkPrompt": "Why is the periodic table such a powerful tool for predicting reactions?"
+  }
+}

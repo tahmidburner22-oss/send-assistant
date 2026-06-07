@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ELECTROLYSIS OF AQUEOUS SOLUTIONS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Aqueous", "definition": "dissolved in water — water ions are also present." },
+        { "term": "Cathode rule", "definition": "hydrogen forms unless the metal is less reactive than H." },
+        { "term": "Anode rule", "definition": "oxygen forms unless a halide ion is present." },
+        { "term": "Half equation", "definition": "shows electrons gained or lost at an electrode." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "The metal always forms at the cathode.", "right": "Only if the metal is less reactive than hydrogen." },
+        { "wrong": "Oxygen always forms at the anode.", "right": "A halide (Cl⁻, Br⁻) forms the halogen instead." },
+        { "wrong": "Water plays no part.", "right": "Water provides H⁺ and OH⁻ ions too." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "AQUEOUS ELECTROLYSIS",
+      "diagram": {
+        "id": "electrolysis-cell",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CATHODE PRODUCT",
+      "type": "short-answer",
+      "text": "Sodium chloride solution is electrolysed. Name the product at the <span class=\"command\">cathode</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "WHY HYDROGEN",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why hydrogen, not sodium, forms at the cathode. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "ANODE PRODUCT",
+      "type": "short-answer",
+      "text": "Name the product at the <span class=\"command\">anode</span> for sodium chloride solution. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 4,
+      "sectionTitle": "COPPER SULFATE",
+      "type": "explain",
+      "text": "Copper sulfate solution is electrolysed. <span class=\"command\">Predict</span> the products and explain why. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["hydrogen", "oxygen", "metal", "halogen"],
+      "secondaryText": "At the cathode you get ______ unless the metal is less reactive than it; a halide gives a ______ at the anode.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "HALF EQUATION",
+      "type": "short-answer",
+      "text": "Write the half equation for <span class=\"command\">hydrogen forming</span> at the cathode. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Cathode: metal only if below hydrogen, else H₂. Anode: halogen if present, else O₂.",
+    "thinkPrompt": "Why does the choice of product depend on the reactivity of the ions?"
+  }
+}

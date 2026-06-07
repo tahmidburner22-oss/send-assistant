@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ENERGY CHANGES – BOND ENERGY CALCULATIONS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Bond energy", "definition": "the energy needed to break one mole of a bond." },
+        { "term": "Breaking bonds", "definition": "endothermic — energy is taken in." },
+        { "term": "Making bonds", "definition": "exothermic — energy is released." },
+        { "term": "ΔH", "definition": "energy to break − energy released making bonds." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Breaking bonds releases energy.", "right": "Breaking bonds takes IN energy (endothermic)." },
+        { "wrong": "Making bonds takes in energy.", "right": "Making bonds RELEASES energy (exothermic)." },
+        { "wrong": "A negative ΔH is endothermic.", "right": "A negative ΔH is exothermic." }
+      ]
+    },
+    {
+      "type": "formula",
+      "title": "ENERGY CHANGE",
+      "formulaLines": [
+        "ΔH = (bonds broken) − (bonds made)"
+      ],
+      "content": "− value = exothermic · + value = endothermic"
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "BREAK OR MAKE",
+      "type": "short-answer",
+      "text": "State whether breaking bonds is exo- or endothermic and why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "CALCULATE ΔH",
+      "type": "calculation",
+      "text": "Bonds broken = 1500 kJ; bonds made = 1800 kJ. <span class=\"command\">Calculate</span> ΔH. <strong>[2 marks]</strong>",
+      "answerUnit": "kJ/mol"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "CLASSIFY",
+      "type": "short-answer",
+      "text": "A reaction has ΔH = −120 kJ/mol. State whether it is exo- or endothermic. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 4,
+      "sectionTitle": "WORK BACKWARDS",
+      "type": "calculation",
+      "text": "ΔH = +60 kJ; bonds made = 940 kJ. <span class=\"command\">Calculate</span> the energy to break the bonds. <strong>[2 marks]</strong>",
+      "answerUnit": "kJ"
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["broken", "made", "in", "out"],
+      "secondaryText": "Energy is taken ______ to break bonds and given ______ when bonds are made.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "EXPLAIN SIGN",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why an exothermic reaction has a negative ΔH. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "ΔH = energy in (break) − energy out (make). Negative = exothermic.",
+    "thinkPrompt": "Why does forming stronger bonds than you broke release energy overall?"
+  }
+}

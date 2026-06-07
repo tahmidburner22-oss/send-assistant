@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "RATE & EXTENT – FACTORS AFFECTING RATE",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Concentration", "definition": "more particles per volume → more collisions." },
+        { "term": "Temperature", "definition": "more energy → faster, more successful collisions." },
+        { "term": "Surface area", "definition": "smaller pieces → more area to collide with." },
+        { "term": "Pressure", "definition": "(gases) higher pressure → particles closer together." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Heating makes more particles.", "right": "Heating gives particles more energy, not more particles." },
+        { "wrong": "A bigger lump reacts faster.", "right": "Smaller pieces have more surface area → faster." },
+        { "wrong": "Concentration changes the amount of product.", "right": "It changes the rate, not the final amount." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "PARTICLES & COLLISIONS",
+      "diagram": {
+        "id": "states-of-matter",
+        "width": "100%"
+      },
+      "secondaryContent": "More frequent, higher-energy <strong>collisions</strong> mean a faster rate."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "LIST FACTORS",
+      "type": "short-answer",
+      "text": "List <span class=\"command\">four factors</span> that affect the rate of reaction. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "TEMPERATURE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span>, using collision theory, why heating speeds up a reaction. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "SURFACE AREA",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why powdered marble reacts faster than marble chips. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "CONCENTRATION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why increasing concentration increases the rate. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["frequent", "energy", "fewer", "slower"],
+      "secondaryText": "Raising temperature gives particles more ______, so collisions are more ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "PRESSURE (GASES)",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why increasing pressure speeds up a reaction between gases. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Anything that increases the frequency or energy of collisions speeds up the rate.",
+    "thinkPrompt": "Why does concentration change the rate but not the final mass of product?"
+  }
+}

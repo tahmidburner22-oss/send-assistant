@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL CHANGES – OXIDATION & REDUCTION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Oxidation", "definition": "loss of electrons (or gain of oxygen)." },
+        { "term": "Reduction", "definition": "gain of electrons (or loss of oxygen)." },
+        { "term": "Redox", "definition": "a reaction where oxidation and reduction both happen." },
+        { "term": "OIL RIG", "definition": "Oxidation Is Loss, Reduction Is Gain (of electrons)." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Oxidation always involves oxygen.", "right": "Oxidation is loss of electrons — oxygen need not be present." },
+        { "wrong": "Reduction means getting smaller.", "right": "Reduction is gain of electrons / loss of oxygen." },
+        { "wrong": "Only one species changes in redox.", "right": "One is oxidised AND another is reduced." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "REDOX EXAMPLE",
+      "workedSteps": [
+        "Mg + Cl₂ → MgCl₂",
+        "!Mg → Mg²⁺ + 2e⁻ (oxidation — loses e⁻)",
+        "!Cl₂ + 2e⁻ → 2Cl⁻ (reduction — gains e⁻)",
+        "Electrons lost = electrons gained.",
+        "Use OIL RIG to decide which is which."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE (ELECTRONS)",
+      "type": "short-answer",
+      "text": "Define <span class=\"command\">oxidation</span> and <span class=\"command\">reduction</span> in terms of electrons. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "IDENTIFY",
+      "type": "short-answer",
+      "text": "In Zn → Zn²⁺ + 2e⁻, state whether zinc is oxidised or reduced. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "HALF EQUATION",
+      "type": "short-answer",
+      "text": "Write the <span class=\"command\">half equation</span> for chlorine gaining electrons. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "OXYGEN VIEW",
+      "type": "explain",
+      "text": "Copper oxide reacts with hydrogen. <span class=\"command\">Explain</span> which substance is reduced. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["loss", "gain", "oxidation", "reduction"],
+      "secondaryText": "Oxidation is the ______ of electrons; ______ is the gain of electrons.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "REDOX OR NOT",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a displacement reaction is a redox reaction. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "OIL RIG — Oxidation Is Loss, Reduction Is Gain (of electrons).",
+    "thinkPrompt": "Why must reduction always happen at the same time as oxidation?"
+  }
+}

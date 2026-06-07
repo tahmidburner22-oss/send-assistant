@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "GROUP 1 – THE ALKALI METALS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Alkali metal", "definition": "a Group 1 metal with one outer electron." },
+        { "term": "Hydroxide", "definition": "alkaline solution formed when Group 1 reacts with water." },
+        { "term": "Reactivity", "definition": "increases going down Group 1." },
+        { "term": "Ion formed", "definition": "Group 1 atoms lose 1 electron to form a 1+ ion." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Reactivity decreases down Group 1.", "right": "Reactivity increases down the group." },
+        { "wrong": "Alkali metals are hard and dense.", "right": "They are soft and have low density." },
+        { "wrong": "They form 2+ ions.", "right": "They lose one electron to form 1+ ions." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "REACTIVITY TREND",
+      "diagram": {
+        "id": "group1-reactivity",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "OUTER ELECTRONS",
+      "type": "short-answer",
+      "text": "State the number of electrons in the <span class=\"command\">outer shell</span> of a Group 1 atom. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "REACTION WITH WATER",
+      "type": "short-answer",
+      "text": "Name the two products when sodium reacts with water. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "EXPLAIN THE TREND",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why reactivity increases down Group 1. <strong>[3 marks]</strong>",
+      "secondaryText": "Think about the distance of the outer electron from the nucleus.",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "BALANCE THE EQUATION",
+      "type": "short-answer",
+      "text": "Complete: 2Na + 2H₂O → 2______ + H₂. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["loses", "increases", "gains", "decreases"],
+      "secondaryText": "A Group 1 atom ______ one electron. Reactivity ______ down the group.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "PREDICT",
+      "type": "explain",
+      "text": "<span class=\"command\">Predict</span> how potassium reacts with water compared with lithium. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Bigger atom → outer electron is further out → lost more easily → more reactive.",
+    "thinkPrompt": "Why does the resulting solution turn universal indicator purple?"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ATMOSPHERE – ATMOSPHERIC POLLUTANTS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Carbon monoxide", "definition": "toxic gas from incomplete combustion (CO)." },
+        { "term": "Sulfur dioxide", "definition": "from sulfur impurities — causes acid rain." },
+        { "term": "Oxides of nitrogen", "definition": "form in hot engines — acid rain and smog." },
+        { "term": "Particulates", "definition": "soot (carbon) particles — cause health problems." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Carbon dioxide causes acid rain.", "right": "Acid rain is caused by sulfur dioxide and NOₓ." },
+        { "wrong": "Carbon monoxide has a strong smell.", "right": "CO is colourless and odourless — hard to detect." },
+        { "wrong": "Particulates are a gas.", "right": "Particulates are tiny solid particles (soot)." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "POLLUTANTS & PROBLEMS",
+      "workedSteps": [
+        "!CO → toxic, binds to blood (incomplete combustion).",
+        "!SO₂ → acid rain (sulfur impurities burn).",
+        "!NOₓ → acid rain & smog (hot engines).",
+        "!Particulates → global dimming & lung damage.",
+        "CO₂ & H₂O → from complete combustion."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CARBON MONOXIDE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why carbon monoxide is dangerous and how it forms. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "ACID RAIN",
+      "type": "short-answer",
+      "text": "Name the two gases mainly responsible for <span class=\"command\">acid rain</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "SULFUR DIOXIDE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> where sulfur dioxide comes from when fuels burn. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "PARTICULATES",
+      "type": "short-answer",
+      "text": "State one problem caused by <span class=\"command\">particulates</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["incomplete", "sulfur", "complete", "nitrogen"],
+      "secondaryText": "Carbon monoxide forms in ______ combustion; ______ dioxide comes from impurities.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "NITROGEN OXIDES",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how oxides of nitrogen form in a car engine. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "CO toxic, SO₂ & NOₓ acid rain, particulates dim light and harm lungs.",
+    "thinkPrompt": "Why does removing sulfur from fuels reduce acid rain?"
+  }
+}

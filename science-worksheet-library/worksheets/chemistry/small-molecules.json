@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "PROPERTIES OF SMALL MOLECULES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Simple molecule", "definition": "a small group of atoms covalently bonded, e.g. CO₂." },
+        { "term": "Intermolecular force", "definition": "weak attraction between separate molecules." },
+        { "term": "Volatile", "definition": "evaporates easily — low boiling point." },
+        { "term": "Insulator", "definition": "does not conduct electricity." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Bigger molecules break their bonds more easily.", "right": "Bigger molecules have stronger intermolecular forces." },
+        { "wrong": "Melting breaks covalent bonds.", "right": "Melting only overcomes weak intermolecular forces." },
+        { "wrong": "Molecular substances are good conductors.", "right": "They have no free charges, so they don't conduct." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "COVALENT MOLECULE",
+      "diagram": {
+        "id": "covalent-bond-shared",
+        "width": "100%"
+      },
+      "secondaryContent": "Strong bonds WITHIN molecules; weak forces BETWEEN them."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "STATE AT RTP",
+      "type": "short-answer",
+      "text": "State why many simple molecules are <span class=\"command\">gases or liquids</span> at room temperature. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "WHAT IS OVERCOME",
+      "type": "short-answer",
+      "text": "State what is overcome when a simple molecular substance boils. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "TREND IN BP",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why boiling point increases as molecules get larger. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "CONDUCTIVITY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why simple molecular substances do not conduct electricity. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["intermolecular", "covalent", "low", "high"],
+      "secondaryText": "Simple molecules have ______ boiling points because the ______ forces are weak.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "COMPARE",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why water has a higher boiling point than methane. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Boiling point depends on the strength of forces BETWEEN molecules.",
+    "thinkPrompt": "Why doesn't the size of the covalent bond change the boiling point?"
+  }
+}

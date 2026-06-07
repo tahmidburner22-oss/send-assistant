@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ORGANIC CHEMISTRY – ALCOHOLS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Alcohol", "definition": "organic molecule with the –OH functional group." },
+        { "term": "Ethanol", "definition": "the alcohol in drinks, C₂H₅OH." },
+        { "term": "Fermentation", "definition": "yeast turns sugar into ethanol + CO₂." },
+        { "term": "Functional group", "definition": "the –OH group, where reactions occur." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Alcohols are hydrocarbons.", "right": "They contain oxygen too (–OH group)." },
+        { "wrong": "Fermentation needs high temperatures.", "right": "Yeast works best around 30–40°C." },
+        { "wrong": "Ethanol does not burn.", "right": "Ethanol is flammable and used as a fuel." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "PROPERTIES OF ALCOHOLS",
+      "workedSteps": [
+        "First four: methanol, ethanol, propanol, butanol.",
+        "!Functional group is –OH.",
+        "Burn in air → CO₂ + H₂O.",
+        "React with sodium → hydrogen gas.",
+        "!Oxidised to carboxylic acids."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "FUNCTIONAL GROUP",
+      "type": "short-answer",
+      "text": "Give the <span class=\"command\">functional group</span> of an alcohol. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "FERMENTATION",
+      "type": "short-answer",
+      "text": "Name the two products made when yeast ferments glucose. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "CONDITIONS",
+      "type": "explain",
+      "text": "<span class=\"command\">State</span> the conditions needed for fermentation and why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "COMBUSTION",
+      "type": "short-answer",
+      "text": "Write the products of the complete combustion of ethanol. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["ethanol", "hydrogen", "carbon dioxide", "oxygen"],
+      "secondaryText": "Fermentation makes ______ and ______ gas.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "USES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Give</span> two uses of ethanol. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Alcohols all share the –OH group, which gives them similar reactions.",
+    "thinkPrompt": "Why is ethanol from fermentation considered a renewable fuel?"
+  }
+}

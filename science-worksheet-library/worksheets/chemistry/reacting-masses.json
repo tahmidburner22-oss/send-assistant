@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "QUANTITATIVE CHEMISTRY – REACTING MASSES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Stoichiometry", "definition": "the ratio of reactants and products in an equation." },
+        { "term": "Limiting reactant", "definition": "the reactant that runs out first and stops the reaction." },
+        { "term": "Excess", "definition": "a reactant that is not all used up." },
+        { "term": "Mole ratio", "definition": "the ratio of moles from the balanced equation." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "The reactant with the bigger mass is in excess.", "right": "Compare MOLES, not masses, to find excess." },
+        { "wrong": "Mass ratio = mole ratio.", "right": "Convert to moles first using the molar mass." },
+        { "wrong": "All reactants are used up.", "right": "Often one is in excess and is left over." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "WORKED EXAMPLE",
+      "workedSteps": [
+        "2Mg + O₂ → 2MgO. Find MgO from 48 g Mg.",
+        "moles Mg = 48 ÷ 24 = 2 mol",
+        "!ratio Mg : MgO = 2 : 2 → 2 mol MgO",
+        "mass MgO = 2 × 40",
+        "!= 80 g"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "USE THE RATIO",
+      "type": "calculation",
+      "text": "2H₂ + O₂ → 2H₂O. <span class=\"command\">Calculate</span> the mass of water from 4 g of H₂. (Mᵣ H₂=2, H₂O=18) <strong>[3 marks]</strong>",
+      "answerUnit": "g"
+    },
+    {
+      "number": 2,
+      "sectionTitle": "FIND THE REACTANT",
+      "type": "calculation",
+      "text": "CaCO₃ → CaO + CO₂. <span class=\"command\">Calculate</span> the mass of CaCO₃ needed to make 5.6 g CaO. (CaCO₃=100, CaO=56) <strong>[3 marks]</strong>",
+      "answerUnit": "g"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "LIMITING REACTANT",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> what is meant by the limiting reactant. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["moles", "limiting", "mass", "excess"],
+      "secondaryText": "Convert masses to ______ first. The reactant that runs out is the ______ reactant.",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "IDENTIFY EXCESS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how you would decide which reactant is in excess. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 6,
+      "sectionTitle": "SCALE UP",
+      "type": "calculation",
+      "text": "If 24 g of Mg makes 40 g MgO, <span class=\"command\">calculate</span> the MgO from 12 g of Mg. <strong>[2 marks]</strong>",
+      "answerUnit": "g"
+    }
+  ],
+  "footer": {
+    "tip": "Always convert to moles, use the balanced ratio, then convert back to mass.",
+    "thinkPrompt": "Why does using excess of one reactant ensure the other is fully used up?"
+  }
+}

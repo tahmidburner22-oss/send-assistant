@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL ANALYSIS – TESTS FOR ANIONS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Carbonate test", "definition": "add acid → fizzes, CO₂ turns limewater cloudy." },
+        { "term": "Halide test", "definition": "add nitric acid then silver nitrate → coloured precipitate." },
+        { "term": "Sulfate test", "definition": "add hydrochloric acid then barium chloride → white precipitate." },
+        { "term": "Anion", "definition": "a negative ion being tested for." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "All silver halides are white.", "right": "AgCl white, AgBr cream, AgI yellow." },
+        { "wrong": "Add barium chloride alone for sulfates.", "right": "Add dilute HCl first to remove carbonates." },
+        { "wrong": "Carbonates need silver nitrate.", "right": "Carbonates are tested with dilute acid + limewater." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "ANION TEST SUMMARY",
+      "workedSteps": [
+        "!Carbonate: + dilute acid → fizz (CO₂).",
+        "!Sulfate: + HCl + BaCl₂ → white precipitate.",
+        "!Halide: + HNO₃ + AgNO₃ → precipitate.",
+        "Cl⁻ white · Br⁻ cream · I⁻ yellow.",
+        "Add the acid first to remove other ions."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CARBONATE",
+      "type": "short-answer",
+      "text": "Describe the test and result for a <span class=\"command\">carbonate</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "SULFATE",
+      "type": "short-answer",
+      "text": "Describe the test and result for a <span class=\"command\">sulfate</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "HALIDES",
+      "type": "short-answer",
+      "text": "State the precipitate colours for chloride, bromide and iodide with silver nitrate. <strong>[3 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "WHY ADD ACID",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why dilute acid is added before the main test reagent. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["white", "cream", "yellow", "barium"],
+      "secondaryText": "A sulfate gives a ______ precipitate with ______ chloride.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "IDENTIFY",
+      "type": "short-answer",
+      "text": "A solution gives a cream precipitate with AgNO₃. <span class=\"command\">Identify</span> the ion. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "Silver halides: Cl⁻ white, Br⁻ cream, I⁻ yellow. Sulfate → white with BaCl₂.",
+    "thinkPrompt": "Why could a carbonate give a false positive in the sulfate test without acid?"
+  }
+}

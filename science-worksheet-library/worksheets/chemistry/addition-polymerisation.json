@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ORGANIC CHEMISTRY – ADDITION POLYMERISATION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Addition polymerisation", "definition": "alkene monomers join with no other product." },
+        { "term": "Monomer", "definition": "the small unsaturated molecule (has a C=C)." },
+        { "term": "Repeat unit", "definition": "the part of the polymer in brackets, with n." },
+        { "term": "Poly(ethene)", "definition": "the polymer made from ethene monomers." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Addition polymerisation makes water too.", "right": "There is only ONE product — the polymer." },
+        { "wrong": "Saturated monomers can polymerise this way.", "right": "Only unsaturated (C=C) monomers can." },
+        { "wrong": "The repeat unit keeps the double bond.", "right": "The C=C opens to single bonds in the polymer." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "MONOMER → POLYMER",
+      "diagram": {
+        "id": "addition-polymerisation",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE",
+      "type": "short-answer",
+      "text": "State what is meant by <span class=\"command\">addition polymerisation</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "MONOMER NEEDED",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why only alkenes can undergo addition polymerisation. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "DRAW REPEAT UNIT",
+      "type": "short-answer",
+      "text": "Draw the <span class=\"command\">repeat unit</span> of poly(ethene). <strong>[2 marks]</strong>",
+      "workingBox": true
+    },
+    {
+      "number": 4,
+      "sectionTitle": "NAME POLYMER",
+      "type": "short-answer",
+      "text": "Name the polymer made from propene monomers. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["one", "double", "two", "single"],
+      "secondaryText": "Addition polymerisation makes ______ product as the ______ bonds open up.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "ENVIRONMENT",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why poly(ethene) waste is a problem for the environment. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Addition polymers have just ONE product; the C=C opens to single bonds.",
+    "thinkPrompt": "Why are addition polymers unreactive and hard to break down?"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "QUANTITATIVE CHEMISTRY – GAS VOLUMES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Molar gas volume", "definition": "the volume of one mole of any gas at rtp = 24 dm³." },
+        { "term": "rtp", "definition": "room temperature and pressure (20°C, 1 atm)." },
+        { "term": "Avogadro's law", "definition": "equal volumes of gases have equal moles (same conditions)." },
+        { "term": "dm³", "definition": "1 dm³ = 1000 cm³ = 1 litre." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Heavier gases take up more volume.", "right": "At rtp, one mole of ANY gas is 24 dm³." },
+        { "wrong": "24 dm³ works at any temperature.", "right": "It only applies at room temperature and pressure." },
+        { "wrong": "cm³ and dm³ are the same.", "right": "Divide cm³ by 1000 to get dm³." }
+      ]
+    },
+    {
+      "type": "formula",
+      "title": "GAS VOLUME AT rtp",
+      "formulaLines": [
+        "moles = <span class=\"formula-fraction\"><span class=\"formula-num\">volume (dm³)</span><span class=\"formula-den\">24</span></span>"
+      ],
+      "content": "1 mole of gas = 24 dm³ at rtp"
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "VOLUME → MOLES",
+      "type": "calculation",
+      "text": "<span class=\"command\">Calculate</span> the moles in 48 dm³ of CO₂ at rtp. <strong>[2 marks]</strong>",
+      "answerUnit": "mol"
+    },
+    {
+      "number": 2,
+      "sectionTitle": "MOLES → VOLUME",
+      "type": "calculation",
+      "text": "<span class=\"command\">Calculate</span> the volume of 0.5 mol of O₂ at rtp. <strong>[2 marks]</strong>",
+      "answerUnit": "dm³"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "FROM MASS",
+      "type": "calculation",
+      "text": "<span class=\"command\">Calculate</span> the volume of 8 g of CH₄ at rtp. (Mᵣ = 16) <strong>[3 marks]</strong>",
+      "answerUnit": "dm³"
+    },
+    {
+      "number": 4,
+      "sectionTitle": "COMPARE GASES",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why 1 mol of H₂ and 1 mol of CO₂ have the same volume at rtp. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["24", "1000", "moles", "mass"],
+      "secondaryText": "At rtp, one mole of any gas occupies ______ dm³, so volume ÷ 24 gives ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "REACTION VOLUME",
+      "type": "calculation",
+      "text": "2 mol of gas is produced. <span class=\"command\">Calculate</span> the total gas volume at rtp. <strong>[1 mark]</strong>",
+      "answerUnit": "dm³"
+    }
+  ],
+  "footer": {
+    "tip": "At rtp: moles = volume (dm³) ÷ 24. Convert cm³ to dm³ first.",
+    "thinkPrompt": "Why does the type of gas not change the volume of one mole at rtp?"
+  }
+}

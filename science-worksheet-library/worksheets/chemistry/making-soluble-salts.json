@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL CHANGES – MAKING SOLUBLE SALTS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Soluble salt", "definition": "a salt that dissolves in water." },
+        { "term": "Excess", "definition": "extra base added to use up all the acid." },
+        { "term": "Filtration", "definition": "removes the unreacted excess base." },
+        { "term": "Crystallisation", "definition": "evaporates water to leave salt crystals." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Add just enough base to the acid.", "right": "Add base in EXCESS so all the acid reacts." },
+        { "wrong": "Boil the solution dry to get crystals.", "right": "Evaporate gently and let it crystallise." },
+        { "wrong": "Filter to remove the salt.", "right": "Filter to remove the unreacted excess solid." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "METHOD (insoluble base)",
+      "workedSteps": [
+        "Warm the acid in a beaker.",
+        "!Add the base (e.g. copper oxide) until in excess.",
+        "Filter to remove unreacted base.",
+        "Heat the filtrate to the point of crystallisation.",
+        "!Leave to crystallise, then pat dry."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "WHY EXCESS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why the base is added in excess. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "REMOVE EXCESS",
+      "type": "short-answer",
+      "text": "Name the technique used to <span class=\"command\">remove the unreacted base</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "GET CRYSTALS",
+      "type": "explain",
+      "text": "<span class=\"command\">Describe</span> how to obtain dry crystals from the salt solution. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "CHOOSE REACTANTS",
+      "type": "short-answer",
+      "text": "Name the acid and base needed to make copper sulfate. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["excess", "filter", "evaporate", "boil"],
+      "secondaryText": "Add the base in ______, then ______ off the unreacted solid.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY GENTLY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why the solution is not heated strongly to dryness. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Excess base → filter → crystallise. Excess ensures all acid is neutralised.",
+    "thinkPrompt": "Why does slow crystallisation give larger, purer crystals?"
+  }
+}

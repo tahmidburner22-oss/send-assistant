@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL CHANGES – pH & NEUTRALISATION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "pH scale", "definition": "measures acidity from 0 to 14." },
+        { "term": "Acid", "definition": "pH below 7 — source of H⁺ ions." },
+        { "term": "Alkali", "definition": "a soluble base, pH above 7 — source of OH⁻ ions." },
+        { "term": "Neutralisation", "definition": "H⁺ + OH⁻ → H₂O." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "A high pH means a strong acid.", "right": "High pH means alkaline; low pH means acidic." },
+        { "wrong": "All bases are alkalis.", "right": "Only bases that dissolve in water are alkalis." },
+        { "wrong": "Neutral means no ions.", "right": "Neutral (pH 7) has equal H⁺ and OH⁻." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "THE pH SCALE",
+      "diagram": {
+        "id": "ph-scale",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "READ THE SCALE",
+      "type": "short-answer",
+      "text": "State the pH range of an <span class=\"command\">acid</span> and an <span class=\"command\">alkali</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "IONS PRESENT",
+      "type": "short-answer",
+      "text": "Name the ion responsible for acidity and the ion for alkalinity. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "NEUTRALISATION",
+      "type": "short-answer",
+      "text": "Write the <span class=\"command\">ionic equation</span> for neutralisation. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "MEASURING pH",
+      "type": "short-answer",
+      "text": "Name two ways to <span class=\"command\">measure the pH</span> of a solution. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["H⁺", "OH⁻", "water", "salt"],
+      "secondaryText": "In neutralisation, ______ ions react with ______ ions to make water.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "APPLY",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why farmers add lime to acidic soil. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Acids release H⁺; alkalis release OH⁻; they combine to make neutral water.",
+    "thinkPrompt": "Why does each step down the pH scale mean 10× more H⁺ ions?"
+  }
+}

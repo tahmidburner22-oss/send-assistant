@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "QUANTITATIVE CHEMISTRY – PERCENTAGE YIELD",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Yield", "definition": "the mass of product actually made." },
+        { "term": "Theoretical yield", "definition": "the maximum mass that could be made." },
+        { "term": "Percentage yield", "definition": "actual ÷ theoretical × 100." },
+        { "term": "Reversible reaction", "definition": "a reaction that lowers yield as it goes both ways." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "100% yield is always possible.", "right": "Product is lost, so yield is usually below 100%." },
+        { "wrong": "Yield and atom economy are the same.", "right": "Yield = how much; atom economy = how efficient." },
+        { "wrong": "Low yield means the equation is wrong.", "right": "Losses happen during transfer and side reactions." }
+      ]
+    },
+    {
+      "type": "formula",
+      "title": "PERCENTAGE YIELD",
+      "formulaLines": [
+        "% yield = <span class=\"formula-fraction\"><span class=\"formula-num\">actual yield</span><span class=\"formula-den\">theoretical yield</span></span> × 100"
+      ],
+      "content": "Yield is never more than 100%"
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CALCULATE YIELD",
+      "type": "calculation",
+      "text": "Theoretical yield 50 g; actual yield 40 g. <span class=\"command\">Calculate</span> the percentage yield. <strong>[2 marks]</strong>",
+      "answerUnit": "%"
+    },
+    {
+      "number": 2,
+      "sectionTitle": "REARRANGE",
+      "type": "calculation",
+      "text": "% yield is 80% and theoretical yield is 25 g. <span class=\"command\">Calculate</span> the actual yield. <strong>[2 marks]</strong>",
+      "answerUnit": "g"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "WHY NOT 100%",
+      "type": "explain",
+      "text": "<span class=\"command\">Give</span> two reasons why the yield is often less than 100%. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "REVERSIBLE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a reversible reaction reduces the yield. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["actual", "theoretical", "100", "10"],
+      "secondaryText": "Percentage yield = (______ ÷ ______ yield) × 100.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "EVALUATE",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why a high percentage yield is important to industry. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "% yield compares what you got with the maximum you could have got.",
+    "thinkPrompt": "Why can losing product on the filter paper lower your yield?"
+  }
+}

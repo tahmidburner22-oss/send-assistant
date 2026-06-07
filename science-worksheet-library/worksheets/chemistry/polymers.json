@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "POLYMERS – STRUCTURE & PROPERTIES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Polymer", "definition": "a very large molecule made of many small repeating units." },
+        { "term": "Monomer", "definition": "the small molecule that joins to make a polymer." },
+        { "term": "Repeat unit", "definition": "the part of the polymer that repeats over and over." },
+        { "term": "Intermolecular force", "definition": "attraction between polymer chains — fairly strong." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Polymers are made of one giant covalent lattice.", "right": "They are long molecules held to each other by intermolecular forces." },
+        { "wrong": "Polymers are gases at room temperature.", "right": "Forces between long chains make them solids." },
+        { "wrong": "Monomer and polymer are the same thing.", "right": "Monomers join to build the polymer." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "MONOMER → POLYMER",
+      "workedSteps": [
+        "Many small monomers (e.g. ethene) react together.",
+        "!The C=C double bond opens up.",
+        "Monomers join into one long chain.",
+        "!n(CH₂=CH₂) → ‑(CH₂‑CH₂)‑ₙ (poly(ethene))",
+        "The repeat unit is shown in brackets with n."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE POLYMER",
+      "type": "short-answer",
+      "text": "State what is meant by a <span class=\"command\">polymer</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "MONOMER",
+      "type": "short-answer",
+      "text": "Name the monomer used to make <span class=\"command\">poly(ethene)</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "STATE AT RTP",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why polymers are solid at room temperature. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "DRAW A REPEAT UNIT",
+      "type": "short-answer",
+      "text": "Draw the <span class=\"command\">repeat unit</span> for poly(ethene). <strong>[2 marks]</strong>",
+      "workingBox": true
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["monomers", "polymer", "double", "single"],
+      "secondaryText": "Many small ______ join together, as the ______ bond opens, to form a polymer.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "PROPERTIES",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why polymers do not conduct electricity. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "A polymer is one long molecule; the repeat unit is written in brackets with 'n'.",
+    "thinkPrompt": "Why are the forces between polymer chains stronger than between small molecules?"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "GIANT COVALENT STRUCTURES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Giant covalent", "definition": "a huge lattice of atoms joined by covalent bonds." },
+        { "term": "Diamond", "definition": "carbon, each atom bonded to 4 others — very hard." },
+        { "term": "Graphite", "definition": "carbon in layers, each atom bonded to 3 — conducts." },
+        { "term": "Silicon dioxide", "definition": "giant covalent structure, like sand/quartz." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Giant covalent substances melt easily.", "right": "They have very high melting points (strong bonds)." },
+        { "wrong": "Diamond conducts electricity.", "right": "Diamond has no free electrons, so it doesn't conduct." },
+        { "wrong": "Graphite's layers are held by strong bonds.", "right": "Layers are held by weak forces, so they slide." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "DIAMOND · GRAPHITE",
+      "diagram": {
+        "id": "carbon-allotropes",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "HIGH MELTING POINT",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why giant covalent structures have very high melting points. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "DIAMOND HARDNESS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why diamond is so hard. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "GRAPHITE CONDUCTS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why graphite conducts electricity but diamond does not. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "SOFT GRAPHITE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why graphite is soft and slippery. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["four", "three", "free", "fixed"],
+      "secondaryText": "In graphite each carbon bonds to ______ others, leaving one ______ electron to carry charge.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "USES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Suggest</span> a use for diamond and a use for graphite, linked to their properties. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Many strong covalent bonds = lots of energy to melt = very high melting point.",
+    "thinkPrompt": "Why does graphite's free electron make it useful as an electrode?"
+  }
+}

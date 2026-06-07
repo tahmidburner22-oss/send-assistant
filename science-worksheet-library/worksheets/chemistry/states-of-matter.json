@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "STATES OF MATTER & CHANGES OF STATE",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Melting", "definition": "solid → liquid as particles gain energy." },
+        { "term": "Boiling/evaporating", "definition": "liquid → gas." },
+        { "term": "Condensing", "definition": "gas → liquid." },
+        { "term": "State symbols", "definition": "(s) solid, (l) liquid, (g) gas, (aq) dissolved." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Particles expand when heated.", "right": "Particles gain energy and move more — they don't grow." },
+        { "wrong": "Mass changes during a state change.", "right": "Mass is conserved; only arrangement/energy changes." },
+        { "wrong": "Gases have no mass.", "right": "Gas particles still have mass." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "PARTICLE ARRANGEMENT",
+      "diagram": {
+        "id": "states-of-matter",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "ARRANGEMENT",
+      "type": "short-answer",
+      "text": "Describe the arrangement of particles in a <span class=\"command\">solid</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "NAME THE CHANGE",
+      "type": "short-answer",
+      "text": "Name the change of state from <span class=\"command\">gas to liquid</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "ENERGY & MELTING",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span>, using particles, what happens when a solid melts. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "STATE SYMBOLS",
+      "type": "short-answer",
+      "text": "Give the state symbol for a substance <span class=\"command\">dissolved in water</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["energy", "closer", "weaker", "stronger"],
+      "secondaryText": "When a substance is heated, particles gain ______ so the forces between them become ______ enough to break.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "LIMITATIONS",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> one limitation of the simple particle model. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Heating gives particles more energy to overcome the forces holding them together.",
+    "thinkPrompt": "Why does a substance stay at the same temperature while it is melting?"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ALLOTROPES OF CARBON",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Allotrope", "definition": "different structural forms of the same element." },
+        { "term": "Graphene", "definition": "a single layer of graphite — one atom thick." },
+        { "term": "Fullerene", "definition": "carbon molecules shaped like balls or tubes." },
+        { "term": "Nanotube", "definition": "a cylinder of carbon atoms — strong and conductive." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Diamond and graphite are different elements.", "right": "Both are pure carbon — just arranged differently." },
+        { "wrong": "Fullerenes are giant covalent.", "right": "Fullerenes are molecules, not giant lattices." },
+        { "wrong": "Graphene is the same as graphite.", "right": "Graphene is just one single layer of graphite." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "FORMS OF CARBON",
+      "diagram": {
+        "id": "carbon-allotropes",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE ALLOTROPE",
+      "type": "short-answer",
+      "text": "State what is meant by an <span class=\"command\">allotrope</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "GRAPHENE",
+      "type": "short-answer",
+      "text": "Describe the structure of <span class=\"command\">graphene</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "WHY CONDUCTIVE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why graphene and nanotubes conduct electricity. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "FULLERENES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Suggest</span> one use of fullerenes and why their structure suits it. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["one", "single", "three", "four"],
+      "secondaryText": "Graphene is a ______ layer of carbon where each atom bonds to ______ others.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "STRENGTH",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why carbon nanotubes are used to strengthen materials. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Same element, different structure → different properties.",
+    "thinkPrompt": "Why does each form of carbon have a free electron except diamond?"
+  }
+}

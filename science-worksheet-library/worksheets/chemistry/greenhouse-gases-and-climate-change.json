@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ATMOSPHERE – GREENHOUSE GASES & CLIMATE CHANGE",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Greenhouse gas", "definition": "absorbs heat (IR) — e.g. CO₂, methane, water vapour." },
+        { "term": "Greenhouse effect", "definition": "trapped heat keeps the Earth warm." },
+        { "term": "Climate change", "definition": "long-term change linked to rising greenhouse gases." },
+        { "term": "Carbon footprint", "definition": "the total greenhouse gas a product/activity makes." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "The greenhouse effect is always bad.", "right": "Some warming is essential for life on Earth." },
+        { "wrong": "The ozone hole causes global warming.", "right": "They are separate issues — warming is from greenhouse gases." },
+        { "wrong": "Weather and climate are the same.", "right": "Climate is the long-term average of weather." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "THE GREENHOUSE EFFECT",
+      "diagram": {
+        "id": "greenhouse-effect",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "NAME GASES",
+      "type": "short-answer",
+      "text": "Name <span class=\"command\">two greenhouse gases</span>. <strong>[2 marks]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "HOW IT WORKS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how greenhouse gases keep the Earth warm. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "HUMAN CAUSES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Give</span> two human activities that increase carbon dioxide. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "EFFECTS",
+      "type": "explain",
+      "text": "<span class=\"command\">Describe</span> one effect of climate change. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["absorb", "infrared", "reflect", "ultraviolet"],
+      "secondaryText": "Greenhouse gases ______ ______ radiation and re-emit it, warming the Earth.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "REDUCE FOOTPRINT",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> one way a person could reduce their carbon footprint. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Greenhouse gases absorb infrared and re-radiate it, trapping heat near the surface.",
+    "thinkPrompt": "Why is it hard to be certain about future climate change predictions?"
+  }
+}

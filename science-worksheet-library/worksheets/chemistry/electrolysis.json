@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL CHANGES – ELECTROLYSIS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Electrolysis", "definition": "using electricity to break down an ionic compound." },
+        { "term": "Electrolyte", "definition": "the molten or dissolved ionic compound." },
+        { "term": "Cathode", "definition": "the negative electrode — attracts positive ions." },
+        { "term": "Anode", "definition": "the positive electrode — attracts negative ions." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Solid ionic compounds can be electrolysed.", "right": "Ions must be free to move — molten or dissolved." },
+        { "wrong": "Positive ions go to the anode.", "right": "Positive ions go to the negative cathode." },
+        { "wrong": "Electrons flow through the electrolyte.", "right": "Ions carry charge in the electrolyte, not electrons." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "ELECTROLYSIS CELL",
+      "diagram": {
+        "id": "electrolysis-cell",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "WHY MOLTEN",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why an ionic compound must be molten or dissolved to be electrolysed. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "ELECTRODE NAMES",
+      "type": "short-answer",
+      "text": "State which electrode is the <span class=\"command\">cathode</span> and its charge. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "PRODUCTS (MOLTEN)",
+      "type": "short-answer",
+      "text": "Molten lead bromide is electrolysed. Name the product at each electrode. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "HALF EQUATION",
+      "type": "short-answer",
+      "text": "Write the <span class=\"command\">half equation</span> for lead ions at the cathode. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["cathode", "anode", "positive", "negative"],
+      "secondaryText": "Positive ions move to the ______ and ______ ions move to the anode.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "OXIDATION/REDUCTION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why reduction happens at the cathode. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "PANIC: Positive Anode, Negative Is Cathode. Cathode = reduction (gain of e⁻).",
+    "thinkPrompt": "Why are the products of molten electrolysis just the two elements?"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL CHANGES – THE REACTIVITY SERIES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Reactivity series", "definition": "metals listed from most to least reactive." },
+        { "term": "Displacement", "definition": "a more reactive metal pushes out a less reactive one." },
+        { "term": "Oxidation", "definition": "loss of electrons (metal forming an ion)." },
+        { "term": "Native metal", "definition": "an unreactive metal found as the element, e.g. gold." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Gold is reactive because it is valuable.", "right": "Gold is very unreactive — that's why it stays shiny." },
+        { "wrong": "All metals react with water.", "right": "Only reactive metals react with cold water." },
+        { "wrong": "A less reactive metal displaces a more reactive one.", "right": "Only a MORE reactive metal can displace another." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "REACTIVITY SERIES",
+      "diagram": {
+        "id": "reactivity-series",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "ORDER METALS",
+      "type": "short-answer",
+      "text": "Put these in order of reactivity (most first): copper, potassium, zinc. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "DISPLACEMENT",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Predict</span> what happens when iron is added to copper sulfate solution. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "EXPLAIN REACTIVITY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> what makes one metal more reactive than another. <strong>[2 marks]</strong>",
+      "secondaryText": "Think about losing electrons to form ions.",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "REACTION WITH ACID",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why magnesium fizzes faster than zinc in acid. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["more", "less", "lose", "gain"],
+      "secondaryText": "A ______ reactive metal displaces a ______ reactive metal from its compound.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WRITE AN EQUATION",
+      "type": "short-answer",
+      "text": "Write the equation for zinc displacing copper from CuSO₄. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "More reactive metals lose electrons more easily to form positive ions.",
+    "thinkPrompt": "Why is carbon used to extract iron but not aluminium?"
+  }
+}

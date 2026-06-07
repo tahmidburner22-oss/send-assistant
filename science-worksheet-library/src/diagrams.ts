@@ -678,6 +678,698 @@ const diagrams: Record<string, string> = {
   <circle cx="18" cy="88" r="8" fill="#1a237e"/><text x="18" y="91" font-family="Arial" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">4</text>
 </svg>`,
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ATOMIC STRUCTURE & PERIODIC TABLE
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Element vs compound vs mixture — three particle boxes. */
+  'element-compound-mixture': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 120" width="330" height="120">
+  <g font-family="Arial" text-anchor="middle">
+  <!-- Element -->
+  <rect x="6" y="20" width="96" height="74" rx="6" fill="#eef2ff" stroke="#1a237e" stroke-width="1.5"/>
+  <text x="54" y="14" font-size="9" font-weight="bold" fill="#1a237e">ELEMENT</text>
+  <circle cx="34" cy="44" r="9" fill="#3b82f6"/><circle cx="62" cy="44" r="9" fill="#3b82f6"/>
+  <circle cx="48" cy="68" r="9" fill="#3b82f6"/><circle cx="76" cy="68" r="9" fill="#3b82f6"/>
+  <text x="54" y="106" font-size="7" fill="#555">one type of atom</text>
+  <!-- Compound -->
+  <rect x="117" y="20" width="96" height="74" rx="6" fill="#eef2ff" stroke="#1a237e" stroke-width="1.5"/>
+  <text x="165" y="14" font-size="9" font-weight="bold" fill="#1a237e">COMPOUND</text>
+  <line x1="142" y1="46" x2="160" y2="46" stroke="#333" stroke-width="2"/>
+  <circle cx="142" cy="46" r="9" fill="#3b82f6"/><circle cx="166" cy="46" r="7" fill="#ef4444"/>
+  <line x1="178" y1="70" x2="196" y2="70" stroke="#333" stroke-width="2"/>
+  <circle cx="178" cy="70" r="9" fill="#3b82f6"/><circle cx="202" cy="70" r="7" fill="#ef4444"/>
+  <text x="165" y="106" font-size="7" fill="#555">atoms chemically bonded</text>
+  <!-- Mixture -->
+  <rect x="228" y="20" width="96" height="74" rx="6" fill="#eef2ff" stroke="#1a237e" stroke-width="1.5"/>
+  <text x="276" y="14" font-size="9" font-weight="bold" fill="#1a237e">MIXTURE</text>
+  <circle cx="250" cy="42" r="9" fill="#3b82f6"/><circle cx="300" cy="46" r="7" fill="#ef4444"/>
+  <line x1="266" y1="68" x2="284" y2="68" stroke="#333" stroke-width="2"/>
+  <circle cx="266" cy="68" r="9" fill="#3b82f6"/><circle cx="290" cy="68" r="7" fill="#ef4444"/>
+  <circle cx="248" cy="74" r="7" fill="#ef4444"/>
+  <text x="276" y="106" font-size="7" fill="#555">not chemically bonded</text>
+  </g>
+</svg>`,
+
+  /** Filtration apparatus — funnel + filter paper, residue, filtrate in beaker. */
+  'filtration': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 200" width="220" height="200">
+  <!-- Funnel -->
+  <path d="M 60 20 L 140 20 L 108 76 L 92 76 Z" fill="#eef6ff" stroke="#333" stroke-width="2"/>
+  <line x1="92" y1="76" x2="92" y2="104" stroke="#333" stroke-width="2"/>
+  <line x1="108" y1="76" x2="108" y2="104" stroke="#333" stroke-width="2"/>
+  <!-- Filter paper -->
+  <path d="M 70 24 L 130 24 L 100 60 Z" fill="#fff" stroke="#999" stroke-width="1"/>
+  <!-- Residue on paper -->
+  <path d="M 84 30 L 116 30 L 100 48 Z" fill="#c8a165" stroke="#8a6d3b" stroke-width="1"/>
+  <!-- Mixture being poured -->
+  <ellipse cx="100" cy="22" rx="26" ry="4" fill="#9ecbf0" opacity="0.6"/>
+  <!-- Beaker -->
+  <path d="M 60 110 L 60 180 Q 60 188 68 188 L 132 188 Q 140 188 140 180 L 140 110" fill="none" stroke="#333" stroke-width="2.5"/>
+  <rect x="62" y="150" width="76" height="36" rx="2" fill="#d4eaf7" opacity="0.7"/>
+  <!-- Drips -->
+  <circle cx="100" cy="120" r="2.5" fill="#9ecbf0"/>
+  <circle cx="100" cy="134" r="2.5" fill="#9ecbf0"/>
+  <!-- Labels -->
+  <line x1="116" y1="38" x2="170" y2="34" stroke="#333" stroke-width="1"/>
+  <text x="172" y="32" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">residue</text>
+  <text x="172" y="42" font-family="Arial" font-size="7" fill="#555">(insoluble solid)</text>
+  <line x1="128" y1="50" x2="170" y2="62" stroke="#333" stroke-width="1"/>
+  <text x="172" y="60" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">filter paper</text>
+  <line x1="138" y1="165" x2="170" y2="150" stroke="#333" stroke-width="1"/>
+  <text x="172" y="148" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">filtrate</text>
+  <text x="172" y="158" font-family="Arial" font-size="7" fill="#555">(liquid that passes)</text>
+</svg>`,
+
+  /** Timeline of atomic models: Dalton, Thomson, Rutherford, Bohr. */
+  'atom-model-timeline': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 130" width="360" height="130">
+  <g font-family="Arial" text-anchor="middle">
+  <!-- Dalton -->
+  <circle cx="45" cy="45" r="24" fill="#9e9e9e" stroke="#555" stroke-width="1.5"/>
+  <text x="45" y="86" font-size="9" font-weight="bold" fill="#1a237e">Dalton</text>
+  <text x="45" y="98" font-size="7" fill="#555">solid sphere</text>
+  <!-- Thomson -->
+  <circle cx="135" cy="45" r="24" fill="#ffcdd2" stroke="#c62828" stroke-width="1.5"/>
+  <circle cx="125" cy="38" r="3.5" fill="#1565c0"/><circle cx="146" cy="40" r="3.5" fill="#1565c0"/>
+  <circle cx="130" cy="55" r="3.5" fill="#1565c0"/><circle cx="145" cy="56" r="3.5" fill="#1565c0"/>
+  <text x="135" y="86" font-size="9" font-weight="bold" fill="#1a237e">Thomson</text>
+  <text x="135" y="98" font-size="7" fill="#555">plum pudding</text>
+  <!-- Rutherford -->
+  <circle cx="225" cy="45" r="24" fill="none" stroke="#90a4d4" stroke-width="1.2"/>
+  <circle cx="225" cy="45" r="6" fill="#d32f2f"/>
+  <circle cx="225" cy="21" r="3" fill="#1565c0"/><circle cx="249" cy="45" r="3" fill="#1565c0"/>
+  <text x="225" y="86" font-size="9" font-weight="bold" fill="#1a237e">Rutherford</text>
+  <text x="225" y="98" font-size="7" fill="#555">nuclear model</text>
+  <!-- Bohr -->
+  <circle cx="315" cy="45" r="24" fill="none" stroke="#90a4d4" stroke-width="1.2"/>
+  <circle cx="315" cy="45" r="13" fill="none" stroke="#90a4d4" stroke-width="1.2"/>
+  <circle cx="315" cy="45" r="5" fill="#d32f2f"/>
+  <circle cx="315" cy="32" r="3" fill="#1565c0"/><circle cx="315" cy="21" r="3" fill="#1565c0"/>
+  <text x="315" y="86" font-size="9" font-weight="bold" fill="#1a237e">Bohr</text>
+  <text x="315" y="98" font-size="7" fill="#555">electron shells</text>
+  <!-- Arrow -->
+  <line x1="20" y1="115" x2="340" y2="115" stroke="#333" stroke-width="1.5" marker-end="url(#tlArr)"/>
+  <defs><marker id="tlArr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#333"/></marker></defs>
+  <text x="180" y="126" font-size="7" fill="#555">time / new evidence</text>
+  </g>
+</svg>`,
+
+  /** Simplified periodic table block diagram — groups, periods, metals/non-metals. */
+  'periodic-table-blocks': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 150" width="320" height="150">
+  <g font-family="Arial" font-size="7" text-anchor="middle">
+  <!-- metal region -->
+  <rect x="10" y="24" width="40" height="100" fill="#fde2c8" stroke="#b06a1a" stroke-width="1"/>
+  <text x="30" y="20" font-size="8" font-weight="bold" fill="#1a237e">1  2</text>
+  <!-- transition metals -->
+  <rect x="52" y="44" width="120" height="60" fill="#ffe0b2" stroke="#b06a1a" stroke-width="1"/>
+  <text x="112" y="78" font-size="7.5" fill="#8a4b00">transition metals</text>
+  <!-- non-metals -->
+  <rect x="174" y="24" width="110" height="100" fill="#dcedf9" stroke="#1565c0" stroke-width="1"/>
+  <text x="229" y="20" font-size="8" font-weight="bold" fill="#1a237e">3  4  5  6  7  0</text>
+  <!-- Group 0 -->
+  <rect x="270" y="24" width="14" height="100" fill="#e1d5f5" stroke="#6a3fb0" stroke-width="1"/>
+  <!-- staircase divide -->
+  <polyline points="174,24 174,60 200,60 200,90 230,90 230,124" fill="none" stroke="#c62828" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <text x="30" y="138" font-size="8" font-weight="bold" fill="#b06a1a">METALS</text>
+  <text x="232" y="138" font-size="8" font-weight="bold" fill="#1565c0">NON-METALS</text>
+  <text x="277" y="138" font-size="7" fill="#6a3fb0">Gp 0</text>
+  </g>
+</svg>`,
+
+  /** Group 1 reactivity trend — Li, Na, K with increasing reactivity arrow. */
+  'group1-reactivity': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 160" width="210" height="160">
+  <g font-family="Arial" text-anchor="middle">
+  <rect x="40" y="14" width="90" height="28" rx="4" fill="#eef2ff" stroke="#1a237e" stroke-width="1.3"/>
+  <text x="85" y="32" font-size="11" font-weight="bold" fill="#1a237e">Lithium (Li)</text>
+  <rect x="40" y="60" width="90" height="28" rx="4" fill="#e3e9ff" stroke="#1a237e" stroke-width="1.3"/>
+  <text x="85" y="78" font-size="11" font-weight="bold" fill="#1a237e">Sodium (Na)</text>
+  <rect x="40" y="106" width="90" height="28" rx="4" fill="#d6deff" stroke="#1a237e" stroke-width="1.3"/>
+  <text x="85" y="124" font-size="11" font-weight="bold" fill="#1a237e">Potassium (K)</text>
+  <!-- arrow -->
+  <line x1="160" y1="20" x2="160" y2="130" stroke="#c62828" stroke-width="2.5" marker-end="url(#g1Arr)"/>
+  <defs><marker id="g1Arr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#c62828"/></marker></defs>
+  <text x="186" y="80" font-size="8" font-weight="bold" fill="#c62828" transform="rotate(90 186 80)">reactivity increases</text>
+  </g>
+</svg>`,
+
+  /** Group 7 trend — colour/state down the group. */
+  'group7-trend': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 175" width="250" height="175">
+  <g font-family="Arial" text-anchor="middle">
+  <rect x="20" y="12" width="120" height="30" rx="4" fill="#fdf6c8" stroke="#c9b400" stroke-width="1.3"/>
+  <text x="80" y="26" font-size="10" font-weight="bold" fill="#1a237e">Fluorine (F₂)</text>
+  <text x="80" y="37" font-size="7.5" fill="#555">pale yellow gas</text>
+  <rect x="20" y="50" width="120" height="30" rx="4" fill="#d7f5cf" stroke="#3a9a2a" stroke-width="1.3"/>
+  <text x="80" y="64" font-size="10" font-weight="bold" fill="#1a237e">Chlorine (Cl₂)</text>
+  <text x="80" y="75" font-size="7.5" fill="#555">green gas</text>
+  <rect x="20" y="88" width="120" height="30" rx="4" fill="#f3c9a0" stroke="#b06a1a" stroke-width="1.3"/>
+  <text x="80" y="102" font-size="10" font-weight="bold" fill="#1a237e">Bromine (Br₂)</text>
+  <text x="80" y="113" font-size="7.5" fill="#555">orange liquid</text>
+  <rect x="20" y="126" width="120" height="30" rx="4" fill="#cdbfe0" stroke="#5a3f8a" stroke-width="1.3"/>
+  <text x="80" y="140" font-size="10" font-weight="bold" fill="#1a237e">Iodine (I₂)</text>
+  <text x="80" y="151" font-size="7.5" fill="#555">grey solid</text>
+  <!-- arrows -->
+  <line x1="166" y1="20" x2="166" y2="150" stroke="#c62828" stroke-width="2.2" marker-start="url(#g7Up)"/>
+  <defs><marker id="g7Up" markerWidth="9" markerHeight="7" refX="1" refY="3.5" orient="auto"><polygon points="9 0, 0 3.5, 9 7" fill="#c62828"/></marker></defs>
+  <text x="180" y="85" font-size="7.5" font-weight="bold" fill="#c62828" transform="rotate(90 180 85)">reactivity increases ↑</text>
+  <line x1="226" y1="20" x2="226" y2="150" stroke="#1565c0" stroke-width="2.2" marker-end="url(#g7Dn)"/>
+  <defs><marker id="g7Dn" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#1565c0"/></marker></defs>
+  <text x="240" y="85" font-size="7.5" font-weight="bold" fill="#1565c0" transform="rotate(90 240 85)">melting point increases ↓</text>
+  </g>
+</svg>`,
+
+  /** Noble gas full outer shells — He and Ne. */
+  'noble-gas-shells': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 150" width="260" height="150">
+  <defs>
+    <radialGradient id="nucNG" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffd6d6"/><stop offset="100%" stop-color="#d32f2f"/>
+    </radialGradient>
+  </defs>
+  <g font-family="Arial" text-anchor="middle">
+  <!-- Helium -->
+  <circle cx="70" cy="60" r="34" fill="none" stroke="#90a4d4" stroke-width="1.3"/>
+  <circle cx="70" cy="60" r="13" fill="url(#nucNG)" stroke="#9a1c1c"/>
+  <circle cx="70" cy="26" r="5" fill="#1565c0"/><circle cx="70" cy="94" r="5" fill="#1565c0"/>
+  <text x="70" y="120" font-size="10" font-weight="bold" fill="#1a237e">Helium (2)</text>
+  <!-- Neon -->
+  <circle cx="185" cy="60" r="48" fill="none" stroke="#90a4d4" stroke-width="1.3"/>
+  <circle cx="185" cy="60" r="22" fill="none" stroke="#90a4d4" stroke-width="1.3"/>
+  <circle cx="185" cy="60" r="11" fill="url(#nucNG)" stroke="#9a1c1c"/>
+  <circle cx="185" cy="38" r="4" fill="#1565c0"/><circle cx="185" cy="82" r="4" fill="#1565c0"/>
+  <circle cx="185" cy="12" r="4" fill="#1565c0"/><circle cx="185" cy="108" r="4" fill="#1565c0"/>
+  <circle cx="137" cy="60" r="4" fill="#1565c0"/><circle cx="233" cy="60" r="4" fill="#1565c0"/>
+  <circle cx="151" cy="26" r="4" fill="#1565c0"/><circle cx="219" cy="26" r="4" fill="#1565c0"/>
+  <circle cx="151" cy="94" r="4" fill="#1565c0"/><circle cx="219" cy="94" r="4" fill="#1565c0"/>
+  <text x="185" y="134" font-size="10" font-weight="bold" fill="#1a237e">Neon (2,8)</text>
+  </g>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BONDING, STRUCTURE & PROPERTIES
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Ionic bonding — electron transfer from Na to Cl forming Na+ and Cl-. */
+  'ionic-bond-transfer': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 150" width="330" height="150">
+  <g font-family="Arial" text-anchor="middle">
+  <!-- Sodium atom -->
+  <circle cx="60" cy="70" r="42" fill="none" stroke="#90a4d4" stroke-width="1.2"/>
+  <circle cx="60" cy="70" r="22" fill="none" stroke="#90a4d4" stroke-width="1.2"/>
+  <circle cx="60" cy="70" r="11" fill="#fde2c8" stroke="#b06a1a"/>
+  <text x="60" y="74" font-size="9" font-weight="bold" fill="#b06a1a">Na</text>
+  <circle cx="60" cy="28" r="4.5" fill="#c62828"/>
+  <circle cx="60" cy="48" r="3.5" fill="#1565c0"/><circle cx="60" cy="92" r="3.5" fill="#1565c0"/>
+  <circle cx="38" cy="70" r="3.5" fill="#1565c0"/><circle cx="82" cy="70" r="3.5" fill="#1565c0"/>
+  <text x="60" y="132" font-size="9" font-weight="bold" fill="#1a237e">Na → Na⁺</text>
+  <!-- transfer arrow -->
+  <path d="M 92 24 q 70 -14 130 36" fill="none" stroke="#c62828" stroke-width="2" marker-end="url(#ibArr)"/>
+  <defs><marker id="ibArr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#c62828"/></marker></defs>
+  <text x="165" y="20" font-size="8" fill="#c62828">transfer 1 e⁻</text>
+  <!-- Chlorine atom -->
+  <circle cx="262" cy="70" r="42" fill="none" stroke="#90a4d4" stroke-width="1.2"/>
+  <circle cx="262" cy="70" r="22" fill="none" stroke="#90a4d4" stroke-width="1.2"/>
+  <circle cx="262" cy="70" r="11" fill="#d7f5cf" stroke="#3a9a2a"/>
+  <text x="262" y="74" font-size="9" font-weight="bold" fill="#3a9a2a">Cl</text>
+  <circle cx="262" cy="28" r="3.5" fill="#1565c0"/><circle cx="262" cy="48" r="3.5" fill="#1565c0"/>
+  <circle cx="262" cy="92" r="3.5" fill="#1565c0"/>
+  <circle cx="240" cy="70" r="3.5" fill="#1565c0"/>
+  <circle cx="232" cy="50" r="3.5" fill="#1565c0"/><circle cx="292" cy="50" r="3.5" fill="#1565c0"/>
+  <circle cx="292" cy="90" r="3.5" fill="#1565c0"/>
+  <text x="262" y="132" font-size="9" font-weight="bold" fill="#1a237e">Cl → Cl⁻</text>
+  </g>
+</svg>`,
+
+  /** Covalent bonding — shared pair of electrons in H2 / Cl2 style. */
+  'covalent-bond-shared': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 150" width="300" height="150">
+  <g font-family="Arial" text-anchor="middle">
+  <text x="150" y="14" font-size="9" font-weight="bold" fill="#1a237e">A SHARED PAIR OF ELECTRONS</text>
+  <!-- two overlapping shells -->
+  <circle cx="115" cy="80" r="44" fill="none" stroke="#90a4d4" stroke-width="1.3"/>
+  <circle cx="185" cy="80" r="44" fill="none" stroke="#90a4d4" stroke-width="1.3"/>
+  <circle cx="115" cy="80" r="11" fill="#dbe7ff" stroke="#1a237e"/><text x="115" y="84" font-size="9" font-weight="bold" fill="#1a237e">H</text>
+  <circle cx="185" cy="80" r="11" fill="#dbe7ff" stroke="#1a237e"/><text x="185" y="84" font-size="9" font-weight="bold" fill="#1a237e">H</text>
+  <!-- shared electrons in the overlap -->
+  <circle cx="150" cy="70" r="5" fill="#c62828"/>
+  <circle cx="150" cy="90" r="5" fill="#c62828"/>
+  <!-- outer electrons -->
+  <circle cx="115" cy="36" r="4" fill="#1565c0"/>
+  <circle cx="185" cy="36" r="4" fill="#1565c0"/>
+  <text x="150" y="140" font-size="8" fill="#555">Each H shares one electron → both have a full shell (2)</text>
+  </g>
+</svg>`,
+
+  /** States of matter — solid, liquid, gas particle arrangement. */
+  'states-of-matter': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 130" width="330" height="130">
+  <g font-family="Arial" text-anchor="middle">
+  <!-- Solid -->
+  <rect x="8" y="20" width="96" height="76" rx="6" fill="#eef6ff" stroke="#1a237e" stroke-width="1.5"/>
+  <text x="56" y="14" font-size="9" font-weight="bold" fill="#1a237e">SOLID</text>
+  <g fill="#3b82f6">
+  <circle cx="28" cy="40" r="7"/><circle cx="50" cy="40" r="7"/><circle cx="72" cy="40" r="7"/><circle cx="94" cy="40" r="0"/>
+  <circle cx="28" cy="60" r="7"/><circle cx="50" cy="60" r="7"/><circle cx="72" cy="60" r="7"/>
+  <circle cx="28" cy="80" r="7"/><circle cx="50" cy="80" r="7"/><circle cx="72" cy="80" r="7"/>
+  </g>
+  <text x="56" y="112" font-size="7" fill="#555">fixed, regular, touching</text>
+  <!-- Liquid -->
+  <rect x="117" y="20" width="96" height="76" rx="6" fill="#eef6ff" stroke="#1a237e" stroke-width="1.5"/>
+  <text x="165" y="14" font-size="9" font-weight="bold" fill="#1a237e">LIQUID</text>
+  <g fill="#3b82f6">
+  <circle cx="136" cy="44" r="7"/><circle cx="158" cy="40" r="7"/><circle cx="182" cy="46" r="7"/>
+  <circle cx="146" cy="62" r="7"/><circle cx="172" cy="60" r="7"/><circle cx="196" cy="58" r="7"/>
+  <circle cx="138" cy="82" r="7"/><circle cx="162" cy="82" r="7"/><circle cx="188" cy="80" r="7"/>
+  </g>
+  <text x="165" y="112" font-size="7" fill="#555">close, random, can flow</text>
+  <!-- Gas -->
+  <rect x="226" y="20" width="96" height="76" rx="6" fill="#eef6ff" stroke="#1a237e" stroke-width="1.5"/>
+  <text x="274" y="14" font-size="9" font-weight="bold" fill="#1a237e">GAS</text>
+  <g fill="#3b82f6">
+  <circle cx="242" cy="36" r="7"/><circle cx="300" cy="42" r="7"/>
+  <circle cx="270" cy="58" r="7"/><circle cx="246" cy="78" r="7"/>
+  <circle cx="304" cy="82" r="7"/>
+  </g>
+  <text x="274" y="112" font-size="7" fill="#555">far apart, fast, random</text>
+  </g>
+</svg>`,
+
+  /** Carbon allotropes — diamond, graphite, graphene structures. */
+  'carbon-allotropes': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 135" width="330" height="135">
+  <g font-family="Arial" text-anchor="middle" stroke="#333">
+  <!-- Diamond (tetrahedral) -->
+  <text x="55" y="14" font-size="9" font-weight="bold" fill="#1a237e" stroke="none">DIAMOND</text>
+  <g stroke="#1a237e" stroke-width="1.3">
+  <line x1="55" y1="60" x2="55" y2="34"/><line x1="55" y1="60" x2="30" y2="78"/>
+  <line x1="55" y1="60" x2="80" y2="78"/><line x1="55" y1="60" x2="55" y2="90"/>
+  </g>
+  <g fill="#444" stroke="none">
+  <circle cx="55" cy="60" r="6"/><circle cx="55" cy="34" r="6"/><circle cx="30" cy="78" r="6"/><circle cx="80" cy="78" r="6"/><circle cx="55" cy="90" r="6"/>
+  </g>
+  <text x="55" y="112" font-size="7" fill="#555" stroke="none">4 bonds each — hard</text>
+  <!-- Graphite (layers) -->
+  <text x="165" y="14" font-size="9" font-weight="bold" fill="#1a237e" stroke="none">GRAPHITE</text>
+  <g stroke="#1a237e" stroke-width="1.1" fill="none">
+  <polygon points="135,34 150,28 165,34 165,48 150,54 135,48"/>
+  <polygon points="165,34 180,28 195,34 195,48 180,54 165,48"/>
+  <polygon points="135,66 150,60 165,66 165,80 150,86 135,80"/>
+  <polygon points="165,66 180,60 195,66 195,80 180,86 165,80"/>
+  </g>
+  <text x="165" y="112" font-size="7" fill="#555" stroke="none">3 bonds — layers slide</text>
+  <!-- Graphene/fullerene -->
+  <text x="276" y="14" font-size="9" font-weight="bold" fill="#1a237e" stroke="none">GRAPHENE</text>
+  <g stroke="#1a237e" stroke-width="1.1" fill="none">
+  <polygon points="250,40 264,33 278,40 278,56 264,63 250,56"/>
+  <polygon points="278,40 292,33 306,40 306,56 292,63 278,56"/>
+  <polygon points="264,63 278,56 292,63 292,79 278,86 264,79"/>
+  </g>
+  <text x="276" y="112" font-size="7" fill="#555" stroke="none">single layer — strong</text>
+  </g>
+</svg>`,
+
+  /** Giant ionic lattice — alternating + and - ions in a grid. */
+  'ionic-lattice': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 150" width="250" height="150">
+  <g font-family="Arial" text-anchor="middle" font-weight="bold">
+  <!-- 4x3 alternating lattice -->
+  <g stroke="#999" stroke-width="0.8">
+  <line x1="40" y1="35" x2="190" y2="35"/><line x1="40" y1="75" x2="190" y2="75"/><line x1="40" y1="115" x2="190" y2="115"/>
+  <line x1="40" y1="35" x2="40" y2="115"/><line x1="90" y1="35" x2="90" y2="115"/><line x1="140" y1="35" x2="140" y2="115"/><line x1="190" y1="35" x2="190" y2="115"/>
+  </g>
+  <g font-size="10">
+  <circle cx="40" cy="35" r="13" fill="#c62828"/><text x="40" y="39" fill="#fff">+</text>
+  <circle cx="90" cy="35" r="13" fill="#1565c0"/><text x="90" y="39" fill="#fff">−</text>
+  <circle cx="140" cy="35" r="13" fill="#c62828"/><text x="140" y="39" fill="#fff">+</text>
+  <circle cx="190" cy="35" r="13" fill="#1565c0"/><text x="190" y="39" fill="#fff">−</text>
+  <circle cx="40" cy="75" r="13" fill="#1565c0"/><text x="40" y="79" fill="#fff">−</text>
+  <circle cx="90" cy="75" r="13" fill="#c62828"/><text x="90" y="79" fill="#fff">+</text>
+  <circle cx="140" cy="75" r="13" fill="#1565c0"/><text x="140" y="79" fill="#fff">−</text>
+  <circle cx="190" cy="75" r="13" fill="#c62828"/><text x="190" y="79" fill="#fff">+</text>
+  <circle cx="40" cy="115" r="13" fill="#c62828"/><text x="40" y="119" fill="#fff">+</text>
+  <circle cx="90" cy="115" r="13" fill="#1565c0"/><text x="90" y="119" fill="#fff">−</text>
+  <circle cx="140" cy="115" r="13" fill="#c62828"/><text x="140" y="119" fill="#fff">+</text>
+  <circle cx="190" cy="115" r="13" fill="#1565c0"/><text x="190" y="119" fill="#fff">−</text>
+  </g>
+  <text x="115" y="140" font-size="7.5" fill="#555" stroke="none" font-weight="normal">Strong electrostatic attraction in all directions</text>
+  </g>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CHEMICAL CHANGES
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Reactivity series ladder — most to least reactive metals. */
+  'reactivity-series': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 165" width="250" height="165">
+  <g font-family="Arial">
+  <rect x="40" y="10" width="120" height="148" rx="6" fill="#eef2ff" stroke="#1a237e" stroke-width="1.3"/>
+  <g font-size="9" font-weight="bold" fill="#1a237e" text-anchor="middle">
+  <text x="100" y="24">Potassium</text>
+  <text x="100" y="40">Sodium</text>
+  <text x="100" y="56">Calcium</text>
+  <text x="100" y="72">Magnesium</text>
+  <text x="100" y="88">Zinc</text>
+  <text x="100" y="104">Iron</text>
+  <text x="100" y="120">Copper</text>
+  <text x="100" y="136">Gold</text>
+  </g>
+  <text x="100" y="152" font-size="7" fill="#c62828" text-anchor="middle">(carbon &amp; hydrogen for comparison)</text>
+  <!-- arrow -->
+  <line x1="22" y1="16" x2="22" y2="138" stroke="#c62828" stroke-width="2.2" marker-end="url(#rsArr)"/>
+  <defs><marker id="rsArr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#c62828"/></marker></defs>
+  <text x="12" y="78" font-size="7.5" font-weight="bold" fill="#c62828" transform="rotate(90 12 78)" text-anchor="middle">reactivity decreases</text>
+  </g>
+</svg>`,
+
+  /** Electrolysis cell — DC supply, two electrodes in molten/aqueous electrolyte. */
+  'electrolysis-cell': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 175" width="250" height="175">
+  <g font-family="Arial">
+  <!-- power supply -->
+  <rect x="95" y="8" width="60" height="22" rx="3" fill="#fff" stroke="#222" stroke-width="1.5"/>
+  <text x="125" y="23" font-size="9" font-weight="bold" fill="#222" text-anchor="middle">+   −</text>
+  <!-- wires -->
+  <line x1="105" y1="30" x2="105" y2="60" stroke="#222" stroke-width="1.5"/>
+  <line x1="145" y1="30" x2="145" y2="60" stroke="#222" stroke-width="1.5"/>
+  <!-- beaker / cell -->
+  <path d="M 50 70 L 50 158 Q 50 166 58 166 L 192 166 Q 200 166 200 158 L 200 70" fill="none" stroke="#333" stroke-width="2.5"/>
+  <rect x="52" y="86" width="146" height="78" rx="2" fill="#dbeafe" opacity="0.7"/>
+  <!-- electrodes -->
+  <rect x="99" y="60" width="12" height="92" fill="#555" stroke="#222" stroke-width="1"/>
+  <rect x="139" y="60" width="12" height="92" fill="#555" stroke="#222" stroke-width="1"/>
+  <text x="105" y="56" font-size="8" font-weight="bold" fill="#c62828" text-anchor="middle">anode (+)</text>
+  <text x="145" y="56" font-size="8" font-weight="bold" fill="#1565c0" text-anchor="middle">cathode (−)</text>
+  <!-- ions -->
+  <text x="75" y="120" font-size="9" fill="#c62828">+</text><text x="90" y="135" font-size="9" fill="#1565c0">−</text>
+  <text x="165" y="118" font-size="9" fill="#1565c0">−</text><text x="178" y="138" font-size="9" fill="#c62828">+</text>
+  <text x="125" y="120" font-size="7.5" fill="#555" text-anchor="middle">electrolyte</text>
+  </g>
+</svg>`,
+
+  /** pH scale 0-14 colour bar. */
+  'ph-scale': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 110" width="320" height="110">
+  <g font-family="Arial" text-anchor="middle">
+  <text x="160" y="14" font-size="9" font-weight="bold" fill="#1a237e">THE pH SCALE</text>
+  <!-- colour blocks 0-14 -->
+  <g stroke="#fff" stroke-width="0.5">
+  <rect x="10" y="22" width="20" height="34" fill="#d32f2f"/>
+  <rect x="30" y="22" width="20" height="34" fill="#e64a19"/>
+  <rect x="50" y="22" width="20" height="34" fill="#f57c00"/>
+  <rect x="70" y="22" width="20" height="34" fill="#fbc02d"/>
+  <rect x="90" y="22" width="20" height="34" fill="#cddc39"/>
+  <rect x="110" y="22" width="20" height="34" fill="#aed581"/>
+  <rect x="130" y="22" width="20" height="34" fill="#66bb6a"/>
+  <rect x="150" y="22" width="20" height="34" fill="#43a047"/>
+  <rect x="170" y="22" width="20" height="34" fill="#26a69a"/>
+  <rect x="190" y="22" width="20" height="34" fill="#29b6f6"/>
+  <rect x="210" y="22" width="20" height="34" fill="#1e88e5"/>
+  <rect x="230" y="22" width="20" height="34" fill="#3949ab"/>
+  <rect x="250" y="22" width="20" height="34" fill="#5e35b1"/>
+  <rect x="270" y="22" width="20" height="34" fill="#6a1b9a"/>
+  <rect x="290" y="22" width="20" height="34" fill="#4a148c"/>
+  </g>
+  <g font-size="7" fill="#222">
+  <text x="20" y="66">0</text><text x="80" y="66">3</text><text x="160" y="66">7</text><text x="240" y="66">11</text><text x="300" y="66">14</text>
+  </g>
+  <text x="55" y="86" font-size="9" font-weight="bold" fill="#d32f2f">ACID</text>
+  <text x="160" y="86" font-size="9" font-weight="bold" fill="#2e7d32">NEUTRAL</text>
+  <text x="270" y="86" font-size="9" font-weight="bold" fill="#4a148c">ALKALI</text>
+  <text x="160" y="102" font-size="7" fill="#555">Lower pH = more H⁺ ions · Higher pH = more OH⁻ ions</text>
+  </g>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ENERGY CHANGES
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Endothermic reaction profile — products higher than reactants. */
+  'reaction-profile-endo': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 170" width="260" height="170">
+  <line x1="34" y1="14" x2="34" y2="150" stroke="#333" stroke-width="1.5"/>
+  <line x1="34" y1="150" x2="248" y2="150" stroke="#333" stroke-width="1.5"/>
+  <text x="10" y="86" font-family="Arial" font-size="8" fill="#333" transform="rotate(-90 10 86)" text-anchor="middle">Energy</text>
+  <text x="140" y="165" font-family="Arial" font-size="8" fill="#333" text-anchor="middle">Progress of reaction</text>
+  <!-- reactants low, hump, products higher -->
+  <path d="M 44 110 L 90 110 C 120 110 120 40 150 40 C 180 40 180 74 210 74 L 240 74" fill="none" stroke="#1a237e" stroke-width="2.2"/>
+  <line x1="44" y1="110" x2="90" y2="110" stroke="#1a237e" stroke-width="2.2"/>
+  <line x1="210" y1="74" x2="240" y2="74" stroke="#1a237e" stroke-width="2.2"/>
+  <text x="58" y="104" font-family="Arial" font-size="7.5" fill="#333">reactants</text>
+  <text x="212" y="68" font-family="Arial" font-size="7.5" fill="#333">products</text>
+  <!-- activation energy -->
+  <line x1="150" y1="110" x2="150" y2="42" stroke="#c62828" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="156" y="78" font-family="Arial" font-size="7" fill="#c62828">Eₐ</text>
+  <!-- energy absorbed -->
+  <line x1="100" y1="110" x2="100" y2="74" stroke="#1565c0" stroke-width="1.2" marker-end="url(#endoArr)"/>
+  <defs><marker id="endoArr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1565c0"/></marker></defs>
+  <text x="104" y="96" font-family="Arial" font-size="7" fill="#1565c0" font-weight="bold">+ΔH</text>
+</svg>`,
+
+  /** Simple chemical cell — two different metal electrodes in electrolyte + voltmeter. */
+  'simple-cell': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 170" width="250" height="170">
+  <g font-family="Arial">
+  <!-- voltmeter -->
+  <circle cx="125" cy="24" r="16" fill="#fff" stroke="#222" stroke-width="1.5"/>
+  <text x="125" y="29" font-size="12" font-weight="bold" fill="#222" text-anchor="middle">V</text>
+  <line x1="109" y1="24" x2="60" y2="24" stroke="#222" stroke-width="1.5"/>
+  <line x1="60" y1="24" x2="60" y2="60" stroke="#222" stroke-width="1.5"/>
+  <line x1="141" y1="24" x2="190" y2="24" stroke="#222" stroke-width="1.5"/>
+  <line x1="190" y1="24" x2="190" y2="60" stroke="#222" stroke-width="1.5"/>
+  <!-- beaker -->
+  <path d="M 40 70 L 40 152 Q 40 160 48 160 L 202 160 Q 210 160 210 152 L 210 70" fill="none" stroke="#333" stroke-width="2.5"/>
+  <rect x="42" y="84" width="166" height="74" rx="2" fill="#dbeafe" opacity="0.7"/>
+  <!-- electrodes -->
+  <rect x="54" y="56" width="12" height="92" fill="#9e9e9e" stroke="#222" stroke-width="1"/>
+  <rect x="184" y="56" width="12" height="92" fill="#d8a657" stroke="#222" stroke-width="1"/>
+  <text x="60" y="52" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="middle">zinc</text>
+  <text x="190" y="52" font-size="8" font-weight="bold" fill="#b06a1a" text-anchor="middle">copper</text>
+  <text x="125" y="120" font-size="8" fill="#555" text-anchor="middle">electrolyte</text>
+  <text x="125" y="135" font-size="7" fill="#555" text-anchor="middle">(salt solution)</text>
+  </g>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ORGANIC CHEMISTRY
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Fractional distillation column — fractions of crude oil by boiling point. */
+  'fractional-distillation': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 175" width="260" height="175">
+  <g font-family="Arial">
+  <!-- column -->
+  <polygon points="60,160 60,30 130,12 130,160" fill="#eef2ff" stroke="#1a237e" stroke-width="1.5"/>
+  <!-- fraction outlets -->
+  <g font-size="7.5" fill="#1a237e">
+  <line x1="130" y1="28" x2="160" y2="28" stroke="#333" stroke-width="1"/><text x="163" y="31">Gases</text>
+  <line x1="130" y1="52" x2="160" y2="52" stroke="#333" stroke-width="1"/><text x="163" y="55">Petrol</text>
+  <line x1="130" y1="76" x2="160" y2="76" stroke="#333" stroke-width="1"/><text x="163" y="79">Kerosene</text>
+  <line x1="130" y1="100" x2="160" y2="100" stroke="#333" stroke-width="1"/><text x="163" y="103">Diesel</text>
+  <line x1="130" y1="124" x2="160" y2="124" stroke="#333" stroke-width="1"/><text x="163" y="127">Oil</text>
+  <line x1="130" y1="150" x2="160" y2="150" stroke="#333" stroke-width="1"/><text x="163" y="153">Bitumen</text>
+  </g>
+  <!-- temperature arrow -->
+  <text x="20" y="30" font-size="7.5" fill="#c62828">cool</text>
+  <text x="20" y="158" font-size="7.5" fill="#c62828">hot</text>
+  <line x1="40" y1="40" x2="40" y2="150" stroke="#c62828" stroke-width="1.5" marker-end="url(#fdArr)"/>
+  <defs><marker id="fdArr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#c62828"/></marker></defs>
+  <text x="95" y="172" font-size="7" fill="#555" text-anchor="middle">crude oil in (heated)</text>
+  </g>
+</svg>`,
+
+  /** Alkane vs alkene displayed formulae — ethane (single) vs ethene (double). */
+  'alkane-alkene': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 140" width="300" height="140">
+  <g font-family="Arial" font-size="13" fill="#1a237e" font-weight="bold" text-anchor="middle">
+  <text x="75" y="16" font-size="10">ETHANE (alkane)</text>
+  <!-- ethane C-C single -->
+  <line x1="55" y1="64" x2="95" y2="64" stroke="#333" stroke-width="2"/>
+  <text x="55" y="69">C</text><text x="95" y="69">C</text>
+  <line x1="55" y1="56" x2="55" y2="38" stroke="#333" stroke-width="2"/><text x="55" y="34">H</text>
+  <line x1="55" y1="72" x2="55" y2="90" stroke="#333" stroke-width="2"/><text x="55" y="102">H</text>
+  <line x1="47" y1="64" x2="30" y2="64" stroke="#333" stroke-width="2"/><text x="24" y="69">H</text>
+  <line x1="95" y1="56" x2="95" y2="38" stroke="#333" stroke-width="2"/><text x="95" y="34">H</text>
+  <line x1="95" y1="72" x2="95" y2="90" stroke="#333" stroke-width="2"/><text x="95" y="102">H</text>
+  <line x1="103" y1="64" x2="120" y2="64" stroke="#333" stroke-width="2"/><text x="126" y="69">H</text>
+  <text x="75" y="124" font-size="9" fill="#555">C₂H₆ · saturated</text>
+  <!-- ethene C=C double -->
+  <text x="225" y="16" font-size="10">ETHENE (alkene)</text>
+  <line x1="205" y1="61" x2="245" y2="61" stroke="#333" stroke-width="2"/>
+  <line x1="205" y1="67" x2="245" y2="67" stroke="#333" stroke-width="2"/>
+  <text x="205" y="69">C</text><text x="245" y="69">C</text>
+  <line x1="205" y1="56" x2="205" y2="38" stroke="#333" stroke-width="2"/><text x="205" y="34">H</text>
+  <line x1="205" y1="72" x2="205" y2="90" stroke="#333" stroke-width="2"/><text x="205" y="102">H</text>
+  <line x1="245" y1="56" x2="245" y2="38" stroke="#333" stroke-width="2"/><text x="245" y="34">H</text>
+  <line x1="245" y1="72" x2="245" y2="90" stroke="#333" stroke-width="2"/><text x="245" y="102">H</text>
+  <text x="225" y="124" font-size="9" fill="#c62828">C₂H₄ · unsaturated (C=C)</text>
+  </g>
+</svg>`,
+
+  /** Addition polymerisation — many ethene monomers join to poly(ethene). */
+  'addition-polymerisation': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" width="320" height="120">
+  <g font-family="Arial" text-anchor="middle">
+  <text x="160" y="14" font-size="9" font-weight="bold" fill="#1a237e">ADDITION POLYMERISATION</text>
+  <!-- monomers -->
+  <g font-size="11" fill="#1a237e" font-weight="bold">
+  <text x="40" y="50">C=C</text><text x="80" y="50">C=C</text><text x="120" y="50">C=C</text>
+  </g>
+  <text x="80" y="68" font-size="8" fill="#555">many ethene monomers (C=C)</text>
+  <!-- arrow -->
+  <line x1="150" y1="46" x2="195" y2="46" stroke="#333" stroke-width="2" marker-end="url(#apArr)"/>
+  <defs><marker id="apArr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#333"/></marker></defs>
+  <!-- polymer chain -->
+  <g font-size="11" fill="#1a237e" font-weight="bold">
+  <text x="255" y="50">‑C‑C‑C‑C‑</text>
+  </g>
+  <text x="255" y="68" font-size="8" fill="#555">poly(ethene) — single bonds</text>
+  <text x="160" y="98" font-size="8.5" fill="#c62828">The C=C double bond opens to form single bonds</text>
+  <text x="160" y="112" font-size="8" fill="#555">n(CH₂=CH₂) → ‑(CH₂‑CH₂)‑ₙ</text>
+  </g>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CHEMICAL ANALYSIS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Paper chromatography — spots separated, with Rf measurement lines. */
+  'chromatography': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 175" width="240" height="175">
+  <g font-family="Arial">
+  <!-- beaker -->
+  <path d="M 30 40 L 30 165 Q 30 170 36 170 L 150 170 Q 156 170 156 165 L 156 40" fill="none" stroke="#333" stroke-width="2"/>
+  <!-- solvent -->
+  <rect x="32" y="150" width="122" height="18" fill="#dbeafe" opacity="0.7"/>
+  <!-- paper -->
+  <rect x="78" y="20" width="40" height="138" fill="#fffdf5" stroke="#bbb" stroke-width="1"/>
+  <!-- baseline (pencil) -->
+  <line x1="78" y1="150" x2="118" y2="150" stroke="#555" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="60" y="153" font-size="7" fill="#555" text-anchor="end">start</text>
+  <!-- solvent front -->
+  <line x1="78" y1="46" x2="118" y2="46" stroke="#1565c0" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="124" y="48" font-size="7" fill="#1565c0">solvent front</text>
+  <!-- spots -->
+  <circle cx="92" cy="92" r="5" fill="#c62828"/>
+  <circle cx="104" cy="70" r="5" fill="#2e7d32"/>
+  <circle cx="98" cy="150" r="3" fill="#444"/>
+  <!-- Rf measurement -->
+  <line x1="138" y1="150" x2="138" y2="92" stroke="#c62828" stroke-width="0.8"/>
+  <text x="142" y="124" font-size="7" fill="#c62828">dist. spot</text>
+  <line x1="158" y1="150" x2="158" y2="46" stroke="#1565c0" stroke-width="0.8"/>
+  <text x="162" y="100" font-size="7" fill="#1565c0" transform="rotate(90 162 100)" text-anchor="middle">dist. solvent</text>
+  <text x="93" y="14" font-size="8.5" font-weight="bold" fill="#1a237e">Rf = spot ÷ solvent</text>
+  </g>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY OF THE ATMOSPHERE
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Today's atmosphere composition pie chart. */
+  'atmosphere-composition': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 160" width="250" height="160">
+  <g font-family="Arial">
+  <!-- pie: N2 78% (281deg), O2 21% (76deg), other 1% -->
+  <circle cx="80" cy="80" r="60" fill="#1565c0"/>
+  <!-- O2 wedge (21% ~76deg) starting at top -->
+  <path d="M 80 80 L 80 20 A 60 60 0 0 1 138 65 Z" fill="#43a047"/>
+  <!-- other small wedge -->
+  <path d="M 80 80 L 138 65 A 60 60 0 0 1 139 70 Z" fill="#fbc02d"/>
+  <!-- legend -->
+  <rect x="160" y="40" width="12" height="12" fill="#1565c0"/><text x="176" y="50" font-size="9" fill="#222">Nitrogen 78%</text>
+  <rect x="160" y="62" width="12" height="12" fill="#43a047"/><text x="176" y="72" font-size="9" fill="#222">Oxygen 21%</text>
+  <rect x="160" y="84" width="12" height="12" fill="#fbc02d"/><text x="176" y="94" font-size="9" fill="#222">Other ~1%</text>
+  <text x="176" y="108" font-size="7.5" fill="#555">(argon, CO₂,</text>
+  <text x="176" y="118" font-size="7.5" fill="#555">water vapour)</text>
+  <text x="80" y="152" font-size="8" fill="#555" text-anchor="middle">Today's atmosphere</text>
+  </g>
+</svg>`,
+
+  /** Greenhouse effect — Sun, Earth, re-radiated IR trapped by gases. */
+  'greenhouse-effect': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 160" width="260" height="160">
+  <g font-family="Arial">
+  <!-- Sun -->
+  <circle cx="28" cy="28" r="16" fill="#fdd835" stroke="#f9a825" stroke-width="1.5"/>
+  <text x="28" y="54" font-size="7.5" fill="#555" text-anchor="middle">Sun</text>
+  <!-- Earth -->
+  <path d="M 20 140 Q 130 120 240 140 L 240 158 L 20 158 Z" fill="#8d6e63"/>
+  <path d="M 20 140 Q 130 120 240 140" fill="none" stroke="#33691e" stroke-width="3"/>
+  <text x="130" y="154" font-size="8" fill="#fff" text-anchor="middle">Earth's surface</text>
+  <!-- greenhouse gas layer -->
+  <line x1="20" y1="70" x2="240" y2="70" stroke="#c62828" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="130" y="64" font-size="8" fill="#c62828" text-anchor="middle">greenhouse gas layer (CO₂, CH₄)</text>
+  <!-- incoming ray -->
+  <line x1="44" y1="40" x2="120" y2="128" stroke="#f9a825" stroke-width="1.8" marker-end="url(#ghIn)"/>
+  <defs><marker id="ghIn" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#f9a825"/></marker></defs>
+  <!-- re-radiated up -->
+  <line x1="150" y1="128" x2="170" y2="74" stroke="#c62828" stroke-width="1.5" marker-end="url(#ghUp)"/>
+  <defs><marker id="ghUp" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#c62828"/></marker></defs>
+  <!-- reflected back down -->
+  <line x1="170" y1="74" x2="190" y2="126" stroke="#c62828" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#ghUp)"/>
+  <text x="205" y="100" font-size="7" fill="#c62828">IR trapped</text>
+  </g>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // USING RESOURCES
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Water treatment stages — sedimentation, filtration, sterilisation. */
+  'water-treatment': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 130" width="320" height="130">
+  <g font-family="Arial" text-anchor="middle">
+  <!-- stage 1 -->
+  <rect x="10" y="30" width="80" height="60" rx="5" fill="#eef6ff" stroke="#1a237e" stroke-width="1.3"/>
+  <text x="50" y="20" font-size="8" font-weight="bold" fill="#1a237e">1 SCREEN</text>
+  <text x="50" y="58" font-size="7.5" fill="#555">remove large</text>
+  <text x="50" y="68" font-size="7.5" fill="#555">objects/grit</text>
+  <!-- arrow -->
+  <line x1="92" y1="60" x2="106" y2="60" stroke="#333" stroke-width="1.5" marker-end="url(#wtA)"/>
+  <defs><marker id="wtA" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#333"/></marker></defs>
+  <!-- stage 2 -->
+  <rect x="108" y="30" width="80" height="60" rx="5" fill="#eef6ff" stroke="#1a237e" stroke-width="1.3"/>
+  <text x="148" y="20" font-size="8" font-weight="bold" fill="#1a237e">2 SEDIMENT/FILTER</text>
+  <text x="148" y="58" font-size="7.5" fill="#555">settle &amp; filter</text>
+  <text x="148" y="68" font-size="7.5" fill="#555">solids out</text>
+  <line x1="190" y1="60" x2="204" y2="60" stroke="#333" stroke-width="1.5" marker-end="url(#wtA)"/>
+  <!-- stage 3 -->
+  <rect x="206" y="30" width="80" height="60" rx="5" fill="#eef6ff" stroke="#1a237e" stroke-width="1.3"/>
+  <text x="246" y="20" font-size="8" font-weight="bold" fill="#1a237e">3 STERILISE</text>
+  <text x="246" y="58" font-size="7.5" fill="#555">chlorine / ozone</text>
+  <text x="246" y="68" font-size="7.5" fill="#555">/ UV kills microbes</text>
+  <text x="160" y="110" font-size="8" fill="#2e7d32" font-weight="bold">→ potable (safe to drink) water</text>
+  </g>
+</svg>`,
+
+  /** Haber process flow — N2 + H2 over iron catalyst, recycle. */
+  'haber-process': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 140" width="300" height="140">
+  <g font-family="Arial" text-anchor="middle">
+  <text x="150" y="14" font-size="9" font-weight="bold" fill="#1a237e">THE HABER PROCESS</text>
+  <text x="150" y="30" font-size="10" font-weight="bold" fill="#1a237e">N₂ + 3H₂ ⇌ 2NH₃</text>
+  <!-- reactor box -->
+  <rect x="100" y="48" width="100" height="44" rx="6" fill="#fde2c8" stroke="#b06a1a" stroke-width="1.3"/>
+  <text x="150" y="68" font-size="8.5" font-weight="bold" fill="#8a4b00">iron catalyst</text>
+  <text x="150" y="82" font-size="7.5" fill="#555">~450°C, 200 atm</text>
+  <!-- inputs -->
+  <text x="40" y="60" font-size="8" fill="#1565c0">N₂ (air)</text>
+  <text x="40" y="84" font-size="8" fill="#1565c0">H₂ (gas)</text>
+  <line x1="70" y1="58" x2="98" y2="62" stroke="#333" stroke-width="1.2" marker-end="url(#hbA)"/>
+  <line x1="70" y1="82" x2="98" y2="78" stroke="#333" stroke-width="1.2" marker-end="url(#hbA)"/>
+  <defs><marker id="hbA" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#333"/></marker></defs>
+  <!-- output -->
+  <line x1="200" y1="70" x2="240" y2="70" stroke="#333" stroke-width="1.2" marker-end="url(#hbA)"/>
+  <text x="268" y="73" font-size="8" font-weight="bold" fill="#2e7d32">NH₃</text>
+  <text x="150" y="112" font-size="7.5" fill="#555">Unreacted N₂ and H₂ are recycled</text>
+  <text x="150" y="126" font-size="7.5" fill="#555">Ammonia cooled and condensed off</text>
+  </g>
+</svg>`,
+
 };
 
 export default diagrams;

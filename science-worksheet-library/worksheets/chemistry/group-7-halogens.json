@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "GROUP 7 – THE HALOGENS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Halogen", "definition": "a Group 7 non-metal with seven outer electrons." },
+        { "term": "Diatomic", "definition": "exists as molecules of two atoms, e.g. Cl₂." },
+        { "term": "Displacement", "definition": "a more reactive halogen pushes out a less reactive one." },
+        { "term": "Ion formed", "definition": "halogens gain 1 electron to form a 1− ion (halide)." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Reactivity increases down Group 7.", "right": "Reactivity decreases down the group." },
+        { "wrong": "Halogens form 1+ ions.", "right": "They gain an electron to form 1− ions." },
+        { "wrong": "All halogens are gases.", "right": "States change: gas → liquid → solid down the group." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "TRENDS DOWN GROUP 7",
+      "diagram": {
+        "id": "group7-trend",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "OUTER ELECTRONS",
+      "type": "short-answer",
+      "text": "State the number of <span class=\"command\">outer electrons</span> in a halogen atom. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "REACTIVITY TREND",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why reactivity decreases down Group 7. <strong>[3 marks]</strong>",
+      "secondaryText": "Think about how easily the outer shell gains an electron.",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "DISPLACEMENT",
+      "type": "short-answer",
+      "text": "Chlorine is added to potassium bromide. <span class=\"command\">Predict</span> what happens and why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "FORM A HALIDE ION",
+      "type": "short-answer",
+      "text": "Describe how a chlorine atom forms a <span class=\"command\">chloride ion</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["gains", "decreases", "loses", "increases"],
+      "secondaryText": "A halogen ______ one electron. Reactivity ______ down the group.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WRITE AN EQUATION",
+      "type": "short-answer",
+      "text": "Write the equation for chlorine displacing bromine from KBr. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Smaller atom → outer shell closer → gains an electron more easily → more reactive.",
+    "thinkPrompt": "Why can fluorine displace every other halogen?"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ORGANIC CHEMISTRY – FRACTIONAL DISTILLATION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Fraction", "definition": "a group of hydrocarbons with similar boiling points." },
+        { "term": "Fractionating column", "definition": "hot at the bottom, cool at the top." },
+        { "term": "Condense", "definition": "a vapour turns to liquid at its boiling point." },
+        { "term": "Volatility", "definition": "how easily a substance evaporates." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Fractional distillation is a chemical reaction.", "right": "It is a physical separation — no new substances." },
+        { "wrong": "Small molecules collect at the bottom.", "right": "Small, low-bp molecules rise to the cool top." },
+        { "wrong": "The column is the same temperature throughout.", "right": "It has a temperature gradient: hot below, cool above." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "FRACTIONATING COLUMN",
+      "diagram": {
+        "id": "fractional-distillation",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "WHY IT WORKS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how fractional distillation separates crude oil. <strong>[3 marks]</strong>",
+      "secondaryText": "Refer to boiling points and the temperature gradient.",
+      "answerLines": 3
+    },
+    {
+      "number": 2,
+      "sectionTitle": "TOP OR BOTTOM",
+      "type": "short-answer",
+      "text": "State where the <span class=\"command\">shortest molecules</span> leave the column and why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "PROPERTIES",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why bitumen is more viscous than petrol. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "NAME FRACTIONS",
+      "type": "short-answer",
+      "text": "Name two useful fractions obtained from crude oil. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["boiling", "condense", "melting", "freeze"],
+      "secondaryText": "Each fraction ______ at the height where the temperature equals its ______ point.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "PHYSICAL CHANGE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why fractional distillation is a physical process. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Hot bottom, cool top: short molecules rise high, long molecules stay low.",
+    "thinkPrompt": "Why do fractions contain a range of molecule sizes rather than just one?"
+  }
+}

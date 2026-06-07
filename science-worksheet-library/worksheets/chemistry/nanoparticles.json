@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "NANOPARTICLES & NANOSCIENCE",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Nanoparticle", "definition": "a particle 1–100 nm across (a few hundred atoms)." },
+        { "term": "Coarse particle", "definition": "dust, 1×10⁻⁵ – 2.5×10⁻⁶ m across." },
+        { "term": "Surface area : volume", "definition": "ratio that increases as particles get smaller." },
+        { "term": "Nanoscience", "definition": "the study of very small structures and their uses." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Smaller particles have a smaller surface area : volume ratio.", "right": "Smaller particles have a much LARGER ratio." },
+        { "wrong": "Nanoparticles behave the same as bulk material.", "right": "They can have very different properties." },
+        { "wrong": "Nanoparticles are completely safe.", "right": "Their effects on health are not yet fully known." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "SURFACE AREA : VOLUME",
+      "workedSteps": [
+        "A cube of side 2: SA = 6×(2²) = 24, V = 2³ = 8.",
+        "!Ratio = 24 : 8 = 3 : 1",
+        "A cube of side 1: SA = 6, V = 1.",
+        "!Ratio = 6 : 1 — much larger!",
+        "Smaller cube → bigger surface area : volume ratio."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE",
+      "type": "short-answer",
+      "text": "State the size range of a <span class=\"command\">nanoparticle</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "SA : VOLUME",
+      "type": "calculation",
+      "text": "A cube has side 3 nm. <span class=\"command\">Calculate</span> its surface area : volume ratio. <strong>[2 marks]</strong>",
+      "answerUnit": "(ratio)"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "WHY USEFUL",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a high surface area : volume ratio makes nanoparticles good catalysts. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "USES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Give</span> one use of nanoparticles (e.g. in sun cream or medicine). <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["larger", "smaller", "less", "more"],
+      "secondaryText": "As particles get ______, the surface area : volume ratio gets ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "RISKS",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why some people are concerned about using nanoparticles. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Halving the size roughly doubles the surface area : volume ratio.",
+    "thinkPrompt": "Why does a larger surface area mean less material can be used?"
+  }
+}

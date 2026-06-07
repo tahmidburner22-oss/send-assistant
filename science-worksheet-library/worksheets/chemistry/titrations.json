@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "QUANTITATIVE CHEMISTRY – TITRATIONS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Titration", "definition": "a method to find the exact volume for neutralisation." },
+        { "term": "Burette", "definition": "measures the volume of solution added accurately." },
+        { "term": "End point", "definition": "when the indicator just changes colour." },
+        { "term": "Concordant", "definition": "repeat titres within 0.10 cm³ of each other." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Use universal indicator for titration.", "right": "Use a single-colour-change indicator (e.g. phenolphthalein)." },
+        { "wrong": "Average every titre value.", "right": "Only average concordant results." },
+        { "wrong": "Read the burette from the top.", "right": "Read from the bottom of the meniscus at eye level." }
+      ]
+    },
+    {
+      "type": "formula",
+      "title": "CONCENTRATION (mol/dm³)",
+      "formulaLines": [
+        "moles = concentration × <span class=\"formula-fraction\"><span class=\"formula-num\">volume (cm³)</span><span class=\"formula-den\">1000</span></span>"
+      ],
+      "content": "1000 cm³ = 1 dm³"
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "APPARATUS",
+      "type": "short-answer",
+      "text": "Name the piece of apparatus used to <span class=\"command\">add acid accurately</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "INDICATOR",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a single indicator (not universal) is used in titrations. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "MOLES OF ACID",
+      "type": "calculation",
+      "text": "25.0 cm³ of 0.10 mol/dm³ HCl is used. <span class=\"command\">Calculate</span> the moles of HCl. <strong>[2 marks]</strong>",
+      "answerUnit": "mol"
+    },
+    {
+      "number": 4,
+      "sectionTitle": "FIND CONCENTRATION",
+      "type": "calculation",
+      "text": "0.0025 mol of NaOH is in 20.0 cm³. <span class=\"command\">Calculate</span> its concentration. <strong>[2 marks]</strong>",
+      "answerUnit": "mol/dm³"
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["concordant", "meniscus", "average", "top"],
+      "secondaryText": "Read the burette at the bottom of the ______ and only average the ______ titres.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "ACCURACY",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> why a pipette is used to measure the alkali into the flask. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "moles = conc × volume ÷ 1000. Use the balanced ratio to find the unknown.",
+    "thinkPrompt": "Why do chemists repeat a titration until results are concordant?"
+  }
+}

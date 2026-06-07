@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "USING RESOURCES – POTABLE WATER",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Potable water", "definition": "water that is safe to drink (low in microbes/salts)." },
+        { "term": "Sterilisation", "definition": "killing microbes using chlorine, ozone or UV." },
+        { "term": "Desalination", "definition": "removing salt from sea water." },
+        { "term": "Distillation", "definition": "boiling and condensing to purify water." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Potable water is pure water.", "right": "It is safe to drink but may contain dissolved salts." },
+        { "wrong": "Filtration removes microbes.", "right": "Sterilisation is needed to kill microbes." },
+        { "wrong": "Desalination is cheap.", "right": "It needs lots of energy, so it is expensive." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "WATER TREATMENT",
+      "diagram": {
+        "id": "water-treatment",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE",
+      "type": "short-answer",
+      "text": "State what is meant by <span class=\"command\">potable water</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "TREATMENT STEPS",
+      "type": "explain",
+      "text": "<span class=\"command\">Describe</span> the main steps used to treat fresh water to make it potable. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "STERILISATION",
+      "type": "short-answer",
+      "text": "Name two methods used to <span class=\"command\">sterilise</span> water. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "DESALINATION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why desalination is expensive. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["sterilised", "filtered", "salt", "microbes"],
+      "secondaryText": "Water is ______ to remove solids and ______ to kill microbes.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY NOT PURE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why potable water is not the same as pure water. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Filter to remove solids, then sterilise (chlorine/ozone/UV) to kill microbes.",
+    "thinkPrompt": "Why might a country with little fresh water rely on desalination despite the cost?"
+  }
+}

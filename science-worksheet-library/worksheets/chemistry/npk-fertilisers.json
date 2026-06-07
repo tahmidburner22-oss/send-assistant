@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "USING RESOURCES – NPK FERTILISERS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "NPK fertiliser", "definition": "supplies nitrogen, phosphorus and potassium." },
+        { "term": "Ammonia", "definition": "from the Haber process — used to make nitrogen salts." },
+        { "term": "Neutralisation", "definition": "acid + ammonia → ammonium salt fertiliser." },
+        { "term": "Phosphate rock", "definition": "the source of phosphorus, treated with acids." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Fertilisers are made in one simple step.", "right": "Industrial production has several stages." },
+        { "wrong": "Phosphate rock can be used directly.", "right": "It is insoluble — it must be reacted with acid first." },
+        { "wrong": "NPK provides only nitrogen.", "right": "It provides nitrogen, phosphorus AND potassium." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "MAKING FERTILISER SALTS",
+      "workedSteps": [
+        "Ammonia + nitric acid → ammonium nitrate.",
+        "!Ammonia + sulfuric acid → ammonium sulfate.",
+        "Phosphate rock + acids → soluble phosphates.",
+        "!Potassium from mined potassium chloride/sulfate.",
+        "NPK = nitrogen + phosphorus + potassium."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "WHAT IS NPK",
+      "type": "short-answer",
+      "text": "State the three elements supplied by an <span class=\"command\">NPK fertiliser</span>. <strong>[3 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "AMMONIUM SALT",
+      "type": "short-answer",
+      "text": "Name the salt made from ammonia and nitric acid. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "PHOSPHATE ROCK",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why phosphate rock is treated with acid before use. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "LAB vs INDUSTRY",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> one difference between making a fertiliser salt in a lab and in industry. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["nitrogen", "potassium", "ammonia", "oxygen"],
+      "secondaryText": "______ from the Haber process is neutralised by acids to supply ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY FERTILISE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why farmers add NPK fertilisers to crops. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "NPK = Nitrogen, Phosphorus, Potassium — the key nutrients for plant growth.",
+    "thinkPrompt": "Why must phosphate rock be made soluble before plants can use it?"
+  }
+}

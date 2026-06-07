@@ -1,0 +1,106 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ORGANIC CHEMISTRY – CONDENSATION POLYMERISATION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Condensation polymerisation", "definition": "monomers join and a small molecule is lost." },
+        { "term": "Small molecule", "definition": "usually water, lost each time monomers join." },
+        { "term": "Two functional groups", "definition": "each monomer reacts at both ends." },
+        { "term": "Polyester", "definition": "a condensation polymer (e.g. from a diol + diacid)." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Condensation has only one product.", "right": "It makes the polymer AND a small molecule (water)." },
+        { "wrong": "It uses one type of monomer with a C=C.", "right": "It uses monomers with two functional groups each." },
+        { "wrong": "Addition and condensation are the same.", "right": "Condensation loses a small molecule; addition does not." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "ADDITION vs CONDENSATION",
+      "workedSteps": [
+        "Addition: 1 monomer (C=C), 1 product.",
+        "!Condensation: 2 monomers (2 groups each).",
+        "A small molecule (water) is lost each join.",
+        "!Example: diol + dicarboxylic acid → polyester + water.",
+        "Both build long-chain polymers."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE",
+      "type": "short-answer",
+      "text": "State what is meant by <span class=\"command\">condensation polymerisation</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "TWO PRODUCTS",
+      "type": "short-answer",
+      "text": "Name the small molecule usually lost in condensation polymerisation. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "MONOMERS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why condensation monomers need two functional groups. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "COMPARE",
+      "type": "compare",
+      "text": "Compare addition and condensation polymerisation. <strong>[3 marks]</strong>",
+      "table": {
+        "headers": ["Feature", "Addition", "Condensation"],
+        "rows": [
+          ["No. of monomer types", "", ""],
+          ["No. of products", "", ""],
+          ["Small molecule lost?", "", ""]
+        ]
+      }
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["two", "water", "one", "carbon dioxide"],
+      "secondaryText": "Each monomer has ______ functional groups, and ______ is lost when they join.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "EXAMPLE",
+      "type": "short-answer",
+      "text": "Name one polymer made by condensation polymerisation. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "Condensation = two monomers join AND a small molecule (water) is released.",
+    "thinkPrompt": "Why can a single C=C monomer not make a condensation polymer?"
+  }
+}

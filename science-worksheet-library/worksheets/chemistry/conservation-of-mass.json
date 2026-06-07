@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "QUANTITATIVE CHEMISTRY – CONSERVATION OF MASS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Conservation of mass", "definition": "no atoms are made or lost in a reaction." },
+        { "term": "Balanced equation", "definition": "same number of each atom on both sides." },
+        { "term": "Reactant", "definition": "a substance that reacts (left of the arrow)." },
+        { "term": "Product", "definition": "a substance made (right of the arrow)." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Mass is lost when a gas is given off.", "right": "The gas escapes — but its mass is not destroyed." },
+        { "wrong": "You can change subscripts to balance.", "right": "Only change the big numbers (coefficients)." },
+        { "wrong": "Mass increases when wood burns.", "right": "Mass seems to fall — gases escape into the air." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "WORKED EXAMPLE",
+      "workedSteps": [
+        "12 g of carbon reacts with 32 g of oxygen.",
+        "!mass of products = mass of reactants",
+        "mass of CO₂ = 12 + 32",
+        "!= 44 g",
+        "No atoms are lost — mass is conserved."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "STATE THE LAW",
+      "type": "short-answer",
+      "text": "State the <span class=\"command\">law of conservation of mass</span>. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "CALCULATE A MASS",
+      "type": "calculation",
+      "text": "8 g of methane reacts with 32 g of oxygen to make 22 g of CO₂. <span class=\"command\">Calculate</span> the mass of water made. <strong>[2 marks]</strong>",
+      "answerUnit": "g"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "MASS DECREASE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why the mass appears to decrease when a metal carbonate is heated. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "MASS INCREASE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why magnesium gains mass when burned in air. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "BALANCE IT",
+      "type": "fill-blank",
+      "text": "Balance: ___ H₂ + O₂ → ___ H₂O. <strong>[2 marks]</strong>",
+      "wordBank": ["2", "1"],
+      "secondaryText": "Add the missing balancing numbers.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "CLOSED SYSTEM",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why mass stays constant when a reaction is done in a sealed flask. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Atoms are only rearranged — total mass before = total mass after.",
+    "thinkPrompt": "Why does burning in an open dish seem to break the law of conservation of mass?"
+  }
+}

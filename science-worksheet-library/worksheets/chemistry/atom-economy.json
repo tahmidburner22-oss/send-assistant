@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "QUANTITATIVE CHEMISTRY – ATOM ECONOMY",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Atom economy", "definition": "the % of reactant mass that becomes the useful product." },
+        { "term": "Useful product", "definition": "the product you actually want to make." },
+        { "term": "By-product", "definition": "a product that is not wanted." },
+        { "term": "Sustainable", "definition": "uses fewer resources and makes less waste." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Atom economy and yield are the same.", "right": "Atom economy is about efficiency; yield is about amount." },
+        { "wrong": "Use only the wanted product's atoms on the bottom.", "right": "Bottom line is the total Mᵣ of ALL products." },
+        { "wrong": "A high yield means a high atom economy.", "right": "They are independent of each other." }
+      ]
+    },
+    {
+      "type": "formula",
+      "title": "ATOM ECONOMY",
+      "formulaLines": [
+        "atom economy = <span class=\"formula-fraction\"><span class=\"formula-num\">Mᵣ of useful product</span><span class=\"formula-den\">Mᵣ of all products</span></span> × 100"
+      ],
+      "content": "Higher atom economy = less waste"
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE",
+      "type": "short-answer",
+      "text": "State what is meant by <span class=\"command\">atom economy</span>. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "CALCULATE",
+      "type": "calculation",
+      "text": "CuO + H₂ → Cu + H₂O. <span class=\"command\">Calculate</span> the atom economy for Cu. (Cu=64, H₂O=18) <strong>[3 marks]</strong>",
+      "answerUnit": "%"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "ONLY ONE PRODUCT",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a reaction with only one product has 100% atom economy. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "WHY IT MATTERS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why high atom economy is good for the environment. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["useful", "all", "less", "more"],
+      "secondaryText": "Atom economy = (Mᵣ of ______ product ÷ Mᵣ of ______ products) × 100.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "EVALUATE",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> what a company could do with a valuable by-product. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Atom economy compares the wanted product's mass with the mass of ALL products.",
+    "thinkPrompt": "Why might a reaction with low atom economy still be used in industry?"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "QUANTITATIVE CHEMISTRY – RELATIVE FORMULA MASS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Relative atomic mass (Aᵣ)", "definition": "the average mass of an atom compared to ¹²C." },
+        { "term": "Relative formula mass (Mᵣ)", "definition": "the sum of the Aᵣ of all atoms in a formula." },
+        { "term": "Subscript", "definition": "the small number showing how many atoms." },
+        { "term": "Bracket", "definition": "multiplies everything inside it by the number after it." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Mᵣ has units of grams.", "right": "Relative masses have no units." },
+        { "wrong": "Ignore the number after a bracket.", "right": "Multiply everything in the bracket by it." },
+        { "wrong": "Mᵣ = number of atoms.", "right": "Mᵣ = sum of the atomic masses." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "WORKED EXAMPLE: Ca(OH)₂",
+      "workedSteps": [
+        "Aᵣ: Ca = 40, O = 16, H = 1.",
+        "Ca = 40; (OH)₂ = 2×(16+1).",
+        "= 40 + 2×17",
+        "!Mᵣ = 40 + 34 = 74"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "SIMPLE Mᵣ",
+      "type": "calculation",
+      "text": "<span class=\"command\">Calculate</span> the Mᵣ of CO₂. (C=12, O=16) <strong>[1 mark]</strong>",
+      "answerUnit": "(Mᵣ)"
+    },
+    {
+      "number": 2,
+      "sectionTitle": "WATER",
+      "type": "calculation",
+      "text": "<span class=\"command\">Calculate</span> the Mᵣ of H₂O. (H=1, O=16) <strong>[1 mark]</strong>",
+      "answerUnit": "(Mᵣ)"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "USE BRACKETS",
+      "type": "calculation",
+      "text": "<span class=\"command\">Calculate</span> the Mᵣ of Mg(NO₃)₂. (Mg=24, N=14, O=16) <strong>[2 marks]</strong>",
+      "answerUnit": "(Mᵣ)"
+    },
+    {
+      "number": 4,
+      "sectionTitle": "PERCENTAGE MASS",
+      "type": "calculation",
+      "text": "<span class=\"command\">Calculate</span> the % by mass of oxygen in CO₂. <strong>[2 marks]</strong>",
+      "answerUnit": "%"
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["sum", "no", "product", "kg"],
+      "secondaryText": "Relative formula mass is the ______ of the atomic masses and has ______ units.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "FIND THE FORMULA",
+      "type": "calculation",
+      "text": "A compound CaCO₃ has Mᵣ = ?. (Ca=40, C=12, O=16) <span class=\"command\">Calculate</span> it. <strong>[2 marks]</strong>",
+      "answerUnit": "(Mᵣ)"
+    }
+  ],
+  "footer": {
+    "tip": "Multiply the atomic mass by the subscript, then add everything up.",
+    "thinkPrompt": "Why does the number outside a bracket multiply ALL atoms inside it?"
+  }
+}

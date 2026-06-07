@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL ANALYSIS – PURITY & FORMULATIONS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Pure substance", "definition": "a single element or compound, not mixed." },
+        { "term": "Formulation", "definition": "a useful mixture made to an exact recipe." },
+        { "term": "Melting point test", "definition": "a pure substance melts at one sharp temperature." },
+        { "term": "Impurity", "definition": "lowers melting point and widens the range." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "'Pure' means safe or natural.", "right": "In chemistry pure means a single substance." },
+        { "wrong": "Impurities raise the melting point.", "right": "Impurities lower it and spread it over a range." },
+        { "wrong": "A formulation is a pure substance.", "right": "A formulation is a carefully made mixture." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "PURE vs IMPURE",
+      "workedSteps": [
+        "Pure water melts sharply at 0°C.",
+        "!Pure substances have a fixed melting point.",
+        "An impurity lowers and broadens the melting point.",
+        "!Formulations: paints, fuels, medicines, alloys.",
+        "Each component has a measured amount and purpose."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE PURE",
+      "type": "short-answer",
+      "text": "State what a chemist means by a <span class=\"command\">pure substance</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "TEST FOR PURITY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how a melting point test shows whether a substance is pure. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "FORMULATION",
+      "type": "short-answer",
+      "text": "State what is meant by a <span class=\"command\">formulation</span> and give an example. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "EFFECT OF IMPURITY",
+      "type": "explain",
+      "text": "<span class=\"command\">Describe</span> how an impurity changes the melting point. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["sharp", "range", "lower", "higher"],
+      "secondaryText": "A pure substance melts at a ______ temperature; an impurity melts over a ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "EVERYDAY EXAMPLES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Give</span> two everyday formulations and their purpose. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Pure = one substance, sharp melting point. Impure = melts over a range.",
+    "thinkPrompt": "Why is a carefully measured recipe so important in a medicine formulation?"
+  }
+}

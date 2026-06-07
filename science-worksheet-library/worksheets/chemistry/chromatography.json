@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL ANALYSIS – CHROMATOGRAPHY",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Stationary phase", "definition": "the chromatography paper (does not move)." },
+        { "term": "Mobile phase", "definition": "the solvent that moves through the paper." },
+        { "term": "Rf value", "definition": "distance by spot ÷ distance by solvent." },
+        { "term": "Pure substance", "definition": "produces a single spot on a chromatogram." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Use a pen to draw the start line.", "right": "Use pencil — ink would separate too." },
+        { "wrong": "Rf can be greater than 1.", "right": "Rf is always between 0 and 1." },
+        { "wrong": "The solvent level starts above the spots.", "right": "Solvent must start BELOW the spots." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "PAPER CHROMATOGRAPHY",
+      "diagram": {
+        "id": "chromatography",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "TWO PHASES",
+      "type": "short-answer",
+      "text": "Name the <span class=\"command\">stationary</span> and <span class=\"command\">mobile</span> phases in paper chromatography. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "WHY PENCIL",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why the start line is drawn in pencil. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "CALCULATE Rf",
+      "type": "calculation",
+      "text": "A spot moves 4.0 cm; the solvent moves 8.0 cm. <span class=\"command\">Calculate</span> the Rf value. <strong>[2 marks]</strong>",
+      "answerUnit": "(Rf)"
+    },
+    {
+      "number": 4,
+      "sectionTitle": "PURE OR IMPURE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how a chromatogram shows a substance is a mixture. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["soluble", "spot", "insoluble", "solvent"],
+      "secondaryText": "A more ______ substance travels further. Rf = distance by ______ ÷ distance by solvent.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "INTERPRET",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why some substances travel further up the paper. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Rf = distance by spot ÷ distance by solvent — always between 0 and 1.",
+    "thinkPrompt": "Why does the same substance always give the same Rf in the same solvent?"
+  }
+}

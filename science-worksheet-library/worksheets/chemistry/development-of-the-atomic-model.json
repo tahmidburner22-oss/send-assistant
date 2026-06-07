@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "DEVELOPMENT OF THE ATOMIC MODEL",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Plum pudding", "definition": "Thomson's model: a ball of positive charge with electrons in it." },
+        { "term": "Nuclear model", "definition": "a tiny dense positive nucleus surrounded by electrons." },
+        { "term": "Alpha scattering", "definition": "experiment that proved most of the atom is empty space." },
+        { "term": "Energy levels", "definition": "Bohr's shells where electrons orbit at set distances." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "The atom was discovered in one experiment.", "right": "The model changed over time as new evidence appeared." },
+        { "wrong": "Electrons were known before the nucleus.", "right": "Correct — but the nucleus was found later by Rutherford." },
+        { "wrong": "Neutrons were in the first models.", "right": "Chadwick discovered the neutron about 20 years later." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "HOW THE MODEL CHANGED",
+      "diagram": {
+        "id": "atom-model-timeline",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "PLUM PUDDING",
+      "type": "short-answer",
+      "text": "Describe the <span class=\"command\">plum pudding model</span> of the atom. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "ALPHA SCATTERING",
+      "type": "explain",
+      "text": "Most alpha particles passed straight through the gold foil. <span class=\"command\">Explain</span> what this showed. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "DEFLECTED PARTICLES",
+      "type": "explain",
+      "text": "A few alpha particles bounced straight back. <span class=\"command\">Explain</span> what this told scientists. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "BOHR'S IDEA",
+      "type": "short-answer",
+      "text": "State how Bohr changed the nuclear model. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "ORDER THE MODELS",
+      "type": "fill-blank",
+      "text": "Complete the order using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["Dalton", "Thomson", "Rutherford", "Bohr"],
+      "secondaryText": "solid sphere → ______ → nuclear model → ______ (shells).",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY MODELS CHANGE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why scientific models are changed over time. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "New experimental evidence forces models to be revised.",
+    "thinkPrompt": "Why was the alpha-scattering experiment such strong evidence for a nucleus?"
+  }
+}

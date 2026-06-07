@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "USING RESOURCES – WASTE WATER TREATMENT",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Sewage", "definition": "waste water containing organic matter and microbes." },
+        { "term": "Screening", "definition": "removing large solids and grit." },
+        { "term": "Sedimentation", "definition": "settling out solids into sludge and effluent." },
+        { "term": "Aerobic digestion", "definition": "bacteria break down effluent using oxygen." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Sewage treatment is the same as making potable water.", "right": "It removes harmful matter before release, not for drinking." },
+        { "wrong": "All bacteria are removed.", "right": "Helpful bacteria are USED to break down waste." },
+        { "wrong": "Sludge is thrown away as useless.", "right": "Sludge can be digested to make biogas/fertiliser." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "TREATMENT STAGES",
+      "workedSteps": [
+        "Screening — remove grit and large solids.",
+        "!Sedimentation — solids settle as sludge.",
+        "Effluent (liquid) treated by aerobic bacteria.",
+        "!Sludge treated by anaerobic bacteria → biogas.",
+        "Treated water can be safely released."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "FIRST STEP",
+      "type": "short-answer",
+      "text": "State why sewage is <span class=\"command\">screened</span> first. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "SEDIMENTATION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> what happens during sedimentation. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "EFFLUENT",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how the liquid effluent is treated. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "USE OF SLUDGE",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Suggest</span> one useful product from digested sludge. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["aerobic", "anaerobic", "effluent", "sludge"],
+      "secondaryText": "Liquid ______ is treated by ______ bacteria using oxygen.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "COMPARE SOURCES",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why treating sewage needs more steps than treating ground water. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Screen → sediment → aerobic (effluent) + anaerobic (sludge) digestion.",
+    "thinkPrompt": "Why is anaerobic digestion of sludge useful as well as cleaning the water?"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "SEPARATING MIXTURES – FILTRATION & DISTILLATION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Filtration", "definition": "separates an insoluble solid from a liquid." },
+        { "term": "Crystallisation", "definition": "separates a soluble solid from its solution." },
+        { "term": "Distillation", "definition": "separates a liquid from a solution by evaporating and condensing." },
+        { "term": "Chromatography", "definition": "separates substances by how far they travel in a solvent." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Filtration separates salt from water.", "right": "Salt dissolves — use crystallisation or distillation." },
+        { "wrong": "The residue is the liquid that passes through.", "right": "The residue is the solid left in the filter paper." },
+        { "wrong": "Distillation makes water disappear.", "right": "The vapour is cooled and condensed back to liquid." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "FILTRATION",
+      "diagram": {
+        "id": "filtration",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CHOOSE A METHOD",
+      "type": "short-answer",
+      "text": "Name the best method to separate sand from water. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "RESIDUE & FILTRATE",
+      "type": "short-answer",
+      "text": "In filtration, define the terms <span class=\"command\">residue</span> and <span class=\"command\">filtrate</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "GET PURE WATER",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how distillation produces pure water from salty water. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "RECOVER A SALT",
+      "type": "short-answer",
+      "text": "Name the method used to recover copper sulfate crystals from solution. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["insoluble", "soluble", "evaporates", "condenses"],
+      "secondaryText": "Filtration removes an ______ solid. In distillation the liquid ______ then ______ on a cold surface.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "CHROMATOGRAPHY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why some inks travel further up the paper than others. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Dissolved (soluble) solids pass through filter paper — only insoluble solids are trapped.",
+    "thinkPrompt": "Why must the thermometer sit at the top of the flask in distillation?"
+  }
+}

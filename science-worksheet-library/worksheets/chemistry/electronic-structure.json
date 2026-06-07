@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ATOMIC STRUCTURE – ELECTRONIC STRUCTURE",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Energy level (shell)", "definition": "a region around the nucleus where electrons are found." },
+        { "term": "Electronic structure", "definition": "how electrons are arranged in the shells, e.g. 2,8,1." },
+        { "term": "Outer shell", "definition": "the highest occupied energy level — controls reactions." },
+        { "term": "Group number", "definition": "equals the number of electrons in the outer shell." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "The first shell holds 8 electrons.", "right": "The first shell holds a maximum of 2." },
+        { "wrong": "Electrons fill the outer shell first.", "right": "Inner shells fill before outer shells." },
+        { "wrong": "Period number = outer electrons.", "right": "Group number = outer electrons; period = number of shells." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "ELECTRON SHELLS",
+      "diagram": {
+        "id": "atom-shells",
+        "width": "100%"
+      },
+      "secondaryContent": "Electrons fill shells <strong>2, 8, 8</strong> ... from the inside out."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "SHELL CAPACITY",
+      "type": "short-answer",
+      "text": "State the maximum number of electrons in the <span class=\"command\">first and second</span> shells. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "WRITE THE STRUCTURE",
+      "type": "short-answer",
+      "text": "Magnesium has 12 electrons. Write its <span class=\"command\">electronic structure</span>. <strong>[1 mark]</strong>",
+      "answerUnit": "(e.g. 2,8,...)"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "GROUP FROM STRUCTURE",
+      "type": "short-answer",
+      "text": "An atom has the structure 2,8,7. State its <span class=\"command\">group and period</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "OUTER ELECTRONS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why elements in the same group have similar reactions. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["group", "period", "shells", "two"],
+      "secondaryText": "The number of occupied ______ equals the ______ number of an element.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "DRAW AN ATOM",
+      "type": "short-answer",
+      "text": "Oxygen is 2,6. <span class=\"command\">State</span> how many electrons are in its outer shell. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "Outer-shell electrons decide how an element reacts.",
+    "thinkPrompt": "Why are the noble gases (full outer shells) so unreactive?"
+  }
+}

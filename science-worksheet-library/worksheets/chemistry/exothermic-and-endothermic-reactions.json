@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ENERGY CHANGES – EXOTHERMIC & ENDOTHERMIC",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Exothermic", "definition": "transfers energy to the surroundings (gets hotter)." },
+        { "term": "Endothermic", "definition": "takes in energy from the surroundings (gets colder)." },
+        { "term": "Surroundings", "definition": "everything around the reaction (e.g. the water)." },
+        { "term": "Combustion", "definition": "burning — an exothermic reaction." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Exothermic reactions feel cold.", "right": "Exothermic releases heat — feels hot." },
+        { "wrong": "Endothermic reactions destroy energy.", "right": "Energy is taken in, not destroyed." },
+        { "wrong": "All reactions release energy.", "right": "Some (endothermic) absorb energy." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "ENDOTHERMIC PROFILE",
+      "diagram": {
+        "id": "reaction-profile-endo",
+        "width": "100%"
+      },
+      "secondaryContent": "Products are <strong>higher</strong> than reactants — energy is <strong>taken in</strong>."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE EXOTHERMIC",
+      "type": "short-answer",
+      "text": "State what is meant by an <span class=\"command\">exothermic reaction</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "CLASSIFY",
+      "type": "short-answer",
+      "text": "Classify combustion and thermal decomposition as exo- or endothermic. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "TEMPERATURE CHANGE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why the temperature of the surroundings falls in an endothermic reaction. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "EVERYDAY USES",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Give</span> a use of an exothermic and an endothermic change. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["releases", "takes in", "higher", "lower"],
+      "secondaryText": "An exothermic reaction ______ energy, so products are at a ______ energy level.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "INTERPRET A PROFILE",
+      "type": "explain",
+      "text": "A reaction profile shows products below reactants. <span class=\"command\">State</span> the type of reaction and why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Exo = exit heat (hotter). Endo = energy in (colder).",
+    "thinkPrompt": "Why does an exothermic reaction have products at a lower energy than reactants?"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "RATE & EXTENT – CALCULATING RATES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Mean rate", "definition": "amount of reactant used or product made ÷ time." },
+        { "term": "Tangent", "definition": "a straight line touching a curve to find the rate." },
+        { "term": "Gradient", "definition": "change in y ÷ change in x of a tangent." },
+        { "term": "Units", "definition": "g/s, cm³/s or mol/s depending on what is measured." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Rate is constant throughout.", "right": "Rate is fastest at the start and slows down." },
+        { "wrong": "A steeper curve means a slower rate.", "right": "A steeper gradient means a faster rate." },
+        { "wrong": "Rate is read straight off a curve.", "right": "Draw a tangent and find its gradient." }
+      ]
+    },
+    {
+      "type": "formula",
+      "title": "MEAN RATE",
+      "formulaLines": [
+        "mean rate = <span class=\"formula-fraction\"><span class=\"formula-num\">quantity of reactant or product</span><span class=\"formula-den\">time taken</span></span>"
+      ],
+      "content": "Rate is fastest at the start"
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "MEAN RATE (MASS)",
+      "type": "calculation",
+      "text": "A flask loses 6.0 g in 30 s. <span class=\"command\">Calculate</span> the mean rate of reaction. <strong>[2 marks]</strong>",
+      "answerUnit": "g/s"
+    },
+    {
+      "number": 2,
+      "sectionTitle": "MEAN RATE (GAS)",
+      "type": "calculation",
+      "text": "60 cm³ of gas is made in 40 s. <span class=\"command\">Calculate</span> the mean rate. <strong>[2 marks]</strong>",
+      "answerUnit": "cm³/s"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "USING A TANGENT",
+      "type": "explain",
+      "text": "<span class=\"command\">Describe</span> how to find the rate at a given time from a curved graph. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "WHY IT SLOWS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why the rate decreases as the reaction continues. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["gradient", "start", "tangent", "end"],
+      "secondaryText": "Draw a ______ to the curve and find its ______ to get the rate.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "READ A GRAPH",
+      "type": "short-answer",
+      "text": "A graph levels off at 80 cm³. <span class=\"command\">State</span> what this shows about the reaction. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Mean rate = amount ÷ time. For an instant rate, use the gradient of a tangent.",
+    "thinkPrompt": "Why is the gradient steepest at the very start of the reaction?"
+  }
+}

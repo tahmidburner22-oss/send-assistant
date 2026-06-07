@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL ANALYSIS – TESTS FOR GASES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Hydrogen test", "definition": "lit splint gives a squeaky pop." },
+        { "term": "Oxygen test", "definition": "relights a glowing splint." },
+        { "term": "Carbon dioxide test", "definition": "turns limewater milky/cloudy." },
+        { "term": "Chlorine test", "definition": "bleaches damp blue litmus paper white." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Oxygen pops with a lit splint.", "right": "Oxygen relights a GLOWING splint; hydrogen pops." },
+        { "wrong": "CO₂ turns limewater clear.", "right": "CO₂ turns limewater cloudy (milky)." },
+        { "wrong": "Chlorine turns litmus red permanently.", "right": "Chlorine bleaches the paper white." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "GAS TEST SUMMARY",
+      "workedSteps": [
+        "!Hydrogen → lit splint → squeaky pop.",
+        "!Oxygen → glowing splint → relights.",
+        "!Carbon dioxide → limewater → goes cloudy.",
+        "!Chlorine → damp litmus → bleached white.",
+        "Always state the test AND the result."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "HYDROGEN",
+      "type": "short-answer",
+      "text": "Describe the test and result for <span class=\"command\">hydrogen</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "OXYGEN",
+      "type": "short-answer",
+      "text": "Describe the test and result for <span class=\"command\">oxygen</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "CARBON DIOXIDE",
+      "type": "short-answer",
+      "text": "Describe the test and result for <span class=\"command\">carbon dioxide</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "CHLORINE",
+      "type": "short-answer",
+      "text": "Describe the test and result for <span class=\"command\">chlorine</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["pop", "relights", "cloudy", "bleaches"],
+      "secondaryText": "A glowing splint ______ in oxygen; carbon dioxide turns limewater ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "IDENTIFY",
+      "type": "short-answer",
+      "text": "A gas relights a glowing splint. <span class=\"command\">Identify</span> the gas. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "Hydrogen pops, oxygen relights, CO₂ clouds limewater, chlorine bleaches.",
+    "thinkPrompt": "Why must the litmus paper be damp to test for chlorine?"
+  }
+}

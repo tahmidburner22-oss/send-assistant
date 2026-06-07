@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL CHANGES – EXTRACTION OF METALS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Ore", "definition": "a rock containing enough metal to extract profitably." },
+        { "term": "Reduction", "definition": "loss of oxygen (or gain of electrons)." },
+        { "term": "Reduction by carbon", "definition": "used for metals less reactive than carbon." },
+        { "term": "Electrolysis", "definition": "used to extract metals more reactive than carbon." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "All metals are extracted by carbon.", "right": "Reactive metals (above carbon) need electrolysis." },
+        { "wrong": "Gold must be extracted from an ore.", "right": "Gold is unreactive and found as the metal itself." },
+        { "wrong": "Reduction means adding oxygen.", "right": "Reduction is the LOSS of oxygen." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "EXTRACTION METHOD",
+      "diagram": {
+        "id": "reactivity-series",
+        "width": "100%"
+      },
+      "secondaryContent": "Above carbon → <strong>electrolysis</strong>. Below carbon → <strong>reduction by carbon</strong>."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE REDUCTION",
+      "type": "short-answer",
+      "text": "State what is meant by <span class=\"command\">reduction</span> in terms of oxygen. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "CHOOSE A METHOD",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why aluminium is extracted by electrolysis, not by carbon. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "IRON FROM IRON OXIDE",
+      "type": "short-answer",
+      "text": "Carbon reduces iron oxide. <span class=\"command\">Identify</span> which substance is reduced. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 4,
+      "sectionTitle": "WHY ELECTROLYSIS COSTS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why extracting metals by electrolysis is expensive. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["carbon", "electrolysis", "above", "below"],
+      "secondaryText": "Metals ______ carbon in the series are extracted by ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "BIOLEACHING",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Suggest</span> one advantage of using bacteria (bioleaching) to extract copper. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Compare the metal with carbon: above = electrolysis, below = reduction by carbon.",
+    "thinkPrompt": "Why is recycling a metal usually cheaper than extracting it from its ore?"
+  }
+}

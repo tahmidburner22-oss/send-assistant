@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "RATE & EXTENT – REVERSIBLE REACTIONS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Reversible reaction", "definition": "products can react to reform the reactants (⇌)." },
+        { "term": "Forward reaction", "definition": "reactants → products." },
+        { "term": "Backward reaction", "definition": "products → reactants." },
+        { "term": "Closed system", "definition": "nothing enters or leaves the reaction." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "A reversible reaction goes one way then stops.", "right": "Both directions happen at the same time." },
+        { "wrong": "If forward is exothermic, so is backward.", "right": "The backward reaction is endothermic by the same amount." },
+        { "wrong": "Reversible reactions reach 100% yield.", "right": "They settle at an equilibrium below 100%." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "ENERGY IN BOTH DIRECTIONS",
+      "workedSteps": [
+        "Hydrated copper sulfate ⇌ anhydrous + water.",
+        "!Forward (heating) is endothermic.",
+        "!Backward (adding water) is exothermic.",
+        "Energy in = energy out (same magnitude).",
+        "The ⇌ symbol shows a reversible reaction."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "THE SYMBOL",
+      "type": "short-answer",
+      "text": "State what the <span class=\"command\">⇌ symbol</span> means in an equation. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "ENERGY",
+      "type": "explain",
+      "text": "The forward reaction is exothermic. <span class=\"command\">State</span> the energy change of the backward reaction and why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "COPPER SULFATE",
+      "type": "explain",
+      "text": "<span class=\"command\">Describe</span> the colour change when hydrated copper sulfate is heated. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "REACH EQUILIBRIUM",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a reversible reaction does not give a 100% yield. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["endothermic", "exothermic", "forward", "backward"],
+      "secondaryText": "If the forward reaction is ______, the backward reaction is ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "APPLY",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Suggest</span> how copper sulfate could be used to test for water. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "In a reversible reaction the energy change is equal and opposite each way.",
+    "thinkPrompt": "Why must a reversible reaction be in a closed system to reach equilibrium?"
+  }
+}

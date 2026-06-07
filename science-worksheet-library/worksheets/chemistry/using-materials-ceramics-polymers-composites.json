@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "USING RESOURCES – CERAMICS, POLYMERS & COMPOSITES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Ceramic", "definition": "a hard, brittle material like clay pottery or glass." },
+        { "term": "Thermosoftening", "definition": "polymer that melts and remoulds when heated." },
+        { "term": "Thermosetting", "definition": "polymer with cross-links — does not melt." },
+        { "term": "Composite", "definition": "a material made of two materials with different properties." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "All polymers melt when heated.", "right": "Thermosetting polymers do not melt." },
+        { "wrong": "Composites are a single material.", "right": "They combine a matrix and reinforcement." },
+        { "wrong": "Ceramics conduct electricity well.", "right": "Ceramics are insulators." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "MATCHING PROPERTIES",
+      "workedSteps": [
+        "Ceramics: hard, brittle, insulators (pottery, glass).",
+        "!Thermosoftening: melts to remould (e.g. poly(ethene)).",
+        "!Thermosetting: rigid, cross-linked — won't melt.",
+        "Composite: matrix + reinforcement (e.g. fibreglass).",
+        "Choose the material to fit the job."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "CERAMIC PROPERTIES",
+      "type": "short-answer",
+      "text": "State two typical properties of a <span class=\"command\">ceramic</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "TWO POLYMERS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> the difference between thermosoftening and thermosetting polymers. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "DEFINE COMPOSITE",
+      "type": "short-answer",
+      "text": "State what is meant by a <span class=\"command\">composite</span> material. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 4,
+      "sectionTitle": "CHOOSE A MATERIAL",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> a suitable material for a saucepan handle and why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["cross-links", "melt", "soften", "ceramic"],
+      "secondaryText": "Thermosetting polymers have ______ so they do not ______ when heated.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "COMPOSITE EXAMPLE",
+      "type": "short-answer",
+      "text": "<span class=\"command\">Give</span> one composite material and a use. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Thermosoftening melts and remoulds; thermosetting has cross-links and won't melt.",
+    "thinkPrompt": "Why does adding glass fibres to plastic create a stronger composite?"
+  }
+}

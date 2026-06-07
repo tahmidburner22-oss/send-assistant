@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ORGANIC CHEMISTRY – ALKENES & THEIR REACTIONS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Alkene", "definition": "an unsaturated hydrocarbon, formula CₙH₂ₙ." },
+        { "term": "Functional group", "definition": "the C=C bond — where reactions happen." },
+        { "term": "Addition reaction", "definition": "atoms add across the C=C double bond." },
+        { "term": "Hydrogenation", "definition": "adding hydrogen across C=C to form an alkane." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Alkenes and alkanes have the same formula.", "right": "Alkenes are CₙH₂ₙ; alkanes CₙH₂ₙ₊₂." },
+        { "wrong": "The whole molecule reacts.", "right": "Reactions happen at the reactive C=C group." },
+        { "wrong": "Alkenes do not decolourise bromine water.", "right": "They DO — the C=C reacts with bromine." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "ETHENE (a C=C bond)",
+      "diagram": {
+        "id": "alkane-alkene",
+        "width": "100%"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "GENERAL FORMULA",
+      "type": "short-answer",
+      "text": "Give the <span class=\"command\">general formula</span> of an alkene. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "FUNCTIONAL GROUP",
+      "type": "short-answer",
+      "text": "Name the functional group that makes alkenes reactive. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "ADD BROMINE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> what happens when ethene reacts with bromine. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "HYDROGENATION",
+      "type": "short-answer",
+      "text": "Name the product when ethene reacts with hydrogen. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["addition", "double", "single", "substitution"],
+      "secondaryText": "Alkenes react in ______ reactions because the ______ bond can open.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "STEAM + ALKENE",
+      "type": "short-answer",
+      "text": "Name the product when ethene reacts with steam. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Alkenes (C=C) undergo addition reactions — atoms add across the double bond.",
+    "thinkPrompt": "Why is the C=C bond described as the reactive 'functional group'?"
+  }
+}

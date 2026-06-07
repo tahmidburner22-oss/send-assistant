@@ -1,0 +1,100 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "USING RESOURCES – CORROSION & RUSTING",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Corrosion", "definition": "the gradual destruction of a metal by reaction." },
+        { "term": "Rusting", "definition": "the corrosion of iron, needing oxygen and water." },
+        { "term": "Barrier method", "definition": "painting/oiling to keep out air and water." },
+        { "term": "Sacrificial protection", "definition": "a more reactive metal corrodes instead." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Rusting needs only oxygen.", "right": "Rusting needs BOTH oxygen and water." },
+        { "wrong": "All metals rust.", "right": "Only iron and steel rust; other metals corrode differently." },
+        { "wrong": "Galvanising only works as a barrier.", "right": "Zinc also gives sacrificial protection." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "PREVENTING RUST",
+      "workedSteps": [
+        "Rusting needs oxygen AND water.",
+        "!Barrier: paint, oil, grease, plastic coating.",
+        "Galvanising: coat iron with zinc.",
+        "!Sacrificial: a more reactive metal corrodes first.",
+        "Word equation: iron + oxygen + water → hydrated iron(III) oxide."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "WHAT RUST NEEDS",
+      "type": "short-answer",
+      "text": "Name the two substances needed for iron to <span class=\"command\">rust</span>. <strong>[2 marks]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "BARRIER METHODS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how painting prevents rusting. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "SACRIFICIAL",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how sacrificial protection stops iron from corroding. <strong>[3 marks]</strong>",
+      "secondaryText": "Refer to the reactivity series.",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "GALVANISING",
+      "type": "short-answer",
+      "text": "State what is meant by <span class=\"command\">galvanising</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["oxygen", "water", "zinc", "carbon"],
+      "secondaryText": "Rusting needs ______ and ______; galvanising coats iron with zinc.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY ZINC WORKS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why zinc protects iron even if the coating is scratched. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Rust needs oxygen AND water. Zinc protects iron as a barrier and sacrificially.",
+    "thinkPrompt": "Why does a more reactive metal corrode in preference to the iron it protects?"
+  }
+}

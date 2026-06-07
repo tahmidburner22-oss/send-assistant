@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ENERGY CHANGES – HYDROGEN FUEL CELLS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Fuel cell", "definition": "uses fuel + oxygen to produce a voltage continuously." },
+        { "term": "Hydrogen fuel cell", "definition": "reacts hydrogen with oxygen to make water." },
+        { "term": "Oxidised", "definition": "hydrogen loses electrons at the electrode." },
+        { "term": "Product", "definition": "only water — no carbon dioxide." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Fuel cells need recharging.", "right": "They run as long as fuel is supplied." },
+        { "wrong": "Fuel cells release CO₂.", "right": "A hydrogen fuel cell only makes water." },
+        { "wrong": "Hydrogen is easy to store.", "right": "Hydrogen is hard and costly to store safely." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "OVERALL REACTION",
+      "workedSteps": [
+        "!2H₂ + O₂ → 2H₂O",
+        "Hydrogen is oxidised at the negative electrode.",
+        "Oxygen is reduced at the positive electrode.",
+        "!The only product is water.",
+        "Chemical energy → electrical energy."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "OVERALL EQUATION",
+      "type": "short-answer",
+      "text": "Write the overall equation for a <span class=\"command\">hydrogen fuel cell</span>. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "THE PRODUCT",
+      "type": "short-answer",
+      "text": "State the only product made in a hydrogen fuel cell. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "ADVANTAGES",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> two advantages of fuel cells over rechargeable batteries. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "DISADVANTAGES",
+      "type": "explain",
+      "text": "<span class=\"command\">Suggest</span> two disadvantages of using hydrogen fuel cells. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["oxidised", "reduced", "water", "carbon dioxide"],
+      "secondaryText": "In the cell, hydrogen is ______ and the only product is ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "EVALUATE",
+      "type": "explain",
+      "text": "<span class=\"command\">Evaluate</span> whether fuel-cell cars are truly 'clean'. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Fuel cell: 2H₂ + O₂ → 2H₂O. Runs continuously while fuel is supplied.",
+    "thinkPrompt": "Why does the way hydrogen is produced affect how 'clean' a fuel cell really is?"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "CHEMICAL ANALYSIS – FLAME TESTS & METAL IONS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Flame test", "definition": "the flame colour identifies a metal ion." },
+        { "term": "Lithium", "definition": "crimson red flame." },
+        { "term": "Sodium / Potassium", "definition": "yellow / lilac flame." },
+        { "term": "Hydroxide test", "definition": "NaOH gives coloured precipitates with some ions." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Flame tests identify non-metal ions.", "right": "They identify metal (positive) ions." },
+        { "wrong": "Two ions in a mix are easy to see by flame.", "right": "One colour can mask another — a limitation." },
+        { "wrong": "All hydroxide precipitates are white.", "right": "Copper is blue, iron(II) green, iron(III) brown." }
+      ]
+    },
+    {
+      "type": "worked-example",
+      "title": "ION TESTS",
+      "workedSteps": [
+        "!Li⁺ crimson · Na⁺ yellow · K⁺ lilac",
+        "!Ca²⁺ orange-red · Cu²⁺ green",
+        "With NaOH(aq): Cu²⁺ → blue precipitate.",
+        "Fe²⁺ → green · Fe³⁺ → brown precipitate.",
+        "!Al³⁺/Ca²⁺/Mg²⁺ → white precipitate."
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "FLAME COLOUR",
+      "type": "short-answer",
+      "text": "State the flame colour for <span class=\"command\">lithium</span> and <span class=\"command\">potassium</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "IDENTIFY THE ION",
+      "type": "short-answer",
+      "text": "A flame test gives a yellow flame. <span class=\"command\">Identify</span> the metal ion. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    },
+    {
+      "number": 3,
+      "sectionTitle": "HYDROXIDE TEST",
+      "type": "short-answer",
+      "text": "State the precipitate colour when NaOH is added to Cu²⁺ and Fe³⁺. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "LIMITATION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> one limitation of using flame tests on a mixture. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FILL THE GAPS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["blue", "green", "brown", "white"],
+      "secondaryText": "With NaOH, iron(II) gives a ______ precipitate and iron(III) gives a ______ one.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "WHY PRECIPITATE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why an insoluble metal hydroxide forms when NaOH is added. <strong>[1 mark]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Li crimson, Na yellow, K lilac, Ca orange-red, Cu green.",
+    "thinkPrompt": "Why are instrumental methods more reliable than flame tests for a mixture?"
+  }
+}
