@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Biology",
+    "company": "Adaptly",
+    "title": "ORGANISATION – THE HEART & CIRCULATORY SYSTEM",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Atria", "definition": "the upper chambers that receive blood into the heart." },
+        { "term": "Ventricles", "definition": "the lower chambers that pump blood out of the heart." },
+        { "term": "Artery", "definition": "carries blood away from the heart at high pressure." },
+        { "term": "Vein", "definition": "carries blood back to the heart; has valves." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Arteries always carry oxygenated blood.", "right": "The pulmonary artery carries deoxygenated blood." },
+        { "wrong": "The heart is one single pump.", "right": "It is a double pump — right and left sides." },
+        { "wrong": "Blood flows in both directions in veins.", "right": "Valves keep blood flowing one way only." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "STRUCTURE OF THE HEART",
+      "diagram": {
+        "id": "heart-labelled",
+        "width": "100%"
+      },
+      "secondaryContent": "The <strong>left ventricle</strong> has the thickest muscle to pump blood around the body."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "NAME THE CHAMBERS",
+      "type": "label-diagram",
+      "text": "Name the <span class=\"command\">four chambers</span> of the heart. <strong>[4 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "DOUBLE CIRCULATION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> what is meant by a 'double circulatory system'. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "THICK MUSCLE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why the left ventricle wall is thicker than the right. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "BLOOD VESSELS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["arteries", "veins", "thick", "valves"],
+      "secondaryText": "______ carry blood away from the heart and have ______ muscular walls.",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "HEART RATE",
+      "type": "calculation",
+      "text": "The heart beats 72 times per minute. <span class=\"command\">Calculate</span> how many beats this is in one hour. <strong>[2 marks]</strong>",
+      "answerUnit": "beats"
+    },
+    {
+      "number": 6,
+      "sectionTitle": "THE PACEMAKER",
+      "type": "short-answer",
+      "text": "Name the group of cells that control the natural resting heart rate. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "Right side = lungs (pulmonary); left side = rest of body (systemic).",
+    "thinkPrompt": "Why must blood pass through the heart twice in one full circuit?"
+  }
+}

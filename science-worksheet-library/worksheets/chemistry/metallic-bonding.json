@@ -3,7 +3,7 @@
   "variant": "standard",
   "header": {
     "subject": "Chemistry",
-    "yearGroup": "Year 10",
+    "company": "Adaptly",
     "title": "BONDING – METALLIC BONDING",
     "titleColor": "blue",
     "titleUnderline": true
@@ -49,7 +49,7 @@
       "number": 1,
       "sectionTitle": "DEFINE THE BOND",
       "type": "short-answer",
-      "text": "Describe what is meant by <span class=\"command\">metallic bonding</span>.",
+      "text": "Describe what is meant by <span class=\"command\">metallic bonding</span>. <strong>[2 marks]</strong>",
       "secondaryText": "Use the words 'positive metal ions' and 'delocalised electrons'.",
       "answerLines": 3
     },
@@ -57,7 +57,7 @@
       "number": 2,
       "sectionTitle": "ELECTRICAL CONDUCTIVITY",
       "type": "explain",
-      "text": "<span class=\"command\">Explain</span> why metals are good conductors of electricity.",
+      "text": "<span class=\"command\">Explain</span> why metals are good conductors of electricity. <strong>[2 marks]</strong>",
       "secondaryText": "Think about which particles are free to move.",
       "answerLines": 3
     },
@@ -65,7 +65,7 @@
       "number": 3,
       "sectionTitle": "MALLEABILITY",
       "type": "explain",
-      "text": "The diagram shows the lattice before and after a force is applied. <span class=\"command\">Explain</span> why the layers of ions can slide.",
+      "text": "The diagram shows the lattice before and after a force is applied. <span class=\"command\">Explain</span> why the layers of ions can slide. <strong>[2 marks]</strong>",
       "diagram": {
         "id": "metal-malleability-compact",
         "width": "100%"
@@ -76,7 +76,7 @@
       "number": 4,
       "sectionTitle": "MELTING POINT",
       "type": "fill-blank",
-      "text": "Complete the sentence using the word bank.",
+      "text": "Complete the sentence using the word bank. <strong>[3 marks]</strong>",
       "wordBank": ["high", "strong", "attraction"],
       "secondaryText": "Metals have ______ melting points because there is a ______ electrostatic ______ between the ions and the delocalised electrons.",
       "answerLines": 1
@@ -85,14 +85,14 @@
       "number": 5,
       "sectionTitle": "LABEL THE PARTICLES",
       "type": "short-answer",
-      "text": "In the lattice diagram, what do the <span class=\"command\">large '+' circles</span> and the <span class=\"command\">small '−' circles</span> represent?",
+      "text": "In the lattice diagram, what do the <span class=\"command\">large '+' circles</span> and the <span class=\"command\">small '−' circles</span> represent? <strong>[2 marks]</strong>",
       "answerLines": 2
     },
     {
       "number": 6,
       "sectionTitle": "WHY SO STRONG?",
       "type": "explain",
-      "text": "<span class=\"command\">Suggest</span> why a metal with ions of charge 2+ has a higher melting point than one with 1+ ions.",
+      "text": "<span class=\"command\">Suggest</span> why a metal with ions of charge 2+ has a higher melting point than one with 1+ ions. <strong>[2 marks]</strong>",
       "answerLines": 2
     }
   ],

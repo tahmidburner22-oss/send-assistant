@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "RATES OF REACTION – COLLISION THEORY",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Rate of reaction", "definition": "how quickly reactants are used up or products are made." },
+        { "term": "Activation energy", "definition": "the minimum energy needed for a successful collision." },
+        { "term": "Catalyst", "definition": "speeds up a reaction without being used up." },
+        { "term": "Collision theory", "definition": "particles must collide with enough energy to react." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "A catalyst is used up in the reaction.", "right": "A catalyst is unchanged and can be reused." },
+        { "wrong": "Heating gives particles more particles.", "right": "Heating gives particles more energy, not more particles." },
+        { "wrong": "A catalyst increases activation energy.", "right": "A catalyst lowers the activation energy." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "REACTION PROFILE (EXOTHERMIC)",
+      "diagram": {
+        "id": "reaction-profile-exo",
+        "width": "100%"
+      },
+      "secondaryContent": "Products are lower than reactants, so energy is <strong>released</strong>. A catalyst lowers Eₐ."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "COLLISION THEORY",
+      "type": "short-answer",
+      "text": "State the <span class=\"command\">two conditions</span> needed for a successful collision. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "EFFECT OF TEMPERATURE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span>, using collision theory, why increasing temperature increases the rate. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "EFFECT OF CONCENTRATION",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a higher concentration of acid speeds up a reaction. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "MEASURING RATE",
+      "type": "calculation",
+      "text": "48 cm³ of gas is collected in 24 s. <span class=\"command\">Calculate</span> the mean rate of reaction. <strong>[2 marks]</strong>",
+      "answerUnit": "cm³/s"
+    },
+    {
+      "number": 5,
+      "sectionTitle": "CATALYSTS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["lowers", "faster", "raises", "slower"],
+      "secondaryText": "A catalyst provides a different pathway that ______ the activation energy, making the reaction ______.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "INTERPRET A GRAPH",
+      "type": "explain",
+      "text": "On a volume–time graph, two curves level off at the same height but one is steeper. <span class=\"command\">Explain</span> what this shows. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "More frequent collisions with enough energy = a faster rate.",
+    "thinkPrompt": "Why does the rate slow down as a reaction proceeds?"
+  }
+}

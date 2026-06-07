@@ -1,0 +1,96 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Biology",
+    "company": "Adaptly",
+    "title": "CELL BIOLOGY – ANIMAL CELL STRUCTURE",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Nucleus", "definition": "controls the cell and contains the genetic material (DNA)." },
+        { "term": "Cytoplasm", "definition": "jelly-like fluid where most reactions happen." },
+        { "term": "Mitochondria", "definition": "site of aerobic respiration; releases energy." },
+        { "term": "Ribosomes", "definition": "where protein synthesis takes place." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Animal cells have a cell wall.", "right": "Only plant, fungal and bacterial cells have walls." },
+        { "wrong": "The nucleus makes energy.", "right": "Mitochondria release energy in respiration." },
+        { "wrong": "All cells are the same size and shape.", "right": "Cells are specialised for their function." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "A TYPICAL ANIMAL CELL",
+      "diagram": {
+        "id": "animal-cell",
+        "width": "100%"
+      },
+      "secondaryContent": "The <strong>cell membrane</strong> controls what enters and leaves the cell."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "LABEL THE CELL",
+      "type": "label-diagram",
+      "text": "Use the word bank to name the four labelled parts of the animal cell above. <strong>[4 marks]</strong>",
+      "wordBank": ["nucleus", "cell membrane", "mitochondria", "ribosomes"],
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "STATE THE FUNCTION",
+      "type": "short-answer",
+      "text": "State the <span class=\"command\">function</span> of the nucleus and of the mitochondria. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "ANIMAL vs PLANT",
+      "type": "compare",
+      "text": "Name <span class=\"command\">two</span> structures found in a plant cell but not in an animal cell. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "EUKARYOTIC CELLS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why an animal cell is described as eukaryotic. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "MAGNIFICATION",
+      "type": "calculation",
+      "text": "An image is 30 mm wide and the real cell is 0.06 mm wide. <span class=\"command\">Calculate</span> the magnification. <strong>[2 marks]</strong>",
+      "answerUnit": "×"
+    },
+    {
+      "number": 6,
+      "sectionTitle": "SPECIALISED CELLS",
+      "type": "explain",
+      "text": "A sperm cell has many mitochondria. <span class=\"command\">Suggest</span> why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Remember: mitochondria release energy, ribosomes make proteins.",
+    "thinkPrompt": "Why do muscle cells contain large numbers of mitochondria?"
+  }
+}

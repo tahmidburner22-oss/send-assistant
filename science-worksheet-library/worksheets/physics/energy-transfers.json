@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Physics",
+    "company": "Adaptly",
+    "title": "ENERGY – TRANSFERS & EFFICIENCY",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Energy store", "definition": "e.g. kinetic, thermal, chemical, gravitational." },
+        { "term": "Dissipated", "definition": "energy spread out to the surroundings (often as heat)." },
+        { "term": "Efficiency", "definition": "useful output energy ÷ total input energy." },
+        { "term": "Conservation", "definition": "energy cannot be created or destroyed, only transferred." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Energy gets used up.", "right": "Energy is transferred and conserved, not used up." },
+        { "wrong": "Wasted energy disappears.", "right": "Wasted energy is dissipated to the surroundings." },
+        { "wrong": "A device can be 100% efficient.", "right": "Some energy is always wasted (usually as heat)." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "SANKEY: USEFUL vs WASTED",
+      "diagram": {
+        "id": "energy-sankey",
+        "width": "100%"
+      },
+      "secondaryContent": "Arrow width shows the amount of energy; <strong>efficiency = useful ÷ total</strong>."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "KINETIC ENERGY",
+      "type": "calculation",
+      "text": "A 2 kg ball moves at 4 m/s. <span class=\"command\">Calculate</span> its kinetic energy (Eₖ = ½mv²). <strong>[2 marks]</strong>",
+      "answerUnit": "J"
+    },
+    {
+      "number": 2,
+      "sectionTitle": "EFFICIENCY",
+      "type": "calculation",
+      "text": "A motor takes in 100 J and usefully transfers 60 J. <span class=\"command\">Calculate</span> its efficiency. <strong>[2 marks]</strong>",
+      "answerUnit": "%"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "ENERGY STORES",
+      "type": "short-answer",
+      "text": "A swinging pendulum transfers energy. Name the <span class=\"command\">two stores</span> involved. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "REDUCING WASTE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how lubricating a machine reduces wasted energy. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "GPE",
+      "type": "calculation",
+      "text": "A 5 kg box is lifted 3 m (g = 9.8 N/kg). <span class=\"command\">Calculate</span> its gravitational PE. <strong>[2 marks]</strong>",
+      "answerUnit": "J"
+    },
+    {
+      "number": 6,
+      "sectionTitle": "INSULATION",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["lower", "thicker", "higher", "thinner"],
+      "secondaryText": "A wall with ______ insulation and a ______ thermal conductivity loses heat more slowly.",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "Efficiency is always less than 1 (or 100%) — energy is never created.",
+    "thinkPrompt": "Where does the 'wasted' energy from a light bulb actually go?"
+  }
+}

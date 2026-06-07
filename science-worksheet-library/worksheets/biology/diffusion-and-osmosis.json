@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Biology",
+    "company": "Adaptly",
+    "title": "CELL TRANSPORT – DIFFUSION & OSMOSIS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Diffusion", "definition": "net movement of particles from high to low concentration." },
+        { "term": "Osmosis", "definition": "diffusion of water across a partially permeable membrane." },
+        { "term": "Active transport", "definition": "moving substances against the gradient using energy." },
+        { "term": "Concentration gradient", "definition": "the difference in concentration between two areas." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Diffusion needs energy from respiration.", "right": "Diffusion is passive — it needs no energy." },
+        { "wrong": "Osmosis is the movement of any substance.", "right": "Osmosis is the movement of water only." },
+        { "wrong": "Particles stop moving once balanced.", "right": "Particles still move, but there is no net change." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "OSMOSIS ACROSS A MEMBRANE",
+      "diagram": {
+        "id": "diffusion-osmosis",
+        "width": "100%"
+      },
+      "secondaryContent": "Water moves from a <strong>dilute</strong> solution to a <strong>concentrated</strong> one."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE DIFFUSION",
+      "type": "short-answer",
+      "text": "Describe what is meant by <span class=\"command\">diffusion</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "OSMOSIS",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how osmosis is different from diffusion. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "RATE OF DIFFUSION",
+      "type": "short-answer",
+      "text": "State <span class=\"command\">three factors</span> that increase the rate of diffusion. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "REQUIRED PRACTICAL",
+      "type": "explain",
+      "text": "Potato cylinders are placed in sugar solution and lose mass. <span class=\"command\">Explain</span> why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "PERCENTAGE CHANGE",
+      "type": "calculation",
+      "text": "A cylinder changes from 5.0 g to 4.0 g. <span class=\"command\">Calculate</span> the percentage change in mass. <strong>[2 marks]</strong>",
+      "answerUnit": "%"
+    },
+    {
+      "number": 6,
+      "sectionTitle": "ACTIVE TRANSPORT",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["against", "energy", "with", "no energy"],
+      "secondaryText": "Active transport moves substances ______ the concentration gradient and requires ______.",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "Osmosis = water only, across a partially permeable membrane.",
+    "thinkPrompt": "Why do root hair cells use active transport to absorb minerals?"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Chemistry",
+    "company": "Adaptly",
+    "title": "ATOMIC STRUCTURE – ATOMS, IONS & ISOTOPES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Atomic number", "definition": "the number of protons in an atom." },
+        { "term": "Mass number", "definition": "the total number of protons and neutrons." },
+        { "term": "Isotope", "definition": "atoms of the same element with different numbers of neutrons." },
+        { "term": "Ion", "definition": "a charged atom formed by losing or gaining electrons." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Atoms always have equal protons and neutrons.", "right": "Neutron number often differs from proton number." },
+        { "wrong": "Isotopes have different chemical reactions.", "right": "Isotopes react the same — they share electron arrangement." },
+        { "wrong": "The mass number is the mass in grams.", "right": "It is just the count of protons + neutrons." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "STRUCTURE OF THE ATOM",
+      "diagram": {
+        "id": "atom-shells",
+        "width": "100%"
+      },
+      "secondaryContent": "A tiny <strong>nucleus</strong> of protons and neutrons is surrounded by <strong>electrons</strong> in shells."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "RELATIVE MASS & CHARGE",
+      "type": "short-answer",
+      "text": "State the <span class=\"command\">relative charge</span> of a proton, a neutron and an electron. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 2,
+      "sectionTitle": "READ THE SYMBOL",
+      "type": "short-answer",
+      "text": "A sodium atom is written as ²³₁₁Na. Give the number of <span class=\"command\">protons, neutrons and electrons</span>. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
+      "sectionTitle": "ELECTRONIC STRUCTURE",
+      "type": "short-answer",
+      "text": "An atom has 17 electrons. Write its <span class=\"command\">electronic structure</span>. <strong>[1 mark]</strong>",
+      "secondaryText": "Fill the inner shells first (2, 8, 8 ...).",
+      "answerUnit": "(e.g. 2,8,...)"
+    },
+    {
+      "number": 4,
+      "sectionTitle": "ISOTOPES",
+      "type": "explain",
+      "text": "Chlorine has isotopes ³⁵Cl and ³⁷Cl. <span class=\"command\">Explain</span> why they are isotopes of the same element. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "FORMING IONS",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["loses", "positive", "gains", "negative"],
+      "secondaryText": "When an atom ______ electrons it becomes a ______ ion.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "RELATIVE ATOMIC MASS",
+      "type": "calculation",
+      "text": "Chlorine is 75% ³⁵Cl and 25% ³⁷Cl. <span class=\"command\">Calculate</span> its relative atomic mass. <strong>[2 marks]</strong>",
+      "answerUnit": "(Aᵣ)"
+    }
+  ],
+  "footer": {
+    "tip": "Protons + neutrons sit in the nucleus; electrons orbit in shells.",
+    "thinkPrompt": "Why do isotopes of an element have identical chemical properties?"
+  }
+}

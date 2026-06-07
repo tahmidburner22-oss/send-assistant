@@ -22,8 +22,10 @@ export type WorksheetVariant = 'standard' | 'adhd';
 export interface WorksheetHeader {
   /** Subject name, e.g. "Chemistry" */
   subject: string;
-  /** Year group, e.g. "Year 10" */
-  yearGroup: string;
+  /** Company/brand badge shown on the right of the subject badge. Defaults to "Adaptly". */
+  company?: string;
+  /** @deprecated Year group is no longer displayed. Use `company` instead. */
+  yearGroup?: string;
   /** Main title, e.g. "Metallic Bonding" */
   title: string;
   /** Diagram label badge on the right, e.g. "Diagram A" (rendered as a navy badge) */

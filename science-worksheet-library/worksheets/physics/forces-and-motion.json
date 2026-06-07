@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Physics",
+    "company": "Adaptly",
+    "title": "FORCES – FORCES & MOTION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Resultant force", "definition": "the single force that has the same effect as all forces." },
+        { "term": "Weight", "definition": "the force of gravity on a mass; W = m × g." },
+        { "term": "Acceleration", "definition": "the rate of change of velocity, in m/s²." },
+        { "term": "Terminal velocity", "definition": "steady speed when drag balances weight." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "A moving object always has a force pushing it.", "right": "At constant speed, forces are balanced." },
+        { "wrong": "Mass and weight are the same thing.", "right": "Mass is in kg; weight is a force in newtons." },
+        { "wrong": "Heavier objects always fall faster.", "right": "Without air, all objects fall at the same rate." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "FORCES ON A MOVING OBJECT",
+      "diagram": {
+        "id": "forces-arrows",
+        "width": "100%"
+      },
+      "secondaryContent": "If thrust = drag and reaction = weight, the resultant force is <strong>zero</strong>."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "WEIGHT",
+      "type": "calculation",
+      "text": "A 6 kg mass sits on Earth (g = 9.8 N/kg). <span class=\"command\">Calculate</span> its weight. <strong>[2 marks]</strong>",
+      "answerUnit": "N"
+    },
+    {
+      "number": 2,
+      "sectionTitle": "NEWTON'S SECOND LAW",
+      "type": "calculation",
+      "text": "A resultant force of 12 N acts on a 4 kg trolley. <span class=\"command\">Calculate</span> its acceleration (F = m a). <strong>[2 marks]</strong>",
+      "answerUnit": "m/s²"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "RESULTANT FORCE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> what happens to a car's motion when the driving force equals the drag. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "TERMINAL VELOCITY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why a skydiver reaches a terminal velocity. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 5,
+      "sectionTitle": "BALANCED FORCES",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["zero", "constant", "increasing", "non-zero"],
+      "secondaryText": "When forces are balanced the resultant force is ______ and the object moves at a ______ velocity.",
+      "answerLines": 1
+    },
+    {
+      "number": 6,
+      "sectionTitle": "STOPPING DISTANCE",
+      "type": "short-answer",
+      "text": "Stopping distance = thinking distance + braking distance. State <span class=\"command\">one factor</span> that increases each. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Resultant force = mass × acceleration (F = m a).",
+    "thinkPrompt": "Why does doubling a car's speed more than double its braking distance?"
+  }
+}

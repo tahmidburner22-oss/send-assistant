@@ -348,7 +348,7 @@ function renderHeader(ws: Worksheet): string {
 <div class="header">
   <div class="header-left">
     <span class="badge-filled">${h.subject}</span>
-    <span class="badge-outline">${h.yearGroup}</span>
+    <span class="badge-outline">${h.company || 'Adaptly'}</span>
   </div>
   <div>${rightContent}</div>
 </div>

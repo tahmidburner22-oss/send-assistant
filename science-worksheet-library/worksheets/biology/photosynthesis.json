@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Biology",
+    "company": "Adaptly",
+    "title": "BIOENERGETICS – PHOTOSYNTHESIS",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Photosynthesis", "definition": "plants make glucose using light energy." },
+        { "term": "Chlorophyll", "definition": "green pigment that absorbs light energy." },
+        { "term": "Endothermic", "definition": "a reaction that takes in energy." },
+        { "term": "Limiting factor", "definition": "the factor that stops the rate increasing further." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Plants only respire at night.", "right": "Plants respire all the time, day and night." },
+        { "wrong": "Plants get food from the soil.", "right": "Plants make glucose in their leaves." },
+        { "wrong": "Photosynthesis releases energy.", "right": "It is endothermic — it absorbs light energy." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "INPUTS & OUTPUTS",
+      "diagram": {
+        "id": "photosynthesis-leaf",
+        "width": "100%"
+      },
+      "secondaryContent": "carbon dioxide + water → <strong>glucose</strong> + oxygen (light/chlorophyll)."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "WORD EQUATION",
+      "type": "fill-blank",
+      "text": "Complete the word equation for photosynthesis. <strong>[2 marks]</strong>",
+      "wordBank": ["carbon dioxide", "oxygen", "glucose", "water"],
+      "secondaryText": "______ + water → ______ + oxygen",
+      "answerLines": 1
+    },
+    {
+      "number": 2,
+      "sectionTitle": "ENDOTHERMIC",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why photosynthesis is described as an endothermic reaction. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "LIMITING FACTORS",
+      "type": "short-answer",
+      "text": "State <span class=\"command\">three factors</span> that can limit the rate of photosynthesis. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "INTERPRET A GRAPH",
+      "type": "explain",
+      "text": "A graph of rate against light intensity levels off. <span class=\"command\">Explain</span> why. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 5,
+      "sectionTitle": "USES OF GLUCOSE",
+      "type": "short-answer",
+      "text": "Give <span class=\"command\">two</span> ways a plant uses the glucose it makes. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 6,
+      "sectionTitle": "INVERSE SQUARE LAW",
+      "type": "calculation",
+      "text": "A lamp is moved from 10 cm to 20 cm from a plant. <span class=\"command\">State</span> what happens to the light intensity. <strong>[1 mark]</strong>",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "Glucose is used in respiration, stored as starch, or made into cellulose.",
+    "thinkPrompt": "On a sunny day, which factor is most likely to be limiting?"
+  }
+}

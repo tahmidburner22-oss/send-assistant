@@ -3,7 +3,7 @@
   "variant": "standard",
   "header": {
     "subject": "Chemistry",
-    "yearGroup": "Year 10",
+    "company": "Adaptly",
     "title": "QUANTITATIVE CHEMISTRY 2 – CONCENTRATION OF SOLUTIONS",
     "titleColor": "blue",
     "titleUnderline": true
@@ -48,7 +48,7 @@
       "number": 1,
       "sectionTitle": "CONVERSION",
       "type": "conversion",
-      "text": "Convert 250 cm³ to dm³.",
+      "text": "Convert 250 cm³ to dm³. <strong>[1 mark]</strong>",
       "secondaryText": "(Use the conversion reminder above.)",
       "answerUnit": "dm³"
     },
@@ -57,7 +57,7 @@
       "sectionTitle": "CALCULATE CONCENTRATION",
       "type": "calculation",
       "text": "A student dissolves 5.0 g of copper sulfate in 0.50 dm³ of water.",
-      "secondaryText": "<span class=\"command\">Calculate the concentration of the solution in g/dm³.</span>",
+      "secondaryText": "<span class=\"command\">Calculate the concentration of the solution in g/dm³.</span> <strong>[2 marks]</strong>",
       "answerUnit": "g/dm³"
     },
     {
@@ -65,14 +65,14 @@
       "sectionTitle": "CALCULATE MASS",
       "type": "calculation",
       "text": "A solution has a concentration of 24 g/dm³. The volume of the solution is 0.40 dm³.",
-      "secondaryText": "<span class=\"command\">Calculate the mass of solute in the solution.</span>",
+      "secondaryText": "<span class=\"command\">Calculate the mass of solute in the solution.</span> <strong>[2 marks]</strong>",
       "answerUnit": "g"
     },
     {
       "number": 4,
       "sectionTitle": "COMPARE SOLUTIONS",
       "type": "compare",
-      "text": "Two solutions are made.",
+      "text": "Two solutions are made. <strong>[3 marks]</strong>",
       "table": {
         "headers": ["Solution", "Mass of solute (g)", "Volume of solution (dm³)"],
         "rows": [

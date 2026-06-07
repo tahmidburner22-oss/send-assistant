@@ -305,6 +305,318 @@ const diagrams: Record<string, string> = {
   <text x="20" y="196" font-family="Arial" font-size="8" fill="#333">The <tspan fill="#1a237e" font-weight="bold">solvent</tspan> is the liquid that does the dissolving.</text>
 </svg>`,
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ATOMIC STRUCTURE
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Bohr-model atom — nucleus (protons + neutrons) with two electron shells.
+   * Labelled for "atomic structure" info panel. Compact (info-panel sized).
+   */
+  'atom-shells': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 180" width="250" height="180">
+  <defs>
+    <radialGradient id="nuc3d" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffd6d6"/>
+      <stop offset="100%" stop-color="#d32f2f"/>
+    </radialGradient>
+  </defs>
+  <!-- Shells -->
+  <circle cx="100" cy="90" r="40" fill="none" stroke="#90a4d4" stroke-width="1.3"/>
+  <circle cx="100" cy="90" r="72" fill="none" stroke="#90a4d4" stroke-width="1.3"/>
+  <!-- Nucleus -->
+  <circle cx="100" cy="90" r="20" fill="url(#nuc3d)" stroke="#9a1c1c" stroke-width="1"/>
+  <text x="100" y="88" font-family="Arial" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">2p+</text>
+  <text x="100" y="98" font-family="Arial" font-size="8" font-weight="bold" fill="#fff" text-anchor="middle">2n</text>
+  <!-- Inner shell electrons (2) -->
+  <circle cx="100" cy="50" r="6" fill="#1d4ed8"/><text x="100" y="53" font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">−</text>
+  <circle cx="100" cy="130" r="6" fill="#1d4ed8"/><text x="100" y="133" font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">−</text>
+  <!-- Outer shell electrons (4) -->
+  <circle cx="100" cy="18" r="6" fill="#1d4ed8"/><text x="100" y="21" font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">−</text>
+  <circle cx="172" cy="90" r="6" fill="#1d4ed8"/><text x="172" y="93" font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">−</text>
+  <circle cx="100" cy="162" r="6" fill="#1d4ed8"/><text x="100" y="165" font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">−</text>
+  <circle cx="28" cy="90" r="6" fill="#1d4ed8"/><text x="28" y="93" font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">−</text>
+  <!-- Labels -->
+  <line x1="118" y1="78" x2="200" y2="50" stroke="#333" stroke-width="1"/>
+  <text x="202" y="48" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">nucleus</text>
+  <text x="202" y="58" font-family="Arial" font-size="7" fill="#555">(protons + neutrons)</text>
+  <line x1="172" y1="90" x2="200" y2="110" stroke="#333" stroke-width="1"/>
+  <text x="202" y="108" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">electrons</text>
+  <text x="202" y="118" font-family="Arial" font-size="7" fill="#555">in shells</text>
+</svg>`,
+
+  /**
+   * Exothermic reaction profile — energy vs progress, products lower than reactants,
+   * activation-energy hump, and an arrow showing energy released. Compact.
+   */
+  'reaction-profile-exo': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 170" width="260" height="170">
+  <!-- Axes -->
+  <line x1="34" y1="14" x2="34" y2="150" stroke="#333" stroke-width="1.5"/>
+  <line x1="34" y1="150" x2="248" y2="150" stroke="#333" stroke-width="1.5"/>
+  <text x="10" y="86" font-family="Arial" font-size="8" fill="#333" transform="rotate(-90 10 86)" text-anchor="middle">Energy</text>
+  <text x="140" y="165" font-family="Arial" font-size="8" fill="#333" text-anchor="middle">Progress of reaction</text>
+  <!-- Reaction curve: reactants high-ish, hump, products low -->
+  <path d="M 44 70 L 90 70 C 120 70 120 30 150 30 C 180 30 180 120 210 120 L 240 120" fill="none" stroke="#1a237e" stroke-width="2.2"/>
+  <!-- Reactant / product levels -->
+  <line x1="44" y1="70" x2="90" y2="70" stroke="#1a237e" stroke-width="2.2"/>
+  <line x1="210" y1="120" x2="240" y2="120" stroke="#1a237e" stroke-width="2.2"/>
+  <text x="60" y="64" font-family="Arial" font-size="7.5" fill="#333">reactants</text>
+  <text x="214" y="134" font-family="Arial" font-size="7.5" fill="#333">products</text>
+  <!-- Activation energy arrow -->
+  <line x1="150" y1="70" x2="150" y2="32" stroke="#c62828" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="156" y="50" font-family="Arial" font-size="7" fill="#c62828">Eₐ</text>
+  <!-- Energy released arrow -->
+  <line x1="100" y1="70" x2="100" y2="120" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#exoArr)"/>
+  <defs><marker id="exoArr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e7d32"/></marker></defs>
+  <text x="104" y="98" font-family="Arial" font-size="7" fill="#2e7d32" font-weight="bold">ΔH</text>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Animal cell — membrane, cytoplasm, nucleus, mitochondria, ribosomes.
+   * Labelled for cell-biology info / label-diagram question.
+   */
+  'animal-cell': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 180" width="260" height="180">
+  <!-- Cell membrane + cytoplasm -->
+  <ellipse cx="110" cy="90" rx="92" ry="72" fill="#fde8f0" stroke="#c2185b" stroke-width="2.5"/>
+  <!-- Nucleus -->
+  <circle cx="105" cy="86" r="30" fill="#9c27b0" opacity="0.35" stroke="#6a1b9a" stroke-width="2"/>
+  <circle cx="105" cy="86" r="9" fill="#6a1b9a" opacity="0.7"/>
+  <!-- Mitochondria -->
+  <ellipse cx="55" cy="135" rx="20" ry="10" fill="#ff7043" stroke="#bf360c" stroke-width="1.5" transform="rotate(-20 55 135)"/>
+  <path d="M 42 137 q 6 -6 12 0 q 6 6 12 0" fill="none" stroke="#bf360c" stroke-width="1"/>
+  <!-- Ribosomes -->
+  <circle cx="150" cy="50" r="3.5" fill="#1565c0"/>
+  <circle cx="162" cy="60" r="3.5" fill="#1565c0"/>
+  <circle cx="150" cy="125" r="3.5" fill="#1565c0"/>
+  <!-- Labels -->
+  <line x1="135" y1="68" x2="206" y2="40" stroke="#333" stroke-width="1"/>
+  <text x="208" y="42" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">nucleus</text>
+  <line x1="200" y1="90" x2="220" y2="90" stroke="#333" stroke-width="1"/>
+  <text x="200" y="84" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e" text-anchor="end">cell membrane</text>
+  <line x1="75" y1="128" x2="210" y2="120" stroke="#333" stroke-width="1"/>
+  <text x="212" y="122" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">mitochondria</text>
+  <line x1="162" y1="60" x2="206" y2="72" stroke="#333" stroke-width="1"/>
+  <text x="208" y="74" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">ribosomes</text>
+  <text x="60" y="70" font-family="Arial" font-size="8" fill="#777" font-style="italic">cytoplasm</text>
+</svg>`,
+
+  /**
+   * Labelled heart — four chambers, simplified, for circulatory system.
+   */
+  'heart-labelled': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 190" width="260" height="190">
+  <!-- Heart outline -->
+  <path d="M 110 175 C 40 120 35 60 70 45 C 95 34 110 55 110 65 C 110 55 125 34 150 45 C 185 60 180 120 110 175 Z" fill="#ffcdd2" stroke="#b71c1c" stroke-width="2.5"/>
+  <!-- Septum -->
+  <line x1="110" y1="62" x2="110" y2="160" stroke="#b71c1c" stroke-width="1.5"/>
+  <!-- Chamber divisions -->
+  <line x1="70" y1="100" x2="110" y2="100" stroke="#b71c1c" stroke-width="1.2"/>
+  <line x1="110" y1="100" x2="152" y2="100" stroke="#b71c1c" stroke-width="1.2"/>
+  <!-- Blood colour hints: right side blue, left side red -->
+  <path d="M 70 65 L 110 65 L 110 98 L 74 98 C 64 88 62 76 70 65 Z" fill="#90caf9" opacity="0.6"/>
+  <path d="M 110 65 L 150 65 C 158 76 156 88 146 98 L 110 98 Z" fill="#ef9a9a" opacity="0.7"/>
+  <!-- Chamber labels -->
+  <text x="88" y="84" font-family="Arial" font-size="6.5" fill="#0d47a1" text-anchor="middle">right</text>
+  <text x="88" y="91" font-family="Arial" font-size="6.5" fill="#0d47a1" text-anchor="middle">atrium</text>
+  <text x="132" y="84" font-family="Arial" font-size="6.5" fill="#b71c1c" text-anchor="middle">left</text>
+  <text x="132" y="91" font-family="Arial" font-size="6.5" fill="#b71c1c" text-anchor="middle">atrium</text>
+  <text x="90" y="130" font-family="Arial" font-size="6.5" fill="#0d47a1" text-anchor="middle">right</text>
+  <text x="90" y="137" font-family="Arial" font-size="6.5" fill="#0d47a1" text-anchor="middle">ventricle</text>
+  <text x="130" y="130" font-family="Arial" font-size="6.5" fill="#b71c1c" text-anchor="middle">left</text>
+  <text x="130" y="137" font-family="Arial" font-size="6.5" fill="#b71c1c" text-anchor="middle">ventricle</text>
+  <!-- Outer labels -->
+  <line x1="150" y1="70" x2="205" y2="55" stroke="#333" stroke-width="1"/>
+  <text x="207" y="57" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">aorta</text>
+  <line x1="120" y1="150" x2="205" y2="150" stroke="#333" stroke-width="1"/>
+  <text x="207" y="152" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">thick muscle</text>
+  <text x="207" y="162" font-family="Arial" font-size="7" fill="#555">(left ventricle)</text>
+</svg>`,
+
+  /**
+   * Enzyme lock-and-key — enzyme with active site + matching substrate.
+   */
+  'enzyme-lock-key': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 150" width="260" height="150">
+  <!-- Enzyme blob with notch (active site) -->
+  <path d="M 30 40 h 70 v 18 h 16 v -18 h 24 a 12 12 0 0 1 12 12 v 56 a 12 12 0 0 1 -12 12 h -110 a 12 12 0 0 1 -12 -12 v -56 a 12 12 0 0 1 12 -12 Z" fill="#a5d6a7" stroke="#2e7d32" stroke-width="2"/>
+  <text x="75" y="100" font-family="Arial" font-size="9" font-weight="bold" fill="#1b5e20" text-anchor="middle">enzyme</text>
+  <!-- Substrate fitting the notch -->
+  <path d="M 100 8 h 16 v 24 h -16 Z" fill="#ffb74d" stroke="#e65100" stroke-width="2"/>
+  <text x="108" y="6" font-family="Arial" font-size="7.5" fill="#e65100" text-anchor="middle">substrate</text>
+  <!-- Active site label -->
+  <line x1="108" y1="58" x2="200" y2="48" stroke="#333" stroke-width="1"/>
+  <text x="202" y="50" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">active site</text>
+  <text x="202" y="60" font-family="Arial" font-size="7" fill="#555">(specific shape)</text>
+  <line x1="170" y1="95" x2="200" y2="100" stroke="#333" stroke-width="1"/>
+  <text x="202" y="102" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">enzyme</text>
+</svg>`,
+
+  /**
+   * Photosynthesis leaf — inputs (CO2, water, light) and outputs (glucose, O2).
+   */
+  'photosynthesis-leaf': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 150" width="270" height="150">
+  <!-- Sun -->
+  <circle cx="36" cy="32" r="15" fill="#ffd54f" stroke="#fbc02d" stroke-width="1.5"/>
+  <g stroke="#fbc02d" stroke-width="1.5"><line x1="36" y1="8" x2="36" y2="14"/><line x1="14" y1="32" x2="20" y2="32"/><line x1="20" y1="16" x2="24" y2="20"/></g>
+  <text x="36" y="58" font-family="Arial" font-size="7.5" fill="#f57f17" text-anchor="middle">light</text>
+  <!-- Leaf -->
+  <path d="M 130 75 C 95 35 165 25 175 30 C 200 50 175 110 130 105 C 110 100 110 88 130 75 Z" fill="#66bb6a" stroke="#2e7d32" stroke-width="2"/>
+  <path d="M 130 100 C 145 80 160 60 172 40" fill="none" stroke="#2e7d32" stroke-width="1.2"/>
+  <!-- Inputs arrows -->
+  <line x1="52" y1="36" x2="118" y2="62" stroke="#f9a825" stroke-width="1.6" marker-end="url(#psArr)"/>
+  <text x="50" y="92" font-family="Arial" font-size="8" fill="#0d47a1">CO₂ →</text>
+  <line x1="84" y1="88" x2="120" y2="80" stroke="#1565c0" stroke-width="1.6" marker-end="url(#psArr)"/>
+  <text x="40" y="118" font-family="Arial" font-size="8" fill="#1565c0">water (roots) →</text>
+  <line x1="118" y1="112" x2="135" y2="100" stroke="#1565c0" stroke-width="1.6" marker-end="url(#psArr)"/>
+  <!-- Outputs arrows -->
+  <line x1="176" y1="55" x2="215" y2="40" stroke="#2e7d32" stroke-width="1.6" marker-end="url(#psArr)"/>
+  <text x="218" y="42" font-family="Arial" font-size="8" fill="#2e7d32">glucose</text>
+  <line x1="178" y1="80" x2="215" y2="92" stroke="#2e7d32" stroke-width="1.6" marker-end="url(#psArr)"/>
+  <text x="218" y="94" font-family="Arial" font-size="8" fill="#2e7d32">oxygen</text>
+  <defs><marker id="psArr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#555"/></marker></defs>
+</svg>`,
+
+  /**
+   * Diffusion / osmosis — partially permeable membrane with water moving from
+   * high to low water concentration.
+   */
+  'diffusion-osmosis': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 150" width="260" height="150">
+  <!-- Container -->
+  <rect x="20" y="20" width="220" height="110" rx="4" fill="none" stroke="#333" stroke-width="2"/>
+  <!-- Partially permeable membrane in the middle -->
+  <line x1="130" y1="20" x2="130" y2="130" stroke="#1a237e" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="130" y="14" font-family="Arial" font-size="7" fill="#1a237e" text-anchor="middle">partially permeable membrane</text>
+  <!-- Left: dilute (more water) -->
+  <rect x="22" y="22" width="106" height="106" fill="#bbdefb" opacity="0.5"/>
+  <text x="74" y="120" font-family="Arial" font-size="7.5" fill="#0d47a1" text-anchor="middle">dilute (more water)</text>
+  <!-- Right: concentrated (less water, more solute) -->
+  <rect x="132" y="22" width="106" height="106" fill="#5c6bc0" opacity="0.45"/>
+  <text x="186" y="120" font-family="Arial" font-size="7.5" fill="#1a237e" text-anchor="middle">concentrated (less water)</text>
+  <!-- Solute particles on the right -->
+  <circle cx="160" cy="55" r="4" fill="#1a237e"/><circle cx="195" cy="70" r="4" fill="#1a237e"/>
+  <circle cx="175" cy="90" r="4" fill="#1a237e"/><circle cx="210" cy="50" r="4" fill="#1a237e"/>
+  <circle cx="200" cy="100" r="4" fill="#1a237e"/>
+  <!-- Water particles small on left -->
+  <circle cx="50" cy="50" r="2.5" fill="#1976d2"/><circle cx="80" cy="65" r="2.5" fill="#1976d2"/>
+  <circle cx="60" cy="90" r="2.5" fill="#1976d2"/><circle cx="95" cy="100" r="2.5" fill="#1976d2"/>
+  <!-- Net water movement arrow across membrane -->
+  <line x1="95" y1="60" x2="165" y2="60" stroke="#2e7d32" stroke-width="2" marker-end="url(#osmArr)"/>
+  <text x="130" y="52" font-family="Arial" font-size="7.5" fill="#2e7d32" text-anchor="middle" font-weight="bold">net water movement</text>
+  <defs><marker id="osmArr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#2e7d32"/></marker></defs>
+</svg>`,
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PHYSICS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Simple circuit — cell, switch, lamp, ammeter in series. Print-safe.
+   */
+  'simple-circuit': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 170" width="250" height="170">
+  <!-- Wires (rectangle loop) -->
+  <rect x="35" y="35" width="180" height="100" fill="none" stroke="#222" stroke-width="2"/>
+  <!-- Cell (top middle) -->
+  <line x1="112" y1="35" x2="112" y2="20" stroke="#222" stroke-width="2"/>
+  <line x1="112" y1="20" x2="138" y2="20" stroke="#222" stroke-width="2"/>
+  <line x1="138" y1="20" x2="138" y2="35" stroke="#222" stroke-width="2"/>
+  <line x1="118" y1="12" x2="118" y2="28" stroke="#222" stroke-width="3"/>
+  <line x1="130" y1="16" x2="130" y2="24" stroke="#222" stroke-width="6"/>
+  <text x="124" y="44" font-family="Arial" font-size="7.5" fill="#1a237e" text-anchor="middle" font-weight="bold">cell</text>
+  <!-- Lamp (right side) -->
+  <circle cx="215" cy="85" r="13" fill="#fff59d" stroke="#222" stroke-width="2"/>
+  <line x1="206" y1="76" x2="224" y2="94" stroke="#222" stroke-width="1.5"/>
+  <line x1="224" y1="76" x2="206" y2="94" stroke="#222" stroke-width="1.5"/>
+  <text x="215" y="115" font-family="Arial" font-size="7.5" fill="#1a237e" text-anchor="middle" font-weight="bold">lamp</text>
+  <!-- Switch (bottom) -->
+  <circle cx="105" cy="135" r="3" fill="#222"/>
+  <circle cx="145" cy="135" r="3" fill="#222"/>
+  <line x1="105" y1="135" x2="140" y2="122" stroke="#222" stroke-width="2"/>
+  <text x="125" y="152" font-family="Arial" font-size="7.5" fill="#1a237e" text-anchor="middle" font-weight="bold">switch</text>
+  <!-- Ammeter (left side) -->
+  <circle cx="35" cy="85" r="13" fill="#fff" stroke="#222" stroke-width="2"/>
+  <text x="35" y="89" font-family="Arial" font-size="11" fill="#222" text-anchor="middle" font-weight="bold">A</text>
+  <text x="35" y="115" font-family="Arial" font-size="7.5" fill="#1a237e" text-anchor="middle" font-weight="bold">ammeter</text>
+</svg>`,
+
+  /**
+   * Transverse wave — labelled wavelength, amplitude, rest line. Compact.
+   */
+  'wave-labelled': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 150" width="260" height="150">
+  <!-- Rest line -->
+  <line x1="14" y1="80" x2="246" y2="80" stroke="#999" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="248" y="83" font-family="Arial" font-size="7" fill="#777">rest</text>
+  <!-- Wave (two full wavelengths) -->
+  <path d="M 20 80 C 40 20, 70 20, 90 80 C 110 140, 140 140, 160 80 C 180 20, 210 20, 230 80" fill="none" stroke="#1a237e" stroke-width="2.5"/>
+  <!-- Wavelength marker (crest to crest) -->
+  <line x1="55" y1="34" x2="125" y2="34" stroke="#c62828" stroke-width="1.2" marker-start="url(#wArr)" marker-end="url(#wArr)"/>
+  <text x="90" y="28" font-family="Arial" font-size="8" fill="#c62828" text-anchor="middle" font-weight="bold">wavelength (λ)</text>
+  <!-- Amplitude marker -->
+  <line x1="125" y1="80" x2="125" y2="128" stroke="#2e7d32" stroke-width="1.2" marker-end="url(#wArr2)"/>
+  <text x="170" y="112" font-family="Arial" font-size="8" fill="#2e7d32" text-anchor="middle" font-weight="bold">amplitude</text>
+  <defs>
+    <marker id="wArr" markerWidth="8" markerHeight="7" refX="4" refY="3.5" orient="auto"><polygon points="0 3.5, 8 0, 8 7" fill="#c62828"/></marker>
+    <marker id="wArr2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e7d32"/></marker>
+  </defs>
+</svg>`,
+
+  /**
+   * Free-body force diagram — a car/box with weight, reaction, thrust and drag
+   * arrows. Used for forces & motion. Compact, info-panel sized.
+   */
+  'forces-arrows': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 160" width="250" height="160">
+  <!-- Ground -->
+  <line x1="10" y1="118" x2="240" y2="118" stroke="#555" stroke-width="1.5"/>
+  <!-- Object -->
+  <rect x="95" y="78" width="60" height="40" rx="4" fill="#bbdefb" stroke="#1565c0" stroke-width="2"/>
+  <text x="125" y="102" font-family="Arial" font-size="9" fill="#0d47a1" text-anchor="middle" font-weight="bold">object</text>
+  <defs><marker id="fArr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#111"/></marker></defs>
+  <!-- Thrust (right) -->
+  <line x1="155" y1="98" x2="225" y2="98" stroke="#2e7d32" stroke-width="2.5" marker-end="url(#fArr)"/>
+  <text x="200" y="92" font-family="Arial" font-size="8" fill="#2e7d32" font-weight="bold" text-anchor="middle">thrust</text>
+  <!-- Drag (left) -->
+  <line x1="95" y1="98" x2="40" y2="98" stroke="#c62828" stroke-width="2" marker-end="url(#fArr)"/>
+  <text x="60" y="92" font-family="Arial" font-size="8" fill="#c62828" font-weight="bold" text-anchor="middle">drag</text>
+  <!-- Weight (down) -->
+  <line x1="125" y1="118" x2="125" y2="150" stroke="#111" stroke-width="2.5" marker-end="url(#fArr)"/>
+  <text x="125" y="148" font-family="Arial" font-size="8" fill="#111" font-weight="bold" text-anchor="start" dx="6">weight (W = m g)</text>
+  <!-- Reaction (up) -->
+  <line x1="110" y1="78" x2="110" y2="46" stroke="#1565c0" stroke-width="2.5" marker-end="url(#fArr)"/>
+  <text x="110" y="42" font-family="Arial" font-size="8" fill="#1565c0" font-weight="bold" text-anchor="middle">reaction</text>
+</svg>`,
+
+  /**
+   * Energy Sankey — input energy splitting into useful and wasted energy.
+   * Used for energy transfers & efficiency. Compact.
+   */
+  'energy-sankey': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 150" width="260" height="150">
+  <!-- Input band -->
+  <rect x="10" y="45" width="60" height="60" fill="#90caf9" stroke="#1565c0" stroke-width="1"/>
+  <text x="40" y="38" font-family="Arial" font-size="8" fill="#0d47a1" text-anchor="middle" font-weight="bold">input</text>
+  <text x="40" y="120" font-family="Arial" font-size="7.5" fill="#0d47a1" text-anchor="middle">100 J</text>
+  <!-- Useful branch (upper, wider) -->
+  <path d="M 70 45 L 200 35 L 200 70 L 70 78 Z" fill="#a5d6a7" stroke="#2e7d32" stroke-width="1"/>
+  <text x="210" y="50" font-family="Arial" font-size="8" fill="#1b5e20" font-weight="bold">useful</text>
+  <text x="210" y="60" font-family="Arial" font-size="7.5" fill="#1b5e20">60 J</text>
+  <!-- Wasted branch (lower, narrower) -->
+  <path d="M 70 78 L 200 92 L 200 118 L 70 105 Z" fill="#ef9a9a" stroke="#c62828" stroke-width="1"/>
+  <text x="210" y="104" font-family="Arial" font-size="8" fill="#b71c1c" font-weight="bold">wasted</text>
+  <text x="210" y="114" font-family="Arial" font-size="7.5" fill="#b71c1c">40 J (heat)</text>
+  <!-- Efficiency note -->
+  <text x="130" y="142" font-family="Arial" font-size="8" fill="#1a237e" text-anchor="middle" font-weight="bold">efficiency = useful ÷ total</text>
+</svg>`,
+
 };
 
 export default diagrams;

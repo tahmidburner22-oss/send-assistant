@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Biology",
+    "company": "Adaptly",
+    "title": "ORGANISATION – ENZYMES & DIGESTION",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Enzyme", "definition": "a biological catalyst that speeds up reactions." },
+        { "term": "Substrate", "definition": "the molecule an enzyme acts on." },
+        { "term": "Active site", "definition": "the part of the enzyme the substrate fits into." },
+        { "term": "Denatured", "definition": "the active site changes shape and stops working." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Enzymes are killed by high temperature.", "right": "Enzymes are not alive — they are denatured." },
+        { "wrong": "One enzyme works on any substrate.", "right": "Enzymes are specific to one substrate shape." },
+        { "wrong": "Denaturing can be reversed by cooling.", "right": "Denaturing is permanent — the shape is lost." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "LOCK-AND-KEY MODEL",
+      "diagram": {
+        "id": "enzyme-lock-key",
+        "width": "100%"
+      },
+      "secondaryContent": "Only a substrate with the right shape fits the <strong>active site</strong>."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "DEFINE THE TERM",
+      "type": "short-answer",
+      "text": "Describe what is meant by an <span class=\"command\">enzyme</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "LOCK AND KEY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why each enzyme only works on one type of substrate. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 3,
+      "sectionTitle": "EFFECT OF TEMPERATURE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> what happens to an enzyme above its optimum temperature. <strong>[3 marks]</strong>",
+      "answerLines": 3
+    },
+    {
+      "number": 4,
+      "sectionTitle": "DIGESTIVE ENZYMES",
+      "type": "fill-blank",
+      "text": "Complete the table of enzymes using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["amino acids", "glucose", "protease", "amylase"],
+      "secondaryText": "______ breaks starch into ______ ; protease breaks protein into amino acids.",
+      "answerLines": 1
+    },
+    {
+      "number": 5,
+      "sectionTitle": "EFFECT OF pH",
+      "type": "explain",
+      "text": "An enzyme works best at pH 7. <span class=\"command\">Predict</span> what happens to its rate at pH 3. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 6,
+      "sectionTitle": "BILE",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> how bile increases the rate of fat digestion. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    }
+  ],
+  "footer": {
+    "tip": "Substrate must fit the active site — like a key in a lock.",
+    "thinkPrompt": "Why does the rate fall on BOTH sides of the optimum temperature?"
+  }
+}

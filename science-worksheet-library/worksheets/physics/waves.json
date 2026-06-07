@@ -1,0 +1,97 @@
+{
+  "version": "2.0",
+  "variant": "standard",
+  "header": {
+    "subject": "Physics",
+    "company": "Adaptly",
+    "title": "WAVES – PROPERTIES OF WAVES",
+    "titleColor": "blue",
+    "titleUnderline": true
+  },
+  "layout": {
+    "mode": "info-grid",
+    "infoCols": 3,
+    "questionCols": 2,
+    "questionRows": 3
+  },
+  "infoPanels": [
+    {
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Wavelength (λ)", "definition": "distance from one wave crest to the next, in metres." },
+        { "term": "Frequency (f)", "definition": "number of waves per second, measured in hertz (Hz)." },
+        { "term": "Amplitude", "definition": "maximum displacement from the rest position." },
+        { "term": "Transverse", "definition": "vibrations are at 90° to the direction of travel." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Waves transfer matter from place to place.", "right": "Waves transfer energy, not matter." },
+        { "wrong": "Amplitude is the same as wavelength.", "right": "Amplitude is height; wavelength is length." },
+        { "wrong": "Sound is a transverse wave.", "right": "Sound is a longitudinal wave." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "PARTS OF A TRANSVERSE WAVE",
+      "diagram": {
+        "id": "wave-labelled",
+        "width": "100%"
+      },
+      "secondaryContent": "Wave speed: <strong>v = f × λ</strong> (speed = frequency × wavelength)."
+    }
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "sectionTitle": "LABEL THE WAVE",
+      "type": "label-diagram",
+      "text": "On the diagram above, name the parts marked <span class=\"command\">wavelength</span> and <span class=\"command\">amplitude</span>. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 2,
+      "sectionTitle": "WAVE SPEED",
+      "type": "calculation",
+      "text": "A wave has frequency 50 Hz and wavelength 0.4 m. <span class=\"command\">Calculate</span> its speed. <strong>[2 marks]</strong>",
+      "answerUnit": "m/s"
+    },
+    {
+      "number": 3,
+      "sectionTitle": "TRANSVERSE vs LONGITUDINAL",
+      "type": "compare",
+      "text": "<span class=\"command\">Describe</span> the difference between transverse and longitudinal waves. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "FREQUENCY & PERIOD",
+      "type": "calculation",
+      "text": "A wave has a period of 0.02 s. <span class=\"command\">Calculate</span> its frequency (f = 1 ÷ T). <strong>[2 marks]</strong>",
+      "answerUnit": "Hz"
+    },
+    {
+      "number": 5,
+      "sectionTitle": "ENERGY TRANSFER",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> what a wave transfers when a cork bobs on water but does not move along. <strong>[2 marks]</strong>",
+      "answerLines": 2
+    },
+    {
+      "number": 6,
+      "sectionTitle": "EM SPECTRUM",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank. <strong>[2 marks]</strong>",
+      "wordBank": ["transverse", "longitudinal", "300 000 000", "340"],
+      "secondaryText": "All electromagnetic waves are ______ and travel at ______ m/s in a vacuum.",
+      "answerLines": 1
+    }
+  ],
+  "footer": {
+    "tip": "v = f × λ. Keep units in metres, hertz and metres per second.",
+    "thinkPrompt": "If frequency doubles but speed stays the same, what happens to wavelength?"
+  }
+}
