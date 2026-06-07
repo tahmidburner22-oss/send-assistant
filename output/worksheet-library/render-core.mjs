@@ -21,11 +21,86 @@ function esc(str) {
     .replace(/>/g, '&gt;');
 }
 
+// Detect sub-parts like "a)", "(a)", "b)" in order so each gets its own answer line.
+function extractParts(content) {
+  const found = [...String(content).matchAll(/(?:^|\s|\()([a-h])\)/g)].map((m) => m[1]);
+  const seq = 'abcdefgh'.split('');
+  const seen = [];
+  for (const c of found) if (!seen.includes(c)) seen.push(c);
+  const parts = [];
+  for (let i = 0; i < seen.length; i++) {
+    if (seen[i] === seq[i]) parts.push(seen[i]);
+    else break;
+  }
+  return parts;
+}
+
+// One ruled answer line per sub-part (a)/(b)/..., or a single "Answer" line.
+function answerBlock(content) {
+  const parts = extractParts(content);
+  let h = `<div class="answer-block"><div class="ab-title">Answer${parts.length ? 's' : ''}</div>`;
+  if (parts.length) {
+    for (const p of parts)
+      h += `<div class="ans-row"><span class="lbl">(${p})</span><span class="eq">=</span><span class="rule"></span></div>`;
+  } else {
+    h += `<div class="ans-row"><span class="lbl">Answer</span><span class="eq">=</span><span class="rule"></span></div>`;
+  }
+  return h + `</div>`;
+}
+
+// A simple worked visual example per topic, drawn as scalable SVG.
+function topicVisual(ws) {
+  const topic = ws.metadata?.topic || '';
+  const sub = (ws.metadata?.subtopic || '').toLowerCase();
+  const F = 'font-family="DejaVu Sans, Arial, sans-serif"';
+  let svg = '', cap = '';
+  if (/surd/i.test(topic)) {
+    cap = 'Simplifying a surd: split off the largest square factor.';
+    svg = `<svg viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+      <text x="10" y="45" ${F} font-size="26">&#8730;72</text>
+      <line x1="95" y1="38" x2="150" y2="38" stroke="#16a34a" stroke-width="2"/>
+      <text x="160" y="45" ${F} font-size="26">= &#8730;(36 &#215; 2)</text>
+      <text x="160" y="95" ${F} font-size="26">= &#8730;36 &#215; &#8730;2</text>
+      <text x="160" y="140" ${F} font-size="26" font-weight="700">= 6&#8730;2</text>
+      <circle cx="300" cy="86" r="3" fill="#16a34a"/><circle cx="360" cy="86" r="3" fill="#16a34a"/>
+    </svg>`;
+  } else if (/indices|standard form/i.test(topic)) {
+    if (/standard form/i.test(sub)) {
+      cap = 'Standard form: A &#215; 10&#8319; with 1 &#8804; A &lt; 10.';
+      svg = `<svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="55" ${F} font-size="24">5 600 000</text>
+        <text x="200" y="55" ${F} font-size="24">=  5.6 &#215; 10</text>
+        <text x="372" y="40" ${F} font-size="16" font-weight="700">6</text>
+        <path d="M30 70 q70 40 150 0" fill="none" stroke="#16a34a" stroke-width="2"/>
+        <text x="70" y="120" ${F} font-size="13" fill="#15803d">move the point 6 places left</text>
+      </svg>`;
+    } else {
+      cap = 'Laws of indices: multiply &#8594; add the powers.';
+      svg = `<svg viewBox="0 0 520 120" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="55" ${F} font-size="24">x&#179; &#215; x&#8309;</text>
+        <text x="150" y="55" ${F} font-size="24">= x&#179;&#8314;&#8309;</text>
+        <text x="320" y="55" ${F} font-size="24" font-weight="700">= x&#8312;</text>
+        <text x="40" y="100" ${F} font-size="13" fill="#15803d">same base &#8594; add indices</text>
+      </svg>`;
+    }
+  } else if (/fraction|percent|decimal/i.test(topic)) {
+    cap = 'One half shown three equivalent ways.';
+    svg = `<svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="20" width="240" height="40" fill="#bbf7d0" stroke="#15803d"/>
+      <rect x="130" y="20" width="120" height="40" fill="#16a34a"/>
+      <text x="270" y="48" ${F} font-size="22">&#189;  =  0.5  =  50%</text>
+      <text x="10" y="95" ${F} font-size="13" fill="#15803d">shaded part = 1 of 2 equal parts = half</text>
+    </svg>`;
+  }
+  if (!svg) return '';
+  return `<div class="visual"><div class="box-title">Visual Example</div>${svg}<div class="vcap">${cap}</div></div>`;
+}
+
 
 const CSS = `
 @page { size: A4; margin: 0; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { font-family: Arial, Helvetica, sans-serif; color: #111; background:#fff; }
+html, body { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; color: #111; background:#fff; }
 .page { width:210mm; height:297mm; padding:11mm 12mm; page-break-after:always;
   overflow:hidden; display:flex; flex-direction:column; background:#fff; }
 .page.landscape { width:297mm; height:210mm; }
@@ -59,8 +134,16 @@ const CSS2 = `
 .frame li::before { content:"\\2192"; position:absolute; left:0; }
 .work { flex:1 1 auto; margin-top:3mm; min-height:0;
   background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 8.4mm,#e9ebee 8.4mm,#e9ebee 8.5mm); }
-.answer-line { text-align:right; font-size:10.5pt; margin:2mm 0; }
-.answer-line .rule { display:inline-block; width:55mm; border-bottom:1pt solid #111; margin-left:2mm; }
+.answer-block { margin:3mm 0 2mm; }
+.answer-block .ab-title { font-size:8.5pt; font-weight:800; text-transform:uppercase; letter-spacing:.4px; color:#444; margin-bottom:1.5mm; }
+.ans-row { display:flex; align-items:flex-end; font-size:11pt; margin-bottom:2.6mm; }
+.ans-row .lbl { min-width:12mm; font-weight:700; }
+.ans-row .eq { margin:0 2mm; }
+.ans-row .rule { flex:1; border-bottom:1pt solid #111; height:5mm; }
+.visual { margin-bottom:4mm; background:#f0fdf4; border:.75pt solid #86c79a; border-left:3pt solid #16a34a; padding:3mm; }
+.visual .box-title { color:#15803d; }
+.visual svg { display:block; width:100%; height:auto; max-height:46mm; }
+.visual .vcap { font-size:8.5pt; font-style:italic; color:#3f6b4e; margin-top:1.5mm; }
 .method-strip { border:.75pt solid #cbd2da; background:#f4f6f8; border-radius:1.5mm; padding:2mm 3mm; font-size:8pt; color:#2a2a2a; }
 .method-strip b { text-transform:uppercase; letter-spacing:.3px; margin-right:2mm; }
 .method-strip .sep { color:#9aa3ad; margin:0 1.5mm; }
@@ -82,12 +165,14 @@ const CSS2 = `
 `;
 
 
-function introBlocks(intro, landscape) {
+function introBlocks(ws, landscape) {
+  const intro = ws.intro;
   let h = `<div class="bk-title">${esc(intro.header)}</div>`;
   h += `<div class="bk-sub">${esc(intro.subheader)}</div>`;
   if (!landscape && intro.nameLine) h += `<div class="bk-name">${esc(intro.nameLine)}</div>`;
   if (landscape && intro.note) h += `<div class="ls-note">${esc(intro.note)}</div>`;
   if (intro.objective) h += `<div class="objective">${esc(intro.objective)}</div>`;
+  h += topicVisual(ws);
   if (intro.commonMistakes?.length) {
     h += `<div class="mistakes"><div class="box-title">Common Mistakes</div><ul>`;
     for (const m of intro.commonMistakes) h += `<li>${esc(m)}</li>`;
@@ -122,7 +207,7 @@ function questionPage(ws, q, index) {
     h += `</ul></div>`;
   }
   h += `<div class="work"></div>`;
-  h += `<div class="answer-line">Answer <span class="rule"></span></div>`;
+  h += answerBlock(q.content);
   if (reminder.length) {
     h += `<div class="method-strip"><b>Method</b>`;
     h += reminder.map((s) => `${esc(s)}`).join(`<span class="sep">|</span>`);
@@ -153,7 +238,7 @@ function answersPage(ws) {
 }
 
 function landscapeQuestions(ws) {
-  let h = `<div class="page landscape">${introBlocks(ws.intro, true)}</div>`;
+  let h = `<div class="page landscape">${introBlocks(ws, true)}</div>`;
   h += `<div class="page landscape"><div class="ls-grid">`;
   for (const q of ws.questions) {
     h += `<div class="ls-q"><div class="ls-q-h">${q.number}. <span class="m">(${q.marks} mark${q.marks > 1 ? 's' : ''})</span></div>`;
@@ -167,7 +252,7 @@ export function buildHtml(ws) {
   if (isLandscapeWs(ws)) {
     body = landscapeQuestions(ws);
   } else {
-    body += `<div class="page">${introBlocks(ws.intro, false)}</div>`;
+    body += `<div class="page">${introBlocks(ws, false)}</div>`;
     ws.questions.forEach((q, i) => { body += questionPage(ws, q, i); });
     body += reflectionPage(ws);
     body += answersPage(ws);

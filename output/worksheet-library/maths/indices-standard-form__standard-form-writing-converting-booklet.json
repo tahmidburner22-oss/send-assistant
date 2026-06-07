@@ -57,8 +57,8 @@
     "5  Check by converting back"
   ],
   "questions": [
-    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Write in standard form:\n\n   a) 5,000       b) 340,000       c) 72,000,000       d) 810" },
-    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Write in standard form:\n\n   a) 0.003       b) 0.00056       c) 0.0000012       d) 0.47" },
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Put one non-zero digit before the decimal point (so 1 ≤ A < 10).", "Count how many places the point moves — that is the power.", "A big number gives a positive power, e.g. 5 000 = 5 × 10³."], "content": "Write in standard form:\n\n   a) 5,000       b) 340,000       c) 72,000,000       d) 810" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Move the point right until one non-zero digit is in front.", "A small number (less than 1) gives a negative power, e.g. 0.003 = 3 × 10⁻³."], "content": "Write in standard form:\n\n   a) 0.003       b) 0.00056       c) 0.0000012       d) 0.47" },
     { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Convert to ordinary numbers:\n\n   a) 3.2 × 10⁴       b) 7.05 × 10⁶       c) 1.8 × 10⁻³       d) 9.1 × 10⁻⁵" },
     { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Which of these are NOT in correct standard form? Fix the ones that are wrong.\n\n   a) 5.6 × 10³       b) 36 × 10⁴       c) 0.8 × 10⁻²       d) 7 × 10⁹" },
     { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "The mass of a hydrogen atom is about 0.000 000 000 000 000 000 000 001 67 kg.\n\nWrite this in standard form." },

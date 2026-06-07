@@ -55,8 +55,8 @@
     "5  State increase or decrease"
   ],
   "questions": [
-    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Find:\n\n   a) 10% of £50       b) 25% of £120       c) 5% of £200       d) 1% of £350" },
-    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Increase each amount by the given percentage.\n\n   a) £40 by 10%       b) £60 by 25%       c) £200 by 50%" },
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["To find 10%, divide the amount by 10.", "To find 1%, divide the amount by 100.", "25% is a quarter, so divide by 4; 5% is half of 10%."], "content": "Find:\n\n   a) 10% of £50       b) 25% of £120       c) 5% of £200       d) 1% of £350" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["First find the percentage of the amount (just like Q1).", "Then ADD that amount on to the original."], "content": "Increase each amount by the given percentage.\n\n   a) £40 by 10%       b) £60 by 25%       c) £200 by 50%" },
     { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Decrease each amount by the given percentage.\n\n   a) £80 by 20%       b) £150 by 10%       c) £500 by 35%" },
     { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "A shop increases the price of a TV from £450 to £495.\n\n   a) How much did the price increase by?\n   b) What is the percentage increase?" },
     { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "A bicycle cost £320. In a sale there is 15% off.\n\n   a) How much is the discount?\n   b) What is the sale price?\n   c) After the sale, the price goes back up by 15%. Is it £320 again? Show why or why not." },
