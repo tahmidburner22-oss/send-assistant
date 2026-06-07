@@ -4,52 +4,86 @@
   "header": {
     "subject": "Chemistry",
     "yearGroup": "Year 10",
-    "title": "METALLIC BONDING – DIAGRAM B",
-    "subtitle": "Interpretation & Practice",
-    "nameDateBox": true,
-    "titleColor": "black"
+    "title": "BONDING – METALLIC BONDING",
+    "titleColor": "blue",
+    "titleUnderline": true
   },
   "layout": {
-    "mode": "panel-pair",
-    "infoCols": 1,
+    "mode": "info-grid",
+    "infoCols": 3,
     "questionCols": 2,
-    "questionRows": 1
+    "questionRows": 2
   },
   "infoPanels": [
     {
-      "type": "definition",
-      "title": "",
-      "content": "Metallic bonding is the strong electrostatic attraction between <strong>positive metal ions</strong> and <strong>delocalised electrons</strong>.",
-      "fullWidth": true
+      "type": "vocab",
+      "title": "KEY VOCABULARY",
+      "vocab": [
+        { "term": "Metallic bond", "definition": "the strong attraction between positive metal ions and delocalised electrons." },
+        { "term": "Delocalised", "definition": "electrons that are free to move through the whole structure." },
+        { "term": "Lattice", "definition": "a regular, repeating arrangement of ions." },
+        { "term": "Malleable", "definition": "can be hammered or bent into shape without breaking." }
+      ]
+    },
+    {
+      "type": "misconceptions",
+      "title": "COMMON MISCONCEPTIONS",
+      "misconceptions": [
+        { "wrong": "Metals are made of molecules.", "right": "Metals are a giant lattice of ions." },
+        { "wrong": "The electrons belong to one atom.", "right": "Electrons are delocalised (shared by all)." },
+        { "wrong": "Metals conduct because ions move.", "right": "The delocalised electrons carry the charge." }
+      ]
+    },
+    {
+      "type": "diagram",
+      "title": "THE METALLIC LATTICE",
+      "diagram": {
+        "id": "metal-lattice-compact",
+        "width": "100%"
+      },
+      "secondaryContent": "Positive <strong>metal ions</strong> sit in a 'sea' of <strong>delocalised electrons</strong>."
     }
   ],
   "questions": [
     {
       "number": 1,
-      "sectionTitle": "LABEL THE STRUCTURE",
-      "type": "label-diagram",
-      "text": "Label the diagram using the terms in the box below.",
-      "wordBank": ["delocalised electrons", "positive metal ions", "layers can slide"],
-      "diagram": {
-        "id": "metal-lattice-label",
-        "width": "100%"
-      }
+      "sectionTitle": "DEFINE THE BOND",
+      "type": "short-answer",
+      "text": "Describe what is meant by <span class=\"command\">metallic bonding</span>.",
+      "secondaryText": "Use the words 'positive metal ions' and 'delocalised electrons'.",
+      "answerLines": 3
     },
     {
       "number": 2,
+      "sectionTitle": "ELECTRICAL CONDUCTIVITY",
+      "type": "explain",
+      "text": "<span class=\"command\">Explain</span> why metals are good conductors of electricity.",
+      "secondaryText": "Think about which particles are free to move.",
+      "answerLines": 3
+    },
+    {
+      "number": 3,
       "sectionTitle": "MALLEABILITY",
       "type": "explain",
-      "text": "The diagram shows layers of metal ions. When a force is applied, the layers can slide over each other.",
+      "text": "The diagram shows the lattice before and after a force is applied. <span class=\"command\">Explain</span> why the layers of ions can slide.",
       "diagram": {
-        "id": "metal-lattice-malleability",
+        "id": "metal-malleability-compact",
         "width": "100%"
       },
-      "secondaryText": "Explain why the layers of ions can slide over each other.",
-      "answerLines": 4
+      "answerLines": 2
+    },
+    {
+      "number": 4,
+      "sectionTitle": "MELTING POINT",
+      "type": "fill-blank",
+      "text": "Complete the sentence using the word bank.",
+      "wordBank": ["high", "strong", "attraction"],
+      "secondaryText": "Metals have ______ melting points because there is a ______ electrostatic ______ between the ions and the delocalised electrons.",
+      "answerLines": 1
     }
   ],
   "footer": {
     "tip": "Positive metal ions are held in a 'sea' of delocalised electrons.",
-    "thinkPrompt": "What property of metals does this structure explain?"
+    "thinkPrompt": "Why does a bigger ionic charge give a stronger metallic bond?"
   }
 }

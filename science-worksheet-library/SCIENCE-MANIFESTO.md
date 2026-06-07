@@ -25,18 +25,44 @@ via Playwright (headless Chromium).
 1. **One A4-landscape page** (297mm × 210mm). The generator **fails** if content
    overflows (page scrollHeight must be ≤ 794px + 5px tolerance).
 2. **Small header** — a thin band, never a tall hero. Maximise space for content.
-3. Every worksheet has, in some form: a small header, **key vocabulary**, **common
-   misconceptions**, diagrams, questions, and an optional footer (tip / think prompt).
-   - Note: in the bespoke layouts these can be expressed via info panels
-     (e.g. a "worked example" panel can carry the misconception-correcting role,
-     or explicit `vocab` / `misconceptions` panels can be added).
-4. **Diagrams are print-safe inline SVGs** keyed in `src/diagrams.ts` (no external
+3. **The Concentration of Solutions standard variant is the GOLD STANDARD layout.**
+   Every worksheet MUST match its visual quality and structure: the `info-grid`
+   layout with **3 info panels on top** + a **question grid below** (2×2 or 2×3).
+   Gold standard PDF:
+   `output/chemistry/concentration-of-solutions.pdf`.
+4. **Minimum 4–6 questions per worksheet.** Fewer than 4 is not acceptable.
+5. **At least 1–2 diagrams per worksheet**, embedded in info panels and/or
+   question panels (never a bare wall of text).
+6. **Key Vocabulary box and Common Misconceptions box are MANDATORY** and sit at the
+   top as info panels (`type: "vocab"` and `type: "misconceptions"`). The standard
+   top row is: **Key Vocabulary | Common Misconceptions | Diagram** (or formula /
+   worked-example as the third panel where a topic needs it).
+7. **NO "Diagram A/B" labels in the header.** The `diagramLabel` field must NOT be
+   used on any worksheet header (remove it everywhere, Concentration included).
+8. **Diagrams are print-safe inline SVGs** keyed in `src/diagrams.ts` (no external
    refs, no filters that break in PDF). Use radial gradients for 3D spheres — these
    render fine in Chromium PDF.
-5. **Standard variant authored first**, then the **ADHD variant** with the SAME grid
+9. **Standard variant authored first**, then the **ADHD variant** with the SAME grid
    and SAME questions but calmer palette, chunked steps, checkboxes, progress tracker,
    and simplified language. **The ADHD structure must never break** — same layout mode,
    same number of questions, same diagrams.
+
+### Gold-standard visual elements (what makes Concentration work — replicate these)
+- **Compact header:** filled `CHEMISTRY` badge + outlined `YEAR 10` badge, large
+  title, **double rule** underneath (no diagram label badge).
+- **3 info panels in a row:** Key Vocabulary, Common Misconceptions, and a third
+  panel carrying a diagram / formula / worked example.
+- **2×2 (or 2×3) question grid** with **navy numbered badges** + **navy filled
+  section-title banners** beside each number.
+- **Word bank:** dashed outer container with solid inner word boxes.
+- **Answer lines with a unit suffix** (e.g. `Answer: ______ g/dm³`).
+- **Tables for compare questions** + circle options + working box.
+- **Footer** with `💡 TIP` and `✓ Think` prompts.
+
+> **Metallic Bonding note:** the old `panel-pair` Metallic Bonding sheet was WEAK
+> and has been completely redone in the `info-grid` layout to match the Concentration
+> gold standard (3 info panels incl. vocab + misconceptions + diagram, then a 4–6
+> question grid).
 
 ---
 
@@ -159,7 +185,8 @@ inline SVG, CSS custom-property palette) → Playwright loads it at A4-landscape
 
 `Worksheet`:
 - `version: "2.0"`, `variant: "standard" | "adhd"`
-- `header`: `{ subject, yearGroup, title, diagramLabel?, subtitle?, nameDateBox?, titleColor? }`
+- `header`: `{ subject, yearGroup, title, subtitle?, nameDateBox?, titleColor?, titleUnderline? }`
+  - **`diagramLabel` is DEPRECATED — do not use it.** (See §1 rule 7.)
 - `layout`: `{ mode: "info-grid" | "panel-pair", infoCols?, questionCols?, questionRows? }`
 - `infoPanels: InfoPanel[]`
 - `questions: Question[]`

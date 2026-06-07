@@ -157,6 +157,110 @@ const diagrams: Record<string, string> = {
   <line x1="290" y1="194" x2="330" y2="194" stroke="#111" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#slipArrow)"/>
 </svg>`,
 
+  /**
+   * Compact metal lattice — for the info-panel "structure" diagram (gold-standard
+   * info-grid layout). Shows a 3×3 grid of 3D silver cations (+) sitting in a
+   * faint blue "sea" of delocalised electrons (−), with two inline labels.
+   * Sized small so it fits a third-width info panel.
+   */
+  'metal-lattice-compact': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 150" width="240" height="150">
+  <defs>
+    <radialGradient id="ionC" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#c8ccd4"/>
+      <stop offset="100%" stop-color="#6b7280"/>
+    </radialGradient>
+    <radialGradient id="elecC" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#bfdbfe"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </radialGradient>
+  </defs>
+  <!-- Electron sea background -->
+  <rect x="6" y="6" width="150" height="138" rx="8" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1.2" stroke-dasharray="4,2"/>
+  <!-- Electrons scattered in the sea -->
+  <g font-family="Arial" font-size="6" fill="#fff" text-anchor="middle">
+  <circle cx="30" cy="22" r="5" fill="url(#elecC)"/><text x="30" y="24.5">−</text>
+  <circle cx="82" cy="20" r="5" fill="url(#elecC)"/><text x="82" y="22.5">−</text>
+  <circle cx="132" cy="24" r="5" fill="url(#elecC)"/><text x="132" y="26.5">−</text>
+  <circle cx="24" cy="74" r="5" fill="url(#elecC)"/><text x="24" y="76.5">−</text>
+  <circle cx="82" cy="72" r="5" fill="url(#elecC)"/><text x="82" y="74.5">−</text>
+  <circle cx="138" cy="74" r="5" fill="url(#elecC)"/><text x="138" y="76.5">−</text>
+  <circle cx="30" cy="126" r="5" fill="url(#elecC)"/><text x="30" y="128.5">−</text>
+  <circle cx="82" cy="128" r="5" fill="url(#elecC)"/><text x="82" y="130.5">−</text>
+  <circle cx="132" cy="126" r="5" fill="url(#elecC)"/><text x="132" y="128.5">−</text>
+  </g>
+  <!-- Cations: 3×3 3D silver spheres -->
+  <g font-family="Arial" font-size="11" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <circle cx="42"  cy="44" r="13" fill="url(#ionC)" stroke="#52525b"/><text x="42"  y="49">+</text>
+  <circle cx="82"  cy="44" r="13" fill="url(#ionC)" stroke="#52525b"/><text x="82"  y="49">+</text>
+  <circle cx="122" cy="44" r="13" fill="url(#ionC)" stroke="#52525b"/><text x="122" y="49">+</text>
+  <circle cx="42"  cy="86" r="13" fill="url(#ionC)" stroke="#52525b"/><text x="42"  y="91">+</text>
+  <circle cx="82"  cy="86" r="13" fill="url(#ionC)" stroke="#52525b"/><text x="82"  y="91">+</text>
+  <circle cx="122" cy="86" r="13" fill="url(#ionC)" stroke="#52525b"/><text x="122" y="91">+</text>
+  <circle cx="42"  cy="118" r="0" fill="none"/>
+  </g>
+  <!-- Inline labels with leader lines -->
+  <line x1="135" y1="44" x2="166" y2="40" stroke="#333" stroke-width="1"/>
+  <text x="168" y="38" font-family="Arial" font-size="8" font-weight="bold" fill="#1a237e">positive</text>
+  <text x="168" y="48" font-family="Arial" font-size="8" font-weight="bold" fill="#1a237e">metal ions</text>
+  <line x1="138" y1="74" x2="166" y2="92" stroke="#333" stroke-width="1"/>
+  <text x="168" y="90" font-family="Arial" font-size="8" font-weight="bold" fill="#1a237e">delocalised</text>
+  <text x="168" y="100" font-family="Arial" font-size="8" font-weight="bold" fill="#1a237e">electrons</text>
+</svg>`,
+
+  /**
+   * Compact malleability diagram — side-by-side BEFORE / AFTER for a question cell.
+   * Top layer shifts right after force; sized short and wide to fit a 2-col grid cell.
+   */
+  'metal-malleability-compact': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" width="320" height="120">
+  <defs>
+    <radialGradient id="ionMC" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#c8ccd4"/>
+      <stop offset="100%" stop-color="#6b7280"/>
+    </radialGradient>
+    <marker id="forceArr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#111"/></marker>
+  </defs>
+  <!-- BEFORE -->
+  <text x="68" y="12" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="#111">BEFORE</text>
+  <rect x="6" y="18" width="124" height="92" rx="6" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1" stroke-dasharray="4,2"/>
+  <g font-family="Arial" font-size="9" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <circle cx="30" cy="40" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="30" y="44">+</text>
+  <circle cx="58" cy="40" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="58" y="44">+</text>
+  <circle cx="86" cy="40" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="86" y="44">+</text>
+  <circle cx="114" cy="40" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="114" y="44">+</text>
+  <circle cx="30" cy="70" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="30" y="74">+</text>
+  <circle cx="58" cy="70" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="58" y="74">+</text>
+  <circle cx="86" cy="70" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="86" y="74">+</text>
+  <circle cx="114" cy="70" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="114" y="74">+</text>
+  <circle cx="30" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="30" y="104">+</text>
+  <circle cx="58" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="58" y="104">+</text>
+  <circle cx="86" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="86" y="104">+</text>
+  <circle cx="114" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="114" y="104">+</text>
+  </g>
+  <!-- FORCE arrow -->
+  <line x1="142" y1="64" x2="176" y2="64" stroke="#111" stroke-width="2" marker-end="url(#forceArr)"/>
+  <text x="159" y="56" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#111">FORCE</text>
+  <!-- AFTER (top rows shifted right) -->
+  <text x="252" y="12" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="#111">AFTER</text>
+  <rect x="190" y="18" width="124" height="92" rx="6" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1" stroke-dasharray="4,2"/>
+  <g font-family="Arial" font-size="9" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <circle cx="228" cy="40" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="228" y="44">+</text>
+  <circle cx="256" cy="40" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="256" y="44">+</text>
+  <circle cx="284" cy="40" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="284" y="44">+</text>
+  <circle cx="214" cy="70" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="214" y="74">+</text>
+  <circle cx="242" cy="70" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="242" y="74">+</text>
+  <circle cx="270" cy="70" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="270" y="74">+</text>
+  <circle cx="298" cy="70" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="298" y="74">+</text>
+  <circle cx="214" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="214" y="104">+</text>
+  <circle cx="242" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="242" y="104">+</text>
+  <circle cx="270" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="270" y="104">+</text>
+  <circle cx="298" cy="100" r="11" fill="url(#ionMC)" stroke="#52525b"/><text x="298" y="104">+</text>
+  </g>
+</svg>`,
+
   // ═══════════════════════════════════════════════════════════════════════════
   // CONCENTRATION OF SOLUTIONS
   // ═══════════════════════════════════════════════════════════════════════════
