@@ -5,7 +5,9 @@
     "subject": "Chemistry",
     "yearGroup": "Year 10",
     "title": "QUANTITATIVE CHEMISTRY 2 – CONCENTRATION OF SOLUTIONS",
-    "diagramLabel": "Diagram A"
+    "diagramLabel": "Diagram A",
+    "titleColor": "blue",
+    "titleUnderline": true
   },
   "layout": {
     "mode": "info-grid",

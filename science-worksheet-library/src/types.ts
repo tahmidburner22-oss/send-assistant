@@ -26,10 +26,16 @@ export interface WorksheetHeader {
   yearGroup: string;
   /** Main title, e.g. "Metallic Bonding" */
   title: string;
-  /** Diagram label, e.g. "Diagram B" */
+  /** Diagram label badge on the right, e.g. "Diagram A" (rendered as a navy badge) */
   diagramLabel?: string;
-  /** Subtitle below title, e.g. "Interpretation & Practice" */
+  /** Subtitle below title, e.g. "Interpretation & Practice" (blue italic) */
   subtitle?: string;
+  /** Show a NAME / DATE box on the right (instead of a diagram label badge) */
+  nameDateBox?: boolean;
+  /** Title colour: "black" or "blue" (defaults to blue) */
+  titleColor?: 'black' | 'blue';
+  /** Draw a double horizontal rule under the title */
+  titleUnderline?: boolean;
 }
 
 // ─── Key Vocabulary ───────────────────────────────────────────────────────────

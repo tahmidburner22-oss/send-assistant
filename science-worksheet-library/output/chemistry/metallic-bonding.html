@@ -21,7 +21,8 @@
   --vocab-bg: #f3f4f6;
   --misconception-bg: #fff8e1;
   --misconception-border: #ffc107;
-  --formula-bg: #f0f4ff;
+  --formula-bg: #e8eaf6;
+  --conversion-bg: #fff9c4;
   --worked-bg: #ffffff;
   --footer-bg: #f8f9fa;
   --answer-line: #666666;
@@ -41,28 +42,51 @@ html, body {
 
 /* ─── Header ─── */
 .header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 4px; flex-shrink: 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 2px; flex-shrink: 0;
 }
 .header-left {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 5px;
 }
-.header-badge {
+/* Filled badge (e.g. CHEMISTRY) */
+.badge-filled {
   background: var(--header-bg); color: var(--header-text);
-  padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: 700;
-  text-transform: uppercase;
+  padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.5px;
 }
-.header-right {
-  font-size: 8px; border: 1px solid var(--border); padding: 3px 8px; border-radius: 3px;
+/* Outlined badge (e.g. YEAR 10) */
+.badge-outline {
+  background: #ffffff; color: var(--accent);
+  padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  border: 1.5px solid var(--accent);
 }
+/* Diagram label badge on the right */
+.badge-diagram {
+  background: var(--header-bg); color: var(--header-text);
+  padding: 3px 12px; border-radius: 4px; font-size: 12px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+/* NAME / DATE box */
+.name-date-box {
+  border: 1.5px solid var(--accent); border-radius: 5px;
+  padding: 4px 10px; min-width: 180px;
+}
+.name-date-row { display: flex; align-items: baseline; gap: 4px; font-size: 9px; font-weight: 700; color: var(--accent); }
+.name-date-row + .name-date-row { margin-top: 3px; }
+.name-date-line { flex: 1; border-bottom: 1px solid #999; height: 11px; }
+
 .header-title {
-  font-size: 16px; font-weight: 900; color: var(--accent);
-  text-align: center; margin: 1px 0; flex-shrink: 0;
-  letter-spacing: -0.3px;
+  font-size: 22px; font-weight: 900; text-align: center; margin: 0;
+  flex-shrink: 0; letter-spacing: -0.5px; line-height: 1.05;
 }
+.header-title.black { color: #111; }
+.header-title.blue { color: var(--accent); }
+.title-rule { border: none; border-top: 2px solid var(--accent); margin: 2px 0 0 0; }
+.title-rule.double { border-top: 2.5px solid var(--accent); box-shadow: 0 3px 0 -1px var(--accent); margin-bottom: 4px; }
 .header-subtitle {
-  font-size: 9px; text-align: center; color: #555;
-  margin-bottom: 3px; flex-shrink: 0; font-style: italic;
+  font-size: 11px; text-align: center; color: var(--accent);
+  margin: 1px 0 4px 0; flex-shrink: 0; font-style: italic; font-weight: 600;
 }
 
 /* ─── Progress Tracker (ADHD) ─── */
@@ -92,29 +116,30 @@ html, body {
 }
 .info-panel.full-width { grid-column: 1 / -1; }
 .info-panel-title {
-  font-size: 8.5px; font-weight: 700; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 3px; letter-spacing: 0.5px;
-  text-align: center; border-bottom: 1px solid var(--border);
-  padding-bottom: 2px;
+  font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 4px; letter-spacing: 0.5px;
+  text-align: center; border-bottom: 1.5px solid var(--accent);
+  padding-bottom: 3px;
 }
 .info-panel-content { font-size: 9px; }
 .info-panel-content strong { color: var(--accent); }
 
 /* Formula panel */
+.info-panel.formula-panel { background: var(--formula-bg); }
 .formula-box {
-  background: var(--formula-bg); border: 1px solid var(--border);
-  border-radius: 3px; padding: 6px 10px; margin: 4px 0; text-align: center;
-  font-size: 10px;
+  background: #ffffff; border: 1.5px solid var(--accent);
+  border-radius: 5px; padding: 8px 10px; margin: 4px 0; text-align: center;
+  font-size: 11px;
 }
 .formula-line { margin: 2px 0; font-family: 'Times New Roman', serif; }
-.formula-fraction { display: inline-block; text-align: center; vertical-align: middle; }
-.formula-num { border-bottom: 1px solid var(--text); padding: 0 4px; display: block; }
-.formula-den { padding: 0 4px; display: block; }
+.formula-fraction { display: inline-block; text-align: center; vertical-align: middle; margin: 0 2px; }
+.formula-num { border-bottom: 1.5px solid var(--text); padding: 0 6px 2px 6px; display: block; }
+.formula-den { padding: 2px 6px 0 6px; display: block; }
 
 /* Worked example */
 .worked-panel { background: var(--worked-bg); }
-.worked-step { font-size: 9px; margin: 2px 0; }
-.worked-step.highlight { color: var(--accent); font-weight: 600; }
+.worked-step { font-size: 9.5px; margin: 3px 0; }
+.worked-step.highlight { color: var(--accent); font-weight: 700; font-size: 10.5px; }
 
 /* Vocab panel */
 .vocab-item { margin-bottom: 2px; font-size: 8.5px; }
@@ -126,11 +151,15 @@ html, body {
 .misconception-item .wrong { color: #c62828; text-decoration: line-through; opacity: 0.8; }
 .misconception-item .right { color: #2e7d32; font-weight: 600; }
 
-/* Conversion reminder */
+/* Conversion reminder — yellow box */
 .conversion-box {
-  background: var(--misconception-bg); border: 1.5px solid var(--panel-border);
-  border-radius: 3px; padding: 5px 10px; margin-top: 4px; text-align: center;
-  font-size: 11px; font-weight: 700;
+  background: var(--conversion-bg); border: 1.5px solid var(--accent);
+  border-radius: 5px; padding: 6px 10px; margin-top: 6px; text-align: center;
+  font-size: 13px; font-weight: 800; color: #111;
+}
+.conversion-label {
+  font-size: 9px; font-weight: 800; text-transform: uppercase; color: var(--accent);
+  letter-spacing: 0.5px; margin-bottom: 2px;
 }
 
 /* Diagram inside panel */
@@ -152,30 +181,34 @@ html, body {
   padding: 6px 8px; overflow: hidden; display: flex; flex-direction: column;
 }
 .question-header {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
 }
 .question-badge {
   background: var(--badge-bg); color: var(--badge-text);
-  width: 20px; height: 20px; border-radius: 3px;
+  width: 22px; height: 22px; border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  font-size: 13px; font-weight: 800; flex-shrink: 0;
 }
+/* Navy filled banner beside the badge */
 .question-title {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  color: var(--text);
+  font-size: 11px; font-weight: 800; text-transform: uppercase;
+  color: var(--badge-text); background: var(--badge-bg);
+  padding: 3px 10px; border-radius: 4px; letter-spacing: 0.5px;
 }
 .question-text { font-size: 9.5px; margin-bottom: 3px; }
 .question-text .command { color: var(--accent); font-weight: 600; }
 .question-secondary { font-size: 8.5px; color: #555; margin-bottom: 3px; font-style: italic; }
 
-/* Word bank */
+/* Word bank — dashed container with solid inner boxes */
 .word-bank {
-  display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0;
-  padding: 4px 8px; border: 1.5px dashed var(--word-bank-border);
-  border-radius: 3px; background: var(--word-bank-bg);
+  display: flex; gap: 10px; flex-wrap: wrap; margin: 5px 0;
+  padding: 7px 10px; border: 1.5px dashed var(--word-bank-border);
+  border-radius: 5px; background: transparent; justify-content: center;
 }
 .word-bank-item {
-  font-size: 9px; font-weight: 500; padding: 2px 6px;
+  font-size: 10px; font-weight: 600; padding: 5px 10px; text-align: center;
+  border: 1.5px solid var(--word-bank-border); border-radius: 4px;
+  background: var(--word-bank-bg); color: var(--accent);
 }
 
 /* Answer lines */
@@ -241,157 +274,152 @@ html, body {
   
 <div class="header">
   <div class="header-left">
-    <span class="header-badge">Chemistry</span>
-    <span class="header-badge">Year 10</span>
+    <span class="badge-filled">Chemistry</span>
+    <span class="badge-outline">Year 10</span>
   </div>
-  <div><span class="header-badge">Diagram B</span></div>
+  <div>
+    <div class="name-date-box">
+      <div class="name-date-row"><span>NAME:</span><span class="name-date-line"></span></div>
+      <div class="name-date-row"><span>DATE:</span><span class="name-date-line"></span></div>
+    </div></div>
 </div>
-<div class="header-title">METALLIC BONDING – DIAGRAM B</div>
+<div class="header-title black">METALLIC BONDING – DIAGRAM B</div>
+
 <div class="header-subtitle">Interpretation & Practice</div>
   
   <div class="info-row cols-1"><div class="info-panel full-width"><div class="info-panel-content">Metallic bonding is the strong electrostatic attraction between <strong>positive metal ions</strong> and <strong>delocalised electrons</strong>.</div></div></div>
   <div class="questions-grid cols-2 rows-1"><div class="question-panel"><div class="question-header"><div class="question-badge">1</div><div class="question-title">LABEL THE STRUCTURE</div></div><div class="question-text">Label the diagram using the terms in the box below.</div><div class="word-bank"><span class="word-bank-item">delocalised electrons</span><span class="word-bank-item">positive metal ions</span><span class="word-bank-item">layers can slide</span></div><div class="question-diagram" style="width:100%">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" width="420" height="280">
+  <defs>
+    <radialGradient id="ion3d" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#c8ccd4"/>
+      <stop offset="100%" stop-color="#6b7280"/>
+    </radialGradient>
+    <radialGradient id="elec3d" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#bfdbfe"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </radialGradient>
+  </defs>
   <!-- Electron sea background -->
-  <rect x="10" y="10" width="250" height="260" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" stroke-dasharray="4,2"/>
+  <rect x="10" y="10" width="250" height="260" rx="10" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1.5" stroke-dasharray="5,3"/>
 
   <!-- Electrons (small − circles scattered) -->
-  <circle cx="40" cy="30" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="40" y="33" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="90" cy="25" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="90" y="28" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="150" cy="30" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="150" y="33" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="200" cy="28" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="200" y="31" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="240" cy="35" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="240" y="38" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
+  <g font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">
+  <circle cx="40" cy="30" r="6.5" fill="url(#elec3d)"/><text x="40" y="33">−</text>
+  <circle cx="90" cy="25" r="6.5" fill="url(#elec3d)"/><text x="90" y="28">−</text>
+  <circle cx="150" cy="30" r="6.5" fill="url(#elec3d)"/><text x="150" y="33">−</text>
+  <circle cx="200" cy="28" r="6.5" fill="url(#elec3d)"/><text x="200" y="31">−</text>
+  <circle cx="240" cy="35" r="6.5" fill="url(#elec3d)"/><text x="240" y="38">−</text>
+  <circle cx="30" cy="90" r="6.5" fill="url(#elec3d)"/><text x="30" y="93">−</text>
+  <circle cx="130" cy="85" r="6.5" fill="url(#elec3d)"/><text x="130" y="88">−</text>
+  <circle cx="230" cy="88" r="6.5" fill="url(#elec3d)"/><text x="230" y="91">−</text>
+  <circle cx="35" cy="155" r="6.5" fill="url(#elec3d)"/><text x="35" y="158">−</text>
+  <circle cx="130" cy="150" r="6.5" fill="url(#elec3d)"/><text x="130" y="153">−</text>
+  <circle cx="235" cy="155" r="6.5" fill="url(#elec3d)"/><text x="235" y="158">−</text>
+  <circle cx="40" cy="220" r="6.5" fill="url(#elec3d)"/><text x="40" y="223">−</text>
+  <circle cx="100" cy="225" r="6.5" fill="url(#elec3d)"/><text x="100" y="228">−</text>
+  <circle cx="175" cy="218" r="6.5" fill="url(#elec3d)"/><text x="175" y="221">−</text>
+  <circle cx="240" cy="222" r="6.5" fill="url(#elec3d)"/><text x="240" y="225">−</text>
+  <circle cx="55" cy="255" r="6.5" fill="url(#elec3d)"/><text x="55" y="258">−</text>
+  <circle cx="135" cy="258" r="6.5" fill="url(#elec3d)"/><text x="135" y="261">−</text>
+  <circle cx="210" cy="255" r="6.5" fill="url(#elec3d)"/><text x="210" y="258">−</text>
+  </g>
 
-  <circle cx="30" cy="90" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="30" y="93" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="130" cy="85" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="130" y="88" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="230" cy="88" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="230" y="91" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
+  <!-- Cations: 3 rows x 3, 3D silver spheres -->
+  <g font-family="Arial" font-size="15" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <circle cx="60"  cy="60"  r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="60"  y="66">+</text>
+  <circle cx="120" cy="60"  r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="120" y="66">+</text>
+  <circle cx="180" cy="60"  r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="180" y="66">+</text>
+  <circle cx="60"  cy="125" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="60"  y="131">+</text>
+  <circle cx="120" cy="125" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="120" y="131">+</text>
+  <circle cx="180" cy="125" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="180" y="131">+</text>
+  <circle cx="60"  cy="190" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="60"  y="196">+</text>
+  <circle cx="120" cy="190" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="120" y="196">+</text>
+  <circle cx="180" cy="190" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="180" y="196">+</text>
+  </g>
 
-  <circle cx="35" cy="155" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="35" y="158" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="130" cy="150" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="130" y="153" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="235" cy="155" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="235" y="158" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-
-  <circle cx="40" cy="220" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="40" y="223" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="100" cy="225" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="100" y="228" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="175" cy="218" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="175" y="221" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="240" cy="222" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="240" y="225" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-
-  <circle cx="55" cy="255" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="55" y="258" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="135" cy="258" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="135" y="261" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="210" cy="255" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="210" y="258" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-
-  <!-- Row 1 cations -->
-  <circle cx="60" cy="60" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="60" y="65" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="120" cy="60" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="120" y="65" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="180" cy="60" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="180" y="65" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-
-  <!-- Row 2 cations -->
-  <circle cx="60" cy="125" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="60" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="120" cy="125" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="120" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="180" cy="125" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="180" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-
-  <!-- Row 3 cations -->
-  <circle cx="60" cy="190" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="60" y="195" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="120" cy="190" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="120" y="195" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="180" cy="190" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="180" y="195" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-
-  <!-- Label line 1: from electron area to box (top) -->
+  <!-- Label leader lines + cream answer boxes -->
   <line x1="240" y1="35" x2="280" y2="50" stroke="#333" stroke-width="1.2"/>
-  <rect x="282" y="38" width="125" height="24" rx="3" fill="#fef9c3" stroke="#333" stroke-width="1"/>
-
-  <!-- Label line 2: from cation to box (middle) -->
+  <rect x="282" y="38" width="128" height="26" rx="4" fill="#fff7d6" stroke="#e0a800" stroke-width="1.5"/>
   <line x1="198" y1="125" x2="280" y2="140" stroke="#333" stroke-width="1.2"/>
-  <rect x="282" y="128" width="125" height="24" rx="3" fill="#fef9c3" stroke="#333" stroke-width="1"/>
-
-  <!-- Label line 3: from between rows to box (bottom) -->
+  <rect x="282" y="128" width="128" height="26" rx="4" fill="#fff7d6" stroke="#e0a800" stroke-width="1.5"/>
   <line x1="200" y1="230" x2="280" y2="230" stroke="#333" stroke-width="1.2"/>
-  <rect x="282" y="218" width="125" height="24" rx="3" fill="#fef9c3" stroke="#333" stroke-width="1"/>
+  <rect x="282" y="218" width="128" height="26" rx="4" fill="#fff7d6" stroke="#e0a800" stroke-width="1.5"/>
 </svg></div></div>
 <div class="question-panel"><div class="question-header"><div class="question-badge">2</div><div class="question-title">MALLEABILITY</div></div><div class="question-text">The diagram shows layers of metal ions. When a force is applied, the layers can slide over each other.</div><div class="question-secondary">Explain why the layers of ions can slide over each other.</div><div class="question-diagram" style="width:100%">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" width="420" height="280">
-  <!-- BEFORE FORCE section -->
-  <text x="210" y="16" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#333">BEFORE FORCE</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 290" width="420" height="290">
+  <defs>
+    <radialGradient id="ionM" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#c8ccd4"/>
+      <stop offset="100%" stop-color="#6b7280"/>
+    </radialGradient>
+    <radialGradient id="elecM" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#bfdbfe"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </radialGradient>
+    <marker id="slipArrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#111"/></marker>
+  </defs>
 
-  <!-- Electron sea background (before) -->
-  <rect x="30" y="22" width="240" height="95" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <!-- BEFORE FORCE -->
+  <text x="150" y="14" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#111">BEFORE FORCE</text>
+  <rect x="20" y="22" width="260" height="96" rx="8" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1" stroke-dasharray="4,2"/>
+  <g font-family="Arial" font-size="11" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <circle cx="55"  cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="55"  y="51">+</text>
+  <circle cx="95"  cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="95"  y="51">+</text>
+  <circle cx="135" cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="135" y="51">+</text>
+  <circle cx="175" cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="175" y="51">+</text>
+  <circle cx="215" cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="215" y="51">+</text>
+  <circle cx="255" cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="255" y="51">+</text>
+  <circle cx="55"  cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="55"  y="85">+</text>
+  <circle cx="95"  cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="95"  y="85">+</text>
+  <circle cx="135" cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="135" y="85">+</text>
+  <circle cx="175" cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="175" y="85">+</text>
+  <circle cx="215" cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="215" y="85">+</text>
+  <circle cx="255" cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="255" y="85">+</text>
+  </g>
+  <g font-family="Arial" font-size="6" fill="#fff" text-anchor="middle">
+  <circle cx="75" cy="32" r="4" fill="url(#elecM)"/><text x="75" y="34.5">−</text>
+  <circle cx="155" cy="30" r="4" fill="url(#elecM)"/><text x="155" y="32.5">−</text>
+  <circle cx="235" cy="32" r="4" fill="url(#elecM)"/><text x="235" y="34.5">−</text>
+  <circle cx="75" cy="98" r="4" fill="url(#elecM)"/><text x="75" y="100.5">−</text>
+  <circle cx="155" cy="100" r="4" fill="url(#elecM)"/><text x="155" y="102.5">−</text>
+  <circle cx="235" cy="98" r="4" fill="url(#elecM)"/><text x="235" y="100.5">−</text>
+  </g>
+  <!-- Bracket + label box -->
+  <path d="M 288 28 q 6 0 6 6 v 22 q 0 6 6 6 q -6 0 -6 6 v 22 q 0 6 -6 6" fill="none" stroke="#333" stroke-width="1.2"/>
+  <rect x="306" y="56" width="104" height="28" rx="4" fill="#fff7d6" stroke="#e0a800" stroke-width="1.5"/>
 
-  <!-- Before: Row 1 -->
-  <circle cx="60" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="60" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="100" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="100" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="140" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="140" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="180" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="180" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="220" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="220" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="250" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="250" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
+  <!-- FORCE APPLIED -->
+  <text x="150" y="140" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#111">↓ FORCE APPLIED</text>
 
-  <!-- Before: Row 2 -->
-  <circle cx="75" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="75" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="115" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="115" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="155" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="155" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="195" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="195" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="235" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="235" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- Before: Row 3 -->
-  <circle cx="60" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="60" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="100" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="100" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="140" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="140" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="180" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="180" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="220" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="220" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- Before: electrons scattered -->
-  <circle cx="45" cy="32" r="4" fill="#9ca3af"/><text x="45" y="35" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="110" cy="30" r="4" fill="#9ca3af"/><text x="110" y="33" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="165" cy="32" r="4" fill="#9ca3af"/><text x="165" y="35" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="205" cy="28" r="4" fill="#9ca3af"/><text x="205" y="31" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="48" cy="62" r="4" fill="#9ca3af"/><text x="48" y="65" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="243" cy="60" r="4" fill="#9ca3af"/><text x="243" y="63" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="50" cy="92" r="4" fill="#9ca3af"/><text x="50" y="95" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="245" cy="92" r="4" fill="#9ca3af"/><text x="245" y="95" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-
-  <!-- Before: label box -->
-  <line x1="270" y1="70" x2="300" y2="70" stroke="#333" stroke-width="1"/>
-  <rect x="302" y="58" width="105" height="24" rx="3" fill="#fef9c3" stroke="#333" stroke-width="1"/>
-
-  <!-- FORCE APPLIED arrow -->
-  <text x="150" y="135" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="#333">↓ FORCE APPLIED</text>
-
-  <!-- AFTER FORCE section -->
-  <text x="210" y="155" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#333">AFTER FORCE</text>
-
-  <!-- Electron sea background (after) -->
-  <rect x="30" y="160" width="240" height="95" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="0.8" stroke-dasharray="3,2"/>
-
-  <!-- After: Row 1 (SHIFTED RIGHT by ~20px) -->
-  <circle cx="95" cy="180" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="95" y="184" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="135" cy="180" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="135" y="184" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="175" cy="180" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="175" y="184" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="215" cy="180" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="215" y="184" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- After: Row 2 -->
-  <circle cx="60" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="60" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="100" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="100" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="140" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="140" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="180" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="180" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="220" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="220" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="250" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="250" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- After: Row 3 -->
-  <circle cx="60" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="60" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="100" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="100" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="140" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="140" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="180" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="180" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="220" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="220" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- After: electrons scattered -->
-  <circle cx="80" cy="168" r="4" fill="#9ca3af"/><text x="80" y="171" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="155" cy="168" r="4" fill="#9ca3af"/><text x="155" y="171" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="230" cy="170" r="4" fill="#9ca3af"/><text x="230" y="173" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="45" cy="198" r="4" fill="#9ca3af"/><text x="45" y="201" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="250" cy="195" r="4" fill="#9ca3af"/><text x="250" y="198" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="48" cy="228" r="4" fill="#9ca3af"/><text x="48" y="231" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="248" cy="228" r="4" fill="#9ca3af"/><text x="248" y="231" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-
-  <!-- After: dashed arrow showing shift direction -->
-  <line x1="280" y1="180" x2="310" y2="180" stroke="#333" stroke-width="1.5" stroke-dasharray="4,3"/>
-  <polygon points="310,176 320,180 310,184" fill="#333"/>
+  <!-- AFTER FORCE -->
+  <text x="150" y="162" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#111">AFTER FORCE</text>
+  <rect x="20" y="170" width="260" height="96" rx="8" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1" stroke-dasharray="4,2"/>
+  <g font-family="Arial" font-size="11" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <!-- top row shifted right by 30 -->
+  <circle cx="85"  cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="85"  y="199">+</text>
+  <circle cx="125" cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="125" y="199">+</text>
+  <circle cx="165" cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="165" y="199">+</text>
+  <circle cx="205" cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="205" y="199">+</text>
+  <circle cx="245" cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="245" y="199">+</text>
+  <!-- bottom row unchanged -->
+  <circle cx="55"  cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="55"  y="237">+</text>
+  <circle cx="95"  cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="95"  y="237">+</text>
+  <circle cx="135" cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="135" y="237">+</text>
+  <circle cx="175" cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="175" y="237">+</text>
+  <circle cx="215" cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="215" y="237">+</text>
+  <circle cx="255" cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="255" y="237">+</text>
+  </g>
+  <g font-family="Arial" font-size="6" fill="#fff" text-anchor="middle">
+  <circle cx="105" cy="180" r="4" fill="url(#elecM)"/><text x="105" y="182.5">−</text>
+  <circle cx="185" cy="178" r="4" fill="url(#elecM)"/><text x="185" y="180.5">−</text>
+  <circle cx="75" cy="250" r="4" fill="url(#elecM)"/><text x="75" y="252.5">−</text>
+  <circle cx="235" cy="250" r="4" fill="url(#elecM)"/><text x="235" y="252.5">−</text>
+  </g>
+  <!-- slip arrow -->
+  <line x1="290" y1="194" x2="330" y2="194" stroke="#111" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#slipArrow)"/>
 </svg></div><div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div></div></div></div>
   <div class="footer"><span class="tip">💡 <strong>TIP:</strong> Positive metal ions are held in a 'sea' of delocalised electrons.</span><span class="think">✓ <strong>Think:</strong> What property of metals does this structure explain?</span></div>
 </div>

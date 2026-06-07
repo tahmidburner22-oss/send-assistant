@@ -19,59 +19,62 @@ const diagrams: Record<string, string> = {
    */
   'metal-lattice-label': `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" width="420" height="280">
+  <defs>
+    <radialGradient id="ion3d" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#c8ccd4"/>
+      <stop offset="100%" stop-color="#6b7280"/>
+    </radialGradient>
+    <radialGradient id="elec3d" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#bfdbfe"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </radialGradient>
+  </defs>
   <!-- Electron sea background -->
-  <rect x="10" y="10" width="250" height="260" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" stroke-dasharray="4,2"/>
+  <rect x="10" y="10" width="250" height="260" rx="10" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1.5" stroke-dasharray="5,3"/>
 
   <!-- Electrons (small − circles scattered) -->
-  <circle cx="40" cy="30" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="40" y="33" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="90" cy="25" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="90" y="28" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="150" cy="30" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="150" y="33" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="200" cy="28" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="200" y="31" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="240" cy="35" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="240" y="38" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
+  <g font-family="Arial" font-size="8" fill="#fff" text-anchor="middle">
+  <circle cx="40" cy="30" r="6.5" fill="url(#elec3d)"/><text x="40" y="33">−</text>
+  <circle cx="90" cy="25" r="6.5" fill="url(#elec3d)"/><text x="90" y="28">−</text>
+  <circle cx="150" cy="30" r="6.5" fill="url(#elec3d)"/><text x="150" y="33">−</text>
+  <circle cx="200" cy="28" r="6.5" fill="url(#elec3d)"/><text x="200" y="31">−</text>
+  <circle cx="240" cy="35" r="6.5" fill="url(#elec3d)"/><text x="240" y="38">−</text>
+  <circle cx="30" cy="90" r="6.5" fill="url(#elec3d)"/><text x="30" y="93">−</text>
+  <circle cx="130" cy="85" r="6.5" fill="url(#elec3d)"/><text x="130" y="88">−</text>
+  <circle cx="230" cy="88" r="6.5" fill="url(#elec3d)"/><text x="230" y="91">−</text>
+  <circle cx="35" cy="155" r="6.5" fill="url(#elec3d)"/><text x="35" y="158">−</text>
+  <circle cx="130" cy="150" r="6.5" fill="url(#elec3d)"/><text x="130" y="153">−</text>
+  <circle cx="235" cy="155" r="6.5" fill="url(#elec3d)"/><text x="235" y="158">−</text>
+  <circle cx="40" cy="220" r="6.5" fill="url(#elec3d)"/><text x="40" y="223">−</text>
+  <circle cx="100" cy="225" r="6.5" fill="url(#elec3d)"/><text x="100" y="228">−</text>
+  <circle cx="175" cy="218" r="6.5" fill="url(#elec3d)"/><text x="175" y="221">−</text>
+  <circle cx="240" cy="222" r="6.5" fill="url(#elec3d)"/><text x="240" y="225">−</text>
+  <circle cx="55" cy="255" r="6.5" fill="url(#elec3d)"/><text x="55" y="258">−</text>
+  <circle cx="135" cy="258" r="6.5" fill="url(#elec3d)"/><text x="135" y="261">−</text>
+  <circle cx="210" cy="255" r="6.5" fill="url(#elec3d)"/><text x="210" y="258">−</text>
+  </g>
 
-  <circle cx="30" cy="90" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="30" y="93" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="130" cy="85" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="130" y="88" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="230" cy="88" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="230" y="91" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
+  <!-- Cations: 3 rows x 3, 3D silver spheres -->
+  <g font-family="Arial" font-size="15" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <circle cx="60"  cy="60"  r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="60"  y="66">+</text>
+  <circle cx="120" cy="60"  r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="120" y="66">+</text>
+  <circle cx="180" cy="60"  r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="180" y="66">+</text>
+  <circle cx="60"  cy="125" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="60"  y="131">+</text>
+  <circle cx="120" cy="125" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="120" y="131">+</text>
+  <circle cx="180" cy="125" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="180" y="131">+</text>
+  <circle cx="60"  cy="190" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="60"  y="196">+</text>
+  <circle cx="120" cy="190" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="120" y="196">+</text>
+  <circle cx="180" cy="190" r="19" fill="url(#ion3d)" stroke="#52525b" stroke-width="1"/><text x="180" y="196">+</text>
+  </g>
 
-  <circle cx="35" cy="155" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="35" y="158" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="130" cy="150" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="130" y="153" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="235" cy="155" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="235" y="158" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-
-  <circle cx="40" cy="220" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="40" y="223" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="100" cy="225" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="100" y="228" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="175" cy="218" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="175" y="221" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="240" cy="222" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="240" y="225" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-
-  <circle cx="55" cy="255" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="55" y="258" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="135" cy="258" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="135" y="261" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-  <circle cx="210" cy="255" r="6" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/><text x="210" y="258" text-anchor="middle" font-family="Arial" font-size="8" fill="#fff">−</text>
-
-  <!-- Row 1 cations -->
-  <circle cx="60" cy="60" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="60" y="65" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="120" cy="60" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="120" y="65" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="180" cy="60" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="180" y="65" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-
-  <!-- Row 2 cations -->
-  <circle cx="60" cy="125" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="60" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="120" cy="125" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="120" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="180" cy="125" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="180" y="130" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-
-  <!-- Row 3 cations -->
-  <circle cx="60" cy="190" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="60" y="195" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="120" cy="190" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="120" y="195" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-  <circle cx="180" cy="190" r="18" fill="#d4d4d8" stroke="#71717a" stroke-width="1.5"/><text x="180" y="195" text-anchor="middle" font-family="Arial" font-size="14" fill="#333" font-weight="bold">+</text>
-
-  <!-- Label line 1: from electron area to box (top) -->
+  <!-- Label leader lines + cream answer boxes -->
   <line x1="240" y1="35" x2="280" y2="50" stroke="#333" stroke-width="1.2"/>
-  <rect x="282" y="38" width="125" height="24" rx="3" fill="#fef9c3" stroke="#333" stroke-width="1"/>
-
-  <!-- Label line 2: from cation to box (middle) -->
+  <rect x="282" y="38" width="128" height="26" rx="4" fill="#fff7d6" stroke="#e0a800" stroke-width="1.5"/>
   <line x1="198" y1="125" x2="280" y2="140" stroke="#333" stroke-width="1.2"/>
-  <rect x="282" y="128" width="125" height="24" rx="3" fill="#fef9c3" stroke="#333" stroke-width="1"/>
-
-  <!-- Label line 3: from between rows to box (bottom) -->
+  <rect x="282" y="128" width="128" height="26" rx="4" fill="#fff7d6" stroke="#e0a800" stroke-width="1.5"/>
   <line x1="200" y1="230" x2="280" y2="230" stroke="#333" stroke-width="1.2"/>
-  <rect x="282" y="218" width="125" height="24" rx="3" fill="#fef9c3" stroke="#333" stroke-width="1"/>
+  <rect x="282" y="218" width="128" height="26" rx="4" fill="#fff7d6" stroke="#e0a800" stroke-width="1.5"/>
 </svg>`,
 
   /**
@@ -80,91 +83,78 @@ const diagrams: Record<string, string> = {
    * with a force arrow between them and a label box on the right.
    */
   'metal-lattice-malleability': `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" width="420" height="280">
-  <!-- BEFORE FORCE section -->
-  <text x="210" y="16" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#333">BEFORE FORCE</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 290" width="420" height="290">
+  <defs>
+    <radialGradient id="ionM" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#c8ccd4"/>
+      <stop offset="100%" stop-color="#6b7280"/>
+    </radialGradient>
+    <radialGradient id="elecM" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#bfdbfe"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </radialGradient>
+    <marker id="slipArrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0, 9 3.5, 0 7" fill="#111"/></marker>
+  </defs>
 
-  <!-- Electron sea background (before) -->
-  <rect x="30" y="22" width="240" height="95" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <!-- BEFORE FORCE -->
+  <text x="150" y="14" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#111">BEFORE FORCE</text>
+  <rect x="20" y="22" width="260" height="96" rx="8" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1" stroke-dasharray="4,2"/>
+  <g font-family="Arial" font-size="11" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <circle cx="55"  cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="55"  y="51">+</text>
+  <circle cx="95"  cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="95"  y="51">+</text>
+  <circle cx="135" cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="135" y="51">+</text>
+  <circle cx="175" cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="175" y="51">+</text>
+  <circle cx="215" cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="215" y="51">+</text>
+  <circle cx="255" cy="46" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="255" y="51">+</text>
+  <circle cx="55"  cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="55"  y="85">+</text>
+  <circle cx="95"  cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="95"  y="85">+</text>
+  <circle cx="135" cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="135" y="85">+</text>
+  <circle cx="175" cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="175" y="85">+</text>
+  <circle cx="215" cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="215" y="85">+</text>
+  <circle cx="255" cy="80" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="255" y="85">+</text>
+  </g>
+  <g font-family="Arial" font-size="6" fill="#fff" text-anchor="middle">
+  <circle cx="75" cy="32" r="4" fill="url(#elecM)"/><text x="75" y="34.5">−</text>
+  <circle cx="155" cy="30" r="4" fill="url(#elecM)"/><text x="155" y="32.5">−</text>
+  <circle cx="235" cy="32" r="4" fill="url(#elecM)"/><text x="235" y="34.5">−</text>
+  <circle cx="75" cy="98" r="4" fill="url(#elecM)"/><text x="75" y="100.5">−</text>
+  <circle cx="155" cy="100" r="4" fill="url(#elecM)"/><text x="155" y="102.5">−</text>
+  <circle cx="235" cy="98" r="4" fill="url(#elecM)"/><text x="235" y="100.5">−</text>
+  </g>
+  <!-- Bracket + label box -->
+  <path d="M 288 28 q 6 0 6 6 v 22 q 0 6 6 6 q -6 0 -6 6 v 22 q 0 6 -6 6" fill="none" stroke="#333" stroke-width="1.2"/>
+  <rect x="306" y="56" width="104" height="28" rx="4" fill="#fff7d6" stroke="#e0a800" stroke-width="1.5"/>
 
-  <!-- Before: Row 1 -->
-  <circle cx="60" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="60" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="100" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="100" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="140" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="140" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="180" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="180" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="220" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="220" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="250" cy="45" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="250" y="49" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
+  <!-- FORCE APPLIED -->
+  <text x="150" y="140" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#111">↓ FORCE APPLIED</text>
 
-  <!-- Before: Row 2 -->
-  <circle cx="75" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="75" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="115" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="115" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="155" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="155" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="195" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="195" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="235" cy="75" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="235" y="79" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- Before: Row 3 -->
-  <circle cx="60" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="60" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="100" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="100" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="140" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="140" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="180" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="180" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="220" cy="105" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="220" y="109" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- Before: electrons scattered -->
-  <circle cx="45" cy="32" r="4" fill="#9ca3af"/><text x="45" y="35" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="110" cy="30" r="4" fill="#9ca3af"/><text x="110" y="33" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="165" cy="32" r="4" fill="#9ca3af"/><text x="165" y="35" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="205" cy="28" r="4" fill="#9ca3af"/><text x="205" y="31" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="48" cy="62" r="4" fill="#9ca3af"/><text x="48" y="65" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="243" cy="60" r="4" fill="#9ca3af"/><text x="243" y="63" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="50" cy="92" r="4" fill="#9ca3af"/><text x="50" y="95" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="245" cy="92" r="4" fill="#9ca3af"/><text x="245" y="95" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-
-  <!-- Before: label box -->
-  <line x1="270" y1="70" x2="300" y2="70" stroke="#333" stroke-width="1"/>
-  <rect x="302" y="58" width="105" height="24" rx="3" fill="#fef9c3" stroke="#333" stroke-width="1"/>
-
-  <!-- FORCE APPLIED arrow -->
-  <text x="150" y="135" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="#333">↓ FORCE APPLIED</text>
-
-  <!-- AFTER FORCE section -->
-  <text x="210" y="155" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#333">AFTER FORCE</text>
-
-  <!-- Electron sea background (after) -->
-  <rect x="30" y="160" width="240" height="95" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="0.8" stroke-dasharray="3,2"/>
-
-  <!-- After: Row 1 (SHIFTED RIGHT by ~20px) -->
-  <circle cx="95" cy="180" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="95" y="184" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="135" cy="180" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="135" y="184" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="175" cy="180" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="175" y="184" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="215" cy="180" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="215" y="184" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- After: Row 2 -->
-  <circle cx="60" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="60" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="100" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="100" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="140" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="140" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="180" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="180" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="220" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="220" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="250" cy="210" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="250" y="214" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- After: Row 3 -->
-  <circle cx="60" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="60" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="100" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="100" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="140" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="140" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="180" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="180" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-  <circle cx="220" cy="240" r="13" fill="#60a5fa" stroke="#2563eb" stroke-width="1.5"/><text x="220" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="white" font-weight="bold">+</text>
-
-  <!-- After: electrons scattered -->
-  <circle cx="80" cy="168" r="4" fill="#9ca3af"/><text x="80" y="171" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="155" cy="168" r="4" fill="#9ca3af"/><text x="155" y="171" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="230" cy="170" r="4" fill="#9ca3af"/><text x="230" y="173" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="45" cy="198" r="4" fill="#9ca3af"/><text x="45" y="201" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="250" cy="195" r="4" fill="#9ca3af"/><text x="250" y="198" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="48" cy="228" r="4" fill="#9ca3af"/><text x="48" y="231" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-  <circle cx="248" cy="228" r="4" fill="#9ca3af"/><text x="248" y="231" text-anchor="middle" font-family="Arial" font-size="6" fill="#fff">−</text>
-
-  <!-- After: dashed arrow showing shift direction -->
-  <line x1="280" y1="180" x2="310" y2="180" stroke="#333" stroke-width="1.5" stroke-dasharray="4,3"/>
-  <polygon points="310,176 320,180 310,184" fill="#333"/>
+  <!-- AFTER FORCE -->
+  <text x="150" y="162" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#111">AFTER FORCE</text>
+  <rect x="20" y="170" width="260" height="96" rx="8" fill="#eaf2fc" stroke="#bcd4f0" stroke-width="1" stroke-dasharray="4,2"/>
+  <g font-family="Arial" font-size="11" fill="#1f2937" font-weight="bold" text-anchor="middle">
+  <!-- top row shifted right by 30 -->
+  <circle cx="85"  cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="85"  y="199">+</text>
+  <circle cx="125" cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="125" y="199">+</text>
+  <circle cx="165" cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="165" y="199">+</text>
+  <circle cx="205" cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="205" y="199">+</text>
+  <circle cx="245" cy="194" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="245" y="199">+</text>
+  <!-- bottom row unchanged -->
+  <circle cx="55"  cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="55"  y="237">+</text>
+  <circle cx="95"  cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="95"  y="237">+</text>
+  <circle cx="135" cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="135" y="237">+</text>
+  <circle cx="175" cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="175" y="237">+</text>
+  <circle cx="215" cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="215" y="237">+</text>
+  <circle cx="255" cy="232" r="14" fill="url(#ionM)" stroke="#52525b"/><text x="255" y="237">+</text>
+  </g>
+  <g font-family="Arial" font-size="6" fill="#fff" text-anchor="middle">
+  <circle cx="105" cy="180" r="4" fill="url(#elecM)"/><text x="105" y="182.5">−</text>
+  <circle cx="185" cy="178" r="4" fill="url(#elecM)"/><text x="185" y="180.5">−</text>
+  <circle cx="75" cy="250" r="4" fill="url(#elecM)"/><text x="75" y="252.5">−</text>
+  <circle cx="235" cy="250" r="4" fill="url(#elecM)"/><text x="235" y="252.5">−</text>
+  </g>
+  <!-- slip arrow -->
+  <line x1="290" y1="194" x2="330" y2="194" stroke="#111" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#slipArrow)"/>
 </svg>`,
 
   // ═══════════════════════════════════════════════════════════════════════════

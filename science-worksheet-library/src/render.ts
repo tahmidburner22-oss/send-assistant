@@ -31,7 +31,8 @@ const STANDARD_PALETTE: Record<string, string> = {
   '--vocab-bg': '#f3f4f6',
   '--misconception-bg': '#fff8e1',
   '--misconception-border': '#ffc107',
-  '--formula-bg': '#f0f4ff',
+  '--formula-bg': '#e8eaf6',
+  '--conversion-bg': '#fff9c4',
   '--worked-bg': '#ffffff',
   '--footer-bg': '#f8f9fa',
   '--answer-line': '#666666',
@@ -54,7 +55,8 @@ const ADHD_PALETTE: Record<string, string> = {
   '--vocab-bg': '#f0f7ee',
   '--misconception-bg': '#fdf6e3',
   '--misconception-border': '#f0c36d',
-  '--formula-bg': '#f0f7f4',
+  '--formula-bg': '#eef4f1',
+  '--conversion-bg': '#fdf6e3',
   '--worked-bg': '#fafbfc',
   '--footer-bg': '#f5f5f0',
   '--answer-line': '#888888',
@@ -91,28 +93,51 @@ html, body {
 
 /* ─── Header ─── */
 .header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 4px; flex-shrink: 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 2px; flex-shrink: 0;
 }
 .header-left {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 5px;
 }
-.header-badge {
+/* Filled badge (e.g. CHEMISTRY) */
+.badge-filled {
   background: var(--header-bg); color: var(--header-text);
-  padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: 700;
-  text-transform: uppercase;
+  padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.5px;
 }
-.header-right {
-  font-size: 8px; border: 1px solid var(--border); padding: 3px 8px; border-radius: 3px;
+/* Outlined badge (e.g. YEAR 10) */
+.badge-outline {
+  background: #ffffff; color: var(--accent);
+  padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  border: 1.5px solid var(--accent);
 }
+/* Diagram label badge on the right */
+.badge-diagram {
+  background: var(--header-bg); color: var(--header-text);
+  padding: 3px 12px; border-radius: 4px; font-size: 12px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+/* NAME / DATE box */
+.name-date-box {
+  border: 1.5px solid var(--accent); border-radius: 5px;
+  padding: 4px 10px; min-width: 180px;
+}
+.name-date-row { display: flex; align-items: baseline; gap: 4px; font-size: 9px; font-weight: 700; color: var(--accent); }
+.name-date-row + .name-date-row { margin-top: 3px; }
+.name-date-line { flex: 1; border-bottom: 1px solid #999; height: 11px; }
+
 .header-title {
-  font-size: 16px; font-weight: 900; color: var(--accent);
-  text-align: center; margin: 1px 0; flex-shrink: 0;
-  letter-spacing: -0.3px;
+  font-size: 22px; font-weight: 900; text-align: center; margin: 0;
+  flex-shrink: 0; letter-spacing: -0.5px; line-height: 1.05;
 }
+.header-title.black { color: #111; }
+.header-title.blue { color: var(--accent); }
+.title-rule { border: none; border-top: 2px solid var(--accent); margin: 2px 0 0 0; }
+.title-rule.double { border-top: 2.5px solid var(--accent); box-shadow: 0 3px 0 -1px var(--accent); margin-bottom: 4px; }
 .header-subtitle {
-  font-size: 9px; text-align: center; color: #555;
-  margin-bottom: 3px; flex-shrink: 0; font-style: italic;
+  font-size: 11px; text-align: center; color: var(--accent);
+  margin: 1px 0 4px 0; flex-shrink: 0; font-style: italic; font-weight: 600;
 }
 
 /* ─── Progress Tracker (ADHD) ─── */
@@ -142,29 +167,30 @@ html, body {
 }
 .info-panel.full-width { grid-column: 1 / -1; }
 .info-panel-title {
-  font-size: 8.5px; font-weight: 700; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 3px; letter-spacing: 0.5px;
-  text-align: center; border-bottom: 1px solid var(--border);
-  padding-bottom: 2px;
+  font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 4px; letter-spacing: 0.5px;
+  text-align: center; border-bottom: 1.5px solid var(--accent);
+  padding-bottom: 3px;
 }
 .info-panel-content { font-size: 9px; }
 .info-panel-content strong { color: var(--accent); }
 
 /* Formula panel */
+.info-panel.formula-panel { background: var(--formula-bg); }
 .formula-box {
-  background: var(--formula-bg); border: 1px solid var(--border);
-  border-radius: 3px; padding: 6px 10px; margin: 4px 0; text-align: center;
-  font-size: 10px;
+  background: #ffffff; border: 1.5px solid var(--accent);
+  border-radius: 5px; padding: 8px 10px; margin: 4px 0; text-align: center;
+  font-size: 11px;
 }
 .formula-line { margin: 2px 0; font-family: 'Times New Roman', serif; }
-.formula-fraction { display: inline-block; text-align: center; vertical-align: middle; }
-.formula-num { border-bottom: 1px solid var(--text); padding: 0 4px; display: block; }
-.formula-den { padding: 0 4px; display: block; }
+.formula-fraction { display: inline-block; text-align: center; vertical-align: middle; margin: 0 2px; }
+.formula-num { border-bottom: 1.5px solid var(--text); padding: 0 6px 2px 6px; display: block; }
+.formula-den { padding: 2px 6px 0 6px; display: block; }
 
 /* Worked example */
 .worked-panel { background: var(--worked-bg); }
-.worked-step { font-size: 9px; margin: 2px 0; }
-.worked-step.highlight { color: var(--accent); font-weight: 600; }
+.worked-step { font-size: 9.5px; margin: 3px 0; }
+.worked-step.highlight { color: var(--accent); font-weight: 700; font-size: 10.5px; }
 
 /* Vocab panel */
 .vocab-item { margin-bottom: 2px; font-size: 8.5px; }
@@ -176,11 +202,15 @@ html, body {
 .misconception-item .wrong { color: #c62828; text-decoration: line-through; opacity: 0.8; }
 .misconception-item .right { color: #2e7d32; font-weight: 600; }
 
-/* Conversion reminder */
+/* Conversion reminder — yellow box */
 .conversion-box {
-  background: var(--misconception-bg); border: 1.5px solid var(--panel-border);
-  border-radius: 3px; padding: 5px 10px; margin-top: 4px; text-align: center;
-  font-size: 11px; font-weight: 700;
+  background: var(--conversion-bg); border: 1.5px solid var(--accent);
+  border-radius: 5px; padding: 6px 10px; margin-top: 6px; text-align: center;
+  font-size: 13px; font-weight: 800; color: #111;
+}
+.conversion-label {
+  font-size: 9px; font-weight: 800; text-transform: uppercase; color: var(--accent);
+  letter-spacing: 0.5px; margin-bottom: 2px;
 }
 
 /* Diagram inside panel */
@@ -202,30 +232,34 @@ html, body {
   padding: 6px 8px; overflow: hidden; display: flex; flex-direction: column;
 }
 .question-header {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
 }
 .question-badge {
   background: var(--badge-bg); color: var(--badge-text);
-  width: 20px; height: 20px; border-radius: 3px;
+  width: 22px; height: 22px; border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  font-size: 13px; font-weight: 800; flex-shrink: 0;
 }
+/* Navy filled banner beside the badge */
 .question-title {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  color: var(--text);
+  font-size: 11px; font-weight: 800; text-transform: uppercase;
+  color: var(--badge-text); background: var(--badge-bg);
+  padding: 3px 10px; border-radius: 4px; letter-spacing: 0.5px;
 }
 .question-text { font-size: 9.5px; margin-bottom: 3px; }
 .question-text .command { color: var(--accent); font-weight: 600; }
 .question-secondary { font-size: 8.5px; color: #555; margin-bottom: 3px; font-style: italic; }
 
-/* Word bank */
+/* Word bank — dashed container with solid inner boxes */
 .word-bank {
-  display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0;
-  padding: 4px 8px; border: 1.5px dashed var(--word-bank-border);
-  border-radius: 3px; background: var(--word-bank-bg);
+  display: flex; gap: 10px; flex-wrap: wrap; margin: 5px 0;
+  padding: 7px 10px; border: 1.5px dashed var(--word-bank-border);
+  border-radius: 5px; background: transparent; justify-content: center;
 }
 .word-bank-item {
-  font-size: 9px; font-weight: 500; padding: 2px 6px;
+  font-size: 10px; font-weight: 600; padding: 5px 10px; text-align: center;
+  border: 1.5px solid var(--word-bank-border); border-radius: 4px;
+  background: var(--word-bank-bg); color: var(--accent);
 }
 
 /* Answer lines */
@@ -291,20 +325,36 @@ html, body {
 
 function renderHeader(ws: Worksheet): string {
   const h = ws.header;
-  const rightContent = h.diagramLabel
-    ? `<span class="header-badge">${h.diagramLabel}</span>`
+
+  // Right side: NAME/DATE box OR diagram label badge
+  let rightContent = '';
+  if (h.nameDateBox) {
+    rightContent = `
+    <div class="name-date-box">
+      <div class="name-date-row"><span>NAME:</span><span class="name-date-line"></span></div>
+      <div class="name-date-row"><span>DATE:</span><span class="name-date-line"></span></div>
+    </div>`;
+  } else if (h.diagramLabel) {
+    rightContent = `<span class="badge-diagram">${h.diagramLabel}</span>`;
+  }
+
+  const titleColor = h.titleColor || 'blue';
+  const rule = h.titleUnderline
+    ? `<hr class="title-rule double"/>`
     : '';
+  const subtitle = h.subtitle ? `<div class="header-subtitle">${h.subtitle}</div>` : '';
 
   return `
 <div class="header">
   <div class="header-left">
-    <span class="header-badge">${h.subject}</span>
-    <span class="header-badge">${h.yearGroup}</span>
+    <span class="badge-filled">${h.subject}</span>
+    <span class="badge-outline">${h.yearGroup}</span>
   </div>
   <div>${rightContent}</div>
 </div>
-<div class="header-title">${h.title}</div>
-${h.subtitle ? `<div class="header-subtitle">${h.subtitle}</div>` : ''}`;
+<div class="header-title ${titleColor}">${h.title}</div>
+${rule}
+${subtitle}`;
 }
 
 function renderProgressTracker(ws: Worksheet): string {
@@ -318,7 +368,10 @@ function renderProgressTracker(ws: Worksheet): string {
 
 function renderInfoPanel(panel: InfoPanel): string {
   const fullWidthClass = panel.fullWidth ? ' full-width' : '';
-  const panelClass = panel.type === 'misconceptions' ? ' misconception-panel' : '';
+  let panelClass = '';
+  if (panel.type === 'misconceptions') panelClass = ' misconception-panel';
+  else if (panel.type === 'formula') panelClass = ' formula-panel';
+  else if (panel.type === 'worked-example') panelClass = ' worked-panel';
 
   let inner = '';
 
@@ -355,7 +408,7 @@ function renderInfoPanel(panel: InfoPanel): string {
         inner += `</div>`;
       }
       if (panel.content) {
-        inner += `<div class="conversion-box">${panel.content}</div>`;
+        inner += `<div class="conversion-box"><div class="conversion-label">Conversion Reminder</div>${panel.content}</div>`;
       }
       break;
 

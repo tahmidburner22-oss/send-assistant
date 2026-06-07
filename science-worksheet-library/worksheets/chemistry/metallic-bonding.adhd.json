@@ -5,8 +5,9 @@
     "subject": "Chemistry",
     "yearGroup": "Year 10",
     "title": "METALLIC BONDING – DIAGRAM B",
-    "diagramLabel": "Diagram B",
-    "subtitle": "Interpretation & Practice"
+    "subtitle": "Interpretation & Practice",
+    "nameDateBox": true,
+    "titleColor": "black"
   },
   "layout": {
     "mode": "panel-pair",
