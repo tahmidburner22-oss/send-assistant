@@ -49,8 +49,9 @@
       "number": 1,
       "sectionTitle": "LABEL THE CELL",
       "type": "label-diagram",
-      "text": "Use the word bank to name the four labelled parts of the animal cell above. <strong>[4 marks]</strong>",
+      "text": "Name parts <strong>1-4</strong> on the animal cell using the word bank. <strong>[4 marks]</strong>",
       "wordBank": ["nucleus", "cell membrane", "mitochondria", "ribosomes"],
+      "diagram": { "id": "animal-cell-blank", "width": "62%" },
       "answerLines": 2
     },
     {

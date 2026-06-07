@@ -1,16 +1,18 @@
 /**
- * Science Worksheet Library — Playwright Headless PDF/PNG Generator
+ * Science Worksheet Library — Playwright Headless PDF Generator
  *
  * Usage:
  *   tsx src/generate.ts <worksheet.json>        — generate one worksheet
  *   tsx src/generate.ts --all                   — generate all worksheets
  *
- * Outputs PDF + PNG to output/ folder.
+ * The JSON in worksheets/<subject>/ is the source of truth; this tool renders
+ * each worksheet to a single-page A4-landscape PDF in output/<subject>/.
+ * (No PNG/HTML is written — JSON + PDF only.)
  * Enforces single-page A4-landscape fit — fails if content overflows.
  */
 
 import { chromium } from 'playwright';
-import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, basename, relative, join } from 'node:path';
 import { renderWorksheet } from './render.js';
 import type { Worksheet } from './types.js';
@@ -48,7 +50,6 @@ function findAllWorksheets(dir: string): string[] {
 interface GenerateResult {
   file: string;
   pdfPath: string;
-  pngPath: string;
   overflow: boolean;
   pageHeight: number;
 }
@@ -57,21 +58,16 @@ async function generateWorksheet(jsonPath: string): Promise<GenerateResult> {
   const raw = readFileSync(jsonPath, 'utf-8');
   const ws: Worksheet = JSON.parse(raw);
 
-  // Render HTML
+  // Render HTML (kept in-memory only; we do NOT write .html to disk)
   const html = renderWorksheet(ws);
 
-  // Determine output filenames
+  // Determine output filenames — JSON is the source of truth, PDF is the only output.
   const rel = relative(WORKSHEETS_DIR, jsonPath);
   const name = basename(rel, '.json');
   const subDir = resolve(OUTPUT_DIR, rel, '..');
   ensureDir(subDir);
 
-  const htmlPath = resolve(subDir, `${name}.html`);
   const pdfPath = resolve(subDir, `${name}.pdf`);
-  const pngPath = resolve(subDir, `${name}.png`);
-
-  // Write HTML for debugging
-  writeFileSync(htmlPath, html, 'utf-8');
 
   // Launch browser
   const browser = await chromium.launch({ headless: true });
@@ -104,16 +100,9 @@ async function generateWorksheet(jsonPath: string): Promise<GenerateResult> {
     margin: { top: '0', right: '0', bottom: '0', left: '0' },
   });
 
-  // ─── Generate PNG ─────────────────────────────────────────────────────────
-  await page.screenshot({
-    path: pngPath,
-    fullPage: false,
-    clip: { x: 0, y: 0, width: A4_LANDSCAPE_WIDTH, height: A4_LANDSCAPE_HEIGHT },
-  });
-
   await browser.close();
 
-  return { file: rel, pdfPath, pngPath, overflow, pageHeight };
+  return { file: rel, pdfPath, overflow, pageHeight };
 }
 
 // ─── CLI ──────────────────────────────────────────────────────────────────────
@@ -149,7 +138,6 @@ async function main() {
       const heightInfo = `(${result.pageHeight}px / ${maxHeightDisplay()}px max)`;
       console.log(`  ${status} ${result.file} ${heightInfo}`);
       console.log(`       PDF: ${relative(ROOT, result.pdfPath)}`);
-      console.log(`       PNG: ${relative(ROOT, result.pngPath)}`);
 
       if (result.overflow) {
         hasOverflow = true;

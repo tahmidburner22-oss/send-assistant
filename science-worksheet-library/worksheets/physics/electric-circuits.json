@@ -54,10 +54,12 @@
     },
     {
       "number": 2,
-      "sectionTitle": "CURRENT IN SERIES",
-      "type": "short-answer",
-      "text": "State what happens to the <span class=\"command\">current</span> at each point in a series circuit. <strong>[1 mark]</strong>",
-      "answerLines": 1
+      "sectionTitle": "NAME THE COMPONENTS",
+      "type": "label-diagram",
+      "text": "Name circuit components <strong>1-4</strong> from their symbols. <strong>[4 marks]</strong>",
+      "wordBank": ["cell", "lamp", "switch", "ammeter"],
+      "diagram": { "id": "simple-circuit-blank", "width": "70%" },
+      "answerLines": 2
     },
     {
       "number": 3,

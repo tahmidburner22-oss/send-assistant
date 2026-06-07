@@ -381,29 +381,62 @@ const diagrams: Record<string, string> = {
    * Labelled for cell-biology info / label-diagram question.
    */
   'animal-cell': `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 180" width="260" height="180">
-  <!-- Cell membrane + cytoplasm -->
-  <ellipse cx="110" cy="90" rx="92" ry="72" fill="#fde8f0" stroke="#c2185b" stroke-width="2.5"/>
-  <!-- Nucleus -->
-  <circle cx="105" cy="86" r="30" fill="#9c27b0" opacity="0.35" stroke="#6a1b9a" stroke-width="2"/>
-  <circle cx="105" cy="86" r="9" fill="#6a1b9a" opacity="0.7"/>
-  <!-- Mitochondria -->
-  <ellipse cx="55" cy="135" rx="20" ry="10" fill="#ff7043" stroke="#bf360c" stroke-width="1.5" transform="rotate(-20 55 135)"/>
-  <path d="M 42 137 q 6 -6 12 0 q 6 6 12 0" fill="none" stroke="#bf360c" stroke-width="1"/>
-  <!-- Ribosomes -->
-  <circle cx="150" cy="50" r="3.5" fill="#1565c0"/>
-  <circle cx="162" cy="60" r="3.5" fill="#1565c0"/>
-  <circle cx="150" cy="125" r="3.5" fill="#1565c0"/>
-  <!-- Labels -->
-  <line x1="135" y1="68" x2="206" y2="40" stroke="#333" stroke-width="1"/>
-  <text x="208" y="42" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">nucleus</text>
-  <line x1="200" y1="90" x2="220" y2="90" stroke="#333" stroke-width="1"/>
-  <text x="200" y="84" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e" text-anchor="end">cell membrane</text>
-  <line x1="75" y1="128" x2="210" y2="120" stroke="#333" stroke-width="1"/>
-  <text x="212" y="122" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">mitochondria</text>
-  <line x1="162" y1="60" x2="206" y2="72" stroke="#333" stroke-width="1"/>
-  <text x="208" y="74" font-family="Arial" font-size="8.5" font-weight="bold" fill="#1a237e">ribosomes</text>
-  <text x="60" y="70" font-family="Arial" font-size="8" fill="#777" font-style="italic">cytoplasm</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 184" width="300" height="184">
+  <defs>
+    <radialGradient id="cellNuc" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#e1bee7"/>
+      <stop offset="100%" stop-color="#8e24aa"/>
+    </radialGradient>
+  </defs>
+  <!-- Cell membrane + cytoplasm (everything below sits INSIDE this ellipse) -->
+  <ellipse cx="100" cy="92" rx="82" ry="74" fill="#fde8f0" stroke="#c2185b" stroke-width="2.5"/>
+  <text x="86" y="150" font-family="Arial" font-size="8" fill="#999" font-style="italic">cytoplasm</text>
+  <!-- Nucleus (3D) -->
+  <circle cx="92" cy="82" r="28" fill="url(#cellNuc)" stroke="#6a1b9a" stroke-width="1.5"/>
+  <circle cx="92" cy="82" r="8" fill="#4a148c" opacity="0.7"/>
+  <!-- Mitochondrion -->
+  <ellipse cx="68" cy="132" rx="17" ry="8.5" fill="#ff7043" stroke="#bf360c" stroke-width="1.5" transform="rotate(-18 68 132)"/>
+  <path d="M 56 132 q 6 -5 12 0 q 6 5 12 0" fill="none" stroke="#bf360c" stroke-width="1" transform="rotate(-18 68 132)"/>
+  <!-- Ribosomes (small dots, well inside) -->
+  <circle cx="128" cy="64" r="3.5" fill="#1565c0"/>
+  <circle cx="138" cy="104" r="3.5" fill="#1565c0"/>
+  <circle cx="120" cy="120" r="3.5" fill="#1565c0"/>
+  <!-- Leader lines + labels (all kept inside the 300-wide viewBox) -->
+  <line x1="116" y1="70" x2="190" y2="40" stroke="#333" stroke-width="1"/>
+  <text x="193" y="43" font-family="Arial" font-size="9" font-weight="bold" fill="#1a237e">nucleus</text>
+  <line x1="180" y1="98" x2="190" y2="74" stroke="#333" stroke-width="1"/>
+  <text x="193" y="77" font-family="Arial" font-size="9" font-weight="bold" fill="#1a237e">cell membrane</text>
+  <line x1="138" y1="104" x2="190" y2="110" stroke="#333" stroke-width="1"/>
+  <text x="193" y="113" font-family="Arial" font-size="9" font-weight="bold" fill="#1a237e">ribosomes</text>
+  <line x1="80" y1="134" x2="190" y2="144" stroke="#333" stroke-width="1"/>
+  <text x="193" y="147" font-family="Arial" font-size="9" font-weight="bold" fill="#1a237e">mitochondria</text>
+</svg>`,
+
+  /**
+   * Blank/numbered animal cell for "label the cell" questions — same shapes,
+   * numbered callouts (1-4) instead of names so pupils fill in the answers.
+   */
+  'animal-cell-blank': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 184" width="280" height="184">
+  <ellipse cx="110" cy="92" rx="88" ry="74" fill="#fde8f0" stroke="#c2185b" stroke-width="2.5"/>
+  <circle cx="100" cy="82" r="28" fill="#e1bee7" stroke="#6a1b9a" stroke-width="1.5"/>
+  <circle cx="100" cy="82" r="8" fill="#8e24aa" opacity="0.6"/>
+  <ellipse cx="74" cy="134" rx="17" ry="8.5" fill="#ff7043" stroke="#bf360c" stroke-width="1.5" transform="rotate(-18 74 134)"/>
+  <circle cx="146" cy="104" r="3.5" fill="#1565c0"/>
+  <circle cx="134" cy="118" r="3.5" fill="#1565c0"/>
+  <!-- Numbered callouts -->
+  <line x1="124" y1="70" x2="196" y2="42" stroke="#333" stroke-width="1"/>
+  <circle cx="204" cy="42" r="9" fill="#1a237e"/><text x="204" y="45" font-family="Arial" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">1</text>
+  <text x="218" y="45" font-family="Arial" font-size="8" fill="#333">_________</text>
+  <line x1="186" y1="100" x2="196" y2="78" stroke="#333" stroke-width="1"/>
+  <circle cx="204" cy="78" r="9" fill="#1a237e"/><text x="204" y="81" font-family="Arial" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">2</text>
+  <text x="218" y="81" font-family="Arial" font-size="8" fill="#333">_________</text>
+  <line x1="146" y1="104" x2="196" y2="114" stroke="#333" stroke-width="1"/>
+  <circle cx="204" cy="114" r="9" fill="#1a237e"/><text x="204" y="117" font-family="Arial" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">3</text>
+  <text x="218" y="117" font-family="Arial" font-size="8" fill="#333">_________</text>
+  <line x1="86" y1="136" x2="196" y2="150" stroke="#333" stroke-width="1"/>
+  <circle cx="204" cy="150" r="9" fill="#1a237e"/><text x="204" y="153" font-family="Arial" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">4</text>
+  <text x="218" y="153" font-family="Arial" font-size="8" fill="#333">_________</text>
 </svg>`,
 
   /**
@@ -615,6 +648,34 @@ const diagrams: Record<string, string> = {
   <text x="210" y="114" font-family="Arial" font-size="7.5" fill="#b71c1c">40 J (heat)</text>
   <!-- Efficiency note -->
   <text x="130" y="142" font-family="Arial" font-size="8" fill="#1a237e" text-anchor="middle" font-weight="bold">efficiency = useful ÷ total</text>
+</svg>`,
+
+  /**
+   * Blank/numbered series circuit for "label the circuit" questions —
+   * components drawn but labelled with numbered callouts (1-4).
+   */
+  'simple-circuit-blank': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 175" width="260" height="175">
+  <rect x="40" y="40" width="170" height="95" fill="none" stroke="#222" stroke-width="2"/>
+  <!-- Cell (top) -->
+  <line x1="112" y1="40" x2="112" y2="26" stroke="#222" stroke-width="2"/>
+  <line x1="138" y1="40" x2="138" y2="26" stroke="#222" stroke-width="2"/>
+  <line x1="118" y1="18" x2="118" y2="34" stroke="#222" stroke-width="3"/>
+  <line x1="130" y1="22" x2="130" y2="30" stroke="#222" stroke-width="6"/>
+  <circle cx="125" cy="52" r="8" fill="#1a237e"/><text x="125" y="55" font-family="Arial" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">1</text>
+  <!-- Lamp (right) -->
+  <circle cx="210" cy="88" r="13" fill="#fff59d" stroke="#222" stroke-width="2"/>
+  <line x1="201" y1="79" x2="219" y2="97" stroke="#222" stroke-width="1.5"/>
+  <line x1="219" y1="79" x2="201" y2="97" stroke="#222" stroke-width="1.5"/>
+  <circle cx="232" cy="88" r="8" fill="#1a237e"/><text x="232" y="91" font-family="Arial" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">2</text>
+  <!-- Switch (bottom) -->
+  <circle cx="105" cy="135" r="3" fill="#222"/><circle cx="145" cy="135" r="3" fill="#222"/>
+  <line x1="105" y1="135" x2="140" y2="122" stroke="#222" stroke-width="2"/>
+  <circle cx="125" cy="155" r="8" fill="#1a237e"/><text x="125" y="158" font-family="Arial" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">3</text>
+  <!-- Ammeter (left) -->
+  <circle cx="40" cy="88" r="13" fill="#fff" stroke="#222" stroke-width="2"/>
+  <text x="40" y="92" font-family="Arial" font-size="11" font-weight="bold" fill="#222" text-anchor="middle">A</text>
+  <circle cx="18" cy="88" r="8" fill="#1a237e"/><text x="18" y="91" font-family="Arial" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">4</text>
 </svg>`,
 
 };
