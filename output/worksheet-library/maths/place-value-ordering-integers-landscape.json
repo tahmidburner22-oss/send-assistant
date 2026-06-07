@@ -1,0 +1,60 @@
+{
+  "title": "Place Value and Ordering Integers",
+  "subtitle": "AQA · KS3 Year 7 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Place Value and Ordering Integers",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid with extra spacing",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Place Value and Ordering Integers",
+    "subheader": "AQA · KS3 Year 7",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Identify the value of each digit",
+      "2  Compare from the largest place value",
+      "3  Use < or > symbols",
+      "4  Arrange in order",
+      "5  Check your answer"
+    ],
+    "commonMistakes": [
+      "Confusing the value of a digit with the digit itself (the 3 in 35,000 is worth 30,000).",
+      "When comparing numbers with different lengths, the longer number is larger.",
+      "Negative numbers: −7 is less than −2.",
+      "Always line up digits by place value — start from the left."
+    ],
+    "workedExample": [
+      "Order from smallest to largest: 4,502   4,520   4,052",
+      "Step 1 — Identify place values: all have 4 thousands.",
+      "Step 2 — Compare hundreds: 4,052 has 0; the others have 5.",
+      "Step 3 — Compare tens of remaining two: 4,502 < 4,520.",
+      "Step 4 — Arrange: 4,052 < 4,502 < 4,520.",
+      "Step 5 — Check: numbers increase ✓."
+    ],
+    "visualAid": "Place value chart showing columns: Millions | Hundred-Thousands | Ten-Thousands | Thousands | Hundreds | Tens | Ones — with the number 5,040,683 broken into its digit columns."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Write down the value of the 6 in: a) 6,421  b) 3,602  c) 46,000  d) 609,000" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Order from smallest to largest: 8,304   8,034   8,340   8,403" },
+    { "number": 3, "marks": 2, "difficulty": 2, "content": "Use < or > :  a) 12,500 ___ 12,050   b) −3 ___ −8   c) 99,999 ___ 100,000" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "A 5-digit number: ten-thousands = 7, hundreds = 4, rest = 0. Write the number." },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Cards: 3  0  7  5  2. Using each once, make a) the largest 5-digit number  b) the smallest 5-digit number." },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Midnight temp = −4 °C. By noon it rose 11°. What is the temperature at noon?" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Populations: Ashford 125,400; Bexley 125,040; Croydon 152,400. a) Order smallest first. b) Ashford +3,000 — now larger than Croydon? Explain." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "6-digit number clues: hundred-thousands = tens + 1; tens = 4; between 500,000–600,000; ones = half hundreds; hundreds = 8; thousands & ten-thousands = 0. Find it." }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "title": "Place Value and Ordering Integers",
+  "subtitle": "AQA · KS3 Year 7",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Place Value and Ordering Integers",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied. The generator layers SEND adaptations, difficulty and reading age on top without altering structure."
+  },
+  "intro": {
+    "header": "Place Value and Ordering Integers",
+    "subheader": "AQA · KS3 Year 7",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Read, write and order whole numbers up to millions. Understand the value of each digit in a number. Compare integers using < and > and place them on a number line.",
+    "commonMistakes": [
+      "Confusing the value of a digit with the digit itself — for example, the 3 in 35,000 is worth 30,000, not 3.",
+      "Forgetting that when comparing numbers with different numbers of digits, the one with more digits is larger.",
+      "Putting negative numbers in the wrong order — remember, −7 is less than −2.",
+      "Not lining up digits by place value when comparing — always start from the left."
+    ],
+    "methodSteps": [
+      "Step 1: Identify the value of each digit by its position (ones, tens, hundreds, thousands…).",
+      "Step 2: To compare two numbers, start from the largest place value and work right.",
+      "Step 3: Use < (less than) or > (greater than) to show which is bigger.",
+      "Step 4: To order a set of numbers, compare pairs using Steps 2–3 and arrange them.",
+      "Step 5: Check your answer makes sense — read the numbers back in order."
+    ],
+    "workedExample": [
+      "Put these numbers in order from smallest to largest: 4,502   4,520   4,052",
+      "Step 1 — Identify place values: All have 4 thousands.",
+      "Step 2 — Compare the hundreds: 4,052 has 0 hundreds; 4,502 and 4,520 both have 5 hundreds.",
+      "Step 3 — Compare the tens for the remaining two: 4,502 has 0 tens; 4,520 has 2 tens. So 4,502 < 4,520.",
+      "Step 4 — Arrange: 4,052 < 4,502 < 4,520.",
+      "Step 5 — Check: the numbers increase — ✓."
+    ]
+  },
+  "methodReminder": [
+    "1  Identify the value of each digit",
+    "2  Compare from the largest place value",
+    "3  Use < or > symbols",
+    "4  Arrange in order",
+    "5  Check your answer"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Write down the value of the 6 in each of these numbers.\n\n   a) 6,421       b) 3,602       c) 46,000       d) 609,000" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Put these numbers in order from smallest to largest.\n\n   8,304     8,034     8,340     8,403" },
+    { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Use < or > to make each statement correct.\n\n   a) 12,500 ___ 12,050\n   b) −3 ___ −8\n   c) 99,999 ___ 100,000" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "A number has 5 digits. The ten-thousands digit is 7, the hundreds digit is 4, and all other digits are 0.\n\nWrite down the number." },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Here are five number cards:  3   0   7   5   2\n\nUsing each card exactly once, make:\n   a) the largest possible 5-digit number\n   b) the smallest possible 5-digit number" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "The temperature at midnight was −4 °C. By noon it had risen by 11 degrees.\n\nWhat was the temperature at noon?\nShow your working." },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "Three towns have populations:\n   Ashford: 125,400\n   Bexley: 125,040\n   Croydon: 152,400\n\n   a) Write the towns in order of population, smallest first.\n   b) The population of Ashford increases by 3,000. Is it now larger than Croydon? Explain your answer." },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A six-digit number has these clues:\n• The hundred-thousands digit is one more than the tens digit.\n• The tens digit is 4.\n• The number is between 500,000 and 600,000.\n• The ones digit is half the hundreds digit.\n• The hundreds digit is 8.\n• The thousands and ten-thousands digits are both 0.\n\nFind the number. Show how each clue helped you." }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "One method step I want to remember next time:",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 6,000  b) 600  c) 6,000  d) 600,000",
+      "Q2: 8,034 < 8,304 < 8,340 < 8,403",
+      "Q3: a) >  b) >  c) <",
+      "Q4: 70,400",
+      "Q5: a) 75,320  b) 20,357",
+      "Q6: −4 + 11 = 7 °C",
+      "Q7: a) Bexley, Ashford, Croydon  b) 125,400 + 3,000 = 128,400 — still less than 152,400, so no.",
+      "Q8: The number is 500,804. Hundred-thousands = 5 (one more than tens 4); tens = 4; hundreds = 8; ones = 4 (half of 8); thousands and ten-thousands = 0."
+    ]
+  }
+}
