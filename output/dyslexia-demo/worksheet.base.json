@@ -42,11 +42,11 @@
     ],
     "workedExample": [
       "Solve:  y = x² − 2x + 3   and   y = x + 3",
-      "Substitute:  x² − 2x + 3 = x + 3",
-      "Rearrange:  x² − 3x = 0",
-      "Factorise:  x(x − 3) = 0  →  x = 0  or  x = 3",
-      "Find y:  x = 0 → y = 3;   x = 3 → y = 6",
-      "Answers:  (0, 3)  and  (3, 6)"
+      "Step 1 — Make y the subject of the line:  y = x + 3 (already done)",
+      "Step 2 — Substitute into the quadratic:  x² − 2x + 3 = x + 3",
+      "Step 3 — Move everything to one side so it = 0:  x² − 3x = 0",
+      "Step 4 — Solve (factorise):  x(x − 3) = 0  →  x = 0 or x = 3",
+      "Step 5 — Put each value back to find its pair:  (0, 3)  and  (3, 6)"
     ]
   },
   "methodReminder": [
