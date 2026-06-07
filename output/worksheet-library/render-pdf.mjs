@@ -20,8 +20,8 @@ const page = await browser.newPage();
 await page.setContent(buildHtml(ws), { waitUntil: 'networkidle' });
 await page.pdf({
   path: outputFile,
-  width: landscape ? '297mm' : '210mm',
-  height: landscape ? '210mm' : '297mm',
+  format: 'A4',
+  landscape: landscape,
   margin: { top: '0', bottom: '0', left: '0', right: '0' },
   printBackground: true,
 });
