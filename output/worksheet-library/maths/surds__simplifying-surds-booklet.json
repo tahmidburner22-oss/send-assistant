@@ -57,8 +57,8 @@
     "5  Answer: k√m (m has no square factors)"
   ],
   "questions": [
-    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) √12       b) √18       c) √20       d) √50" },
-    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "content": "Simplify:\n\n   a) √8       b) √32       c) √45       d) √75" },
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Find the largest square number that divides into the number under the root (e.g. 4, 9, 16, 25, 36…).", "Split it: √12 = √(4 × 3) = √4 × √3.", "Take the square root of the square factor: √4 = 2, so √12 = 2√3."], "content": "Simplify:\n\n   a) √12       b) √18       c) √20       d) √50" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Same method: largest square factor first.", "For √8, the largest square factor is 4: √8 = √4 × √2 = 2√2."], "content": "Simplify:\n\n   a) √8       b) √32       c) √45       d) √75" },
     { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Simplify:\n\n   a) √98       b) √200       c) √128       d) √300" },
     { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Simplify:\n\n   a) √(4 × 7)       b) 3√12       c) 2√50       d) 5√8" },
     { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Simplify fully:\n\n   a) √48 + √12       b) √75 − √27       c) 2√18 + 3√2" },
