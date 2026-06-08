@@ -1,0 +1,92 @@
+{
+  "title": "Arithmetic Sequences — nth Term",
+  "subtitle": "AQA · KS3 Year 7–8",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Sequences",
+    "subtopic": "Arithmetic sequences — nth term",
+    "yearGroup": "Year 7–8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Arithmetic Sequences — nth Term",
+    "subheader": "AQA · KS3 Year 7–8",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Find and use the nth term rule (of the form an + b) for a linear (arithmetic) sequence. Use it to generate terms and to decide whether a given number is in the sequence.",
+    "commonMistakes": [
+      "Writing the rule as d + n instead of dn (the difference multiplies n).",
+      "Getting the sign of the constant wrong — find it from (first term − common difference).",
+      "Confusing the term number (n) with the term value.",
+      "Saying a number is in the sequence without checking that n is a positive whole number."
+    ],
+    "methodSteps": [
+      "Step 1: Find the common difference d (subtract a term from the next term).",
+      "Step 2: The rule begins with dn (the difference times n).",
+      "Step 3: Find the constant b = first term − d.",
+      "Step 4: Write the nth term as dn + b.",
+      "Step 5: Check by substituting n = 1, 2, 3 to make sure you get the sequence back."
+    ],
+    "workedExample": [
+      "Find the nth term of:  3, 7, 11, 15, …",
+      "Step 1 — Common difference: 7 − 3 = 4, so d = 4.",
+      "Step 2 — Rule begins with 4n.",
+      "Step 3 — Constant: first term − d = 3 − 4 = −1.",
+      "Step 4 — nth term = 4n − 1.",
+      "Step 5 — Check n = 1: 4(1) − 1 = 3 ✓;  n = 2: 4(2) − 1 = 7 ✓"
+    ]
+  },
+  "methodReminder": [
+    "1  Find the common difference d",
+    "2  Rule starts with dn",
+    "3  Constant = first term − d",
+    "4  nth term = dn + constant",
+    "5  Check with n = 1, 2, 3"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Look at how much the sequence goes up (or down) each step.", "Add that same amount to the last term to get the next terms."], "content": "Write the next two terms of each sequence.\n\n   a) 2, 5, 8, 11, …\n   b) 20, 17, 14, …" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["The rule starts with the common difference times n.", "For 4, 6, 8, 10: d = 2, so it starts 2n; constant = 4 − 2 = 2, giving 2n + 2."], "content": "Find the common difference and the nth term.\n\n   a) 4, 6, 8, 10, …\n   b) 1, 5, 9, 13, …" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Find the nth term of each sequence.\n\n   a) 5, 8, 11, 14, …\n   b) 7, 12, 17, 22, …\n   c) 10, 8, 6, 4, …" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "A sequence has nth term 4n − 1.\n\n   a) Find the 10th term.\n   b) Find the 20th term.\n   c) Which term has the value 51?" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Decide whether each number is in the sequence. Show your working.\n\n   a) Is 100 in the sequence with nth term 3n + 1?\n   b) Is 50 in the sequence with nth term 4n − 2?\n   c) Is 30 in the sequence with nth term 5n + 2?" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "In a theatre, row 1 has 15 seats, row 2 has 18 seats and row 3 has 21 seats.\n\n   a) Find a rule for the number of seats in row n. (2 marks)\n   b) How many seats are in row 10? (1 mark)" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "The nth term of a sequence is 6n − 4.\n\n   a) Write down the first three terms. (1 mark)\n   b) Find the 50th term. (1 mark)\n   c) Show that 201 is NOT a term in this sequence. (2 marks)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "Sequence A has nth term 4n + 1. Sequence B has nth term 3n + 7.\n\n   a) Write the first five terms of each sequence. (2 marks)\n   b) Which value appears in both of your lists? (1 mark)\n   c) Solve 4n + 1 = 3n + 7 and explain what your answer tells you about the two sequences. (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "How do I find the constant in the nth term rule?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 14, 17  b) 11, 8",
+      "Q2: a) d = 2, nth term = 2n + 2  b) d = 4, nth term = 4n − 3",
+      "Q3: a) 3n + 2  b) 5n + 2  c) −2n + 12 (or 12 − 2n)",
+      "Q4: a) 4(10) − 1 = 39  b) 4(20) − 1 = 79  c) 4n − 1 = 51 → 4n = 52 → n = 13 (the 13th term)",
+      "Q5: a) 3n + 1 = 100 → 3n = 99 → n = 33, whole number, so YES  b) 4n − 2 = 50 → 4n = 52 → n = 13, so YES  c) 5n + 2 = 30 → 5n = 28 → n = 5.6, not whole, so NO",
+      "Q6: a) d = 3; constant = 15 − 3 = 12; rule = 3n + 12  b) 3(10) + 12 = 42 seats",
+      "Q7: a) 2, 8, 14  b) 6(50) − 4 = 296  c) 6n − 4 = 201 → 6n = 205 → n = 34.17, not a whole number, so 201 is not a term",
+      "Q8: a) A: 5, 9, 13, 17, 21;  B: 10, 13, 16, 19, 22  b) 13  c) 4n + 1 = 3n + 7 → n = 6; at the 6th term both sequences give the same value (4×6+1 = 3×6+7 = 25)"
+    ]
+  }
+}

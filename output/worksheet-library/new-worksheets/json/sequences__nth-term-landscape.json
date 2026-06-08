@@ -1,0 +1,59 @@
+{
+  "title": "Arithmetic Sequences — nth Term",
+  "subtitle": "AQA · KS3 Year 7–8 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Sequences",
+    "subtopic": "Arithmetic sequences — nth term",
+    "yearGroup": "Year 7–8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Arithmetic Sequences — nth Term",
+    "subheader": "AQA · KS3 Year 7–8",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Find the common difference d",
+      "2  Rule starts with dn",
+      "3  Constant = first term − d",
+      "4  nth term = dn + constant",
+      "5  Check with n = 1, 2, 3"
+    ],
+    "commonMistakes": [
+      "Writing d + n instead of dn.",
+      "Wrong sign on the constant.",
+      "Confusing term number with term value.",
+      "Not checking that n is a positive whole number."
+    ],
+    "workedExample": [
+      "Find the nth term of 3, 7, 11, 15, …",
+      "d = 4 → 4n; constant = 3 − 4 = −1.",
+      "nth term = 4n − 1 (check n = 1 gives 3 ✓)"
+    ],
+    "visualAid": "The arcs between terms show the constant difference (+4 each step). The rule 4n − 1 gives the value of the term in position n."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Write the next two terms: a) 2, 5, 8, 11, …  b) 20, 17, 14, …" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Find d and the nth term: a) 4, 6, 8, 10, …  b) 1, 5, 9, 13, …" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Find the nth term: a) 5, 8, 11, 14, …  b) 7, 12, 17, 22, …  c) 10, 8, 6, 4, …" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "nth term = 4n − 1. a) 10th term?  b) 20th term?  c) Which term is 51?" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Is the number in the sequence? a) 100 in 3n + 1?  b) 50 in 4n − 2?  c) 30 in 5n + 2?" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Theatre: row 1 = 15 seats, row 2 = 18, row 3 = 21. a) Rule for row n. b) Seats in row 10." },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "nth term = 6n − 4. a) First three terms. b) 50th term. c) Show 201 is not a term." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "A: 4n+1, B: 3n+7. a) First five terms of each. b) Common value? c) Solve 4n+1 = 3n+7 and explain." }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "title": "Fibonacci-Type Sequences",
+  "subtitle": "AQA · KS3 Year 7–8",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Sequences",
+    "subtopic": "Fibonacci-type sequences",
+    "yearGroup": "Year 7–8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Fibonacci-Type Sequences",
+    "subheader": "AQA · KS3 Year 7–8",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Recognise and continue Fibonacci-type sequences, where each term is the sum of the two terms before it. Work forwards and backwards, and find missing terms.",
+    "commonMistakes": [
+      "Multiplying the two previous terms instead of adding them.",
+      "Adding the wrong pair of terms — always use the two immediately before.",
+      "For a missing middle term, forgetting that term = (term before) + (term two before).",
+      "Arithmetic slips when the numbers get larger."
+    ],
+    "methodSteps": [
+      "Step 1: The rule is: each term = the sum of the two terms before it.",
+      "Step 2: To continue, add the last two terms together.",
+      "Step 3: To find a missing term, use the rule and solve (subtract if needed).",
+      "Step 4: To work backwards, subtract: term before = this term − the one before that.",
+      "Step 5: Check the rule works across the whole sequence."
+    ],
+    "workedExample": [
+      "Continue:  1, 1, 2, 3, 5, 8, …",
+      "Step 1 — Rule: add the two previous terms.",
+      "Step 2 — Next term: 5 + 8 = 13.",
+      "Step 3 — Then: 8 + 13 = 21.",
+      "Step 4 — (Check backwards: 13 − 8 = 5 ✓)",
+      "Step 5 — Sequence continues 1, 1, 2, 3, 5, 8, 13, 21, …"
+    ]
+  },
+  "methodReminder": [
+    "1  Each term = sum of the two before it",
+    "2  Continue by adding the last two",
+    "3  Missing term: use term = prev + prev-prev",
+    "4  Work backwards by subtracting",
+    "5  Check the rule everywhere"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Add the two previous terms to get the next.", "For 1, 1, 2, 3, 5, 8: the next term is 5 + 8 = 13."], "content": "Write the next two terms of each sequence.\n\n   a) 1, 1, 2, 3, 5, 8, …\n   b) 2, 2, 4, 6, 10, …" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Each term is the sum of the two before it.", "For 3, 5, 8, …: the next term is 5 + 8 = 13."], "content": "Each term is the sum of the two terms before it. Write the next term.\n\n   a) 3, 5, 8, …\n   b) 1, 4, 5, 9, …" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Find the missing term in each Fibonacci-type sequence.\n\n   a) 1, __, 3, 5, …\n   b) 4, __, 11, 18, …\n   c) __, 5, 8, 13, …" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Using the first two terms given, write the first five terms.\n\n   a) Start 1, 3\n   b) Start 2, 5\n   c) Start 4, 4" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "a) The first two terms are 1 and 2. Write the first six terms. (1 mark)\n\nb) A Fibonacci-type sequence has 3rd term 10 and 4th term 16. Work backwards to find the 1st and 2nd terms. (2 marks)" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Each month, the number of rabbit pairs equals the sum of the pairs in the two previous months. Months 1 and 2 each have 1 pair.\n\n   a) Find the number of pairs in months 3, 4, 5 and 6. (2 marks)\n   b) In which month are there first more than 10 pairs? (1 mark)" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "A Fibonacci-type sequence has 3rd term 7 and 4th term 11.\n\n   a) Find the 1st and 2nd terms. (2 marks)\n   b) Write the first six terms. (1 mark)\n   c) Find the 7th term. (1 mark)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "In a Fibonacci-type sequence the 5th term is 22 and the 6th term is 35.\n\n   a) Work backwards to find the first four terms. (3 marks)\n   b) Write the whole sequence (terms 1 to 6). (1 mark)\n   c) Explain why the terms grow more like a geometric sequence than an arithmetic one. (1 mark)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "How do I find a missing term in the middle of the sequence?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 13, 21  b) 16, 26",
+      "Q2: a) 13  b) 14",
+      "Q3: a) 2 (since 1 + 2 = 3, and 2 + 3 = 5 ✓)  b) 7 (4 + 7 = 11, 7 + 11 = 18 ✓)  c) 3 (3 + 5 = 8, 5 + 8 = 13 ✓)",
+      "Q4: a) 1, 3, 4, 7, 11  b) 2, 5, 7, 12, 19  c) 4, 4, 8, 12, 20",
+      "Q5: a) 1, 2, 3, 5, 8, 13  b) 2nd term = 16 − 10 = 6;  1st term = 10 − 6 = 4 (sequence 4, 6, 10, 16)",
+      "Q6: a) month 3 = 2, month 4 = 3, month 5 = 5, month 6 = 8  b) month 7 (13 pairs)",
+      "Q7: a) 2nd term = 11 − 7 = 4;  1st term = 7 − 4 = 3  b) 3, 4, 7, 11, 18, 29  c) 18 + 29 = 47",
+      "Q8: a) 4th term = 35 − 22 = 13; 3rd = 22 − 13 = 9; 2nd = 13 − 9 = 4; 1st = 9 − 4 = 5  b) 5, 4, 9, 13, 22, 35  c) the ratio between consecutive terms settles towards a constant value (about 1.618, the golden ratio), so it multiplies by roughly the same factor each time like a geometric sequence, rather than adding a constant like an arithmetic one"
+    ]
+  }
+}

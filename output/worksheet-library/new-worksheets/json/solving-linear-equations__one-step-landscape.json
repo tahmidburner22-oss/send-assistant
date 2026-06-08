@@ -1,0 +1,59 @@
+{
+  "title": "One-Step Equations",
+  "subtitle": "AQA · KS3 Year 8 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Solving Linear Equations",
+    "subtopic": "One-step equations",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "One-Step Equations",
+    "subheader": "AQA · KS3 Year 8",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  See what was done to the letter",
+      "2  Choose the inverse operation",
+      "3  Do it to BOTH sides",
+      "4  Simplify to leave the letter alone",
+      "5  Check by substituting"
+    ],
+    "commonMistakes": [
+      "Only changing one side of the equation.",
+      "Wrong inverse: the inverse of × 3 is ÷ 3, not − 3.",
+      "For x ÷ 4 = 3, multiply both sides by 4.",
+      "Sign slips: x + 7 = 2 gives x = −5."
+    ],
+    "workedExample": [
+      "Solve x + 7 = 12.",
+      "Inverse of + 7 is − 7: x = 12 − 7 = 5.",
+      "Check: 5 + 7 = 12 ✓"
+    ],
+    "visualAid": "Balance scale: x + 7 on the left pan equals 12 on the right pan. Remove 7 from both pans so the scale stays level, leaving x = 5."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Solve: a) x + 5 = 12  b) y − 3 = 10  c) m + 8 = 8" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Solve: a) 4x = 20  b) x ÷ 3 = 6  c) 7x = 56" },
+    { "number": 3, "marks": 2, "difficulty": 2, "content": "Solve: a) x − 9 = −2  b) x + 11 = 4  c) 6x = −30" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Solve: a) x ÷ 5 = −4  b) −3x = 21  c) x + 2.5 = 6" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Solve (letter on the right): a) 9 = x + 4  b) 20 = 5x  c) −8 = x − 3" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Form and solve: a) A number n times 4 is 28.  b) 5 subtracted from p gives 12." },
+    { "number": 7, "marks": 3, "difficulty": 4, "content": "Rectangle: width w, length 5w = 35 cm. a) Equation in w. b) Find w. c) Perimeter." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Each parcel costs £x; 4 parcels cost £26. a) Equation. b) Price of one parcel. c) Most whole parcels for £40?" }
+  ]
+}

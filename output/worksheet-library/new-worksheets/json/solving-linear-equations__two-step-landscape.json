@@ -1,0 +1,59 @@
+{
+  "title": "Two-Step Equations",
+  "subtitle": "AQA · KS3 Year 8 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Solving Linear Equations",
+    "subtopic": "Two-step equations",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Two-Step Equations",
+    "subheader": "AQA · KS3 Year 8",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Spot the letter term and the + / − number",
+      "2  Undo the + or − first (both sides)",
+      "3  Now it is a one-step equation",
+      "4  Undo the × or ÷ (both sides)",
+      "5  Check by substituting"
+    ],
+    "commonMistakes": [
+      "Dividing before undoing the + or −.",
+      "Not doing each step to both sides.",
+      "2x = 8 gives x = 4, not 2x = 4.",
+      "Losing a minus sign with negative constants."
+    ],
+    "workedExample": [
+      "Solve 2x + 3 = 11.",
+      "Subtract 3: 2x = 8. Divide by 2: x = 4.",
+      "Check: 2 × 4 + 3 = 11 ✓"
+    ],
+    "visualAid": "Balance scale: 2x + 3 equals 11. Remove 3 from both sides to get 2x = 8, then halve both sides to get x = 4."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Solve: a) 2x + 1 = 7  b) 3x + 4 = 19" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Solve: a) 5x − 2 = 13  b) 4x − 7 = 9" },
+    { "number": 3, "marks": 2, "difficulty": 2, "content": "Solve: a) x ÷ 2 + 3 = 8  b) x ÷ 3 − 1 = 4" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Solve: a) 2x + 9 = 3  b) 5x + 14 = 4  c) 3x − 5 = −11" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Solve: a) 7 = 2x + 1  b) 10 = 4x − 6  c) (x + 5) ÷ 2 = 6" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Form and solve: a) Taxi £3 + £2/mile = £17 — how many miles?  b) Number × 3 then − 5 = 16." },
+    { "number": 7, "marks": 3, "difficulty": 4, "content": "Rectangle length (2x+1), width 4, perimeter 30 cm. a) Equation. b) Find x. c) Length." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Repair: £15 call-out + £c/hour. 3-hour job = £60. a) Find c. b) Cost of 5 hours. c) £75 job — how many hours?" }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "title": "Equations with Unknowns on Both Sides",
+  "subtitle": "AQA · KS3 Year 8",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Solving Linear Equations",
+    "subtopic": "Equations with unknowns on both sides",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Equations with Unknowns on Both Sides",
+    "subheader": "AQA · KS3 Year 8",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Solve linear equations where the unknown appears on both sides. Collect the letter terms on one side and the numbers on the other, then solve the simpler equation.",
+    "commonMistakes": [
+      "Forgetting to do the move to both sides — subtract the same letter term from each side.",
+      "Moving the larger letter term, which can leave a negative coefficient unnecessarily.",
+      "Sign errors when subtracting a term: 5x − 3x = 2x, not 8x.",
+      "Stopping at ax = c and forgetting the final division."
+    ],
+    "methodSteps": [
+      "Step 1: Decide which side will keep the letters — usually the side with more of them.",
+      "Step 2: Subtract the smaller letter term from both sides.",
+      "Step 3: You now have a number on only one side — collect the numbers using inverses.",
+      "Step 4: Solve the resulting one- or two-step equation.",
+      "Step 5: Check by substituting into the original equation (both sides should match)."
+    ],
+    "workedExample": [
+      "Solve: 5x + 2 = 3x + 10",
+      "Step 1 — Keep letters on the left (it has more x).",
+      "Step 2 — Subtract 3x from both sides: 2x + 2 = 10.",
+      "Step 3 — Subtract 2 from both sides: 2x = 8.",
+      "Step 4 — Divide by 2: x = 4.",
+      "Step 5 — Check: 5(4) + 2 = 22 and 3(4) + 10 = 22 ✓"
+    ]
+  },
+  "methodReminder": [
+    "1  Choose the side to keep the letters",
+    "2  Subtract the smaller letter term (both sides)",
+    "3  Collect the numbers using inverses",
+    "4  Solve the simpler equation",
+    "5  Check both sides match"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Take the smaller letter term away from both sides first.", "For 5x = 2x + 9, subtract 2x: 3x = 9, so x = 3."], "content": "Solve.\n\n   a) 5x = 2x + 9\n   b) 7x = 3x + 20" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Move the letters one way and the numbers the other.", "For 6x + 1 = 4x + 9, subtract 4x: 2x + 1 = 9, then − 1: 2x = 8, x = 4."], "content": "Solve.\n\n   a) 6x + 1 = 4x + 9\n   b) 8x − 5 = 6x + 7" },
+    { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Solve.\n\n   a) 9x − 4 = 4x + 11\n   b) 4x + 7 = x + 22" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Solve. Keep the side that gives a positive letter term.\n\n   a) 3x + 8 = 7x\n   b) 2x − 5 = 5x + 4\n   c) 10 − x = 4 + x" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Solve.\n\n   a) 5x + 3 = 2x − 9\n   b) 7 − 2x = x + 1\n   c) 4x − 1 = 6x − 9" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Sara and Tom have the same number of sweets.\nSara has (4x + 2) sweets and Tom has (6x − 8) sweets.\n\n   a) Form an equation. (1 mark)\n   b) Solve it to find x. (1 mark)\n   c) How many sweets does each person have? (1 mark)" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "Two phone plans cost the same for g gigabytes of data.\nPlan A: £10 plus £2 per GB.   Plan B: £4 plus £4 per GB.\n\n   a) Form an equation in g. (1 mark)\n   b) Solve it to find the number of GB where the plans cost the same. (2 marks)\n   c) What is that cost? (1 mark)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "Two metal rods are the same length.\nRod A is (5x − 3) cm long and Rod B is (2x + 9) cm long.\n\n   a) Find x. (2 marks)\n   b) Find the length of each rod. (1 mark)\n   c) A third rod is 5 cm shorter than twice the length of Rod A. Find its length. (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "How do I decide which side to keep the letters on?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 3x = 9 → x = 3  b) 4x = 20 → x = 5",
+      "Q2: a) 2x = 8 → x = 4  b) 2x = 12 → x = 6",
+      "Q3: a) 5x = 15 → x = 3  b) 3x = 15 → x = 5",
+      "Q4: a) 8 = 4x → x = 2  b) −9 = 3x → x = −3  c) 6 = 2x → x = 3",
+      "Q5: a) 3x = −12 → x = −4  b) 6 = 3x → x = 2  c) 8 = 2x → x = 4",
+      "Q6: a) 4x + 2 = 6x − 8  b) 10 = 2x → x = 5  c) 4(5) + 2 = 22 sweets each",
+      "Q7: a) 10 + 2g = 4 + 4g  b) 6 = 2g → g = 3 GB  c) cost = 10 + 2(3) = £16",
+      "Q8: a) 5x − 3 = 2x + 9 → 3x = 12 → x = 4  b) Rod A = 5(4) − 3 = 17 cm, Rod B = 2(4) + 9 = 17 cm  c) 2(17) − 5 = 29 cm"
+    ]
+  }
+}

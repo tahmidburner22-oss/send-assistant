@@ -1,0 +1,92 @@
+{
+  "title": "Double Inequalities",
+  "subtitle": "AQA · KS4 Year 9–10",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Linear Inequalities",
+    "subtopic": "Double inequalities",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Double Inequalities",
+    "subheader": "AQA · KS4 Year 9–10",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Solve double (three-part) inequalities such as a < bx + c ≤ d. Keep all three parts balanced, and list the integer solutions or show them on a number line.",
+    "commonMistakes": [
+      "Only doing the operation to two parts — you must do it to ALL three parts.",
+      "Forgetting to reverse BOTH inequality signs when dividing all parts by a negative.",
+      "Mixing up which end value is included (watch < versus ≤).",
+      "Listing integers wrongly at the ends — check whether each endpoint is included."
+    ],
+    "methodSteps": [
+      "Step 1: A double inequality has three parts joined by two signs; treat the whole thing together.",
+      "Step 2: Undo any + or − by doing it to all three parts.",
+      "Step 3: Undo any × or ÷ by doing it to all three parts (reverse both signs if dividing by a negative).",
+      "Step 4: Write the solution as a single statement, e.g. −1 < x ≤ 3.",
+      "Step 5: If asked, list the integer solutions or draw the solution on a number line."
+    ],
+    "workedExample": [
+      "Solve: 1 < 2x + 3 ≤ 9",
+      "Step 1 — Three parts: 1,  2x + 3,  9.",
+      "Step 2 — Subtract 3 from all parts: −2 < 2x ≤ 6.",
+      "Step 3 — Divide all parts by 2 (positive, no flip): −1 < x ≤ 3.",
+      "Step 4 — Solution: −1 < x ≤ 3.",
+      "Step 5 — Integers: 0, 1, 2, 3 (−1 is excluded, 3 is included)."
+    ]
+  },
+  "methodReminder": [
+    "1  Three parts — work on all of them",
+    "2  Undo +/− across all three",
+    "3  Undo ×/÷ across all three (flip both if ÷ negative)",
+    "4  Write as one statement a < x ≤ b",
+    "5  List integers / draw the line if asked"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Do the same to all THREE parts.", "For 2 < x + 1 < 5, subtract 1 from each part: 1 < x < 4."], "content": "Solve.\n\n   a) 2 < x + 1 < 5\n   b) 0 ≤ x − 2 ≤ 4" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["Divide all three parts by the number in front of x.", "For 4 < 2x < 10, divide each part by 2: 2 < x < 5."], "content": "Solve.\n\n   a) 4 < 2x < 10\n   b) 6 ≤ 3x ≤ 18" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Solve.\n\n   a) 1 < 2x + 1 ≤ 7\n   b) −3 ≤ 2x − 1 < 5\n   c) 5 ≤ 3x + 2 ≤ 14" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "List the integer values of x that satisfy each inequality.\n\n   a) −2 < x ≤ 3\n   b) 0 ≤ x < 4\n   c) −3 ≤ x ≤ 1" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Solve.\n\n   a) 7 < 2x + 1 ≤ 15\n   b) −4 ≤ 3x − 1 < 11\n   c) 2 ≤ (x ÷ 2) + 1 < 5" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Solve. Take care — you will need to reverse the signs.\n\n   a) 1 ≤ 5 − x < 4\n   b) −2 < 3 − x ≤ 2" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "Solve 4 ≤ 2x − 6 < 10.\n\n   a) Write the solution as a single inequality. (2 marks)\n   b) List the integer values of x. (1 mark)\n   c) Show the solution on a number line. (1 mark)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "a) A length L is measured as 50 cm to the nearest 10 cm. Write a double inequality (the error interval) for L. (2 marks)\n\nb) Solve 3 ≤ (y + 1) ÷ 2 < 6 and list the integer values of y. (3 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Why must I do every step to all three parts?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) 1 < x < 4  b) 2 ≤ x ≤ 6",
+      "Q2: a) 2 < x < 5  b) 2 ≤ x ≤ 6",
+      "Q3: a) 0 < x ≤ 3  b) −1 ≤ x < 3  c) 1 ≤ x ≤ 4",
+      "Q4: a) −1, 0, 1, 2, 3  b) 0, 1, 2, 3  c) −3, −2, −1, 0, 1",
+      "Q5: a) 6 < 2x ≤ 14 → 3 < x ≤ 7  b) −3 ≤ 3x < 12 → −1 ≤ x < 4  c) 1 ≤ x ÷ 2 < 4 → 2 ≤ x < 8",
+      "Q6: a) subtract 5: −4 ≤ −x < −1; ×(−1) and reverse: 1 < x ≤ 4  b) subtract 3: −5 < −x ≤ −1; ×(−1) and reverse: 1 ≤ x < 5",
+      "Q7: a) add 6: 10 ≤ 2x < 16 → 5 ≤ x < 8  b) 5, 6, 7  c) filled circle at 5, open circle at 8, shaded between",
+      "Q8: a) 45 ≤ L < 55  b) ×2: 6 ≤ y + 1 < 12 → −1: 5 ≤ y < 11 → integers 5, 6, 7, 8, 9, 10"
+    ]
+  }
+}

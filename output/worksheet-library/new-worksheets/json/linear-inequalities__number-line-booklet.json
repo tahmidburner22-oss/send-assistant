@@ -1,0 +1,92 @@
+{
+  "title": "Representing Inequalities on a Number Line",
+  "subtitle": "AQA · KS4 Year 9–10",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Linear Inequalities",
+    "subtopic": "Representing inequalities on a number line",
+    "yearGroup": "Year 9-10",
+    "examBoard": "AQA",
+    "stage": "KS4",
+    "tier": "Higher",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "exam-style",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Representing Inequalities on a Number Line",
+    "subheader": "AQA · KS4 Year 9–10",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Show the solution set of an inequality on a number line using open and filled circles and arrows, and read an inequality from a given number line.",
+    "commonMistakes": [
+      "Using a filled circle for < or > — these need an OPEN circle (value not included).",
+      "Using an open circle for ≤ or ≥ — these need a FILLED circle (value included).",
+      "Drawing the arrow the wrong way: it points towards the values that make the inequality true.",
+      "Forgetting to rearrange first, e.g. −2 ≤ x is the same as x ≥ −2."
+    ],
+    "methodSteps": [
+      "Step 1: Find the boundary value (the number in the inequality).",
+      "Step 2: Choose the circle — open ○ for < or >, filled ● for ≤ or ≥.",
+      "Step 3: Draw an arrow towards the values that satisfy the inequality (left for </≤, right for >/≥).",
+      "Step 4: For a 'between' inequality, mark both ends and shade in between.",
+      "Step 5: To read a line, reverse the process: circle type gives < / ≤, direction gives the rest."
+    ],
+    "workedExample": [
+      "Represent: x ≥ −2",
+      "Step 1 — Boundary value is −2.",
+      "Step 2 — ≥ means −2 is included, so use a FILLED circle ●.",
+      "Step 3 — 'Greater than or equal to' points right, so the arrow goes right.",
+      "Step 4 — (Single arrow, no upper end.)",
+      "Step 5 — Read-back check: filled circle at −2 with arrow right = x ≥ −2 ✓"
+    ]
+  },
+  "methodReminder": [
+    "1  Find the boundary number",
+    "2  Open ○ for </>, filled ● for ≤/≥",
+    "3  Arrow towards the true values",
+    "4  Shade between for 'between' inequalities",
+    "5  Read back to check"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["Open circle ○ for > (the value is not included).", "The arrow points right for 'greater than'."], "content": "Show each inequality on a number line.\n\n   a) x > 1\n   b) x ≤ 4" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["≥ means the value IS included, so use a filled circle ●.", "Negative numbers go to the left of zero."], "content": "Show each inequality on a number line.\n\n   a) x ≥ −3\n   b) x < 0" },
+    { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Write the inequality shown by each number line.\n\n   a) An open circle at 2 with the arrow pointing right.\n   b) A filled circle at −1 with the arrow pointing left." },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "Show each inequality on a number line.\n\n   a) x ≥ 5\n   b) x < −4\n   c) −2 ≤ x" },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Solve each inequality, then show the solution on a number line.\n\n   a) 2x + 1 > 7\n   b) 3x − 2 ≤ 10\n   c) 5 − 2x ≥ 1" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Write an inequality for each statement and show it on a number line.\n\n   a) The number n is at least −1.\n   b) The temperature t (°C) is below 5." },
+    { "id": "q7", "number": 7, "marks": 3, "difficulty": 4, "content": "A number line has a filled circle at −3, an open circle at 4, and the section between them shaded.\n\n   a) Write the inequality shown. (1 mark)\n   b) List all the integers that satisfy it. (2 marks)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A machine only works safely when the temperature t (°C) is both at least 10 and below 35.\n\n   a) Write each condition as an inequality and show each on a number line. (2 marks)\n   b) Write the two conditions as one combined inequality. (1 mark)\n   c) The temperature is exactly 35 °C. Is the machine safe? Explain your answer. (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "How do I decide between an open and a filled circle?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) open circle ○ at 1, arrow right  b) filled circle ● at 4, arrow left",
+      "Q2: a) filled circle ● at −3, arrow right  b) open circle ○ at 0, arrow left",
+      "Q3: a) x > 2  b) x ≤ −1",
+      "Q4: a) filled ● at 5, arrow right  b) open ○ at −4, arrow left  c) −2 ≤ x means x ≥ −2: filled ● at −2, arrow right",
+      "Q5: a) 2x > 6 → x > 3 (open at 3, right)  b) 3x ≤ 12 → x ≤ 4 (filled at 4, left)  c) −2x ≥ −4 → x ≤ 2 (filled at 2, left)",
+      "Q6: a) n ≥ −1 (filled ● at −1, arrow right)  b) t < 5 (open ○ at 5, arrow left)",
+      "Q7: a) −3 ≤ x < 4  b) −3, −2, −1, 0, 1, 2, 3",
+      "Q8: a) t ≥ 10 (filled at 10, right) and t < 35 (open at 35, left)  b) 10 ≤ t < 35  c) Not safe — t < 35 means 35 is not included, so 35 °C is outside the safe range."
+    ]
+  }
+}
