@@ -292,32 +292,145 @@ function answersPage(ws) {
   return h + `</div>`;
 }
 
-function landscapeQuestions(ws) {
-  // Single portrait page: compact intro at top, then 2-column question grid below
-  let h = `<div class="page onepage">${introBlocks(ws, true)}</div>`;
-  return h;
+// --- Landscape 2-page layout (matching reference format) ---
+function landscapeIntroPage(ws) {
+  const intro = ws.intro || {};
+  const methodItems = (intro.methodSteps || []).map((s) => `<span class="ls-m-step">${esc(s.replace(/^Step\s*\d+:\s*/i, '').replace(/^\d+\s+/, ''))}</span>`).join('');
+  const mistakes = (intro.commonMistakes || []).map((m) => `<li>${esc(m)}</li>`).join('');
+  const worked = (intro.workedExample || []).map((l) => `<div>${esc(l)}</div>`).join('');
+  const visual = topicVisual(ws);
+  const visualAidText = intro.visualAid ? `<p class="ls-cap">${esc(intro.visualAid)}</p>` : '';
+
+  return `<section class="ls-page ls-intro">
+    <div class="ls-header">
+      <span class="ls-h-title">${esc(intro.header)}</span>
+      <span class="ls-h-sub">${esc(intro.subheader)}</span>
+    </div>
+    <div class="ls-note">${esc(intro.note || '')}</div>
+    <div class="ls-method ls-box">
+      <h2>Method</h2>
+      <div class="ls-m-steps">${methodItems}</div>
+    </div>
+    <div class="ls-lower">
+      <div class="ls-box ls-mistakes">
+        <h2>Common mistakes</h2>
+        <ul>${mistakes}</ul>
+      </div>
+      <div class="ls-box ls-worked">
+        <h2>Worked example</h2>
+        <div class="ls-ex">${worked}</div>
+      </div>
+      <div class="ls-box ls-visual">
+        <h2>Visual aid</h2>
+        ${visual}
+        ${visualAidText}
+      </div>
+    </div>
+  </section>`;
 }
 
-// Builds the one-page question grid that goes INSIDE the single page (appended after intro)
-function onepageGrid(ws) {
-  let h = `<div class="ls-grid">`;
-  for (const q of ws.questions) {
-    h += `<div class="ls-q"><div class="ls-q-h">${q.number}. <span class="m">(${q.marks} mark${q.marks > 1 ? 's' : ''})</span></div>`;
-    h += `<div class="ls-q-c">${esc(q.content)}</div></div>`;
-  }
-  return h + `</div>`;
+function landscapeQuestionsPage(ws) {
+  const qCards = (ws.questions || []).map((q) => {
+    let pipsHtml = '';
+    const n = Math.max(1, Math.min(5, Number(q.difficulty) || 1));
+    for (let i = 1; i <= 5; i++) pipsHtml += `<span class="ls-pip ${i <= n ? 'on' : ''}"></span>`;
+    return `<div class="ls-q-card ls-box">
+      <div class="ls-q-head">
+        <span class="ls-q-num">Q${esc(q.number)} of ${ws.questions.length}</span>
+        <span class="ls-q-right">${q.marks ? `<span class="ls-marks">[${esc(q.marks)}]</span>` : ''}<span class="ls-difficulty">${pipsHtml}</span></span>
+      </div>
+      <div class="ls-q-text">${esc(q.content)}</div>
+    </div>`;
+  }).join('');
+
+  return `<section class="ls-page ls-questions">
+    <div class="ls-header">
+      <span class="ls-h-title">Questions</span>
+      <span class="ls-h-sub">${esc(ws.landscape?.questionsSubheader || ws.intro?.note || 'Show working in your workbook')}</span>
+    </div>
+    <div class="ls-q-grid">${qCards}</div>
+  </section>`;
 }
+
+const CSS_LANDSCAPE = `
+  @page { size: A4 landscape; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  .ls-page {
+    box-sizing: border-box;
+    width: 297mm;
+    height: 209.7mm;
+    background: #fff;
+    color: #111;
+    padding: 12mm 14mm;
+    display: flex;
+    flex-direction: column;
+    font-family: "DejaVu Sans", Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+  .ls-page + .ls-page { break-before: page; }
+  .ls-box {
+    border: 1.4px solid #333;
+    border-radius: 8px;
+    background: transparent;
+    padding: 12px 16px;
+  }
+  .ls-page h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; color: #111; }
+  .ls-header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.4px solid #333; padding-bottom: 8px; margin-bottom: 12px; flex: 0 0 auto; }
+  .ls-h-title { font-size: 26px; font-weight: 700; }
+  .ls-h-sub { font-size: 15px; }
+  .ls-note { font-size: 15px; margin-bottom: 14px; flex: 0 0 auto; }
+
+  /* intro page */
+  .ls-method { margin-bottom: 14px; flex: 0 0 auto; }
+  .ls-m-steps { display: flex; flex-wrap: wrap; gap: 10px 30px; margin-top: 6px; font-size: 17px; }
+  .ls-m-step { white-space: nowrap; }
+  .ls-lower { display: flex; gap: 14px; flex: 1 1 auto; align-items: stretch; min-height: 0; }
+  .ls-lower > .ls-box { display: flex; flex-direction: column; min-height: 0; }
+  .ls-mistakes { flex: 1.15; }
+  .ls-worked   { flex: 1.25; }
+  .ls-visual   { flex: 1.05; }
+  .ls-mistakes ul { margin: 0; padding-left: 22px; }
+  .ls-mistakes li { margin: 9px 0; }
+  .ls-worked .ls-ex { display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+  .ls-worked .ls-ex div { margin: 4px 0; font-size: 16px; }
+  .ls-visual .visual { margin: 0; border: none; background: none; padding: 0; }
+  .ls-visual .visual svg { width: 100%; max-height: 100%; }
+  .ls-visual .visual .vcap { display: none; }
+  .ls-cap { font-size: 14px; margin: 8px 0 0; color: #333; }
+
+  /* questions page: 2x4 grid filling the page */
+  .ls-questions .ls-q-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 18px 26px;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .ls-q-card { display: flex; flex-direction: column; justify-content: center; }
+  .ls-q-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .ls-q-num { font-size: 19px; font-weight: 700; color: #111; }
+  .ls-q-right { display: flex; align-items: center; gap: 12px; }
+  .ls-marks { font-weight: 700; font-size: 17px; }
+  .ls-difficulty { display: inline-flex; gap: 5px; align-items: center; }
+  .ls-pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #333; display: inline-block; }
+  .ls-pip.on { background: #333; }
+  .ls-q-text { font-size: 21px; white-space: pre-wrap; }
+`;
 
 export function buildHtml(ws) {
   let body = '';
   if (isLandscapeWs(ws)) {
-    // One portrait page: compact intro + visual at top, questions below in 2-col grid
-    body += `<div class="page onepage">${introBlocks(ws, true)}${onepageGrid(ws)}</div>`;
+    // Two landscape A4 pages: intro + questions grid (matching reference format)
+    body = landscapeIntroPage(ws) + landscapeQuestionsPage(ws);
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${CSS_LANDSCAPE}</style></head><body>${body}</body></html>`;
   } else {
     body += `<div class="page">${introBlocks(ws, false)}</div>`;
     ws.questions.forEach((q, i) => { body += questionPage(ws, q, i); });
     body += reflectionPage(ws);
     body += answersPage(ws);
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${CSS}${CSS2}</style></head><body>${body}</body></html>`;
   }
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${CSS}${CSS2}</style></head><body>${body}</body></html>`;
 }
