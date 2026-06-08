@@ -1,0 +1,59 @@
+{
+  "title": "Geometric Sequences",
+  "subtitle": "AQA · KS3 Year 7–8 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Sequences",
+    "subtopic": "Geometric sequences",
+    "yearGroup": "Year 7–8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Geometric Sequences",
+    "subheader": "AQA · KS3 Year 7–8",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Ratio r = term ÷ previous term",
+      "2  Check r is the same throughout",
+      "3  Next term = current × r",
+      "4  nth term = first × r^(n−1)",
+      "5  Check against the pattern"
+    ],
+    "commonMistakes": [
+      "Adding instead of multiplying.",
+      "Dividing the wrong way to find r.",
+      "Decreasing sequences have a fractional ratio.",
+      "Using r^n instead of r^(n−1)."
+    ],
+    "workedExample": [
+      "Continue 2, 6, 18, 54, …",
+      "r = 6 ÷ 2 = 3. Next = 54 × 3 = 162.",
+      "5th term = 2 × 3⁴ = 162."
+    ],
+    "visualAid": "In a geometric sequence each term is the previous term multiplied by the same ratio r. With r > 1 the terms grow quickly; with 0 < r < 1 they shrink towards zero."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Write the next two terms: a) 3, 6, 12, 24, …  b) 1, 5, 25, 125, …" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Find the common ratio: a) 4, 8, 16, …  b) 2, 6, 18, …" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Write the next two terms: a) 5, 15, 45, …  b) 80, 40, 20, …  c) 1, −2, 4, −8, …" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Find the term: a) first 3, r = 2, 4th term  b) first 2, r = 5, 3rd term  c) first 100, r = ½, 4th term" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Arithmetic or geometric (give d or r)? a) 2, 4, 6, 8  b) 2, 4, 8, 16  c) 5, 10, 20, 40" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Bacteria double each hour, start at 50. a) Number after 0, 1, 2, 3 hours. b) After 5 hours?" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Geometric, first term 4, ratio 3. a) First four terms. b) 6th term. c) Which term is 2916?" },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "Ball dropped from 20 m, bounces to 0.8 of previous height. a) Heights after 3 bounces. b) Arithmetic or geometric? c) Will it ever reach 0? Explain." }
+  ]
+}

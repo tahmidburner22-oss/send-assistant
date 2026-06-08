@@ -1,0 +1,92 @@
+{
+  "title": "Quadratic Sequences",
+  "subtitle": "AQA · KS3 Year 7–8",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Sequences",
+    "subtopic": "Quadratic sequences",
+    "yearGroup": "Year 7–8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "introOnPageOne": ["small header", "what you need to be able to do", "common mistakes", "method steps", "worked example"],
+      "oneQuestionPerPage": true,
+      "answerLines": "ruled lines in the bottom-right corner of each question page",
+      "difficulty": "increases from Q1 to Q8",
+      "selfReflection": "one dedicated page after the questions",
+      "teacherKey": "one dedicated page at the end"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Quadratic Sequences",
+    "subheader": "AQA · KS3 Year 7–8",
+    "nameLine": "Name: ____________________     Class: __________     Date: __________",
+    "objective": "Recognise a quadratic sequence by its constant second difference, and find the nth term in the form an² + bn + c using the second-difference method.",
+    "commonMistakes": [
+      "Forgetting to HALVE the second difference to find a (the coefficient of n²).",
+      "Making arithmetic slips when subtracting the an² values from the sequence.",
+      "Not finding the leftover linear part (bn + c) correctly.",
+      "Sign errors, especially when the linear part is negative."
+    ],
+    "methodSteps": [
+      "Step 1: Find the first differences between consecutive terms.",
+      "Step 2: Find the second differences — for a quadratic these are constant.",
+      "Step 3: a = second difference ÷ 2; this gives the an² part.",
+      "Step 4: Subtract an² from each term to leave a linear sequence; find its nth term (bn + c).",
+      "Step 5: Combine to get an² + bn + c and check by substituting n = 1, 2."
+    ],
+    "workedExample": [
+      "Find the nth term of:  3, 8, 15, 24, 35, …",
+      "Step 1 — First differences: 5, 7, 9, 11.",
+      "Step 2 — Second differences: 2, 2, 2 (constant) → quadratic.",
+      "Step 3 — a = 2 ÷ 2 = 1, so the n² part is n².",
+      "Step 4 — Subtract n² (1, 4, 9, 16, 25): 2, 4, 6, 8, 10 = 2n.",
+      "Step 5 — nth term = n² + 2n (check n = 1: 1 + 2 = 3 ✓)"
+    ]
+  },
+  "methodReminder": [
+    "1  First differences",
+    "2  Second differences (constant?)",
+    "3  a = second difference ÷ 2",
+    "4  Subtract an² → find bn + c",
+    "5  Combine: an² + bn + c"
+  ],
+  "questions": [
+    { "id": "q1", "number": 1, "marks": 2, "difficulty": 1, "frame": ["First differences are the gaps between terms; second differences are the gaps between those.", "For 2, 5, 10, 17, 26: first differences 3, 5, 7, 9; second differences 2, 2, 2."], "content": "Find the first and second differences of each sequence.\n\n   a) 2, 5, 10, 17, 26, …\n   b) 4, 7, 12, 19, 28, …" },
+    { "id": "q2", "number": 2, "marks": 2, "difficulty": 1, "frame": ["A sequence is quadratic if its SECOND differences are constant.", "1, 4, 9, 16 has second differences 2, 2 → quadratic."], "content": "State whether each sequence is quadratic. Show the second differences.\n\n   a) 1, 4, 9, 16, …\n   b) 2, 4, 6, 8, …" },
+    { "id": "q3", "number": 3, "marks": 3, "difficulty": 2, "content": "Find the nth term of each quadratic sequence.\n\n   a) 2, 5, 10, 17, 26, …\n   b) 4, 7, 12, 19, 28, …\n   c) 3, 9, 19, 33, 51, …" },
+    { "id": "q4", "number": 4, "marks": 3, "difficulty": 2, "content": "A sequence has nth term n² + n.\n\n   a) Find the 1st term.\n   b) Find the 5th term.\n   c) Find the 10th term." },
+    { "id": "q5", "number": 5, "marks": 3, "difficulty": 3, "content": "Find the nth term of each quadratic sequence.\n\n   a) 0, 3, 8, 15, 24, …\n   b) 5, 14, 27, 44, 65, …\n   c) 3, 8, 15, 24, …" },
+    { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "A growing pattern of squares uses 2, 6, 12, 20, … tiles for patterns 1, 2, 3, 4.\n\n   a) How many tiles are in pattern 5? (1 mark)\n   b) Find the nth term for the number of tiles. (2 marks)" },
+    { "id": "q7", "number": 7, "marks": 4, "difficulty": 4, "content": "A quadratic sequence is 1, 6, 15, 28, 45, …\n\n   a) Show that the second difference is constant. (1 mark)\n   b) Find the nth term. (2 marks)\n   c) Find the 10th term. (1 mark)" },
+    { "id": "q8", "number": 8, "marks": 5, "difficulty": 5, "content": "A quadratic sequence has nth term n² − 3n + 2.\n\n   a) Find the first four terms. (2 marks)\n   b) Show that the second difference is 2. (1 mark)\n   c) Which term has the value 30? (2 marks)" }
+  ],
+  "selfReflection": {
+    "title": "Self-reflection",
+    "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+    "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+    "prompts": [
+      "Which question did you find the hardest, and why?",
+      "Why do I halve the second difference?",
+      "One thing I will practise before the next lesson:"
+    ]
+  },
+  "answers": {
+    "title": "Teacher key",
+    "rows": [
+      "Q1: a) first 3, 5, 7, 9; second 2, 2, 2  b) first 3, 5, 7, 9; second 2, 2, 2",
+      "Q2: a) second differences 2, 2 → quadratic  b) first differences all 2, second differences 0 → not quadratic (it is linear)",
+      "Q3: a) a = 1 → n²; subtract gives 1, 1, 1… → n² + 1  b) n² + 3  c) second difference 4 → a = 2 (2n²); subtract gives 1,1,1… → 2n² + 1",
+      "Q4: a) 1² + 1 = 2  b) 25 + 5 = 30  c) 100 + 10 = 110",
+      "Q5: a) n² − 1  b) second difference 4 → a = 2; subtract 2n² gives 3, 6, 9… = 3n → 2n² + 3n  c) n² + 2n",
+      "Q6: a) 30 tiles  b) second difference 2 → a = 1 (n²); subtract gives 1, 2, 3, 4 = n → n² + n",
+      "Q7: a) first differences 5, 9, 13, 17; second differences 4, 4, 4 (constant)  b) a = 2 (2n²); subtract gives −1, −2, −3… = −n → 2n² − n  c) 2(100) − 10 = 190",
+      "Q8: a) 0, 0, 2, 6  b) first differences 0, 2, 4; second differences 2, 2  c) n² − 3n + 2 = 30 → n² − 3n − 28 = 0 → (n − 7)(n + 4) = 0 → n = 7 (the 7th term)"
+    ]
+  }
+}

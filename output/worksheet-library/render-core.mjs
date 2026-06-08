@@ -112,6 +112,21 @@ function topicVisual(ws) {
       <line x1="220" y1="55" x2="220" y2="65" stroke="#111"/><line x1="300" y1="55" x2="300" y2="65" stroke="#111"/>
       <line x1="380" y1="55" x2="380" y2="65" stroke="#111"/><line x1="460" y1="55" x2="460" y2="65" stroke="#111"/>
     </svg>`;
+  } else if (/sequence/i.test(topic)) {
+    cap = 'Arithmetic sequence: a constant difference is added each step.';
+    svg = `<svg viewBox="0 0 520 120" xmlns="http://www.w3.org/2000/svg">
+      <g ${F} font-size="24" font-weight="700">
+        <text x="20" y="70">3</text><text x="150" y="70">7</text>
+        <text x="280" y="70">11</text><text x="410" y="70">15</text>
+      </g>
+      <path d="M32 50 q55 -28 110 0" fill="none" stroke="#16a34a" stroke-width="2"/>
+      <path d="M162 50 q55 -28 110 0" fill="none" stroke="#16a34a" stroke-width="2"/>
+      <path d="M298 50 q55 -28 110 0" fill="none" stroke="#16a34a" stroke-width="2"/>
+      <g ${F} font-size="14" fill="#15803d">
+        <text x="78" y="30">+4</text><text x="208" y="30">+4</text><text x="344" y="30">+4</text>
+      </g>
+      <text x="20" y="105" ${F} font-size="13" fill="#15803d">nth term = 4n &#8722; 1</text>
+    </svg>`;
   } else if (/fraction|percent|decimal/i.test(topic)) {
     cap = 'One half shown three equivalent ways.';
     svg = `<svg viewBox="0 0 520 130" xmlns="http://www.w3.org/2000/svg">

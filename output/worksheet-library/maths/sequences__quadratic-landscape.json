@@ -1,0 +1,59 @@
+{
+  "title": "Quadratic Sequences",
+  "subtitle": "AQA · KS3 Year 7–8 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Sequences",
+    "subtopic": "Quadratic sequences",
+    "yearGroup": "Year 7–8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Quadratic Sequences",
+    "subheader": "AQA · KS3 Year 7–8",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  First differences",
+      "2  Second differences (constant?)",
+      "3  a = second difference ÷ 2",
+      "4  Subtract an² → find bn + c",
+      "5  Combine: an² + bn + c"
+    ],
+    "commonMistakes": [
+      "Forgetting to halve the second difference.",
+      "Slips subtracting the an² values.",
+      "Not finding the linear part correctly.",
+      "Sign errors with a negative linear part."
+    ],
+    "workedExample": [
+      "Find nth term of 3, 8, 15, 24, 35.",
+      "Second difference 2 → a = 1 (n²). Subtract n²: 2, 4, 6, 8, 10 = 2n.",
+      "nth term = n² + 2n."
+    ],
+    "visualAid": "A quadratic sequence has a constant SECOND difference. Halving it gives the coefficient of n²; subtracting the an² values leaves a simpler linear sequence to finish the rule."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Find first and second differences: a) 2, 5, 10, 17, 26  b) 4, 7, 12, 19, 28" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Quadratic? Show second differences: a) 1, 4, 9, 16  b) 2, 4, 6, 8" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Find the nth term: a) 2, 5, 10, 17, 26  b) 4, 7, 12, 19, 28  c) 3, 9, 19, 33, 51" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "nth term = n² + n. a) 1st term  b) 5th term  c) 10th term" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "Find the nth term: a) 0, 3, 8, 15, 24  b) 5, 14, 27, 44, 65  c) 3, 8, 15, 24" },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Tile pattern: 2, 6, 12, 20, … a) Tiles in pattern 5. b) nth term." },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "Sequence 1, 6, 15, 28, 45. a) Show second difference constant. b) nth term. c) 10th term." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "nth term = n² − 3n + 2. a) First four terms. b) Show 2nd difference is 2. c) Which term = 30?" }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "title": "Fibonacci-Type Sequences",
+  "subtitle": "AQA · KS3 Year 7–8 · Landscape",
+  "metadata": {
+    "subject": "Maths",
+    "topic": "Sequences",
+    "subtopic": "Fibonacci-type sequences",
+    "yearGroup": "Year 7–8",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "tier": "Foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "difficultyMode": "problem-solving",
+    "layout": {
+      "orientation": "landscape",
+      "pages": 2,
+      "page1": "intro (header, method, common mistakes, worked example, visual aid)",
+      "page2": "all 8 questions in a 2-column grid",
+      "writingSpace": "none — pupils work in separate workbooks",
+      "difficulty": "increases from Q1 to Q8"
+    },
+    "note": "Base canonical version. No SEND overlay applied."
+  },
+  "intro": {
+    "header": "Fibonacci-Type Sequences",
+    "subheader": "AQA · KS3 Year 7–8",
+    "note": "Answer each question in your workbook. Show your working.",
+    "methodSteps": [
+      "1  Each term = sum of the two before it",
+      "2  Continue by adding the last two",
+      "3  Missing term: use term = prev + prev-prev",
+      "4  Work backwards by subtracting",
+      "5  Check the rule everywhere"
+    ],
+    "commonMistakes": [
+      "Multiplying instead of adding.",
+      "Adding the wrong pair of terms.",
+      "Missing term: term = (term before) + (two before).",
+      "Arithmetic slips with larger numbers."
+    ],
+    "workedExample": [
+      "Continue 1, 1, 2, 3, 5, 8, …",
+      "Next = 5 + 8 = 13, then 8 + 13 = 21.",
+      "Backwards check: 13 − 8 = 5 ✓"
+    ],
+    "visualAid": "Each term is built from the two before it: 1, 1, 2, 3, 5, 8, 13, … This is the famous Fibonacci pattern, and the ratio of neighbouring terms approaches the golden ratio (≈ 1.618)."
+  },
+  "questions": [
+    { "number": 1, "marks": 2, "difficulty": 1, "content": "Write the next two terms: a) 1, 1, 2, 3, 5, 8, …  b) 2, 2, 4, 6, 10, …" },
+    { "number": 2, "marks": 2, "difficulty": 1, "content": "Each term = sum of the two before. Write the next term: a) 3, 5, 8, …  b) 1, 4, 5, 9, …" },
+    { "number": 3, "marks": 3, "difficulty": 2, "content": "Find the missing term: a) 1, __, 3, 5, …  b) 4, __, 11, 18, …  c) __, 5, 8, 13, …" },
+    { "number": 4, "marks": 3, "difficulty": 2, "content": "Write the first five terms: a) start 1, 3  b) start 2, 5  c) start 4, 4" },
+    { "number": 5, "marks": 3, "difficulty": 3, "content": "a) First two terms 1 and 2 — write the first six terms. b) 3rd term 10, 4th term 16 — find the 1st and 2nd terms." },
+    { "number": 6, "marks": 3, "difficulty": 3, "content": "Rabbit pairs: months 1 and 2 each have 1 pair; each month = sum of previous two. a) Pairs in months 3–6. b) First month with more than 10 pairs?" },
+    { "number": 7, "marks": 4, "difficulty": 4, "content": "3rd term 7, 4th term 11. a) Find 1st and 2nd terms. b) First six terms. c) 7th term." },
+    { "number": 8, "marks": 5, "difficulty": 5, "content": "5th term 22, 6th term 35. a) Work backwards to first four terms. b) Whole sequence (1–6). c) Why does it grow more like a geometric sequence?" }
+  ]
+}
