@@ -1,0 +1,62 @@
+{
+  "type": "maths_worksheet",
+  "title": "Collecting Like Terms",
+  "subject": "Maths",
+  "topic": "Algebra",
+  "subtopic": "Collecting Like Terms",
+  "stage": "KS3",
+  "yearGroup": "Year 7",
+  "pages": 2,
+  "orientation": "landscape",
+  "format": "A4",
+  "margins": "none",
+  "learning_objective": "Simplify algebraic expressions by collecting like terms, handling the hidden coefficient of 1 and negative terms correctly.",
+  "output": { "filename": "worksheet.pdf", "path": "output/collecting-like-terms/worksheet.pdf" },
+  "source_html": "worksheet.html",
+  "generated_with": "playwright",
+  "improvements_applied": [
+    {
+      "id": 2,
+      "area": "Question 1 - circle the like terms",
+      "change": "Instruction now asks pupils to circle each GROUP of like terms using a different shape (circle for squared terms, square for single-letter terms), so expressions with more than one group (e.g. 5m^2 + 2m + 3m^2) are handled clearly."
+    },
+    {
+      "id": 3,
+      "area": "Worked examples - coefficient of 1",
+      "change": "Added the 'hidden 1' example: a means 1a, so 4a + a = 5a; plus 4a + 5a + a = 10a and 4p + 3q + p = 5p + 3q."
+    },
+    {
+      "id": 4,
+      "area": "Negative terms emphasis",
+      "change": "Added 'The sign belongs to the term.' Shows -3x - 5x = -3x + (-5x) = -8x (adding two negatives) and 3x - -5x = 3x + 5x = 8x (subtracting a negative)."
+    },
+    {
+      "id": 5,
+      "area": "Misconception / spot-the-mistake section",
+      "change": "Each item now has labelled 'Correct answer:' and 'Reason:' lines with writing space, making it diagnostic."
+    },
+    {
+      "id": 6,
+      "area": "Challenge word problem (gardener)",
+      "change": "Wording clarified to 'She then plants 4 more rose bushes only' so pupils see the +4 applies to one type, giving x + 2x + 3x + 4 = 6x + 4."
+    },
+    {
+      "id": 7,
+      "area": "Top instruction wording",
+      "change": "Changed to 'Collect like terms by adding or subtracting the coefficients. Keep the letter part the same.' introducing correct vocabulary."
+    }
+  ],
+  "answer_key": {
+    "Q2a": "10a",
+    "Q2b": "5p + 3q",
+    "Q2c": "-8x",
+    "Q2d": "8x",
+    "Q2e": "6y",
+    "Q2f": "8m^2 + 2m",
+    "ChallengeA": "3x + 5",
+    "ChallengeB": "6x + 4",
+    "Q3_Sam": "3x + 2 (cannot be simplified; 3x and 2 are not like terms)",
+    "Q3_Priya": "8x (subtracting a negative means adding: 3x + 5x)",
+    "Q3_Leo": "8m^2 (add the coefficients, the power stays m^2; do not add the powers)"
+  }
+}
