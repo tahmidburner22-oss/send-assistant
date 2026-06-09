@@ -1,0 +1,30 @@
+{
+  "type": "maths_worksheet",
+  "title": "Maths Worksheet",
+  "pages": 2,
+  "orientation": "landscape",
+  "format": "A4",
+  "margins": "none",
+  "source_images": [
+    {
+      "filename": "p1_full.png",
+      "path": "source_images/p1_full.png",
+      "width_px": 1054,
+      "height_px": 709,
+      "page": 1
+    },
+    {
+      "filename": "p2_full.png",
+      "path": "source_images/p2_full.png",
+      "width_px": 1054,
+      "height_px": 781,
+      "page": 2
+    }
+  ],
+  "output": {
+    "filename": "worksheet.pdf",
+    "path": "output/worksheet.pdf"
+  },
+  "generated_with": "playwright",
+  "image_encoding": "base64_data_uri"
+}
