@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Collecting Like Terms</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { font-family: Arial, Helvetica, sans-serif; color: #111; }
+  .page {
+    width: 297mm;
+    height: 210mm;
+    padding: 10mm 12mm;
+    page-break-after: always;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* Header */
+  .head { border-bottom: 3px solid #111; padding-bottom: 4px; margin-bottom: 6px; }
+  .head h1 { font-size: 22px; letter-spacing: .3px; }
+  .head .sub { font-size: 12px; color: #444; margin-top: 1px; }
+  .nameline { font-size: 11px; color: #333; margin-top: 4px; }
+
+  .cols { display: flex; gap: 10px; flex: 1; }
+  .col { flex: 1; display: flex; flex-direction: column; gap: 7px; }
+
+  .box { border: 1.5px solid #111; border-radius: 5px; padding: 7px 9px; }
+  .box h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+  .box.tint { background: #f3f3f3; }
+  .note { font-size: 12px; line-height: 1.35; }
+
+  .eg { font-size: 12px; line-height: 1.5; }
+  .eg .lbl { font-weight: bold; }
+  .eg .math { font-family: "Cambria Math", Georgia, serif; }
+  .rule { color: #b00; font-weight: bold; }
+
+  ul.tight { margin-left: 16px; }
+  ul.tight li { font-size: 12px; line-height: 1.4; margin-bottom: 2px; }
+
+  .q { font-size: 12px; line-height: 1.45; }
+  .q .num { font-weight: bold; }
+  .expr { font-family: "Cambria Math", Georgia, serif; font-size: 14px; letter-spacing: .5px; }
+  .qrow { margin: 3px 0; }
+
+  .answerline { border-bottom: 1px solid #999; height: 14px; margin-top: 3px; }
+
+  .mistake { border: 1.5px solid #111; border-radius: 5px; padding: 6px 9px; margin-bottom: 6px; }
+  .mistake .claim { font-size: 12px; }
+  .mistake .claim .expr { font-weight: bold; }
+  .mistake .field { font-size: 11px; color: #333; margin-top: 4px; }
+  .mistake .field .fl { display: inline-block; min-width: 78px; font-weight: bold; }
+  .mistake .field .line { border-bottom: 1px solid #999; display: inline-block; width: 70%; height: 13px; vertical-align: bottom; }
+
+  sup { font-size: .72em; vertical-align: super; }
+  .foot { font-size: 9.5px; color: #777; position: absolute; bottom: 4mm; left: 12mm; }
+  .pg { font-size: 9.5px; color: #777; position: absolute; bottom: 4mm; right: 12mm; }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page">
+  <div class="head">
+    <h1>Collecting Like Terms</h1>
+    <div class="sub">KS3 Algebra &middot; Year 7 &middot; Simplifying expressions</div>
+    <div class="nameline">Name: ___________________________   Class: ____________   Date: ____________</div>
+  </div>
+
+  <div class="box tint">
+    <h2>How to simplify</h2>
+    <div class="note">Collect like terms by <strong>adding or subtracting the coefficients</strong> (the numbers in front).
+    Keep the letter part the same. Like terms have the <strong>same letter and the same power</strong> &mdash;
+    so 5m<sup>2</sup> and 3m<sup>2</sup> are like terms, but 2m is <em>not</em>.</div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="box">
+        <h2>Worked examples</h2>
+        <div class="eg">
+          <div class="lbl">Basic</div>
+          <div class="math">5x + 2x = 7x</div>
+          <div class="lbl" style="margin-top:5px;">The hidden 1</div>
+          <div class="math">a&nbsp; means&nbsp; 1a, &nbsp; so&nbsp; 4a + a = 5a</div>
+          <div class="math">4a + 5a + a = 10a</div>
+          <div class="math">4p + 3q + p = 5p + 3q</div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h2>Negative terms</h2>
+        <div class="eg">
+          <div class="rule">The sign belongs to the term.</div>
+          <div style="margin-top:4px;" class="math">&minus;3x &minus; 5x &nbsp;means&nbsp; &minus;3x + (&minus;5x) = &minus;8x</div>
+          <div class="note" style="margin-top:2px;">You are adding two negative amounts, so the answer gets <em>more</em> negative.</div>
+          <div style="margin-top:6px;" class="math">3x &minus; &minus;5x &nbsp;means&nbsp; 3x + 5x = 8x</div>
+          <div class="note" style="margin-top:2px;">Subtracting a negative is the same as adding.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="box" style="flex:1;">
+        <h2>Question 1 &mdash; Spot the like terms</h2>
+        <div class="note" style="margin-bottom:5px;">
+          <strong>Circle each group of like terms using a different shape.</strong>
+          Draw a <strong>circle</strong> around the squared terms (m<sup>2</sup>, t<sup>2</sup> &hellip;) and a
+          <strong>square / box</strong> around the single-letter terms (m, t &hellip;). Some expressions have more than one group.
+        </div>
+        <div class="q">
+          <div class="qrow"><span class="num">a)</span> <span class="expr">5m<sup>2</sup> + 2m + 3m<sup>2</sup></span></div>
+          <div class="qrow"><span class="num">b)</span> <span class="expr">4a + 5a + a</span></div>
+          <div class="qrow"><span class="num">c)</span> <span class="expr">4p + 3q + p</span></div>
+          <div class="qrow"><span class="num">d)</span> <span class="expr">7x + 2y + x + 3y</span></div>
+          <div class="qrow"><span class="num">e)</span> <span class="expr">6t<sup>2</sup> + 2t + t<sup>2</sup> + 5t</span></div>
+          <div class="qrow"><span class="num">f)</span> <span class="expr">8c + 3d &minus; 2c + d</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">Collecting Like Terms &middot; KS3 Algebra</div>
+  <div class="pg">Page 1 of 2</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page">
+  <div class="head">
+    <h1>Collecting Like Terms &mdash; Practice</h1>
+    <div class="sub">Simplify, then check your signs and any hidden 1s</div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="box">
+        <h2>Question 2 &mdash; Simplify</h2>
+        <div class="q">
+          <div class="qrow"><span class="num">a)</span> <span class="expr">4a + 5a + a</span> <div class="answerline"></div></div>
+          <div class="qrow"><span class="num">b)</span> <span class="expr">4p + 3q + p</span> <div class="answerline"></div></div>
+          <div class="qrow"><span class="num">c)</span> <span class="expr">&minus;3x &minus; 5x</span> <div class="answerline"></div></div>
+          <div class="qrow"><span class="num">d)</span> <span class="expr">3x &minus; &minus;5x</span> <div class="answerline"></div></div>
+          <div class="qrow"><span class="num">e)</span> <span class="expr">8y &minus; 3y + y</span> <div class="answerline"></div></div>
+          <div class="qrow"><span class="num">f)</span> <span class="expr">5m<sup>2</sup> + 2m + 3m<sup>2</sup></span> <div class="answerline"></div></div>
+        </div>
+      </div>
+
+      <div class="box tint">
+        <h2>Challenge &mdash; word problems</h2>
+        <div class="q">
+          <div class="qrow"><span class="num">a)</span> A box contains x red counters, 2x blue counters and 5 green counters.
+            Write a simplified expression for the total number of counters.</div>
+          <div class="answerline"></div>
+          <div class="qrow" style="margin-top:7px;"><span class="num">b)</span> A gardener plants x tulips, 2x daffodils and 3x rose bushes.
+            She then plants <strong>4 more rose bushes only</strong>.
+            Write a simplified expression for the total number of plants.</div>
+          <div class="answerline"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="box" style="flex:1;">
+        <h2>Question 3 &mdash; Spot the mistake</h2>
+        <div class="note" style="margin-bottom:6px;">For each one, write the <strong>correct answer</strong> and a short <strong>reason</strong> explaining the mistake.</div>
+
+        <div class="mistake">
+          <div class="claim">Sam writes: <span class="expr">3x + 2 = 5x</span></div>
+          <div class="field"><span class="fl">Correct answer:</span> <span class="line"></span></div>
+          <div class="field"><span class="fl">Reason:</span> <span class="line"></span></div>
+        </div>
+
+        <div class="mistake">
+          <div class="claim">Priya writes: <span class="expr">3x &minus; &minus;5x = &minus;2x</span></div>
+          <div class="field"><span class="fl">Correct answer:</span> <span class="line"></span></div>
+          <div class="field"><span class="fl">Reason:</span> <span class="line"></span></div>
+        </div>
+
+        <div class="mistake">
+          <div class="claim">Leo writes: <span class="expr">5m<sup>2</sup> + 3m<sup>2</sup> = 8m<sup>4</sup></span></div>
+          <div class="field"><span class="fl">Correct answer:</span> <span class="line"></span></div>
+          <div class="field"><span class="fl">Reason:</span> <span class="line"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">Collecting Like Terms &middot; KS3 Algebra</div>
+  <div class="pg">Page 2 of 2</div>
+</section>
+
+</body>
+</html>
