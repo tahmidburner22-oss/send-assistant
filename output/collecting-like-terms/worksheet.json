@@ -1,62 +1,188 @@
 {
-  "type": "maths_worksheet",
-  "title": "Collecting Like Terms",
-  "subject": "Maths",
-  "topic": "Algebra",
-  "subtopic": "Collecting Like Terms",
-  "stage": "KS3",
-  "yearGroup": "Year 7",
-  "pages": 2,
-  "orientation": "landscape",
-  "format": "A4",
-  "margins": "none",
-  "learning_objective": "Simplify algebraic expressions by collecting like terms, handling the hidden coefficient of 1 and negative terms correctly.",
-  "output": { "filename": "worksheet.pdf", "path": "output/collecting-like-terms/worksheet.pdf" },
-  "source_html": "worksheet.html",
-  "generated_with": "playwright",
-  "improvements_applied": [
-    {
-      "id": 2,
-      "area": "Question 1 - circle the like terms",
-      "change": "Instruction now asks pupils to circle each GROUP of like terms using a different shape (circle for squared terms, square for single-letter terms), so expressions with more than one group (e.g. 5m^2 + 2m + 3m^2) are handled clearly."
+  "schema_version": "2.0",
+  "description": "Complete, self-contained specification for the 'Collecting Like Terms' worksheet. This file contains EVERYTHING needed to reproduce the worksheet PDF 1:1, including the full verbatim HTML source, the complete CSS, a structured content model, exact build instructions, and the answer key. A model can reproduce the PDF exactly by writing the value of `reproduction.full_html` to a file and rendering it with the settings in `build`.",
+
+  "meta": {
+    "type": "maths_worksheet",
+    "title": "Collecting Like Terms",
+    "subject": "Maths",
+    "topic": "Algebra",
+    "subtopic": "Collecting Like Terms",
+    "stage": "KS3",
+    "yearGroup": "Year 7",
+    "pages": 2,
+    "orientation": "landscape",
+    "page_format": "A4",
+    "margins": "none",
+    "language": "en-GB",
+    "learning_objective": "Simplify algebraic expressions by collecting like terms, handling the hidden coefficient of 1 and negative terms correctly."
+  },
+
+  "reproduction": {
+    "instructions": "To reproduce the PDF 1:1: (1) Write the exact string in `full_html` to a file named worksheet.html (UTF-8, no modifications). (2) Render it to PDF using a headless Chromium engine (Playwright/Puppeteer) with the options in `build.pdf_options`. The @page CSS rule and the .page element dimensions (297mm x 210mm) enforce A4 landscape with a hard page break between the two <section class='page'> blocks, producing exactly 2 pages. Do NOT add print margins; they are set to 0 in both the CSS and the renderer. Fonts: Arial/Helvetica for body, Cambria Math/Georgia/serif for mathematical expressions.",
+    "engine": "chromium-headless (Playwright or Puppeteer)",
+    "expected_page_count": 2,
+    "expected_page_size_pts": "841.9 x 595.3 (A4 landscape: 297mm x 210mm)",
+    "full_html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\" />\n<title>Collecting Like Terms</title>\n<style>\n  @page { size: A4 landscape; margin: 0; }\n  * { margin: 0; padding: 0; box-sizing: border-box; }\n  html, body { font-family: Arial, Helvetica, sans-serif; color: #111; }\n  .page {\n    width: 297mm;\n    height: 210mm;\n    padding: 10mm 12mm;\n    page-break-after: always;\n    position: relative;\n    display: flex;\n    flex-direction: column;\n  }\n  .page:last-child { page-break-after: auto; }\n\n  /* Header */\n  .head { border-bottom: 3px solid #111; padding-bottom: 4px; margin-bottom: 6px; }\n  .head h1 { font-size: 22px; letter-spacing: .3px; }\n  .head .sub { font-size: 12px; color: #444; margin-top: 1px; }\n  .nameline { font-size: 11px; color: #333; margin-top: 4px; }\n\n  .cols { display: flex; gap: 10px; flex: 1; }\n  .col { flex: 1; display: flex; flex-direction: column; gap: 7px; }\n\n  .box { border: 1.5px solid #111; border-radius: 5px; padding: 7px 9px; }\n  .box h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }\n  .box.tint { background: #f3f3f3; }\n  .note { font-size: 12px; line-height: 1.35; }\n\n  .eg { font-size: 12px; line-height: 1.5; }\n  .eg .lbl { font-weight: bold; }\n  .eg .math { font-family: \"Cambria Math\", Georgia, serif; }\n  .rule { color: #b00; font-weight: bold; }\n\n  ul.tight { margin-left: 16px; }\n  ul.tight li { font-size: 12px; line-height: 1.4; margin-bottom: 2px; }\n\n  .q { font-size: 12px; line-height: 1.45; }\n  .q .num { font-weight: bold; }\n  .expr { font-family: \"Cambria Math\", Georgia, serif; font-size: 14px; letter-spacing: .5px; }\n  .qrow { margin: 3px 0; }\n\n  .answerline { border-bottom: 1px solid #999; height: 14px; margin-top: 3px; }\n\n  .mistake { border: 1.5px solid #111; border-radius: 5px; padding: 6px 9px; margin-bottom: 6px; }\n  .mistake .claim { font-size: 12px; }\n  .mistake .claim .expr { font-weight: bold; }\n  .mistake .field { font-size: 11px; color: #333; margin-top: 4px; }\n  .mistake .field .fl { display: inline-block; min-width: 78px; font-weight: bold; }\n  .mistake .field .line { border-bottom: 1px solid #999; display: inline-block; width: 70%; height: 13px; vertical-align: bottom; }\n\n  sup { font-size: .72em; vertical-align: super; }\n  .foot { font-size: 9.5px; color: #777; position: absolute; bottom: 4mm; left: 12mm; }\n  .pg { font-size: 9.5px; color: #777; position: absolute; bottom: 4mm; right: 12mm; }\n</style>\n</head>\n<body>\n\n<!-- ============ PAGE 1 ============ -->\n<section class=\"page\">\n  <div class=\"head\">\n    <h1>Collecting Like Terms</h1>\n    <div class=\"sub\">KS3 Algebra &middot; Year 7 &middot; Simplifying expressions</div>\n    <div class=\"nameline\">Name: ___________________________   Class: ____________   Date: ____________</div>\n  </div>\n\n  <div class=\"box tint\">\n    <h2>How to simplify</h2>\n    <div class=\"note\">Collect like terms by <strong>adding or subtracting the coefficients</strong> (the numbers in front).\n    Keep the letter part the same. Like terms have the <strong>same letter and the same power</strong> &mdash;\n    so 5m<sup>2</sup> and 3m<sup>2</sup> are like terms, but 2m is <em>not</em>.</div>\n  </div>\n\n  <div class=\"cols\">\n    <div class=\"col\">\n      <div class=\"box\">\n        <h2>Worked examples</h2>\n        <div class=\"eg\">\n          <div class=\"lbl\">Basic</div>\n          <div class=\"math\">5x + 2x = 7x</div>\n          <div class=\"lbl\" style=\"margin-top:5px;\">The hidden 1</div>\n          <div class=\"math\">a&nbsp; means&nbsp; 1a, &nbsp; so&nbsp; 4a + a = 5a</div>\n          <div class=\"math\">4a + 5a + a = 10a</div>\n          <div class=\"math\">4p + 3q + p = 5p + 3q</div>\n        </div>\n      </div>\n\n      <div class=\"box\">\n        <h2>Negative terms</h2>\n        <div class=\"eg\">\n          <div class=\"rule\">The sign belongs to the term.</div>\n          <div style=\"margin-top:4px;\" class=\"math\">&minus;3x &minus; 5x &nbsp;means&nbsp; &minus;3x + (&minus;5x) = &minus;8x</div>\n          <div class=\"note\" style=\"margin-top:2px;\">You are adding two negative amounts, so the answer gets <em>more</em> negative.</div>\n          <div style=\"margin-top:6px;\" class=\"math\">3x &minus; &minus;5x &nbsp;means&nbsp; 3x + 5x = 8x</div>\n          <div class=\"note\" style=\"margin-top:2px;\">Subtracting a negative is the same as adding.</div>\n        </div>\n      </div>\n    </div>\n\n    <div class=\"col\">\n      <div class=\"box\" style=\"flex:1;\">\n        <h2>Question 1 &mdash; Spot the like terms</h2>\n        <div class=\"note\" style=\"margin-bottom:5px;\">\n          <strong>Circle each group of like terms using a different shape.</strong>\n          Draw a <strong>circle</strong> around the squared terms (m<sup>2</sup>, t<sup>2</sup> &hellip;) and a\n          <strong>square / box</strong> around the single-letter terms (m, t &hellip;). Some expressions have more than one group.\n        </div>\n        <div class=\"q\">\n          <div class=\"qrow\"><span class=\"num\">a)</span> <span class=\"expr\">5m<sup>2</sup> + 2m + 3m<sup>2</sup></span></div>\n          <div class=\"qrow\"><span class=\"num\">b)</span> <span class=\"expr\">4a + 5a + a</span></div>\n          <div class=\"qrow\"><span class=\"num\">c)</span> <span class=\"expr\">4p + 3q + p</span></div>\n          <div class=\"qrow\"><span class=\"num\">d)</span> <span class=\"expr\">7x + 2y + x + 3y</span></div>\n          <div class=\"qrow\"><span class=\"num\">e)</span> <span class=\"expr\">6t<sup>2</sup> + 2t + t<sup>2</sup> + 5t</span></div>\n          <div class=\"qrow\"><span class=\"num\">f)</span> <span class=\"expr\">8c + 3d &minus; 2c + d</span></div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"foot\">Collecting Like Terms &middot; KS3 Algebra</div>\n  <div class=\"pg\">Page 1 of 2</div>\n</section>\n\n<!-- ============ PAGE 2 ============ -->\n<section class=\"page\">\n  <div class=\"head\">\n    <h1>Collecting Like Terms &mdash; Practice</h1>\n    <div class=\"sub\">Simplify, then check your signs and any hidden 1s</div>\n  </div>\n\n  <div class=\"cols\">\n    <div class=\"col\">\n      <div class=\"box\">\n        <h2>Question 2 &mdash; Simplify</h2>\n        <div class=\"q\">\n          <div class=\"qrow\"><span class=\"num\">a)</span> <span class=\"expr\">4a + 5a + a</span> <div class=\"answerline\"></div></div>\n          <div class=\"qrow\"><span class=\"num\">b)</span> <span class=\"expr\">4p + 3q + p</span> <div class=\"answerline\"></div></div>\n          <div class=\"qrow\"><span class=\"num\">c)</span> <span class=\"expr\">&minus;3x &minus; 5x</span> <div class=\"answerline\"></div></div>\n          <div class=\"qrow\"><span class=\"num\">d)</span> <span class=\"expr\">3x &minus; &minus;5x</span> <div class=\"answerline\"></div></div>\n          <div class=\"qrow\"><span class=\"num\">e)</span> <span class=\"expr\">8y &minus; 3y + y</span> <div class=\"answerline\"></div></div>\n          <div class=\"qrow\"><span class=\"num\">f)</span> <span class=\"expr\">5m<sup>2</sup> + 2m + 3m<sup>2</sup></span> <div class=\"answerline\"></div></div>\n        </div>\n      </div>\n\n      <div class=\"box tint\">\n        <h2>Challenge &mdash; word problems</h2>\n        <div class=\"q\">\n          <div class=\"qrow\"><span class=\"num\">a)</span> A box contains x red counters, 2x blue counters and 5 green counters.\n            Write a simplified expression for the total number of counters.</div>\n          <div class=\"answerline\"></div>\n          <div class=\"qrow\" style=\"margin-top:7px;\"><span class=\"num\">b)</span> A gardener plants x tulips, 2x daffodils and 3x rose bushes.\n            She then plants <strong>4 more rose bushes only</strong>.\n            Write a simplified expression for the total number of plants.</div>\n          <div class=\"answerline\"></div>\n        </div>\n      </div>\n    </div>\n\n    <div class=\"col\">\n      <div class=\"box\" style=\"flex:1;\">\n        <h2>Question 3 &mdash; Spot the mistake</h2>\n        <div class=\"note\" style=\"margin-bottom:6px;\">For each one, write the <strong>correct answer</strong> and a short <strong>reason</strong> explaining the mistake.</div>\n\n        <div class=\"mistake\">\n          <div class=\"claim\">Sam writes: <span class=\"expr\">3x + 2 = 5x</span></div>\n          <div class=\"field\"><span class=\"fl\">Correct answer:</span> <span class=\"line\"></span></div>\n          <div class=\"field\"><span class=\"fl\">Reason:</span> <span class=\"line\"></span></div>\n        </div>\n\n        <div class=\"mistake\">\n          <div class=\"claim\">Priya writes: <span class=\"expr\">3x &minus; &minus;5x = &minus;2x</span></div>\n          <div class=\"field\"><span class=\"fl\">Correct answer:</span> <span class=\"line\"></span></div>\n          <div class=\"field\"><span class=\"fl\">Reason:</span> <span class=\"line\"></span></div>\n        </div>\n\n        <div class=\"mistake\">\n          <div class=\"claim\">Leo writes: <span class=\"expr\">5m<sup>2</sup> + 3m<sup>2</sup> = 8m<sup>4</sup></span></div>\n          <div class=\"field\"><span class=\"fl\">Correct answer:</span> <span class=\"line\"></span></div>\n          <div class=\"field\"><span class=\"fl\">Reason:</span> <span class=\"line\"></span></div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"foot\">Collecting Like Terms &middot; KS3 Algebra</div>\n  <div class=\"pg\">Page 2 of 2</div>\n</section>\n\n</body>\n</html>\n"
+  },
+
+  "build": {
+    "generated_with": "playwright (chromium)",
+    "source_html_file": "worksheet.html",
+    "output_pdf_file": "worksheet.pdf",
+    "pdf_options": {
+      "format": "A4",
+      "landscape": true,
+      "printBackground": true,
+      "margin": { "top": "0", "right": "0", "bottom": "0", "left": "0" }
     },
-    {
-      "id": 3,
-      "area": "Worked examples - coefficient of 1",
-      "change": "Added the 'hidden 1' example: a means 1a, so 4a + a = 5a; plus 4a + 5a + a = 10a and 4p + 3q + p = 5p + 3q."
-    },
-    {
-      "id": 4,
-      "area": "Negative terms emphasis",
-      "change": "Added 'The sign belongs to the term.' Shows -3x - 5x = -3x + (-5x) = -8x (adding two negatives) and 3x - -5x = 3x + 5x = 8x (subtracting a negative)."
-    },
-    {
-      "id": 5,
-      "area": "Misconception / spot-the-mistake section",
-      "change": "Each item now has labelled 'Correct answer:' and 'Reason:' lines with writing space, making it diagnostic."
-    },
-    {
-      "id": 6,
-      "area": "Challenge word problem (gardener)",
-      "change": "Wording clarified to 'She then plants 4 more rose bushes only' so pupils see the +4 applies to one type, giving x + 2x + 3x + 4 = 6x + 4."
-    },
-    {
-      "id": 7,
-      "area": "Top instruction wording",
-      "change": "Changed to 'Collect like terms by adding or subtracting the coefficients. Keep the letter part the same.' introducing correct vocabulary."
-    }
-  ],
+    "playwright_script": "import { chromium } from 'playwright';\nimport { fileURLToPath } from 'url';\nimport { dirname, join } from 'path';\nconst __dirname = dirname(fileURLToPath(import.meta.url));\nasync function main() {\n  const htmlPath = join(__dirname, 'worksheet.html');\n  const pdfPath = join(__dirname, 'worksheet.pdf');\n  const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });\n  const page = await browser.newPage();\n  await page.goto('file://' + htmlPath, { waitUntil: 'networkidle' });\n  await page.pdf({ path: pdfPath, format: 'A4', landscape: true, printBackground: true, margin: { top: '0', right: '0', bottom: '0', left: '0' } });\n  await browser.close();\n  console.log('PDF generated:', pdfPath);\n}\nmain().catch((err) => { console.error('Error generating PDF:', err); process.exit(1); });"
+  },
+
+  "styles": {
+    "note": "Complete CSS used by the worksheet. Identical to the <style> block embedded in reproduction.full_html. Provided separately for convenience.",
+    "css": "@page { size: A4 landscape; margin: 0; }\n* { margin: 0; padding: 0; box-sizing: border-box; }\nhtml, body { font-family: Arial, Helvetica, sans-serif; color: #111; }\n.page { width: 297mm; height: 210mm; padding: 10mm 12mm; page-break-after: always; position: relative; display: flex; flex-direction: column; }\n.page:last-child { page-break-after: auto; }\n.head { border-bottom: 3px solid #111; padding-bottom: 4px; margin-bottom: 6px; }\n.head h1 { font-size: 22px; letter-spacing: .3px; }\n.head .sub { font-size: 12px; color: #444; margin-top: 1px; }\n.nameline { font-size: 11px; color: #333; margin-top: 4px; }\n.cols { display: flex; gap: 10px; flex: 1; }\n.col { flex: 1; display: flex; flex-direction: column; gap: 7px; }\n.box { border: 1.5px solid #111; border-radius: 5px; padding: 7px 9px; }\n.box h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }\n.box.tint { background: #f3f3f3; }\n.note { font-size: 12px; line-height: 1.35; }\n.eg { font-size: 12px; line-height: 1.5; }\n.eg .lbl { font-weight: bold; }\n.eg .math { font-family: \"Cambria Math\", Georgia, serif; }\n.rule { color: #b00; font-weight: bold; }\nul.tight { margin-left: 16px; }\nul.tight li { font-size: 12px; line-height: 1.4; margin-bottom: 2px; }\n.q { font-size: 12px; line-height: 1.45; }\n.q .num { font-weight: bold; }\n.expr { font-family: \"Cambria Math\", Georgia, serif; font-size: 14px; letter-spacing: .5px; }\n.qrow { margin: 3px 0; }\n.answerline { border-bottom: 1px solid #999; height: 14px; margin-top: 3px; }\n.mistake { border: 1.5px solid #111; border-radius: 5px; padding: 6px 9px; margin-bottom: 6px; }\n.mistake .claim { font-size: 12px; }\n.mistake .claim .expr { font-weight: bold; }\n.mistake .field { font-size: 11px; color: #333; margin-top: 4px; }\n.mistake .field .fl { display: inline-block; min-width: 78px; font-weight: bold; }\n.mistake .field .line { border-bottom: 1px solid #999; display: inline-block; width: 70%; height: 13px; vertical-align: bottom; }\nsup { font-size: .72em; vertical-align: super; }\n.foot { font-size: 9.5px; color: #777; position: absolute; bottom: 4mm; left: 12mm; }\n.pg { font-size: 9.5px; color: #777; position: absolute; bottom: 4mm; right: 12mm; }"
+  },
+
+  "content": {
+    "pages": [
+      {
+        "page_number": 1,
+        "header": {
+          "title": "Collecting Like Terms",
+          "subtitle": "KS3 Algebra · Year 7 · Simplifying expressions",
+          "nameline": "Name: ___________________________   Class: ____________   Date: ____________"
+        },
+        "sections": [
+          {
+            "id": "how_to_simplify",
+            "type": "info_box",
+            "tint": true,
+            "heading": "How to simplify",
+            "body": "Collect like terms by adding or subtracting the coefficients (the numbers in front). Keep the letter part the same. Like terms have the same letter and the same power — so 5m² and 3m² are like terms, but 2m is not.",
+            "emphasis": ["adding or subtracting the coefficients", "same letter and the same power"]
+          },
+          {
+            "id": "worked_examples",
+            "type": "examples_box",
+            "heading": "Worked examples",
+            "groups": [
+              { "label": "Basic", "lines": ["5x + 2x = 7x"] },
+              { "label": "The hidden 1", "lines": ["a  means  1a,   so  4a + a = 5a", "4a + 5a + a = 10a", "4p + 3q + p = 5p + 3q"] }
+            ]
+          },
+          {
+            "id": "negative_terms",
+            "type": "examples_box",
+            "heading": "Negative terms",
+            "rule": "The sign belongs to the term.",
+            "lines": [
+              { "math": "−3x − 5x  means  −3x + (−5x) = −8x", "note": "You are adding two negative amounts, so the answer gets more negative." },
+              { "math": "3x − −5x  means  3x + 5x = 8x", "note": "Subtracting a negative is the same as adding." }
+            ]
+          },
+          {
+            "id": "question_1",
+            "type": "question_box",
+            "heading": "Question 1 — Spot the like terms",
+            "instruction": "Circle each group of like terms using a different shape. Draw a circle around the squared terms (m², t² …) and a square / box around the single-letter terms (m, t …). Some expressions have more than one group.",
+            "items": [
+              { "label": "a)", "expr": "5m² + 2m + 3m²" },
+              { "label": "b)", "expr": "4a + 5a + a" },
+              { "label": "c)", "expr": "4p + 3q + p" },
+              { "label": "d)", "expr": "7x + 2y + x + 3y" },
+              { "label": "e)", "expr": "6t² + 2t + t² + 5t" },
+              { "label": "f)", "expr": "8c + 3d − 2c + d" }
+            ]
+          }
+        ],
+        "footer_left": "Collecting Like Terms · KS3 Algebra",
+        "footer_right": "Page 1 of 2"
+      },
+      {
+        "page_number": 2,
+        "header": {
+          "title": "Collecting Like Terms — Practice",
+          "subtitle": "Simplify, then check your signs and any hidden 1s"
+        },
+        "sections": [
+          {
+            "id": "question_2",
+            "type": "question_box",
+            "heading": "Question 2 — Simplify",
+            "answer_lines": true,
+            "items": [
+              { "label": "a)", "expr": "4a + 5a + a" },
+              { "label": "b)", "expr": "4p + 3q + p" },
+              { "label": "c)", "expr": "−3x − 5x" },
+              { "label": "d)", "expr": "3x − −5x" },
+              { "label": "e)", "expr": "8y − 3y + y" },
+              { "label": "f)", "expr": "5m² + 2m + 3m²" }
+            ]
+          },
+          {
+            "id": "challenge_word_problems",
+            "type": "question_box",
+            "tint": true,
+            "heading": "Challenge — word problems",
+            "answer_lines": true,
+            "items": [
+              { "label": "a)", "text": "A box contains x red counters, 2x blue counters and 5 green counters. Write a simplified expression for the total number of counters." },
+              { "label": "b)", "text": "A gardener plants x tulips, 2x daffodils and 3x rose bushes. She then plants 4 more rose bushes only. Write a simplified expression for the total number of plants.", "emphasis": ["4 more rose bushes only"] }
+            ]
+          },
+          {
+            "id": "question_3",
+            "type": "spot_the_mistake_box",
+            "heading": "Question 3 — Spot the mistake",
+            "instruction": "For each one, write the correct answer and a short reason explaining the mistake.",
+            "items": [
+              { "claim_author": "Sam", "claim": "3x + 2 = 5x", "fields": ["Correct answer:", "Reason:"] },
+              { "claim_author": "Priya", "claim": "3x − −5x = −2x", "fields": ["Correct answer:", "Reason:"] },
+              { "claim_author": "Leo", "claim": "5m² + 3m² = 8m⁴", "fields": ["Correct answer:", "Reason:"] }
+            ]
+          }
+        ],
+        "footer_left": "Collecting Like Terms · KS3 Algebra",
+        "footer_right": "Page 2 of 2"
+      }
+    ]
+  },
+
   "answer_key": {
-    "Q2a": "10a",
-    "Q2b": "5p + 3q",
-    "Q2c": "-8x",
-    "Q2d": "8x",
-    "Q2e": "6y",
-    "Q2f": "8m^2 + 2m",
-    "ChallengeA": "3x + 5",
-    "ChallengeB": "6x + 4",
-    "Q3_Sam": "3x + 2 (cannot be simplified; 3x and 2 are not like terms)",
-    "Q3_Priya": "8x (subtracting a negative means adding: 3x + 5x)",
-    "Q3_Leo": "8m^2 (add the coefficients, the power stays m^2; do not add the powers)"
-  }
+    "Q1_like_term_groups": {
+      "a": "m² terms: 5m² and 3m² (= 8m²); single term: 2m stays separate",
+      "b": "all like terms: 4a + 5a + a = 10a (remember a = 1a)",
+      "c": "p terms: 4p and p (= 5p); q term: 3q stays separate → 5p + 3q",
+      "d": "x terms: 7x and x (= 8x); y terms: 2y and 3y (= 5y) → 8x + 5y",
+      "e": "t² terms: 6t² and t² (= 7t²); t terms: 2t and 5t (= 7t) → 7t² + 7t",
+      "f": "c terms: 8c and −2c (= 6c); d terms: 3d and d (= 4d) → 6c + 4d"
+    },
+    "Q2_simplify": {
+      "a": "10a",
+      "b": "5p + 3q",
+      "c": "-8x",
+      "d": "8x",
+      "e": "6y",
+      "f": "8m^2 + 2m"
+    },
+    "Q2_challenge": {
+      "a": "3x + 5",
+      "b": "6x + 4"
+    },
+    "Q3_spot_the_mistake": {
+      "Sam": "Correct: 3x + 2 cannot be simplified. Reason: 3x and 2 are not like terms (one has a letter, one does not).",
+      "Priya": "Correct: 8x. Reason: subtracting a negative means adding, so 3x − −5x = 3x + 5x = 8x.",
+      "Leo": "Correct: 8m². Reason: add the coefficients (5 + 3 = 8); the power stays m². Do not add the powers."
+    }
+  },
+
+  "improvements_applied": [
+    { "id": 2, "area": "Question 1 — circle the like terms", "change": "Instruction now asks pupils to circle each GROUP of like terms using a different shape (circle for squared terms, square/box for single-letter terms), so expressions with more than one group (e.g. 5m² + 2m + 3m²) are handled clearly." },
+    { "id": 3, "area": "Worked examples — coefficient of 1", "change": "Added the 'hidden 1' example: a means 1a, so 4a + a = 5a; plus 4a + 5a + a = 10a and 4p + 3q + p = 5p + 3q." },
+    { "id": 4, "area": "Negative terms emphasis", "change": "Added 'The sign belongs to the term.' Shows −3x − 5x = −3x + (−5x) = −8x (adding two negatives) and 3x − −5x = 3x + 5x = 8x (subtracting a negative)." },
+    { "id": 5, "area": "Misconception / spot-the-mistake section", "change": "Each item now has labelled 'Correct answer:' and 'Reason:' lines with writing space, making it diagnostic." },
+    { "id": 6, "area": "Challenge word problem (gardener)", "change": "Wording clarified to 'She then plants 4 more rose bushes only' so pupils see the +4 applies to one type, giving x + 2x + 3x + 4 = 6x + 4." },
+    { "id": 7, "area": "Top instruction wording", "change": "Changed to 'Collect like terms by adding or subtracting the coefficients. Keep the letter part the same.' introducing correct vocabulary." }
+  ]
 }
