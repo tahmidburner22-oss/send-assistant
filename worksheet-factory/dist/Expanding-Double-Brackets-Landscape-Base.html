@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+
+  .page {
+    box-sizing: border-box;
+    width: 297mm;
+    height: 209.7mm;                  /* exactly one landscape A4 page */
+    background: #ffffff;
+    color: #111111;
+    padding: 12mm 14mm;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+  .page *, .page *::before, .page *::after { font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .page + .page { break-before: page; }
+  .page p, .page li, .page div { text-align: left; }
+
+  .box {
+    border: 1.4px solid #333333;
+    border-radius: 8px;
+    background: transparent;
+    padding: 12px 16px;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; color: #111111; }
+
+  .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.4px solid #333333; padding-bottom: 8px; margin-bottom: 12px; flex: 0 0 auto; }
+  .h-title { font-size: 26px; font-weight: 700; }
+  .h-sub { font-size: 15px; }
+  .note { font-size: 15px; margin-bottom: 14px; flex: 0 0 auto; }
+
+  /* ---------- intro page ---------- */
+  .method { margin-bottom: 14px; flex: 0 0 auto; }
+  .m-steps { display: flex; flex-wrap: wrap; gap: 10px 30px; margin-top: 6px; font-size: 17px; }
+  .m-step { white-space: nowrap; }
+
+  /* stretched row that fills the rest of the page */
+  .lower { display: flex; gap: 14px; flex: 1 1 auto; align-items: stretch; min-height: 0; }
+  .lower > .box { display: flex; flex-direction: column; min-height: 0; }
+  .mistakes { flex: 1.15; }
+  .worked   { flex: 1.25; }
+  .visual   { flex: 1.05; }
+
+  ul { margin: 0; padding-left: 22px; }
+  li { margin: 9px 0; }
+  .worked .ex { display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+  .worked .ex div { margin: 4px 0; font-size: 16px; }
+
+  .visual .graph-svg { width: 100%; flex: 1 1 auto; min-height: 0; }
+  .visual .cap { font-size: 14px; margin: 8px 0 0; color: #333; }
+  .g-ax  { font-size: 13px; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .g-pt  { font-size: 13px; font-weight: 700; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .g-lbl { font-size: 13px; fill: #444; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .t-lbl { font-size: 12px; font-weight: 700; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .t-eq  { font-size: 15px; font-weight: 700; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .t-cell{ font-size: 15px; fill: #111111; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+
+  /* ---------- questions page: 2×4 grid filling the page ---------- */
+  .questions .q-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 18px 26px;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .q-card { display: flex; flex-direction: column; justify-content: center; }
+  .q-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .q-num { font-size: 19px; font-weight: 700; color: #111111; }
+  .q-right { display: flex; align-items: center; gap: 12px; }
+  .marks { font-weight: 700; font-size: 17px; }
+  .difficulty { display: inline-flex; gap: 5px; align-items: center; }
+  .pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #333333; display: inline-block; }
+  .pip.on { background: #333333; }
+  .q-text { font-size: 21px; }
+</style>
+</head>
+<body>
+  
+<section class="page intro">
+  <div class="header">
+    <span class="h-title">Expanding Double Brackets</span>
+    <span class="h-sub">AQA KS3 · Year 8 · Foundation</span>
+  </div>
+  <div class="note">To expand double brackets, multiply every term in the first bracket by every term in the second bracket. You can use the FOIL method (First, Outside, Inside, Last) or the grid method to organise your working. Then collect like terms to simplify.</div>
+
+  <div class="method box">
+    <h2>Method</h2>
+    <div class="m-steps"><span class="m-step">1  Multiply each term in the first bracket by each term in the second</span><span class="m-step">2  Write each product in its grid cell</span><span class="m-step">3  Collect like terms (the two middle terms)</span><span class="m-step">4  Write the simplified answer</span><span class="m-step">5  Check by substituting a value</span></div>
+  </div>
+
+  <div class="lower">
+    <div class="box mistakes">
+      <h2>Common mistakes</h2>
+      <ul><li>Forgetting the last term: you must multiply the constant in the first bracket by the constant in the second.</li><li>Sign errors with negatives: remember that a negative times a negative gives a positive.</li><li>Writing x + x instead of 2x for the middle term when collecting like terms.</li><li>Forgetting that x × x = x², not 2x.</li></ul>
+    </div>
+    <div class="box worked">
+      <h2>Worked example</h2>
+      <div class="ex"><div>Expand and simplify:  (x + 2)(x + 3)</div><div>Step 1 — Draw the grid with (x + 2) down the side and (x + 3) along the top.</div><div>Step 2 — Fill in: x·x = x²,  x·3 = 3x,  2·x = 2x,  2·3 = 6</div><div>Step 3 — Collect like terms: 3x + 2x = 5x</div><div>Step 4 — Write the answer: x² + 5x + 6</div><div>Check (x = 10): (10+2)(10+3) = 12×13 = 156  and  100+50+6 = 156 ✓</div></div>
+    </div>
+    <div class="box visual">
+      <h2>Visual aid — grid method</h2>
+      <svg viewBox="0 0 360 250" class="graph-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grid model showing (x+2)(x+3): top row x times x gives x squared, x times +3 gives 3x; bottom row +2 times x gives 2x, +2 times +3 gives 6. Collecting like terms: x squared + 3x + 2x + 6 = x squared + 5x + 6."><text x="125" y="38" class="t-eq" text-anchor="middle">x</text><text x="235" y="38" class="t-eq" text-anchor="middle">+3</text><text x="56" y="90" class="t-eq" text-anchor="end">x</text><text x="56" y="160" class="t-eq" text-anchor="end">+2</text><rect x="70" y="50" width="110" height="70" fill="#ffffff" stroke="#333333" stroke-width="1.4"/><text x="125" y="91" class="t-cell" text-anchor="middle">x<sup>2</sup></text><rect x="180" y="50" width="110" height="70" fill="#f4f6fa" stroke="#333333" stroke-width="1.4"/><text x="235" y="91" class="t-cell" text-anchor="middle">3x</text><rect x="70" y="120" width="110" height="70" fill="#f4f6fa" stroke="#333333" stroke-width="1.4"/><text x="125" y="161" class="t-cell" text-anchor="middle">2x</text><rect x="180" y="120" width="110" height="70" fill="#ffffff" stroke="#333333" stroke-width="1.4"/><text x="235" y="161" class="t-cell" text-anchor="middle">6</text></svg>
+      <p class="cap">Each cell shows the product of its row and column headers: (x+2)(x+3) = x² + 5x + 6.</p>
+    </div>
+  </div>
+</section>
+  
+<section class="page questions">
+  <div class="header">
+    <span class="h-title">Questions</span>
+    <span class="h-sub">Expand and simplify — show your working in your workbook</span>
+  </div>
+  <div class="q-grid">
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q1 of 8</span>
+        <span class="q-right"><span class="marks">[1]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   (x + 1)(x + 2)</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q2 of 8</span>
+        <span class="q-right"><span class="marks">[1]</span><span class="difficulty" title="Difficulty 1 of 5"><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   (x + 3)(x + 4)</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q3 of 8</span>
+        <span class="q-right"><span class="marks">[2]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   (x + 5)(x − 2)</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q4 of 8</span>
+        <span class="q-right"><span class="marks">[2]</span><span class="difficulty" title="Difficulty 2 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   (x − 3)(x + 4)</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q5 of 8</span>
+        <span class="q-right"><span class="marks">[2]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   (x − 2)(x − 5)</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q6 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 3 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   (2x + 1)(x + 3)</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q7 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 4 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip "></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   (3x − 2)(x + 4)</div>
+    </div>
+    <div class="q-card box">
+      <div class="q-head">
+        <span class="q-num">Q8 of 8</span>
+        <span class="q-right"><span class="marks">[3]</span><span class="difficulty" title="Difficulty 5 of 5"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></span></span>
+      </div>
+      <div class="q-text">Expand and simplify:   (2x + 3)(3x − 1)</div>
+    </div></div>
+</section>
+</body></html>

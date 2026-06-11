@@ -1,0 +1,156 @@
+{
+  "meta": {
+    "title": "Expanding Double Brackets",
+    "slug": "expanding-double-brackets",
+    "subject": "Maths",
+    "topic": "Expanding Double Brackets",
+    "examBoard": "AQA",
+    "stage": "KS3",
+    "year": "8",
+    "tier": "Foundation",
+    "difficultyMode": "foundation",
+    "variant": "base-canonical",
+    "sendNeed": "none",
+    "note": "Base canonical version. No SEND overlay applied.",
+    "provenance": "Original questions authored for this booklet on the AQA KS3 'Expanding Double Brackets' topic."
+  },
+
+  "landscape": {
+    "questionsSubheader": "Expand and simplify — show your working in your workbook",
+    "intro": {
+      "header": "Expanding Double Brackets",
+      "subheader": "AQA KS3 \u00b7 Year 8 \u00b7 Foundation",
+      "note": "To expand double brackets, multiply every term in the first bracket by every term in the second bracket. You can use the FOIL method (First, Outside, Inside, Last) or the grid method to organise your working. Then collect like terms to simplify.",
+      "visual": {
+        "type": "grid",
+        "title": "Visual aid \u2014 grid method",
+        "caption": "Each cell shows the product of its row and column headers: (x+2)(x+3) = x\u00b2 + 5x + 6.",
+        "params": {
+          "cols": ["x", "+3"],
+          "rows": ["x", "+2"],
+          "cells": [["x^2", "3x"], ["2x", "6"]],
+          "aria": "Grid model showing (x+2)(x+3): top row x times x gives x squared, x times +3 gives 3x; bottom row +2 times x gives 2x, +2 times +3 gives 6. Collecting like terms: x squared + 3x + 2x + 6 = x squared + 5x + 6."
+        }
+      },
+      "methodSteps": [
+        "1  Multiply each term in the first bracket by each term in the second",
+        "2  Write each product in its grid cell",
+        "3  Collect like terms (the two middle terms)",
+        "4  Write the simplified answer",
+        "5  Check by substituting a value"
+      ],
+      "commonMistakes": [
+        "Forgetting the last term: you must multiply the constant in the first bracket by the constant in the second.",
+        "Sign errors with negatives: remember that a negative times a negative gives a positive.",
+        "Writing x + x instead of 2x for the middle term when collecting like terms.",
+        "Forgetting that x \u00d7 x = x\u00b2, not 2x."
+      ],
+      "workedExample": [
+        "Expand and simplify:  (x + 2)(x + 3)",
+        "Step 1 \u2014 Draw the grid with (x + 2) down the side and (x + 3) along the top.",
+        "Step 2 \u2014 Fill in: x\u00b7x = x\u00b2,  x\u00b73 = 3x,  2\u00b7x = 2x,  2\u00b73 = 6",
+        "Step 3 \u2014 Collect like terms: 3x + 2x = 5x",
+        "Step 4 \u2014 Write the answer: x\u00b2 + 5x + 6",
+        "Check (x = 10): (10+2)(10+3) = 12\u00d713 = 156  and  100+50+6 = 156 \u2713"
+      ]
+    },
+    "questions": [
+      { "number": 1, "marks": 1, "difficulty": 1, "content": "Expand and simplify:   (x + 1)(x + 2)" },
+      { "number": 2, "marks": 1, "difficulty": 1, "content": "Expand and simplify:   (x + 3)(x + 4)" },
+      { "number": 3, "marks": 2, "difficulty": 2, "content": "Expand and simplify:   (x + 5)(x \u2212 2)" },
+      { "number": 4, "marks": 2, "difficulty": 2, "content": "Expand and simplify:   (x \u2212 3)(x + 4)" },
+      { "number": 5, "marks": 2, "difficulty": 3, "content": "Expand and simplify:   (x \u2212 2)(x \u2212 5)" },
+      { "number": 6, "marks": 3, "difficulty": 3, "content": "Expand and simplify:   (2x + 1)(x + 3)" },
+      { "number": 7, "marks": 3, "difficulty": 4, "content": "Expand and simplify:   (3x \u2212 2)(x + 4)" },
+      { "number": 8, "marks": 3, "difficulty": 5, "content": "Expand and simplify:   (2x + 3)(3x \u2212 1)" }
+    ]
+  },
+
+  "booklet": {
+    "answerLabels": ["Answer:", ""],
+    "intro": {
+      "header": "Expanding Double Brackets",
+      "subheader": "AQA KS3 \u00b7 Year 8 \u00b7 Foundation",
+      "nameLine": "Name: ____________________     Class: __________     Date: __________",
+      "objective": "Expand products of two binomials (double brackets) using the grid method or FOIL. Collect like terms to write a simplified quadratic expression.",
+      "commonMistakes": [
+        "Forgetting the last term: you must multiply the constant in the first bracket by the constant in the second.",
+        "Sign errors with negatives: remember that a negative times a negative gives a positive.",
+        "Writing x + x instead of 2x for the middle term when collecting like terms.",
+        "Forgetting that x \u00d7 x = x\u00b2, not 2x."
+      ],
+      "methodSteps": [
+        "Step 1: Draw a grid with the terms of the first bracket down the left and the terms of the second bracket along the top.",
+        "Step 2: Fill in each cell by multiplying the row header by the column header.",
+        "Step 3: Write out all four products in a line.",
+        "Step 4: Collect like terms (the two middle terms will usually be alike).",
+        "Step 5: Check by substituting a simple value such as x = 10."
+      ],
+      "workedExample": [
+        "Expand and simplify:  (x + 2)(x + 3)",
+        "Step 1 \u2014 Draw the grid: columns are x and +3, rows are x and +2.",
+        "Step 2 \u2014 Fill in: x\u00b7x = x\u00b2,  x\u00b73 = 3x,  2\u00b7x = 2x,  2\u00b73 = 6",
+        "Step 3 \u2014 Write out: x\u00b2 + 3x + 2x + 6",
+        "Step 4 \u2014 Collect like terms: 3x + 2x = 5x",
+        "Answer:  x\u00b2 + 5x + 6",
+        "Check (x = 10): (12)(13) = 156  and  100 + 50 + 6 = 156 \u2713"
+      ]
+    },
+    "methodReminder": [
+      "1  Draw the grid",
+      "2  Multiply each pair",
+      "3  Write all four products",
+      "4  Collect like terms",
+      "5  Check by substituting"
+    ],
+    "questions": [
+      {
+        "id": "q1", "number": 1, "marks": 1, "difficulty": 1,
+        "content": "Expand and simplify.\n\n   (x + 1)(x + 2)",
+        "frame": [
+          "Draw a 2\u00d72 grid. Put x and +1 down the left side, x and +2 along the top.",
+          "Fill in each cell: x\u00b7x, x\u00b72, 1\u00b7x, 1\u00b72.",
+          "Write all four terms, then collect the like terms together."
+        ]
+      },
+      {
+        "id": "q2", "number": 2, "marks": 1, "difficulty": 1,
+        "content": "Expand and simplify.\n\n   (x + 3)(x + 4)",
+        "frame": [
+          "Draw a 2\u00d72 grid. Put x and +3 down the left side, x and +4 along the top.",
+          "Fill in each cell by multiplying the row term by the column term.",
+          "Add up the four products and collect like terms."
+        ]
+      },
+      { "id": "q3", "number": 3, "marks": 2, "difficulty": 2, "content": "Expand and simplify.\n\n   (x + 5)(x \u2212 2)" },
+      { "id": "q4", "number": 4, "marks": 2, "difficulty": 2, "content": "Expand and simplify.\n\n   (x \u2212 3)(x + 4)" },
+      { "id": "q5", "number": 5, "marks": 2, "difficulty": 3, "content": "Expand and simplify.\n\n   (x \u2212 2)(x \u2212 5)" },
+      { "id": "q6", "number": 6, "marks": 3, "difficulty": 3, "content": "Expand and simplify.\n\n   (2x + 1)(x + 3)" },
+      { "id": "q7", "number": 7, "marks": 3, "difficulty": 4, "content": "Expand and simplify.\n\n   (3x \u2212 2)(x + 4)" },
+      { "id": "q8", "number": 8, "marks": 3, "difficulty": 5, "content": "Expand and simplify.\n\n   (2x + 3)(3x \u2212 1)" }
+    ],
+    "selfReflection": {
+      "title": "Self-reflection",
+      "confidencePrompt": "How confident do you feel with this topic now? (tick one)",
+      "confidenceOptions": ["Not yet", "Getting there", "Confident", "Really confident"],
+      "prompts": [
+        "Which question did you find the hardest, and why?",
+        "One thing I now understand about expanding double brackets:",
+        "One thing I will practise before the next lesson:"
+      ]
+    },
+    "answers": {
+      "title": "Teacher key",
+      "rows": [
+        "Q1:  x^2 + 3x + 2     [(x+1)(x+2): x^2 + 2x + x + 2 = x^2 + 3x + 2]",
+        "Q2:  x^2 + 7x + 12    [(x+3)(x+4): x^2 + 4x + 3x + 12 = x^2 + 7x + 12]",
+        "Q3:  x^2 + 3x \u2212 10   [(x+5)(x\u22122): x^2 \u2212 2x + 5x \u2212 10 = x^2 + 3x \u2212 10]",
+        "Q4:  x^2 + x \u2212 12    [(x\u22123)(x+4): x^2 + 4x \u2212 3x \u2212 12 = x^2 + x \u2212 12]",
+        "Q5:  x^2 \u2212 7x + 10   [(x\u22122)(x\u22125): x^2 \u2212 5x \u2212 2x + 10 = x^2 \u2212 7x + 10]",
+        "Q6:  2x^2 + 7x + 3    [(2x+1)(x+3): 2x^2 + 6x + x + 3 = 2x^2 + 7x + 3]",
+        "Q7:  3x^2 + 10x \u2212 8  [(3x\u22122)(x+4): 3x^2 + 12x \u2212 2x \u2212 8 = 3x^2 + 10x \u2212 8]",
+        "Q8:  6x^2 + 7x \u2212 3   [(2x+3)(3x\u22121): 6x^2 \u2212 2x + 9x \u2212 3 = 6x^2 + 7x \u2212 3]"
+      ]
+    }
+  }
+}
