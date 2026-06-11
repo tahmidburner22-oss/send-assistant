@@ -1,0 +1,22 @@
+{
+  "project_type": "Node.js worksheet build pipeline (Playwright PDF generator)",
+  "language": "JavaScript (ESM)",
+  "build_system": "Node.js with Playwright for headless PDF rendering",
+  "test_framework": "None (manual verification via PDF output)",
+  "build_command": "node build.mjs topics/expanding-double-brackets.json",
+  "test_command": "ls dist/Expanding-Double-Brackets-*.pdf && echo 'PDFs generated'",
+  "verification_instructions": "1. Run `node build.mjs topics/expanding-double-brackets.json` from the worksheet-factory directory. 2. Confirm dist/ contains the landscape and booklet PDFs. 3. Run `node build.mjs topics/expanding-double-brackets.json dist vi` (or equivalent VI build command) to generate VI-adapted versions. 4. Confirm all 4 PDFs exist in dist/.",
+  "snapshot_or_generated_files": "dist/ directory contains generated HTML and PDF files. Not checked in - regenerated on demand.",
+  "setup_instructions": "cd /projects/sandbox/send-assistant/worksheet-factory && npm install && npx playwright install chromium",
+  "environment_constraints": "Playwright requires chromium. node_modules already present. The factory does NOT currently have a VI-adapted build mode - this needs to be added.",
+  "contribution_requirements": "Topic JSON follows the exact structure of introduction-to-algebra.json. Visual aid uses the 'grid' type from the visual registry in render.mjs. VI-adapted version needs larger fonts (min 18pt), high contrast, generous spacing, and text descriptions for all visual content per RNIB Clear Print guidelines.",
+  "key_patterns": "Topic JSON has meta/landscape/booklet sections. landscape.intro contains header, subheader, note, visual (type+params), methodSteps, commonMistakes, workedExample. landscape.questions is an array of 8 questions with number/marks/difficulty/content. booklet has intro, methodReminder, questions (with optional frame scaffolds), selfReflection, answers. Visual types: tiles, intersection, grid, none. Build produces two PDFs: <Title>-Landscape-Base.pdf and <Title>-Base.pdf.",
+  "relevant_files": [
+    "worksheet-factory/topics/introduction-to-algebra.json",
+    "worksheet-factory/build.mjs",
+    "worksheet-factory/render.mjs",
+    "worksheet-factory/package.json",
+    "worksheet-factory/README.md"
+  ],
+  "directory_structure": "worksheet-factory/ - build pipeline root. topics/ - topic JSON files. dist/ - generated output. render.mjs - HTML templating with visual registry. build.mjs - orchestrates Playwright PDF generation."
+}

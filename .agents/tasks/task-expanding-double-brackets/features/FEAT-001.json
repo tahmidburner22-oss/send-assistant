@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create the expanding-double-brackets.json topic file and generate both standard base PDFs (landscape + booklet) and VI-adapted PDFs.",
+  "status": "completed",
+  "steps": [
+    "Step 1: Create topics/expanding-double-brackets.json with FOIL/grid method content, 8 graded questions, full booklet structure",
+    "Step 2: Add VI-adapted build mode to build.mjs (third arg 'vi' injects large-print CSS overlay and visible aria descriptions)",
+    "Step 3: Run standard build",
+    "Step 4: Run VI-adapted build",
+    "Step 5: Verify all 4 PDF files exist"
+  ],
+  "acceptance_criteria": [
+    "topics/expanding-double-brackets.json exists and is valid JSON matching the schema of introduction-to-algebra.json",
+    "The topic JSON contains 8 questions covering expanding double brackets with FOIL method, ramping from difficulty 1 to 5",
+    "The visual aid uses type 'grid' showing the area model for expanding (x+3)(x+2)",
+    "Running `node build.mjs topics/expanding-double-brackets.json` produces dist/Expanding-Double-Brackets-Landscape-Base.pdf and dist/Expanding-Double-Brackets-Base.pdf without errors",
+    "Running `node build.mjs topics/expanding-double-brackets.json dist vi` produces VI-adapted PDFs with larger fonts and high contrast",
+    "All 4 PDF files exist in dist/ after both build commands complete"
+  ],
+  "verification": [
+    "Run `node build.mjs topics/expanding-double-brackets.json` and confirm exit code 0 and PDFs written",
+    "Run `node build.mjs topics/expanding-double-brackets.json dist vi` and confirm exit code 0 and VI PDFs written",
+    "Run `ls -la dist/Expanding-Double-Brackets*` to confirm all 4 files exist and have non-zero size"
+  ],
+  "blocked_reason": null,
+  "findings": "All 4 PDFs generated successfully. Standard base landscape: 82KB, standard booklet: 176KB, VI-adapted landscape: 66KB, VI-adapted booklet: 99KB. No regressions to existing introduction-to-algebra build."
+}

@@ -1,0 +1,14 @@
+{
+  "task_id": "task-expanding-double-brackets",
+  "task_description": "Create expanding-double-brackets topic JSON and generate both standard base PDFs and VI-adapted (visually impaired) PDFs using the worksheet-factory build pipeline.",
+  "status": "completed",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null,
+  "verification": {
+    "build": "pass",
+    "tests": "pass",
+    "test_quality": "pass",
+    "docker_build": "skipped",
+    "summary": "Both standard and VI-adapted builds run cleanly (exit code 0). All 4 PDFs generated with non-zero size. Existing introduction-to-algebra build still works (no regression). No formal test suite in this project - verification is build output."
+  }
+}
