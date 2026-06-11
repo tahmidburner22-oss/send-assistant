@@ -31,7 +31,7 @@
   }
   h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; color: #111111; }
 
-  .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.4px solid #333333; padding-bottom: 8px; margin-bottom: 12px; flex: 0 0 auto; }
+  .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.4px solid #333333; padding-bottom: 8px; margin-bottom: 7px; flex: 0 0 auto; }
   .h-title { font-size: 26px; font-weight: 700; }
   .h-sub { font-size: 15px; }
   .note { font-size: 15px; margin-bottom: 14px; flex: 0 0 auto; }
@@ -71,13 +71,13 @@
     flex: 1 1 auto;
     min-height: 0;
   }
-  .q-card { display: flex; flex-direction: column; justify-content: center; }
+  .q-card { display: flex; flex-direction: column; justify-content: center; border-style: dashed; }
   .q-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .q-num { font-size: 19px; font-weight: 700; color: #111111; }
   .q-right { display: flex; align-items: center; gap: 12px; }
   .marks { font-weight: 700; font-size: 17px; }
   .difficulty { display: inline-flex; gap: 5px; align-items: center; }
-  .pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #333333; display: inline-block; }
+  .pip { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #333333; display: inline-block; }
   .pip.on { background: #333333; }
   .q-text { font-size: 21px; }
 </style>
@@ -122,8 +122,8 @@
     font-size: 20px !important;
   }
   .pip {
-    width: 14px !important;
-    height: 14px !important;
+    width: 16px !important;
+    height: 16px !important;
     border-color: #000000 !important;
   }
   .pip.on {
@@ -199,7 +199,7 @@
     </div>
     <div class="box visual">
       <h2>Visual aid — grid method</h2>
-      <svg viewBox="0 0 360 250" class="graph-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grid model showing (x+2)(x+3): top row x times x gives x squared, x times +3 gives 3x; bottom row +2 times x gives 2x, +2 times +3 gives 6. Collecting like terms: x squared + 3x + 2x + 6 = x squared + 5x + 6."><text x="125" y="38" class="t-eq" text-anchor="middle">x</text><text x="235" y="38" class="t-eq" text-anchor="middle">+3</text><text x="56" y="90" class="t-eq" text-anchor="end">x</text><text x="56" y="160" class="t-eq" text-anchor="end">+2</text><rect x="70" y="50" width="110" height="70" fill="#ffffff" stroke="#333333" stroke-width="1.4"/><text x="125" y="91" class="t-cell" text-anchor="middle">x<sup>2</sup></text><rect x="180" y="50" width="110" height="70" fill="#f4f6fa" stroke="#333333" stroke-width="1.4"/><text x="235" y="91" class="t-cell" text-anchor="middle">3x</text><rect x="70" y="120" width="110" height="70" fill="#f4f6fa" stroke="#333333" stroke-width="1.4"/><text x="125" y="161" class="t-cell" text-anchor="middle">2x</text><rect x="180" y="120" width="110" height="70" fill="#ffffff" stroke="#333333" stroke-width="1.4"/><text x="235" y="161" class="t-cell" text-anchor="middle">6</text></svg>
+      <svg viewBox="0 0 360 250" class="graph-svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grid model showing (x+2)(x+3): top row x times x gives x squared, x times +3 gives 3x; bottom row +2 times x gives 2x, +2 times +3 gives 6. Collecting like terms: x squared + 3x + 2x + 6 = x squared + 5x + 6."><text x="125" y="38" class="t-eq" text-anchor="middle">x</text><text x="235" y="38" class="t-eq" text-anchor="middle">+3</text><text x="56" y="90" class="t-eq" text-anchor="end">x</text><text x="56" y="160" class="t-eq" text-anchor="end">+2</text><rect x="70" y="50" width="110" height="70" fill="#ffffff" stroke="#333333" stroke-width="2"/><text x="125" y="91" class="t-cell" text-anchor="middle">x<sup>2</sup></text><rect x="180" y="50" width="110" height="70" fill="#f4f6fa" stroke="#333333" stroke-width="2"/><text x="235" y="91" class="t-cell" text-anchor="middle">3x</text><rect x="70" y="120" width="110" height="70" fill="#f4f6fa" stroke="#333333" stroke-width="2"/><text x="125" y="161" class="t-cell" text-anchor="middle">2x</text><rect x="180" y="120" width="110" height="70" fill="#ffffff" stroke="#333333" stroke-width="2"/><text x="235" y="161" class="t-cell" text-anchor="middle">6</text></svg>
 <p class="vi-description">Grid model showing (x+2)(x+3): top row x times x gives x squared, x times +3 gives 3x; bottom row +2 times x gives 2x, +2 times +3 gives 6. Collecting like terms: x squared + 3x + 2x + 6 = x squared + 5x + 6.</p>
       <p class="cap">Each cell shows the product of its row and column headers: (x+2)(x+3) = x² + 5x + 6.</p>
     </div>

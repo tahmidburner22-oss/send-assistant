@@ -98,8 +98,8 @@ const VI_CSS = `
     font-size: 20px !important;
   }
   .pip {
-    width: 14px !important;
-    height: 14px !important;
+    width: 16px !important;
+    height: 16px !important;
     border-color: #000000 !important;
   }
   .pip.on {

@@ -171,7 +171,7 @@ function visualGrid(p = {}) {
     out += `<text x="${x0 - 14}" y="${y0 + r * ch + ch / 2 + 5}" class="t-eq" text-anchor="end">${esc(rows[r])}</text>`;
   for (let r = 0; r < rows.length; r++)
     for (let c = 0; c < cols.length; c++) {
-      out += `<rect x="${x0 + c * cw}" y="${y0 + r * ch}" width="${cw}" height="${ch}" fill="${(r + c) % 2 ? "#f4f6fa" : "#ffffff"}" stroke="${BORDER}" stroke-width="1.4"/>`;
+      out += `<rect x="${x0 + c * cw}" y="${y0 + r * ch}" width="${cw}" height="${ch}" fill="${(r + c) % 2 ? "#f4f6fa" : "#ffffff"}" stroke="${BORDER}" stroke-width="2"/>`;
       const v = (cells[r] && cells[r][c]) || "";
       out += `<text x="${x0 + c * cw + cw / 2}" y="${y0 + r * ch + ch / 2 + 6}" class="t-cell" text-anchor="middle">${mathify(esc(v))}</text>`;
     }
@@ -295,7 +295,7 @@ export function renderLandscapeHTML(ws) {
   }
   h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; color: ${HEAD}; }
 
-  .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.4px solid ${BORDER}; padding-bottom: 8px; margin-bottom: 12px; flex: 0 0 auto; }
+  .header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.4px solid ${BORDER}; padding-bottom: 8px; margin-bottom: 7px; flex: 0 0 auto; }
   .h-title { font-size: 26px; font-weight: 700; }
   .h-sub { font-size: 15px; }
   .note { font-size: 15px; margin-bottom: 14px; flex: 0 0 auto; }
@@ -335,13 +335,13 @@ export function renderLandscapeHTML(ws) {
     flex: 1 1 auto;
     min-height: 0;
   }
-  .q-card { display: flex; flex-direction: column; justify-content: center; }
+  .q-card { display: flex; flex-direction: column; justify-content: center; border-style: dashed; }
   .q-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .q-num { font-size: 19px; font-weight: 700; color: ${HEAD}; }
   .q-right { display: flex; align-items: center; gap: 12px; }
   .marks { font-weight: 700; font-size: 17px; }
   .difficulty { display: inline-flex; gap: 5px; align-items: center; }
-  .pip { width: 12px; height: 12px; border-radius: 50%; border: 2px solid ${BORDER}; display: inline-block; }
+  .pip { width: 14px; height: 14px; border-radius: 50%; border: 2px solid ${BORDER}; display: inline-block; }
   .pip.on { background: ${BORDER}; }
   .q-text { font-size: 21px; }
 </style>

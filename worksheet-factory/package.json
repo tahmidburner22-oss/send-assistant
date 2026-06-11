@@ -8,6 +8,8 @@
     "build": "node build.mjs"
   },
   "dependencies": {
+    "mupdf": "^1.27.0",
+    "pdf2json": "^4.0.3",
     "playwright": "^1.49.0"
   }
 }
