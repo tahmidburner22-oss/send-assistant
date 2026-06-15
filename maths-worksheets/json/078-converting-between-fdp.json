@@ -1,0 +1,179 @@
+{
+  "title": "FRACTIONS, DECIMALS AND PERCENTAGES\n(CONVERTING BETWEEN FDP)",
+  "objective": "LO: I can convert fluently between fractions, decimals and percentages.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What does converting mean?",
+      "content": [
+        {"type": "paragraph", "text": "<span class=\"ul-b\">Converting</span> means writing a number in a <span class=\"ul-k\">DIFFERENT</span> form without changing its value. Fractions, decimals and percentages are three ways to write the same amount."},
+        {"type": "paragraph", "text": "<span class=\"rb\">Key fact:</span> To convert a fraction to a decimal, divide the numerator by the denominator. To convert a decimal to a percentage, multiply by 100."}
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Equivalent values",
+      "examples": [
+        {"correct": true, "expr": "&frac12; = 0.5 = 50%", "desc": "all equivalent"},
+        {"correct": true, "expr": "&frac14; = 0.25 = 25%", "desc": "all equivalent"},
+        {"correct": true, "expr": "&frac35; = 0.6 = 60%", "desc": "all equivalent"},
+        {"correct": false, "expr": "&frac13; = 0.3 = 30%", "desc": "0.3 &ne; &frac13;"},
+        {"correct": false, "expr": "0.7 = 70% = &frac{7}{70}", "desc": "should be 7/10"}
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Fraction &rarr; Decimal: divide top by bottom. Decimal &rarr; Percentage: &times; 100. Percentage &rarr; Fraction: write over 100 and simplify.",
+      "equation": "<span class=\"ov\">&frac38;</span> &rarr; 3 &divide; 8 = <span class=\"ovr\">0.375</span> &rarr; <span class=\"ovr\">37.5%</span>",
+      "caption": "Divide, then multiply by 100"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; fraction to decimal",
+      "question": "Convert &frac34; to a decimal",
+      "steps": ["3 &divide; 4", "= 0.75", "&check;"],
+      "answer": "= 0.75",
+      "explanation": "Divide numerator by denominator: 3 &divide; 4 = 0.75"
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; decimal to percentage",
+      "question": "Convert 0.35 to a percentage",
+      "steps": ["0.35 &times; 100", "= 35", "Add % sign"],
+      "answer": "= 35%",
+      "explanation": "Multiply the decimal by 100 and add the % symbol."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; percentage to fraction",
+      "question": "Convert 45% to a fraction in simplest form",
+      "steps": ["45 &frasl; 100", "HCF of 45 and 100 = 5", "= 9 &frasl; 20"],
+      "answer": "= 9/20",
+      "explanation": "Write over 100, then simplify by dividing both by the HCF (5)."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; fraction to percentage",
+      "question": "Convert &frac{7}{20} to a percentage",
+      "steps": ["7 &divide; 20 = 0.35", "0.35 &times; 100", "= 35%"],
+      "answer": "= 35%",
+      "explanation": "Convert to decimal first (divide), then multiply by 100."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Fraction to decimal",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Convert each fraction to a decimal by dividing the numerator by the denominator.",
+      "linked_example": "ex1",
+      "questions": [
+        {"id": "a", "expression": "&frac12;", "answer": "0.5"},
+        {"id": "b", "expression": "&frac15;", "answer": "0.2"},
+        {"id": "c", "expression": "&frac38;", "answer": "0.375"},
+        {"id": "d", "expression": "&frac{7}{20}", "answer": "0.35"}
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Decimal to percentage",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Convert each decimal to a percentage by multiplying by 100.",
+      "linked_example": "ex2",
+      "questions": [
+        {"id": "a", "expression": "0.4", "answer": "40%"},
+        {"id": "b", "expression": "0.75", "answer": "75%"},
+        {"id": "c", "expression": "0.08", "answer": "8%"},
+        {"id": "d", "expression": "0.125", "answer": "12.5%"}
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Percentage to fraction",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Convert each percentage to a fraction in its simplest form. Write over 100 then simplify.",
+      "linked_example": "ex3",
+      "questions": [
+        {"id": "a", "expression": "20%", "answer": "1/5"},
+        {"id": "b", "expression": "60%", "answer": "3/5"},
+        {"id": "c", "expression": "35%", "answer": "7/20"},
+        {"id": "d", "expression": "84%", "answer": "21/25"}
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Fraction to percentage",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Convert each fraction to a percentage. Divide first, then multiply by 100.",
+      "linked_example": "ex4",
+      "questions": [
+        {"id": "a", "expression": "&frac14;", "answer": "25%"},
+        {"id": "b", "expression": "&frac25;", "answer": "40%"},
+        {"id": "c", "expression": "&frac{3}{8}", "answer": "37.5%"},
+        {"id": "d", "expression": "&frac{11}{20}", "answer": "55%"}
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed conversions",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Convert each value to the other two forms (fraction, decimal, percentage).",
+      "linked_example": "ex4",
+      "questions": [
+        {"id": "a", "expression": "0.6 = ___ = ___%", "answer": "3/5, 60%"},
+        {"id": "b", "expression": "72% = ___ = ___", "answer": "18/25, 0.72"},
+        {"id": "c", "expression": "&frac{9}{25} = ___ = ___%", "answer": "0.36, 36%"},
+        {"id": "d", "expression": "0.875 = ___ = ___%", "answer": "7/8, 87.5%"},
+        {"id": "e", "expression": "5% = ___ = ___", "answer": "1/20, 0.05"}
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {"id": "a", "statement": "&frac13; = 0.3", "correct": false},
+      {"id": "b", "statement": "0.25 = 25%", "correct": true},
+      {"id": "c", "statement": "70% = &frac{7}{10}", "correct": true},
+      {"id": "d", "statement": "0.5% = &frac12;", "correct": false},
+      {"id": "e", "statement": "&frac45; = 0.45", "correct": false}
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A shop offers a &frac14; off sale. The sale sign says &ldquo;20% off everything!&rdquo;<br>Is the sale sign correct? Show your working to explain why or why not."
+      },
+      {
+        "id": "b",
+        "text": "Three students scored the following on different tests:<br>Amy: 17 out of 20 &nbsp;&nbsp; Ben: 0.82 &nbsp;&nbsp; Clara: 78%<br>Who got the highest score? Convert all to the same form to compare."
+      }
+    ]
+  }
+}

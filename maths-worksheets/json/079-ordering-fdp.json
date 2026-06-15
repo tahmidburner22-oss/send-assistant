@@ -1,0 +1,179 @@
+{
+  "title": "FRACTIONS, DECIMALS AND PERCENTAGES\n(ORDERING FDP)",
+  "objective": "LO: I can order fractions, decimals and percentages by converting to a common form.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What does ordering FDP mean?",
+      "content": [
+        {"type": "paragraph", "text": "<span class=\"ul-b\">Ordering FDP</span> means arranging fractions, decimals and percentages from <span class=\"ul-k\">SMALLEST</span> to largest (ascending) or largest to smallest (descending)."},
+        {"type": "paragraph", "text": "<span class=\"rb\">Strategy:</span> Convert ALL values to the SAME form (usually decimals) before comparing. Then rewrite in original form for your final answer."}
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Converting to compare",
+      "examples": [
+        {"correct": true, "expr": "&frac12;, 0.6, 55% &rarr; 0.5, 0.6, 0.55", "desc": "convert to decimals"},
+        {"correct": true, "expr": "Order: 0.5, 0.55, 0.6", "desc": "ascending"},
+        {"correct": true, "expr": "Answer: &frac12;, 55%, 0.6", "desc": "rewrite in original form"},
+        {"correct": false, "expr": "&frac13; &gt; &frac14; because 3 &lt; 4", "desc": "wrong reasoning"},
+        {"correct": false, "expr": "0.9 &lt; 0.12 because 12 &gt; 9", "desc": "ignoring place value"}
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Convert everything to decimals. Compare digit by digit from left to right. Write your final answer in the ORIGINAL forms given in the question.",
+      "equation": "<span class=\"ov\">30%</span>, <span class=\"ov\">&frac38;</span>, <span class=\"ov\">0.34</span> &rarr; 0.30, 0.375, 0.34",
+      "caption": "Ascending: 30%, 0.34, &frac38;"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; two values",
+      "question": "Which is larger: &frac35; or 55%?",
+      "steps": ["&frac35; = 3 &divide; 5 = 0.6", "55% = 0.55", "0.6 &gt; 0.55"],
+      "answer": "&frac35; is larger",
+      "explanation": "Convert both to decimals: 0.6 &gt; 0.55, so &frac35; is larger."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; three values ascending",
+      "question": "Order: 0.7, &frac34;, 72%",
+      "steps": ["0.7, 0.75, 0.72", "Smallest first: 0.7", "0.7, 72%, &frac34;"],
+      "answer": "0.7, 72%, &frac34;",
+      "explanation": "All as decimals: 0.7, 0.75, 0.72. Ascending: 0.7, 0.72, 0.75."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; tricky decimals",
+      "question": "Order: 0.3, &frac13;, 30%",
+      "steps": ["0.3, 0.333..., 0.30", "0.30 = 0.3 &lt; 0.333...", "30% = 0.3, then &frac13;"],
+      "answer": "0.3 = 30%, then &frac13;",
+      "explanation": "&frac13; = 0.333... which is greater than 0.3. Note: 0.3 and 30% are equal."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; descending order",
+      "question": "Order descending: 85%, &frac45;, 0.9",
+      "steps": ["0.85, 0.8, 0.9", "Largest first: 0.9", "0.9, 85%, &frac45;"],
+      "answer": "0.9, 85%, &frac45;",
+      "explanation": "Convert: 85%=0.85, &frac45;=0.8, 0.9. Descending: 0.9, 0.85, 0.8."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Convert to decimals",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Convert each value to a decimal so you can compare them.",
+      "linked_example": "ex1",
+      "questions": [
+        {"id": "a", "expression": "&frac25; = ___", "answer": "0.4"},
+        {"id": "b", "expression": "65% = ___", "answer": "0.65"},
+        {"id": "c", "expression": "&frac78; = ___", "answer": "0.875"},
+        {"id": "d", "expression": "4% = ___", "answer": "0.04"}
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Compare two values",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write &lt; or &gt; between each pair. Convert to decimals first.",
+      "linked_example": "ex1",
+      "questions": [
+        {"id": "a", "expression": "&frac12; ___ 45%", "answer": ">"},
+        {"id": "b", "expression": "0.3 ___ &frac14;", "answer": ">"},
+        {"id": "c", "expression": "68% ___ &frac{7}{10}", "answer": "<"},
+        {"id": "d", "expression": "&frac58; ___ 60%", "answer": ">"}
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Order ascending (smallest first)",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Write these in ascending order. Show your decimal conversions.",
+      "linked_example": "ex2",
+      "questions": [
+        {"id": "a", "expression": "0.4, &frac12;, 35%", "answer": "35%, 0.4, 1/2"},
+        {"id": "b", "expression": "62%, &frac35;, 0.58", "answer": "0.58, 3/5, 62%"},
+        {"id": "c", "expression": "&frac{3}{8}, 40%, 0.39", "answer": "3/8, 0.39, 40%"},
+        {"id": "d", "expression": "0.15, 12%, &frac18;", "answer": "12%, 1/8, 0.15"}
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Order descending (largest first)",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Write these in descending order. Show your decimal conversions.",
+      "linked_example": "ex4",
+      "questions": [
+        {"id": "a", "expression": "0.8, 75%, &frac45;", "answer": "4/5, 0.8, 75%"},
+        {"id": "b", "expression": "&frac{9}{10}, 88%, 0.92", "answer": "0.92, 9/10, 88%"},
+        {"id": "c", "expression": "55%, 0.6, &frac{11}{20}", "answer": "0.6, 55%=11/20"},
+        {"id": "d", "expression": "&frac{7}{8}, 90%, 0.86", "answer": "90%, 7/8, 0.86"}
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed ordering challenges",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Order these sets. State whether ascending or descending as indicated.",
+      "linked_example": "ex4",
+      "questions": [
+        {"id": "a", "expression": "Ascending: &frac13;, 30%, 0.29, &frac{3}{10}", "answer": "0.29, 30%=3/10, 1/3"},
+        {"id": "b", "expression": "Descending: 0.45, &frac{9}{20}, 44%, &frac12;", "answer": "1/2, 0.45=9/20, 44%"},
+        {"id": "c", "expression": "Ascending: 1%, 0.1, &frac{1}{10}, 0.01", "answer": "1%=0.01, 0.1=1/10"},
+        {"id": "d", "expression": "Ascending: &frac56;, 80%, 0.84, &frac{17}{20}", "answer": "80%, 0.84=5/6?, check"},
+        {"id": "e", "expression": "Descending: 99%, &frac{19}{20}, 0.96, 1", "answer": "1, 99%, 0.96, 19/20"}
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {"id": "a", "statement": "0.45 &gt; 0.5 because 45 &gt; 5", "correct": false},
+      {"id": "b", "statement": "&frac13; &gt; 30% because &frac13; = 0.333...", "correct": true},
+      {"id": "c", "statement": "&frac14; = 14%", "correct": false},
+      {"id": "d", "statement": "0.08 &lt; 0.1", "correct": true},
+      {"id": "e", "statement": "75% &gt; &frac45; because 75 &gt; 4", "correct": false}
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Five pupils scored these marks on different tests:<br>Ali: &frac{17}{25} &nbsp; Beth: 70% &nbsp; Cara: 0.68 &nbsp; Dan: &frac{7}{10} &nbsp; Eve: 69%<br>Rank all five from highest to lowest. Show all conversions."
+      },
+      {
+        "id": "b",
+        "text": "A shop sells three sizes of orange juice:<br>Small: &frac35; full for 80p &nbsp; Medium: 58% full for 75p &nbsp; Large: 0.55 full for 70p<br>Which bottle gives the most juice? Which gives the best value (most juice per penny)?"
+      }
+    ]
+  }
+}
