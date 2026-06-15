@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(THREE TIMES TABLE)",
+  "objective": "LO: I can recall and use the 3 times table to multiply and divide.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is the 3 times table?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">3 times table</span> is a list of <span class=\"ul-k\">multiples</span> of 3: numbers we get when we count in 3s. The digits of every multiple of 3 add up to a multiple of 3 (e.g. 27 &rarr; 2+7 = 9)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Skip-count in 3s on your fingers, or use a number line. Each jump adds 3."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Multiples of 3",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "1 &times; 3 = 3",
+          "desc": "starting point"
+        },
+        {
+          "correct": true,
+          "expr": "2 &times; 3 = 6",
+          "desc": "double"
+        },
+        {
+          "correct": true,
+          "expr": "5 &times; 3 = 15",
+          "desc": "halfway to 10"
+        },
+        {
+          "correct": false,
+          "expr": "3 &times; 3 = 10",
+          "desc": "wrong"
+        },
+        {
+          "correct": false,
+          "expr": "3 &times; 0 = 3",
+          "desc": "any &times; 0 = 0"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiplication is repeated addition. 3 &times; 4 means &lsquo;4 groups of 3&rsquo;. You can also think of it as &lsquo;3 groups of 4&rsquo; — the answer is the same.",
+      "equation": "<span class=\"ov\">3</span> + <span class=\"ov\">3</span> + <span class=\"ov\">3</span> + <span class=\"ov\">3</span> = <span class=\"ovr\">3&times;4 = 12</span>",
+      "caption": "Four groups of 3"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; single multiplication",
+      "question": "Calculate 7 &times; 3",
+      "steps": [
+        "7 groups of 3",
+        "3 + 3 + 3 + 3  ...",
+        "= 21"
+      ],
+      "answer": "= 21",
+      "explanation": "Skip-count in 3s 7 times to reach 21."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; missing factor",
+      "question": "Solve: ___ &times; 3 = 15",
+      "steps": [
+        "How many 3s in 15?",
+        "Count up: 3, 6, 9, ...",
+        "= 5"
+      ],
+      "answer": "= 5",
+      "explanation": "Divide: 15 &divide; 3 = 5."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; division by sharing",
+      "question": "Calculate 12 &divide; 3",
+      "steps": [
+        "How many groups of 3 fit in 12?",
+        "3 &times; ___ = 12",
+        "= 4"
+      ],
+      "answer": "= 4",
+      "explanation": "Division is the inverse of multiplication."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; word problem",
+      "question": "A tricycle has <strong>3 wheels</strong>. How many wheels are on <strong>9 tricycles</strong>? Show your multiplication.",
+      "steps": [
+        "Identify what is being repeated",
+        "Set up: count &times; 3",
+        "Compute and check"
+      ],
+      "answer": "See solution",
+      "explanation": "Always show your working clearly."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Recall the 3 times table",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Complete the calculation. Skip-count in 3s if you need to.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 &times; 3 = ___",
+          "answer": "9"
+        },
+        {
+          "id": "b",
+          "expression": "6 &times; 3 = ___",
+          "answer": "18"
+        },
+        {
+          "id": "c",
+          "expression": "8 &times; 3 = ___",
+          "answer": "24"
+        },
+        {
+          "id": "d",
+          "expression": "10 &times; 3 = ___",
+          "answer": "30"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Missing factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing number.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "___ &times; 3 = 12",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "___ &times; 3 = 21",
+          "answer": "7"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 3 = 27",
+          "answer": "9"
+        },
+        {
+          "id": "d",
+          "expression": "___ &times; 3 = 33",
+          "answer": "11"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Dividing by 3",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the 3 times table to divide. 3 &times; ___ = ?",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "6 &divide; 3 = ___",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "15 &divide; 3 = ___",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "24 &divide; 3 = ___",
+          "answer": "8"
+        },
+        {
+          "id": "d",
+          "expression": "36 &divide; 3 = ___",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Two-step problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Work out the answer step by step.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2&times;3) + (3&times;3) = ___",
+          "answer": "15"
+        },
+        {
+          "id": "b",
+          "expression": "(5&times;3) &minus; (2&times;3) = ___",
+          "answer": "9"
+        },
+        {
+          "id": "c",
+          "expression": "12 &divide; 3 + 6 = ___",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "(3&times;3) &times; 2 = ___",
+          "answer": "18"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed practice",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use what you know about the 3 times table.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 &times; 7 = ___",
+          "answer": "21"
+        },
+        {
+          "id": "b",
+          "expression": "36 &divide; 3 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 3 = 18",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "9 &divide; 3 = ___",
+          "answer": "3"
+        },
+        {
+          "id": "e",
+          "expression": "27 &divide; 3 = ___",
+          "answer": "9"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3 &times; 0 = 3",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "3 &times; 1 = 3",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "12 &divide; 3 = 4",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "3 &times; 10 = 30 (i.e. 30)",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "3 &times; 7 = 22",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A tricycle has <strong>3 wheels</strong>. How many wheels are on <strong>9 tricycles</strong>? Show your multiplication."
+      },
+      {
+        "id": "b",
+        "text": "A florist sells roses in bunches of 3. There are <strong>24 roses</strong> in total. How many bunches can she make?"
+      }
+    ]
+  }
+}

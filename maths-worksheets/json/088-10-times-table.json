@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(TEN TIMES TABLE)",
+  "objective": "LO: I can recall and use the 10 times table to multiply and divide.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is the 10 times table?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">10 times table</span> is a list of <span class=\"ul-k\">multiples</span> of 10: numbers we get when we count in 10s. Numbers in the 10 times table always end in 0."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Skip-count in 10s on your fingers, or use a number line. Each jump adds 10."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Multiples of 10",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "1 &times; 10 = 10",
+          "desc": "starting point"
+        },
+        {
+          "correct": true,
+          "expr": "2 &times; 10 = 20",
+          "desc": "double"
+        },
+        {
+          "correct": true,
+          "expr": "5 &times; 10 = 50",
+          "desc": "halfway to 10"
+        },
+        {
+          "correct": false,
+          "expr": "3 &times; 10 = 31",
+          "desc": "wrong"
+        },
+        {
+          "correct": false,
+          "expr": "10 &times; 0 = 10",
+          "desc": "any &times; 0 = 0"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiplication is repeated addition. 10 &times; 4 means &lsquo;4 groups of 10&rsquo;. You can also think of it as &lsquo;10 groups of 4&rsquo; — the answer is the same.",
+      "equation": "<span class=\"ov\">10</span> + <span class=\"ov\">10</span> + <span class=\"ov\">10</span> + <span class=\"ov\">10</span> = <span class=\"ovr\">10&times;4 = 40</span>",
+      "caption": "Four groups of 10"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; single multiplication",
+      "question": "Calculate 7 &times; 10",
+      "steps": [
+        "7 groups of 10",
+        "10 + 10 + 10 + 10  ...",
+        "= 70"
+      ],
+      "answer": "= 70",
+      "explanation": "Skip-count in 10s 7 times to reach 70."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; missing factor",
+      "question": "Solve: ___ &times; 10 = 40",
+      "steps": [
+        "How many 10s in 40?",
+        "Count up: 10, 20, 30, ...",
+        "= 4"
+      ],
+      "answer": "= 4",
+      "explanation": "Divide: 40 &divide; 10 = 4."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; division by sharing",
+      "question": "Calculate 80 &divide; 10",
+      "steps": [
+        "How many groups of 10 fit in 80?",
+        "10 &times; ___ = 80",
+        "= 8"
+      ],
+      "answer": "= 8",
+      "explanation": "Division is the inverse of multiplication."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; word problem",
+      "question": "A bag of marbles holds <strong>10 marbles</strong>. How many marbles are in <strong>6 bags</strong>? Write a multiplication and find the answer.",
+      "steps": [
+        "Identify what is being repeated",
+        "Set up: count &times; 10",
+        "Compute and check"
+      ],
+      "answer": "See solution",
+      "explanation": "Always show your working clearly."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Recall the 10 times table",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Complete the calculation. Skip-count in 10s if you need to.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 &times; 10 = ___",
+          "answer": "30"
+        },
+        {
+          "id": "b",
+          "expression": "6 &times; 10 = ___",
+          "answer": "60"
+        },
+        {
+          "id": "c",
+          "expression": "8 &times; 10 = ___",
+          "answer": "80"
+        },
+        {
+          "id": "d",
+          "expression": "10 &times; 10 = ___",
+          "answer": "100"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Missing factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing number.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "___ &times; 10 = 40",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "___ &times; 10 = 70",
+          "answer": "7"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 10 = 90",
+          "answer": "9"
+        },
+        {
+          "id": "d",
+          "expression": "___ &times; 10 = 110",
+          "answer": "11"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Dividing by 10",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the 10 times table to divide. 10 &times; ___ = ?",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "20 &divide; 10 = ___",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "50 &divide; 10 = ___",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "80 &divide; 10 = ___",
+          "answer": "8"
+        },
+        {
+          "id": "d",
+          "expression": "120 &divide; 10 = ___",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Two-step problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Work out the answer step by step.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2&times;10) + (3&times;10) = ___",
+          "answer": "50"
+        },
+        {
+          "id": "b",
+          "expression": "(5&times;10) &minus; (2&times;10) = ___",
+          "answer": "30"
+        },
+        {
+          "id": "c",
+          "expression": "40 &divide; 10 + 6 = ___",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "(10&times;10) &times; 2 = ___",
+          "answer": "200"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed practice",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use what you know about the 10 times table.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "10 &times; 7 = ___",
+          "answer": "70"
+        },
+        {
+          "id": "b",
+          "expression": "120 &divide; 10 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 10 = 60",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "100 &divide; 10 = ___",
+          "answer": "10"
+        },
+        {
+          "id": "e",
+          "expression": "90 &divide; 10 = ___",
+          "answer": "9"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "10 &times; 0 = 10",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "10 &times; 1 = 10",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "40 &divide; 10 = 4",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "10 &times; 10 = 100 (i.e. 100)",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "10 &times; 7 = 71",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A bag of marbles holds <strong>10 marbles</strong>. How many marbles are in <strong>6 bags</strong>? Write a multiplication and find the answer."
+      },
+      {
+        "id": "b",
+        "text": "Sara collects 10p coins. She has <strong>£1.20 in total</strong>. How many 10p coins does she have? Show your working."
+      }
+    ]
+  }
+}
