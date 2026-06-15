@@ -1,0 +1,179 @@
+{
+  "title": "FRACTIONS, DECIMALS AND PERCENTAGES\n(RECURRING DECIMALS)",
+  "objective": "LO: I can convert recurring decimals to fractions using algebraic methods.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is a recurring decimal?",
+      "content": [
+        {"type": "paragraph", "text": "<span class=\"ul-b\">Recurring decimals</span> have one or more digits that <span class=\"ul-k\">REPEAT</span> forever. We write a dot above the repeating digit(s): 0.3&#x0307; means 0.333... and 0.1&#x0307;2&#x0307; means 0.121212..."},
+        {"type": "paragraph", "text": "<span class=\"rb\">Key fact:</span> Every recurring decimal can be written as an exact fraction. Terminating decimals have denominators whose only prime factors are 2 and 5."}
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Terminating vs recurring",
+      "examples": [
+        {"correct": true, "expr": "0.333... = &frac13;", "desc": "recurring (one digit)"},
+        {"correct": true, "expr": "0.272727... = &frac{3}{11}", "desc": "recurring (two digits)"},
+        {"correct": true, "expr": "0.1666... = &frac16;", "desc": "recurring (after 0.1)"},
+        {"correct": false, "expr": "0.25 is recurring", "desc": "it terminates (= &frac14;)"},
+        {"correct": false, "expr": "0.333... = &frac{33}{100}", "desc": "that equals 0.33 only"}
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Let x = the recurring decimal. Multiply by 10 (or 100, 1000...) to shift the repeating block. Subtract to eliminate the recurring part. Solve for x.",
+      "equation": "x = 0.2&#x0307;7&#x0307; &rarr; 100x = 27.2&#x0307;7&#x0307; &rarr; 99x = 27 &rarr; x = <span class=\"ovr\">&frac{27}{99} = &frac{3}{11}</span>",
+      "caption": "Multiply, subtract, simplify"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; one repeating digit",
+      "question": "Convert 0.4&#x0307; to a fraction",
+      "steps": ["Let x = 0.444...", "10x = 4.444...", "9x = 4, so x = 4/9"],
+      "answer": "= 4/9",
+      "explanation": "One repeating digit: multiply by 10. Subtract x from 10x to get 9x = 4."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; two repeating digits",
+      "question": "Convert 0.6&#x0307;3&#x0307; to a fraction",
+      "steps": ["Let x = 0.636363...", "100x = 63.636363...", "99x = 63, so x = 63/99"],
+      "answer": "= 7/11",
+      "explanation": "Two repeating digits: multiply by 100. Subtract: 99x = 63. Simplify: 63/99 = 7/11."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; non-repeating start",
+      "question": "Convert 0.16&#x0307; to a fraction",
+      "steps": ["Let x = 0.1666...", "10x = 1.666..., 100x = 16.666...", "90x = 15, so x = 15/90 = 1/6"],
+      "answer": "= 1/6",
+      "explanation": "The 1 doesn&rsquo;t repeat, but the 6 does. Use 100x &minus; 10x = 90x to eliminate the recurring part."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; three repeating digits",
+      "question": "Convert 0.1&#x0307;23&#x0307; to a fraction",
+      "steps": ["Let x = 0.123123...", "1000x = 123.123123...", "999x = 123, so x = 123/999"],
+      "answer": "= 41/333",
+      "explanation": "Three repeating digits: multiply by 1000. Subtract: 999x = 123. Simplify: 123/999 = 41/333."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identify the recurring part",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write the first 6 decimal places and underline the repeating block.",
+      "linked_example": "ex1",
+      "questions": [
+        {"id": "a", "expression": "0.7&#x0307; = 0.______", "answer": "0.777777"},
+        {"id": "b", "expression": "0.1&#x0307;8&#x0307; = 0.______", "answer": "0.181818"},
+        {"id": "c", "expression": "0.41&#x0307; = 0.______", "answer": "0.411111"},
+        {"id": "d", "expression": "0.5&#x0307;23&#x0307; = 0.______", "answer": "0.523523"}
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "One repeating digit &rarr; fraction",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Convert each recurring decimal to a fraction. Simplify where possible.",
+      "linked_example": "ex1",
+      "questions": [
+        {"id": "a", "expression": "0.2&#x0307;", "answer": "2/9"},
+        {"id": "b", "expression": "0.5&#x0307;", "answer": "5/9"},
+        {"id": "c", "expression": "0.8&#x0307;", "answer": "8/9"},
+        {"id": "d", "expression": "0.6&#x0307;", "answer": "6/9 = 2/3"}
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Two repeating digits &rarr; fraction",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Convert each recurring decimal to a fraction. Use &times;100 and subtract.",
+      "linked_example": "ex2",
+      "questions": [
+        {"id": "a", "expression": "0.2&#x0307;7&#x0307;", "answer": "27/99 = 3/11"},
+        {"id": "b", "expression": "0.4&#x0307;5&#x0307;", "answer": "45/99 = 5/11"},
+        {"id": "c", "expression": "0.0&#x0307;9&#x0307;", "answer": "9/99 = 1/11"},
+        {"id": "d", "expression": "0.7&#x0307;2&#x0307;", "answer": "72/99 = 8/11"}
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Non-repeating start &rarr; fraction",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Convert each recurring decimal to a fraction. Careful: part of the decimal doesn&rsquo;t repeat.",
+      "linked_example": "ex3",
+      "questions": [
+        {"id": "a", "expression": "0.13&#x0307;", "answer": "12/90 = 2/15"},
+        {"id": "b", "expression": "0.83&#x0307;", "answer": "75/90 = 5/6"},
+        {"id": "c", "expression": "0.23&#x0307;6&#x0307;", "answer": "check: 234/990"},
+        {"id": "d", "expression": "0.41&#x0307;6&#x0307;", "answer": "check: 412/990"}
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed recurring decimal challenges",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Convert to fractions. Simplify fully.",
+      "linked_example": "ex4",
+      "questions": [
+        {"id": "a", "expression": "0.9&#x0307;", "answer": "9/9 = 1"},
+        {"id": "b", "expression": "0.1&#x0307;42857&#x0307;", "answer": "1/7"},
+        {"id": "c", "expression": "0.0&#x0307;3&#x0307;", "answer": "3/99 = 1/33"},
+        {"id": "d", "expression": "0.5&#x0307;4&#x0307;", "answer": "54/99 = 6/11"},
+        {"id": "e", "expression": "0.83&#x0307;", "answer": "5/6"}
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {"id": "a", "statement": "0.9&#x0307; = 0.999... &lt; 1", "correct": false},
+      {"id": "b", "statement": "0.1&#x0307;2&#x0307; means multiply by 100 to shift the block", "correct": true},
+      {"id": "c", "statement": "0.3&#x0307; = 3/10", "correct": false},
+      {"id": "d", "statement": "0.16&#x0307; needs 100x &minus; 10x to eliminate the recurring part", "correct": true},
+      {"id": "e", "statement": "All fractions give terminating decimals", "correct": false}
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Prove algebraically that 0.9&#x0307; = 1.<br>Let x = 0.999... and use the multiply-and-subtract method. Explain why this proves they are equal."
+      },
+      {
+        "id": "b",
+        "text": "A student says &ldquo;&frac17; = 0.142857&#x0307;&rdquo; (with a dot only over the 7).<br>Explain why this is wrong. What is the correct dot notation for &frac17;? How many digits repeat?"
+      }
+    ]
+  }
+}
