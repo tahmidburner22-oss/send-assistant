@@ -139,7 +139,7 @@ body {{ font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111; 
 .ex-n {{ font-size: 8.5pt; color: #111; margin-top: 8px; line-height: 1.35; padding: 0 4px; }}
 
 /* ════════ PAGE 2 ════════ */
-.prac-wrap {{ position: absolute; top: 0; left: 0; right: 0; height: 65mm; border: 1.5px solid #1f5fa6; border-radius: 5px; overflow: hidden; }}
+.prac-wrap {{ position: absolute; top: 0; left: 0; right: 0; height: 73mm; border: 1.5px solid #1f5fa6; border-radius: 5px; overflow: hidden; }}
 .prac-head {{ background: #1f5fa6; color: white; font-weight: bold; font-size: 11pt; text-align: center; height: 9mm; line-height: 9mm; }}
 .prac-cols {{ display: table; width: 100%; height: 40mm; border-spacing: 0; table-layout: fixed; }}
 .pc {{ display: table-cell; width: 25%; vertical-align: top; padding: 5px 8px; font-size: 9pt; }}
@@ -151,11 +151,11 @@ body {{ font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111; 
 .t-p5 {{ color: #7b3fa0; }}
 .pci {{ font-size: 8pt; color: #111; margin-bottom: 4px; }}
 .pi  {{ line-height: 1.9; font-weight: bold; }}
-.prac-mixed {{ padding: 4px 10px 5px; border-top: 1px solid #1f5fa6; height: 15mm; }}
+.prac-mixed {{ padding: 5px 10px 6px; border-top: 1px solid #1f5fa6; height: 23mm; }}
 .pmr {{ display: table; width: 100%; margin-top: 2px; table-layout: fixed; }}
-.pmd {{ display: table-cell; width: 20%; font-size: 9pt; font-weight: bold; }}
+.pmd {{ display: table-cell; width: 20%; font-size: 9pt; font-weight: bold; padding: 4px 0; vertical-align: middle; }}
 
-.misc-wrap {{ position: absolute; top: 67mm; left: 0; right: 0; height: 44mm; border: 1.5px solid #cc0000; border-radius: 5px; overflow: hidden; }}
+.misc-wrap {{ position: absolute; top: 75mm; left: 0; right: 0; height: 44mm; border: 1.5px solid #cc0000; border-radius: 5px; overflow: hidden; }}
 .misc-head {{ background: #fff0f0; color: #cc0000; font-weight: bold; font-size: 11pt; text-align: center; height: 9mm; line-height: 9mm; }}
 .misc-body {{ padding: 6px 10px 8px; }}
 .misc-inst {{ font-size: 9pt; margin-bottom: 8px; }}
@@ -167,7 +167,7 @@ body {{ font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111; 
 .mia {{ font-size: 8.5pt; color: #111; margin-bottom: 6px; }}
 .mir {{ font-size: 8.5pt; color: #111; }}
 
-.chal-wrap {{ position: absolute; top: 112mm; left: 0; right: 0; bottom: 37mm; border: 1.5px solid #b8860b; border-radius: 5px; background: #fffdf5; overflow: hidden; }}
+.chal-wrap {{ position: absolute; top: 121mm; left: 0; right: 0; bottom: 37mm; border: 1.5px solid #b8860b; border-radius: 5px; background: #fffdf5; overflow: hidden; }}
 .chal-head {{ color: #b8860b; font-weight: bold; font-size: 11pt; text-align: center; height: 8mm; line-height: 8mm; border-bottom: 1px solid #b8860b; }}
 .chal-body {{ position: absolute; top: 8mm; left: 0; right: 0; bottom: 0; display: table; width: 100%; table-layout: fixed; }}
 .cc {{ display: table-cell; width: 50%; padding: 8px 12px; font-size: 9pt; line-height: 1.6; vertical-align: top; }}
