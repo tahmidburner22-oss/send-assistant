@@ -248,31 +248,31 @@ done
 ### Topic 26: Multiplication and Division (2, 5, 10 Times Tables)
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 88 | 10 times table | `088-10-times-table.json` | ⬜ |
-| 89 | 2 times table | `089-2-times-table.json` | ⬜ |
-| 90 | 5 times table | `090-5-times-table.json` | ⬜ |
-| 91 | Division as the inverse of multiplication | `091-division-as-the-inverse-of-multiplication.json` | ⬜ |
+| 88 | 10 times table | `088-10-times-table.json` | ✅ |
+| 89 | 2 times table | `089-2-times-table.json` | ✅ |
+| 90 | 5 times table | `090-5-times-table.json` | ✅ |
+| 91 | Division as the inverse of multiplication | `091-division-as-the-inverse-of-multiplication.json` | ✅ |
 
 ### Topic 27: Multiplication and Division (3, 4, 8 Times Tables)
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 92 | 3 times table | `092-3-times-table.json` | ⬜ |
-| 93 | 4 times table | `093-4-times-table.json` | ⬜ |
-| 94 | 8 times table | `094-8-times-table.json` | ⬜ |
-| 95 | Mixed times table practice | `095-mixed-times-table-practice.json` | ⬜ |
+| 92 | 3 times table | `092-3-times-table.json` | ✅ |
+| 93 | 4 times table | `093-4-times-table.json` | ✅ |
+| 94 | 8 times table | `094-8-times-table.json` | ✅ |
+| 95 | Mixed times table practice | `095-mixed-times-table-practice.json` | ✅ |
 
 ### Topic 28: Multiplication and Division (Multi-Digit)
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 96 | Dividing by 10, 100 and 1000 | `096-dividing-by-10-100-and-1000.json` | ⬜ |
+| 96 | Dividing by 10, 100 and 1000 | `096-dividing-by-10-100-and-1000.json` | ✅ |
 | 97 | Long division | `097-long-division.json` | ⬜ |
 | 98 | Long multiplication | `098-long-multiplication.json` | ⬜ |
-| 99 | Multiplying by 10, 100 and 1000 | `099-multiplying-by-10-100-and-1000.json` | ⬜ |
+| 99 | Multiplying by 10, 100 and 1000 | `099-multiplying-by-10-100-and-1000.json` | ✅ |
 
 ### Topic 29: Multiplication and Division (Times Tables to 12×12)
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 100 | 6, 7, 9, 11, 12 times tables | `100-6-7-9-11-12-times-tables.json` | ⬜ |
+| 100 | 6, 7, 9, 11, 12 times tables | `100-6-7-9-11-12-times-tables.json` | ✅ |
 | 101 | Factor pairs and commutativity | `101-factor-pairs-and-commutativity.json` | ⬜ |
 | 102 | Short division | `102-short-division.json` | ⬜ |
 | 103 | Short multiplication | `103-short-multiplication.json` | ⬜ |
@@ -475,9 +475,9 @@ done
 | Metric | Count |
 |--------|-------|
 | Total subtopics | 194 |
-| JSON created | 3 |
-| PDF generated | 3 |
-| Remaining | 191 |
+| JSON created | 14 |
+| PDF generated | 14 |
+| Remaining | 180 |
 
 ---
 

@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(MIXED TIMES TABLE PRACTICE)",
+  "objective": "LO: I can fluently recall and use multiplication and division facts up to 12 &times; 12.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is times-table fluency?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Fluency</span> means recalling a <span class=\"ul-k\">multiplication fact</span> in under 2 seconds, without counting on fingers."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Tip:</span> Each multiplication gives you <strong>two</strong> division facts. e.g. 6&times;7=42, so 42&divide;6=7 and 42&divide;7=6."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Spot the table",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "8 &times; 6 = 48",
+          "desc": "fact"
+        },
+        {
+          "correct": true,
+          "expr": "48 &divide; 6 = 8",
+          "desc": "linked"
+        },
+        {
+          "correct": true,
+          "expr": "7 &times; 9 = 63",
+          "desc": "fact"
+        },
+        {
+          "correct": false,
+          "expr": "7 &times; 8 = 54",
+          "desc": "should be 56"
+        },
+        {
+          "correct": false,
+          "expr": "9 &times; 6 = 56",
+          "desc": "should be 54"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiplication is commutative: a &times; b = b &times; a. So you only need to learn HALF the table.",
+      "equation": "<span class=\"ov\">7 &times; 8</span> = <span class=\"ov\">8 &times; 7</span> = <span class=\"ovr\">56</span>",
+      "caption": "Same answer either way"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; fact recall",
+      "question": "Calculate 7 &times; 8",
+      "steps": [
+        "Think: 7 &times; 8 = 8 &times; 7",
+        "= (7 &times; 7) + 7",
+        "= 49 + 7"
+      ],
+      "answer": "= 56",
+      "explanation": "If you know 7&times;7=49, just add one more 7."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; missing factor",
+      "question": "Solve: 6 &times; ___ = 54",
+      "steps": [
+        "54 &divide; 6",
+        "Count up in 6s: 6,12,...,54",
+        "= 9"
+      ],
+      "answer": "= 9",
+      "explanation": "9 sixes make 54."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; division",
+      "question": "Calculate 72 &divide; 9",
+      "steps": [
+        "Think: 9 &times; ___ = 72",
+        "9 &times; 8 = 72",
+        "= 8"
+      ],
+      "answer": "= 8",
+      "explanation": "Use multiplication to check: 9 &times; 8 = 72 &check;"
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; two-step",
+      "question": "Calculate (4 &times; 6) + (3 &times; 7)",
+      "steps": [
+        "4 &times; 6 = 24",
+        "3 &times; 7 = 21",
+        "24 + 21 = 45"
+      ],
+      "answer": "= 45",
+      "explanation": "Do each multiplication first, then add."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Quick recall",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Answer as quickly as you can.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "6 &times; 7 = ___",
+          "answer": "42"
+        },
+        {
+          "id": "b",
+          "expression": "8 &times; 9 = ___",
+          "answer": "72"
+        },
+        {
+          "id": "c",
+          "expression": "11 &times; 5 = ___",
+          "answer": "55"
+        },
+        {
+          "id": "d",
+          "expression": "12 &times; 4 = ___",
+          "answer": "48"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Missing factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Fill in the blank.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "___ &times; 7 = 49",
+          "answer": "7"
+        },
+        {
+          "id": "b",
+          "expression": "8 &times; ___ = 64",
+          "answer": "8"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 9 = 81",
+          "answer": "9"
+        },
+        {
+          "id": "d",
+          "expression": "11 &times; ___ = 121",
+          "answer": "11"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Division facts",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use times-tables knowledge to divide.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "63 &divide; 9 = ___",
+          "answer": "7"
+        },
+        {
+          "id": "b",
+          "expression": "84 &divide; 7 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "96 &divide; 8 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "d",
+          "expression": "144 &divide; 12 = ___",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Two-step",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Show full working.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(5&times;6) + (4&times;7) = ___",
+          "answer": "58"
+        },
+        {
+          "id": "b",
+          "expression": "(8&times;7) &minus; (3&times;9) = ___",
+          "answer": "29"
+        },
+        {
+          "id": "c",
+          "expression": "63 &divide; 7 + 9 = ___",
+          "answer": "18"
+        },
+        {
+          "id": "d",
+          "expression": "11 &times; 12 &divide; 6 = ___",
+          "answer": "22"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed challenge",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "These mix all tables to 12 &times; 12.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "9 &times; 7 = ___",
+          "answer": "63"
+        },
+        {
+          "id": "b",
+          "expression": "132 &divide; 12 = ___",
+          "answer": "11"
+        },
+        {
+          "id": "c",
+          "expression": "8 &times; 11 = ___",
+          "answer": "88"
+        },
+        {
+          "id": "d",
+          "expression": "144 &divide; 9 = ___",
+          "answer": "16"
+        },
+        {
+          "id": "e",
+          "expression": "12 &times; 12 = ___",
+          "answer": "144"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "7 &times; 8 = 54",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "9 &times; 6 = 54",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "11 &times; 11 = 121",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "8 &times; 7 = 7 &times; 8",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "6 &times; 9 &ne; 9 &times; 6",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "There are <strong>6 boxes</strong> with <strong>9 cupcakes</strong> in each. Mr Khan eats <strong>7 cupcakes</strong>. How many are left? Show your working step by step."
+      },
+      {
+        "id": "b",
+        "text": "A school has <strong>11 classes</strong> with <strong>12 children</strong> in each. On Sports Day, the children form <strong>teams of 8</strong>. How many full teams can be made? Are any children left over?"
+      }
+    ]
+  }
+}

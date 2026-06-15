@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(6, 7, 9, 11 AND 12 TIMES TABLES)",
+  "objective": "LO: I can recall the harder times tables (6, 7, 9, 11, 12) and use them to solve problems.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Tricks for the harder tables",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">9 times table</span> trick: the digits of every multiple of 9 add to <span class=\"ul-k\">9</span> (e.g. 36 &rarr; 3+6 = 9). Or use 10&times;n then subtract n: 9&times;7 = 70 &minus; 7 = 63."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">11 times table</span> trick: for 1&minus;9, just repeat the digit (4&times;11 = 44, 7&times;11 = 77)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Patterns to spot",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "9 &times; 7 = 63 (6+3=9)",
+          "desc": "9-trick"
+        },
+        {
+          "correct": true,
+          "expr": "11 &times; 5 = 55",
+          "desc": "doubled digit"
+        },
+        {
+          "correct": true,
+          "expr": "12 &times; 6 = 72",
+          "desc": "double 6 = 12, &times;6 = 72"
+        },
+        {
+          "correct": false,
+          "expr": "7 &times; 8 = 54",
+          "desc": "should be 56"
+        },
+        {
+          "correct": false,
+          "expr": "11 &times; 12 = 121",
+          "desc": "should be 132"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Use friendly facts to bridge to harder ones. e.g. 7&times;6 = (7&times;5) + 7 = 35 + 7 = 42.",
+      "equation": "<span class=\"ov\">9 &times; 8</span> = <span class=\"ov\">10 &times; 8</span> &minus; 8 = <span class=\"ovr\">72</span>",
+      "caption": "&times;10 then subtract"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; 9 times table trick",
+      "question": "Calculate 9 &times; 6",
+      "steps": [
+        "10 &times; 6 = 60",
+        "Subtract one 6",
+        "60 &minus; 6 = 54"
+      ],
+      "answer": "= 54",
+      "explanation": "Multiples of 9 are always one less than 10&times;n."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; 7 times table",
+      "question": "Calculate 7 &times; 8",
+      "steps": [
+        "7 &times; 7 = 49",
+        "Add one more 7",
+        "49 + 7 = 56"
+      ],
+      "answer": "= 56",
+      "explanation": "Use the square fact 7&times;7=49 as a stepping stone."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; 12 times table",
+      "question": "Calculate 12 &times; 8",
+      "steps": [
+        "12 = 10 + 2",
+        "(10&times;8) + (2&times;8)",
+        "80 + 16 = 96"
+      ],
+      "answer": "= 96",
+      "explanation": "Split 12 into 10 + 2 and multiply each separately."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; 11 times table",
+      "question": "Calculate 11 &times; 7",
+      "steps": [
+        "For 1&minus;9, repeat the digit",
+        "11 &times; 7 = 77",
+        "&check;"
+      ],
+      "answer": "= 77",
+      "explanation": "11 &times; 12 breaks the rule: it's 132, not 1212."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "6 and 7 times tables",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Recall as fast as you can.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "6 &times; 8 = ___",
+          "answer": "48"
+        },
+        {
+          "id": "b",
+          "expression": "7 &times; 9 = ___",
+          "answer": "63"
+        },
+        {
+          "id": "c",
+          "expression": "6 &times; 12 = ___",
+          "answer": "72"
+        },
+        {
+          "id": "d",
+          "expression": "7 &times; 6 = ___",
+          "answer": "42"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "9 times table",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the &times;10&minus;n trick if you need to.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "9 &times; 4 = ___",
+          "answer": "36"
+        },
+        {
+          "id": "b",
+          "expression": "9 &times; 7 = ___",
+          "answer": "63"
+        },
+        {
+          "id": "c",
+          "expression": "9 &times; 11 = ___",
+          "answer": "99"
+        },
+        {
+          "id": "d",
+          "expression": "9 &times; 12 = ___",
+          "answer": "108"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "11 times table",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Most are easy &mdash; just repeat the digit. Watch out for 11&times;10, 11&times;11, 11&times;12!",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "11 &times; 6 = ___",
+          "answer": "66"
+        },
+        {
+          "id": "b",
+          "expression": "11 &times; 9 = ___",
+          "answer": "99"
+        },
+        {
+          "id": "c",
+          "expression": "11 &times; 11 = ___",
+          "answer": "121"
+        },
+        {
+          "id": "d",
+          "expression": "11 &times; 12 = ___",
+          "answer": "132"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "12 times table",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Split 12 into 10 + 2 if needed.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "12 &times; 5 = ___",
+          "answer": "60"
+        },
+        {
+          "id": "b",
+          "expression": "12 &times; 7 = ___",
+          "answer": "84"
+        },
+        {
+          "id": "c",
+          "expression": "12 &times; 9 = ___",
+          "answer": "108"
+        },
+        {
+          "id": "d",
+          "expression": "12 &times; 12 = ___",
+          "answer": "144"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed harder tables",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "All 6/7/9/11/12 facts mixed.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "7 &times; 12 = ___",
+          "answer": "84"
+        },
+        {
+          "id": "b",
+          "expression": "9 &times; 6 = ___",
+          "answer": "54"
+        },
+        {
+          "id": "c",
+          "expression": "11 &times; 8 = ___",
+          "answer": "88"
+        },
+        {
+          "id": "d",
+          "expression": "6 &times; 9 = ___",
+          "answer": "54"
+        },
+        {
+          "id": "e",
+          "expression": "12 &times; 11 = ___",
+          "answer": "132"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "11 &times; 12 = 1212",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "9 &times; 7 = 63 because 6+3 = 9",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "7 &times; 8 = 54",
+        "correct": false
+      },
+      {
+        "id": "d",
+        "statement": "12 &times; 12 = 144",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "6 &times; 7 &ne; 7 &times; 6",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A football coach has <strong>11 players</strong> in each of <strong>9 teams</strong>. <strong>7 players</strong> are absent. How many are present? Show your working."
+      },
+      {
+        "id": "b",
+        "text": "A baker makes trays of <strong>12 buns</strong>. She bakes for <strong>6 hours</strong> and produces <strong>1 tray every 30 minutes</strong>. How many buns does she make in total?"
+      }
+    ]
+  }
+}

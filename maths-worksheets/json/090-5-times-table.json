@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(FIVE TIMES TABLE)",
+  "objective": "LO: I can recall and use the 5 times table to multiply and divide.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is the 5 times table?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">5 times table</span> is a list of <span class=\"ul-k\">multiples</span> of 5: numbers we get when we count in 5s. Numbers in the 5 times table always end in 0 or 5."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Skip-count in 5s on your fingers, or use a number line. Each jump adds 5."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Multiples of 5",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "1 &times; 5 = 5",
+          "desc": "starting point"
+        },
+        {
+          "correct": true,
+          "expr": "2 &times; 5 = 10",
+          "desc": "double"
+        },
+        {
+          "correct": true,
+          "expr": "5 &times; 5 = 25",
+          "desc": "halfway to 10"
+        },
+        {
+          "correct": false,
+          "expr": "3 &times; 5 = 16",
+          "desc": "wrong"
+        },
+        {
+          "correct": false,
+          "expr": "5 &times; 0 = 5",
+          "desc": "any &times; 0 = 0"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiplication is repeated addition. 5 &times; 4 means &lsquo;4 groups of 5&rsquo;. You can also think of it as &lsquo;5 groups of 4&rsquo; — the answer is the same.",
+      "equation": "<span class=\"ov\">5</span> + <span class=\"ov\">5</span> + <span class=\"ov\">5</span> + <span class=\"ov\">5</span> = <span class=\"ovr\">5&times;4 = 20</span>",
+      "caption": "Four groups of 5"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; single multiplication",
+      "question": "Calculate 6 &times; 5",
+      "steps": [
+        "6 groups of 5",
+        "5 + 5 + 5 + 5  ...",
+        "= 30"
+      ],
+      "answer": "= 30",
+      "explanation": "Skip-count in 5s 6 times to reach 30."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; missing factor",
+      "question": "Solve: ___ &times; 5 = 20",
+      "steps": [
+        "How many 5s in 20?",
+        "Count up: 5, 10, 15, ...",
+        "= 4"
+      ],
+      "answer": "= 4",
+      "explanation": "Divide: 20 &divide; 5 = 4."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; division by sharing",
+      "question": "Calculate 35 &divide; 5",
+      "steps": [
+        "How many groups of 5 fit in 35?",
+        "5 &times; ___ = 35",
+        "= 7"
+      ],
+      "answer": "= 7",
+      "explanation": "Division is the inverse of multiplication."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; word problem",
+      "question": "A starfish has <strong>5 arms</strong>. How many arms do <strong>8 starfish</strong> have in total? Show your working.",
+      "steps": [
+        "Identify what is being repeated",
+        "Set up: count &times; 5",
+        "Compute and check"
+      ],
+      "answer": "See solution",
+      "explanation": "Always show your working clearly."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Recall the 5 times table",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Complete the calculation. Skip-count in 5s if you need to.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 &times; 5 = ___",
+          "answer": "15"
+        },
+        {
+          "id": "b",
+          "expression": "6 &times; 5 = ___",
+          "answer": "30"
+        },
+        {
+          "id": "c",
+          "expression": "8 &times; 5 = ___",
+          "answer": "40"
+        },
+        {
+          "id": "d",
+          "expression": "10 &times; 5 = ___",
+          "answer": "50"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Missing factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing number.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "___ &times; 5 = 20",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "___ &times; 5 = 35",
+          "answer": "7"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 5 = 45",
+          "answer": "9"
+        },
+        {
+          "id": "d",
+          "expression": "___ &times; 5 = 55",
+          "answer": "11"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Dividing by 5",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the 5 times table to divide. 5 &times; ___ = ?",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "10 &divide; 5 = ___",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "25 &divide; 5 = ___",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "40 &divide; 5 = ___",
+          "answer": "8"
+        },
+        {
+          "id": "d",
+          "expression": "60 &divide; 5 = ___",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Two-step problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Work out the answer step by step.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2&times;5) + (3&times;5) = ___",
+          "answer": "25"
+        },
+        {
+          "id": "b",
+          "expression": "(5&times;5) &minus; (2&times;5) = ___",
+          "answer": "15"
+        },
+        {
+          "id": "c",
+          "expression": "20 &divide; 5 + 6 = ___",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "(5&times;5) &times; 2 = ___",
+          "answer": "50"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed practice",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use what you know about the 5 times table.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 &times; 7 = ___",
+          "answer": "35"
+        },
+        {
+          "id": "b",
+          "expression": "60 &divide; 5 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 5 = 30",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "25 &divide; 5 = ___",
+          "answer": "5"
+        },
+        {
+          "id": "e",
+          "expression": "45 &divide; 5 = ___",
+          "answer": "9"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "5 &times; 0 = 5",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "5 &times; 1 = 5",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "20 &divide; 5 = 4",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "5 &times; 10 = 50 (i.e. 50)",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "5 &times; 7 = 36",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A starfish has <strong>5 arms</strong>. How many arms do <strong>8 starfish</strong> have in total? Show your working."
+      },
+      {
+        "id": "b",
+        "text": "Lucy saves 5p coins. She has <strong>45p</strong> saved up. How many 5p coins does she have? Write a division."
+      }
+    ]
+  }
+}
