@@ -1,0 +1,325 @@
+{
+  "title": "DIVISION,\n(BY 10, 100 AND 1000)",
+  "objective": "LO: I can divide whole numbers and decimals by 10, 100 and 1000 by shifting place value.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "How does &divide;10 work?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Dividing by <span class=\"ul-b\">10</span> shifts every digit one column <span class=\"ul-k\">RIGHT</span>. The digits stay the same; their place value gets smaller."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Common error:</span> &lsquo;just remove a zero.&rsquo; Doesn't work for decimals or numbers without trailing zeros (e.g. 47 &divide; 10 &ne; 47, it's 4.7)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Examples of place-value shift",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "70 &divide; 10 = 7",
+          "desc": "shift R by 1"
+        },
+        {
+          "correct": true,
+          "expr": "700 &divide; 100 = 7",
+          "desc": "shift R by 2"
+        },
+        {
+          "correct": true,
+          "expr": "7000 &divide; 1000 = 7",
+          "desc": "shift R by 3"
+        },
+        {
+          "correct": true,
+          "expr": "47 &divide; 10 = 4.7",
+          "desc": "decimal appears"
+        },
+        {
+          "correct": false,
+          "expr": "47 &divide; 10 = 47",
+          "desc": "must shift, not erase"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Dividing by 10 = shift digits 1 right. By 100 = shift 2 right. By 1000 = shift 3 right. The decimal point appears to move LEFT.",
+      "equation": "<span class=\"ov\">345</span> &divide; <span class=\"ov\">100</span> = <span class=\"ovr\">3.45</span>",
+      "caption": "Decimal point moves 2 places left"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; whole &divide; 10",
+      "question": "Calculate 80 &divide; 10",
+      "steps": [
+        "80 has digits 8 and 0",
+        "Shift each one column right",
+        "= 8"
+      ],
+      "answer": "= 8",
+      "explanation": "The 8 moves from tens to ones; the 0 falls off."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; whole &divide; 100",
+      "question": "Calculate 4500 &divide; 100",
+      "steps": [
+        "Each digit shifts 2 places right",
+        "4500 &rarr; 45.00",
+        "= 45"
+      ],
+      "answer": "= 45",
+      "explanation": "Two zeros become placeholders that drop off."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; needs decimal",
+      "question": "Calculate 23 &divide; 10",
+      "steps": [
+        "The 3 moves to tenths",
+        "Decimal point appears",
+        "= 2.3"
+      ],
+      "answer": "= 2.3",
+      "explanation": "We can't just &lsquo;remove a zero&rsquo; here &mdash; there isn't one."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; decimal &divide; 1000",
+      "question": "Calculate 47 &divide; 1000",
+      "steps": [
+        "Shift each digit 3 places right",
+        "47 &rarr; 0.047",
+        "= 0.047"
+      ],
+      "answer": "= 0.047",
+      "explanation": "Add zeros as placeholders before the digits."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "&divide; 10",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Shift digits one column right.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "60 &divide; 10 = ___",
+          "answer": "6"
+        },
+        {
+          "id": "b",
+          "expression": "240 &divide; 10 = ___",
+          "answer": "24"
+        },
+        {
+          "id": "c",
+          "expression": "8 &divide; 10 = ___",
+          "answer": "0.8"
+        },
+        {
+          "id": "d",
+          "expression": "37 &divide; 10 = ___",
+          "answer": "3.7"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "&divide; 100",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Shift digits two columns right.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "500 &divide; 100 = ___",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "3200 &divide; 100 = ___",
+          "answer": "32"
+        },
+        {
+          "id": "c",
+          "expression": "6 &divide; 100 = ___",
+          "answer": "0.06"
+        },
+        {
+          "id": "d",
+          "expression": "145 &divide; 100 = ___",
+          "answer": "1.45"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "&divide; 1000",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Shift digits three columns right.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4000 &divide; 1000 = ___",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "12000 &divide; 1000 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "5 &divide; 1000 = ___",
+          "answer": "0.005"
+        },
+        {
+          "id": "d",
+          "expression": "2340 &divide; 1000 = ___",
+          "answer": "2.34"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed scales",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Spot the &divide;10/100/1000 pattern.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "700 &divide; ___ = 7",
+          "answer": "100"
+        },
+        {
+          "id": "b",
+          "expression": "30 &divide; ___ = 0.3",
+          "answer": "100"
+        },
+        {
+          "id": "c",
+          "expression": "60 &divide; 1000 = ___",
+          "answer": "0.06"
+        },
+        {
+          "id": "d",
+          "expression": "840 &divide; 100 = ___",
+          "answer": "8.4"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Two-step",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Apply the rule twice or combine with multiplication.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2500 &divide; 10) &divide; 100 = ___",
+          "answer": "2.5"
+        },
+        {
+          "id": "b",
+          "expression": "(400 &divide; 1000) &times; 10 = ___",
+          "answer": "4"
+        },
+        {
+          "id": "c",
+          "expression": "(700 &divide; 100) + (30 &divide; 10) = ___",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "(600 &divide; 1000) &times; 100 = ___",
+          "answer": "60"
+        },
+        {
+          "id": "e",
+          "expression": "(1200 &divide; 100) &divide; 10 = ___",
+          "answer": "1.2"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "70 &divide; 10 = 7",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "47 &divide; 10 = 47 (just remove zero)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "5 &divide; 100 = 0.05",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&divide;10 makes a number smaller",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "0.6 &divide; 1000 = 600",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A factory produces <strong>4500 toys</strong> a week. They are packed in boxes of <strong>100 toys</strong>. How many boxes are made? Use &divide;100 to find out."
+      },
+      {
+        "id": "b",
+        "text": "<strong>3.4 km</strong> is how many <strong>metres</strong>? Then divide that answer by 1000 to convert back to km. Show that you get the original number."
+      }
+    ]
+  }
+}

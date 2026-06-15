@@ -1,0 +1,321 @@
+{
+  "title": "MULTIPLICATION AND DIVISION,\n(DIVISION AS THE INVERSE)",
+  "objective": "LO: I can use multiplication facts to solve division problems by recognising they are inverse operations.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What does inverse mean?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Inverse</span> means <span class=\"ul-k\">opposite</span>. Multiplication and division are inverses: one undoes the other."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Fact families:</span> from one multiplication you can write FOUR related facts. e.g. 3&times;4=12 gives 4&times;3=12, 12&divide;3=4, 12&divide;4=3."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Fact families",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "5 &times; 6 = 30",
+          "desc": "multiplication"
+        },
+        {
+          "correct": true,
+          "expr": "6 &times; 5 = 30",
+          "desc": "commutative"
+        },
+        {
+          "correct": true,
+          "expr": "30 &divide; 5 = 6",
+          "desc": "inverse"
+        },
+        {
+          "correct": true,
+          "expr": "30 &divide; 6 = 5",
+          "desc": "inverse"
+        },
+        {
+          "correct": false,
+          "expr": "30 &divide; 30 = 1 &times; 5 + 6",
+          "desc": "doesn't follow"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "If a &times; b = c, then c &divide; a = b AND c &divide; b = a. Use what you know about times tables to divide.",
+      "equation": "<span class=\"ov\">7 &times; 8 = 56</span> &rarr; <span class=\"ovr\">56 &divide; 7 = 8</span>",
+      "caption": "Same numbers, inverse operation"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; fact family from a multiplication",
+      "question": "If 4 &times; 7 = 28, write the four related facts.",
+      "steps": [
+        "4 &times; 7 = 28",
+        "7 &times; 4 = 28",
+        "28 &divide; 4 = 7,  28 &divide; 7 = 4"
+      ],
+      "answer": "Four facts",
+      "explanation": "Same three numbers (4, 7, 28) just rearranged."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; use multiplication to divide",
+      "question": "Calculate 42 &divide; 6",
+      "steps": [
+        "Think: 6 &times; ___ = 42",
+        "From times table: 6 &times; 7 = 42",
+        "So 42 &divide; 6 = 7"
+      ],
+      "answer": "= 7",
+      "explanation": "Recall the multiplication fact, then read off the inverse."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; checking with the inverse",
+      "question": "Check that 81 &divide; 9 = 9 is correct.",
+      "steps": [
+        "Inverse: 9 &times; 9 = ?",
+        "9 &times; 9 = 81",
+        "Match &check;"
+      ],
+      "answer": "Correct",
+      "explanation": "If multiplication gives the original, the division is right."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; missing-number problem",
+      "question": "Solve: ___ &divide; 8 = 7",
+      "steps": [
+        "Inverse: 8 &times; 7 = ?",
+        "8 &times; 7 = 56",
+        "So the missing number is 56"
+      ],
+      "answer": "= 56",
+      "explanation": "Multiplying both sides by 8 gives the original number."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Complete the fact family",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Each multiplication has 3 partners. Write them.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 &times; 9 = 45 &rarr; ___, ___, ___"
+        },
+        {
+          "id": "b",
+          "expression": "6 &times; 8 = 48 &rarr; ___, ___, ___"
+        },
+        {
+          "id": "c",
+          "expression": "7 &times; 7 = 49 &rarr; ___, ___"
+        },
+        {
+          "id": "d",
+          "expression": "12 &times; 4 = 48 &rarr; ___, ___, ___"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Use multiplication to divide",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Think which multiplication helps.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "36 &divide; 4 = ___",
+          "answer": "9"
+        },
+        {
+          "id": "b",
+          "expression": "63 &divide; 7 = ___",
+          "answer": "9"
+        },
+        {
+          "id": "c",
+          "expression": "72 &divide; 8 = ___",
+          "answer": "9"
+        },
+        {
+          "id": "d",
+          "expression": "55 &divide; 5 = ___",
+          "answer": "11"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Check with the inverse",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Is each statement correct? Use multiplication to check.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "84 &divide; 7 = 12 &mdash; check by 7&times;12",
+          "answer": "yes 7&times;12=84"
+        },
+        {
+          "id": "b",
+          "expression": "54 &divide; 6 = 8 &mdash; check by 6&times;8",
+          "answer": "no, 6&times;8=48"
+        },
+        {
+          "id": "c",
+          "expression": "121 &divide; 11 = 11 &mdash; check",
+          "answer": "yes"
+        },
+        {
+          "id": "d",
+          "expression": "96 &divide; 8 = 11 &mdash; check",
+          "answer": "no, 8&times;11=88"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Missing-number problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use the inverse to find the unknown.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "___ &divide; 9 = 8",
+          "answer": "72"
+        },
+        {
+          "id": "b",
+          "expression": "144 &divide; ___ = 12",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "___ &divide; 7 = 11",
+          "answer": "77"
+        },
+        {
+          "id": "d",
+          "expression": "108 &divide; ___ = 9",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed fact-family practice",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Spot the multiplication fact you need.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "If 12 &times; 6 = 72, then 72 &divide; 6 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "b",
+          "expression": "If 8 &times; 9 = 72, then 72 &divide; 9 = ___",
+          "answer": "8"
+        },
+        {
+          "id": "c",
+          "expression": "11 &times; 11 = ___, so 121 &divide; 11 = ___",
+          "answer": "121, 11"
+        },
+        {
+          "id": "d",
+          "expression": "If 7 &times; 5 = 35, then 35 &divide; 5 = ___",
+          "answer": "7"
+        },
+        {
+          "id": "e",
+          "expression": "Write 4 facts from 4 &times; 6 = 24",
+          "answer": "24÷4=6, 24÷6=4, 6×4=24"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Division is the inverse of multiplication",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "If 7&times;9=63, then 63&divide;7=9",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "Division is commutative: 12&divide;3 = 3&divide;12",
+        "correct": false
+      },
+      {
+        "id": "d",
+        "statement": "If a&times;b = c, then c&divide;a = b",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "Multiplication undoes division",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A teacher has <strong>56 stickers</strong> to share equally between <strong>8 children</strong>. Without dividing directly, use multiplication facts to find how many each child gets. Show your reasoning."
+      },
+      {
+        "id": "b",
+        "text": "Mia says &lsquo;I know 7 &times; 11 = 77, so I also know 77 &divide; 7 and 77 &divide; 11.&rsquo; Is she right? Write all four related facts and explain."
+      }
+    ]
+  }
+}

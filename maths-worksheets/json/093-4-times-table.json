@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(FOUR TIMES TABLE)",
+  "objective": "LO: I can recall and use the 4 times table to multiply and divide.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is the 4 times table?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">4 times table</span> is a list of <span class=\"ul-k\">multiples</span> of 4: numbers we get when we count in 4s. Multiples of 4 are always even, and you can find them by doubling the 2 times table."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Skip-count in 4s on your fingers, or use a number line. Each jump adds 4."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Multiples of 4",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "1 &times; 4 = 4",
+          "desc": "starting point"
+        },
+        {
+          "correct": true,
+          "expr": "2 &times; 4 = 8",
+          "desc": "double"
+        },
+        {
+          "correct": true,
+          "expr": "5 &times; 4 = 20",
+          "desc": "halfway to 10"
+        },
+        {
+          "correct": false,
+          "expr": "3 &times; 4 = 13",
+          "desc": "wrong"
+        },
+        {
+          "correct": false,
+          "expr": "4 &times; 0 = 4",
+          "desc": "any &times; 0 = 0"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiplication is repeated addition. 4 &times; 4 means &lsquo;4 groups of 4&rsquo;. You can also think of it as &lsquo;4 groups of 4&rsquo; — the answer is the same.",
+      "equation": "<span class=\"ov\">4</span> + <span class=\"ov\">4</span> + <span class=\"ov\">4</span> + <span class=\"ov\">4</span> = <span class=\"ovr\">4&times;4 = 16</span>",
+      "caption": "Four groups of 4"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; single multiplication",
+      "question": "Calculate 6 &times; 4",
+      "steps": [
+        "6 groups of 4",
+        "4 + 4 + 4 + 4  ...",
+        "= 24"
+      ],
+      "answer": "= 24",
+      "explanation": "Skip-count in 4s 6 times to reach 24."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; missing factor",
+      "question": "Solve: ___ &times; 4 = 20",
+      "steps": [
+        "How many 4s in 20?",
+        "Count up: 4, 8, 12, ...",
+        "= 5"
+      ],
+      "answer": "= 5",
+      "explanation": "Divide: 20 &divide; 4 = 5."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; division by sharing",
+      "question": "Calculate 32 &divide; 4",
+      "steps": [
+        "How many groups of 4 fit in 32?",
+        "4 &times; ___ = 32",
+        "= 8"
+      ],
+      "answer": "= 8",
+      "explanation": "Division is the inverse of multiplication."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; word problem",
+      "question": "A car has <strong>4 wheels</strong>. How many wheels are on <strong>7 cars</strong>?",
+      "steps": [
+        "Identify what is being repeated",
+        "Set up: count &times; 4",
+        "Compute and check"
+      ],
+      "answer": "See solution",
+      "explanation": "Always show your working clearly."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Recall the 4 times table",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Complete the calculation. Skip-count in 4s if you need to.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 &times; 4 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "b",
+          "expression": "6 &times; 4 = ___",
+          "answer": "24"
+        },
+        {
+          "id": "c",
+          "expression": "8 &times; 4 = ___",
+          "answer": "32"
+        },
+        {
+          "id": "d",
+          "expression": "10 &times; 4 = ___",
+          "answer": "40"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Missing factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing number.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "___ &times; 4 = 16",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "___ &times; 4 = 28",
+          "answer": "7"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 4 = 36",
+          "answer": "9"
+        },
+        {
+          "id": "d",
+          "expression": "___ &times; 4 = 44",
+          "answer": "11"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Dividing by 4",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the 4 times table to divide. 4 &times; ___ = ?",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8 &divide; 4 = ___",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "20 &divide; 4 = ___",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "32 &divide; 4 = ___",
+          "answer": "8"
+        },
+        {
+          "id": "d",
+          "expression": "48 &divide; 4 = ___",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Two-step problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Work out the answer step by step.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2&times;4) + (3&times;4) = ___",
+          "answer": "20"
+        },
+        {
+          "id": "b",
+          "expression": "(5&times;4) &minus; (2&times;4) = ___",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "16 &divide; 4 + 6 = ___",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "(4&times;4) &times; 2 = ___",
+          "answer": "32"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed practice",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use what you know about the 4 times table.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4 &times; 7 = ___",
+          "answer": "28"
+        },
+        {
+          "id": "b",
+          "expression": "48 &divide; 4 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 4 = 24",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "16 &divide; 4 = ___",
+          "answer": "4"
+        },
+        {
+          "id": "e",
+          "expression": "36 &divide; 4 = ___",
+          "answer": "9"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "4 &times; 0 = 4",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "4 &times; 1 = 4",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "16 &divide; 4 = 4",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "4 &times; 10 = 40 (i.e. 40)",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "4 &times; 7 = 29",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A car has <strong>4 wheels</strong>. How many wheels are on <strong>7 cars</strong>?"
+      },
+      {
+        "id": "b",
+        "text": "There are <strong>36 chair legs</strong> in a hall. Each chair has 4 legs. How many chairs are in the hall?"
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(BY 10, 100 AND 1000)",
+  "objective": "LO: I can multiply whole numbers and decimals by 10, 100 and 1000 by shifting place value.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "How does &times;10 work?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Multiplying by <span class=\"ul-b\">10</span> shifts every digit one column <span class=\"ul-k\">LEFT</span>. The digits stay the same; their place value changes."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Common error:</span> &lsquo;just add a zero.&rsquo; That works only for whole numbers. For decimals, you must shift digits (3.4 &times; 10 = 34, not 3.40)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Examples of place-value shift",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "7 &times; 10 = 70",
+          "desc": "shift L by 1"
+        },
+        {
+          "correct": true,
+          "expr": "7 &times; 100 = 700",
+          "desc": "shift L by 2"
+        },
+        {
+          "correct": true,
+          "expr": "7 &times; 1000 = 7000",
+          "desc": "shift L by 3"
+        },
+        {
+          "correct": true,
+          "expr": "0.4 &times; 10 = 4",
+          "desc": "decimal shifts too"
+        },
+        {
+          "correct": false,
+          "expr": "3.4 &times; 10 = 3.40",
+          "desc": "should be 34"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiplying by 10 = shift digits 1 left. By 100 = shift 2 left. By 1000 = shift 3 left. The decimal point appears to move RIGHT.",
+      "equation": "<span class=\"ov\">3.45</span> &times; <span class=\"ov\">100</span> = <span class=\"ovr\">345</span>",
+      "caption": "Decimal point moves 2 places right"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; whole &times; 10",
+      "question": "Calculate 47 &times; 10",
+      "steps": [
+        "47 has digits 4 and 7",
+        "Shift each one column left",
+        "= 470"
+      ],
+      "answer": "= 470",
+      "explanation": "Add a zero in the units column to mark the new place."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; whole &times; 100",
+      "question": "Calculate 23 &times; 100",
+      "steps": [
+        "Each digit shifts 2 places left",
+        "Add 2 zeros as placeholders",
+        "= 2300"
+      ],
+      "answer": "= 2300",
+      "explanation": "Multiplying by 100 = multiplying by 10 twice."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; decimal &times; 10",
+      "question": "Calculate 3.6 &times; 10",
+      "steps": [
+        "3.6 has 3 ones and 6 tenths",
+        "Shift each one place left",
+        "= 36"
+      ],
+      "answer": "= 36",
+      "explanation": "The 6 moves from tenths to ones."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; decimal &times; 1000",
+      "question": "Calculate 0.045 &times; 1000",
+      "steps": [
+        "Shift each digit 3 places left",
+        "0.045 &rarr; 45.0",
+        "= 45"
+      ],
+      "answer": "= 45",
+      "explanation": "Decimal point moves 3 places right."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "&times; 10",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Shift digits one column left.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8 &times; 10 = ___",
+          "answer": "80"
+        },
+        {
+          "id": "b",
+          "expression": "26 &times; 10 = ___",
+          "answer": "260"
+        },
+        {
+          "id": "c",
+          "expression": "0.7 &times; 10 = ___",
+          "answer": "7"
+        },
+        {
+          "id": "d",
+          "expression": "3.4 &times; 10 = ___",
+          "answer": "34"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "&times; 100",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Shift digits two columns left.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 &times; 100 = ___",
+          "answer": "500"
+        },
+        {
+          "id": "b",
+          "expression": "32 &times; 100 = ___",
+          "answer": "3200"
+        },
+        {
+          "id": "c",
+          "expression": "0.06 &times; 100 = ___",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "1.45 &times; 100 = ___",
+          "answer": "145"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "&times; 1000",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Shift digits three columns left.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4 &times; 1000 = ___",
+          "answer": "4000"
+        },
+        {
+          "id": "b",
+          "expression": "12 &times; 1000 = ___",
+          "answer": "12000"
+        },
+        {
+          "id": "c",
+          "expression": "0.005 &times; 1000 = ___",
+          "answer": "5"
+        },
+        {
+          "id": "d",
+          "expression": "2.34 &times; 1000 = ___",
+          "answer": "2340"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed scales",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Spot the &times;10/100/1000 pattern.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "7 &times; ___ = 700",
+          "answer": "100"
+        },
+        {
+          "id": "b",
+          "expression": "0.3 &times; ___ = 30",
+          "answer": "100"
+        },
+        {
+          "id": "c",
+          "expression": "0.06 &times; 1000 = ___",
+          "answer": "60"
+        },
+        {
+          "id": "d",
+          "expression": "8.4 &times; 100 = ___",
+          "answer": "840"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Two-step",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Apply the rule twice.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2.5 &times; 10) &times; 100 = ___",
+          "answer": "2500"
+        },
+        {
+          "id": "b",
+          "expression": "(0.04 &times; 1000) &times; 10 = ___",
+          "answer": "400"
+        },
+        {
+          "id": "c",
+          "expression": "(7 &times; 100) + (3 &times; 10) = ___",
+          "answer": "730"
+        },
+        {
+          "id": "d",
+          "expression": "(0.6 &times; 1000) &minus; (5 &times; 10) = ___",
+          "answer": "550"
+        },
+        {
+          "id": "e",
+          "expression": "(1.2 &times; 100) &times; 10 = ___",
+          "answer": "1200"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3.4 &times; 10 = 3.40",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "0.05 &times; 100 = 5",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "47 &times; 100 = 4700",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&times;10 means &lsquo;just add a zero&rsquo;",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "0.6 &times; 1000 = 600",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A box of pencils contains <strong>100 pencils</strong>. A school orders <strong>34 boxes</strong>. How many pencils in total? Use &times;100 to find the answer."
+      },
+      {
+        "id": "b",
+        "text": "A water bottle holds <strong>0.75 litres</strong>. A factory fills <strong>1000 bottles</strong> an hour. How many litres of water are used per hour? Show your working."
+      }
+    ]
+  }
+}

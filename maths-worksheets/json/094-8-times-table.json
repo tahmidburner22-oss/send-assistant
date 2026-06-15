@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(EIGHT TIMES TABLE)",
+  "objective": "LO: I can recall and use the 8 times table to multiply and divide.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is the 8 times table?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">8 times table</span> is a list of <span class=\"ul-k\">multiples</span> of 8: numbers we get when we count in 8s. Multiples of 8 are always even, and you can find them by doubling the 4 times table."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Skip-count in 8s on your fingers, or use a number line. Each jump adds 8."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Multiples of 8",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "1 &times; 8 = 8",
+          "desc": "starting point"
+        },
+        {
+          "correct": true,
+          "expr": "2 &times; 8 = 16",
+          "desc": "double"
+        },
+        {
+          "correct": true,
+          "expr": "5 &times; 8 = 40",
+          "desc": "halfway to 10"
+        },
+        {
+          "correct": false,
+          "expr": "3 &times; 8 = 25",
+          "desc": "wrong"
+        },
+        {
+          "correct": false,
+          "expr": "8 &times; 0 = 8",
+          "desc": "any &times; 0 = 0"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiplication is repeated addition. 8 &times; 4 means &lsquo;4 groups of 8&rsquo;. You can also think of it as &lsquo;8 groups of 4&rsquo; — the answer is the same.",
+      "equation": "<span class=\"ov\">8</span> + <span class=\"ov\">8</span> + <span class=\"ov\">8</span> + <span class=\"ov\">8</span> = <span class=\"ovr\">8&times;4 = 32</span>",
+      "caption": "Four groups of 8"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; single multiplication",
+      "question": "Calculate 4 &times; 8",
+      "steps": [
+        "4 groups of 8",
+        "8 + 8 + 8 + 8",
+        "= 32"
+      ],
+      "answer": "= 32",
+      "explanation": "Skip-count in 8s 4 times to reach 32."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; missing factor",
+      "question": "Solve: ___ &times; 8 = 48",
+      "steps": [
+        "How many 8s in 48?",
+        "Count up: 8, 16, 24, ...",
+        "= 6"
+      ],
+      "answer": "= 6",
+      "explanation": "Divide: 48 &divide; 8 = 6."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; division by sharing",
+      "question": "Calculate 56 &divide; 8",
+      "steps": [
+        "How many groups of 8 fit in 56?",
+        "8 &times; ___ = 56",
+        "= 7"
+      ],
+      "answer": "= 7",
+      "explanation": "Division is the inverse of multiplication."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; word problem",
+      "question": "A spider has <strong>8 legs</strong>. How many legs do <strong>6 spiders</strong> have? Write a multiplication and solve it.",
+      "steps": [
+        "Identify what is being repeated",
+        "Set up: count &times; 8",
+        "Compute and check"
+      ],
+      "answer": "See solution",
+      "explanation": "Always show your working clearly."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Recall the 8 times table",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Complete the calculation. Skip-count in 8s if you need to.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 &times; 8 = ___",
+          "answer": "24"
+        },
+        {
+          "id": "b",
+          "expression": "6 &times; 8 = ___",
+          "answer": "48"
+        },
+        {
+          "id": "c",
+          "expression": "8 &times; 8 = ___",
+          "answer": "64"
+        },
+        {
+          "id": "d",
+          "expression": "10 &times; 8 = ___",
+          "answer": "80"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Missing factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing number.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "___ &times; 8 = 32",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "___ &times; 8 = 56",
+          "answer": "7"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 8 = 72",
+          "answer": "9"
+        },
+        {
+          "id": "d",
+          "expression": "___ &times; 8 = 88",
+          "answer": "11"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Dividing by 8",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the 8 times table to divide. 8 &times; ___ = ?",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "16 &divide; 8 = ___",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "40 &divide; 8 = ___",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "64 &divide; 8 = ___",
+          "answer": "8"
+        },
+        {
+          "id": "d",
+          "expression": "96 &divide; 8 = ___",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Two-step problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Work out the answer step by step.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2&times;8) + (3&times;8) = ___",
+          "answer": "40"
+        },
+        {
+          "id": "b",
+          "expression": "(5&times;8) &minus; (2&times;8) = ___",
+          "answer": "24"
+        },
+        {
+          "id": "c",
+          "expression": "32 &divide; 8 + 6 = ___",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "(8&times;8) &times; 2 = ___",
+          "answer": "128"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed practice",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use what you know about the 8 times table.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8 &times; 7 = ___",
+          "answer": "56"
+        },
+        {
+          "id": "b",
+          "expression": "96 &divide; 8 = ___",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 8 = 48",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "64 &divide; 8 = ___",
+          "answer": "8"
+        },
+        {
+          "id": "e",
+          "expression": "72 &divide; 8 = ___",
+          "answer": "9"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "8 &times; 0 = 8",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "8 &times; 1 = 8",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "32 &divide; 8 = 4",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "8 &times; 10 = 80 (i.e. 80)",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "8 &times; 7 = 57",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A spider has <strong>8 legs</strong>. How many legs do <strong>6 spiders</strong> have? Write a multiplication and solve it."
+      },
+      {
+        "id": "b",
+        "text": "An octopus tank has <strong>72 tentacles</strong> in total. Each octopus has 8 tentacles. How many octopuses are in the tank?"
+      }
+    ]
+  }
+}
