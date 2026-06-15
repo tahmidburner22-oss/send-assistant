@@ -63,7 +63,7 @@ def generate_pdf(json_path, output_pdf):
 <meta charset="UTF-8">
 <title>Worksheet</title>
 <style>
-@page {{ size: A4 landscape; margin: 7mm 9mm; }}
+@page {{ size: A4 landscape; margin: 5mm 6mm; }}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 body {{ font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111; background: white; }}
 
@@ -74,7 +74,7 @@ body {{ font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111; 
 .frac sup, .frac sub {{ display: inline-block; }}
 
 /* page wrapper */
-.page {{ width: 279mm; height: 196mm; position: relative; overflow: hidden; page-break-after: always; }}
+.page {{ width: 285mm; height: 200mm; position: relative; overflow: hidden; page-break-after: always; }}
 .page:last-child {{ page-break-after: avoid; }}
 
 /* ════════ PAGE 1 ════════ */
@@ -167,7 +167,7 @@ body {{ font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111; 
 .mia {{ font-size: 8.5pt; color: #111; margin-bottom: 6px; }}
 .mir {{ font-size: 8.5pt; color: #111; }}
 
-.chal-wrap {{ position: absolute; top: 121mm; left: 0; right: 0; bottom: 37mm; border: 1.5px solid #b8860b; border-radius: 5px; background: #fffdf5; overflow: hidden; }}
+.chal-wrap {{ position: absolute; top: 121mm; left: 0; right: 0; bottom: 35mm; border: 1.5px solid #b8860b; border-radius: 5px; background: #fffdf5; overflow: hidden; }}
 .chal-head {{ color: #b8860b; font-weight: bold; font-size: 11pt; text-align: center; height: 8mm; line-height: 8mm; border-bottom: 1px solid #b8860b; }}
 .chal-body {{ position: absolute; top: 8mm; left: 0; right: 0; bottom: 0; display: table; width: 100%; table-layout: fixed; }}
 .cc {{ display: table-cell; width: 50%; padding: 8px 12px; font-size: 9pt; line-height: 1.6; vertical-align: top; }}
