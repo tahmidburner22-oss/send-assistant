@@ -1,0 +1,325 @@
+{
+  "title": "ALGEBRAIC EXPRESSIONS,\n(EXPANDING SINGLE BRACKETS)",
+  "objective": "LO: I can expand single brackets by multiplying every term inside by the term outside.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What does &lsquo;expand&rsquo; mean?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Expanding</span> means removing the brackets by multiplying <span class=\"ul-k\">every term</span> inside by the term outside."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Common error:</span> only multiplying the first term. You must multiply BOTH terms inside the bracket."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3(x + 2) = 3x + 6",
+          "desc": "both terms"
+        },
+        {
+          "correct": true,
+          "expr": "&minus;2(x &minus; 5) = &minus;2x + 10",
+          "desc": "watch signs"
+        },
+        {
+          "correct": true,
+          "expr": "x(x + 3) = x&sup2; + 3x",
+          "desc": "x &times; x = x&sup2;"
+        },
+        {
+          "correct": false,
+          "expr": "3(x + 2) = 3x + 2",
+          "desc": "missed second term"
+        },
+        {
+          "correct": false,
+          "expr": "&minus;2(x + 3) = &minus;2x + 6",
+          "desc": "should be &minus;6"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply the term outside by EVERY term inside. Watch the signs carefully when there's a negative outside.",
+      "equation": "<span class=\"ov\">3(x + 2)</span> = <span class=\"ovr\">3x + 6</span>",
+      "caption": "Multiply both terms"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; all positive",
+      "question": "Expand 3(x + 4)",
+      "steps": [
+        "3 &times; x = 3x",
+        "3 &times; 4 = 12",
+        "Combine: 3x + 12"
+      ],
+      "answer": "= 3x + 12",
+      "explanation": "Multiply each term inside by 3."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; with subtraction",
+      "question": "Expand 5(x &minus; 2)",
+      "steps": [
+        "5 &times; x = 5x",
+        "5 &times; (&minus;2) = &minus;10",
+        "Combine: 5x &minus; 10"
+      ],
+      "answer": "= 5x &minus; 10",
+      "explanation": "The minus sign belongs to the 2."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; negative outside",
+      "question": "Expand &minus;2(x + 3)",
+      "steps": [
+        "&minus;2 &times; x = &minus;2x",
+        "&minus;2 &times; 3 = &minus;6",
+        "Combine: &minus;2x &minus; 6"
+      ],
+      "answer": "= &minus;2x &minus; 6",
+      "explanation": "Negative &times; positive = negative."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; variable outside",
+      "question": "Expand x(x + 5)",
+      "steps": [
+        "x &times; x = x&sup2;",
+        "x &times; 5 = 5x",
+        "Combine: x&sup2; + 5x"
+      ],
+      "answer": "= x&sup2; + 5x",
+      "explanation": "x times x is x squared."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Number outside, all positive",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Multiply each term inside.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2(x + 5)",
+          "answer": "2x+10"
+        },
+        {
+          "id": "b",
+          "expression": "4(x + 3)",
+          "answer": "4x+12"
+        },
+        {
+          "id": "c",
+          "expression": "7(x + 2)",
+          "answer": "7x+14"
+        },
+        {
+          "id": "d",
+          "expression": "5(x + 6)",
+          "answer": "5x+30"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "With subtraction inside",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "The minus sign stays with its term.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3(x &minus; 4)",
+          "answer": "3x&minus;12"
+        },
+        {
+          "id": "b",
+          "expression": "6(x &minus; 1)",
+          "answer": "6x&minus;6"
+        },
+        {
+          "id": "c",
+          "expression": "8(x &minus; 5)",
+          "answer": "8x&minus;40"
+        },
+        {
+          "id": "d",
+          "expression": "9(x &minus; 2)",
+          "answer": "9x&minus;18"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Negative outside",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Watch signs carefully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&minus;2(x + 3)",
+          "answer": "&minus;2x&minus;6"
+        },
+        {
+          "id": "b",
+          "expression": "&minus;5(x + 4)",
+          "answer": "&minus;5x&minus;20"
+        },
+        {
+          "id": "c",
+          "expression": "&minus;3(x &minus; 2)",
+          "answer": "&minus;3x+6"
+        },
+        {
+          "id": "d",
+          "expression": "&minus;4(x &minus; 7)",
+          "answer": "&minus;4x+28"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Variable outside",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "x &times; x = x&sup2;.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x(x + 4)",
+          "answer": "x&sup2;+4x"
+        },
+        {
+          "id": "b",
+          "expression": "x(x &minus; 3)",
+          "answer": "x&sup2;&minus;3x"
+        },
+        {
+          "id": "c",
+          "expression": "2x(x + 5)",
+          "answer": "2x&sup2;+10x"
+        },
+        {
+          "id": "d",
+          "expression": "3x(x &minus; 2)",
+          "answer": "3x&sup2;&minus;6x"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed expand and simplify",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Expand, then collect any like terms.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3(x + 2) + 4",
+          "answer": "3x+10"
+        },
+        {
+          "id": "b",
+          "expression": "5(x &minus; 1) + 2x",
+          "answer": "7x&minus;5"
+        },
+        {
+          "id": "c",
+          "expression": "2(x + 3) + 3(x &minus; 1)",
+          "answer": "5x+3"
+        },
+        {
+          "id": "d",
+          "expression": "x(x + 2) &minus; x",
+          "answer": "x&sup2;+x"
+        },
+        {
+          "id": "e",
+          "expression": "&minus;2(x &minus; 4) + 5",
+          "answer": "&minus;2x+13"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3(x + 2) = 3x + 2",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "5(x &minus; 3) = 5x &minus; 15",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "&minus;4(x + 2) = &minus;4x + 8",
+        "correct": false
+      },
+      {
+        "id": "d",
+        "statement": "x(x + 3) = x&sup2; + 3x",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "&minus;2(x &minus; 5) = &minus;2x + 10",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A rectangle has length <strong>(x + 4)</strong> cm and width <strong>3</strong> cm. Write an expanded expression for its perimeter and area."
+      },
+      {
+        "id": "b",
+        "text": "Expand and simplify <strong>4(2x + 3) &minus; 2(x &minus; 5)</strong>. Show your full working step by step."
+      }
+    ]
+  }
+}

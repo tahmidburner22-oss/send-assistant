@@ -1,0 +1,325 @@
+{
+  "title": "DIVISION,\n(SHORT DIVISION)",
+  "objective": "LO: I can use short division (bus-stop) to divide by a single-digit number.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is short division?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Short division</span> is a quick written method for dividing by a <span class=\"ul-k\">SINGLE</span>-digit number. We carry remainders mentally."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">When to use:</span> dividing by 2-9. For 10+, use long division."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "84 &divide; 4 = 21",
+          "desc": "no remainder"
+        },
+        {
+          "correct": true,
+          "expr": "85 &divide; 4 = 21 r 1",
+          "desc": "with remainder"
+        },
+        {
+          "correct": true,
+          "expr": "936 &divide; 6 = 156",
+          "desc": "3-digit"
+        },
+        {
+          "correct": false,
+          "expr": "Carry to the LEFT",
+          "desc": "carry to the RIGHT"
+        },
+        {
+          "correct": false,
+          "expr": "Skip a digit if too small",
+          "desc": "write 0 above"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Divide each digit left-to-right. If a digit is too small, carry to the next as a remainder.",
+      "equation": "<span class=\"ov\">936</span> &divide; <span class=\"ov\">6</span> = <span class=\"ovr\">156</span>",
+      "caption": "Left to right; carry small remainders"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; no remainder",
+      "question": "Calculate 84 &divide; 4",
+      "steps": [
+        "8 &divide; 4 = 2 (write above 8)",
+        "4 &divide; 4 = 1 (write above 4)",
+        "Read off: 21"
+      ],
+      "answer": "= 21",
+      "explanation": "Check: 21 &times; 4 = 84 &check;"
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; with carry",
+      "question": "Calculate 75 &divide; 3",
+      "steps": [
+        "7 &divide; 3 = 2 r 1 (carry the 1 to next digit &rarr; 15)",
+        "15 &divide; 3 = 5",
+        "Read off: 25"
+      ],
+      "answer": "= 25",
+      "explanation": "The remainder &lsquo;1&rsquo; from 7&divide;3 joins the next digit 5 to make 15."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; with remainder",
+      "question": "Calculate 85 &divide; 4",
+      "steps": [
+        "8 &divide; 4 = 2",
+        "5 &divide; 4 = 1 r 1",
+        "Read off: 21 r 1"
+      ],
+      "answer": "= 21 r 1",
+      "explanation": "Final remainder is left over because no more digits to bring down."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; writing zero",
+      "question": "Calculate 612 &divide; 6",
+      "steps": [
+        "6 &divide; 6 = 1",
+        "1 &divide; 6 = 0 r 1 (carry 1 &rarr; 12)",
+        "12 &divide; 6 = 2"
+      ],
+      "answer": "= 102",
+      "explanation": "When a digit doesn't divide, write 0 in the answer."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Short division (no carry)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Each digit divides exactly.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "48 &divide; 4",
+          "answer": "12"
+        },
+        {
+          "id": "b",
+          "expression": "96 &divide; 3",
+          "answer": "32"
+        },
+        {
+          "id": "c",
+          "expression": "84 &divide; 2",
+          "answer": "42"
+        },
+        {
+          "id": "d",
+          "expression": "636 &divide; 3",
+          "answer": "212"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "With carry",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Carry small remainders to the next digit.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "75 &divide; 3",
+          "answer": "25"
+        },
+        {
+          "id": "b",
+          "expression": "92 &divide; 4",
+          "answer": "23"
+        },
+        {
+          "id": "c",
+          "expression": "68 &divide; 4",
+          "answer": "17"
+        },
+        {
+          "id": "d",
+          "expression": "238 &divide; 7",
+          "answer": "34"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "With remainder",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Write &lsquo;quotient r remainder&rsquo;.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "85 &divide; 4",
+          "answer": "21 r 1"
+        },
+        {
+          "id": "b",
+          "expression": "47 &divide; 5",
+          "answer": "9 r 2"
+        },
+        {
+          "id": "c",
+          "expression": "100 &divide; 7",
+          "answer": "14 r 2"
+        },
+        {
+          "id": "d",
+          "expression": "153 &divide; 6",
+          "answer": "25 r 3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Writing zero in answer",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "If a digit doesn't divide, write 0 in the answer.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "612 &divide; 6",
+          "answer": "102"
+        },
+        {
+          "id": "b",
+          "expression": "509 &divide; 5",
+          "answer": "101 r 4"
+        },
+        {
+          "id": "c",
+          "expression": "303 &divide; 3",
+          "answer": "101"
+        },
+        {
+          "id": "d",
+          "expression": "808 &divide; 4",
+          "answer": "202"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed short division",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Choose carefully and check.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "744 &divide; 8",
+          "answer": "93"
+        },
+        {
+          "id": "b",
+          "expression": "925 &divide; 5",
+          "answer": "185"
+        },
+        {
+          "id": "c",
+          "expression": "486 &divide; 9",
+          "answer": "54"
+        },
+        {
+          "id": "d",
+          "expression": "327 &divide; 3",
+          "answer": "109"
+        },
+        {
+          "id": "e",
+          "expression": "1001 &divide; 7",
+          "answer": "143"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Carry remainders to the next digit on the RIGHT",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "612 &divide; 6 = 12 (skip the 1)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "85 &divide; 4 = 21 r 1",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Short division works for any divisor",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Always check: quotient &times; divisor + remainder = dividend",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "<strong>936 sweets</strong> are shared equally between <strong>8 children</strong>. How many sweets each? Are any left over? Show your short division."
+      },
+      {
+        "id": "b",
+        "text": "A school orders <strong>525 textbooks</strong> packed in boxes of <strong>7</strong>. How many full boxes? Now imagine <strong>530 books</strong>. How many full boxes and how many spare?"
+      }
+    ]
+  }
+}

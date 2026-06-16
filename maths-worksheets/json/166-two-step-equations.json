@@ -1,0 +1,325 @@
+{
+  "title": "SOLVING LINEAR EQUATIONS,\n(TWO-STEP EQUATIONS)",
+  "objective": "LO: I can solve two-step linear equations by undoing operations in reverse order.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is a two-step equation?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">two-step equation</span> needs <span class=\"ul-k\">TWO</span> inverse operations, e.g. 3x + 4 = 19 &rarr; subtract 4, then divide by 3."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Order matters:</span> always undo +/&minus; FIRST, then &times;/&divide;. This is the reverse of BIDMAS."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Strategy",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3x + 4 = 19",
+          "desc": "&minus;4 then &divide;3"
+        },
+        {
+          "correct": true,
+          "expr": "x = 5 (check: 15+4=19)",
+          "desc": "always check"
+        },
+        {
+          "correct": true,
+          "expr": "Undo +/&minus; first",
+          "desc": "reverse BIDMAS"
+        },
+        {
+          "correct": false,
+          "expr": "3x + 4 = 19 &rarr; &divide;3 first",
+          "desc": "wrong order"
+        },
+        {
+          "correct": false,
+          "expr": "Forget to do both sides",
+          "desc": "must do BOTH"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Undo the LAST operation first. For 3x + 4: the last operation done to x was +4, so undo +4 first.",
+      "equation": "<span class=\"ov\">3x + 4</span> = 19 &rArr; <span class=\"ov\">3x</span> = 15 &rArr; <span class=\"ovr\">x = 5</span>",
+      "caption": "&minus;4 then &divide;3"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; +/&times;",
+      "question": "Solve 3x + 4 = 19",
+      "steps": [
+        "Subtract 4 from both sides",
+        "3x = 15",
+        "Divide both sides by 3 &rarr; x = 5"
+      ],
+      "answer": "x = 5",
+      "explanation": "Check: 3(5) + 4 = 15 + 4 = 19 &check;"
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; &minus;/&times;",
+      "question": "Solve 5x &minus; 7 = 18",
+      "steps": [
+        "Add 7 to both sides",
+        "5x = 25",
+        "Divide by 5 &rarr; x = 5"
+      ],
+      "answer": "x = 5",
+      "explanation": "Check: 5(5) &minus; 7 = 18 &check;"
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; +/&divide;",
+      "question": "Solve x &divide; 3 + 2 = 6",
+      "steps": [
+        "Subtract 2 from both sides",
+        "x &divide; 3 = 4",
+        "Multiply both sides by 3 &rarr; x = 12"
+      ],
+      "answer": "x = 12",
+      "explanation": "Check: 12 &divide; 3 + 2 = 4 + 2 = 6 &check;"
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; fractional answer",
+      "question": "Solve 4x + 3 = 10",
+      "steps": [
+        "Subtract 3 &rarr; 4x = 7",
+        "Divide by 4 &rarr; x = 7/4",
+        "Or x = 1.75"
+      ],
+      "answer": "x = 7/4",
+      "explanation": "Some answers are fractions or decimals."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "+/&times; form",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Subtract first, then divide.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2x + 3 = 11",
+          "answer": "x=4"
+        },
+        {
+          "id": "b",
+          "expression": "5x + 7 = 32",
+          "answer": "x=5"
+        },
+        {
+          "id": "c",
+          "expression": "4x + 8 = 32",
+          "answer": "x=6"
+        },
+        {
+          "id": "d",
+          "expression": "7x + 1 = 50",
+          "answer": "x=7"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "&minus;/&times; form",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Add first, then divide.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3x &minus; 5 = 16",
+          "answer": "x=7"
+        },
+        {
+          "id": "b",
+          "expression": "6x &minus; 2 = 22",
+          "answer": "x=4"
+        },
+        {
+          "id": "c",
+          "expression": "4x &minus; 9 = 19",
+          "answer": "x=7"
+        },
+        {
+          "id": "d",
+          "expression": "8x &minus; 3 = 45",
+          "answer": "x=6"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Division form",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "x is divided. Undo the +/&minus; first, then multiply.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x &divide; 2 + 3 = 8",
+          "answer": "x=10"
+        },
+        {
+          "id": "b",
+          "expression": "x &divide; 4 &minus; 1 = 3",
+          "answer": "x=16"
+        },
+        {
+          "id": "c",
+          "expression": "x &divide; 5 + 2 = 7",
+          "answer": "x=25"
+        },
+        {
+          "id": "d",
+          "expression": "x &divide; 3 &minus; 2 = 4",
+          "answer": "x=18"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Fractional answers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Don't be put off by fractions or decimals.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4x + 3 = 10",
+          "answer": "x=1.75"
+        },
+        {
+          "id": "b",
+          "expression": "3x &minus; 2 = 8",
+          "answer": "x=10/3"
+        },
+        {
+          "id": "c",
+          "expression": "5x + 1 = 8",
+          "answer": "x=1.4"
+        },
+        {
+          "id": "d",
+          "expression": "6x &minus; 5 = 7",
+          "answer": "x=2"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed two-step",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Choose the right order of operations.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "9x + 7 = 70",
+          "answer": "x=7"
+        },
+        {
+          "id": "b",
+          "expression": "x &divide; 6 + 4 = 9",
+          "answer": "x=30"
+        },
+        {
+          "id": "c",
+          "expression": "12x &minus; 5 = 31",
+          "answer": "x=3"
+        },
+        {
+          "id": "d",
+          "expression": "x &divide; 2 &minus; 7 = &minus;3",
+          "answer": "x=8"
+        },
+        {
+          "id": "e",
+          "expression": "11x + 9 = 86",
+          "answer": "x=7"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3x + 4 = 19 &rarr; first divide by 3",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "Subtract 4 first, THEN divide",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "5x &minus; 7 = 18 means x = 5",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Undo BIDMAS in reverse order",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "x can never be a fraction",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A taxi charges <strong>£3 fixed fee</strong> plus <strong>£2 per mile</strong>. A journey costs <strong>£17</strong>. Form an equation 2x + 3 = 17 and solve to find the distance."
+      },
+      {
+        "id": "b",
+        "text": "I think of a number, multiply by <strong>4</strong>, then subtract <strong>9</strong>. The result is <strong>23</strong>. Form a two-step equation and solve to find my number."
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "SOLVING LINEAR EQUATIONS,\n(ONE-STEP EQUATIONS)",
+  "objective": "LO: I can solve one-step linear equations using inverse operations.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is a one-step equation?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">one-step equation</span> needs only <span class=\"ul-k\">ONE</span> inverse operation to solve, e.g. x + 5 = 12 needs only &minus;5."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Golden rule:</span> whatever you do to one side, you must do to the OTHER side. This keeps the equation balanced."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Inverse operations",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "+ &harr; &minus;",
+          "desc": "inverses"
+        },
+        {
+          "correct": true,
+          "expr": "&times; &harr; &divide;",
+          "desc": "inverses"
+        },
+        {
+          "correct": true,
+          "expr": "x + 5 = 12 &rarr; x = 7",
+          "desc": "subtract 5"
+        },
+        {
+          "correct": false,
+          "expr": "3x = 12 &rarr; x = 9 (wrong: should &divide;)",
+          "desc": "&divide; not &minus;"
+        },
+        {
+          "correct": false,
+          "expr": "Only do operation on one side",
+          "desc": "must do BOTH sides"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Use the INVERSE operation to undo what's done to x. Apply it to BOTH sides.",
+      "equation": "<span class=\"ov\">x + 5</span> = 12 &rArr; <span class=\"ovr\">x = 7</span>",
+      "caption": "Subtract 5 from both sides"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; addition",
+      "question": "Solve x + 7 = 15",
+      "steps": [
+        "Inverse of +7 is &minus;7",
+        "x + 7 &minus; 7 = 15 &minus; 7",
+        "x = 8"
+      ],
+      "answer": "x = 8",
+      "explanation": "Check: 8 + 7 = 15 &check;"
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; subtraction",
+      "question": "Solve x &minus; 9 = 4",
+      "steps": [
+        "Inverse of &minus;9 is +9",
+        "x &minus; 9 + 9 = 4 + 9",
+        "x = 13"
+      ],
+      "answer": "x = 13",
+      "explanation": "Check: 13 &minus; 9 = 4 &check;"
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; multiplication",
+      "question": "Solve 5x = 35",
+      "steps": [
+        "Inverse of &times;5 is &divide;5",
+        "5x &divide; 5 = 35 &divide; 5",
+        "x = 7"
+      ],
+      "answer": "x = 7",
+      "explanation": "Check: 5 &times; 7 = 35 &check;"
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; division",
+      "question": "Solve x &divide; 4 = 9",
+      "steps": [
+        "Inverse of &divide;4 is &times;4",
+        "x &divide; 4 &times; 4 = 9 &times; 4",
+        "x = 36"
+      ],
+      "answer": "x = 36",
+      "explanation": "Check: 36 &divide; 4 = 9 &check;"
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Add/subtract",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the inverse operation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x + 5 = 12",
+          "answer": "x=7"
+        },
+        {
+          "id": "b",
+          "expression": "x + 11 = 20",
+          "answer": "x=9"
+        },
+        {
+          "id": "c",
+          "expression": "x &minus; 6 = 10",
+          "answer": "x=16"
+        },
+        {
+          "id": "d",
+          "expression": "x &minus; 4 = 9",
+          "answer": "x=13"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Multiply/divide",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the inverse operation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3x = 18",
+          "answer": "x=6"
+        },
+        {
+          "id": "b",
+          "expression": "7x = 56",
+          "answer": "x=8"
+        },
+        {
+          "id": "c",
+          "expression": "x &divide; 5 = 6",
+          "answer": "x=30"
+        },
+        {
+          "id": "d",
+          "expression": "x &divide; 8 = 4",
+          "answer": "x=32"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "With negatives",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Be careful with sign changes.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x + 12 = 5",
+          "answer": "x=&minus;7"
+        },
+        {
+          "id": "b",
+          "expression": "x &minus; 3 = &minus;10",
+          "answer": "x=&minus;7"
+        },
+        {
+          "id": "c",
+          "expression": "&minus;4x = 24",
+          "answer": "x=&minus;6"
+        },
+        {
+          "id": "d",
+          "expression": "x &divide; &minus;3 = 5",
+          "answer": "x=&minus;15"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Form an equation, then solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "I think of x. Add 9 to get 22. Find x.",
+          "answer": "x=13"
+        },
+        {
+          "id": "b",
+          "expression": "Multiply x by 4 to get 28. Find x.",
+          "answer": "x=7"
+        },
+        {
+          "id": "c",
+          "expression": "Divide x by 3 to get 12. Find x.",
+          "answer": "x=36"
+        },
+        {
+          "id": "d",
+          "expression": "Subtract 8 from x to get 0. Find x.",
+          "answer": "x=8"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed one-step",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Identify the operation, then apply its inverse.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x + 17 = 25",
+          "answer": "x=8"
+        },
+        {
+          "id": "b",
+          "expression": "11x = 121",
+          "answer": "x=11"
+        },
+        {
+          "id": "c",
+          "expression": "x &minus; 4.5 = 2.5",
+          "answer": "x=7"
+        },
+        {
+          "id": "d",
+          "expression": "x &divide; 6 = 9",
+          "answer": "x=54"
+        },
+        {
+          "id": "e",
+          "expression": "x + 2.4 = 5.1",
+          "answer": "x=2.7"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "x + 5 = 12 means x = 17",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "5x = 25 means x = 5",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "Whatever you do to one side, do to the other",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Inverse of &times;3 is &times;3",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "x &divide; 4 = 8 means x = 32",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Maya buys <strong>x cupcakes</strong> at <strong>£1.20 each</strong>, paying <strong>£14.40</strong> in total. Form a one-step equation and solve to find how many cupcakes she bought."
+      },
+      {
+        "id": "b",
+        "text": "A rectangle has perimeter <strong>22 cm</strong>. The length is <strong>6 cm</strong>. Form a one-step equation for the width w, and solve."
+      }
+    ]
+  }
+}

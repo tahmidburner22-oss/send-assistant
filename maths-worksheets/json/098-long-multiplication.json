@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(LONG MULTIPLICATION)",
+  "objective": "LO: I can multiply 2- and 3-digit numbers using the long multiplication (column) method.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is long multiplication?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Long multiplication</span> is the column method for <span class=\"ul-k\">multi-digit</span> &times; multi-digit. We multiply by each digit separately, then add."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Place-value rule:</span> when multiplying by tens, put a 0 in the units column first. By hundreds, put 00."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "23 &times; 45 = 1035",
+          "desc": "2-digit"
+        },
+        {
+          "correct": true,
+          "expr": "146 &times; 27 = 3942",
+          "desc": "3-by-2 digit"
+        },
+        {
+          "correct": true,
+          "expr": "Multiply units, then tens",
+          "desc": "two rows then add"
+        },
+        {
+          "correct": false,
+          "expr": "Forget the placeholder 0",
+          "desc": "answer wrong"
+        },
+        {
+          "correct": false,
+          "expr": "Multiply only the units",
+          "desc": "incomplete"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply by each digit of the bottom number separately. Each new row shifts left by one column (place value).",
+      "equation": "<span class=\"ov\">23</span> &times; <span class=\"ov\">45</span> = <span class=\"ovr\">1035</span>",
+      "caption": "Two rows, then add"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; 2 by 2 digit",
+      "question": "Calculate 23 &times; 45",
+      "steps": [
+        "23 &times; 5 = 115 (units row)",
+        "23 &times; 40 = 920 (tens row, with 0 placeholder)",
+        "115 + 920 = 1035"
+      ],
+      "answer": "= 1035",
+      "explanation": "Always add a placeholder 0 when multiplying by the tens digit."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; with carrying",
+      "question": "Calculate 47 &times; 36",
+      "steps": [
+        "47 &times; 6 = 282 (units row)",
+        "47 &times; 30 = 1410 (tens row)",
+        "282 + 1410 = 1692"
+      ],
+      "answer": "= 1692",
+      "explanation": "Show carries clearly above each column."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; 3 by 2 digit",
+      "question": "Calculate 146 &times; 27",
+      "steps": [
+        "146 &times; 7 = 1022",
+        "146 &times; 20 = 2920",
+        "1022 + 2920 = 3942"
+      ],
+      "answer": "= 3942",
+      "explanation": "3-digit numbers follow the same rules; just more digits."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with zeros",
+      "question": "Calculate 304 &times; 25",
+      "steps": [
+        "304 &times; 5 = 1520",
+        "304 &times; 20 = 6080",
+        "1520 + 6080 = 7600"
+      ],
+      "answer": "= 7600",
+      "explanation": "The zero in 304 means &times;0 gives 0 in that column."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "2 by 1 digit",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use column method.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "34 &times; 7",
+          "answer": "238"
+        },
+        {
+          "id": "b",
+          "expression": "56 &times; 8",
+          "answer": "448"
+        },
+        {
+          "id": "c",
+          "expression": "73 &times; 9",
+          "answer": "657"
+        },
+        {
+          "id": "d",
+          "expression": "85 &times; 6",
+          "answer": "510"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "2 by 2 digit",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Two rows, then add. Don't forget the placeholder 0.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "23 &times; 45",
+          "answer": "1035"
+        },
+        {
+          "id": "b",
+          "expression": "62 &times; 38",
+          "answer": "2356"
+        },
+        {
+          "id": "c",
+          "expression": "47 &times; 26",
+          "answer": "1222"
+        },
+        {
+          "id": "d",
+          "expression": "84 &times; 19",
+          "answer": "1596"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "3 by 2 digit",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Same method, more digits.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "146 &times; 27",
+          "answer": "3942"
+        },
+        {
+          "id": "b",
+          "expression": "234 &times; 35",
+          "answer": "8190"
+        },
+        {
+          "id": "c",
+          "expression": "508 &times; 14",
+          "answer": "7112"
+        },
+        {
+          "id": "d",
+          "expression": "672 &times; 25",
+          "answer": "16800"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Set up a multiplication, solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "27 boxes of 36 = ___",
+          "answer": "972"
+        },
+        {
+          "id": "b",
+          "expression": "School trip: 14 coaches &times; 52 seats = ___",
+          "answer": "728"
+        },
+        {
+          "id": "c",
+          "expression": "8 weeks at 175 mins/week = ___",
+          "answer": "1400"
+        },
+        {
+          "id": "d",
+          "expression": "23 packs of 48 stickers = ___",
+          "answer": "1104"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use the column method.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "39 &times; 46",
+          "answer": "1794"
+        },
+        {
+          "id": "b",
+          "expression": "125 &times; 16",
+          "answer": "2000"
+        },
+        {
+          "id": "c",
+          "expression": "78 &times; 53",
+          "answer": "4134"
+        },
+        {
+          "id": "d",
+          "expression": "246 &times; 18",
+          "answer": "4428"
+        },
+        {
+          "id": "e",
+          "expression": "100 &times; 100",
+          "answer": "10000"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "23 &times; 45 = 23 &times; 4 &times; 5",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "Add a placeholder 0 when multiplying by tens",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "47 &times; 36 = 1692",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Multiplication is commutative: 23&times;45 = 45&times;23",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "304 &times; 25 = 760 (forget last 0)",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A theatre has <strong>27 rows</strong> with <strong>48 seats</strong> per row. How many seats in total? If <strong>£12.50</strong> per ticket, what's the maximum revenue per show?"
+      },
+      {
+        "id": "b",
+        "text": "A factory packs <strong>148 chocolates per box</strong>, <strong>36 boxes per crate</strong>, and ships <strong>12 crates a day</strong>. How many chocolates ship per day? Show your working clearly."
+      }
+    ]
+  }
+}
