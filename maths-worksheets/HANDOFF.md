@@ -12,6 +12,25 @@ The full subtopic list with filenames is in [`PLAN.md`](./PLAN.md).
 
 ---
 
+## 1a. Scope (KS3 / KS4 ONLY)
+
+**This project targets KS3 and KS4 (GCSE) maths only.** KS1 and KS2 (primary) topics are out of scope going forward.
+
+### Topics IN SCOPE (KS3 / KS4)
+Topics 6, 7, 8, 9, 12, 13, 14, 15, 19, 20, 22, 23, 24, 25, 28, 29, 30, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54.
+
+### Topics OUT OF SCOPE (KS1 / KS2)
+Topics 1, 2, 3, 4, 5, 10, 11, 16, 17, 18, 21, 26, 27, 31, 32, 33, 34, 35, 36, 37.
+
+**Past batches that already shipped KS2 content** (Batch 1's single times tables 088–100 and Batch 2's long/short ×÷ 097/098/102/103) are kept as bonus content — no need to remove them. But future batches must be KS3 / KS4 only.
+
+### KS3/KS4 progress
+- KS3/KS4 subtopics already done: **7** (024, 078, 079, 080, 081, 165, 166)
+- KS3/KS4 subtopics remaining: **~105**
+- Plus KS1/KS2 bonus already shipped: 15 (single times tables, long/short ×÷)
+
+---
+
 ## 2. Repository layout
 
 ```
