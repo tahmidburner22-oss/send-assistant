@@ -83,14 +83,16 @@ Page margins: `5mm 6mm` (was `7mm 9mm`). `.page` size: `285mm × 200mm`.
 
 | Status | Count | List |
 |--------|-------|------|
-| ✅ Done | **14** | 078, 079, 081 (samples), 088, 089, 090, 091, 092, 093, 094, 095, 096, 099, 100 |
-| ⬜ Remaining | **180** | see `PLAN.md` for the numbered list |
+| ✅ Done | **22** | 024, 078, 079, 080, 081, 088, 089, 090, 091, 092, 093, 094, 095, 096, 097, 098, 099, 100, 102, 103, 165, 166 |
+| ⬜ Remaining | **172** | see `PLAN.md` for the numbered list |
 
 ### Topics fully complete
-- **Multiplication & division foundation** (Topics 26, 27, 28, 29 — all but Long mult/div, Factor pairs/commutativity, Short mult/div)
+- **Fractions, Decimals and Percentages** (Topic 22 — all 4 subtopics)
+- **Multiplication & division foundation** (Topics 26, 27, 28, 29 — all but Factor pairs/commutativity)
 
 ### Topics partially complete
-- **FDP (Topic 22):** 3 of 4 done — only `080-percentage-change.json` remaining
+- **Solving Linear Equations** (Topic 47): 2 of 4 — one-step ✅, two-step ✅; brackets and unknowns-both-sides remaining
+- **Algebraic Expressions** (Topic 7): 1 of 3 — expanding single brackets ✅; double brackets and factorising remaining
 
 ### Topics not yet started
 - Topics 1–21 (lower-primary number, fractions, addition/subtraction, counting, place value)

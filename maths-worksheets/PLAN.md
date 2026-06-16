@@ -108,7 +108,7 @@ done
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
 | 23 | Expanding double brackets | `023-expanding-double-brackets.json` | ⬜ |
-| 24 | Expanding single brackets | `024-expanding-single-brackets.json` | ⬜ |
+| 24 | Expanding single brackets | `024-expanding-single-brackets.json` | ✅ |
 | 25 | Factorising expressions | `025-factorising-expressions.json` | ⬜ |
 
 ### Topic 8: Angles
@@ -224,7 +224,7 @@ done
 |---|----------|---------------|--------|
 | 78 | Converting between fractions, decimals and percentages | `078-converting-between-fdp.json` | ✅ |
 | 79 | Ordering FDP | `079-ordering-fdp.json` | ✅ |
-| 80 | Percentage change | `080-percentage-change.json` | ⬜ |
+| 80 | Percentage change | `080-percentage-change.json` | ✅ |
 | 81 | Recurring decimals | `081-recurring-decimals.json` | ✅ |
 
 ### Topic 23: Functions and Graphs
@@ -265,8 +265,8 @@ done
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
 | 96 | Dividing by 10, 100 and 1000 | `096-dividing-by-10-100-and-1000.json` | ✅ |
-| 97 | Long division | `097-long-division.json` | ⬜ |
-| 98 | Long multiplication | `098-long-multiplication.json` | ⬜ |
+| 97 | Long division | `097-long-division.json` | ✅ |
+| 98 | Long multiplication | `098-long-multiplication.json` | ✅ |
 | 99 | Multiplying by 10, 100 and 1000 | `099-multiplying-by-10-100-and-1000.json` | ✅ |
 
 ### Topic 29: Multiplication and Division (Times Tables to 12×12)
@@ -274,8 +274,8 @@ done
 |---|----------|---------------|--------|
 | 100 | 6, 7, 9, 11, 12 times tables | `100-6-7-9-11-12-times-tables.json` | ✅ |
 | 101 | Factor pairs and commutativity | `101-factor-pairs-and-commutativity.json` | ⬜ |
-| 102 | Short division | `102-short-division.json` | ⬜ |
-| 103 | Short multiplication | `103-short-multiplication.json` | ⬜ |
+| 102 | Short division | `102-short-division.json` | ✅ |
+| 103 | Short multiplication | `103-short-multiplication.json` | ✅ |
 
 ### Topic 30: Percentages
 | # | Subtopic | JSON filename | Status |
@@ -409,8 +409,8 @@ done
 |---|----------|---------------|--------|
 | 163 | Equations with brackets | `163-equations-with-brackets.json` | ⬜ |
 | 164 | Equations with unknowns on both sides | `164-equations-with-unknowns-on-both-sides.json` | ⬜ |
-| 165 | One-step equations | `165-one-step-equations.json` | ⬜ |
-| 166 | Two-step equations | `166-two-step-equations.json` | ⬜ |
+| 165 | One-step equations | `165-one-step-equations.json` | ✅ |
+| 166 | Two-step equations | `166-two-step-equations.json` | ✅ |
 
 ### Topic 48: Statistics
 | # | Subtopic | JSON filename | Status |
@@ -475,9 +475,9 @@ done
 | Metric | Count |
 |--------|-------|
 | Total subtopics | 194 |
-| JSON created | 14 |
-| PDF generated | 14 |
-| Remaining | 180 |
+| JSON created | 22 |
+| PDF generated | 22 |
+| Remaining | 172 |
 
 ---
 

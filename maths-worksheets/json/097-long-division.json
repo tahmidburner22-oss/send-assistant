@@ -1,0 +1,325 @@
+{
+  "title": "DIVISION,\n(LONG DIVISION)",
+  "objective": "LO: I can divide larger numbers using the long division algorithm (bus stop method).",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is long division?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Long division</span> is a written method for dividing by <span class=\"ul-k\">2-digit or larger</span> numbers. We work digit-by-digit from left to right."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Bus stop:</span> the divisor sits outside, the dividend underneath, and the answer appears on top. Subtract, bring down, repeat."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Steps to remember",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Divide, multiply, subtract, bring down",
+          "desc": "DMSB cycle"
+        },
+        {
+          "correct": true,
+          "expr": "672 &divide; 12 = 56",
+          "desc": "no remainder"
+        },
+        {
+          "correct": true,
+          "expr": "415 &divide; 13 = 31 r 12",
+          "desc": "with remainder"
+        },
+        {
+          "correct": false,
+          "expr": "Skip a step in DMSB",
+          "desc": "leads to errors"
+        },
+        {
+          "correct": false,
+          "expr": "Forget place value alignment",
+          "desc": "answer wrong"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Repeat the cycle: <strong>D</strong>ivide, <strong>M</strong>ultiply, <strong>S</strong>ubtract, <strong>B</strong>ring down. Stop when no more digits to bring down.",
+      "equation": "<span class=\"ov\">D</span> &rarr; <span class=\"ov\">M</span> &rarr; <span class=\"ov\">S</span> &rarr; <span class=\"ovr\">B</span>",
+      "caption": "Repeat until done"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; no remainder",
+      "question": "Calculate 672 &divide; 12",
+      "steps": [
+        "12 into 6? No. 12 into 67? 5 (5&times;12=60)",
+        "67 &minus; 60 = 7. Bring down 2 &rarr; 72",
+        "12 into 72? 6 (6&times;12=72)"
+      ],
+      "answer": "= 56",
+      "explanation": "Answer: 56 (no remainder). Check: 56&times;12 = 672 &check;"
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; with remainder",
+      "question": "Calculate 415 &divide; 13",
+      "steps": [
+        "13 into 41? 3 (3&times;13=39)",
+        "41 &minus; 39 = 2. Bring down 5 &rarr; 25",
+        "13 into 25? 1 (1&times;13=13). 25&minus;13 = 12"
+      ],
+      "answer": "= 31 r 12",
+      "explanation": "31 remainder 12. Check: 31&times;13 + 12 = 403+12 = 415 &check;"
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; 3-digit divisor",
+      "question": "Calculate 4500 &divide; 25",
+      "steps": [
+        "25 into 45? 1 (1&times;25=25). 45&minus;25 = 20",
+        "Bring down 0 &rarr; 200. 25 into 200? 8",
+        "200 &minus; 200 = 0. Bring down 0. 25 into 0? 0"
+      ],
+      "answer": "= 180",
+      "explanation": "Check: 180&times;25 = 4500 &check;"
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; decimal answer",
+      "question": "Calculate 35 &divide; 4",
+      "steps": [
+        "4 into 35? 8 (8&times;4=32). 35&minus;32 = 3",
+        "Add a decimal point and zero: 30",
+        "4 into 30? 7 (7&times;4=28). 30&minus;28 = 2 &mdash; continue"
+      ],
+      "answer": "= 8.75",
+      "explanation": "Keep going past decimal point until remainder is 0 or you have enough d.p."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Single-digit divisor",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the bus-stop method.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "144 &divide; 6",
+          "answer": "24"
+        },
+        {
+          "id": "b",
+          "expression": "196 &divide; 7",
+          "answer": "28"
+        },
+        {
+          "id": "c",
+          "expression": "315 &divide; 9",
+          "answer": "35"
+        },
+        {
+          "id": "d",
+          "expression": "568 &divide; 8",
+          "answer": "71"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Two-digit divisor (no remainder)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Divide carefully &mdash; line up digits.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "672 &divide; 12",
+          "answer": "56"
+        },
+        {
+          "id": "b",
+          "expression": "936 &divide; 13",
+          "answer": "72"
+        },
+        {
+          "id": "c",
+          "expression": "1056 &divide; 16",
+          "answer": "66"
+        },
+        {
+          "id": "d",
+          "expression": "1638 &divide; 18",
+          "answer": "91"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "With remainder",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Write the answer as &lsquo;quotient r remainder&rsquo;.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "415 &divide; 13",
+          "answer": "31 r 12"
+        },
+        {
+          "id": "b",
+          "expression": "500 &divide; 17",
+          "answer": "29 r 7"
+        },
+        {
+          "id": "c",
+          "expression": "847 &divide; 23",
+          "answer": "36 r 19"
+        },
+        {
+          "id": "d",
+          "expression": "1234 &divide; 41",
+          "answer": "30 r 4"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Decimal answers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Continue past the decimal point until exact.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "35 &divide; 4",
+          "answer": "8.75"
+        },
+        {
+          "id": "b",
+          "expression": "63 &divide; 8",
+          "answer": "7.875"
+        },
+        {
+          "id": "c",
+          "expression": "27 &divide; 5",
+          "answer": "5.4"
+        },
+        {
+          "id": "d",
+          "expression": "100 &divide; 8",
+          "answer": "12.5"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed long division",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Choose the right method.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "504 &divide; 14",
+          "answer": "36"
+        },
+        {
+          "id": "b",
+          "expression": "725 &divide; 25",
+          "answer": "29"
+        },
+        {
+          "id": "c",
+          "expression": "847 &divide; 11",
+          "answer": "77"
+        },
+        {
+          "id": "d",
+          "expression": "1000 &divide; 8",
+          "answer": "125"
+        },
+        {
+          "id": "e",
+          "expression": "234 &divide; 18",
+          "answer": "13"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Always divide left to right",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "DMSB stands for Divide, Multiply, Subtract, Bring down",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "If divisor doesn't fit, skip the digit",
+        "correct": false
+      },
+      {
+        "id": "d",
+        "statement": "Remainder must be smaller than divisor",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "100 &divide; 8 has remainder 4",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A factory has <strong>2160 chocolates</strong> to pack into boxes of <strong>24</strong>. How many full boxes? Are any chocolates left over? Show your full long division."
+      },
+      {
+        "id": "b",
+        "text": "Mr Khan drives <strong>462 miles</strong> using <strong>14 gallons</strong> of fuel. Find his miles-per-gallon (mpg). Now do <strong>637 miles &divide; 13 gallons</strong>. Which trip was more efficient?"
+      }
+    ]
+  }
+}

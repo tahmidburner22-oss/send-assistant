@@ -1,0 +1,325 @@
+{
+  "title": "FRACTIONS, DECIMALS AND PERCENTAGES,\n(PERCENTAGE CHANGE)",
+  "objective": "LO: I can calculate percentage increase, decrease and percentage change.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is percentage change?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Percentage change</span> measures how much a value has <span class=\"ul-k\">increased or decreased</span> as a percentage of the original."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Formula:</span> % change = (change &divide; original) &times; 100. Always divide by the ORIGINAL amount, not the new amount."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "£20 &rarr; £25 = +25%",
+          "desc": "increase"
+        },
+        {
+          "correct": true,
+          "expr": "£40 &rarr; £30 = &minus;25%",
+          "desc": "decrease"
+        },
+        {
+          "correct": true,
+          "expr": "10 &rarr; 12 = +20%",
+          "desc": "(2&divide;10)&times;100"
+        },
+        {
+          "correct": false,
+          "expr": "£20 &rarr; £30 = +33%",
+          "desc": "should be +50%"
+        },
+        {
+          "correct": false,
+          "expr": "Divide by NEW value",
+          "desc": "always divide by ORIGINAL"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "% change = (new &minus; old) &divide; old &times; 100. Positive = increase, negative = decrease.",
+      "equation": "<span class=\"ov\">change</span> &divide; <span class=\"ov\">original</span> &times; 100 = <span class=\"ovr\">% change</span>",
+      "caption": "Always divide by ORIGINAL"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; increase",
+      "question": "Price rises from £40 to £50. Find the % increase.",
+      "steps": [
+        "Change = 50 &minus; 40 = 10",
+        "10 &divide; 40 = 0.25",
+        "0.25 &times; 100 = 25%"
+      ],
+      "answer": "= 25% increase",
+      "explanation": "Always divide the change by the ORIGINAL price (£40)."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; decrease",
+      "question": "Population drops from 800 to 600. Find the % decrease.",
+      "steps": [
+        "Change = 800 &minus; 600 = 200",
+        "200 &divide; 800 = 0.25",
+        "0.25 &times; 100 = 25%"
+      ],
+      "answer": "= 25% decrease",
+      "explanation": "The change is always positive; the &lsquo;decrease&rsquo; describes the direction."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; from amounts",
+      "question": "A coat costs £80 in a sale. The original price was £100. % change?",
+      "steps": [
+        "Change = 80 &minus; 100 = &minus;20",
+        "&minus;20 &divide; 100 = &minus;0.20",
+        "&minus;0.20 &times; 100 = &minus;20%"
+      ],
+      "answer": "= 20% decrease",
+      "explanation": "Negative answer means a decrease."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; growth",
+      "question": "Plant grows from 12 cm to 18 cm. % growth?",
+      "steps": [
+        "Change = 18 &minus; 12 = 6",
+        "6 &divide; 12 = 0.5",
+        "0.5 &times; 100 = 50%"
+      ],
+      "answer": "= 50% growth",
+      "explanation": "Divide the increase by the original (12 cm)."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Find the change",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate the change (new &minus; old).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "£50 &rarr; £65",
+          "answer": "+£15"
+        },
+        {
+          "id": "b",
+          "expression": "£90 &rarr; £75",
+          "answer": "&minus;£15"
+        },
+        {
+          "id": "c",
+          "expression": "200 &rarr; 240",
+          "answer": "+40"
+        },
+        {
+          "id": "d",
+          "expression": "150 &rarr; 120",
+          "answer": "&minus;30"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "% increase",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate the percentage increase. Use (change &divide; old) &times; 100.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "£20 &rarr; £25",
+          "answer": "25%"
+        },
+        {
+          "id": "b",
+          "expression": "£40 &rarr; £50",
+          "answer": "25%"
+        },
+        {
+          "id": "c",
+          "expression": "60 &rarr; 90",
+          "answer": "50%"
+        },
+        {
+          "id": "d",
+          "expression": "200 &rarr; 240",
+          "answer": "20%"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "% decrease",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Calculate the percentage decrease.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "£40 &rarr; £30",
+          "answer": "25%"
+        },
+        {
+          "id": "b",
+          "expression": "£100 &rarr; £85",
+          "answer": "15%"
+        },
+        {
+          "id": "c",
+          "expression": "150 &rarr; 120",
+          "answer": "20%"
+        },
+        {
+          "id": "d",
+          "expression": "80 &rarr; 60",
+          "answer": "25%"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "State whether each is an increase or decrease, and find the %.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Salary £25k &rarr; £30k",
+          "answer": "20% increase"
+        },
+        {
+          "id": "b",
+          "expression": "Houses 400 &rarr; 480",
+          "answer": "20% increase"
+        },
+        {
+          "id": "c",
+          "expression": "Bill £80 &rarr; £64",
+          "answer": "20% decrease"
+        },
+        {
+          "id": "d",
+          "expression": "Speed 50 &rarr; 35 mph",
+          "answer": "30% decrease"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed % change",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find the percentage change. State increase or decrease.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "12 &rarr; 15",
+          "answer": "+25%"
+        },
+        {
+          "id": "b",
+          "expression": "£90 &rarr; £108",
+          "answer": "+20%"
+        },
+        {
+          "id": "c",
+          "expression": "60 &rarr; 45",
+          "answer": "&minus;25%"
+        },
+        {
+          "id": "d",
+          "expression": "£500 &rarr; £575",
+          "answer": "+15%"
+        },
+        {
+          "id": "e",
+          "expression": "120 &rarr; 90",
+          "answer": "&minus;25%"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "£20 &rarr; £25 is a 25% increase",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Divide by the new value, not the old",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "£100 &rarr; £80 is a 20% decrease",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "200 &rarr; 240 is a 40% increase",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "% change can be negative for a decrease",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A shop sells a TV for <strong>£500</strong>. In a sale they reduce it to <strong>£425</strong>. After the sale they raise it back to <strong>£480</strong>. Find the % decrease in the sale and the % increase after the sale. Are they the same number? Explain why or why not."
+      },
+      {
+        "id": "b",
+        "text": "A car worth <strong>£12 000</strong> loses <strong>15% of its value</strong> in year 1, then another <strong>10%</strong> in year 2. What is the car worth after 2 years? What's the total % change?"
+      }
+    ]
+  }
+}

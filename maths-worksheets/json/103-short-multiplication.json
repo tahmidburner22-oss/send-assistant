@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION,\n(SHORT MULTIPLICATION)",
+  "objective": "LO: I can multiply a multi-digit number by a single digit using short multiplication.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is short multiplication?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Short multiplication</span> is the column method for multi-digit &times; <span class=\"ul-k\">SINGLE</span>-digit. Multiply each digit, carry tens to the next column."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">When to use:</span> multiplying by 2-9. For 10+, use long multiplication."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "234 &times; 6 = 1404",
+          "desc": "with carrying"
+        },
+        {
+          "correct": true,
+          "expr": "Carry tens to next column",
+          "desc": "left-shift"
+        },
+        {
+          "correct": true,
+          "expr": "47 &times; 8 = 376",
+          "desc": "2-digit"
+        },
+        {
+          "correct": false,
+          "expr": "Forget to add the carry",
+          "desc": "answer wrong"
+        },
+        {
+          "correct": false,
+          "expr": "Multiply right to left",
+          "desc": "actually right-to-left IS correct!"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply each digit (right to left). If the result is 10+, write the units and CARRY the tens to the next column.",
+      "equation": "<span class=\"ov\">47</span> &times; <span class=\"ov\">8</span> = <span class=\"ovr\">376</span>",
+      "caption": "8&times;7=56, write 6 carry 5; then 8&times;4+5=37"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; no carry",
+      "question": "Calculate 32 &times; 3",
+      "steps": [
+        "3 &times; 2 = 6 (units)",
+        "3 &times; 3 = 9 (tens)",
+        "Read off: 96"
+      ],
+      "answer": "= 96",
+      "explanation": "No carrying needed because each multiplication is &lt; 10."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; single carry",
+      "question": "Calculate 47 &times; 8",
+      "steps": [
+        "8 &times; 7 = 56 (write 6, carry 5)",
+        "8 &times; 4 = 32, +5 = 37",
+        "Read off: 376"
+      ],
+      "answer": "= 376",
+      "explanation": "Always work right to left, carrying any tens."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; 3-digit number",
+      "question": "Calculate 234 &times; 6",
+      "steps": [
+        "6 &times; 4 = 24 (write 4, carry 2)",
+        "6 &times; 3 = 18, +2 = 20 (write 0, carry 2)",
+        "6 &times; 2 = 12, +2 = 14"
+      ],
+      "answer": "= 1404",
+      "explanation": "Multiple carries: each one adds to the next column."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with zero",
+      "question": "Calculate 305 &times; 7",
+      "steps": [
+        "7 &times; 5 = 35 (write 5, carry 3)",
+        "7 &times; 0 = 0, +3 = 3",
+        "7 &times; 3 = 21"
+      ],
+      "answer": "= 2135",
+      "explanation": "Zeros multiply to give 0 — but carries still apply."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Single-digit results",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "No carrying needed.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "13 &times; 2",
+          "answer": "26"
+        },
+        {
+          "id": "b",
+          "expression": "23 &times; 3",
+          "answer": "69"
+        },
+        {
+          "id": "c",
+          "expression": "31 &times; 3",
+          "answer": "93"
+        },
+        {
+          "id": "d",
+          "expression": "412 &times; 2",
+          "answer": "824"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "With carrying",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Carry the tens to the next column.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "47 &times; 8",
+          "answer": "376"
+        },
+        {
+          "id": "b",
+          "expression": "56 &times; 7",
+          "answer": "392"
+        },
+        {
+          "id": "c",
+          "expression": "83 &times; 6",
+          "answer": "498"
+        },
+        {
+          "id": "d",
+          "expression": "94 &times; 5",
+          "answer": "470"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "3-digit by 1-digit",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Same method, one extra column.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "234 &times; 6",
+          "answer": "1404"
+        },
+        {
+          "id": "b",
+          "expression": "457 &times; 4",
+          "answer": "1828"
+        },
+        {
+          "id": "c",
+          "expression": "623 &times; 7",
+          "answer": "4361"
+        },
+        {
+          "id": "d",
+          "expression": "856 &times; 9",
+          "answer": "7704"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "With zero in number",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Don't forget: 0 &times; n = 0, plus any carry.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "305 &times; 7",
+          "answer": "2135"
+        },
+        {
+          "id": "b",
+          "expression": "402 &times; 8",
+          "answer": "3216"
+        },
+        {
+          "id": "c",
+          "expression": "709 &times; 6",
+          "answer": "4254"
+        },
+        {
+          "id": "d",
+          "expression": "5006 &times; 4",
+          "answer": "20024"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Apply short multiplication.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "78 &times; 6",
+          "answer": "468"
+        },
+        {
+          "id": "b",
+          "expression": "239 &times; 5",
+          "answer": "1195"
+        },
+        {
+          "id": "c",
+          "expression": "517 &times; 8",
+          "answer": "4136"
+        },
+        {
+          "id": "d",
+          "expression": "1234 &times; 7",
+          "answer": "8638"
+        },
+        {
+          "id": "e",
+          "expression": "999 &times; 9",
+          "answer": "8991"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Multiply right to left",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Carries are added to the NEXT column's product",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "47 &times; 8 = 326 (forget carry)",
+        "correct": false
+      },
+      {
+        "id": "d",
+        "statement": "0 &times; n = 0, ignore the carry",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Short multiplication only works for single-digit multipliers",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A book has <strong>247 pages</strong>. A library has <strong>9 copies</strong>. How many pages in total across all copies? Use short multiplication."
+      },
+      {
+        "id": "b",
+        "text": "A factory makes <strong>1234 widgets a day</strong>, <strong>7 days a week</strong>. How many widgets per week? How many in 4 weeks? Show your working clearly."
+      }
+    ]
+  }
+}
