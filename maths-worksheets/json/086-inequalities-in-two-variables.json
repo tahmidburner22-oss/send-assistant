@@ -1,0 +1,325 @@
+{
+  "title": "INEQUALITIES,\n(INEQUALITIES IN TWO VARIABLES)",
+  "objective": "LO: I can represent and identify regions defined by linear inequalities in two variables.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Inequalities with x and y",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "An <span class=\"ul-b\">inequality in two variables</span> such as y &lt; 2x + 1 defines a <span class=\"ul-k\">region</span> on a coordinate grid, not just a line."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Draw the boundary line (dashed for &lt; or &gt;, solid for &le; or &ge;), then shade the correct region by testing a point."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y &lt; x + 3: region below the line y = x + 3",
+          "desc": "dashed line"
+        },
+        {
+          "correct": true,
+          "expr": "y &ge; 2x &minus; 1: region above and including the line",
+          "desc": "solid line"
+        },
+        {
+          "correct": true,
+          "expr": "x + y &le; 5: test (0,0) gives 0 &le; 5, true, so shade that side",
+          "desc": "test point method"
+        },
+        {
+          "correct": false,
+          "expr": "y &lt; x + 3 uses a solid boundary line",
+          "desc": "strict inequality = dashed"
+        },
+        {
+          "correct": false,
+          "expr": "The line y = x is always the boundary for y &gt; x",
+          "desc": "y = x is correct boundary, but y &gt; x is above"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Draw the boundary line, choose dashed or solid, then test a point to determine which side to shade.",
+      "equation": "y <span class=\"ov\">&le;</span> mx + c &rArr; <span class=\"ovr\">solid line, shade below</span>",
+      "caption": "Solid line includes the boundary; shade the correct side"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; identifying the region",
+      "question": "Describe the region y &lt; x + 2",
+      "steps": [
+        "Boundary line: y = x + 2 (dashed, as strict &lt;)",
+        "Test (0, 0): 0 &lt; 0 + 2 = 2, true",
+        "Region: below the dashed line y = x + 2"
+      ],
+      "answer": "Below dashed line y = x + 2",
+      "explanation": "Use a test point to verify which side satisfies the inequality."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; solid boundary",
+      "question": "Describe the region y &ge; 3x &minus; 1",
+      "steps": [
+        "Boundary: y = 3x &minus; 1 (solid, as &ge;)",
+        "Test (0, 0): 0 &ge; &minus;1, true",
+        "Region: above and on the solid line"
+      ],
+      "answer": "Above/on solid line y = 3x &minus; 1",
+      "explanation": "Solid line means points ON the line are included."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; testing a point",
+      "question": "Is the point (2, 5) in the region x + y &le; 6?",
+      "steps": [
+        "Substitute: 2 + 5 = 7",
+        "Check: 7 &le; 6?",
+        "No, 7 &gt; 6, so (2, 5) is NOT in the region"
+      ],
+      "answer": "No",
+      "explanation": "Substitute the coordinates into the inequality and check if it is true."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; combined region",
+      "question": "Describe the region satisfying y &gt; 1, x &lt; 4, and y &lt; x",
+      "steps": [
+        "y &gt; 1: above the dashed line y = 1",
+        "x &lt; 4: left of the dashed line x = 4",
+        "y &lt; x: below the dashed line y = x; the overlap is the triangular region"
+      ],
+      "answer": "Triangular region above y = 1, left of x = 4, below y = x",
+      "explanation": "The feasible region is where all three inequalities are satisfied simultaneously."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identifying boundary lines",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State the boundary line and whether it is dashed or solid.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y &lt; 3x + 1",
+          "answer": "y = 3x + 1, dashed"
+        },
+        {
+          "id": "b",
+          "expression": "y &ge; x &minus; 4",
+          "answer": "y = x &minus; 4, solid"
+        },
+        {
+          "id": "c",
+          "expression": "x + y &le; 10",
+          "answer": "x + y = 10, solid"
+        },
+        {
+          "id": "d",
+          "expression": "2x + y &gt; 6",
+          "answer": "2x + y = 6, dashed"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Test point method",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Test (0, 0). Is it in the region?",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y &lt; x + 5",
+          "answer": "0 &lt; 5, yes"
+        },
+        {
+          "id": "b",
+          "expression": "y &gt; 2x + 3",
+          "answer": "0 &gt; 3, no"
+        },
+        {
+          "id": "c",
+          "expression": "x + y &le; 4",
+          "answer": "0 &le; 4, yes"
+        },
+        {
+          "id": "d",
+          "expression": "3x &minus; y &ge; 1",
+          "answer": "0 &ge; 1, no"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Describing regions",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Describe the region (above/below, left/right of boundary).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y &gt; 2",
+          "answer": "Above the line y = 2"
+        },
+        {
+          "id": "b",
+          "expression": "x &le; 5",
+          "answer": "Left of and on the line x = 5"
+        },
+        {
+          "id": "c",
+          "expression": "y &lt; &minus;x + 3",
+          "answer": "Below the line y = &minus;x + 3"
+        },
+        {
+          "id": "d",
+          "expression": "y &ge; &frac{1}{2}x",
+          "answer": "Above and on the line y = &frac{1}{2}x"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Checking points",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Determine if the given point satisfies the inequality.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(1, 4) in y &le; 3x + 2?",
+          "answer": "4 &le; 5, yes"
+        },
+        {
+          "id": "b",
+          "expression": "(3, 1) in y &gt; x &minus; 1?",
+          "answer": "1 &gt; 2, no"
+        },
+        {
+          "id": "c",
+          "expression": "(2, 3) in x + y &lt; 6?",
+          "answer": "5 &lt; 6, yes"
+        },
+        {
+          "id": "d",
+          "expression": "(&minus;1, 2) in y &ge; 2x + 5?",
+          "answer": "2 &ge; 3, no"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Combined regions",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Describe the region satisfying all given inequalities.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y &ge; 0, x &ge; 0, x + y &le; 4",
+          "answer": "Triangle with vertices (0,0), (4,0), (0,4)"
+        },
+        {
+          "id": "b",
+          "expression": "x &gt; 1, y &lt; 5, y &gt; x",
+          "answer": "Region above y = x, below y = 5, right of x = 1"
+        },
+        {
+          "id": "c",
+          "expression": "y &le; x + 2, y &ge; 0, x &le; 3",
+          "answer": "Triangle-like region"
+        },
+        {
+          "id": "d",
+          "expression": "x + y &le; 8, x &ge; 2, y &ge; 1",
+          "answer": "Enclosed region"
+        },
+        {
+          "id": "e",
+          "expression": "y &lt; 2x, y &gt; &minus;1, x &lt; 3",
+          "answer": "Region between y = &minus;1 and y = 2x, left of x = 3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "A strict inequality (&lt; or &gt;) uses a dashed boundary line",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "y &lt; x + 3 means the region above the line y = x + 3",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Testing (0, 0) tells you which side of the line to shade",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&le; and &ge; both use solid lines because the boundary is included",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "y &ge; 2x means the region below the line y = 2x",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A factory makes chairs (x) and tables (y). Each chair needs <strong>2 hours</strong> and each table needs <strong>3 hours</strong>. They have <strong>30 hours</strong> available. Write an inequality for this constraint and identify three integer points (x, y) that satisfy it, where x &ge; 0 and y &ge; 0."
+      },
+      {
+        "id": "b",
+        "text": "Find the area of the region satisfying <strong>x &ge; 0</strong>, <strong>y &ge; 0</strong>, and <strong>x + y &le; 6</strong>. What shape is this region? If we add <strong>y &le; x</strong>, what is the new area?"
+      }
+    ]
+  }
+}

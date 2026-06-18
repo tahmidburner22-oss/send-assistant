@@ -1,0 +1,325 @@
+{
+  "title": "STATISTICS,\n(FREQUENCY TABLES AND GROUPED DATA)",
+  "objective": "LO: I can calculate averages and other statistics from frequency tables and grouped frequency tables.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Averages from frequency tables",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">frequency table</span> shows how often each value (or group of values) occurs. For grouped data, use the <span class=\"ul-k\">midpoint</span> of each class to estimate the mean."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Mean = &Sigma;fx &divide; &Sigma;f. For grouped data, x is the class midpoint. The modal class has the highest frequency."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Mean = &Sigma;fx &divide; &Sigma;f",
+          "desc": "total of fx divided by total frequency"
+        },
+        {
+          "correct": true,
+          "expr": "Midpoint of 10&ndash;20 is 15",
+          "desc": "(10 + 20) &divide; 2"
+        },
+        {
+          "correct": true,
+          "expr": "Modal class = class with highest frequency",
+          "desc": "not the midpoint"
+        },
+        {
+          "correct": false,
+          "expr": "Mean of grouped data uses class boundaries",
+          "desc": "use midpoints"
+        },
+        {
+          "correct": false,
+          "expr": "You can find the exact mean from grouped data",
+          "desc": "only an estimate"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "For grouped data: estimate mean = sum of (frequency &times; midpoint) divided by total frequency.",
+      "equation": "Estimated mean = <span class=\"ov\">&Sigma;fx</span> &divide; <span class=\"ovr\">&Sigma;f</span>",
+      "caption": "x = midpoint of each class; f = frequency"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; ungrouped frequency table",
+      "question": "Scores: 1(f=3), 2(f=5), 3(f=7), 4(f=4), 5(f=1). Find the mean.",
+      "steps": [
+        "&Sigma;fx = 1&times;3 + 2&times;5 + 3&times;7 + 4&times;4 + 5&times;1 = 3+10+21+16+5 = 55",
+        "&Sigma;f = 3+5+7+4+1 = 20",
+        "Mean = 55 &divide; 20 = 2.75"
+      ],
+      "answer": "Mean = 2.75",
+      "explanation": "Multiply each value by its frequency, sum, then divide by total frequency."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; grouped data mean",
+      "question": "Heights (cm): 140&ndash;150 (f=4), 150&ndash;160 (f=10), 160&ndash;170 (f=8), 170&ndash;180 (f=3). Estimate the mean.",
+      "steps": [
+        "Midpoints: 145, 155, 165, 175",
+        "&Sigma;fx = 145&times;4 + 155&times;10 + 165&times;8 + 175&times;3 = 580+1550+1320+525 = 3975",
+        "Mean = 3975 &divide; 25 = 159"
+      ],
+      "answer": "Estimated mean = 159 cm",
+      "explanation": "Use midpoints because we do not know exact values within groups."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; modal class and median class",
+      "question": "Classes: 0&ndash;10 (f=5), 10&ndash;20 (f=12), 20&ndash;30 (f=8), 30&ndash;40 (f=5). Find the modal class and the class containing the median.",
+      "steps": [
+        "Modal class: 10&ndash;20 (highest frequency = 12)",
+        "Total n = 30; median at &frac{30}{2} = 15th value",
+        "CF: 5, 17, ... The 15th value is in the 10&ndash;20 class"
+      ],
+      "answer": "Modal class: 10&ndash;20; Median class: 10&ndash;20",
+      "explanation": "The modal class has the highest frequency. Count up CFs to find the median class."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; range from grouped data",
+      "question": "Smallest possible value: 0 (from class 0&ndash;10). Largest possible: 40 (from class 30&ndash;40). Find the estimated range.",
+      "steps": [
+        "Minimum could be anywhere in 0&ndash;10",
+        "Maximum could be anywhere in 30&ndash;40",
+        "Estimated range = 40 &minus; 0 = 40 (maximum possible)"
+      ],
+      "answer": "Estimated range = 40",
+      "explanation": "From grouped data, we can only estimate the range using class boundaries."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Mean from ungrouped frequency tables",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate the mean.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x: 1,2,3,4; f: 5,8,4,3",
+          "answer": "Mean = (5+16+12+12)/20 = 45/20 = 2.25"
+        },
+        {
+          "id": "b",
+          "expression": "x: 0,1,2,3,4; f: 2,6,9,7,1",
+          "answer": "Mean = (0+6+18+21+4)/25 = 49/25 = 1.96"
+        },
+        {
+          "id": "c",
+          "expression": "x: 5,6,7,8; f: 4,10,8,3",
+          "answer": "Mean = (20+60+56+24)/25 = 160/25 = 6.4"
+        },
+        {
+          "id": "d",
+          "expression": "x: 10,20,30; f: 7,5,8",
+          "answer": "Mean = (70+100+240)/20 = 410/20 = 20.5"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Estimated mean (grouped)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the estimated mean using midpoints.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "0&ndash;10 (f=6), 10&ndash;20 (f=10), 20&ndash;30 (f=4)",
+          "answer": "Mean = (30+150+100)/20 = 280/20 = 14"
+        },
+        {
+          "id": "b",
+          "expression": "0&ndash;5 (f=3), 5&ndash;10 (f=8), 10&ndash;15 (f=9)",
+          "answer": "Mean = (7.5+60+112.5)/20 = 180/20 = 9"
+        },
+        {
+          "id": "c",
+          "expression": "50&ndash;60 (f=5), 60&ndash;70 (f=12), 70&ndash;80 (f=8), 80&ndash;90 (f=5)",
+          "answer": "Midpoints: 55,65,75,85; mean = (275+780+600+425)/30 = 2080/30 = 69.3"
+        },
+        {
+          "id": "d",
+          "expression": "100&ndash;120 (f=4), 120&ndash;140 (f=7), 140&ndash;160 (f=9)",
+          "answer": "Mean = (440+910+1350)/20 = 2700/20 = 135"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Modal class and median class",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Identify the modal class and the class containing the median.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "0&ndash;10(f=4), 10&ndash;20(f=11), 20&ndash;30(f=5)",
+          "answer": "Modal: 10&ndash;20; Median in 10&ndash;20"
+        },
+        {
+          "id": "b",
+          "expression": "0&ndash;5(f=2), 5&ndash;10(f=8), 10&ndash;15(f=6), 15&ndash;20(f=4)",
+          "answer": "Modal: 5&ndash;10; Median in 5&ndash;10"
+        },
+        {
+          "id": "c",
+          "expression": "20&ndash;30(f=7), 30&ndash;40(f=13), 40&ndash;50(f=10)",
+          "answer": "Modal: 30&ndash;40; Median in 30&ndash;40"
+        },
+        {
+          "id": "d",
+          "expression": "0&ndash;100(f=5), 100&ndash;200(f=15), 200&ndash;300(f=10)",
+          "answer": "Modal: 100&ndash;200; Median in 100&ndash;200"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Median and mode from ungrouped",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the median and mode.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x: 1,2,3,4,5; f: 2,5,8,3,2",
+          "answer": "Mode=3; n=20, median at 10/11th, CF: 2,7,15... median=3"
+        },
+        {
+          "id": "b",
+          "expression": "x: 0,1,2,3; f: 4,6,6,4",
+          "answer": "Mode=1 and 2 (bimodal); n=20, median between 10th/11th = 1.5"
+        },
+        {
+          "id": "c",
+          "expression": "x: 10,11,12,13,14; f: 1,3,7,5,4",
+          "answer": "Mode=12; n=20, median at 10/11th = 12"
+        },
+        {
+          "id": "d",
+          "expression": "x: 2,4,6,8; f: 5,10,3,2",
+          "answer": "Mode=4; n=20, median at 10/11th = 4"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed frequency table problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer each question.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "n=30, &Sigma;fx = 450. Find the mean.",
+          "answer": "15"
+        },
+        {
+          "id": "b",
+          "expression": "Mean = 8, n = 25. Find &Sigma;fx.",
+          "answer": "200"
+        },
+        {
+          "id": "c",
+          "expression": "Classes: 0&ndash;20(f=8), 20&ndash;40(f=12), 40&ndash;60(f=5). Range estimate?",
+          "answer": "60"
+        },
+        {
+          "id": "d",
+          "expression": "Modal class for: 1&ndash;3(f=4), 3&ndash;5(f=9), 5&ndash;7(f=6), 7&ndash;9(f=1)?",
+          "answer": "3&ndash;5"
+        },
+        {
+          "id": "e",
+          "expression": "Estimated mean if all in class 10&ndash;20 are exactly 15?",
+          "answer": "That is the midpoint assumption"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Mean from a frequency table = &Sigma;fx &divide; &Sigma;f",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "For grouped data, use the class boundaries (not midpoints) for the mean",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The modal class is the class with the highest frequency",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "You can find the exact mean from grouped data",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The midpoint of a class 10&ndash;20 is 15",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A grouped frequency table shows times (minutes): 0&ndash;5 (f=3), 5&ndash;10 (f=7), 10&ndash;15 (f=<strong>k</strong>), 15&ndash;20 (f=4). The estimated mean is 10.5 minutes. Find the value of k."
+      },
+      {
+        "id": "b",
+        "text": "Two datasets are summarised. Set A: n=20, &Sigma;fx=140. Set B: n=30, &Sigma;fx=240. Find the mean of each set. If the datasets are combined, find the overall mean. Explain why this is not the average of the two means."
+      }
+    ]
+  }
+}

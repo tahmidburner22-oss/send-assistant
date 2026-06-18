@@ -1,0 +1,325 @@
+{
+  "title": "PYTHAGORAS,\n(APPLYING PYTHAGORAS IN 2D PROBLEMS)",
+  "objective": "LO: I can apply Pythagoras' theorem to solve problems in 2D contexts.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Pythagoras in context",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Pythagoras' theorem</span> states a&sup2; + b&sup2; = c&sup2; where c is the <span class=\"ul-k\">hypotenuse</span> (longest side, opposite the right angle)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Identify the right-angled triangle in the problem, label the sides, decide if finding the hypotenuse (add) or a shorter side (subtract), then solve."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Distance between (0,0) and (3,4) = &radic;(9+16) = 5",
+          "desc": "coordinate distance"
+        },
+        {
+          "correct": true,
+          "expr": "Diagonal of rectangle 6 by 8 = &radic;(36+64) = 10",
+          "desc": "add squares"
+        },
+        {
+          "correct": true,
+          "expr": "Ladder 5m, base 3m from wall: height = &radic;(25&minus;9) = 4m",
+          "desc": "subtract"
+        },
+        {
+          "correct": false,
+          "expr": "Diagonal of 6 by 8 rectangle = 6 + 8 = 14",
+          "desc": "cannot just add sides"
+        },
+        {
+          "correct": false,
+          "expr": "a&sup2; + b&sup2; = c&sup2; means a + b = c",
+          "desc": "must square then root"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Identify the right angle, label the hypotenuse (opposite it), then use a&sup2; + b&sup2; = c&sup2;.",
+      "equation": "c = &radic;(<span class=\"ov\">a&sup2;</span> + <span class=\"ovr\">b&sup2;</span>)",
+      "caption": "Hypotenuse = square root of (sum of squares)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; coordinate distance",
+      "question": "Find the distance between A(1, 2) and B(4, 6).",
+      "steps": [
+        "Horizontal distance: 4 &minus; 1 = 3",
+        "Vertical distance: 6 &minus; 2 = 4",
+        "Distance = &radic;(3&sup2; + 4&sup2;) = &radic;(9 + 16) = &radic;25 = 5"
+      ],
+      "answer": "5 units",
+      "explanation": "The distance formula is just Pythagoras applied to coordinates."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; diagonal of a rectangle",
+      "question": "Find the diagonal of a rectangle 5 cm by 12 cm.",
+      "steps": [
+        "The diagonal is the hypotenuse of a right-angled triangle",
+        "d&sup2; = 5&sup2; + 12&sup2; = 25 + 144 = 169",
+        "d = &radic;169 = 13 cm"
+      ],
+      "answer": "13 cm",
+      "explanation": "The diagonal splits a rectangle into two right-angled triangles."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; ladder problem",
+      "question": "A 10 m ladder leans against a wall with its base 6 m away. How high does it reach?",
+      "steps": [
+        "Ladder = hypotenuse = 10, base = 6, height = ?",
+        "h&sup2; = 10&sup2; &minus; 6&sup2; = 100 &minus; 36 = 64",
+        "h = &radic;64 = 8 m"
+      ],
+      "answer": "8 m",
+      "explanation": "The ladder is the hypotenuse; subtract to find the shorter side."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; isosceles triangle height",
+      "question": "An isosceles triangle has base 10 cm and equal sides 13 cm. Find the height.",
+      "steps": [
+        "Height bisects the base: half-base = 5 cm",
+        "h&sup2; = 13&sup2; &minus; 5&sup2; = 169 &minus; 25 = 144",
+        "h = &radic;144 = 12 cm"
+      ],
+      "answer": "12 cm",
+      "explanation": "Drop a perpendicular from the apex to create two right-angled triangles."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Coordinate distances",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the distance between each pair of points.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(0, 0) and (3, 4)",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "(1, 2) and (5, 5)",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "(0, 0) and (5, 12)",
+          "answer": "13"
+        },
+        {
+          "id": "d",
+          "expression": "(2, 1) and (6, 4)",
+          "answer": "5"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Diagonals",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the diagonal of each rectangle.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 cm by 4 cm",
+          "answer": "5 cm"
+        },
+        {
+          "id": "b",
+          "expression": "8 cm by 15 cm",
+          "answer": "17 cm"
+        },
+        {
+          "id": "c",
+          "expression": "7 cm by 24 cm",
+          "answer": "25 cm"
+        },
+        {
+          "id": "d",
+          "expression": "9 cm by 12 cm",
+          "answer": "15 cm"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Ladder and ramp problems",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Solve each real-life problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ladder 13 m, base 5 m from wall. Height?",
+          "answer": "12 m"
+        },
+        {
+          "id": "b",
+          "expression": "Ramp 5 m long, rises 3 m. Horizontal distance?",
+          "answer": "4 m"
+        },
+        {
+          "id": "c",
+          "expression": "Flagpole 12 m, wire anchor 5 m away. Wire length?",
+          "answer": "13 m"
+        },
+        {
+          "id": "d",
+          "expression": "Slide 15 m, height 9 m. Horizontal distance?",
+          "answer": "12 m"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Triangles and shapes",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the unknown measurement.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Isosceles triangle: base 8, equal sides 5. Height?",
+          "answer": "3"
+        },
+        {
+          "id": "b",
+          "expression": "Equilateral triangle side 6. Height?",
+          "answer": "5.20 (3 s.f.)"
+        },
+        {
+          "id": "c",
+          "expression": "Square diagonal 10 cm. Side length?",
+          "answer": "7.07 cm (3 s.f.)"
+        },
+        {
+          "id": "d",
+          "expression": "Rhombus diagonals 6 and 8. Side length?",
+          "answer": "5"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed 2D problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer each problem, giving answers to 1 d.p. where needed.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ship sails 8 km East then 6 km North. Direct distance?",
+          "answer": "10 km"
+        },
+        {
+          "id": "b",
+          "expression": "TV screen 40 cm by 30 cm. Diagonal?",
+          "answer": "50 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Kite string 25 m, horizontal distance 7 m. Height?",
+          "answer": "24 m"
+        },
+        {
+          "id": "d",
+          "expression": "Points (&minus;2, 1) and (4, 9). Distance?",
+          "answer": "10"
+        },
+        {
+          "id": "e",
+          "expression": "Right triangle: legs 7 cm and 9 cm. Hypotenuse?",
+          "answer": "11.4 cm"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "The hypotenuse is always the longest side",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "a&sup2; + b&sup2; = c means add and square root",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "To find a shorter side, subtract the squares then square root",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Pythagoras works for all triangles",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The distance formula uses Pythagoras' theorem",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A rectangular field is <strong>120 m by 50 m</strong>. A diagonal path is built across it. How much shorter is the diagonal path than walking along two edges? Give your answer to 1 decimal place."
+      },
+      {
+        "id": "b",
+        "text": "Three towns A, B, C form a right angle at B. AB = <strong>15 km</strong> and BC = <strong>20 km</strong>. A new road is built directly from A to C. A fourth town D is at the midpoint of AC. Find the distance BD to 1 decimal place."
+      }
+    ]
+  }
+}

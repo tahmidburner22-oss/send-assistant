@@ -1,0 +1,325 @@
+{
+  "title": "PYTHAGORAS,\n(FINDING THE HYPOTENUSE)",
+  "objective": "LO: I can use Pythagoras' theorem to find the hypotenuse of a right-angled triangle.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding the hypotenuse",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">hypotenuse</span> is the longest side of a right-angled triangle, opposite the right angle. Use <span class=\"ul-k\">c&sup2; = a&sup2; + b&sup2;</span> then square root."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Square both shorter sides, add them together, then take the square root to find c."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "a = 3, b = 4: c = &radic;(9 + 16) = &radic;25 = 5",
+          "desc": "3-4-5 triple"
+        },
+        {
+          "correct": true,
+          "expr": "a = 5, b = 12: c = &radic;(25 + 144) = &radic;169 = 13",
+          "desc": "5-12-13 triple"
+        },
+        {
+          "correct": true,
+          "expr": "a = 6, b = 8: c = &radic;(36 + 64) = &radic;100 = 10",
+          "desc": "6-8-10 triple"
+        },
+        {
+          "correct": false,
+          "expr": "c = a + b = 3 + 4 = 7",
+          "desc": "must square, add, then root"
+        },
+        {
+          "correct": false,
+          "expr": "c = &radic;(a + b) = &radic;7",
+          "desc": "must square a and b first"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Square both shorter sides, add them, then square root to find the hypotenuse.",
+      "equation": "c = &radic;(<span class=\"ov\">a&sup2;</span> + <span class=\"ovr\">b&sup2;</span>)",
+      "caption": "Hypotenuse = &radic;(sum of squares of shorter sides)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; Pythagorean triple",
+      "question": "Find the hypotenuse when a = 6 and b = 8.",
+      "steps": [
+        "c&sup2; = 6&sup2; + 8&sup2; = 36 + 64 = 100",
+        "c = &radic;100",
+        "c = 10"
+      ],
+      "answer": "c = 10",
+      "explanation": "6, 8, 10 is a Pythagorean triple (multiple of 3, 4, 5)."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; non-integer answer",
+      "question": "Find the hypotenuse when a = 5 and b = 7.",
+      "steps": [
+        "c&sup2; = 5&sup2; + 7&sup2; = 25 + 49 = 74",
+        "c = &radic;74",
+        "c = 8.60 (2 d.p.)"
+      ],
+      "answer": "c = 8.60",
+      "explanation": "Leave as &radic;74 for exact form, or round for decimal."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; in context",
+      "question": "A field has sides 40 m and 30 m at right angles. Find the diagonal.",
+      "steps": [
+        "c&sup2; = 40&sup2; + 30&sup2; = 1600 + 900 = 2500",
+        "c = &radic;2500",
+        "c = 50 m"
+      ],
+      "answer": "50 m",
+      "explanation": "The diagonal of a right-angled arrangement is the hypotenuse."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with decimals",
+      "question": "Find the hypotenuse when a = 2.5 and b = 6.",
+      "steps": [
+        "c&sup2; = 2.5&sup2; + 6&sup2; = 6.25 + 36 = 42.25",
+        "c = &radic;42.25",
+        "c = 6.5"
+      ],
+      "answer": "c = 6.5",
+      "explanation": "Decimal inputs follow the same process: square, add, root."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Integer answers (triples)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the hypotenuse.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a = 3, b = 4",
+          "answer": "c = 5"
+        },
+        {
+          "id": "b",
+          "expression": "a = 5, b = 12",
+          "answer": "c = 13"
+        },
+        {
+          "id": "c",
+          "expression": "a = 8, b = 15",
+          "answer": "c = 17"
+        },
+        {
+          "id": "d",
+          "expression": "a = 9, b = 40",
+          "answer": "c = 41"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Decimal answers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find c to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a = 4, b = 6",
+          "answer": "c = 7.2"
+        },
+        {
+          "id": "b",
+          "expression": "a = 3, b = 7",
+          "answer": "c = 7.6"
+        },
+        {
+          "id": "c",
+          "expression": "a = 5, b = 9",
+          "answer": "c = 10.3"
+        },
+        {
+          "id": "d",
+          "expression": "a = 2, b = 8",
+          "answer": "c = 8.2"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Word problems",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the hypotenuse in each situation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Walk 6 km East then 8 km North. Direct distance?",
+          "answer": "10 km"
+        },
+        {
+          "id": "b",
+          "expression": "Gate 3 m wide, 4 m tall. Diagonal brace length?",
+          "answer": "5 m"
+        },
+        {
+          "id": "c",
+          "expression": "TV screen 48 cm wide, 36 cm tall. Diagonal?",
+          "answer": "60 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Triangle: base 7 cm, height 24 cm. Hypotenuse?",
+          "answer": "25 cm"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Larger numbers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the hypotenuse. Give exact or rounded answer.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a = 20, b = 21",
+          "answer": "c = 29"
+        },
+        {
+          "id": "b",
+          "expression": "a = 11, b = 60",
+          "answer": "c = 61"
+        },
+        {
+          "id": "c",
+          "expression": "a = 14, b = 48",
+          "answer": "c = 50"
+        },
+        {
+          "id": "d",
+          "expression": "a = 10, b = 10",
+          "answer": "c = 14.1 (1 d.p.)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find the missing hypotenuse.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Right triangle: legs 9 and 12",
+          "answer": "15"
+        },
+        {
+          "id": "b",
+          "expression": "Right triangle: legs 7 and 7",
+          "answer": "9.9 (1 d.p.)"
+        },
+        {
+          "id": "c",
+          "expression": "Rectangular garden 15 m by 20 m, diagonal path?",
+          "answer": "25 m"
+        },
+        {
+          "id": "d",
+          "expression": "Right triangle: legs 1.5 and 2",
+          "answer": "2.5"
+        },
+        {
+          "id": "e",
+          "expression": "Right triangle: legs 11 and 13",
+          "answer": "17.0 (1 d.p.)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "c&sup2; = a&sup2; + b&sup2; then c = &radic;(a&sup2; + b&sup2;)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The hypotenuse equals a + b",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The hypotenuse is always the longest side",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "c = &radic;(a + b)",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "3, 4, 5 and 5, 12, 13 are Pythagorean triples",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A right-angled triangle has legs <strong>(x)</strong> and <strong>(x + 1)</strong>. The hypotenuse is <strong>(x + 2)</strong>. Use Pythagoras to find x. Show this gives the 3-4-5 triangle."
+      },
+      {
+        "id": "b",
+        "text": "A ship sails <strong>24 km</strong> due North, then <strong>7 km</strong> due East, then <strong>10 km</strong> due North. Find the direct distance from start to finish."
+      }
+    ]
+  }
+}

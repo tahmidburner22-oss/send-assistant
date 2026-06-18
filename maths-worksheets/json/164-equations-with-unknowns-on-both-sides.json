@@ -1,0 +1,325 @@
+{
+  "title": "SOLVING LINEAR EQUATIONS,\n(EQUATIONS WITH UNKNOWNS ON BOTH SIDES)",
+  "objective": "LO: I can solve linear equations where the unknown appears on both sides.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Unknowns on both sides",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "When <span class=\"ul-b\">x appears on both sides</span> of the equation, collect all x terms on one side and all number terms on the other by using <span class=\"ul-k\">inverse operations</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Move the smaller x term to the other side (to keep x positive), then isolate x."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "5x + 3 = 2x + 12: subtract 2x, get 3x + 3 = 12, x = 3",
+          "desc": "collect x terms"
+        },
+        {
+          "correct": true,
+          "expr": "7x &minus; 4 = 3x + 8: subtract 3x, get 4x &minus; 4 = 8, x = 3",
+          "desc": "move smaller x"
+        },
+        {
+          "correct": true,
+          "expr": "Always move the smaller x coefficient to keep x positive",
+          "desc": "good practice"
+        },
+        {
+          "correct": false,
+          "expr": "5x + 3 = 2x + 12 gives 7x = 15",
+          "desc": "cannot add x terms across ="
+        },
+        {
+          "correct": false,
+          "expr": "5x + 3 = 2x + 12 gives 3x = 15 directly",
+          "desc": "forgot to subtract 3 from both sides"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Collect x terms on one side, number terms on the other, then solve.",
+      "equation": "<span class=\"ov\">5x</span> + 3 = <span class=\"ovr\">2x</span> + 12 &rArr; 3x = 9 &rArr; x = 3",
+      "caption": "Subtract 2x from both sides, then subtract 3 from both sides"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; x terms positive",
+      "question": "Solve 5x + 2 = 3x + 10",
+      "steps": [
+        "Subtract 3x: 2x + 2 = 10",
+        "Subtract 2: 2x = 8",
+        "Divide by 2: x = 4"
+      ],
+      "answer": "x = 4",
+      "explanation": "Move the smaller x term (3x) to get a positive coefficient."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; larger coefficient on right",
+      "question": "Solve 2x + 9 = 5x &minus; 3",
+      "steps": [
+        "Subtract 2x: 9 = 3x &minus; 3",
+        "Add 3: 12 = 3x",
+        "Divide by 3: x = 4"
+      ],
+      "answer": "x = 4",
+      "explanation": "Move 2x to keep x positive on the right."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; negative terms",
+      "question": "Solve 6x &minus; 5 = 4x + 7",
+      "steps": [
+        "Subtract 4x: 2x &minus; 5 = 7",
+        "Add 5: 2x = 12",
+        "Divide by 2: x = 6"
+      ],
+      "answer": "x = 6",
+      "explanation": "Subtract the smaller x coefficient from both sides."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with brackets",
+      "question": "Solve 3(x + 2) = x + 14",
+      "steps": [
+        "Expand: 3x + 6 = x + 14",
+        "Subtract x: 2x + 6 = 14",
+        "Subtract 6: 2x = 8, x = 4"
+      ],
+      "answer": "x = 4",
+      "explanation": "Expand brackets first, then collect like terms."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Simple equations",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Solve each equation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4x + 1 = 2x + 7",
+          "answer": "x = 3"
+        },
+        {
+          "id": "b",
+          "expression": "6x + 3 = 4x + 11",
+          "answer": "x = 4"
+        },
+        {
+          "id": "c",
+          "expression": "7x &minus; 2 = 3x + 10",
+          "answer": "x = 3"
+        },
+        {
+          "id": "d",
+          "expression": "5x + 4 = x + 20",
+          "answer": "x = 4"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Larger coefficient on right",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Move x to the side with the larger coefficient.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2x + 10 = 5x + 1",
+          "answer": "x = 3"
+        },
+        {
+          "id": "b",
+          "expression": "x + 9 = 4x",
+          "answer": "x = 3"
+        },
+        {
+          "id": "c",
+          "expression": "3x + 1 = 7x &minus; 11",
+          "answer": "x = 3"
+        },
+        {
+          "id": "d",
+          "expression": "x + 14 = 3x + 2",
+          "answer": "x = 6"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "With negatives",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Solve carefully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8x &minus; 3 = 5x + 9",
+          "answer": "x = 4"
+        },
+        {
+          "id": "b",
+          "expression": "6x &minus; 7 = 2x + 5",
+          "answer": "x = 3"
+        },
+        {
+          "id": "c",
+          "expression": "9x &minus; 10 = 4x + 5",
+          "answer": "x = 3"
+        },
+        {
+          "id": "d",
+          "expression": "3x &minus; 8 = x &minus; 2",
+          "answer": "x = 3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "With brackets",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Expand, then solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2(x + 5) = x + 13",
+          "answer": "x = 3"
+        },
+        {
+          "id": "b",
+          "expression": "4(x + 1) = 2x + 10",
+          "answer": "x = 3"
+        },
+        {
+          "id": "c",
+          "expression": "3(x + 2) = 2(x + 4)",
+          "answer": "x = 2"
+        },
+        {
+          "id": "d",
+          "expression": "5(x &minus; 1) = 3(x + 1)",
+          "answer": "x = 4"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each equation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "10x + 3 = 7x + 12",
+          "answer": "x = 3"
+        },
+        {
+          "id": "b",
+          "expression": "2(3x + 4) = 4(x + 5)",
+          "answer": "x = 6"
+        },
+        {
+          "id": "c",
+          "expression": "9 &minus; 2x = x &minus; 6",
+          "answer": "x = 5"
+        },
+        {
+          "id": "d",
+          "expression": "4x + 7 = 19 &minus; 2x",
+          "answer": "x = 2"
+        },
+        {
+          "id": "e",
+          "expression": "3(2x &minus; 1) = 2(x + 3) + 7",
+          "answer": "x = 4"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "5x + 3 = 2x + 12 becomes 3x + 3 = 12 (subtract 2x from both sides)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "5x + 3 = 2x + 12 becomes 7x + 3 = 12",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Move the smaller x term to avoid negative coefficients",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "You can add x terms from different sides: 5x + 2x = 7x",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "After collecting terms, solve as a one-step or two-step equation",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Two taxi companies: Company A charges <strong>&pound;3 + &pound;2 per mile</strong>. Company B charges <strong>&pound;5 + &pound;1.50 per mile</strong>. For what distance are they the same price? Which is cheaper for a 10-mile journey?"
+      },
+      {
+        "id": "b",
+        "text": "A triangle has sides <strong>(3x + 1) cm</strong>, <strong>(2x + 5) cm</strong>, and <strong>(4x &minus; 2) cm</strong>. An equilateral triangle has perimeter equal to this triangle and side length <strong>(2x + 3) cm</strong>. Find x and the perimeters."
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "INEQUALITIES,\n(REPRESENTING INEQUALITIES ON A NUMBER LINE)",
+  "objective": "LO: I can represent linear inequalities on a number line using open and closed circles.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Number line representations",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "On a number line, an <span class=\"ul-b\">open circle</span> (&#9675;) means the value is NOT included (&lt; or &gt;). A <span class=\"ul-k\">closed circle</span> (&#9679;) means the value IS included (&le; or &ge;)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Solve the inequality first, then draw the number line with the correct circle and arrow/line."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "x &gt; 3: open circle at 3, arrow right",
+          "desc": "not including 3"
+        },
+        {
+          "correct": true,
+          "expr": "x &le; 5: closed circle at 5, arrow left",
+          "desc": "including 5"
+        },
+        {
+          "correct": true,
+          "expr": "2 &lt; x &le; 6: open at 2, closed at 6, line between",
+          "desc": "compound"
+        },
+        {
+          "correct": false,
+          "expr": "x &gt; 3 uses a closed circle at 3",
+          "desc": "strict means open"
+        },
+        {
+          "correct": false,
+          "expr": "x &le; 5 means arrow pointing right from 5",
+          "desc": "less than means left"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Open circle = not included (strict). Closed circle = included (or equal to). Arrow shows the direction of valid values.",
+      "equation": "<span class=\"ov\">&#9675;</span> for &lt; &gt;; <span class=\"ovr\">&#9679;</span> for &le; &ge;",
+      "caption": "Open = excluded, Closed = included"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; simple inequality",
+      "question": "Represent x &gt; 2 on a number line",
+      "steps": [
+        "Draw a number line with 2 marked",
+        "Place an open circle at 2 (not included)",
+        "Draw an arrow pointing right from 2"
+      ],
+      "answer": "Open circle at 2, arrow right",
+      "explanation": "The open circle shows that 2 itself is not a solution."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; less than or equal",
+      "question": "Represent x &le; 4 on a number line",
+      "steps": [
+        "Draw a number line with 4 marked",
+        "Place a closed circle at 4 (included)",
+        "Draw an arrow pointing left from 4"
+      ],
+      "answer": "Closed circle at 4, arrow left",
+      "explanation": "The closed circle shows that 4 IS a solution."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; compound inequality",
+      "question": "Represent &minus;1 &lt; x &le; 3 on a number line",
+      "steps": [
+        "Mark &minus;1 and 3 on the number line",
+        "Open circle at &minus;1 (not included), closed at 3 (included)",
+        "Draw a solid line between them"
+      ],
+      "answer": "Open at &minus;1, closed at 3, line between",
+      "explanation": "No arrows needed for a compound inequality, just the connecting line."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; solving then representing",
+      "question": "Solve 2x + 1 &gt; 7 and represent on a number line",
+      "steps": [
+        "2x + 1 &gt; 7; subtract 1: 2x &gt; 6",
+        "Divide by 2: x &gt; 3",
+        "Open circle at 3, arrow pointing right"
+      ],
+      "answer": "x &gt; 3: open circle at 3, arrow right",
+      "explanation": "Solve the inequality first, then draw the representation."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Drawing simple inequalities",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Describe the number line representation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x &gt; 5",
+          "answer": "Open circle at 5, arrow right"
+        },
+        {
+          "id": "b",
+          "expression": "x &le; 2",
+          "answer": "Closed circle at 2, arrow left"
+        },
+        {
+          "id": "c",
+          "expression": "x &ge; &minus;3",
+          "answer": "Closed circle at &minus;3, arrow right"
+        },
+        {
+          "id": "d",
+          "expression": "x &lt; 0",
+          "answer": "Open circle at 0, arrow left"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Reading number lines",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write the inequality shown.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Closed circle at 4, arrow right",
+          "answer": "x &ge; 4"
+        },
+        {
+          "id": "b",
+          "expression": "Open circle at &minus;2, arrow left",
+          "answer": "x &lt; &minus;2"
+        },
+        {
+          "id": "c",
+          "expression": "Open at 1, closed at 5, line between",
+          "answer": "1 &lt; x &le; 5"
+        },
+        {
+          "id": "d",
+          "expression": "Closed at &minus;3, open at 2, line between",
+          "answer": "&minus;3 &le; x &lt; 2"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Compound inequalities",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Describe the number line for each compound inequality.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1 &lt; x &lt; 4",
+          "answer": "Open at 1, open at 4, line between"
+        },
+        {
+          "id": "b",
+          "expression": "&minus;2 &le; x &le; 3",
+          "answer": "Closed at &minus;2, closed at 3, line between"
+        },
+        {
+          "id": "c",
+          "expression": "0 &lt; x &le; 5",
+          "answer": "Open at 0, closed at 5, line between"
+        },
+        {
+          "id": "d",
+          "expression": "&minus;4 &le; x &lt; &minus;1",
+          "answer": "Closed at &minus;4, open at &minus;1, line between"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Solve then represent",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve the inequality, then describe the number line.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3x &gt; 12",
+          "answer": "x &gt; 4: open at 4, arrow right"
+        },
+        {
+          "id": "b",
+          "expression": "x + 5 &le; 8",
+          "answer": "x &le; 3: closed at 3, arrow left"
+        },
+        {
+          "id": "c",
+          "expression": "2x &minus; 1 &ge; 5",
+          "answer": "x &ge; 3: closed at 3, arrow right"
+        },
+        {
+          "id": "d",
+          "expression": "4x + 3 &lt; 15",
+          "answer": "x &lt; 3: open at 3, arrow left"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve and represent on a number line.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 &le; 2x + 1 &lt; 11",
+          "answer": "2 &le; x &lt; 5: closed at 2, open at 5"
+        },
+        {
+          "id": "b",
+          "expression": "&minus;3 &lt; x + 2 &le; 4",
+          "answer": "&minus;5 &lt; x &le; 2: open at &minus;5, closed at 2"
+        },
+        {
+          "id": "c",
+          "expression": "x &ge; &minus;1 and x &lt; 4",
+          "answer": "Closed at &minus;1, open at 4, line between"
+        },
+        {
+          "id": "d",
+          "expression": "3x &minus; 2 &gt; 1 and 2x &lt; 10",
+          "answer": "1 &lt; x &lt; 5: open at 1, open at 5"
+        },
+        {
+          "id": "e",
+          "expression": "&minus;4 &le; 3x + 2 &le; 11",
+          "answer": "&minus;2 &le; x &le; 3: closed at &minus;2, closed at 3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "An open circle means the value is NOT included",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "x &gt; 3 uses a closed circle at 3",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "x &le; 5 means closed circle at 5 with arrow pointing left",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "For x &lt; 4, the arrow points right from 4",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A compound inequality has two endpoints and a line between them",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Solve <strong>2(x &minus; 3) &lt; x + 1</strong> and <strong>3x + 2 &ge; 5</strong> simultaneously. Represent the solution on a number line and list all integer solutions."
+      },
+      {
+        "id": "b",
+        "text": "A number line shows a <strong>closed circle at &minus;2</strong> and an <strong>open circle at 4</strong> with a line between. Write this as a double inequality. If we then apply the transformation <strong>y = 2x + 1</strong>, what inequality does y satisfy?"
+      }
+    ]
+  }
+}
