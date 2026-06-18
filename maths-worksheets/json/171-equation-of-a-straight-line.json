@@ -1,0 +1,325 @@
+{
+  "title": "STRAIGHT-LINE GRAPHS,\n(EQUATION OF A STRAIGHT LINE)",
+  "objective": "LO: I can identify and write the equation of a straight line in the form y = mx + c.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Equation of a straight line",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Every straight line can be written as <span class=\"ul-b\">y = mx + c</span>, where <span class=\"ul-k\">m</span> is the gradient (slope) and <span class=\"ul-k\">c</span> is the y-intercept."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Reading from a graph:</span> The y-intercept is where the line crosses the y-axis. The gradient is the steepness, calculated as rise &divide; run."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y = 2x + 3 has gradient 2 and y-intercept 3",
+          "desc": "m = 2, c = 3"
+        },
+        {
+          "correct": true,
+          "expr": "y = -x + 5 has gradient -1",
+          "desc": "line slopes downward"
+        },
+        {
+          "correct": true,
+          "expr": "y = &frac{1}{2}x has gradient &frac{1}{2} and y-intercept 0",
+          "desc": "passes through origin"
+        },
+        {
+          "correct": false,
+          "expr": "y = 3x + 2 has gradient 2",
+          "desc": "gradient is 3, not 2"
+        },
+        {
+          "correct": false,
+          "expr": "y = 4 - 2x has positive gradient",
+          "desc": "gradient is -2 (negative)"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "In y = mx + c, m is the gradient (how steep) and c is where the line crosses the y-axis.",
+      "equation": "y = <span class=\"ov\">m</span>x + <span class=\"ovr\">c</span>",
+      "caption": "m = gradient, c = y-intercept"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; identifying m and c",
+      "question": "State the gradient and y-intercept of y = 3x - 2.",
+      "steps": [
+        "Compare with y = mx + c",
+        "m = 3 (gradient)",
+        "c = -2 (y-intercept)"
+      ],
+      "answer": "Gradient = 3, y-intercept = -2",
+      "explanation": "Read m and c directly from the equation."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; writing the equation",
+      "question": "A line has gradient 4 and y-intercept -1. Write its equation.",
+      "steps": [
+        "Use y = mx + c",
+        "Substitute m = 4 and c = -1",
+        "y = 4x - 1"
+      ],
+      "answer": "y = 4x - 1",
+      "explanation": "Plug the gradient and y-intercept into the formula."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; rearranging to y = mx + c",
+      "question": "Write 2x + y = 7 in the form y = mx + c.",
+      "steps": [
+        "Subtract 2x from both sides",
+        "y = -2x + 7",
+        "Gradient = -2, y-intercept = 7"
+      ],
+      "answer": "y = -2x + 7",
+      "explanation": "Rearrange so y is the subject."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; finding equation from two points",
+      "question": "Find the equation of the line through (0, 3) and (2, 7).",
+      "steps": [
+        "Gradient = (7 - 3) &divide; (2 - 0) = 4 &divide; 2 = 2",
+        "y-intercept = 3 (the point where x = 0)",
+        "y = 2x + 3"
+      ],
+      "answer": "y = 2x + 3",
+      "explanation": "Use two points to find gradient, then identify c."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identifying gradient and y-intercept",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State m and c for each equation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 5x + 2",
+          "answer": "m = 5, c = 2"
+        },
+        {
+          "id": "b",
+          "expression": "y = -3x + 1",
+          "answer": "m = -3, c = 1"
+        },
+        {
+          "id": "c",
+          "expression": "y = &frac{1}{2}x - 4",
+          "answer": "m = &frac{1}{2}, c = -4"
+        },
+        {
+          "id": "d",
+          "expression": "y = x",
+          "answer": "m = 1, c = 0"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Writing equations",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write the equation y = mx + c.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Gradient 2, y-intercept 5",
+          "answer": "y = 2x + 5"
+        },
+        {
+          "id": "b",
+          "expression": "Gradient -1, y-intercept 3",
+          "answer": "y = -x + 3"
+        },
+        {
+          "id": "c",
+          "expression": "Gradient &frac{3}{4}, y-intercept -2",
+          "answer": "y = &frac{3}{4}x - 2"
+        },
+        {
+          "id": "d",
+          "expression": "Gradient 0, y-intercept 6",
+          "answer": "y = 6"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Rearranging equations",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Write in the form y = mx + c.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3x + y = 10",
+          "answer": "y = -3x + 10"
+        },
+        {
+          "id": "b",
+          "expression": "2y = 6x - 4",
+          "answer": "y = 3x - 2"
+        },
+        {
+          "id": "c",
+          "expression": "x + 2y = 8",
+          "answer": "y = -&frac{1}{2}x + 4"
+        },
+        {
+          "id": "d",
+          "expression": "4x - 2y = 6",
+          "answer": "y = 2x - 3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "From two points",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the equation of the line through these points.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(0, 1) and (2, 5)",
+          "answer": "y = 2x + 1"
+        },
+        {
+          "id": "b",
+          "expression": "(0, -3) and (3, 6)",
+          "answer": "y = 3x - 3"
+        },
+        {
+          "id": "c",
+          "expression": "(1, 4) and (3, 10)",
+          "answer": "y = 3x + 1"
+        },
+        {
+          "id": "d",
+          "expression": "(2, 1) and (6, 9)",
+          "answer": "y = 2x - 3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Line passes through (0, 4) with gradient -2. Equation?",
+          "answer": "y = -2x + 4"
+        },
+        {
+          "id": "b",
+          "expression": "Which line is steeper: y = 3x + 1 or y = 5x - 2?",
+          "answer": "y = 5x - 2"
+        },
+        {
+          "id": "c",
+          "expression": "Does (2, 7) lie on y = 3x + 1?",
+          "answer": "Yes (3(2)+1=7)"
+        },
+        {
+          "id": "d",
+          "expression": "Find where y = 2x - 1 crosses the x-axis.",
+          "answer": "x = &frac{1}{2}"
+        },
+        {
+          "id": "e",
+          "expression": "Write 6x + 3y = 9 in y = mx + c form.",
+          "answer": "y = -2x + 3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "In y = mx + c, m is the gradient and c is the y-intercept",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "y = 3x + 2 has y-intercept 3",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A line with gradient 0 is horizontal",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "y = 5 - 2x has a positive gradient",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The y-intercept is found by setting x = 0",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Line A passes through <strong>(1, 5)</strong> and <strong>(4, 14)</strong>. Line B passes through <strong>(0, 8)</strong> and <strong>(3, 2)</strong>. Find the equation of each line and the coordinates of their intersection point."
+      },
+      {
+        "id": "b",
+        "text": "A phone company charges a <strong>monthly fee</strong> plus a <strong>cost per minute</strong>. After 100 minutes the bill is <strong>£18</strong> and after 250 minutes it is <strong>£25.50</strong>. Write the cost C as a function of minutes m, and find the cost for 400 minutes."
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "RATIO AND PROPORTION,\n(DIVIDING QUANTITIES IN A GIVEN RATIO)",
+  "objective": "LO: I can divide a quantity into two or more parts using a given ratio.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Dividing in a ratio",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Dividing in a ratio</span> means splitting a total into parts whose sizes follow the given <span class=\"ul-k\">ratio</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Steps:</span> Add the ratio parts to get the total number of shares. Divide the quantity by this total to get one share. Multiply each part of the ratio by the value of one share."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "£50 in ratio 2 : 3 = £20 and £30",
+          "desc": "5 parts, £10 each"
+        },
+        {
+          "correct": true,
+          "expr": "120 in ratio 1 : 2 : 3 = 20, 40, 60",
+          "desc": "6 parts, 20 each"
+        },
+        {
+          "correct": true,
+          "expr": "Check: shares must add to original total",
+          "desc": "20 + 30 = 50 ✓"
+        },
+        {
+          "correct": false,
+          "expr": "£50 in ratio 2 : 3 = £25 and £25",
+          "desc": "that is halving, not using the ratio"
+        },
+        {
+          "correct": false,
+          "expr": "£50 in ratio 2 : 3 = £2 and £3",
+          "desc": "must multiply by value of one share"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Total shares = sum of ratio parts. Value of one share = quantity divided by total shares.",
+      "equation": "<span class=\"ov\">one share</span> = quantity &divide; <span class=\"ovr\">(a + b)</span>",
+      "caption": "Then multiply: a shares and b shares"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; two-part ratio",
+      "question": "Divide £80 in the ratio 3 : 5",
+      "steps": [
+        "Total parts = 3 + 5 = 8",
+        "One part = £80 &divide; 8 = £10",
+        "3 parts = £30, 5 parts = £50"
+      ],
+      "answer": "£30 and £50",
+      "explanation": "Check: £30 + £50 = £80."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; three-part ratio",
+      "question": "Divide 180 cm in the ratio 2 : 3 : 4",
+      "steps": [
+        "Total parts = 2 + 3 + 4 = 9",
+        "One part = 180 &divide; 9 = 20 cm",
+        "Shares: 40 cm, 60 cm, 80 cm"
+      ],
+      "answer": "40 cm, 60 cm, 80 cm",
+      "explanation": "Check: 40 + 60 + 80 = 180."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; working backwards",
+      "question": "Two amounts in ratio 3 : 7 differ by £20. Find each amount.",
+      "steps": [
+        "Difference in parts = 7 - 3 = 4 parts",
+        "4 parts = £20, so 1 part = £5",
+        "3 parts = £15, 7 parts = £35"
+      ],
+      "answer": "£15 and £35",
+      "explanation": "Use the difference when the total is not given."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; problem in context",
+      "question": "Mortar is cement and sand in ratio 1 : 5. A builder needs 42 kg of mortar. Find the amounts.",
+      "steps": [
+        "Total parts = 1 + 5 = 6",
+        "One part = 42 &divide; 6 = 7 kg",
+        "Cement = 7 kg, Sand = 35 kg"
+      ],
+      "answer": "7 kg cement and 35 kg sand",
+      "explanation": "Real-world ratios work exactly the same way."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Two-part ratios",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Divide each quantity in the given ratio.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "£40 in ratio 1 : 3",
+          "answer": "£10 and £30"
+        },
+        {
+          "id": "b",
+          "expression": "72 in ratio 5 : 4",
+          "answer": "40 and 32"
+        },
+        {
+          "id": "c",
+          "expression": "£120 in ratio 7 : 5",
+          "answer": "£70 and £50"
+        },
+        {
+          "id": "d",
+          "expression": "200 g in ratio 3 : 2",
+          "answer": "120 g and 80 g"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Three-part ratios",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Divide in the ratio given.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "90 in ratio 1 : 2 : 3",
+          "answer": "15, 30, 45"
+        },
+        {
+          "id": "b",
+          "expression": "£200 in ratio 2 : 3 : 5",
+          "answer": "£40, £60, £100"
+        },
+        {
+          "id": "c",
+          "expression": "360 in ratio 4 : 5 : 3",
+          "answer": "120, 150, 90"
+        },
+        {
+          "id": "d",
+          "expression": "£480 in ratio 1 : 3 : 4",
+          "answer": "£60, £180, £240"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Using the difference",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the difference between shares to solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ratio 2 : 5. Difference is 21. Find each part.",
+          "answer": "14 and 35"
+        },
+        {
+          "id": "b",
+          "expression": "Ratio 3 : 8. Difference is 30. Find each part.",
+          "answer": "18 and 48"
+        },
+        {
+          "id": "c",
+          "expression": "Ratio 1 : 4. Larger part is 60 more. Find each.",
+          "answer": "20 and 80"
+        },
+        {
+          "id": "d",
+          "expression": "Ratio 5 : 9. Difference is 28. Find the total.",
+          "answer": "98"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "In context",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each word problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cordial : water = 1 : 4. Make 2 litres of drink. How much cordial?",
+          "answer": "400 ml"
+        },
+        {
+          "id": "b",
+          "expression": "Boys : girls = 3 : 5. There are 32 students. How many boys?",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "Cement : sand : gravel = 1 : 2 : 4. Need 35 kg total. Find each.",
+          "answer": "5 kg, 10 kg, 20 kg"
+        },
+        {
+          "id": "d",
+          "expression": "Savings : spending = 2 : 7. Earn £270 per week. How much saved?",
+          "answer": "£60"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each ratio problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "£450 in ratio 4 : 5",
+          "answer": "£200 and £250"
+        },
+        {
+          "id": "b",
+          "expression": "Ratio 3 : 7. Larger part is £84. Find the smaller.",
+          "answer": "£36"
+        },
+        {
+          "id": "c",
+          "expression": "720 ml in ratio 1 : 2 : 5",
+          "answer": "90, 180, 450 ml"
+        },
+        {
+          "id": "d",
+          "expression": "Two numbers in ratio 5 : 8. Sum is 78. Find both.",
+          "answer": "30 and 48"
+        },
+        {
+          "id": "e",
+          "expression": "£600 split in ratio 1 : 2 : 3. Largest share?",
+          "answer": "£300"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To divide £60 in ratio 1 : 2, find total parts (3), then one part (£20)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Dividing £60 in ratio 1 : 2 gives £30 and £30",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The shares must always add up to the original quantity",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Ratio 3 : 5 means the first share is always £3",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "If ratio is 2 : 3 and difference is 10, one part = 10",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Ali, Ben and Cara share <strong>£540</strong> in the ratio <strong>2 : 3 : 4</strong>. Cara gives <strong>&frac{1}{3}</strong> of her share to Ali. How much does each person now have?"
+      },
+      {
+        "id": "b",
+        "text": "A 750 ml bottle of squash makes drinks by mixing with water in ratio <strong>1 : 4</strong>. How many <strong>250 ml glasses</strong> of drink can be made from one bottle?"
+      }
+    ]
+  }
+}

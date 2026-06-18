@@ -1,0 +1,325 @@
+{
+  "title": "TRIGONOMETRY,\n(SOH CAH TOA FINDING SIDES)",
+  "objective": "LO: I can use trigonometric ratios to find unknown side lengths in right-angled triangles.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding sides with trigonometry",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To find an <span class=\"ul-b\">unknown side</span>, label the sides (O, A, H) relative to the given angle, then use the appropriate ratio: <span class=\"ul-k\">SOH, CAH, or TOA</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Rearrange:</span> If the unknown is in the denominator, rearrange the formula or use the triangle method."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "hyp = 10, angle = 30°: opp = 10 sin 30° = 5",
+          "desc": "multiply hyp by sin"
+        },
+        {
+          "correct": true,
+          "expr": "adj = 6, angle = 45°: opp = 6 tan 45° = 6",
+          "desc": "multiply adj by tan"
+        },
+        {
+          "correct": true,
+          "expr": "opp = 8, angle = 30°: hyp = 8 &divide; sin 30° = 16",
+          "desc": "divide by sin"
+        },
+        {
+          "correct": false,
+          "expr": "opp = hyp &divide; sinθ",
+          "desc": "opp = hyp &times; sinθ"
+        },
+        {
+          "correct": false,
+          "expr": "sin 30° = adj/hyp",
+          "desc": "sin = opp/hyp, cos = adj/hyp"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Label sides O, A, H. Choose the ratio involving the known side and the unknown side. Rearrange to find the unknown.",
+      "equation": "opp = <span class=\"ov\">hyp</span> &times; <span class=\"ovr\">sin θ</span>",
+      "caption": "Similarly: adj = hyp &times; cosθ, opp = adj &times; tanθ"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; finding the opposite",
+      "question": "Angle = 30°, hypotenuse = 12. Find the opposite.",
+      "steps": [
+        "Need opp, have hyp and angle: use sin",
+        "sin 30° = opp/12",
+        "opp = 12 &times; sin 30° = 12 &times; 0.5 = 6"
+      ],
+      "answer": "opp = 6",
+      "explanation": "Multiply the hypotenuse by sin of the angle."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding the adjacent",
+      "question": "Angle = 60°, hypotenuse = 10. Find the adjacent.",
+      "steps": [
+        "Need adj, have hyp: use cos",
+        "cos 60° = adj/10",
+        "adj = 10 &times; cos 60° = 10 &times; 0.5 = 5"
+      ],
+      "answer": "adj = 5",
+      "explanation": "Multiply hypotenuse by cos."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding the hypotenuse",
+      "question": "Angle = 45°, opposite = 7. Find the hypotenuse.",
+      "steps": [
+        "sin 45° = 7/hyp",
+        "hyp = 7 &divide; sin 45°",
+        "hyp = 7 &divide; (&frac{&radic;2}{2}) = 7&radic;2 = 9.9 (1 dp)"
+      ],
+      "answer": "hyp = 7&radic;2 ≈ 9.9",
+      "explanation": "When the unknown is the denominator, divide."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; using tan",
+      "question": "Angle = 40°, adjacent = 8. Find the opposite (1 dp).",
+      "steps": [
+        "tan 40° = opp/8",
+        "opp = 8 &times; tan 40°",
+        "= 8 &times; 0.839 = 6.7"
+      ],
+      "answer": "opp = 6.7",
+      "explanation": "Use tan when you have opposite and adjacent."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding opposite (using sin)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the opposite side.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "hyp = 10, angle = 30°",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "hyp = 8, angle = 45°",
+          "answer": "4&radic;2"
+        },
+        {
+          "id": "c",
+          "expression": "hyp = 14, angle = 60°",
+          "answer": "7&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "hyp = 20, angle = 30°",
+          "answer": "10"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding adjacent (using cos)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the adjacent side.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "hyp = 12, angle = 60°",
+          "answer": "6"
+        },
+        {
+          "id": "b",
+          "expression": "hyp = 16, angle = 45°",
+          "answer": "8&radic;2"
+        },
+        {
+          "id": "c",
+          "expression": "hyp = 6, angle = 30°",
+          "answer": "3&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "hyp = 24, angle = 60°",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding hypotenuse",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the hypotenuse.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "opp = 4, angle = 30°",
+          "answer": "8"
+        },
+        {
+          "id": "b",
+          "expression": "adj = 5, angle = 60°",
+          "answer": "10"
+        },
+        {
+          "id": "c",
+          "expression": "opp = 6, angle = 45°",
+          "answer": "6&radic;2"
+        },
+        {
+          "id": "d",
+          "expression": "adj = 9, angle = 30°",
+          "answer": "6&radic;3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Using tan",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the unknown side using tan.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "adj = 5, angle = 45°. Find opp.",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "opp = 8, angle = 45°. Find adj.",
+          "answer": "8"
+        },
+        {
+          "id": "c",
+          "expression": "adj = 4, angle = 60°. Find opp.",
+          "answer": "4&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "opp = 10, angle = 30°. Find adj.",
+          "answer": "10&radic;3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems (1 dp)",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find the unknown side. Round to 1 dp where needed.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "hyp = 15, angle = 35°. Find opp.",
+          "answer": "8.6"
+        },
+        {
+          "id": "b",
+          "expression": "adj = 7, angle = 50°. Find opp.",
+          "answer": "8.3"
+        },
+        {
+          "id": "c",
+          "expression": "opp = 9, angle = 40°. Find hyp.",
+          "answer": "14.0"
+        },
+        {
+          "id": "d",
+          "expression": "hyp = 20, angle = 55°. Find adj.",
+          "answer": "11.5"
+        },
+        {
+          "id": "e",
+          "expression": "adj = 12, angle = 65°. Find hyp.",
+          "answer": "28.4"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "opp = hyp &times; sinθ",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "opp = hyp &divide; sinθ",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "adj = hyp &times; cosθ",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "sinθ gives the adjacent side",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "hyp = opp &divide; sinθ",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A ship sails <strong>15 km</strong> on a bearing of <strong>040°</strong>. How far <strong>north</strong> has it travelled? How far <strong>east</strong>? Give answers to 1 dp."
+      },
+      {
+        "id": "b",
+        "text": "A ramp is inclined at <strong>12°</strong> to the horizontal. It must reach a height of <strong>1.5 m</strong>. Find the length of the ramp. If the maximum safe angle is <strong>15°</strong>, what is the shortest possible ramp length?"
+      }
+    ]
+  }
+}

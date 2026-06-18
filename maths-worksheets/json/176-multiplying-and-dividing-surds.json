@@ -1,0 +1,325 @@
+{
+  "title": "SURDS,\n(MULTIPLYING AND DIVIDING SURDS)",
+  "objective": "LO: I can multiply and divide surds using the rules of surds.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Multiplying and dividing surds",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"ul-b\">multiply surds</span>: &radic;a &times; &radic;b = &radic;(ab). To <span class=\"ul-k\">divide surds</span>: &radic;a &divide; &radic;b = &radic;(a/b)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key fact:</span> &radic;a &times; &radic;a = a. Simplify the result where possible."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&radic;3 &times; &radic;5 = &radic;15",
+          "desc": "multiply under the root"
+        },
+        {
+          "correct": true,
+          "expr": "&radic;6 &times; &radic;6 = 6",
+          "desc": "square root times itself = integer"
+        },
+        {
+          "correct": true,
+          "expr": "&radic;20 &divide; &radic;5 = &radic;4 = 2",
+          "desc": "divide under the root"
+        },
+        {
+          "correct": false,
+          "expr": "&radic;3 &times; &radic;5 = &radic;8",
+          "desc": "multiply, not add"
+        },
+        {
+          "correct": false,
+          "expr": "2&radic;3 &times; 4&radic;5 = 6&radic;15",
+          "desc": "should be 8&radic;15"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply or divide the numbers under the root sign. Multiply coefficients separately.",
+      "equation": "<span class=\"ov\">&radic;a</span> &times; <span class=\"ovr\">&radic;b</span> = &radic;(a &times; b)",
+      "caption": "Same rule works for division: &radic;a &divide; &radic;b = &radic;(a &divide; b)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; multiplying simple surds",
+      "question": "Calculate &radic;3 &times; &radic;7.",
+      "steps": [
+        "Multiply under the root: 3 &times; 7 = 21",
+        "&radic;3 &times; &radic;7 = &radic;21",
+        "&radic;21 cannot be simplified"
+      ],
+      "answer": "&radic;21",
+      "explanation": "Multiply the radicands together."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; with coefficients",
+      "question": "Calculate 3&radic;2 &times; 4&radic;5.",
+      "steps": [
+        "Multiply coefficients: 3 &times; 4 = 12",
+        "Multiply surds: &radic;2 &times; &radic;5 = &radic;10",
+        "= 12&radic;10"
+      ],
+      "answer": "12&radic;10",
+      "explanation": "Coefficients multiply separately from the surds."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; simplifying the product",
+      "question": "Calculate &radic;6 &times; &radic;8.",
+      "steps": [
+        "&radic;6 &times; &radic;8 = &radic;48",
+        "&radic;48 = &radic;(16 &times; 3) = 4&radic;3",
+        "Simplified: 4&radic;3"
+      ],
+      "answer": "4&radic;3",
+      "explanation": "Always check if the product simplifies."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; dividing surds",
+      "question": "Calculate &radic;72 &divide; &radic;2.",
+      "steps": [
+        "&radic;72 &divide; &radic;2 = &radic;(72 &divide; 2) = &radic;36",
+        "&radic;36 = 6",
+        "Answer is a whole number"
+      ],
+      "answer": "6",
+      "explanation": "When dividing, divide the numbers under the root."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Multiplying simple surds",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Multiply and simplify where possible.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;2 &times; &radic;3",
+          "answer": "&radic;6"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;5 &times; &radic;5",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "&radic;7 &times; &radic;3",
+          "answer": "&radic;21"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;2 &times; &radic;8",
+          "answer": "4"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "With coefficients",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Multiply and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2&radic;3 &times; 5&radic;3",
+          "answer": "30"
+        },
+        {
+          "id": "b",
+          "expression": "3&radic;2 &times; 2&radic;7",
+          "answer": "6&radic;14"
+        },
+        {
+          "id": "c",
+          "expression": "4&radic;5 &times; &radic;5",
+          "answer": "20"
+        },
+        {
+          "id": "d",
+          "expression": "2&radic;6 &times; 3&radic;2",
+          "answer": "6&radic;12 = 12&radic;3"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Dividing surds",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Divide and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;12 &divide; &radic;3",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;50 &divide; &radic;2",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "6&radic;10 &divide; 2&radic;5",
+          "answer": "3&radic;2"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;75 &divide; &radic;3",
+          "answer": "5"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Expanding brackets with surds",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Expand and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;3(&radic;3 + 2)",
+          "answer": "3 + 2&radic;3"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;5(2&radic;5 - 1)",
+          "answer": "10 - &radic;5"
+        },
+        {
+          "id": "c",
+          "expression": "2&radic;2(&radic;2 + &radic;3)",
+          "answer": "4 + 2&radic;6"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;7(3 - &radic;7)",
+          "answer": "3&radic;7 - 7"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed multiplication and division",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Simplify fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;3 &times; &radic;12",
+          "answer": "6"
+        },
+        {
+          "id": "b",
+          "expression": "(2&radic;3)²",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "&radic;18 &divide; &radic;6",
+          "answer": "&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "(1 + &radic;2)(1 - &radic;2)",
+          "answer": "-1"
+        },
+        {
+          "id": "e",
+          "expression": "(&radic;3 + &radic;5)²",
+          "answer": "8 + 2&radic;15"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&radic;3 &times; &radic;5 = &radic;15",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&radic;3 &times; &radic;5 = &radic;8",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "&radic;a &times; &radic;a = a",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "2&radic;3 &times; 4&radic;5 = 6&radic;15",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "&radic;72 &divide; &radic;2 = &radic;36 = 6",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Show that <strong>(&radic;5 + &radic;3)(&radic;5 - &radic;3) = 2</strong>. Use this result to explain why the product of conjugate surds is always rational."
+      },
+      {
+        "id": "b",
+        "text": "A rectangle has area <strong>12&radic;6 cm²</strong> and width <strong>2&radic;3 cm</strong>. Find the length in simplified surd form. Find the perimeter of the rectangle."
+      }
+    ]
+  }
+}

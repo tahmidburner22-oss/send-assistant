@@ -1,0 +1,325 @@
+{
+  "title": "TRANSFORMATIONS,\n(REFLECTION)",
+  "objective": "LO: I can reflect shapes in mirror lines including the axes and the lines y = x and y = -x.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Reflection",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">reflection</span> flips a shape across a <span class=\"ul-k\">mirror line</span>. Each point and its image are the same distance from the mirror line."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Common mirror lines:</span> x-axis (y = 0), y-axis (x = 0), y = x (diagonal), y = -x, and vertical/horizontal lines like x = 2."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Reflect (3, 2) in y-axis gives (-3, 2)",
+          "desc": "x changes sign"
+        },
+        {
+          "correct": true,
+          "expr": "Reflect (3, 2) in x-axis gives (3, -2)",
+          "desc": "y changes sign"
+        },
+        {
+          "correct": true,
+          "expr": "Reflect (3, 2) in y = x gives (2, 3)",
+          "desc": "swap x and y"
+        },
+        {
+          "correct": false,
+          "expr": "Reflect (3, 2) in y-axis gives (3, -2)",
+          "desc": "that is reflection in x-axis"
+        },
+        {
+          "correct": false,
+          "expr": "Reflection changes the size of the shape",
+          "desc": "size stays the same"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Each point is the same perpendicular distance from the mirror line as its image, on the opposite side.",
+      "equation": "<span class=\"ov\">(a, b)</span> in y-axis &rarr; <span class=\"ovr\">(-a, b)</span>",
+      "caption": "Reflecting in the y-axis negates the x-coordinate"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; reflection in y-axis",
+      "question": "Reflect (4, 3) in the y-axis.",
+      "steps": [
+        "Mirror line is x = 0 (y-axis)",
+        "x-coordinate changes sign: 4 becomes -4",
+        "y-coordinate stays the same: 3"
+      ],
+      "answer": "(-4, 3)",
+      "explanation": "Reflection in y-axis: (x, y) becomes (-x, y)."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; reflection in x-axis",
+      "question": "Reflect (-2, 5) in the x-axis.",
+      "steps": [
+        "Mirror line is y = 0 (x-axis)",
+        "x-coordinate stays: -2",
+        "y-coordinate changes sign: 5 becomes -5"
+      ],
+      "answer": "(-2, -5)",
+      "explanation": "Reflection in x-axis: (x, y) becomes (x, -y)."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; reflection in y = x",
+      "question": "Reflect (1, 4) in the line y = x.",
+      "steps": [
+        "The line y = x is the diagonal",
+        "Swap x and y coordinates",
+        "(1, 4) becomes (4, 1)"
+      ],
+      "answer": "(4, 1)",
+      "explanation": "Reflection in y = x swaps the coordinates."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; reflection in x = 2",
+      "question": "Reflect (5, 3) in the line x = 2.",
+      "steps": [
+        "Distance from x = 2: 5 - 2 = 3",
+        "Image is 3 to the left of x = 2",
+        "Image x = 2 - 3 = -1; y stays at 3"
+      ],
+      "answer": "(-1, 3)",
+      "explanation": "Find distance to mirror line, go same distance on other side."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Reflection in the y-axis",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Reflect each point in the y-axis.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3, 1)",
+          "answer": "(-3, 1)"
+        },
+        {
+          "id": "b",
+          "expression": "(-2, 4)",
+          "answer": "(2, 4)"
+        },
+        {
+          "id": "c",
+          "expression": "(5, -2)",
+          "answer": "(-5, -2)"
+        },
+        {
+          "id": "d",
+          "expression": "(0, 7)",
+          "answer": "(0, 7)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Reflection in the x-axis",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Reflect each point in the x-axis.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2, 5)",
+          "answer": "(2, -5)"
+        },
+        {
+          "id": "b",
+          "expression": "(-3, -1)",
+          "answer": "(-3, 1)"
+        },
+        {
+          "id": "c",
+          "expression": "(4, 0)",
+          "answer": "(4, 0)"
+        },
+        {
+          "id": "d",
+          "expression": "(-1, 6)",
+          "answer": "(-1, -6)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Reflection in y = x and y = -x",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Reflect in the given line.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2, 5) in y = x",
+          "answer": "(5, 2)"
+        },
+        {
+          "id": "b",
+          "expression": "(3, -1) in y = x",
+          "answer": "(-1, 3)"
+        },
+        {
+          "id": "c",
+          "expression": "(4, 2) in y = -x",
+          "answer": "(-2, -4)"
+        },
+        {
+          "id": "d",
+          "expression": "(-1, 3) in y = -x",
+          "answer": "(-3, 1)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Reflection in other lines",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Reflect in the given mirror line.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(5, 2) in x = 3",
+          "answer": "(1, 2)"
+        },
+        {
+          "id": "b",
+          "expression": "(1, 4) in x = 4",
+          "answer": "(7, 4)"
+        },
+        {
+          "id": "c",
+          "expression": "(2, 6) in y = 4",
+          "answer": "(2, 2)"
+        },
+        {
+          "id": "d",
+          "expression": "(3, 1) in y = 3",
+          "answer": "(3, 5)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed reflections",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Perform each reflection.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(4, -1) in y-axis",
+          "answer": "(-4, -1)"
+        },
+        {
+          "id": "b",
+          "expression": "(-3, 2) in x-axis",
+          "answer": "(-3, -2)"
+        },
+        {
+          "id": "c",
+          "expression": "(6, 1) in x = 4",
+          "answer": "(2, 1)"
+        },
+        {
+          "id": "d",
+          "expression": "(2, 7) in y = 5",
+          "answer": "(2, 3)"
+        },
+        {
+          "id": "e",
+          "expression": "(5, 3) in y = x",
+          "answer": "(3, 5)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Reflecting (3, 2) in the y-axis gives (-3, 2)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Reflecting (3, 2) in the y-axis gives (3, -2)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Reflection in y = x swaps the x and y coordinates",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Reflection changes the size of the shape",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A point on the mirror line maps to itself",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Triangle PQR has vertices P(1, 2), Q(4, 2), R(4, 5). Reflect it in the line <strong>y = x</strong> to get P′Q′R′. Then reflect P′Q′R′ in the <strong>x-axis</strong>. Describe the single transformation that maps PQR to the final image."
+      },
+      {
+        "id": "b",
+        "text": "Point A(5, 3) is reflected in an unknown vertical mirror line to give image A′(1, 3). Find the equation of the mirror line. Point B(2, 7) is reflected in the same line. Find B′."
+      }
+    ]
+  }
+}

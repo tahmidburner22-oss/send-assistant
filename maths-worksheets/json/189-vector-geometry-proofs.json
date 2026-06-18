@@ -1,0 +1,325 @@
+{
+  "title": "VECTORS,\n(VECTOR GEOMETRY PROOFS)",
+  "objective": "LO: I can use vectors to prove geometric results involving midpoints, parallel lines, and collinear points.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Vector geometry proofs",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "In <span class=\"ul-b\">vector geometry</span>, we express journeys around a shape in terms of vectors <strong>a</strong> and <strong>b</strong>. If two vectors are <span class=\"ul-k\">parallel</span> (scalar multiples), the lines are parallel."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key strategies:</span> To prove collinearity, show one vector is a scalar multiple of another AND they share a common point. The midpoint of AB has position vector &frac{1}{2}(a + b)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "AB = b - a (position vectors)",
+          "desc": "from A to B"
+        },
+        {
+          "correct": true,
+          "expr": "Midpoint M of AB: OM = &frac{1}{2}(a + b)",
+          "desc": "average of position vectors"
+        },
+        {
+          "correct": true,
+          "expr": "If PQ = kRS, then PQ is parallel to RS",
+          "desc": "scalar multiple means parallel"
+        },
+        {
+          "correct": false,
+          "expr": "AB = a + b",
+          "desc": "should be b - a"
+        },
+        {
+          "correct": false,
+          "expr": "Parallel vectors prove collinearity",
+          "desc": "also need a shared point"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Express unknown vectors as journeys using known vectors. Parallel means scalar multiple; collinear needs shared point too.",
+      "equation": "<span class=\"ov\">AB</span> = <span class=\"ovr\">b - a</span>",
+      "caption": "Travel from A to O (which is -a), then O to B (which is +b)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; expressing a vector",
+      "question": "OA = a, OB = b. Express AB in terms of a and b.",
+      "steps": [
+        "AB = AO + OB",
+        "AO = -a (reverse of OA)",
+        "AB = -a + b = b - a"
+      ],
+      "answer": "AB = b - a",
+      "explanation": "Go backwards along a, then forwards along b."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding a midpoint",
+      "question": "M is the midpoint of AB. OA = a, OB = b. Find OM.",
+      "steps": [
+        "OM = OA + AM",
+        "AM = &frac{1}{2}AB = &frac{1}{2}(b - a)",
+        "OM = a + &frac{1}{2}(b - a) = &frac{1}{2}(a + b)"
+      ],
+      "answer": "OM = &frac{1}{2}(a + b)",
+      "explanation": "The midpoint is the average of the position vectors."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; proving lines are parallel",
+      "question": "OA = a, OB = b. M is midpoint of OA, N is midpoint of OB. Show MN is parallel to AB.",
+      "steps": [
+        "OM = &frac{1}{2}a, ON = &frac{1}{2}b",
+        "MN = -&frac{1}{2}a + &frac{1}{2}b = &frac{1}{2}(b - a)",
+        "AB = b - a, so MN = &frac{1}{2}AB. Parallel."
+      ],
+      "answer": "MN = &frac{1}{2}AB, so parallel",
+      "explanation": "MN is a scalar multiple of AB, proving they are parallel."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; proving collinearity",
+      "question": "OA = a, OB = 3a. Show O, A, B are collinear.",
+      "steps": [
+        "OA = a and OB = 3a",
+        "AB = OB - OA = 3a - a = 2a",
+        "OA = a and AB = 2a: AB = 2(OA), same direction, shared point A"
+      ],
+      "answer": "O, A, B are collinear",
+      "explanation": "AB is a scalar multiple of OA and they share point A."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Expressing vectors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "OA = a, OB = b. Express in terms of a and b.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "AB",
+          "answer": "b - a"
+        },
+        {
+          "id": "b",
+          "expression": "BA",
+          "answer": "a - b"
+        },
+        {
+          "id": "c",
+          "expression": "2OA + OB",
+          "answer": "2a + b"
+        },
+        {
+          "id": "d",
+          "expression": "OA + &frac{1}{2}AB",
+          "answer": "&frac{1}{2}(a + b)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Midpoints",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the position vector of the midpoint M.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "OA = (2, 6), OB = (4, 8). M midpoint of AB.",
+          "answer": "(3, 7)"
+        },
+        {
+          "id": "b",
+          "expression": "OA = (1, 3), OB = (5, 7). M midpoint of AB.",
+          "answer": "(3, 5)"
+        },
+        {
+          "id": "c",
+          "expression": "OA = a, OB = b. M midpoint of AB.",
+          "answer": "&frac{1}{2}(a + b)"
+        },
+        {
+          "id": "d",
+          "expression": "OA = (0, 4), OB = (6, 0). M midpoint of AB.",
+          "answer": "(3, 2)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Proving parallel lines",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Show that the vectors are parallel.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "PQ = 2a + b, RS = 6a + 3b",
+          "answer": "RS = 3(PQ)"
+        },
+        {
+          "id": "b",
+          "expression": "AB = a - 2b, CD = 3a - 6b",
+          "answer": "CD = 3(AB)"
+        },
+        {
+          "id": "c",
+          "expression": "EF = 4a + 2b, GH = 2a + b",
+          "answer": "EF = 2(GH)"
+        },
+        {
+          "id": "d",
+          "expression": "MN = -a + 3b, PQ = 2a - 6b",
+          "answer": "PQ = -2(MN)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Ratio problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "P divides AB in the given ratio. Find OP.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "OA = a, OB = b. P divides AB in ratio 1:1.",
+          "answer": "&frac{1}{2}(a + b)"
+        },
+        {
+          "id": "b",
+          "expression": "OA = a, OB = b. P divides AB in ratio 1:2.",
+          "answer": "&frac{2}{3}a + &frac{1}{3}b"
+        },
+        {
+          "id": "c",
+          "expression": "OA = a, OB = b. P divides AB in ratio 2:1.",
+          "answer": "&frac{1}{3}a + &frac{2}{3}b"
+        },
+        {
+          "id": "d",
+          "expression": "OA = (2, 1), OB = (8, 7). P divides AB in ratio 1:2.",
+          "answer": "(4, 3)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed vector proofs",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "OA = a, OB = b, OC = a + b. What shape is OACB?",
+          "answer": "Parallelogram"
+        },
+        {
+          "id": "b",
+          "expression": "OA = 2a, AB = 6a. Is O, A, B collinear?",
+          "answer": "Yes (OB = 8a = 4(OA))"
+        },
+        {
+          "id": "c",
+          "expression": "OA = a, OB = b, M midpoint of AB. Express OM.",
+          "answer": "&frac{1}{2}(a + b)"
+        },
+        {
+          "id": "d",
+          "expression": "If AB = 3(CD), what can you say about AB and CD?",
+          "answer": "Parallel, AB is 3 times as long"
+        },
+        {
+          "id": "e",
+          "expression": "OA = a, OB = b. X is on AB such that AX:XB = 3:1. Find OX.",
+          "answer": "&frac{1}{4}a + &frac{3}{4}b"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "AB = b - a when OA = a and OB = b",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "AB = a + b",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "If PQ = kRS, then PQ and RS are parallel",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Parallel vectors always prove collinearity",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Midpoint of AB = &frac{1}{2}(a + b) when OA = a, OB = b",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "In triangle OAB, OA = <strong>a</strong> and OB = <strong>b</strong>. M is the midpoint of OA, N is the midpoint of AB. Prove that MN is parallel to OB and find the ratio MN : OB."
+      },
+      {
+        "id": "b",
+        "text": "OABC is a quadrilateral with OA = <strong>a</strong>, OC = <strong>c</strong>, and AB = <strong>c</strong>. Show that OABC is a parallelogram. M is the midpoint of OB and N is the midpoint of AC. Prove that M and N are the same point."
+      }
+    ]
+  }
+}

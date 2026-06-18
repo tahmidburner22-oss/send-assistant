@@ -1,0 +1,325 @@
+{
+  "title": "RATIO,\n(SIMPLIFYING RATIOS)",
+  "objective": "LO: I can simplify ratios by dividing both sides by their highest common factor.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Simplifying ratios",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"ul-b\">simplify a ratio</span>, divide all parts by their <span class=\"ul-k\">highest common factor (HCF)</span>. A ratio is in its simplest form when the parts share no common factor other than 1."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Remember:</span> Ratios can include units. Convert to the same unit first, then simplify."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "12 : 18 = 2 : 3",
+          "desc": "divide both by HCF 6"
+        },
+        {
+          "correct": true,
+          "expr": "1.5 : 2.5 = 3 : 5",
+          "desc": "multiply by 2 first to remove decimals"
+        },
+        {
+          "correct": true,
+          "expr": "40 cm : 1 m = 40 : 100 = 2 : 5",
+          "desc": "convert to same unit"
+        },
+        {
+          "correct": false,
+          "expr": "12 : 18 = 6 : 9",
+          "desc": "not fully simplified"
+        },
+        {
+          "correct": false,
+          "expr": "40 cm : 1 m = 40 : 1",
+          "desc": "units not converted"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Divide every part of the ratio by the highest common factor to simplify.",
+      "equation": "<span class=\"ov\">a : b</span> = <span class=\"ovr\">&frac{a}{HCF} : &frac{b}{HCF}</span>",
+      "caption": "Keep dividing until no common factor remains"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; whole numbers",
+      "question": "Simplify 24 : 36",
+      "steps": [
+        "Find HCF of 24 and 36 = 12",
+        "24 &divide; 12 = 2",
+        "36 &divide; 12 = 3"
+      ],
+      "answer": "2 : 3",
+      "explanation": "Always find the largest factor that divides both numbers."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; three-part ratio",
+      "question": "Simplify 10 : 15 : 25",
+      "steps": [
+        "Find HCF of 10, 15, and 25 = 5",
+        "Divide each: 10 &divide; 5 = 2, 15 &divide; 5 = 3, 25 &divide; 5 = 5",
+        "Simplified ratio: 2 : 3 : 5"
+      ],
+      "answer": "2 : 3 : 5",
+      "explanation": "The same method works for three-part ratios."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; decimals",
+      "question": "Simplify 0.6 : 1.4",
+      "steps": [
+        "Multiply both by 10: 6 : 14",
+        "HCF of 6 and 14 = 2",
+        "6 &divide; 2 = 3, 14 &divide; 2 = 7"
+      ],
+      "answer": "3 : 7",
+      "explanation": "Remove decimals first by multiplying by 10, 100, etc."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; different units",
+      "question": "Simplify 500 g : 2 kg",
+      "steps": [
+        "Convert to same unit: 500 g : 2000 g",
+        "HCF of 500 and 2000 = 500",
+        "500 &divide; 500 = 1, 2000 &divide; 500 = 4"
+      ],
+      "answer": "1 : 4",
+      "explanation": "Always convert to the same unit before simplifying."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Simple whole number ratios",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Simplify each ratio fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8 : 12",
+          "answer": "2 : 3"
+        },
+        {
+          "id": "b",
+          "expression": "15 : 25",
+          "answer": "3 : 5"
+        },
+        {
+          "id": "c",
+          "expression": "18 : 24",
+          "answer": "3 : 4"
+        },
+        {
+          "id": "d",
+          "expression": "30 : 45",
+          "answer": "2 : 3"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Larger numbers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the HCF and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "48 : 64",
+          "answer": "3 : 4"
+        },
+        {
+          "id": "b",
+          "expression": "72 : 108",
+          "answer": "2 : 3"
+        },
+        {
+          "id": "c",
+          "expression": "56 : 84",
+          "answer": "2 : 3"
+        },
+        {
+          "id": "d",
+          "expression": "90 : 126",
+          "answer": "5 : 7"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Decimals and fractions",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Simplify these ratios.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "0.4 : 0.6",
+          "answer": "2 : 3"
+        },
+        {
+          "id": "b",
+          "expression": "1.2 : 1.8",
+          "answer": "2 : 3"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{1}{2} : &frac{3}{4}",
+          "answer": "2 : 3"
+        },
+        {
+          "id": "d",
+          "expression": "2.5 : 3.5",
+          "answer": "5 : 7"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Different units",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Convert to the same unit, then simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "50 cm : 2 m",
+          "answer": "1 : 4"
+        },
+        {
+          "id": "b",
+          "expression": "300 g : 1.5 kg",
+          "answer": "1 : 5"
+        },
+        {
+          "id": "c",
+          "expression": "20 min : 1 hour",
+          "answer": "1 : 3"
+        },
+        {
+          "id": "d",
+          "expression": "750 ml : 2 litres",
+          "answer": "3 : 8"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed simplifying",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Simplify each ratio fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "36 : 48 : 60",
+          "answer": "3 : 4 : 5"
+        },
+        {
+          "id": "b",
+          "expression": "0.8 : 1.2 : 2",
+          "answer": "2 : 3 : 5"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2}{3} : &frac{5}{6}",
+          "answer": "4 : 5"
+        },
+        {
+          "id": "d",
+          "expression": "45 cm : 1.5 m : 2.25 m",
+          "answer": "2 : 6 : 9"
+        },
+        {
+          "id": "e",
+          "expression": "125 : 200 : 350",
+          "answer": "5 : 8 : 14"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "12 : 18 simplifies to 2 : 3 (divide by 6)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "12 : 18 simplifies to 6 : 9 and that is the simplest form",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "To simplify a ratio with decimals, multiply to make whole numbers first",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "40 cm : 1 m = 40 : 1 because we just drop the units",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A ratio is fully simplified when the HCF of all parts is 1",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A recipe uses <strong>250 g of flour</strong>, <strong>150 g of sugar</strong>, and <strong>100 g of butter</strong>. Write the ratio flour : sugar : butter in simplest form. If you only have <strong>200 g of butter</strong>, how much flour and sugar do you need?"
+      },
+      {
+        "id": "b",
+        "text": "The angles in a quadrilateral are in the ratio <strong>1 : 2 : 3 : 4</strong>. Find each angle. The smallest angle is increased by <strong>10 degrees</strong>. If the shape remains a quadrilateral, what must the largest angle become?"
+      }
+    ]
+  }
+}

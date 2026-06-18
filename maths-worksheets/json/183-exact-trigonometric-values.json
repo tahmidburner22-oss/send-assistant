@@ -1,0 +1,325 @@
+{
+  "title": "TRIGONOMETRY,\n(EXACT TRIGONOMETRIC VALUES)",
+  "objective": "LO: I can recall and use exact values of sin, cos, and tan for 0, 30, 45, 60, and 90 degrees.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Exact trigonometric values",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">exact values</span> of sin, cos, and tan at key angles (0°, 30°, 45°, 60°, 90°) can be expressed as <span class=\"ul-k\">surds or fractions</span> without a calculator."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key facts:</span> sin 30° = &frac{1}{2}, cos 60° = &frac{1}{2}, tan 45° = 1. These come from equilateral triangles and isosceles right-angled triangles."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "sin 30° = &frac{1}{2}",
+          "desc": "half the hypotenuse"
+        },
+        {
+          "correct": true,
+          "expr": "cos 45° = &frac{&radic;2}{2}",
+          "desc": "from isosceles right triangle"
+        },
+        {
+          "correct": true,
+          "expr": "tan 60° = &radic;3",
+          "desc": "from equilateral triangle"
+        },
+        {
+          "correct": false,
+          "expr": "sin 45° = &frac{1}{2}",
+          "desc": "sin 45° = &frac{&radic;2}{2}"
+        },
+        {
+          "correct": false,
+          "expr": "cos 30° = &frac{1}{2}",
+          "desc": "cos 30° = &frac{&radic;3}{2}"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Learn the exact values from the 30-60-90 triangle (sides 1, &radic;3, 2) and the 45-45-90 triangle (sides 1, 1, &radic;2).",
+      "equation": "sin 60° = <span class=\"ov\">&frac{&radic;3}{2}</span>, cos 60° = <span class=\"ovr\">&frac{1}{2}</span>",
+      "caption": "Derived from half an equilateral triangle"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; finding sin values",
+      "question": "State the exact value of sin 60°.",
+      "steps": [
+        "Use the 30-60-90 triangle: sides 1, &radic;3, 2",
+        "sin 60° = opposite/hypotenuse = &radic;3/2",
+        "= &frac{&radic;3}{2}"
+      ],
+      "answer": "&frac{&radic;3}{2}",
+      "explanation": "The side opposite 60° is &radic;3, hypotenuse is 2."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding cos values",
+      "question": "State the exact value of cos 45°.",
+      "steps": [
+        "Use the 45-45-90 triangle: sides 1, 1, &radic;2",
+        "cos 45° = adjacent/hypotenuse = 1/&radic;2",
+        "= &frac{&radic;2}{2} (rationalised)"
+      ],
+      "answer": "&frac{&radic;2}{2}",
+      "explanation": "Both sin and cos of 45° are equal."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding tan values",
+      "question": "State the exact value of tan 30°.",
+      "steps": [
+        "tan = sin/cos = (&frac{1}{2}) / (&frac{&radic;3}{2})",
+        "= &frac{1}{&radic;3}",
+        "= &frac{&radic;3}{3} (rationalised)"
+      ],
+      "answer": "&frac{&radic;3}{3}",
+      "explanation": "tan = opposite/adjacent = 1/&radic;3."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; using exact values",
+      "question": "Find the exact length of the side opposite 30° in a triangle with hypotenuse 10.",
+      "steps": [
+        "sin 30° = opposite / hypotenuse",
+        "&frac{1}{2} = opposite / 10",
+        "opposite = 5"
+      ],
+      "answer": "5",
+      "explanation": "Use the exact value of sin 30° = &frac{1}{2}."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Recall sin values",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State the exact value of each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "sin 0°",
+          "answer": "0"
+        },
+        {
+          "id": "b",
+          "expression": "sin 30°",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "sin 45°",
+          "answer": "&frac{&radic;2}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "sin 90°",
+          "answer": "1"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Recall cos values",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State the exact value of each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "cos 0°",
+          "answer": "1"
+        },
+        {
+          "id": "b",
+          "expression": "cos 30°",
+          "answer": "&frac{&radic;3}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "cos 60°",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "cos 90°",
+          "answer": "0"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Recall tan values",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "State the exact value of each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "tan 0°",
+          "answer": "0"
+        },
+        {
+          "id": "b",
+          "expression": "tan 30°",
+          "answer": "&frac{&radic;3}{3}"
+        },
+        {
+          "id": "c",
+          "expression": "tan 45°",
+          "answer": "1"
+        },
+        {
+          "id": "d",
+          "expression": "tan 60°",
+          "answer": "&radic;3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Using exact values in triangles",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the exact length.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Hypotenuse 8, angle 30°. Find opposite side.",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "Hypotenuse 6, angle 60°. Find adjacent side.",
+          "answer": "3"
+        },
+        {
+          "id": "c",
+          "expression": "Adjacent 5, angle 45°. Find opposite side.",
+          "answer": "5"
+        },
+        {
+          "id": "d",
+          "expression": "Opposite 4, angle 30°. Find hypotenuse.",
+          "answer": "8"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed exact values",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Evaluate without a calculator.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "sin 30° + cos 60°",
+          "answer": "1"
+        },
+        {
+          "id": "b",
+          "expression": "tan 45° + sin 90°",
+          "answer": "2"
+        },
+        {
+          "id": "c",
+          "expression": "2 sin 60°",
+          "answer": "&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "sin² 45° + cos² 45°",
+          "answer": "1"
+        },
+        {
+          "id": "e",
+          "expression": "tan 60° &divide; tan 30°",
+          "answer": "3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "sin 30° = &frac{1}{2}",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "sin 45° = &frac{1}{2}",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "tan 45° = 1",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "cos 30° = &frac{1}{2}",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "sin²θ + cos²θ = 1 for all angles",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "An equilateral triangle has sides of <strong>10 cm</strong>. Using exact values, find its height and area. Leave your answer in surd form."
+      },
+      {
+        "id": "b",
+        "text": "Without a calculator, show that <strong>sin² 60° + cos² 60° = 1</strong>. Then find the exact value of <strong>sin 60° &times; cos 30° + sin 30° &times; cos 60°</strong>."
+      }
+    ]
+  }
+}

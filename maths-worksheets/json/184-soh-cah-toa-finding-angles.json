@@ -1,0 +1,325 @@
+{
+  "title": "TRIGONOMETRY,\n(SOH CAH TOA FINDING ANGLES)",
+  "objective": "LO: I can use inverse trigonometric functions to find unknown angles in right-angled triangles.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding angles with trigonometry",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To find an <span class=\"ul-b\">unknown angle</span>, use the inverse trig functions: sin⁻¹, cos⁻¹, or tan⁻¹. Choose which ratio to use based on which <span class=\"ul-k\">two sides</span> are known."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">SOH CAH TOA:</span> Sin = Opposite/Hypotenuse, Cos = Adjacent/Hypotenuse, Tan = Opposite/Adjacent."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "opp = 3, hyp = 6: angle = sin⁻¹(3/6) = 30°",
+          "desc": "use SOH"
+        },
+        {
+          "correct": true,
+          "expr": "adj = 4, hyp = 8: angle = cos⁻¹(4/8) = 60°",
+          "desc": "use CAH"
+        },
+        {
+          "correct": true,
+          "expr": "opp = 5, adj = 5: angle = tan⁻¹(1) = 45°",
+          "desc": "use TOA"
+        },
+        {
+          "correct": false,
+          "expr": "Use sin when you have adjacent and hypotenuse",
+          "desc": "that is cos (CAH)"
+        },
+        {
+          "correct": false,
+          "expr": "sin⁻¹(0.5) = 60°",
+          "desc": "sin⁻¹(0.5) = 30°"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Identify the two known sides, choose the correct ratio, then apply the inverse function.",
+      "equation": "θ = <span class=\"ov\">sin⁻¹</span>(<span class=\"ovr\">opp &divide; hyp</span>)",
+      "caption": "Or cos⁻¹(adj/hyp) or tan⁻¹(opp/adj)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; using sin inverse",
+      "question": "Find angle x: opposite = 4, hypotenuse = 8.",
+      "steps": [
+        "Have opposite and hypotenuse: use sin",
+        "sin x = 4/8 = 0.5",
+        "x = sin⁻¹(0.5) = 30°"
+      ],
+      "answer": "x = 30°",
+      "explanation": "Opposite and hypotenuse means SOH."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; using cos inverse",
+      "question": "Find angle x: adjacent = 5, hypotenuse = 10.",
+      "steps": [
+        "Have adjacent and hypotenuse: use cos",
+        "cos x = 5/10 = 0.5",
+        "x = cos⁻¹(0.5) = 60°"
+      ],
+      "answer": "x = 60°",
+      "explanation": "Adjacent and hypotenuse means CAH."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; using tan inverse",
+      "question": "Find angle x: opposite = 7, adjacent = 7.",
+      "steps": [
+        "Have opposite and adjacent: use tan",
+        "tan x = 7/7 = 1",
+        "x = tan⁻¹(1) = 45°"
+      ],
+      "answer": "x = 45°",
+      "explanation": "Opposite and adjacent means TOA."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; decimal answer",
+      "question": "Find angle x: opposite = 6, hypotenuse = 9.",
+      "steps": [
+        "sin x = 6/9 = 0.667...",
+        "x = sin⁻¹(0.667)",
+        "x = 41.8° (1 dp)"
+      ],
+      "answer": "x = 41.8°",
+      "explanation": "Round to 1 decimal place unless told otherwise."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Using sin⁻¹",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find each angle. Give exact values where possible.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "opp = 5, hyp = 10",
+          "answer": "30°"
+        },
+        {
+          "id": "b",
+          "expression": "opp = 3, hyp = 6",
+          "answer": "30°"
+        },
+        {
+          "id": "c",
+          "expression": "opp = 4, hyp = 4&radic;2",
+          "answer": "45°"
+        },
+        {
+          "id": "d",
+          "expression": "opp = 6, hyp = 12",
+          "answer": "30°"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Using cos⁻¹",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find each angle.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "adj = 3, hyp = 6",
+          "answer": "60°"
+        },
+        {
+          "id": "b",
+          "expression": "adj = 5, hyp = 10",
+          "answer": "60°"
+        },
+        {
+          "id": "c",
+          "expression": "adj = 7, hyp = 14",
+          "answer": "60°"
+        },
+        {
+          "id": "d",
+          "expression": "adj = 4, hyp = 4&radic;2",
+          "answer": "45°"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Using tan⁻¹",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find each angle.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "opp = 8, adj = 8",
+          "answer": "45°"
+        },
+        {
+          "id": "b",
+          "expression": "opp = 5&radic;3, adj = 5",
+          "answer": "60°"
+        },
+        {
+          "id": "c",
+          "expression": "opp = 3, adj = 3&radic;3",
+          "answer": "30°"
+        },
+        {
+          "id": "d",
+          "expression": "opp = 10, adj = 10",
+          "answer": "45°"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Choosing the correct ratio",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Identify which ratio to use, then find the angle (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "opp = 7, hyp = 11",
+          "answer": "39.5° (sin)"
+        },
+        {
+          "id": "b",
+          "expression": "adj = 6, hyp = 9",
+          "answer": "48.2° (cos)"
+        },
+        {
+          "id": "c",
+          "expression": "opp = 8, adj = 5",
+          "answer": "58.0° (tan)"
+        },
+        {
+          "id": "d",
+          "expression": "adj = 12, hyp = 15",
+          "answer": "36.9° (cos)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed angle problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find angle x in each triangle (1 dp where needed).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "opp = 4, adj = 3",
+          "answer": "53.1°"
+        },
+        {
+          "id": "b",
+          "expression": "opp = 5, hyp = 13",
+          "answer": "22.6°"
+        },
+        {
+          "id": "c",
+          "expression": "adj = 8, hyp = 10",
+          "answer": "36.9°"
+        },
+        {
+          "id": "d",
+          "expression": "opp = 12, adj = 9",
+          "answer": "53.1°"
+        },
+        {
+          "id": "e",
+          "expression": "opp = 1, hyp = 2",
+          "answer": "30°"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To find an angle, use the inverse trig function",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "sin⁻¹(0.5) = 60°",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "tan⁻¹(1) = 45°",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Use SOH when you know the adjacent and hypotenuse",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "cos⁻¹(0.5) = 60°",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A ladder <strong>6 m long</strong> leans against a wall. The foot is <strong>2.5 m</strong> from the base of the wall. Find the angle between the ladder and the ground. If the angle must be less than <strong>75°</strong> for safety, is this ladder safe?"
+      },
+      {
+        "id": "b",
+        "text": "From a point <strong>30 m</strong> from the base of a tower, the angle of elevation to the top is <strong>55°</strong>. Find the height of the tower. A second person stands where the angle of elevation is <strong>35°</strong>. How far are they from the base?"
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "SURDS,\n(SIMPLIFYING SURDS)",
+  "objective": "LO: I can simplify surds by finding the largest square factor.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Simplifying surds",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"ul-b\">simplify a surd</span>, find the largest <span class=\"ul-k\">perfect square factor</span> of the number under the root sign and take its square root outside."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Method:</span> &radic;n = &radic;(a² &times; b) = a&radic;b. Choose the largest perfect square factor for efficiency."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&radic;12 = &radic;(4 &times; 3) = 2&radic;3",
+          "desc": "4 is the square factor"
+        },
+        {
+          "correct": true,
+          "expr": "&radic;50 = &radic;(25 &times; 2) = 5&radic;2",
+          "desc": "25 is the largest square factor"
+        },
+        {
+          "correct": true,
+          "expr": "&radic;72 = &radic;(36 &times; 2) = 6&radic;2",
+          "desc": "36 is the largest square factor"
+        },
+        {
+          "correct": false,
+          "expr": "&radic;12 = &radic;6 &times; &radic;2",
+          "desc": "not simplified; need square factors"
+        },
+        {
+          "correct": false,
+          "expr": "&radic;50 = &radic;(10 &times; 5) = &radic;10&radic;5",
+          "desc": "neither factor is a perfect square"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Find the largest perfect square that divides the number. Take its root outside the radical.",
+      "equation": "&radic;n = <span class=\"ov\">a</span>&radic;<span class=\"ovr\">b</span> where n = a² &times; b",
+      "caption": "b should have no perfect square factors left"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; basic simplification",
+      "question": "Simplify &radic;20.",
+      "steps": [
+        "Find largest square factor of 20: 4",
+        "&radic;20 = &radic;(4 &times; 5)",
+        "= 2&radic;5"
+      ],
+      "answer": "2&radic;5",
+      "explanation": "4 is the largest perfect square that divides 20."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; larger number",
+      "question": "Simplify &radic;45.",
+      "steps": [
+        "Find largest square factor of 45: 9",
+        "&radic;45 = &radic;(9 &times; 5)",
+        "= 3&radic;5"
+      ],
+      "answer": "3&radic;5",
+      "explanation": "9 is the largest perfect square that divides 45."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; large radicand",
+      "question": "Simplify &radic;200.",
+      "steps": [
+        "Find largest square factor of 200: 100",
+        "&radic;200 = &radic;(100 &times; 2)",
+        "= 10&radic;2"
+      ],
+      "answer": "10&radic;2",
+      "explanation": "Look for 4, 9, 16, 25, 36, 49, 64, 81, 100 as factors."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with coefficient",
+      "question": "Simplify 3&radic;28.",
+      "steps": [
+        "&radic;28 = &radic;(4 &times; 7) = 2&radic;7",
+        "3 &times; 2&radic;7 = 6&radic;7",
+        "Multiply coefficients"
+      ],
+      "answer": "6&radic;7",
+      "explanation": "Simplify the surd first, then multiply by the outer coefficient."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Basic simplification",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Simplify each surd.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;8",
+          "answer": "2&radic;2"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;18",
+          "answer": "3&radic;2"
+        },
+        {
+          "id": "c",
+          "expression": "&radic;32",
+          "answer": "4&radic;2"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;27",
+          "answer": "3&radic;3"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Larger numbers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Simplify each surd.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;48",
+          "answer": "4&radic;3"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;75",
+          "answer": "5&radic;3"
+        },
+        {
+          "id": "c",
+          "expression": "&radic;98",
+          "answer": "7&radic;2"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;125",
+          "answer": "5&radic;5"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "With coefficients",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Simplify fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2&radic;12",
+          "answer": "4&radic;3"
+        },
+        {
+          "id": "b",
+          "expression": "5&radic;8",
+          "answer": "10&radic;2"
+        },
+        {
+          "id": "c",
+          "expression": "3&radic;50",
+          "answer": "15&radic;2"
+        },
+        {
+          "id": "d",
+          "expression": "4&radic;45",
+          "answer": "12&radic;5"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Expressing in surd form",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Write in the form a&radic;b.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;180",
+          "answer": "6&radic;5"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;128",
+          "answer": "8&radic;2"
+        },
+        {
+          "id": "c",
+          "expression": "&radic;300",
+          "answer": "10&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;242",
+          "answer": "11&radic;2"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed surd simplification",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Simplify each expression fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;63",
+          "answer": "3&radic;7"
+        },
+        {
+          "id": "b",
+          "expression": "2&radic;54",
+          "answer": "6&radic;6"
+        },
+        {
+          "id": "c",
+          "expression": "&radic;108",
+          "answer": "6&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{&radic;72}{2}",
+          "answer": "3&radic;2"
+        },
+        {
+          "id": "e",
+          "expression": "&radic;500",
+          "answer": "10&radic;5"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&radic;12 = 2&radic;3 because 12 = 4 &times; 3",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&radic;50 = 10&radic;2",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "&radic;72 = 6&radic;2 because 72 = 36 &times; 2",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&radic;8 = 4&radic;2",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A surd is fully simplified when no perfect square divides the radicand",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Find the exact length of the diagonal of a rectangle with sides <strong>6 cm</strong> and <strong>8 cm</strong>. Express &radic;100 and show it equals a whole number. Now find the diagonal of a <strong>5 cm by 7 cm</strong> rectangle in simplified surd form."
+      },
+      {
+        "id": "b",
+        "text": "Simplify <strong>&radic;(3n²)</strong> where n is a positive integer. Hence write <strong>&radic;(300)</strong> in the form a&radic;b and verify your answer by finding a² &times; b."
+      }
+    ]
+  }
+}
