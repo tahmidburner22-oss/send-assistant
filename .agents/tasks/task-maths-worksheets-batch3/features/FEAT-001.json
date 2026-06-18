@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Create build_batch_3.py with the first 25 KS3/KS4 worksheets covering Algebra, Angles, Area/Perimeter, Fractions Secondary, and Decimals/Percentages topics",
+  "status": "completed",
+  "steps": [
+    "Create maths-worksheets/scripts/build_batch_3.py importing practice, example, write_ws from build_batch_1",
+    "Generate worksheet JSON for these 25 subtopics (following exact schema from 021-substitution-into-expressions.json as reference): 022-using-and-writing-simple-formulae, 023-expanding-double-brackets, 025-factorising-expressions, 026-angles-in-parallel-lines, 027-angles-in-polygons, 028-angles-in-triangles-and-quadrilaterals, 029-angles-on-a-straight-line-and-at-a-point, 030-area-of-rectangles-triangles-and-parallelograms, 031-area-of-trapeziums-and-composite-shapes, 032-circumference-of-a-circle, 039-comparing-fractions-decimals-and-percentages, 040-finding-percentages-of-amounts, 041-percentage-increase-and-decrease, 042-percentages-as-fractions-and-decimals, 043-adding-and-subtracting-decimals, 044-dividing-decimals, 045-multiplying-decimals, 046-rounding-decimals-to-decimal-places, 047-bidmas-bodmas, 048-checking-answers-using-inverse-operations, 049-multi-step-calculations, 050-adding-and-subtracting-fractions, 051-algebraic-fractions, 052-dividing-fractions, 053-multiplying-fractions",
+    "Each worksheet MUST have: title (TOPIC,\\n(SUBTOPIC)), objective starting with 'LO: I can...', info_boxes with key_terms (2 paragraphs with ul-b and ul-k spans), what_we_learn (3 correct + 2 incorrect examples), key_idea (text, equation with ov/ovr spans, caption), 4 modelled_examples (ex1 blue, ex2 blue, ex3 red, ex4 green - each with label, question, exactly 3 steps, answer, explanation), 5 practice sections (sections 1-2 blue, 3 red, 4 green, 5 purple - sections 1-4 have 4 questions a-d, section 5 has 5 questions a-e), misconceptions (5 items mix of correct/incorrect), challenge (2 word problems)",
+    "Use HTML entities throughout: &times; &divide; &minus; &rarr; &lsquo; &rsquo; &ndash; &sup2; &frac{N}{M} etc. Use <strong> for emphasis in word problems. Use <span class='ul-b'> and <span class='ul-k'> in key_terms. Use <span class='rb'> for red bold tips.",
+    "Run the script to generate all 25 JSON files in maths-worksheets/json/",
+    "Generate PDFs for all 25 using: for j in maths-worksheets/json/022-*.json maths-worksheets/json/023-*.json ...; do python3 maths-worksheets/scripts/generate_worksheet.py \"$j\" \"maths-worksheets/pdf/$(basename ${j%.json}.pdf)\"; done",
+    "Verify 3-4 PDFs using pypdfium2: open PDF, extract text from both pages, confirm 'Example 1', 'Example 2', 'Example 3', 'Example 4' all appear, and no literal '&frac{' string appears in extracted text"
+  ],
+  "acceptance_criteria": [
+    "25 new JSON files exist in maths-worksheets/json/ for worksheets 022, 023, 025, 026-032, 039-053",
+    "25 new PDF files exist in maths-worksheets/pdf/ for the same worksheets",
+    "Each JSON file validates against the schema (has all required fields)",
+    "pypdfium2 text extraction of at least 3 sample PDFs shows all 4 example labels present",
+    "No literal '&frac{' strings in pypdfium2 extracted text",
+    "build_batch_3.py runs without errors"
+  ],
+  "verification": [
+    "python3 maths-worksheets/scripts/build_batch_3.py",
+    "for j in maths-worksheets/json/022-*.json maths-worksheets/json/023-*.json maths-worksheets/json/025-*.json maths-worksheets/json/026-*.json maths-worksheets/json/027-*.json maths-worksheets/json/028-*.json maths-worksheets/json/029-*.json maths-worksheets/json/030-*.json maths-worksheets/json/031-*.json maths-worksheets/json/032-*.json maths-worksheets/json/039-*.json maths-worksheets/json/040-*.json maths-worksheets/json/041-*.json maths-worksheets/json/042-*.json maths-worksheets/json/043-*.json maths-worksheets/json/044-*.json maths-worksheets/json/045-*.json maths-worksheets/json/046-*.json maths-worksheets/json/047-*.json maths-worksheets/json/048-*.json maths-worksheets/json/049-*.json maths-worksheets/json/050-*.json maths-worksheets/json/051-*.json maths-worksheets/json/052-*.json maths-worksheets/json/053-*.json; do python3 maths-worksheets/scripts/generate_worksheet.py \"$j\" \"maths-worksheets/pdf/$(basename ${j%.json}.pdf)\"; done",
+    "python3 -c \"import pypdfium2; pdf=pypdfium2.PdfDocument('maths-worksheets/pdf/022-using-and-writing-simple-formulae.pdf'); text=''.join(p.get_textpage().get_text_range() for p in pdf); assert 'Example 1' in text and 'Example 2' in text and 'Example 3' in text and 'Example 4' in text; assert '&frac{' not in text; print('PASS')\""
+  ],
+  "blocked_reason": null,
+  "findings": "All 25 worksheets generated successfully. WeasyPrint deprecation warnings about instantiateVariableFont are benign. pypdfium2 verification confirms all 4 examples appear in extracted text and no &frac{ leaks. Script appends with heredoc pattern."
+}
