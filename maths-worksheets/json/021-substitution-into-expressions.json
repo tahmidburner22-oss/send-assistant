@@ -1,0 +1,325 @@
+{
+  "title": "ALGEBRAIC EXPRESSIONS,\n(SUBSTITUTION INTO EXPRESSIONS)",
+  "objective": "LO: I can substitute given values into algebraic expressions and evaluate the result.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What does &lsquo;substitute&rsquo; mean?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Substitution</span> means replacing a <span class=\"ul-k\">letter</span> with a given number, then working out the value of the expression."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Remember:</span> 2x means 2 &times; x. When we write letters next to numbers or other letters, multiplication is implied."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "If x = 3, then 2x = 6",
+          "desc": "2 &times; 3"
+        },
+        {
+          "correct": true,
+          "expr": "If a = 4, then a + 7 = 11",
+          "desc": "4 + 7"
+        },
+        {
+          "correct": true,
+          "expr": "If x = 5, then x&sup2; = 25",
+          "desc": "5 &times; 5"
+        },
+        {
+          "correct": false,
+          "expr": "If x = 3, then 2x = 23",
+          "desc": "not joining digits"
+        },
+        {
+          "correct": false,
+          "expr": "If x = 4, then x&sup2; = 8",
+          "desc": "squared means &times; itself, not &times; 2"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Replace the letter with the number. Use BIDMAS to work out the answer in the correct order.",
+      "equation": "If x = 4: <span class=\"ov\">3x + 1</span> = 3 &times; 4 + 1 = <span class=\"ovr\">13</span>",
+      "caption": "Substitute then calculate"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; single variable",
+      "question": "Find the value of 4x + 3 when x = 5",
+      "steps": [
+        "Replace x with 5: 4 &times; 5 + 3",
+        "Work out the multiplication: 20 + 3",
+        "Add: 23"
+      ],
+      "answer": "= 23",
+      "explanation": "Multiply first (BIDMAS), then add."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; two variables",
+      "question": "Find the value of 3a + 2b when a = 4 and b = 5",
+      "steps": [
+        "Replace a with 4 and b with 5: 3 &times; 4 + 2 &times; 5",
+        "Work out each multiplication: 12 + 10",
+        "Add: 22"
+      ],
+      "answer": "= 22",
+      "explanation": "Substitute both letters, then follow BIDMAS."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; with powers",
+      "question": "Find the value of x&sup2; + 3x when x = 4",
+      "steps": [
+        "Replace x with 4: 4&sup2; + 3 &times; 4",
+        "Work out the power: 16 + 3 &times; 4",
+        "Multiply then add: 16 + 12 = 28"
+      ],
+      "answer": "= 28",
+      "explanation": "Powers first, then multiplication, then addition."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; negative values",
+      "question": "Find the value of 2x&sup2; &minus; 3x when x = &minus;2",
+      "steps": [
+        "Replace x with &minus;2: 2 &times; (&minus;2)&sup2; &minus; 3 &times; (&minus;2)",
+        "Work out (&minus;2)&sup2; = 4, so 2 &times; 4 = 8",
+        "Work out &minus;3 &times; (&minus;2) = 6, so 8 + 6 = 14"
+      ],
+      "answer": "= 14",
+      "explanation": "(&minus;2)&sup2; = 4, not &minus;4. A negative squared gives a positive."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Single variable, no powers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Substitute x = 3 into each expression.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2x + 1",
+          "answer": "7"
+        },
+        {
+          "id": "b",
+          "expression": "5x &minus; 4",
+          "answer": "11"
+        },
+        {
+          "id": "c",
+          "expression": "10 &minus; 2x",
+          "answer": "4"
+        },
+        {
+          "id": "d",
+          "expression": "4x + 7",
+          "answer": "19"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Two variables",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Substitute a = 5 and b = 2 into each expression.",
+      "linked_example": "ex2",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3a + b",
+          "answer": "17"
+        },
+        {
+          "id": "b",
+          "expression": "4a &minus; 2b",
+          "answer": "16"
+        },
+        {
+          "id": "c",
+          "expression": "a + 3b",
+          "answer": "11"
+        },
+        {
+          "id": "d",
+          "expression": "2a &minus; b + 1",
+          "answer": "9"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Expressions with powers",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Substitute x = 3 into each expression.",
+      "linked_example": "ex3",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2;",
+          "answer": "9"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; + 5",
+          "answer": "14"
+        },
+        {
+          "id": "c",
+          "expression": "2x&sup2;",
+          "answer": "18"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; + 2x",
+          "answer": "15"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Negative substitution",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Substitute x = &minus;2 into each expression.",
+      "linked_example": "ex4",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3x + 10",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2;",
+          "answer": "4"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; + x",
+          "answer": "2"
+        },
+        {
+          "id": "d",
+          "expression": "5 &minus; 2x",
+          "answer": "9"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed challenge",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use the values given with each question.",
+      "linked_example": "ex4",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3x &minus; 2y when x = 4, y = 3",
+          "answer": "6"
+        },
+        {
+          "id": "b",
+          "expression": "a&sup2; + b&sup2; when a = 3, b = 4",
+          "answer": "25"
+        },
+        {
+          "id": "c",
+          "expression": "2x&sup2; &minus; x + 1 when x = 5",
+          "answer": "46"
+        },
+        {
+          "id": "d",
+          "expression": "4(x + y) when x = 3, y = &minus;1",
+          "answer": "8"
+        },
+        {
+          "id": "e",
+          "expression": "x&sup2; &minus; y&sup2; when x = 5, y = 3",
+          "answer": "16"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "If x = 3, then 2x = 23",
+        "correct": false
+      },
+      {
+        "id": "b",
+        "statement": "If x = 4, then x&sup2; = 16",
+        "correct": true
+      },
+      {
+        "id": "c",
+        "statement": "If x = &minus;3, then x&sup2; = &minus;9",
+        "correct": false
+      },
+      {
+        "id": "d",
+        "statement": "If a = 2 and b = 3, then ab = 6",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "If x = 5, then 3x + 1 = 16",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The formula for the area of a trapezium is A = &frac12;(a + b)h. Find the area when <strong>a = 5 cm</strong>, <strong>b = 9 cm</strong> and <strong>h = 4 cm</strong>. Show your working."
+      },
+      {
+        "id": "b",
+        "text": "A taxi firm charges <strong>£(2.50 + 1.20m)</strong> for a journey of <strong>m miles</strong>. Work out the cost for a journey of <strong>8 miles</strong>, then find how many miles you can travel for exactly <strong>£20.50</strong>."
+      }
+    ]
+  }
+}
