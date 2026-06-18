@@ -1,0 +1,325 @@
+{
+  "title": "ANGLES AND GEOMETRY,\n(ANGLES IN POLYGONS)",
+  "objective": "LO: I can find interior and exterior angles of regular and irregular polygons.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Polygon angle rules",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The sum of <span class=\"ul-b\">interior angles</span> of a polygon with n sides is <span class=\"ul-k\">(n &minus; 2) &times; 180&deg;</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Exterior angles:</span> The exterior angles of any convex polygon always sum to 360&deg;. Each exterior angle of a regular polygon = 360&deg; &divide; n."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key facts",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Triangle: (3&minus;2)&times;180 = 180&deg;",
+          "desc": "angle sum"
+        },
+        {
+          "correct": true,
+          "expr": "Quadrilateral: (4&minus;2)&times;180 = 360&deg;",
+          "desc": "angle sum"
+        },
+        {
+          "correct": true,
+          "expr": "Pentagon: (5&minus;2)&times;180 = 540&deg;",
+          "desc": "angle sum"
+        },
+        {
+          "correct": false,
+          "expr": "Hexagon interior sum = 600&deg;",
+          "desc": "should be 720&deg;"
+        },
+        {
+          "correct": false,
+          "expr": "Exterior angles sum to 180&deg;",
+          "desc": "always 360&deg;"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Interior angle sum = (n &minus; 2) &times; 180&deg;. Exterior angles always sum to 360&deg;.",
+      "equation": "Sum = (<span class=\"ov\">n &minus; 2</span>) &times; <span class=\"ovr\">180&deg;</span>",
+      "caption": "n = number of sides"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; interior angle sum",
+      "question": "Find the sum of interior angles of a hexagon.",
+      "steps": [
+        "A hexagon has 6 sides, so n = 6",
+        "(6 &minus; 2) &times; 180 = 4 &times; 180",
+        "= 720&deg;"
+      ],
+      "answer": "= 720&deg;",
+      "explanation": "Always subtract 2 from the number of sides first."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; one interior angle (regular)",
+      "question": "Find one interior angle of a regular octagon.",
+      "steps": [
+        "Sum = (8 &minus; 2) &times; 180 = 1080&deg;",
+        "Regular: all angles equal",
+        "1080 &divide; 8 = 135&deg;"
+      ],
+      "answer": "= 135&deg;",
+      "explanation": "For regular polygons, divide the total by the number of sides."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; exterior angle",
+      "question": "Find one exterior angle of a regular pentagon.",
+      "steps": [
+        "Exterior angles sum to 360&deg;",
+        "Regular: all exterior angles equal",
+        "360 &divide; 5 = 72&deg;"
+      ],
+      "answer": "= 72&deg;",
+      "explanation": "Exterior angle + interior angle = 180&deg; (check: 108 + 72 = 180)."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; finding missing angle",
+      "question": "A pentagon has angles 100&deg;, 120&deg;, 130&deg;, 90&deg; and x. Find x.",
+      "steps": [
+        "Sum = (5 &minus; 2) &times; 180 = 540&deg;",
+        "100 + 120 + 130 + 90 = 440&deg;",
+        "x = 540 &minus; 440 = 100&deg;"
+      ],
+      "answer": "x = 100&deg;",
+      "explanation": "Subtract the known angles from the total angle sum."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Interior angle sums",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the sum of interior angles.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Triangle (3 sides)",
+          "answer": "180&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "Pentagon (5 sides)",
+          "answer": "540&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "Heptagon (7 sides)",
+          "answer": "900&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Decagon (10 sides)",
+          "answer": "1440&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "One angle of a regular polygon",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find one interior angle of each regular polygon.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Equilateral triangle",
+          "answer": "60&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "Square",
+          "answer": "90&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "Regular hexagon",
+          "answer": "120&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Regular nonagon (9)",
+          "answer": "140&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Exterior angles",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find one exterior angle of each regular polygon.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Regular triangle",
+          "answer": "120&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "Regular quadrilateral",
+          "answer": "90&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "Regular hexagon",
+          "answer": "60&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Regular decagon",
+          "answer": "36&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Missing angles",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the missing angle x.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Triangle: 60&deg;, 80&deg;, x",
+          "answer": "40&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "Quadrilateral: 90&deg;, 85&deg;, 110&deg;, x",
+          "answer": "75&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "Pentagon: 100&deg;, 110&deg;, 120&deg;, 130&deg;, x",
+          "answer": "80&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Hexagon: 130&deg;, 140&deg;, 100&deg;, 110&deg;, 120&deg;, x",
+          "answer": "120&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed polygon problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer each question.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "How many sides if interior sum = 1260&deg;?",
+          "answer": "9"
+        },
+        {
+          "id": "b",
+          "expression": "Each exterior angle is 40&deg;. How many sides?",
+          "answer": "9"
+        },
+        {
+          "id": "c",
+          "expression": "Interior angle of regular polygon = 156&deg;. How many sides?",
+          "answer": "15"
+        },
+        {
+          "id": "d",
+          "expression": "Sum of exterior angles of a 100-sided polygon?",
+          "answer": "360&deg;"
+        },
+        {
+          "id": "e",
+          "expression": "Interior angle of regular 12-sided polygon?",
+          "answer": "150&deg;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Interior angles of a hexagon sum to 720&deg;",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Exterior angles always sum to 180&deg;",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A regular polygon has all angles equal",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Interior angle sum of a quadrilateral is 180&deg;",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Exterior angle = 360&deg; &divide; n for regular polygons",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The interior angle of a regular polygon is <strong>5 times</strong> its exterior angle. How many sides does the polygon have? Show your working."
+      },
+      {
+        "id": "b",
+        "text": "Three angles of a quadrilateral are in the ratio <strong>2 : 3 : 4</strong>. The fourth angle is <strong>120&deg;</strong>. Find each of the other three angles."
+      }
+    ]
+  }
+}

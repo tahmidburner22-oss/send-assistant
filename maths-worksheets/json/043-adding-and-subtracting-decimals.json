@@ -1,0 +1,325 @@
+{
+  "title": "DECIMALS,\n(ADDING AND SUBTRACTING DECIMALS)",
+  "objective": "LO: I can add and subtract decimals using column methods, lining up the decimal points.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Adding and subtracting decimals",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "When adding or subtracting <span class=\"ul-b\">decimals</span>, line up the <span class=\"ul-k\">decimal points</span> so that digits with the same place value are in the same column."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Tip:</span> Use trailing zeros as placeholders so all numbers have the same number of decimal places."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key points",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3.5 + 2.7 = 6.2",
+          "desc": "line up points"
+        },
+        {
+          "correct": true,
+          "expr": "5.0 &minus; 1.3 = 3.7",
+          "desc": "use placeholder 0"
+        },
+        {
+          "correct": true,
+          "expr": "12.45 + 3.6 = 16.05",
+          "desc": "3.6 = 3.60"
+        },
+        {
+          "correct": false,
+          "expr": "3.5 + 2.7 = 5.12",
+          "desc": "not place value error"
+        },
+        {
+          "correct": false,
+          "expr": "1.3 + 2.45 lined up without point",
+          "desc": "must align decimals"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Line up the decimal points. Fill empty places with zeros. Then add or subtract as normal.",
+      "equation": "<span class=\"ov\">12.45</span> + <span class=\"ov\">3.60</span> = <span class=\"ovr\">16.05</span>",
+      "caption": "Pad with zeros to match decimal places"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; adding",
+      "question": "Calculate 4.3 + 2.8",
+      "steps": [
+        "Line up: 4.3 + 2.8",
+        "3 + 8 = 11, write 1 carry 1",
+        "4 + 2 + 1 = 7 &rarr; 7.1"
+      ],
+      "answer": "= 7.1",
+      "explanation": "Carry works exactly the same as with whole numbers."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; different decimal places",
+      "question": "Calculate 5.6 + 3.45",
+      "steps": [
+        "Write as 5.60 + 3.45",
+        "0 + 5 = 5; 6 + 4 = 10, write 0 carry 1",
+        "5 + 3 + 1 = 9 &rarr; 9.05"
+      ],
+      "answer": "= 9.05",
+      "explanation": "Pad 5.6 with a zero to make 5.60."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; subtraction",
+      "question": "Calculate 8.2 &minus; 3.7",
+      "steps": [
+        "Line up: 8.2 &minus; 3.7",
+        "2 &minus; 7: borrow, 12 &minus; 7 = 5",
+        "7 &minus; 3 = 4 &rarr; 4.5"
+      ],
+      "answer": "= 4.5",
+      "explanation": "Borrow from the next column just like whole numbers."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; from a whole number",
+      "question": "Calculate 10 &minus; 3.46",
+      "steps": [
+        "Write as 10.00 &minus; 3.46",
+        "0 &minus; 6: borrow through &rarr; 10 &minus; 6 = 4",
+        "Continue borrowing: 9 &minus; 4 = 5, 9 &minus; 3 = 6 &rarr; 6.54"
+      ],
+      "answer": "= 6.54",
+      "explanation": "Write 10 as 10.00 to subtract easily."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Adding decimals (same d.p.)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate each sum.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3.4 + 2.5",
+          "answer": "5.9"
+        },
+        {
+          "id": "b",
+          "expression": "6.7 + 1.8",
+          "answer": "8.5"
+        },
+        {
+          "id": "c",
+          "expression": "4.25 + 3.14",
+          "answer": "7.39"
+        },
+        {
+          "id": "d",
+          "expression": "8.63 + 5.29",
+          "answer": "13.92"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Adding (different d.p.)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Pad with zeros first.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4.5 + 2.35",
+          "answer": "6.85"
+        },
+        {
+          "id": "b",
+          "expression": "7 + 3.62",
+          "answer": "10.62"
+        },
+        {
+          "id": "c",
+          "expression": "12.4 + 0.85",
+          "answer": "13.25"
+        },
+        {
+          "id": "d",
+          "expression": "9.1 + 4.275",
+          "answer": "13.375"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Subtracting decimals",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Calculate each difference.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "7.8 &minus; 3.5",
+          "answer": "4.3"
+        },
+        {
+          "id": "b",
+          "expression": "9.4 &minus; 2.7",
+          "answer": "6.7"
+        },
+        {
+          "id": "c",
+          "expression": "6.32 &minus; 4.18",
+          "answer": "2.14"
+        },
+        {
+          "id": "d",
+          "expression": "10 &minus; 4.65",
+          "answer": "5.35"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Show your column working.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Buy items at &pound;3.49 and &pound;2.75. Total?",
+          "answer": "&pound;6.24"
+        },
+        {
+          "id": "b",
+          "expression": "Had &pound;20; spent &pound;13.62. Change?",
+          "answer": "&pound;6.38"
+        },
+        {
+          "id": "c",
+          "expression": "Run 3.5 km then 2.75 km. Total?",
+          "answer": "6.25 km"
+        },
+        {
+          "id": "d",
+          "expression": "Rope 8 m; cut off 2.35 m. Left?",
+          "answer": "5.65 m"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed addition and subtraction",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5.6 + 3.45 &minus; 2.1",
+          "answer": "6.95"
+        },
+        {
+          "id": "b",
+          "expression": "10 &minus; 3.7 + 1.25",
+          "answer": "7.55"
+        },
+        {
+          "id": "c",
+          "expression": "7.82 + 4.5 &minus; 6.07",
+          "answer": "6.25"
+        },
+        {
+          "id": "d",
+          "expression": "20 &minus; 8.45 &minus; 3.2",
+          "answer": "8.35"
+        },
+        {
+          "id": "e",
+          "expression": "0.75 + 0.8 + 0.125",
+          "answer": "1.675"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Line up decimal points when adding",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "3.5 + 2.7 = 5.12",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "10 &minus; 3.46 = 6.54",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "4.5 is the same as 4.50",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "1.3 + 2.45 = 3.48",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A shopper buys items costing <strong>&pound;4.99</strong>, <strong>&pound;2.50</strong>, <strong>&pound;7.25</strong> and <strong>&pound;0.89</strong>. They pay with a <strong>&pound;20 note</strong>. How much change do they receive?"
+      },
+      {
+        "id": "b",
+        "text": "Three pieces of wood are <strong>2.4 m</strong>, <strong>1.85 m</strong> and <strong>3.125 m</strong> long. What is their total length? If they are cut from a <strong>10 m</strong> plank, what length remains?"
+      }
+    ]
+  }
+}

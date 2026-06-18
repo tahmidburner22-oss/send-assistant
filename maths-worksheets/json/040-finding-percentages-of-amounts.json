@@ -1,0 +1,325 @@
+{
+  "title": "FRACTIONS, DECIMALS AND PERCENTAGES,\n(FINDING PERCENTAGES OF AMOUNTS)",
+  "objective": "LO: I can calculate a percentage of a given amount using mental and written methods.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Percentages of amounts",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Finding a <span class=\"ul-b\">percentage of an amount</span> means finding that <span class=\"ul-k\">fraction</span> of the total. 'Of' means multiply."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Method:</span> Divide by 100, then multiply by the percentage. Or find 10% first and build up."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key methods",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "50% of 80 = 40",
+          "desc": "half"
+        },
+        {
+          "correct": true,
+          "expr": "10% of 250 = 25",
+          "desc": "&divide; 10"
+        },
+        {
+          "correct": true,
+          "expr": "25% of 60 = 15",
+          "desc": "&divide; 4"
+        },
+        {
+          "correct": false,
+          "expr": "10% of 80 = 8.0 (move 2 places)",
+          "desc": "only move 1 place"
+        },
+        {
+          "correct": false,
+          "expr": "30% of 50 = 30 &times; 50 = 1500",
+          "desc": "must divide by 100 too"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "To find x% of an amount: divide by 100, multiply by x. Or use 10% building blocks.",
+      "equation": "<span class=\"ov\">x%</span> of A = <span class=\"ovr\">A &times; x &divide; 100</span>",
+      "caption": "Percentage means per hundred"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; simple percentage",
+      "question": "Find 20% of &pound;150.",
+      "steps": [
+        "10% of 150 = 15",
+        "20% = 2 &times; 10% = 2 &times; 15",
+        "= &pound;30"
+      ],
+      "answer": "= &pound;30",
+      "explanation": "Find 10% first, then double it."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; using division",
+      "question": "Find 35% of 200.",
+      "steps": [
+        "200 &divide; 100 = 2 (this is 1%)",
+        "2 &times; 35 = 70",
+        "35% of 200 = 70"
+      ],
+      "answer": "= 70",
+      "explanation": "Divide by 100 to get 1%, then multiply."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; non-calculator",
+      "question": "Find 15% of &pound;80.",
+      "steps": [
+        "10% of 80 = 8",
+        "5% = half of 10% = 4",
+        "15% = 8 + 4 = &pound;12"
+      ],
+      "answer": "= &pound;12",
+      "explanation": "Build up from 10% and 5%."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; applied",
+      "question": "A coat costs &pound;120. There is a 30% discount. How much is the discount?",
+      "steps": [
+        "Find 30% of 120",
+        "10% = 12, so 30% = 3 &times; 12 = 36",
+        "Discount = &pound;36"
+      ],
+      "answer": "= &pound;36",
+      "explanation": "The discount means you save &pound;36; sale price = &pound;84."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Simple percentages",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find each percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "50% of 60",
+          "answer": "30"
+        },
+        {
+          "id": "b",
+          "expression": "25% of 80",
+          "answer": "20"
+        },
+        {
+          "id": "c",
+          "expression": "10% of 350",
+          "answer": "35"
+        },
+        {
+          "id": "d",
+          "expression": "75% of 40",
+          "answer": "30"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Using 10% building blocks",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find each percentage of the amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "20% of 90",
+          "answer": "18"
+        },
+        {
+          "id": "b",
+          "expression": "30% of 150",
+          "answer": "45"
+        },
+        {
+          "id": "c",
+          "expression": "40% of 200",
+          "answer": "80"
+        },
+        {
+          "id": "d",
+          "expression": "60% of 250",
+          "answer": "150"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Trickier percentages",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use 10% and 5% building blocks.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "15% of 120",
+          "answer": "18"
+        },
+        {
+          "id": "b",
+          "expression": "35% of 200",
+          "answer": "70"
+        },
+        {
+          "id": "c",
+          "expression": "45% of 80",
+          "answer": "36"
+        },
+        {
+          "id": "d",
+          "expression": "5% of 360",
+          "answer": "18"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Calculate each amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "20% discount on &pound;55",
+          "answer": "&pound;11"
+        },
+        {
+          "id": "b",
+          "expression": "15% tip on a &pound;40 meal",
+          "answer": "&pound;6"
+        },
+        {
+          "id": "c",
+          "expression": "VAT is 20% on &pound;250",
+          "answer": "&pound;50"
+        },
+        {
+          "id": "d",
+          "expression": "65% of 120 students passed",
+          "answer": "78 students"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find each percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "12% of 300",
+          "answer": "36"
+        },
+        {
+          "id": "b",
+          "expression": "85% of 60",
+          "answer": "51"
+        },
+        {
+          "id": "c",
+          "expression": "2.5% of 400",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "17.5% of 200",
+          "answer": "35"
+        },
+        {
+          "id": "e",
+          "expression": "33&frac{1}{3}% of 90",
+          "answer": "30"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "10% means divide by 10",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "50% of 70 = 140",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "25% is the same as &frac{1}{4}",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "To find 1%, divide by 10",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "15% = 10% + 5%",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A TV costs <strong>&pound;480</strong>. Shop A offers <strong>25% off</strong>. Shop B offers <strong>&pound;100 off</strong>. Which is cheaper? By how much?"
+      },
+      {
+        "id": "b",
+        "text": "A school has <strong>1200 students</strong>. <strong>55%</strong> are girls. <strong>30%</strong> of the girls and <strong>40%</strong> of the boys take the bus. How many students take the bus in total?"
+      }
+    ]
+  }
+}

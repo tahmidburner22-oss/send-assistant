@@ -1,0 +1,325 @@
+{
+  "title": "NUMBER OPERATIONS,\n(BIDMAS / BODMAS)",
+  "objective": "LO: I can apply the correct order of operations (BIDMAS) to evaluate expressions.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Order of operations",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">BIDMAS</span> tells us the order: <span class=\"ul-k\">B</span>rackets, <span class=\"ul-k\">I</span>ndices, <span class=\"ul-k\">D</span>ivision/<span class=\"ul-k\">M</span>ultiplication, <span class=\"ul-k\">A</span>ddition/<span class=\"ul-k\">S</span>ubtraction."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key point:</span> Division and multiplication are equal priority (left to right). Addition and subtraction are equal priority (left to right)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "BIDMAS in action",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3 + 4 &times; 2 = 11",
+          "desc": "multiply first"
+        },
+        {
+          "correct": true,
+          "expr": "(3 + 4) &times; 2 = 14",
+          "desc": "brackets first"
+        },
+        {
+          "correct": true,
+          "expr": "2&sup2; + 3 = 7",
+          "desc": "indices before addition"
+        },
+        {
+          "correct": false,
+          "expr": "3 + 4 &times; 2 = 14",
+          "desc": "left-to-right is wrong here"
+        },
+        {
+          "correct": false,
+          "expr": "8 &divide; 2(2+2) = 1",
+          "desc": "common viral debate"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Always follow BIDMAS: Brackets first, then Indices (powers), then Division/Multiplication (L to R), then Addition/Subtraction (L to R).",
+      "equation": "<span class=\"ov\">B</span> &rarr; I &rarr; DM &rarr; <span class=\"ovr\">AS</span>",
+      "caption": "Brackets, Indices, Divide/Multiply, Add/Subtract"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; multiplication before addition",
+      "question": "Calculate 5 + 3 &times; 4",
+      "steps": [
+        "Multiplication first: 3 &times; 4 = 12",
+        "Then add: 5 + 12",
+        "= 17"
+      ],
+      "answer": "= 17",
+      "explanation": "Without brackets, &times; and &divide; always come before + and &minus;."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; brackets first",
+      "question": "Calculate (8 + 2) &times; 3",
+      "steps": [
+        "Brackets first: 8 + 2 = 10",
+        "Then multiply: 10 &times; 3",
+        "= 30"
+      ],
+      "answer": "= 30",
+      "explanation": "Brackets override the normal priority."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; indices",
+      "question": "Calculate 4 + 3&sup2; &times; 2",
+      "steps": [
+        "Indices first: 3&sup2; = 9",
+        "Multiply: 9 &times; 2 = 18",
+        "Add: 4 + 18 = 22"
+      ],
+      "answer": "= 22",
+      "explanation": "Indices before multiplication, multiplication before addition."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; complex expression",
+      "question": "Calculate 20 &minus; 2 &times; (3 + 4)&sup2; &divide; 7",
+      "steps": [
+        "Brackets: 3 + 4 = 7",
+        "Indices: 7&sup2; = 49",
+        "Left to right: 2 &times; 49 = 98; 98 &divide; 7 = 14; 20 &minus; 14 = 6"
+      ],
+      "answer": "= 6",
+      "explanation": "Work through BIDMAS step by step."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Multiplication and addition",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate using BIDMAS.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2 + 5 &times; 3",
+          "answer": "17"
+        },
+        {
+          "id": "b",
+          "expression": "10 &minus; 4 &times; 2",
+          "answer": "2"
+        },
+        {
+          "id": "c",
+          "expression": "6 &times; 2 + 4",
+          "answer": "16"
+        },
+        {
+          "id": "d",
+          "expression": "20 &minus; 3 &times; 5",
+          "answer": "5"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Brackets",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Do brackets first.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(4 + 3) &times; 2",
+          "answer": "14"
+        },
+        {
+          "id": "b",
+          "expression": "5 &times; (8 &minus; 3)",
+          "answer": "25"
+        },
+        {
+          "id": "c",
+          "expression": "(10 + 5) &divide; 3",
+          "answer": "5"
+        },
+        {
+          "id": "d",
+          "expression": "(6 &minus; 2) &times; (3 + 1)",
+          "answer": "16"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "With indices",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Remember: indices come after brackets but before &times; and &divide;.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2&sup2; + 3&sup2;",
+          "answer": "13"
+        },
+        {
+          "id": "b",
+          "expression": "5 &times; 2&sup2;",
+          "answer": "20"
+        },
+        {
+          "id": "c",
+          "expression": "(2 + 3)&sup2;",
+          "answer": "25"
+        },
+        {
+          "id": "d",
+          "expression": "10 &minus; 3&sup2;",
+          "answer": "1"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Multi-step",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Evaluate step by step.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 + 4 &times; 2 &minus; 1",
+          "answer": "10"
+        },
+        {
+          "id": "b",
+          "expression": "12 &divide; 4 + 2 &times; 5",
+          "answer": "13"
+        },
+        {
+          "id": "c",
+          "expression": "(5 + 3)&sup2; &divide; 4",
+          "answer": "16"
+        },
+        {
+          "id": "d",
+          "expression": "2 &times; (10 &minus; 4)&sup2; &divide; 3",
+          "answer": "24"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed BIDMAS",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Show your working clearly.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8 + 12 &divide; (2 + 4)",
+          "answer": "10"
+        },
+        {
+          "id": "b",
+          "expression": "3&sup2; &times; 2 + 4",
+          "answer": "22"
+        },
+        {
+          "id": "c",
+          "expression": "100 &minus; (4 + 6)&sup2;",
+          "answer": "0"
+        },
+        {
+          "id": "d",
+          "expression": "5 &times; 3 + 2&sup3;",
+          "answer": "23"
+        },
+        {
+          "id": "e",
+          "expression": "(7 &minus; 3)&sup2; + (2 + 1)&sup2;",
+          "answer": "25"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3 + 4 &times; 2 = 11",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "3 + 4 &times; 2 = 14",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Brackets are always done first",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Addition comes before subtraction",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Indices are done before multiplication",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Insert brackets to make each statement true: (i) <strong>3 + 4 &times; 5 = 35</strong>, (ii) <strong>12 &divide; 2 + 4 = 2</strong>, (iii) <strong>2 + 3&sup2; = 25</strong>."
+      },
+      {
+        "id": "b",
+        "text": "Using the digits <strong>2, 3, 4, 5</strong> (each exactly once) and the operations +, &minus;, &times;, &divide;, write an expression that equals <strong>1</strong>. You may use brackets."
+      }
+    ]
+  }
+}

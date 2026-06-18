@@ -1,0 +1,325 @@
+{
+  "title": "FRACTIONS (SECONDARY),\n(ADDING AND SUBTRACTING FRACTIONS)",
+  "objective": "LO: I can add and subtract fractions with different denominators by finding a common denominator.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Adding and subtracting fractions",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To add or subtract fractions with different <span class=\"ul-b\">denominators</span>, first find a <span class=\"ul-k\">common denominator</span> (usually the LCM), then add/subtract the numerators."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Steps:</span> 1) Find the LCM of denominators. 2) Convert both fractions. 3) Add/subtract numerators. 4) Simplify."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key steps",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&frac{1}{3} + &frac{1}{4} = &frac{4}{12} + &frac{3}{12} = &frac{7}{12}",
+          "desc": "LCM = 12"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{3}{4} &minus; &frac{1}{2} = &frac{3}{4} &minus; &frac{2}{4} = &frac{1}{4}",
+          "desc": "LCM = 4"
+        },
+        {
+          "correct": true,
+          "expr": "Always simplify the final answer",
+          "desc": "if possible"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{1}{3} + &frac{1}{4} = &frac{2}{7}",
+          "desc": "cannot add tops and bottoms"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{1}{3} + &frac{1}{4} = &frac{1}{7}",
+          "desc": "added both top and bottom"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Same denominator: just add/subtract numerators. Different: find the LCM first.",
+      "equation": "<span class=\"ov\">&frac{a}{b}</span> + <span class=\"ov\">&frac{c}{d}</span> = <span class=\"ovr\">&frac{ad + bc}{bd}</span>",
+      "caption": "Cross-multiply method (or use LCM)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; same denominator",
+      "question": "Calculate &frac{3}{8} + &frac{2}{8}",
+      "steps": [
+        "Same denominator: add numerators",
+        "3 + 2 = 5",
+        "&frac{5}{8}"
+      ],
+      "answer": "= &frac{5}{8}",
+      "explanation": "When denominators match, just add the tops."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; different denominators",
+      "question": "Calculate &frac{2}{3} + &frac{1}{4}",
+      "steps": [
+        "LCM of 3 and 4 is 12",
+        "&frac{2}{3} = &frac{8}{12}; &frac{1}{4} = &frac{3}{12}",
+        "&frac{8}{12} + &frac{3}{12} = &frac{11}{12}"
+      ],
+      "answer": "= &frac{11}{12}",
+      "explanation": "Convert both to twelfths, then add."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; subtraction",
+      "question": "Calculate &frac{5}{6} &minus; &frac{1}{4}",
+      "steps": [
+        "LCM of 6 and 4 is 12",
+        "&frac{5}{6} = &frac{10}{12}; &frac{1}{4} = &frac{3}{12}",
+        "&frac{10}{12} &minus; &frac{3}{12} = &frac{7}{12}"
+      ],
+      "answer": "= &frac{7}{12}",
+      "explanation": "Same method: common denominator, then subtract numerators."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; mixed numbers",
+      "question": "Calculate 1&frac{1}{2} + 2&frac{2}{3}",
+      "steps": [
+        "Convert: &frac{3}{2} + &frac{8}{3}",
+        "LCM = 6: &frac{9}{6} + &frac{16}{6} = &frac{25}{6}",
+        "= 4&frac{1}{6}"
+      ],
+      "answer": "= 4&frac{1}{6}",
+      "explanation": "Convert to improper fractions, find common denominator, then convert back."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Same denominator",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Add or subtract. Simplify if possible.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{2}{7} + &frac{3}{7}",
+          "answer": "&frac{5}{7}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{5}{8} &minus; &frac{1}{8}",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{4}{9} + &frac{2}{9}",
+          "answer": "&frac{2}{3}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{7}{10} &minus; &frac{3}{10}",
+          "answer": "&frac{2}{5}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Different denominators",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find a common denominator first.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{2} + &frac{1}{3}",
+          "answer": "&frac{5}{6}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{1}{4} + &frac{1}{5}",
+          "answer": "&frac{9}{20}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2}{3} + &frac{1}{6}",
+          "answer": "&frac{5}{6}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{3}{4} + &frac{2}{5}",
+          "answer": "1&frac{3}{20}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Subtraction with different denominators",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find a common denominator, then subtract.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{3}{4} &minus; &frac{1}{3}",
+          "answer": "&frac{5}{12}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{5}{6} &minus; &frac{2}{3}",
+          "answer": "&frac{1}{6}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{7}{8} &minus; &frac{1}{2}",
+          "answer": "&frac{3}{8}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{4}{5} &minus; &frac{1}{4}",
+          "answer": "&frac{11}{20}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed numbers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Convert to improper fractions, calculate, convert back.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1&frac{1}{2} + 2&frac{1}{4}",
+          "answer": "3&frac{3}{4}"
+        },
+        {
+          "id": "b",
+          "expression": "3&frac{1}{3} &minus; 1&frac{1}{2}",
+          "answer": "1&frac{5}{6}"
+        },
+        {
+          "id": "c",
+          "expression": "2&frac{2}{5} + 1&frac{3}{10}",
+          "answer": "3&frac{7}{10}"
+        },
+        {
+          "id": "d",
+          "expression": "4&frac{1}{6} &minus; 2&frac{2}{3}",
+          "answer": "1&frac{1}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed addition and subtraction",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate. Give answers in simplest form.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{2} + &frac{1}{3} + &frac{1}{6}",
+          "answer": "1"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{5}{6} &minus; &frac{1}{4} + &frac{1}{3}",
+          "answer": "&frac{11}{12}"
+        },
+        {
+          "id": "c",
+          "expression": "2&frac{3}{4} &minus; 1&frac{1}{3}",
+          "answer": "1&frac{5}{12}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{7}{10} + &frac{3}{5} &minus; &frac{1}{2}",
+          "answer": "&frac{4}{5}"
+        },
+        {
+          "id": "e",
+          "expression": "3&frac{1}{2} &minus; &frac{2}{3} &minus; &frac{5}{6}",
+          "answer": "2"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&frac{1}{3} + &frac{1}{4} = &frac{7}{12}",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&frac{1}{3} + &frac{1}{4} = &frac{2}{7}",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "You need a common denominator to add fractions",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&frac{3}{4} &minus; &frac{1}{2} = &frac{2}{2}",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Always simplify your final answer",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A recipe uses <strong>&frac{2}{3} cup</strong> of flour and <strong>&frac{3}{4} cup</strong> of sugar. How much more sugar than flour is used? If you make a triple batch, how much flour and sugar in total?"
+      },
+      {
+        "id": "b",
+        "text": "Find three different fractions that add up to <strong>1</strong> where no denominator is repeated and none of the fractions is &frac{1}{2}. How many solutions can you find?"
+      }
+    ]
+  }
+}

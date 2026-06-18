@@ -1,0 +1,325 @@
+{
+  "title": "ANGLES AND GEOMETRY,\n(ANGLES ON A STRAIGHT LINE AND AT A POINT)",
+  "objective": "LO: I can use the facts that angles on a straight line sum to 180° and angles at a point sum to 360°.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Angle rules",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Angles on a <span class=\"ul-b\">straight line</span> add up to <span class=\"ul-k\">180&deg;</span>. Angles at a <span class=\"ul-b\">point</span> add up to <span class=\"ul-k\">360&deg;</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Vertically opposite:</span> When two lines cross, the opposite angles are equal."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key facts",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Angles on a straight line = 180&deg;",
+          "desc": "half turn"
+        },
+        {
+          "correct": true,
+          "expr": "Angles at a point = 360&deg;",
+          "desc": "full turn"
+        },
+        {
+          "correct": true,
+          "expr": "Vertically opposite angles are equal",
+          "desc": "X-shape"
+        },
+        {
+          "correct": false,
+          "expr": "Angles on a line sum to 360&deg;",
+          "desc": "should be 180&deg;"
+        },
+        {
+          "correct": false,
+          "expr": "Vertically opposite angles sum to 180&deg;",
+          "desc": "they are equal"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Straight line = 180&deg;. Full turn = 360&deg;. Vertically opposite = equal.",
+      "equation": "<span class=\"ov\">a + b</span> = 180&deg; (on a line); <span class=\"ovr\">a + b + c + d</span> = 360&deg; (at a point)",
+      "caption": "Two fundamental angle facts"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; angles on a straight line",
+      "question": "Angles of 110&deg; and x are on a straight line. Find x.",
+      "steps": [
+        "Angles on a straight line = 180&deg;",
+        "110 + x = 180",
+        "x = 180 &minus; 110 = 70&deg;"
+      ],
+      "answer": "x = 70&deg;",
+      "explanation": "Subtract the known angle from 180&deg;."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; three angles on a line",
+      "question": "Three angles on a straight line are 40&deg;, 85&deg; and x. Find x.",
+      "steps": [
+        "40 + 85 + x = 180",
+        "125 + x = 180",
+        "x = 55&deg;"
+      ],
+      "answer": "x = 55&deg;",
+      "explanation": "Add the known angles, then subtract from 180&deg;."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; angles at a point",
+      "question": "Three angles at a point are 120&deg;, 150&deg; and x. Find x.",
+      "steps": [
+        "Angles at a point = 360&deg;",
+        "120 + 150 + x = 360",
+        "x = 360 &minus; 270 = 90&deg;"
+      ],
+      "answer": "x = 90&deg;",
+      "explanation": "Subtract total of known angles from 360&deg;."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; vertically opposite",
+      "question": "Two lines cross. One angle is 65&deg;. Find all four angles.",
+      "steps": [
+        "Vertically opposite to 65&deg; is also 65&deg;",
+        "Adjacent angle: 180 &minus; 65 = 115&deg;",
+        "The four angles: 65&deg;, 115&deg;, 65&deg;, 115&deg;"
+      ],
+      "answer": "65&deg;, 115&deg;, 65&deg;, 115&deg;",
+      "explanation": "Opposite angles equal; adjacent angles sum to 180&deg;."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Two angles on a straight line",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find x.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x and 130&deg;",
+          "answer": "50&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "x and 45&deg;",
+          "answer": "135&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "x and 90&deg;",
+          "answer": "90&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "x and 167&deg;",
+          "answer": "13&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Three angles on a line",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find x.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "50&deg;, 60&deg;, x",
+          "answer": "70&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "35&deg;, 90&deg;, x",
+          "answer": "55&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "40&deg;, 40&deg;, x",
+          "answer": "100&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "25&deg;, 75&deg;, x",
+          "answer": "80&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Angles at a point",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find x.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "90&deg;, 120&deg;, 80&deg;, x",
+          "answer": "70&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "100&deg;, 100&deg;, 100&deg;, x",
+          "answer": "60&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "45&deg;, 135&deg;, 90&deg;, x",
+          "answer": "90&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "150&deg;, 70&deg;, x",
+          "answer": "140&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Vertically opposite",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Two lines cross. One angle is given. Find the other three.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "40&deg;",
+          "answer": "40&deg;, 140&deg;, 140&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "72&deg;",
+          "answer": "72&deg;, 108&deg;, 108&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "115&deg;",
+          "answer": "115&deg;, 65&deg;, 65&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "90&deg;",
+          "answer": "90&deg;, 90&deg;, 90&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find x. State which rule you used.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2x and 3x on a straight line",
+          "answer": "36&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "x, 2x, 3x at a point",
+          "answer": "60&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "4x &minus; 10 and 2x + 40 on a line",
+          "answer": "25&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Vertically opposite: 3x + 5 = 50",
+          "answer": "15&deg;"
+        },
+        {
+          "id": "e",
+          "expression": "x + 20, 2x + 10, x + 30 on a line",
+          "answer": "30&deg;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Angles on a straight line add to 180&deg;",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Angles at a point add to 180&deg;",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Vertically opposite angles are equal",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A straight line has an angle of 360&deg;",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "When two lines cross, all four angles are equal",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Three angles on a straight line are <strong>x&deg;</strong>, <strong>(2x + 10)&deg;</strong> and <strong>(x + 30)&deg;</strong>. Find each angle."
+      },
+      {
+        "id": "b",
+        "text": "Five angles meet at a point. Four of them are <strong>80&deg;</strong>, <strong>95&deg;</strong>, <strong>55&deg;</strong> and <strong>x&deg;</strong>. The fifth angle is twice x. Find all five angles."
+      }
+    ]
+  }
+}

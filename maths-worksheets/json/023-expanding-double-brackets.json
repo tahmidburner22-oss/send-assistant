@@ -1,0 +1,325 @@
+{
+  "title": "ALGEBRAIC EXPRESSIONS,\n(EXPANDING DOUBLE BRACKETS)",
+  "objective": "LO: I can expand the product of two binomials using the FOIL method or grid method.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What does expanding double brackets mean?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Expanding double brackets</span> means multiplying two expressions like <span class=\"ul-k\">(x + 3)(x + 5)</span> to remove the brackets and write as a single expression."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">FOIL:</span> First, Outside, Inside, Last. Multiply each pair then collect like terms."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "(x + 2)(x + 3) = x&sup2; + 5x + 6",
+          "desc": "FOIL"
+        },
+        {
+          "correct": true,
+          "expr": "(x + 4)(x &minus; 1) = x&sup2; + 3x &minus; 4",
+          "desc": "mixed signs"
+        },
+        {
+          "correct": true,
+          "expr": "(x &minus; 3)(x &minus; 2) = x&sup2; &minus; 5x + 6",
+          "desc": "both negative"
+        },
+        {
+          "correct": false,
+          "expr": "(x + 2)(x + 3) = x&sup2; + 6",
+          "desc": "forgot middle term"
+        },
+        {
+          "correct": false,
+          "expr": "(x + 4)&sup2; = x&sup2; + 16",
+          "desc": "must use FOIL"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply each term in the first bracket by each term in the second bracket, then simplify by collecting like terms.",
+      "equation": "(x + a)(x + b) = x&sup2; + <span class=\"ov\">(a + b)</span>x + <span class=\"ovr\">ab</span>",
+      "caption": "Middle term = sum, last term = product"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; both positive",
+      "question": "Expand (x + 2)(x + 5)",
+      "steps": [
+        "F: x &times; x = x&sup2;, O: x &times; 5 = 5x, I: 2 &times; x = 2x, L: 2 &times; 5 = 10",
+        "Combine: x&sup2; + 5x + 2x + 10",
+        "Simplify: x&sup2; + 7x + 10"
+      ],
+      "answer": "= x&sup2; + 7x + 10",
+      "explanation": "Collect the two middle terms: 5x + 2x = 7x."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; one negative",
+      "question": "Expand (x + 4)(x &minus; 3)",
+      "steps": [
+        "F: x&sup2;, O: &minus;3x, I: 4x, L: 4 &times; (&minus;3) = &minus;12",
+        "Combine: x&sup2; &minus; 3x + 4x &minus; 12",
+        "Simplify: x&sup2; + x &minus; 12"
+      ],
+      "answer": "= x&sup2; + x &minus; 12",
+      "explanation": "Be careful with signs: +4 &times; &minus;3 = &minus;12."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; both negative",
+      "question": "Expand (x &minus; 3)(x &minus; 4)",
+      "steps": [
+        "F: x&sup2;, O: &minus;4x, I: &minus;3x, L: (&minus;3)(&minus;4) = +12",
+        "Combine: x&sup2; &minus; 4x &minus; 3x + 12",
+        "Simplify: x&sup2; &minus; 7x + 12"
+      ],
+      "answer": "= x&sup2; &minus; 7x + 12",
+      "explanation": "Negative &times; negative = positive for the last term."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; perfect square",
+      "question": "Expand (x + 5)&sup2;",
+      "steps": [
+        "Write as (x + 5)(x + 5)",
+        "F: x&sup2;, O: 5x, I: 5x, L: 25",
+        "Simplify: x&sup2; + 10x + 25"
+      ],
+      "answer": "= x&sup2; + 10x + 25",
+      "explanation": "A perfect square always gives x&sup2; + 2ax + a&sup2;."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Both terms positive",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Expand and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(x + 1)(x + 3)",
+          "answer": "x&sup2; + 4x + 3"
+        },
+        {
+          "id": "b",
+          "expression": "(x + 2)(x + 4)",
+          "answer": "x&sup2; + 6x + 8"
+        },
+        {
+          "id": "c",
+          "expression": "(x + 5)(x + 2)",
+          "answer": "x&sup2; + 7x + 10"
+        },
+        {
+          "id": "d",
+          "expression": "(x + 6)(x + 1)",
+          "answer": "x&sup2; + 7x + 6"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "One negative term",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Expand and simplify. Watch the signs!",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(x + 5)(x &minus; 2)",
+          "answer": "x&sup2; + 3x &minus; 10"
+        },
+        {
+          "id": "b",
+          "expression": "(x + 3)(x &minus; 4)",
+          "answer": "x&sup2; &minus; x &minus; 12"
+        },
+        {
+          "id": "c",
+          "expression": "(x &minus; 1)(x + 6)",
+          "answer": "x&sup2; + 5x &minus; 6"
+        },
+        {
+          "id": "d",
+          "expression": "(x + 7)(x &minus; 3)",
+          "answer": "x&sup2; + 4x &minus; 21"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Both terms negative",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Expand and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(x &minus; 2)(x &minus; 3)",
+          "answer": "x&sup2; &minus; 5x + 6"
+        },
+        {
+          "id": "b",
+          "expression": "(x &minus; 5)(x &minus; 1)",
+          "answer": "x&sup2; &minus; 6x + 5"
+        },
+        {
+          "id": "c",
+          "expression": "(x &minus; 4)(x &minus; 4)",
+          "answer": "x&sup2; &minus; 8x + 16"
+        },
+        {
+          "id": "d",
+          "expression": "(x &minus; 6)(x &minus; 2)",
+          "answer": "x&sup2; &minus; 8x + 12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Applied / special cases",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Expand and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(x + 3)&sup2;",
+          "answer": "x&sup2; + 6x + 9"
+        },
+        {
+          "id": "b",
+          "expression": "(x &minus; 4)&sup2;",
+          "answer": "x&sup2; &minus; 8x + 16"
+        },
+        {
+          "id": "c",
+          "expression": "(x + 2)(x &minus; 2)",
+          "answer": "x&sup2; &minus; 4"
+        },
+        {
+          "id": "d",
+          "expression": "(2x + 1)(x + 3)",
+          "answer": "2x&sup2; + 7x + 3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed expansion",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Expand and simplify each expression.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(x + 4)(x &minus; 5)",
+          "answer": "x&sup2; &minus; x &minus; 20"
+        },
+        {
+          "id": "b",
+          "expression": "(x &minus; 7)(x + 2)",
+          "answer": "x&sup2; &minus; 5x &minus; 14"
+        },
+        {
+          "id": "c",
+          "expression": "(x + 1)&sup2;",
+          "answer": "x&sup2; + 2x + 1"
+        },
+        {
+          "id": "d",
+          "expression": "(x &minus; 3)(x + 3)",
+          "answer": "x&sup2; &minus; 9"
+        },
+        {
+          "id": "e",
+          "expression": "(2x + 3)(x &minus; 1)",
+          "answer": "2x&sup2; + x &minus; 3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "(x + 2)(x + 3) = x&sup2; + 5x + 6",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "(x + 4)&sup2; = x&sup2; + 16",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "(x &minus; 3)(x &minus; 2) = x&sup2; &minus; 5x + 6",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "(x + 5)(x &minus; 5) = x&sup2; + 25",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "(x + a)(x + b) has middle term (a + b)x",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A rectangle has sides <strong>(x + 3) cm</strong> and <strong>(x + 7) cm</strong>. Write an expression for the area. If x = 5, find the numerical area and verify by substituting into your expanded form."
+      },
+      {
+        "id": "b",
+        "text": "Show that <strong>(x + a)(x &minus; a) = x&sup2; &minus; a&sup2;</strong> for any value of a. Use this result to calculate <strong>103 &times; 97</strong> without a calculator (hint: let x = 100, a = 3)."
+      }
+    ]
+  }
+}

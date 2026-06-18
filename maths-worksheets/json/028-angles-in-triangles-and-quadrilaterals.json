@@ -1,0 +1,325 @@
+{
+  "title": "ANGLES AND GEOMETRY,\n(ANGLES IN TRIANGLES AND QUADRILATERALS)",
+  "objective": "LO: I can find missing angles in triangles and quadrilaterals using angle sum facts.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Angle sums",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The angles in a <span class=\"ul-b\">triangle</span> always add up to <span class=\"ul-k\">180&deg;</span>. The angles in a quadrilateral always add up to 360&deg;."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Types of triangle:</span> Equilateral (all 60&deg;), isosceles (two equal), scalene (all different), right-angled (one 90&deg;)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key facts",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Triangle angles sum to 180&deg;",
+          "desc": "always"
+        },
+        {
+          "correct": true,
+          "expr": "Quadrilateral angles sum to 360&deg;",
+          "desc": "always"
+        },
+        {
+          "correct": true,
+          "expr": "Isosceles: two angles are equal",
+          "desc": "base angles"
+        },
+        {
+          "correct": false,
+          "expr": "Triangle angles sum to 360&deg;",
+          "desc": "that is a quadrilateral"
+        },
+        {
+          "correct": false,
+          "expr": "All triangles have a right angle",
+          "desc": "only right-angled ones"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Triangle = 180&deg;. Quadrilateral = 360&deg;. Subtract known angles to find the missing one.",
+      "equation": "<span class=\"ov\">a + b + c</span> = <span class=\"ovr\">180&deg;</span> (triangle)",
+      "caption": "Sum of angles in a triangle"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; triangle missing angle",
+      "question": "A triangle has angles 50&deg; and 70&deg;. Find the third angle.",
+      "steps": [
+        "Angles sum to 180&deg;",
+        "50 + 70 = 120",
+        "180 &minus; 120 = 60&deg;"
+      ],
+      "answer": "= 60&deg;",
+      "explanation": "Always subtract the sum of known angles from 180&deg;."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; isosceles triangle",
+      "question": "An isosceles triangle has a top angle of 40&deg;. Find the base angles.",
+      "steps": [
+        "Base angles are equal; call them x",
+        "40 + x + x = 180 &rarr; 40 + 2x = 180",
+        "2x = 140 &rarr; x = 70&deg;"
+      ],
+      "answer": "= 70&deg; each",
+      "explanation": "In isosceles triangles, the two base angles are always equal."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; quadrilateral missing angle",
+      "question": "A quadrilateral has angles 85&deg;, 110&deg;, 90&deg; and x. Find x.",
+      "steps": [
+        "Angles sum to 360&deg;",
+        "85 + 110 + 90 = 285",
+        "x = 360 &minus; 285 = 75&deg;"
+      ],
+      "answer": "x = 75&deg;",
+      "explanation": "Quadrilateral angle sum is 360&deg;."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; algebraic",
+      "question": "A triangle has angles x, 2x and 3x. Find x.",
+      "steps": [
+        "x + 2x + 3x = 180",
+        "6x = 180",
+        "x = 30&deg;"
+      ],
+      "answer": "x = 30&deg;",
+      "explanation": "Form an equation and solve. Angles are 30&deg;, 60&deg;, 90&deg;."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Missing angle in a triangle",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing angle.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "60&deg;, 80&deg;, ?",
+          "answer": "40&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "45&deg;, 90&deg;, ?",
+          "answer": "45&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "30&deg;, 30&deg;, ?",
+          "answer": "120&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "55&deg;, 65&deg;, ?",
+          "answer": "60&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Isosceles triangles",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the base angles (marked x).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Top angle = 50&deg;",
+          "answer": "65&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "Top angle = 80&deg;",
+          "answer": "50&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "Top angle = 100&deg;",
+          "answer": "40&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Top angle = 36&deg;",
+          "answer": "72&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Quadrilateral missing angles",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find x in each quadrilateral.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "90&deg;, 90&deg;, 90&deg;, x",
+          "answer": "90&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "80&deg;, 100&deg;, 120&deg;, x",
+          "answer": "60&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "75&deg;, 105&deg;, 95&deg;, x",
+          "answer": "85&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "110&deg;, 70&deg;, 130&deg;, x",
+          "answer": "50&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Algebraic angles",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Form and solve an equation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Triangle: x, x, x + 60",
+          "answer": "40&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "Triangle: 2x, 3x, 4x",
+          "answer": "20&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "Quadrilateral: x, 2x, 3x, 4x",
+          "answer": "36&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Triangle: x + 10, 2x, x + 30",
+          "answer": "35&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find the missing angle(s).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Right-angled triangle: 90&deg;, 35&deg;, ?",
+          "answer": "55&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "Equilateral triangle: all angles?",
+          "answer": "60&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "Parallelogram: one angle is 70&deg;; find all",
+          "answer": "70&deg;, 110&deg;, 70&deg;, 110&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Kite: 100&deg;, 60&deg;, 100&deg;, ?",
+          "answer": "100&deg;"
+        },
+        {
+          "id": "e",
+          "expression": "Triangle: 2x &minus; 10, x + 20, x + 30; find x",
+          "answer": "35&deg;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Angles in a triangle sum to 180&deg;",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Angles in a quadrilateral sum to 180&deg;",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "An isosceles triangle has two equal angles",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "An equilateral triangle has angles of 90&deg;",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A right angle is exactly 90&deg;",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "An isosceles triangle has one angle of <strong>x&deg;</strong>. Explain why x could be the top angle or a base angle. Find all possible triangles if <strong>x = 50&deg;</strong>."
+      },
+      {
+        "id": "b",
+        "text": "A quadrilateral has angles in the ratio <strong>1 : 2 : 3 : 4</strong>. Find each angle. What type of quadrilateral could this be?"
+      }
+    ]
+  }
+}
