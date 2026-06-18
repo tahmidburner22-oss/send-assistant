@@ -101,7 +101,7 @@ done
 ### Topic 6: Algebra — Simple Formulae and Sequences
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 21 | Substitution into expressions | `021-substitution-into-expressions.json` | ⬜ |
+| 21 | Substitution into expressions | `021-substitution-into-expressions.json` | ✅ |
 | 22 | Using and writing simple formulae | `022-using-and-writing-simple-formulae.json` | ✅ |
 
 ### Topic 7: Algebraic Expressions
@@ -198,10 +198,10 @@ done
 ### Topic 19: Fractions — All Operations
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 66 | Adding and subtracting fractions (different denominators) | `066-adding-and-subtracting-fractions-different-denominators.json` | ⬜ |
-| 67 | Dividing fractions | `067-dividing-fractions.json` | ⬜ |
-| 68 | Fractions of amounts | `068-fractions-of-amounts.json` | ⬜ |
-| 69 | Multiplying fractions | `069-multiplying-fractions.json` | ⬜ |
+| 66 | Adding and subtracting fractions (different denominators) | `066-adding-and-subtracting-fractions-different-denominators.json` | ✅ |
+| 67 | Dividing fractions | `067-dividing-fractions.json` | ✅ |
+| 68 | Fractions of amounts | `068-fractions-of-amounts.json` | ✅ |
+| 69 | Multiplying fractions | `069-multiplying-fractions.json` | ✅ |
 
 ### Topic 20: Fractions — Secondary
 | # | Subtopic | JSON filename | Status |
@@ -230,8 +230,8 @@ done
 ### Topic 23: Functions and Graphs
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 82 | Sketching quadratic, cubic and reciprocal graphs | `082-sketching-quadratic-cubic-and-reciprocal-graphs.json` | ⬜ |
-| 83 | Transformations of graphs | `083-transformations-of-graphs.json` | ⬜ |
+| 82 | Sketching quadratic, cubic and reciprocal graphs | `082-sketching-quadratic-cubic-and-reciprocal-graphs.json` | ✅ |
+| 83 | Transformations of graphs | `083-transformations-of-graphs.json` | ✅ |
 
 ### Topic 24: Indices and Standard Form
 | # | Subtopic | JSON filename | Status |
@@ -280,15 +280,15 @@ done
 ### Topic 30: Percentages
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 104 | Compound interest and depreciation | `104-compound-interest-and-depreciation.json` | ⬜ |
-| 105 | Percentage increase and decrease | `105-percentage-increase-and-decrease.json` | ⬜ |
-| 106 | Percentage of an amount | `106-percentage-of-an-amount.json` | ⬜ |
+| 104 | Compound interest and depreciation | `104-compound-interest-and-depreciation.json` | ✅ |
+| 105 | Percentage increase and decrease | `105-percentage-increase-and-decrease.json` | ✅ |
+| 106 | Percentage of an amount | `106-percentage-of-an-amount.json` | ✅ |
 
 ### Topic 31: Percentages of Amounts
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 107 | Finding any percentage of an amount | `107-finding-any-percentage-of-an-amount.json` | ⬜ |
-| 108 | Percentage increase and decrease | `108-percentage-increase-and-decrease-primary.json` | ⬜ |
+| 107 | Finding any percentage of an amount | `107-finding-any-percentage-of-an-amount.json` | ✅ |
+| 108 | Percentage increase and decrease | `108-percentage-increase-and-decrease-primary.json` | ✅ |
 
 ### Topic 32: Place Value (Tens and Ones)
 | # | Subtopic | JSON filename | Status |
@@ -340,26 +340,26 @@ done
 ### Topic 38: Place Value and Ordering Integers
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 132 | Estimating calculations | `132-estimating-calculations.json` | ⬜ |
-| 133 | Ordering positive and negative integers | `133-ordering-positive-and-negative-integers.json` | ⬜ |
-| 134 | Reading and writing large integers | `134-reading-and-writing-large-integers.json` | ⬜ |
-| 135 | Rounding to significant figures | `135-rounding-to-significant-figures.json` | ⬜ |
+| 132 | Estimating calculations | `132-estimating-calculations.json` | ✅ |
+| 133 | Ordering positive and negative integers | `133-ordering-positive-and-negative-integers.json` | ✅ |
+| 134 | Reading and writing large integers | `134-reading-and-writing-large-integers.json` | ✅ |
+| 135 | Rounding to significant figures | `135-rounding-to-significant-figures.json` | ✅ |
 
 ### Topic 39: Probability
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 136 | Basic probability — single events | `136-basic-probability-single-events.json` | ⬜ |
-| 137 | Conditional probability and Venn diagrams | `137-conditional-probability-and-venn-diagrams.json` | ⬜ |
-| 138 | Mutually exclusive events | `138-mutually-exclusive-events.json` | ⬜ |
-| 139 | Tree diagrams | `139-tree-diagrams.json` | ⬜ |
+| 136 | Basic probability — single events | `136-basic-probability-single-events.json` | ✅ |
+| 137 | Conditional probability and Venn diagrams | `137-conditional-probability-and-venn-diagrams.json` | ✅ |
+| 138 | Mutually exclusive events | `138-mutually-exclusive-events.json` | ✅ |
+| 139 | Tree diagrams | `139-tree-diagrams.json` | ✅ |
 
 ### Topic 40: Proportion
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 140 | Direct proportion | `140-direct-proportion.json` | ⬜ |
-| 141 | Inverse proportion | `141-inverse-proportion.json` | ⬜ |
-| 142 | Proportion graphs | `142-proportion-graphs.json` | ⬜ |
-| 143 | Proportion in context (recipes, maps, scale) | `143-proportion-in-context.json` | ⬜ |
+| 140 | Direct proportion | `140-direct-proportion.json` | ✅ |
+| 141 | Inverse proportion | `141-inverse-proportion.json` | ✅ |
+| 142 | Proportion graphs | `142-proportion-graphs.json` | ✅ |
+| 143 | Proportion in context (recipes, maps, scale) | `143-proportion-in-context.json` | ✅ |
 
 ### Topic 41: Pythagoras' Theorem
 | # | Subtopic | JSON filename | Status |
@@ -379,16 +379,16 @@ done
 ### Topic 43: Ratio
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 151 | Best value problems | `151-best-value-problems.json` | ⬜ |
-| 152 | Dividing in a ratio | `152-dividing-in-a-ratio.json` | ⬜ |
-| 153 | Ratio and proportion problems | `153-ratio-and-proportion-problems.json` | ⬜ |
-| 154 | Simplifying ratios | `154-simplifying-ratios.json` | ⬜ |
+| 151 | Best value problems | `151-best-value-problems.json` | ✅ |
+| 152 | Dividing in a ratio | `152-dividing-in-a-ratio.json` | ✅ |
+| 153 | Ratio and proportion problems | `153-ratio-and-proportion-problems.json` | ✅ |
+| 154 | Simplifying ratios | `154-simplifying-ratios.json` | ✅ |
 
 ### Topic 44: Ratio and Proportion
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 155 | Dividing quantities in a given ratio | `155-dividing-quantities-in-a-given-ratio.json` | ⬜ |
-| 156 | Scale factors | `156-scale-factors.json` | ⬜ |
+| 155 | Dividing quantities in a given ratio | `155-dividing-quantities-in-a-given-ratio.json` | ✅ |
+| 156 | Scale factors | `156-scale-factors.json` | ✅ |
 
 ### Topic 45: Sequences
 | # | Subtopic | JSON filename | Status |
@@ -417,47 +417,47 @@ done
 |---|----------|---------------|--------|
 | 167 | Cumulative frequency and box plots | `167-cumulative-frequency-and-box-plots.json` | ✅ |
 | 168 | Frequency tables and grouped data | `168-frequency-tables-and-grouped-data.json` | ✅ |
-| 169 | Histograms | `169-histograms.json` | ⬜ |
-| 170 | Mean, median, mode and range | `170-mean-median-mode-and-range.json` | ⬜ |
+| 169 | Histograms | `169-histograms.json` | ✅ |
+| 170 | Mean, median, mode and range | `170-mean-median-mode-and-range.json` | ✅ |
 
 ### Topic 49: Straight-Line Graphs
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 171 | Equation of a straight line (y = mx + c) | `171-equation-of-a-straight-line.json` | ⬜ |
-| 172 | Gradient and y-intercept | `172-gradient-and-y-intercept.json` | ⬜ |
-| 173 | Parallel and perpendicular lines | `173-parallel-and-perpendicular-lines.json` | ⬜ |
-| 174 | Plotting straight-line graphs | `174-plotting-straight-line-graphs.json` | ⬜ |
+| 171 | Equation of a straight line (y = mx + c) | `171-equation-of-a-straight-line.json` | ✅ |
+| 172 | Gradient and y-intercept | `172-gradient-and-y-intercept.json` | ✅ |
+| 173 | Parallel and perpendicular lines | `173-parallel-and-perpendicular-lines.json` | ✅ |
+| 174 | Plotting straight-line graphs | `174-plotting-straight-line-graphs.json` | ✅ |
 
 ### Topic 50: Surds
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 175 | Adding and subtracting surds | `175-adding-and-subtracting-surds.json` | ⬜ |
-| 176 | Multiplying and dividing surds | `176-multiplying-and-dividing-surds.json` | ⬜ |
-| 177 | Rationalising the denominator | `177-rationalising-the-denominator.json` | ⬜ |
-| 178 | Simplifying surds | `178-simplifying-surds.json` | ⬜ |
+| 175 | Adding and subtracting surds | `175-adding-and-subtracting-surds.json` | ✅ |
+| 176 | Multiplying and dividing surds | `176-multiplying-and-dividing-surds.json` | ✅ |
+| 177 | Rationalising the denominator | `177-rationalising-the-denominator.json` | ✅ |
+| 178 | Simplifying surds | `178-simplifying-surds.json` | ✅ |
 
 ### Topic 51: Transformations
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 179 | Enlargement | `179-enlargement.json` | ⬜ |
-| 180 | Reflection | `180-reflection.json` | ⬜ |
-| 181 | Rotation | `181-rotation.json` | ⬜ |
-| 182 | Translation | `182-translation.json` | ⬜ |
+| 179 | Enlargement | `179-enlargement.json` | ✅ |
+| 180 | Reflection | `180-reflection.json` | ✅ |
+| 181 | Rotation | `181-rotation.json` | ✅ |
+| 182 | Translation | `182-translation.json` | ✅ |
 
 ### Topic 52: Trigonometry
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 183 | Exact trigonometric values | `183-exact-trigonometric-values.json` | ⬜ |
-| 184 | SOH CAH TOA — finding angles | `184-soh-cah-toa-finding-angles.json` | ⬜ |
-| 185 | SOH CAH TOA — finding sides | `185-soh-cah-toa-finding-sides.json` | ⬜ |
-| 186 | Sine and cosine rules | `186-sine-and-cosine-rules.json` | ⬜ |
+| 183 | Exact trigonometric values | `183-exact-trigonometric-values.json` | ✅ |
+| 184 | SOH CAH TOA — finding angles | `184-soh-cah-toa-finding-angles.json` | ✅ |
+| 185 | SOH CAH TOA — finding sides | `185-soh-cah-toa-finding-sides.json` | ✅ |
+| 186 | Sine and cosine rules | `186-sine-and-cosine-rules.json` | ✅ |
 
 ### Topic 53: Vectors
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 187 | Adding and subtracting vectors | `187-adding-and-subtracting-vectors.json` | ⬜ |
-| 188 | Multiplying vectors by a scalar | `188-multiplying-vectors-by-a-scalar.json` | ⬜ |
-| 189 | Vector geometry proofs | `189-vector-geometry-proofs.json` | ⬜ |
+| 187 | Adding and subtracting vectors | `187-adding-and-subtracting-vectors.json` | ✅ |
+| 188 | Multiplying vectors by a scalar | `188-multiplying-vectors-by-a-scalar.json` | ✅ |
+| 189 | Vector geometry proofs | `189-vector-geometry-proofs.json` | ✅ |
 | 190 | Writing and representing vectors | `190-writing-and-representing-vectors.json` | ⬜ |
 
 ### Topic 54: Volume and Surface Area
@@ -475,9 +475,9 @@ done
 | Metric | Count |
 |--------|-------|
 | Total subtopics | 194 |
-| JSON created | 72 |
-| PDF generated | 72 |
-| Remaining | 122 |
+| JSON created | 123 |
+| PDF generated | 123 |
+| Remaining | 71 |
 
 ---
 
