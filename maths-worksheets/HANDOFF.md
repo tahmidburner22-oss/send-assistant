@@ -25,9 +25,9 @@ Topics 1, 2, 3, 4, 5, 10, 11, 16, 17, 18, 21, 26, 27, 31, 32, 33, 34, 35, 36, 37
 **Past batches that already shipped KS2 content** (Batch 1's single times tables 088–100 and Batch 2's long/short ×÷ 097/098/102/103) are kept as bonus content — no need to remove them. But future batches must be KS3 / KS4 only.
 
 ### KS3/KS4 progress
-- KS3/KS4 subtopics already done: **7** (024, 078, 079, 080, 081, 165, 166)
-- KS3/KS4 subtopics remaining: **~105**
-- Plus KS1/KS2 bonus already shipped: 15 (single times tables, long/short ×÷)
+- KS3/KS4 subtopics already done: **57** (7 original + 50 new from batch 3)
+- KS3/KS4 subtopics remaining: **~55**
+- Plus KS1/KS2 bonus already shipped: 15 (single times tables, long/short x÷)
 
 ---
 
@@ -102,22 +102,43 @@ Page margins: `5mm 6mm` (was `7mm 9mm`). `.page` size: `285mm × 200mm`.
 
 | Status | Count | List |
 |--------|-------|------|
-| ✅ Done | **22** | 024, 078, 079, 080, 081, 088, 089, 090, 091, 092, 093, 094, 095, 096, 097, 098, 099, 100, 102, 103, 165, 166 |
-| ⬜ Remaining | **172** | see `PLAN.md` for the numbered list |
+| ✅ Done | **72** | 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 039, 040, 041, 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 052, 053, 070, 071, 072, 073, 078, 079, 080, 081, 084, 085, 086, 087, 088, 089, 090, 091, 092, 093, 094, 095, 096, 097, 098, 099, 100, 102, 103, 144, 145, 146, 147, 148, 149, 150, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168 |
+| ⬜ Remaining | **122** | see `PLAN.md` for the numbered list |
 
 ### Topics fully complete
-- **Fractions, Decimals and Percentages** (Topic 22 — all 4 subtopics)
-- **Multiplication & division foundation** (Topics 26, 27, 28, 29 — all but Factor pairs/commutativity)
+- **Algebraic Expressions** (Topic 7 -- all 3 subtopics)
+- **Angles** (Topic 8 -- all 4 subtopics)
+- **Area and Perimeter** (Topic 9 -- all 3 subtopics)
+- **Decimals and Percentages** (Topic 12 -- all 4 subtopics)
+- **Decimals -- All Operations** (Topic 13 -- all 4 subtopics)
+- **Four Operations and Order of Operations** (Topic 14 -- all 3 subtopics)
+- **Fractions** (Topic 15 -- all 4 subtopics)
+- **Fractions -- Secondary** (Topic 20 -- all 4 subtopics)
+- **Fractions, Decimals and Percentages** (Topic 22 -- all 4 subtopics)
+- **Indices and Standard Form** (Topic 24 -- all 1 subtopic)
+- **Linear Inequalities** (Topic 25 -- all 3 subtopics)
+- **Multiplication & division foundation** (Topics 26, 27, 28, 29 -- all but Factor pairs/commutativity)
+- **Pythagoras' Theorem** (Topic 41 -- all 4 subtopics)
+- **Quadratic Equations** (Topic 42 -- all 3 subtopics)
+- **Sequences** (Topic 45 -- all 3 subtopics)
+- **Simultaneous Equations** (Topic 46 -- all 3 subtopics)
+- **Solving Linear Equations** (Topic 47 -- all 4 subtopics)
 
 ### Topics partially complete
-- **Solving Linear Equations** (Topic 47): 2 of 4 — one-step ✅, two-step ✅; brackets and unknowns-both-sides remaining
-- **Algebraic Expressions** (Topic 7): 1 of 3 — expanding single brackets ✅; double brackets and factorising remaining
+- **Statistics** (Topic 48): 2 of 4 -- cumulative frequency ✅, frequency tables ✅; histograms and mean/median/mode remaining
+- **Algebra -- Simple Formulae and Sequences** (Topic 6): 1 of 2 -- using and writing simple formulae ✅; substitution remaining (021 not yet done in this batch)
 
 ### Topics not yet started
-- Topics 1–21 (lower-primary number, fractions, addition/subtraction, counting, place value)
-- Topics 23–25 (Functions, Indices, Linear Inequalities)
-- Topics 30–54 (Percentages, Place Value, Probability, Proportion, Pythagoras, Quadratics, Ratio, Sequences, Simultaneous Equations, Solving Linear Equations, Statistics, Straight-Line Graphs, Surds, Transformations, Trigonometry, Vectors, Volume & Surface Area)
-- A few residual maths/M&D ones: Long mult (098), Long div (097), Factor pairs (101), Short mult (103), Short div (102)
+- Topics 1-5 (lower-primary addition/subtraction)
+- Topics 10-11 (Counting, Number Recognition)
+- Topics 16-19 (Primary fractions)
+- Topic 21 (Fractions -- Unit and Non-Unit)
+- Topic 23 (Functions and Graphs)
+- Topics 26-29 Factor pairs (101) only
+- Topics 30-31 (Percentages)
+- Topics 32-40 (Place Value, Probability, Proportion)
+- Topics 43-44 (Ratio)
+- Topics 49-54 (Straight-Line Graphs, Surds, Transformations, Trigonometry, Vectors, Volume & Surface Area)
 
 ---
 
