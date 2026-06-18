@@ -1,0 +1,325 @@
+{
+  "title": "PERCENTAGES OF AMOUNTS,\n(PERCENTAGE INCREASE AND DECREASE)",
+  "objective": "LO: I can find a percentage increase or decrease and express a change as a percentage.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Percentage change",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"\u0001\">percentage change</span> tells you how much something has gone up or down compared to the <span class=\"\u0001\">original</span> amount, expressed as a percentage."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Formula:</span> Percentage change = (change &divide; original) &times; 100%"
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "20 to 25: change = 5, % = 5/20 &times; 100 = 25%",
+          "desc": "increase"
+        },
+        {
+          "correct": true,
+          "expr": "80 to 60: change = 20, % = 20/80 &times; 100 = 25%",
+          "desc": "decrease"
+        },
+        {
+          "correct": true,
+          "expr": "Always divide by the ORIGINAL amount",
+          "desc": "key rule"
+        },
+        {
+          "correct": false,
+          "expr": "20 to 25: % change = 5/25 &times; 100 = 20%",
+          "desc": "divided by new, not original"
+        },
+        {
+          "correct": false,
+          "expr": "Change from 80 to 60 = 20%",
+          "desc": "must divide by original (80)"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Percentage change = (difference &divide; original) &times; 100. Always divide by the ORIGINAL value.",
+      "equation": "% change = <span class=\"\u0001\">&frac{change}{original}</span> &times; <span class=\"\u0001\">100</span>",
+      "caption": "Divide by the starting value, not the new value"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; percentage increase",
+      "question": "A price goes from &pound;40 to &pound;52. Find the percentage increase.",
+      "steps": [
+        "Change = 52 - 40 = 12",
+        "% change = 12 &divide; 40 &times; 100",
+        "= 30% increase"
+      ],
+      "answer": "= 30% increase",
+      "explanation": "Divide the change by the original amount."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; percentage decrease",
+      "question": "A weight drops from 80 kg to 68 kg. Find the percentage decrease.",
+      "steps": [
+        "Change = 80 - 68 = 12",
+        "% change = 12 &divide; 80 &times; 100",
+        "= 15% decrease"
+      ],
+      "answer": "= 15% decrease",
+      "explanation": "Same formula, but the answer is a decrease."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; with decimals",
+      "question": "A bill goes from &pound;120 to &pound;135. Find the percentage change.",
+      "steps": [
+        "Change = 135 - 120 = 15",
+        "% change = 15 &divide; 120 &times; 100",
+        "= 12.5% increase"
+      ],
+      "answer": "= 12.5% increase",
+      "explanation": "The answer can be a decimal percentage."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; comparing changes",
+      "question": "Shop A: &pound;50 to &pound;60. Shop B: &pound;80 to &pound;92. Which has the bigger % increase?",
+      "steps": [
+        "Shop A: 10/50 &times; 100 = 20%",
+        "Shop B: 12/80 &times; 100 = 15%",
+        "Shop A has the bigger percentage increase"
+      ],
+      "answer": "Shop A = 20%, Shop B = 15%",
+      "explanation": "Compare percentage changes, not absolute changes."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding percentage increase",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the percentage increase.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "20 to 25",
+          "answer": "25%"
+        },
+        {
+          "id": "b",
+          "expression": "50 to 65",
+          "answer": "30%"
+        },
+        {
+          "id": "c",
+          "expression": "80 to 100",
+          "answer": "25%"
+        },
+        {
+          "id": "d",
+          "expression": "200 to 230",
+          "answer": "15%"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding percentage decrease",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the percentage decrease.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "40 to 30",
+          "answer": "25%"
+        },
+        {
+          "id": "b",
+          "expression": "60 to 45",
+          "answer": "25%"
+        },
+        {
+          "id": "c",
+          "expression": "120 to 96",
+          "answer": "20%"
+        },
+        {
+          "id": "d",
+          "expression": "500 to 350",
+          "answer": "30%"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Percentage change with decimals",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the percentage change (to 1 d.p. if needed).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "30 to 38",
+          "answer": "26.7%"
+        },
+        {
+          "id": "b",
+          "expression": "75 to 60",
+          "answer": "20%"
+        },
+        {
+          "id": "c",
+          "expression": "110 to 143",
+          "answer": "30%"
+        },
+        {
+          "id": "d",
+          "expression": "64 to 48",
+          "answer": "25%"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Real-world percentage change",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Calculate the percentage change.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Rent goes from &pound;600 to &pound;660",
+          "answer": "10% increase"
+        },
+        {
+          "id": "b",
+          "expression": "Temperature drops from 20&deg;C to 15&deg;C",
+          "answer": "25% decrease"
+        },
+        {
+          "id": "c",
+          "expression": "Population grows from 4000 to 4500",
+          "answer": "12.5% increase"
+        },
+        {
+          "id": "d",
+          "expression": "Price falls from &pound;90 to &pound;72",
+          "answer": "20% decrease"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed percentage change",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Identify increase or decrease and find the percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "45 to 54",
+          "answer": "20% increase"
+        },
+        {
+          "id": "b",
+          "expression": "160 to 120",
+          "answer": "25% decrease"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;35 to &pound;42",
+          "answer": "20% increase"
+        },
+        {
+          "id": "d",
+          "expression": "250 g to 200 g",
+          "answer": "20% decrease"
+        },
+        {
+          "id": "e",
+          "expression": "&pound;1200 to &pound;1350",
+          "answer": "12.5% increase"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Percentage change = change &divide; original &times; 100",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "From 20 to 25 is a 20% increase",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Always divide by the original (starting) value",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A change from 80 to 60 and 60 to 80 are the same percentage",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "From 50 to 65 is 30% increase (15/50 &times; 100)",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A shop buys jumpers for <strong>&pound;24</strong> and sells them for <strong>&pound;36</strong>. Find the percentage profit. If they then put a <strong>25% off</strong> sticker on unsold jumpers, do they still make a profit? Explain."
+      },
+      {
+        "id": "b",
+        "text": "In January, a town has <strong>8000 residents</strong>. By December, it has <strong>8640</strong>. Find the percentage increase. If the same percentage increase happens next year, predict the population for December of the following year."
+      }
+    ]
+  }
+}

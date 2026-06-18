@@ -1,0 +1,325 @@
+{
+  "title": "FRACTIONS ALL OPERATIONS,\n(FRACTIONS OF AMOUNTS)",
+  "objective": "LO: I can find a fraction of a given amount by dividing and multiplying.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding a fraction of an amount",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To find a <span class=\"\u0001\">fraction of an amount</span>, divide the amount by the <span class=\"\u0001\">denominator</span> then multiply by the numerator."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Method:</span> &frac{a}{b} of n = n &divide; b &times; a. Always divide first to keep numbers small."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&frac{1}{4} of 60 = 15",
+          "desc": "60 &divide; 4 = 15"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{2}{5} of 30 = 12",
+          "desc": "30 &divide; 5 = 6, then 6 &times; 2"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{3}{4} of 80 = 60",
+          "desc": "80 &divide; 4 = 20, then 20 &times; 3"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{2}{5} of 30 = 6",
+          "desc": "forgot to multiply by numerator"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{3}{4} of 80 = 240",
+          "desc": "multiplied by both 3 and 4"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Divide by the denominator first to find one part, then multiply by the numerator to find the required number of parts.",
+      "equation": "<span class=\"\u0001\">&frac{a}{b}</span> of n = n &divide; <span class=\"\u0001\">b</span> &times; a",
+      "caption": "Divide by bottom, multiply by top"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; unit fraction",
+      "question": "Find &frac{1}{5} of 45",
+      "steps": [
+        "Divide by the denominator: 45 &divide; 5",
+        "= 9",
+        "&frac{1}{5} of 45 = 9"
+      ],
+      "answer": "= 9",
+      "explanation": "For unit fractions, just divide by the denominator."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; non-unit fraction",
+      "question": "Find &frac{3}{4} of 60",
+      "steps": [
+        "Divide by 4: 60 &divide; 4 = 15",
+        "Multiply by 3: 15 &times; 3 = 45",
+        "&frac{3}{4} of 60 = 45"
+      ],
+      "answer": "= 45",
+      "explanation": "Divide by the bottom number, multiply by the top number."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; fraction of money",
+      "question": "Find &frac{2}{3} of &pound;18",
+      "steps": [
+        "Divide by 3: 18 &divide; 3 = 6",
+        "Multiply by 2: 6 &times; 2 = 12",
+        "&frac{2}{3} of &pound;18 = &pound;12"
+      ],
+      "answer": "= &pound;12",
+      "explanation": "Same method works for money and measurements."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; finding the whole",
+      "question": "&frac{3}{5} of a number is 24. Find the number.",
+      "steps": [
+        "If &frac{3}{5} = 24, find &frac{1}{5}: 24 &divide; 3 = 8",
+        "Find the whole: 8 &times; 5 = 40",
+        "The number is 40"
+      ],
+      "answer": "= 40",
+      "explanation": "Divide by the numerator to find one part, then multiply by the denominator."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Unit fractions of amounts",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find each fraction of the amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{3} of 27",
+          "answer": "9"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{1}{4} of 48",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{1}{6} of 42",
+          "answer": "7"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{1}{8} of 56",
+          "answer": "7"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Non-unit fractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the fraction of each amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{2}{5} of 35",
+          "answer": "14"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3}{4} of 44",
+          "answer": "33"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{4}{7} of 49",
+          "answer": "28"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{5}{8} of 72",
+          "answer": "45"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Fractions of money",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the fraction of each amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{3}{5} of &pound;40",
+          "answer": "&pound;24"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{2}{3} of &pound;63",
+          "answer": "&pound;42"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{5}{6} of &pound;54",
+          "answer": "&pound;45"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{7}{10} of &pound;120",
+          "answer": "&pound;84"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Finding the whole amount",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Work backwards to find the original amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{4} of a number = 9. Find the number.",
+          "answer": "36"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{2}{5} of a number = 18. Find the number.",
+          "answer": "45"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{3}{7} of a number = 21. Find the number.",
+          "answer": "49"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{5}{8} of a number = 30. Find the number.",
+          "answer": "48"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{3}{10} of 80",
+          "answer": "24"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{4}{9} of 63",
+          "answer": "28"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2}{3} of &pound;99",
+          "answer": "&pound;66"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{5}{6} of a number = 35. Find it.",
+          "answer": "42"
+        },
+        {
+          "id": "e",
+          "expression": "&frac{7}{8} of 64",
+          "answer": "56"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&frac{2}{5} of 30 means 30 &divide; 5 &times; 2 = 12",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&frac{2}{5} of 30 means 30 &divide; 5 = 6",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "&frac{3}{4} of 80 = 60",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Finding a fraction of an amount always gives a smaller number",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "To find the whole, divide by numerator then multiply by denominator",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A school has <strong>840 pupils</strong>. <strong>&frac{3}{7}</strong> are in KS3 and <strong>&frac{2}{5}</strong> of the remainder are in KS4. How many pupils are in KS4? How many are in KS5?"
+      },
+      {
+        "id": "b",
+        "text": "Jake has <strong>&pound;120</strong>. He spends <strong>&frac{1}{4}</strong> on a book, then <strong>&frac{2}{3}</strong> of what remains on a game. How much does he have left?"
+      }
+    ]
+  }
+}

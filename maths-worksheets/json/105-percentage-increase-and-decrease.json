@@ -1,0 +1,325 @@
+{
+  "title": "PERCENTAGES,\n(PERCENTAGE INCREASE AND DECREASE)",
+  "objective": "LO: I can increase or decrease an amount by a given percentage using a multiplier.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Percentage increase and decrease",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"\u0001\">percentage increase</span> makes an amount larger. A <span class=\"\u0001\">percentage decrease</span> makes it smaller. Use a single multiplier for efficiency."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Multiplier method:</span> Increase by 15% means &times; 1.15. Decrease by 15% means &times; 0.85."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Increase &pound;80 by 25%: 80 &times; 1.25 = &pound;100",
+          "desc": "multiplier 1.25"
+        },
+        {
+          "correct": true,
+          "expr": "Decrease &pound;60 by 10%: 60 &times; 0.90 = &pound;54",
+          "desc": "multiplier 0.90"
+        },
+        {
+          "correct": true,
+          "expr": "VAT at 20%: multiply by 1.20",
+          "desc": "adding 20%"
+        },
+        {
+          "correct": false,
+          "expr": "Increase by 25% then decrease by 25% = original",
+          "desc": "does not return to original"
+        },
+        {
+          "correct": false,
+          "expr": "Decrease by 10%: multiply by 0.10",
+          "desc": "that finds 10%, not 90%"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "To increase, add the percentage to 100% to get the multiplier. To decrease, subtract from 100%.",
+      "equation": "New = Original &times; <span class=\"\u0001\">multiplier</span>",
+      "caption": "Increase: 1 + &frac{%}{100}. Decrease: 1 - <span class=\"\u0001\">&frac{%}{100}</span>"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; percentage increase",
+      "question": "Increase &pound;240 by 15%",
+      "steps": [
+        "Multiplier = 1 + 0.15 = 1.15",
+        "240 &times; 1.15",
+        "= &pound;276"
+      ],
+      "answer": "= &pound;276",
+      "explanation": "The multiplier 1.15 means 100% + 15% = 115% of original."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; percentage decrease",
+      "question": "Decrease &pound;350 by 20%",
+      "steps": [
+        "Multiplier = 1 - 0.20 = 0.80",
+        "350 &times; 0.80",
+        "= &pound;280"
+      ],
+      "answer": "= &pound;280",
+      "explanation": "0.80 means keeping 80% (removing 20%)."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; VAT calculation",
+      "question": "A TV costs &pound;450 before VAT at 20%. Find the price including VAT.",
+      "steps": [
+        "Multiplier = 1.20",
+        "450 &times; 1.20",
+        "= &pound;540"
+      ],
+      "answer": "= &pound;540",
+      "explanation": "VAT is a percentage increase on the original price."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; reverse percentage",
+      "question": "After a 20% increase, a price is &pound;360. Find the original.",
+      "steps": [
+        "&pound;360 = original &times; 1.20",
+        "Original = 360 &divide; 1.20",
+        "= &pound;300"
+      ],
+      "answer": "= &pound;300",
+      "explanation": "Divide by the multiplier to reverse a percentage change."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Percentage increases",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Increase each amount by the given percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;200 by 10%",
+          "answer": "&pound;220"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;450 by 20%",
+          "answer": "&pound;540"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;80 by 25%",
+          "answer": "&pound;100"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;1200 by 5%",
+          "answer": "&pound;1260"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Percentage decreases",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Decrease each amount by the given percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;300 by 10%",
+          "answer": "&pound;270"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;560 by 25%",
+          "answer": "&pound;420"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;90 by 30%",
+          "answer": "&pound;63"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;1500 by 15%",
+          "answer": "&pound;1275"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding the multiplier",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Write the single multiplier for each change.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Increase by 35%",
+          "answer": "1.35"
+        },
+        {
+          "id": "b",
+          "expression": "Decrease by 12%",
+          "answer": "0.88"
+        },
+        {
+          "id": "c",
+          "expression": "Increase by 7.5%",
+          "answer": "1.075"
+        },
+        {
+          "id": "d",
+          "expression": "Decrease by 42%",
+          "answer": "0.58"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Reverse percentage problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the original amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "After 20% increase, price = &pound;480. Original?",
+          "answer": "&pound;400"
+        },
+        {
+          "id": "b",
+          "expression": "After 10% decrease, value = &pound;540. Original?",
+          "answer": "&pound;600"
+        },
+        {
+          "id": "c",
+          "expression": "After 25% increase, bill = &pound;75. Original?",
+          "answer": "&pound;60"
+        },
+        {
+          "id": "d",
+          "expression": "After 15% decrease, weight = &pound;170. Original?",
+          "answer": "&pound;200"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed percentage changes",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;640 increased by 12.5%",
+          "answer": "&pound;720"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;880 decreased by 35%",
+          "answer": "&pound;572"
+        },
+        {
+          "id": "c",
+          "expression": "After 30% off, a coat costs &pound;56. Original price?",
+          "answer": "&pound;80"
+        },
+        {
+          "id": "d",
+          "expression": "A house worth &pound;250000 increases by 8%. New value?",
+          "answer": "&pound;270000"
+        },
+        {
+          "id": "e",
+          "expression": "A salary of &pound;32000 gets a 4.5% rise. New salary?",
+          "answer": "&pound;33440"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To increase by 15%, multiply by 1.15",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "To decrease by 20%, multiply by 0.20",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A 20% increase followed by a 20% decrease gives the original",
+        "correct": false
+      },
+      {
+        "id": "d",
+        "statement": "To find original after increase, divide by the multiplier",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "Decrease by 30% means multiplier is 0.70",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A shop increases all prices by <strong>20%</strong>, then offers a <strong>20% discount</strong> sale. Explain why the final price is NOT the same as the original. If an item was originally <strong>&pound;50</strong>, what is the sale price?"
+      },
+      {
+        "id": "b",
+        "text": "A company makes <strong>&pound;85000</strong> profit after a <strong>12.5% increase</strong> on last year. What was last year's profit? If next year they want <strong>&pound;100000</strong>, what percentage increase from this year's profit do they need (to 1 d.p.)?"
+      }
+    ]
+  }
+}

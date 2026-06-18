@@ -1,0 +1,325 @@
+{
+  "title": "PERCENTAGES,\n(PERCENTAGE OF AN AMOUNT)",
+  "objective": "LO: I can calculate a percentage of an amount using mental and written methods.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding a percentage of an amount",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To find a <span class=\"\u0001\">percentage of an amount</span>, divide by 100 to find 1%, then multiply by the percentage needed. Or use the <span class=\"\u0001\">multiplier</span> method."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Multiplier:</span> 35% of 80 = 0.35 &times; 80 = 28. The percentage as a decimal IS the multiplier."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "10% of 70 = 7",
+          "desc": "divide by 10"
+        },
+        {
+          "correct": true,
+          "expr": "25% of 60 = 15",
+          "desc": "divide by 4"
+        },
+        {
+          "correct": true,
+          "expr": "15% of 80 = 12",
+          "desc": "10% + 5% = 8 + 4"
+        },
+        {
+          "correct": false,
+          "expr": "10% of 70 = 70",
+          "desc": "that is 100%"
+        },
+        {
+          "correct": false,
+          "expr": "25% of 60 = 20",
+          "desc": "divided by 3 not 4"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Percentage means per hundred. Divide by 100 to find 1%, then scale up.",
+      "equation": "<span class=\"\u0001\">P%</span> of A = <span class=\"\u0001\">&frac{P}{100}</span> &times; A",
+      "caption": "Convert percentage to decimal, then multiply"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; using 10%",
+      "question": "Find 30% of 90",
+      "steps": [
+        "10% of 90 = 9",
+        "30% = 3 &times; 10%",
+        "3 &times; 9 = 27"
+      ],
+      "answer": "= 27",
+      "explanation": "Find 10% first, then multiply by 3 for 30%."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; using the multiplier",
+      "question": "Find 45% of 200",
+      "steps": [
+        "45% as a decimal = 0.45",
+        "0.45 &times; 200",
+        "= 90"
+      ],
+      "answer": "= 90",
+      "explanation": "The multiplier method works for any percentage."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; building percentages",
+      "question": "Find 17.5% of 60",
+      "steps": [
+        "10% = 6, 5% = 3, 2.5% = 1.5",
+        "17.5% = 10% + 5% + 2.5%",
+        "= 6 + 3 + 1.5 = 10.5"
+      ],
+      "answer": "= 10.5",
+      "explanation": "Break awkward percentages into easier parts."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; percentage of money",
+      "question": "Find 12% of &pound;350",
+      "steps": [
+        "1% of 350 = 3.50",
+        "12% = 12 &times; 3.50",
+        "= &pound;42"
+      ],
+      "answer": "= &pound;42",
+      "explanation": "Find 1% by dividing by 100, then multiply up."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Common percentages",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use mental methods to find each percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "50% of 84",
+          "answer": "42"
+        },
+        {
+          "id": "b",
+          "expression": "25% of 120",
+          "answer": "30"
+        },
+        {
+          "id": "c",
+          "expression": "10% of 65",
+          "answer": "6.5"
+        },
+        {
+          "id": "d",
+          "expression": "75% of 200",
+          "answer": "150"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Multiples of 10%",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find 10% first, then use it.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "20% of 150",
+          "answer": "30"
+        },
+        {
+          "id": "b",
+          "expression": "40% of 85",
+          "answer": "34"
+        },
+        {
+          "id": "c",
+          "expression": "60% of 45",
+          "answer": "27"
+        },
+        {
+          "id": "d",
+          "expression": "90% of 70",
+          "answer": "63"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Using the multiplier",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the decimal multiplier to calculate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "35% of 80",
+          "answer": "28"
+        },
+        {
+          "id": "b",
+          "expression": "12% of 250",
+          "answer": "30"
+        },
+        {
+          "id": "c",
+          "expression": "85% of 60",
+          "answer": "51"
+        },
+        {
+          "id": "d",
+          "expression": "4% of 350",
+          "answer": "14"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Percentage of money",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find each percentage amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "15% of &pound;80",
+          "answer": "&pound;12"
+        },
+        {
+          "id": "b",
+          "expression": "8% of &pound;450",
+          "answer": "&pound;36"
+        },
+        {
+          "id": "c",
+          "expression": "17.5% of &pound;200",
+          "answer": "&pound;35"
+        },
+        {
+          "id": "d",
+          "expression": "33% of &pound;600",
+          "answer": "&pound;198"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed percentage problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate each percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5% of 320",
+          "answer": "16"
+        },
+        {
+          "id": "b",
+          "expression": "72% of 50",
+          "answer": "36"
+        },
+        {
+          "id": "c",
+          "expression": "2.5% of 400",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "65% of &pound;180",
+          "answer": "&pound;117"
+        },
+        {
+          "id": "e",
+          "expression": "11% of 900",
+          "answer": "99"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "10% of 45 = 4.5",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "10% means divide by 100",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "35% of 80 = 0.35 &times; 80 = 28",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "25% of 60 = 60 &divide; 25 = 2.4",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "To find 1%, divide the amount by 100",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A school has <strong>1200 pupils</strong>. <strong>45%</strong> are boys. Of the boys, <strong>60%</strong> play a sport. Of the girls, <strong>55%</strong> play a sport. How many pupils in total play a sport?"
+      },
+      {
+        "id": "b",
+        "text": "A shop sells a jacket for <strong>&pound;85</strong>. This is <strong>32% more</strong> than the shop paid for it. How much did the shop pay? If the shop sells <strong>24 jackets</strong>, what is the total profit?"
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "PLACE VALUE AND ORDERING INTEGERS,\n(ROUNDING TO SIGNIFICANT FIGURES)",
+  "objective": "LO: I can round numbers to a given number of significant figures.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Significant figures",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Significant figures</span> (s.f.) are counted from the first non-zero digit. Leading zeros are <span class=\"\u0001\">not significant</span> but trailing zeros after a decimal point are."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Rule:</span> Find the digit at the required position, look at the next digit. If it is 5 or more, round up."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3462 to 2 s.f. = 3500",
+          "desc": "round up (6 &ge; 5)"
+        },
+        {
+          "correct": true,
+          "expr": "0.00587 to 2 s.f. = 0.0059",
+          "desc": "leading zeros not significant"
+        },
+        {
+          "correct": true,
+          "expr": "45.83 to 1 s.f. = 50",
+          "desc": "round up (5 &ge; 5)"
+        },
+        {
+          "correct": false,
+          "expr": "0.00587 to 2 s.f. = 0.01",
+          "desc": "counted the zeros as significant"
+        },
+        {
+          "correct": false,
+          "expr": "3462 to 2 s.f. = 3400",
+          "desc": "should round up, not down"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Count significant figures from the first non-zero digit. Round using normal rounding rules.",
+      "equation": "<span class=\"\u0001\">0.004</span><span class=\"\u0001\">73</span> to 2 s.f. = 0.0047",
+      "caption": "Leading zeros are placeholders, not significant"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; rounding whole numbers",
+      "question": "Round 5738 to 2 significant figures.",
+      "steps": [
+        "First 2 s.f.: 5, 7",
+        "Next digit is 3 (< 5), so round down",
+        "= 5700"
+      ],
+      "answer": "= 5700",
+      "explanation": "Fill remaining places with zeros to keep the number the right size."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; rounding decimals",
+      "question": "Round 0.04562 to 2 significant figures.",
+      "steps": [
+        "Skip leading zeros: first s.f. is 4, second is 5",
+        "Next digit is 6 (&ge; 5), so round up",
+        "= 0.046"
+      ],
+      "answer": "= 0.046",
+      "explanation": "Leading zeros are not counted as significant."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; rounding to 3 s.f.",
+      "question": "Round 24,850 to 3 significant figures.",
+      "steps": [
+        "First 3 s.f.: 2, 4, 8",
+        "Next digit is 5 (&ge; 5), so round up",
+        "= 24,900"
+      ],
+      "answer": "= 24,900",
+      "explanation": "The 8 becomes 9 because the next digit is 5."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; rounding to 1 s.f.",
+      "question": "Round 0.000394 to 1 significant figure.",
+      "steps": [
+        "Skip leading zeros: first s.f. is 3",
+        "Next digit is 9 (&ge; 5), so round up",
+        "= 0.0004"
+      ],
+      "answer": "= 0.0004",
+      "explanation": "Only one non-zero digit remains in the answer."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Rounding to 1 s.f.",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Round to 1 significant figure.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "74",
+          "answer": "70"
+        },
+        {
+          "id": "b",
+          "expression": "386",
+          "answer": "400"
+        },
+        {
+          "id": "c",
+          "expression": "4520",
+          "answer": "5000"
+        },
+        {
+          "id": "d",
+          "expression": "0.067",
+          "answer": "0.07"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Rounding to 2 s.f.",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Round to 2 significant figures.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "473",
+          "answer": "470"
+        },
+        {
+          "id": "b",
+          "expression": "6.85",
+          "answer": "6.9"
+        },
+        {
+          "id": "c",
+          "expression": "0.0342",
+          "answer": "0.034"
+        },
+        {
+          "id": "d",
+          "expression": "15800",
+          "answer": "16000"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Rounding to 3 s.f.",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Round to 3 significant figures.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4567",
+          "answer": "4570"
+        },
+        {
+          "id": "b",
+          "expression": "0.05678",
+          "answer": "0.0568"
+        },
+        {
+          "id": "c",
+          "expression": "123456",
+          "answer": "123000"
+        },
+        {
+          "id": "d",
+          "expression": "3.0045",
+          "answer": "3.00"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed rounding",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Round to the number of significant figures stated.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8765 to 1 s.f.",
+          "answer": "9000"
+        },
+        {
+          "id": "b",
+          "expression": "0.00456 to 2 s.f.",
+          "answer": "0.0046"
+        },
+        {
+          "id": "c",
+          "expression": "345.67 to 3 s.f.",
+          "answer": "346"
+        },
+        {
+          "id": "d",
+          "expression": "0.9996 to 3 s.f.",
+          "answer": "1.00"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Significant figures in context",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Round each value appropriately.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A distance of 12,345 m to 2 s.f.",
+          "answer": "12,000 m"
+        },
+        {
+          "id": "b",
+          "expression": "A mass of 0.00872 kg to 2 s.f.",
+          "answer": "0.0087 kg"
+        },
+        {
+          "id": "c",
+          "expression": "A population of 67,530 to 3 s.f.",
+          "answer": "67,500"
+        },
+        {
+          "id": "d",
+          "expression": "A speed of 345.8 m/s to 2 s.f.",
+          "answer": "350 m/s"
+        },
+        {
+          "id": "e",
+          "expression": "A probability of 0.4567 to 3 s.f.",
+          "answer": "0.457"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "0.0047 has 2 significant figures",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The zero in 3.02 is not significant",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "5738 to 2 s.f. = 5700",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Leading zeros count as significant figures",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "When rounding up 9, it becomes 10 and carries",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A calculator shows <strong>0.007142857</strong>. Write this to: (i) 1 s.f., (ii) 2 s.f., (iii) 3 s.f. Which is the most useful for a final answer? Explain."
+      },
+      {
+        "id": "b",
+        "text": "The exact area of a circle with radius <strong>4.7 cm</strong> is <strong>69.397...</strong> cm&sup2;. Round to 3 s.f. If you used this in a further calculation that multiplied by <strong>12</strong>, what would the difference be between using the exact and rounded values?"
+      }
+    ]
+  }
+}

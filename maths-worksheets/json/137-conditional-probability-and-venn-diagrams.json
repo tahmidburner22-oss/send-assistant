@@ -1,0 +1,325 @@
+{
+  "title": "PROBABILITY,\n(CONDITIONAL PROBABILITY AND VENN DIAGRAMS)",
+  "objective": "LO: I can use Venn diagrams to find probabilities including conditional probability.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Conditional probability",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Conditional probability</span> is the probability of an event given that another event has already occurred. <span class=\"\u0001\">Venn diagrams</span> help us visualise overlapping groups."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Notation:</span> P(A|B) means the probability of A given B. P(A|B) = P(A and B) &divide; P(B)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "P(A|B) = P(A&cap;B) &divide; P(B)",
+          "desc": "conditional formula"
+        },
+        {
+          "correct": true,
+          "expr": "A Venn diagram shows overlapping sets",
+          "desc": "intersection"
+        },
+        {
+          "correct": true,
+          "expr": "P(A&cup;B) = P(A) + P(B) - P(A&cap;B)",
+          "desc": "addition rule"
+        },
+        {
+          "correct": false,
+          "expr": "P(A|B) = P(A) always",
+          "desc": "only if independent"
+        },
+        {
+          "correct": false,
+          "expr": "P(A&cup;B) = P(A) + P(B)",
+          "desc": "must subtract overlap"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "In a Venn diagram, the overlap shows items in BOTH sets. Conditional probability restricts to a subset.",
+      "equation": "P(A|B) = <span class=\"\u0001\">&frac{n(A&cap;B)}{n(B)}</span>",
+      "caption": "<span class=\"\u0001\">Given B</span>, only look at members of B"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; reading a Venn diagram",
+      "question": "In a class of 30: 18 like football, 12 like tennis, 5 like both. Find P(football only).",
+      "steps": [
+        "Football only = 18 - 5 = 13",
+        "Total = 30",
+        "P(football only) = &frac{13}{30}"
+      ],
+      "answer": "= &frac{13}{30}",
+      "explanation": "Subtract the overlap to find the football-only region."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; conditional probability",
+      "question": "Using the same data: find P(tennis | likes football).",
+      "steps": [
+        "Given they like football: 18 students",
+        "Of these, 5 also like tennis",
+        "P(tennis|football) = &frac{5}{18}"
+      ],
+      "answer": "= &frac{5}{18}",
+      "explanation": "Restrict to the football group, then find those who also like tennis."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding the total",
+      "question": "A Venn diagram shows: A only = 8, B only = 12, A&cap;B = 4, neither = 6. Find P(A&cup;B).",
+      "steps": [
+        "Total = 8 + 12 + 4 + 6 = 30",
+        "A&cup;B = 8 + 4 + 12 = 24",
+        "P(A&cup;B) = &frac{24}{30} = &frac{4}{5}"
+      ],
+      "answer": "= &frac{4}{5}",
+      "explanation": "A union B includes everything inside at least one circle."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; completing a Venn diagram",
+      "question": "60 students: 35 study French, 25 study Spanish, 10 study both. How many study neither?",
+      "steps": [
+        "French only = 35 - 10 = 25, Spanish only = 25 - 10 = 15",
+        "Total in circles = 25 + 10 + 15 = 50",
+        "Neither = 60 - 50 = 10"
+      ],
+      "answer": "= 10 students",
+      "explanation": "Add all regions and subtract from total."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Reading Venn diagrams",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "A class of 40: A = 22, B = 18, A&cap;B = 8, neither = 8. Find:",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A only)",
+          "answer": "&frac{14}{40} = &frac{7}{20}"
+        },
+        {
+          "id": "b",
+          "expression": "P(B only)",
+          "answer": "&frac{10}{40} = &frac{1}{4}"
+        },
+        {
+          "id": "c",
+          "expression": "P(A&cup;B)",
+          "answer": "&frac{32}{40} = &frac{4}{5}"
+        },
+        {
+          "id": "d",
+          "expression": "P(neither)",
+          "answer": "&frac{8}{40} = &frac{1}{5}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Conditional probability",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Using: A = 22, B = 18, A&cap;B = 8, total = 40.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(B|A)",
+          "answer": "&frac{8}{22} = &frac{4}{11}"
+        },
+        {
+          "id": "b",
+          "expression": "P(A|B)",
+          "answer": "&frac{8}{18} = &frac{4}{9}"
+        },
+        {
+          "id": "c",
+          "expression": "P(not B|A)",
+          "answer": "&frac{14}{22} = &frac{7}{11}"
+        },
+        {
+          "id": "d",
+          "expression": "P(A|not B)",
+          "answer": "&frac{14}{22} = &frac{7}{11}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Completing Venn diagrams",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the missing values.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Total 50, A = 30, B = 20, A&cap;B = 7. Neither?",
+          "answer": "7"
+        },
+        {
+          "id": "b",
+          "expression": "Total 80, A = 45, B = 35, neither = 15. A&cap;B?",
+          "answer": "15"
+        },
+        {
+          "id": "c",
+          "expression": "Total 100, A only = 25, B only = 30, neither = 20. A&cap;B?",
+          "answer": "25"
+        },
+        {
+          "id": "d",
+          "expression": "Total 60, A = 40, A&cap;B = 12, neither = 5. B?",
+          "answer": "27"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Draw a Venn diagram and find the probability.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "50 people: 30 drink tea, 25 drink coffee, 15 drink both. P(tea only)?",
+          "answer": "&frac{15}{50} = &frac{3}{10}"
+        },
+        {
+          "id": "b",
+          "expression": "Same data: P(coffee | drinks tea)?",
+          "answer": "&frac{15}{30} = &frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "Same data: P(neither)?",
+          "answer": "&frac{10}{50} = &frac{1}{5}"
+        },
+        {
+          "id": "d",
+          "expression": "Same data: P(tea | drinks coffee)?",
+          "answer": "&frac{15}{25} = &frac{3}{5}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed conditional probability",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use the given information.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A) = 0.6, P(B) = 0.5, P(A&cap;B) = 0.3. Find P(A&cup;B)",
+          "answer": "0.8"
+        },
+        {
+          "id": "b",
+          "expression": "Same: find P(A|B)",
+          "answer": "0.6"
+        },
+        {
+          "id": "c",
+          "expression": "Same: find P(B|A)",
+          "answer": "0.5"
+        },
+        {
+          "id": "d",
+          "expression": "Are A and B independent? Explain",
+          "answer": "Yes, P(A|B) = P(A) = 0.6"
+        },
+        {
+          "id": "e",
+          "expression": "P(neither A nor B)",
+          "answer": "0.2"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "P(A|B) means restrict to set B then find P(A)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "P(A&cup;B) = P(A) + P(B) always",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "If P(A|B) = P(A) then A and B are independent",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "P(A|B) is the same as P(B|A)",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "P(A&cup;B) = P(A) + P(B) - P(A&cap;B)",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "In a school of <strong>200</strong> students: <strong>120</strong> study Maths, <strong>90</strong> study Science, <strong>50</strong> study both. Draw a Venn diagram. Find P(Maths|Science) and P(Science|Maths). Are Maths and Science independent events?"
+      },
+      {
+        "id": "b",
+        "text": "A medical test is <strong>95% accurate</strong>. A disease affects <strong>1%</strong> of people. If a person tests positive, what is the probability they actually have the disease? (Hint: consider 10,000 people.)"
+      }
+    ]
+  }
+}

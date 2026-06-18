@@ -1,0 +1,325 @@
+{
+  "title": "PLACE VALUE AND ORDERING INTEGERS,\n(ESTIMATING CALCULATIONS)",
+  "objective": "LO: I can estimate answers to calculations by rounding numbers to one significant figure.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Estimating calculations",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"\u0001\">estimate</span> a calculation, round each number to <span class=\"\u0001\">one significant figure</span> (1 s.f.) first, then perform the calculation with the rounded values."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Why estimate?</span> Estimating checks your answer is sensible and helps spot errors."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "48 &times; 31 &asymp; 50 &times; 30 = 1500",
+          "desc": "round to 1 s.f."
+        },
+        {
+          "correct": true,
+          "expr": "198 &divide; 4.1 &asymp; 200 &divide; 4 = 50",
+          "desc": "round each number"
+        },
+        {
+          "correct": true,
+          "expr": "&radic;26 &asymp; &radic;25 = 5",
+          "desc": "round to nearest square"
+        },
+        {
+          "correct": false,
+          "expr": "48 &times; 31 &asymp; 48 &times; 30 = 1440",
+          "desc": "must round both numbers"
+        },
+        {
+          "correct": false,
+          "expr": "3.7 rounded to 1 s.f. is 3",
+          "desc": "should be 4"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Round every number to 1 significant figure, then calculate. The symbol &asymp; means approximately equal to.",
+      "equation": "<span class=\"\u0001\">3.8 &times; 19.6</span> &asymp; <span class=\"\u0001\">4 &times; 20</span> = 80",
+      "caption": "Round each value to 1 s.f. before calculating"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; multiplication estimate",
+      "question": "Estimate 38 &times; 52",
+      "steps": [
+        "Round: 38 &asymp; 40, 52 &asymp; 50",
+        "40 &times; 50",
+        "= 2000"
+      ],
+      "answer": "&asymp; 2000",
+      "explanation": "Both numbers rounded to 1 significant figure."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; division estimate",
+      "question": "Estimate 412 &divide; 7.8",
+      "steps": [
+        "Round: 412 &asymp; 400, 7.8 &asymp; 8",
+        "400 &divide; 8",
+        "= 50"
+      ],
+      "answer": "&asymp; 50",
+      "explanation": "Choose values that make the division easier."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; combined operations",
+      "question": "Estimate (4.9 &times; 21.3) &divide; 0.48",
+      "steps": [
+        "Round: 4.9 &asymp; 5, 21.3 &asymp; 20, 0.48 &asymp; 0.5",
+        "(5 &times; 20) &divide; 0.5 = 100 &divide; 0.5",
+        "= 200"
+      ],
+      "answer": "&asymp; 200",
+      "explanation": "Follow BIDMAS after rounding."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with square roots",
+      "question": "Estimate &radic;(63) &times; 4.2",
+      "steps": [
+        "Round: &radic;63 &asymp; &radic;64 = 8, 4.2 &asymp; 4",
+        "8 &times; 4",
+        "= 32"
+      ],
+      "answer": "&asymp; 32",
+      "explanation": "For square roots, round to the nearest perfect square."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Rounding to 1 s.f.",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Round each number to 1 significant figure.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "47",
+          "answer": "50"
+        },
+        {
+          "id": "b",
+          "expression": "683",
+          "answer": "700"
+        },
+        {
+          "id": "c",
+          "expression": "3.62",
+          "answer": "4"
+        },
+        {
+          "id": "d",
+          "expression": "0.078",
+          "answer": "0.08"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Estimating multiplications",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Estimate each calculation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "29 &times; 41",
+          "answer": "&asymp; 1200"
+        },
+        {
+          "id": "b",
+          "expression": "58 &times; 32",
+          "answer": "&asymp; 1800"
+        },
+        {
+          "id": "c",
+          "expression": "4.8 &times; 6.1",
+          "answer": "&asymp; 30"
+        },
+        {
+          "id": "d",
+          "expression": "197 &times; 3.2",
+          "answer": "&asymp; 600"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Estimating divisions",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Estimate each division.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "396 &divide; 8.1",
+          "answer": "&asymp; 50"
+        },
+        {
+          "id": "b",
+          "expression": "61.2 &divide; 2.9",
+          "answer": "&asymp; 20"
+        },
+        {
+          "id": "c",
+          "expression": "7890 &divide; 42",
+          "answer": "&asymp; 200"
+        },
+        {
+          "id": "d",
+          "expression": "0.82 &divide; 0.19",
+          "answer": "&asymp; 4"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Combined operations",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Estimate each calculation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(5.1 &times; 9.8) &divide; 2.1",
+          "answer": "&asymp; 25"
+        },
+        {
+          "id": "b",
+          "expression": "(41 + 59) &times; 3.8",
+          "answer": "&asymp; 400"
+        },
+        {
+          "id": "c",
+          "expression": "(312 - 97) &divide; 4.2",
+          "answer": "&asymp; 50"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;(81.3) &times; 2.9",
+          "answer": "&asymp; 27"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed estimation",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Estimate each calculation to 1 s.f.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "67 &times; 4.3",
+          "answer": "&asymp; 280"
+        },
+        {
+          "id": "b",
+          "expression": "891 &divide; 29",
+          "answer": "&asymp; 30"
+        },
+        {
+          "id": "c",
+          "expression": "&radic;(48) + 3.1&sup2;",
+          "answer": "&asymp; 16"
+        },
+        {
+          "id": "d",
+          "expression": "(6.2)&sup2; &times; 1.9",
+          "answer": "&asymp; 72"
+        },
+        {
+          "id": "e",
+          "expression": "5.1 &times; 3.9 &divide; 0.21",
+          "answer": "&asymp; 100"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "48 rounded to 1 s.f. is 50",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "3.7 rounded to 1 s.f. is 3",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Estimating gives an approximate answer, not exact",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "0.052 rounded to 1 s.f. is 0.1",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "&radic;50 &asymp; 7 because 7&sup2; = 49",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A hall seats <strong>48 rows</strong> of <strong>32 chairs</strong>. Tickets cost <strong>&pound;18.50</strong> each. Estimate the total income if the hall is full. Then calculate the exact answer. How close was your estimate?"
+      },
+      {
+        "id": "b",
+        "text": "Estimate <strong>&frac{62.3 &times; 4.8}{0.52}</strong>. Show your working. Then use a calculator to find the exact answer. Find the percentage error in your estimate."
+      }
+    ]
+  }
+}
