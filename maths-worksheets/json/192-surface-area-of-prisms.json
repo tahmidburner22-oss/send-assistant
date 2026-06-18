@@ -1,0 +1,325 @@
+{
+  "title": "VOLUME AND SURFACE AREA,\n(SURFACE AREA OF PRISMS)",
+  "objective": "LO: I can calculate the surface area of prisms by finding the area of each face.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Surface area of prisms",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">prism</span> is a 3D shape with a uniform cross-section. Its <span class=\"ul-k\">surface area</span> is the sum of the areas of all its faces: two identical end faces plus the rectangular side faces."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Method:</span> Find the area of the cross-section (end face), double it for both ends, then add the areas of each rectangular side. SA = 2 × (area of cross-section) + (perimeter of cross-section) × length."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Cuboid: SA = 2(lw + lh + wh)",
+          "desc": "three pairs of rectangular faces"
+        },
+        {
+          "correct": true,
+          "expr": "Triangular prism: 2 triangles + 3 rectangles",
+          "desc": "count all faces"
+        },
+        {
+          "correct": true,
+          "expr": "SA = 2A + Ph (A = end area, P = perimeter, h = length)",
+          "desc": "general prism formula"
+        },
+        {
+          "correct": false,
+          "expr": "SA = area of cross-section × length",
+          "desc": "that gives volume, not surface area"
+        },
+        {
+          "correct": false,
+          "expr": "A triangular prism has 4 faces",
+          "desc": "it has 5 faces: 2 triangles + 3 rectangles"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Surface area of a prism = 2 times the end face area plus the lateral (side) area. The lateral area equals perimeter of cross-section times length.",
+      "equation": "SA = <span class=\"ov\">2A</span> + <span class=\"ovr\">P × l</span>",
+      "caption": "A = area of end face, P = perimeter of end, l = length of prism"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; cuboid",
+      "question": "Find the surface area of a cuboid 6 cm by 4 cm by 3 cm.",
+      "steps": [
+        "Three pairs of faces: 6×4 = 24, 6×3 = 18, 4×3 = 12",
+        "Double each: 48 + 36 + 24",
+        "SA = 108 cm²"
+      ],
+      "answer": "108 cm²",
+      "explanation": "A cuboid has three different pairs of rectangular faces."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; triangular prism",
+      "question": "A triangular prism has a right-angled triangle cross-section (base 6, height 8, hypotenuse 10 cm) and length 12 cm. Find the SA.",
+      "steps": [
+        "Two triangles: 2 × ½ × 6 × 8 = 48 cm²",
+        "Three rectangles: 6×12 + 8×12 + 10×12 = 72 + 96 + 120 = 288 cm²",
+        "SA = 48 + 288 = 336 cm²"
+      ],
+      "answer": "336 cm²",
+      "explanation": "Find all five faces: two triangles and three rectangles."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; L-shaped prism",
+      "question": "An L-shaped prism has cross-section area 20 cm², perimeter 24 cm, and length 10 cm. Find the SA.",
+      "steps": [
+        "Two ends: 2 × 20 = 40 cm²",
+        "Lateral area: 24 × 10 = 240 cm²",
+        "SA = 40 + 240 = 280 cm²"
+      ],
+      "answer": "280 cm²",
+      "explanation": "Use the general formula when end area and perimeter are given."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; trapezoidal prism",
+      "question": "A prism has a trapezium cross-section with parallel sides 5 cm and 9 cm, height 4 cm, slant sides 5 cm each, and length 15 cm.",
+      "steps": [
+        "End area: ½(5 + 9) × 4 = 28 cm². Two ends = 56 cm²",
+        "Perimeter: 5 + 9 + 5 + 5 = 24 cm",
+        "Lateral area: 24 × 15 = 360 cm². SA = 56 + 360 = 416 cm²"
+      ],
+      "answer": "416 cm²",
+      "explanation": "Find the trapezium area, then use SA = 2A + Pl."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Cuboids",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the surface area of each cuboid.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 cm × 3 cm × 2 cm",
+          "answer": "62 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "8 cm × 4 cm × 3 cm",
+          "answer": "136 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "10 cm × 6 cm × 4 cm",
+          "answer": "248 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "7 cm × 7 cm × 7 cm",
+          "answer": "294 cm²"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Triangular prisms",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the surface area of each triangular prism.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Triangle: base 6, height 4, hyp 5 cm. Length 10 cm.",
+          "answer": "184 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "Triangle: base 8, height 3, hyp 5 cm. Length 12 cm.",
+          "answer": "216 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "Triangle: base 5, height 12, hyp 13 cm. Length 8 cm.",
+          "answer": "308 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "Equilateral triangle side 6 cm. Length 10 cm.",
+          "answer": "211.2 cm²"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Using SA = 2A + Pl",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Given the cross-section area A, perimeter P, and length l, find the SA.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A = 15 cm², P = 20 cm, l = 8 cm",
+          "answer": "190 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "A = 24 cm², P = 22 cm, l = 10 cm",
+          "answer": "268 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "A = 30 cm², P = 28 cm, l = 6 cm",
+          "answer": "228 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "A = 18 cm², P = 18 cm, l = 12 cm",
+          "answer": "252 cm²"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Trapezoidal prisms",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the surface area of each trapezoidal prism.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Parallel sides 4, 8 cm; height 3 cm; slant sides 5 cm each; length 10 cm",
+          "answer": "256 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "Parallel sides 6, 10 cm; height 4 cm; slant sides 5 cm each; length 12 cm",
+          "answer": "440 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "Parallel sides 3, 7 cm; height 3 cm; slant sides 4 cm each; length 9 cm",
+          "answer": "192 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "Parallel sides 5, 11 cm; height 4 cm; slant sides 5 cm each; length 14 cm",
+          "answer": "532 cm²"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed prism problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cube with side 5 cm. SA?",
+          "answer": "150 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "Triangular prism: isosceles triangle base 10, equal sides 13, height 12 cm. Length 20 cm.",
+          "answer": "840 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "Cuboid SA = 340 cm². If l = 10, w = 5, find h.",
+          "answer": "6 cm"
+        },
+        {
+          "id": "d",
+          "expression": "A pentagonal prism: end area 45 cm², perimeter 30 cm, length 8 cm.",
+          "answer": "330 cm²"
+        },
+        {
+          "id": "e",
+          "expression": "Hexagonal prism: end area 54 cm², perimeter 36 cm, length 10 cm.",
+          "answer": "468 cm²"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "SA of a prism = 2 × end area + perimeter × length",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "SA of a prism = cross-section area × length",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A triangular prism has 5 faces",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "All faces of a prism are rectangles",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "To find SA you must add the area of every single face",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A chocolate box is a triangular prism with an equilateral triangle cross-section of side <strong>8 cm</strong> and length <strong>20 cm</strong>. The box needs wrapping with <strong>10% extra</strong> paper for overlaps. How much wrapping paper is needed in cm²?"
+      },
+      {
+        "id": "b",
+        "text": "A swimming pool has a trapezoidal cross-section: one end is <strong>1 m deep</strong>, the other is <strong>2.5 m deep</strong>, the pool is <strong>25 m long</strong> and <strong>10 m wide</strong>. Find the total internal surface area that needs tiling (base and all four sides, no top)."
+      }
+    ]
+  }
+}
