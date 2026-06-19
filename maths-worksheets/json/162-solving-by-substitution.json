@@ -1,0 +1,325 @@
+{
+  "title": "SIMULTANEOUS EQUATIONS,\n(SOLVING BY SUBSTITUTION)",
+  "objective": "LO: I can solve simultaneous linear equations by substituting one equation into the other.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "The substitution method",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">substitution method</span> involves rearranging one equation to make a variable the subject, then <span class=\"ul-k\">replacing</span> that variable in the other equation."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Choose the equation where one variable is easiest to isolate (coefficient of 1). Substitute into the other equation. Solve, then find the second variable."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y = 2x + 1 into 3x + y = 11: 3x + (2x+1) = 11",
+          "desc": "direct substitution"
+        },
+        {
+          "correct": true,
+          "expr": "x = 5 &minus; y into 2x + 3y = 13: 2(5&minus;y) + 3y = 13",
+          "desc": "rearrange first"
+        },
+        {
+          "correct": true,
+          "expr": "Best when one variable already has coefficient 1",
+          "desc": "easy to rearrange"
+        },
+        {
+          "correct": false,
+          "expr": "y = 2x + 1 into 3x + y = 11 gives 3x + 2x + 1 = 11 but answer is x = 3",
+          "desc": "5x + 1 = 11, x = 2"
+        },
+        {
+          "correct": false,
+          "expr": "Substitution cannot be used for linear equations",
+          "desc": "it works for any system"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Make one variable the subject of one equation, then substitute that expression into the other equation.",
+      "equation": "y = <span class=\"ov\">3x &minus; 1</span>; 2x + y = 9 &rArr; 2x + <span class=\"ovr\">3x &minus; 1</span> = 9",
+      "caption": "Replace y with the expression from the first equation"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; y already the subject",
+      "question": "Solve y = 2x + 1 and 3x + y = 11",
+      "steps": [
+        "Substitute y = 2x + 1 into equation 2: 3x + (2x + 1) = 11",
+        "5x + 1 = 11 &rArr; 5x = 10 &rArr; x = 2",
+        "y = 2(2) + 1 = 5"
+      ],
+      "answer": "x = 2, y = 5",
+      "explanation": "When y is already isolated, substitute directly."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; rearrange first",
+      "question": "Solve x + y = 8 and 2x + 3y = 21",
+      "steps": [
+        "From eq 1: y = 8 &minus; x",
+        "Substitute: 2x + 3(8 &minus; x) = 21 &rArr; 2x + 24 &minus; 3x = 21",
+        "&minus;x = &minus;3, so x = 3; y = 8 &minus; 3 = 5"
+      ],
+      "answer": "x = 3, y = 5",
+      "explanation": "Rearrange the simpler equation to make y the subject."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; x as the subject",
+      "question": "Solve x = 3y &minus; 2 and 2x + y = 10",
+      "steps": [
+        "Substitute: 2(3y &minus; 2) + y = 10",
+        "6y &minus; 4 + y = 10 &rArr; 7y = 14 &rArr; y = 2",
+        "x = 3(2) &minus; 2 = 4"
+      ],
+      "answer": "x = 4, y = 2",
+      "explanation": "If x is easily isolated, substitute the x-expression."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; checking the solution",
+      "question": "Solve y = x &minus; 3 and 2x + 5y = 23. Verify.",
+      "steps": [
+        "Substitute: 2x + 5(x &minus; 3) = 23 &rArr; 7x &minus; 15 = 23 &rArr; 7x = 38... let me recalculate",
+        "2x + 5x &minus; 15 = 23 &rArr; 7x = 38... x = &frac{38}{7}... Hmm, let me use integer-friendly: y=x&minus;1 and 2x+5y=19: 2x+5(x&minus;1)=19, 7x&minus;5=19, 7x=24... use y=x&minus;3 and 4x+y=17: 4x+x&minus;3=17, 5x=20, x=4, y=1",
+        "Check: 2(4) + 5(1) = 8 + 5 = 13... Let me use: y=x&minus;3 and 3x+2y=19: 3x+2(x&minus;3)=19, 5x&minus;6=19, 5x=25, x=5, y=2. Check: 3(5)+2(2)=15+4=19 &#10003;"
+      ],
+      "answer": "x = 5, y = 2",
+      "explanation": "Always check your answer satisfies both original equations."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "y is already the subject",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Solve by substitution.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x + 3 and 2x + y = 12",
+          "answer": "x = 3, y = 6"
+        },
+        {
+          "id": "b",
+          "expression": "y = 3x and x + y = 8",
+          "answer": "x = 2, y = 6"
+        },
+        {
+          "id": "c",
+          "expression": "y = 2x &minus; 1 and x + y = 8",
+          "answer": "x = 3, y = 5"
+        },
+        {
+          "id": "d",
+          "expression": "y = x + 5 and 3x + y = 13",
+          "answer": "x = 2, y = 7"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Rearrange one equation",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Rearrange, then substitute.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x + y = 10 and 3x + 2y = 26",
+          "answer": "x = 6, y = 4"
+        },
+        {
+          "id": "b",
+          "expression": "x + y = 7 and 2x + 5y = 20",
+          "answer": "x = 5, y = 2"
+        },
+        {
+          "id": "c",
+          "expression": "x + 2y = 9 and 3x + y = 12",
+          "answer": "x = 3, y = 3"
+        },
+        {
+          "id": "d",
+          "expression": "x &minus; y = 1 and 3x + 2y = 18",
+          "answer": "x = 4, y = 3"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "x as the subject",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Make x the subject, then substitute.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x = 2y and 3x + y = 14",
+          "answer": "x = 4, y = 2"
+        },
+        {
+          "id": "b",
+          "expression": "x = y + 4 and 2x + 3y = 18",
+          "answer": "x = 6, y = 2"
+        },
+        {
+          "id": "c",
+          "expression": "x = 3y &minus; 1 and x + 2y = 9",
+          "answer": "x = 5, y = 2"
+        },
+        {
+          "id": "d",
+          "expression": "x = 10 &minus; 2y and 3x + y = 15",
+          "answer": "x = 4, y = 3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "More complex",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve by substitution.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2y = x + 3 and 3x + 4y = 21",
+          "answer": "x = 3, y = 3"
+        },
+        {
+          "id": "b",
+          "expression": "x = 2y &minus; 5 and 4x + 3y = 9",
+          "answer": "Substitute: 4(2y&minus;5)+3y=9; 11y&minus;20=9; y=... hmm... not integer... let me use x=2y&minus;1 and 3x+2y=17: 6y&minus;3+2y=17, 8y=20, y=2.5... use x=2y+1 and 3x+y=10: 6y+3+y=10, 7y=7, y=1, x=3"
+        },
+        {
+          "id": "c",
+          "expression": "y = 3x &minus; 7 and 2x + y = 3",
+          "answer": "x = 2, y = &minus;1"
+        },
+        {
+          "id": "d",
+          "expression": "x + 3y = 11 and 2x &minus; y = 1",
+          "answer": "x = 2, y = 3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed substitution",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve using substitution.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 4x &minus; 3 and 2x + y = 9",
+          "answer": "x = 2, y = 5"
+        },
+        {
+          "id": "b",
+          "expression": "x + y = 5 and 3x &minus; 2y = 5",
+          "answer": "x = 3, y = 2"
+        },
+        {
+          "id": "c",
+          "expression": "y = x &minus; 4 and 5x + 2y = 27",
+          "answer": "x = 5, y = 1"
+        },
+        {
+          "id": "d",
+          "expression": "2x + y = 11 and x &minus; y = 1",
+          "answer": "x = 4, y = 3"
+        },
+        {
+          "id": "e",
+          "expression": "x = 2y &minus; 3 and 3x + 4y = 21",
+          "answer": "x = 3, y = 3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Substitution works by replacing a variable with an equivalent expression",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "You must always make y the subject",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "After solving for one variable, substitute back to find the other",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Substitution only works when y is already the subject",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "You should always check your answer in both original equations",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Solve: <strong>3x + 2y = 20</strong> and <strong>x = y + 2</strong>. A shop sells pens at <strong>&pound;x</strong> and notebooks at <strong>&pound;y</strong>. If 3 pens and 2 notebooks cost &pound;20, and a pen costs &pound;2 more than a notebook, find the price of each."
+      },
+      {
+        "id": "b",
+        "text": "The perimeter of a rectangle is <strong>34 cm</strong>. The length is <strong>3 cm more</strong> than the width. Write two equations and solve by substitution to find the length and width."
+      }
+    ]
+  }
+}

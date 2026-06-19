@@ -1,0 +1,325 @@
+{
+  "title": "PYTHAGORAS,\n(APPLYING PYTHAGORAS IN 3D PROBLEMS)",
+  "objective": "LO: I can apply Pythagoras' theorem to find lengths in three-dimensional shapes.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Pythagoras in 3D",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "In <span class=\"ul-b\">3D problems</span>, we often need to apply Pythagoras' theorem <span class=\"ul-k\">twice</span>: once on the base to find a diagonal, then again using that diagonal and the height."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Identify the right-angled triangle in the 3D shape. Often this involves finding a base diagonal first, then using it with the vertical height."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Cuboid diagonal: d = &radic;(l&sup2; + w&sup2; + h&sup2;)",
+          "desc": "3D diagonal formula"
+        },
+        {
+          "correct": true,
+          "expr": "Space diagonal of 3, 4, 12 cuboid = &radic;(9+16+144) = 13",
+          "desc": "apply twice or use formula"
+        },
+        {
+          "correct": true,
+          "expr": "Pyramid: slant height uses base half-diagonal and vertical height",
+          "desc": "two-step approach"
+        },
+        {
+          "correct": false,
+          "expr": "3D diagonal = l + w + h",
+          "desc": "cannot add lengths directly"
+        },
+        {
+          "correct": false,
+          "expr": "Only need Pythagoras once in 3D",
+          "desc": "usually need it twice"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "In 3D, apply Pythagoras twice or use the 3D formula: diagonal = &radic;(l&sup2; + w&sup2; + h&sup2;).",
+      "equation": "d = &radic;(<span class=\"ov\">l&sup2; + w&sup2;</span> + <span class=\"ovr\">h&sup2;</span>)",
+      "caption": "First find base diagonal, then combine with height"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; cuboid space diagonal",
+      "question": "Find the space diagonal of a cuboid 3 cm by 4 cm by 12 cm.",
+      "steps": [
+        "Base diagonal: &radic;(3&sup2; + 4&sup2;) = &radic;(9 + 16) = &radic;25 = 5",
+        "Now use base diagonal (5) and height (12)",
+        "Space diagonal = &radic;(5&sup2; + 12&sup2;) = &radic;(25 + 144) = &radic;169 = 13 cm"
+      ],
+      "answer": "13 cm",
+      "explanation": "Apply Pythagoras twice: once for the base, once with the height."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; using the 3D formula",
+      "question": "Find the space diagonal of a cuboid 2 cm by 6 cm by 9 cm.",
+      "steps": [
+        "d = &radic;(2&sup2; + 6&sup2; + 9&sup2;)",
+        "d = &radic;(4 + 36 + 81) = &radic;121",
+        "d = 11 cm"
+      ],
+      "answer": "11 cm",
+      "explanation": "The 3D formula combines both Pythagoras steps into one."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; pyramid slant height",
+      "question": "A square-based pyramid has base side 6 cm and vertical height 4 cm. Find the slant height.",
+      "steps": [
+        "Half the base = 3 cm (distance from centre to midpoint of base edge)",
+        "Right triangle: base 3, height 4",
+        "Slant = &radic;(3&sup2; + 4&sup2;) = &radic;(9 + 16) = &radic;25 = 5 cm"
+      ],
+      "answer": "5 cm",
+      "explanation": "The slant height runs from apex to the midpoint of a base edge."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; cone",
+      "question": "A cone has radius 5 cm and slant height 13 cm. Find the vertical height.",
+      "steps": [
+        "Right triangle: radius 5, slant 13 (hypotenuse)",
+        "h&sup2; = 13&sup2; &minus; 5&sup2; = 169 &minus; 25 = 144",
+        "h = &radic;144 = 12 cm"
+      ],
+      "answer": "12 cm",
+      "explanation": "The slant height is the hypotenuse; subtract to find the vertical height."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Cuboid space diagonals",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the space diagonal of each cuboid.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1 cm &times; 2 cm &times; 2 cm",
+          "answer": "3 cm"
+        },
+        {
+          "id": "b",
+          "expression": "2 cm &times; 3 cm &times; 6 cm",
+          "answer": "7 cm"
+        },
+        {
+          "id": "c",
+          "expression": "4 cm &times; 4 cm &times; 7 cm",
+          "answer": "9 cm"
+        },
+        {
+          "id": "d",
+          "expression": "6 cm &times; 6 cm &times; 7 cm",
+          "answer": "11 cm"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Cube diagonals",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the space diagonal of each cube (side length given).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Side = 1 cm",
+          "answer": "&radic;3 = 1.73 cm (3 s.f.)"
+        },
+        {
+          "id": "b",
+          "expression": "Side = 4 cm",
+          "answer": "4&radic;3 = 6.93 cm (3 s.f.)"
+        },
+        {
+          "id": "c",
+          "expression": "Side = 5 cm",
+          "answer": "5&radic;3 = 8.66 cm (3 s.f.)"
+        },
+        {
+          "id": "d",
+          "expression": "Side = 10 cm",
+          "answer": "10&radic;3 = 17.3 cm (3 s.f.)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Pyramids",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the slant height of each square-based pyramid.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Base 8 cm, height 3 cm",
+          "answer": "5 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Base 10 cm, height 12 cm",
+          "answer": "13 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Base 6 cm, height 8 cm",
+          "answer": "&radic;73 = 8.54 cm (3 s.f.)"
+        },
+        {
+          "id": "d",
+          "expression": "Base 12 cm, height 5 cm",
+          "answer": "&radic;61 = 7.81 cm (3 s.f.)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Cones and cylinders",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the missing measurement.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cone: radius 3, slant height 5. Vertical height?",
+          "answer": "4 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Cone: radius 8, vertical height 15. Slant height?",
+          "answer": "17 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Cone: slant 10, height 6. Radius?",
+          "answer": "8 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Cylinder: radius 3, height 4. Diagonal across?",
+          "answer": "&radic;(36+16) = &radic;52 = 7.21 cm"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed 3D problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem. Give answers to 1 d.p. where necessary.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Room 5 m &times; 4 m &times; 3 m. Longest pole that fits?",
+          "answer": "7.1 m"
+        },
+        {
+          "id": "b",
+          "expression": "Box 8 &times; 6 &times; 10. Can a 15 cm rod fit inside?",
+          "answer": "Yes, diagonal = 14.1 cm... No"
+        },
+        {
+          "id": "c",
+          "expression": "Square pyramid: base 10, slant edge to vertex 13. Height?",
+          "answer": "12"
+        },
+        {
+          "id": "d",
+          "expression": "Cuboid 5 &times; 5 &times; h, space diagonal 15. Find h.",
+          "answer": "h = &radic;(225 &minus; 50) = &radic;175 = 13.2"
+        },
+        {
+          "id": "e",
+          "expression": "Cone: diameter 14, height 24. Slant height?",
+          "answer": "25 cm"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "A cuboid space diagonal requires Pythagoras applied twice",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The space diagonal of a cuboid equals l + w + h",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "d = &radic;(l&sup2; + w&sup2; + h&sup2;) gives the space diagonal",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A pyramid slant height equals the vertical height",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "In a cone, the slant height is the hypotenuse",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A room is <strong>6 m long, 4 m wide, and 3 m high</strong>. A spider at one top corner wants to reach the opposite bottom corner. What is the shortest distance it can travel along the surfaces? (Hint: unfold the room.)"
+      },
+      {
+        "id": "b",
+        "text": "A square-based pyramid has base side <strong>8 cm</strong> and all slant edges are <strong>9 cm</strong>. Find the vertical height of the pyramid. Then find the distance from the apex to the midpoint of a base edge."
+      }
+    ]
+  }
+}

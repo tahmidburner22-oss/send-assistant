@@ -1,0 +1,325 @@
+{
+  "title": "DECIMALS,\n(MULTIPLYING DECIMALS)",
+  "objective": "LO: I can multiply decimal numbers using place value and the column method.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Multiplying decimals",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"ul-b\">multiply decimals</span>, ignore the decimal points, multiply as whole numbers, then put the point back using the total number of <span class=\"ul-k\">decimal places</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Rule:</span> Count the total decimal places in the question. The answer has the same total number of decimal places."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key method",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "0.3 &times; 0.4 = 0.12",
+          "desc": "1 d.p. + 1 d.p. = 2 d.p."
+        },
+        {
+          "correct": true,
+          "expr": "2.5 &times; 4 = 10.0",
+          "desc": "1 d.p. + 0 d.p. = 1 d.p."
+        },
+        {
+          "correct": true,
+          "expr": "1.2 &times; 0.3 = 0.36",
+          "desc": "12 &times; 3 = 36, 2 d.p."
+        },
+        {
+          "correct": false,
+          "expr": "0.3 &times; 0.4 = 1.2",
+          "desc": "wrong number of d.p."
+        },
+        {
+          "correct": false,
+          "expr": "2.5 &times; 4 = 100",
+          "desc": "forgot the decimal point"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply as whole numbers, then place the decimal point so the answer has the correct total number of decimal places.",
+      "equation": "<span class=\"ov\">1.2 &times; 0.3</span>: 12 &times; 3 = 36 &rarr; <span class=\"ovr\">0.36</span>",
+      "caption": "2 decimal places in total"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; decimal by whole number",
+      "question": "Calculate 3.4 &times; 5",
+      "steps": [
+        "Ignore decimal: 34 &times; 5 = 170",
+        "Total d.p. in question: 1",
+        "Place point: 17.0"
+      ],
+      "answer": "= 17.0",
+      "explanation": "One decimal place in the question means one in the answer."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; decimal by decimal",
+      "question": "Calculate 0.6 &times; 0.7",
+      "steps": [
+        "Ignore decimals: 6 &times; 7 = 42",
+        "Total d.p.: 1 + 1 = 2",
+        "Place point: 0.42"
+      ],
+      "answer": "= 0.42",
+      "explanation": "Two decimal places total: answer is 0.42 not 4.2."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; two-digit decimals",
+      "question": "Calculate 2.4 &times; 1.3",
+      "steps": [
+        "Ignore decimals: 24 &times; 13 = 312",
+        "Total d.p.: 1 + 1 = 2",
+        "Place point: 3.12"
+      ],
+      "answer": "= 3.12",
+      "explanation": "24 &times; 13: 24&times;10 = 240, 24&times;3 = 72, total 312."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with zeros",
+      "question": "Calculate 0.05 &times; 0.4",
+      "steps": [
+        "Ignore decimals: 5 &times; 4 = 20",
+        "Total d.p.: 2 + 1 = 3",
+        "Place point: 0.020 = 0.02"
+      ],
+      "answer": "= 0.02",
+      "explanation": "Three decimal places needed; 020 becomes 0.020 = 0.02."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Decimal &times; whole number",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2.3 &times; 4",
+          "answer": "9.2"
+        },
+        {
+          "id": "b",
+          "expression": "5.6 &times; 3",
+          "answer": "16.8"
+        },
+        {
+          "id": "c",
+          "expression": "0.7 &times; 8",
+          "answer": "5.6"
+        },
+        {
+          "id": "d",
+          "expression": "3.25 &times; 2",
+          "answer": "6.50"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Decimal &times; decimal (1 d.p. each)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Count decimal places carefully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "0.3 &times; 0.4",
+          "answer": "0.12"
+        },
+        {
+          "id": "b",
+          "expression": "0.6 &times; 0.5",
+          "answer": "0.30"
+        },
+        {
+          "id": "c",
+          "expression": "1.2 &times; 0.3",
+          "answer": "0.36"
+        },
+        {
+          "id": "d",
+          "expression": "2.5 &times; 0.4",
+          "answer": "1.00"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Harder multiplications",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Work as whole numbers first, then place the point.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2.4 &times; 1.3",
+          "answer": "3.12"
+        },
+        {
+          "id": "b",
+          "expression": "3.5 &times; 2.6",
+          "answer": "9.10"
+        },
+        {
+          "id": "c",
+          "expression": "4.2 &times; 0.15",
+          "answer": "0.63"
+        },
+        {
+          "id": "d",
+          "expression": "0.08 &times; 0.6",
+          "answer": "0.048"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Multiply to find the answer.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Petrol costs &pound;1.45/litre. Cost of 8 litres?",
+          "answer": "&pound;11.60"
+        },
+        {
+          "id": "b",
+          "expression": "A tile is 0.3 m &times; 0.3 m. What is its area?",
+          "answer": "0.09 m&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "Speed 4.5 km/h for 2.5 hours. Distance?",
+          "answer": "11.25 km"
+        },
+        {
+          "id": "d",
+          "expression": "3 items at &pound;2.99 each. Total?",
+          "answer": "&pound;8.97"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed multiplication",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate each product.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "6.5 &times; 4",
+          "answer": "26"
+        },
+        {
+          "id": "b",
+          "expression": "0.4 &times; 0.4",
+          "answer": "0.16"
+        },
+        {
+          "id": "c",
+          "expression": "1.5 &times; 1.5",
+          "answer": "2.25"
+        },
+        {
+          "id": "d",
+          "expression": "0.12 &times; 0.3",
+          "answer": "0.036"
+        },
+        {
+          "id": "e",
+          "expression": "7.2 &times; 0.5",
+          "answer": "3.6"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "0.3 &times; 0.4 = 0.12 (2 d.p.)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "0.3 &times; 0.4 = 1.2",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Total d.p. in answer = sum of d.p. in question",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Multiplying decimals always gives a bigger number",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "2.5 &times; 4 = 10",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A square has side length <strong>3.5 cm</strong>. Find its area. Then find the area of a square with side <strong>0.35 cm</strong>. How many times smaller is the second area?"
+      },
+      {
+        "id": "b",
+        "text": "Without a calculator, work out <strong>2.4 &times; 3.5</strong> and <strong>0.24 &times; 35</strong>. Explain why the answers are the same. What about <strong>24 &times; 0.35</strong>?"
+      }
+    ]
+  }
+}

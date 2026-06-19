@@ -1,0 +1,325 @@
+{
+  "title": "STANDARD FORM,\n(CALCULATIONS IN STANDARD FORM)",
+  "objective": "LO: I can add, subtract, multiply and divide numbers in standard form.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Calculating with standard form",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Standard form</span> is written as A &times; 10<sup>n</sup> where 1 &le; A &lt; 10 and n is an integer. To <span class=\"ul-k\">multiply or divide</span>, use index laws on the powers of 10."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> For multiplication/division, deal with the A values and powers of 10 separately. For addition/subtraction, convert to the same power of 10 first."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "(3 &times; 10&sup2;) &times; (2 &times; 10&sup3;) = 6 &times; 10<sup>5</sup>",
+          "desc": "multiply A values, add powers"
+        },
+        {
+          "correct": true,
+          "expr": "(8 &times; 10<sup>6</sup>) &divide; (4 &times; 10&sup2;) = 2 &times; 10<sup>4</sup>",
+          "desc": "divide A values, subtract powers"
+        },
+        {
+          "correct": true,
+          "expr": "(4 &times; 10&sup3;) + (3 &times; 10&sup3;) = 7 &times; 10&sup3;",
+          "desc": "same power, add A values"
+        },
+        {
+          "correct": false,
+          "expr": "(3 &times; 10&sup2;) &times; (2 &times; 10&sup3;) = 6 &times; 10<sup>6</sup>",
+          "desc": "powers add, not multiply"
+        },
+        {
+          "correct": false,
+          "expr": "(4 &times; 10&sup3;) + (3 &times; 10&sup2;) = 7 &times; 10&sup3;",
+          "desc": "must match powers first"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply/divide: deal with A and 10^n separately. Add/subtract: match the powers of 10 first.",
+      "equation": "(a &times; 10<sup>m</sup>) &times; (b &times; 10<sup>n</sup>) = <span class=\"ov\">ab</span> &times; <span class=\"ovr\">10<sup>m+n</sup></span>",
+      "caption": "Multiply A values, add indices"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; multiplication",
+      "question": "Calculate (4 &times; 10&sup3;) &times; (2 &times; 10<sup>5</sup>)",
+      "steps": [
+        "Multiply A values: 4 &times; 2 = 8",
+        "Add powers: 3 + 5 = 8",
+        "Answer: 8 &times; 10<sup>8</sup>"
+      ],
+      "answer": "8 &times; 10<sup>8</sup>",
+      "explanation": "Multiply the numbers, add the indices."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; division",
+      "question": "Calculate (9 &times; 10<sup>7</sup>) &divide; (3 &times; 10&sup3;)",
+      "steps": [
+        "Divide A values: 9 &divide; 3 = 3",
+        "Subtract powers: 7 &minus; 3 = 4",
+        "Answer: 3 &times; 10<sup>4</sup>"
+      ],
+      "answer": "3 &times; 10<sup>4</sup>",
+      "explanation": "Divide the numbers, subtract the indices."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; adjusting after multiplication",
+      "question": "Calculate (6 &times; 10<sup>4</sup>) &times; (5 &times; 10&sup3;)",
+      "steps": [
+        "Multiply A values: 6 &times; 5 = 30",
+        "Add powers: 4 + 3 = 7, so 30 &times; 10<sup>7</sup>",
+        "Adjust: 30 = 3 &times; 10, so 3 &times; 10<sup>8</sup>"
+      ],
+      "answer": "3 &times; 10<sup>8</sup>",
+      "explanation": "If A &ge; 10, adjust by increasing the power of 10."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; addition",
+      "question": "Calculate (5.2 &times; 10<sup>4</sup>) + (3.1 &times; 10&sup3;)",
+      "steps": [
+        "Convert: 3.1 &times; 10&sup3; = 0.31 &times; 10<sup>4</sup>",
+        "Add: 5.2 + 0.31 = 5.51",
+        "Answer: 5.51 &times; 10<sup>4</sup>"
+      ],
+      "answer": "5.51 &times; 10<sup>4</sup>",
+      "explanation": "Match the powers of 10 before adding the A values."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Multiplication",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate, giving your answer in standard form.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3 &times; 10&sup2;) &times; (4 &times; 10&sup3;)",
+          "answer": "1.2 &times; 10<sup>6</sup>"
+        },
+        {
+          "id": "b",
+          "expression": "(2 &times; 10<sup>5</sup>) &times; (3 &times; 10<sup>4</sup>)",
+          "answer": "6 &times; 10<sup>9</sup>"
+        },
+        {
+          "id": "c",
+          "expression": "(5 &times; 10&sup3;) &times; (4 &times; 10&sup2;)",
+          "answer": "2 &times; 10<sup>6</sup>"
+        },
+        {
+          "id": "d",
+          "expression": "(7 &times; 10<sup>4</sup>) &times; (2 &times; 10<sup>6</sup>)",
+          "answer": "1.4 &times; 10<sup>11</sup>"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Division",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate, giving your answer in standard form.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(8 &times; 10<sup>6</sup>) &divide; (2 &times; 10&sup3;)",
+          "answer": "4 &times; 10&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "(9 &times; 10<sup>8</sup>) &divide; (3 &times; 10<sup>5</sup>)",
+          "answer": "3 &times; 10&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "(6 &times; 10<sup>7</sup>) &divide; (4 &times; 10&sup2;)",
+          "answer": "1.5 &times; 10<sup>5</sup>"
+        },
+        {
+          "id": "d",
+          "expression": "(4.8 &times; 10<sup>9</sup>) &divide; (1.2 &times; 10<sup>4</sup>)",
+          "answer": "4 &times; 10<sup>5</sup>"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Addition and subtraction",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Calculate, giving your answer in standard form.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(4 &times; 10&sup3;) + (5 &times; 10&sup3;)",
+          "answer": "9 &times; 10&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "(7 &times; 10<sup>5</sup>) &minus; (2 &times; 10<sup>5</sup>)",
+          "answer": "5 &times; 10<sup>5</sup>"
+        },
+        {
+          "id": "c",
+          "expression": "(6 &times; 10<sup>4</sup>) + (8 &times; 10&sup3;)",
+          "answer": "6.8 &times; 10<sup>4</sup>"
+        },
+        {
+          "id": "d",
+          "expression": "(3.5 &times; 10<sup>6</sup>) &minus; (4 &times; 10<sup>5</sup>)",
+          "answer": "3.1 &times; 10<sup>6</sup>"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed with adjustment",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Calculate. Ensure answer is in standard form.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(8 &times; 10&sup3;) &times; (5 &times; 10<sup>4</sup>)",
+          "answer": "4 &times; 10<sup>8</sup>"
+        },
+        {
+          "id": "b",
+          "expression": "(6 &times; 10<sup>5</sup>) &times; (7 &times; 10&sup2;)",
+          "answer": "4.2 &times; 10<sup>8</sup>"
+        },
+        {
+          "id": "c",
+          "expression": "(3 &times; 10<sup>&minus;2</sup>) &times; (4 &times; 10<sup>5</sup>)",
+          "answer": "1.2 &times; 10<sup>4</sup>"
+        },
+        {
+          "id": "d",
+          "expression": "(2.5 &times; 10<sup>4</sup>) &times; (4 &times; 10<sup>&minus;2</sup>)",
+          "answer": "1 &times; 10&sup3;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Worded problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer in standard form.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Light travels 3 &times; 10<sup>8</sup> m/s. How far in 500 s?",
+          "answer": "1.5 &times; 10<sup>11</sup> m"
+        },
+        {
+          "id": "b",
+          "expression": "A virus is 2.5 &times; 10<sup>&minus;7</sup> m. 4000 in a line?",
+          "answer": "1 &times; 10<sup>&minus;3</sup> m"
+        },
+        {
+          "id": "c",
+          "expression": "Earth mass: 6 &times; 10<sup>24</sup> kg. Moon: 7.3 &times; 10<sup>22</sup> kg. Difference?",
+          "answer": "5.927 &times; 10<sup>24</sup> kg"
+        },
+        {
+          "id": "d",
+          "expression": "Population 6.7 &times; 10<sup>7</sup> shares 2.01 &times; 10<sup>12</sup> equally. Each?",
+          "answer": "3 &times; 10<sup>4</sup>"
+        },
+        {
+          "id": "e",
+          "expression": "Area = (4 &times; 10&sup3;) &times; (2.5 &times; 10&sup2;). Find area.",
+          "answer": "1 &times; 10<sup>6</sup>"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "When multiplying in standard form, add the powers of 10",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "(3 &times; 10&sup2;) &times; (2 &times; 10&sup3;) = 6 &times; 10<sup>6</sup>",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "If A &ge; 10 after calculation, adjust by increasing the power",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "You can add numbers in standard form by adding the A values regardless of power",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "To divide in standard form, subtract the powers",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The distance from Earth to the Sun is approximately <strong>1.5 &times; 10<sup>11</sup> m</strong>. Light travels at <strong>3 &times; 10<sup>8</sup> m/s</strong>. How many seconds does it take light to reach Earth? Give your answer in standard form."
+      },
+      {
+        "id": "b",
+        "text": "Calculate <strong>(4.2 &times; 10<sup>5</sup>) &times; (3 &times; 10<sup>&minus;2</sup>) + (1.74 &times; 10<sup>4</sup>)</strong>. Show all working and give your answer in standard form."
+      }
+    ]
+  }
+}

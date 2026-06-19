@@ -1,0 +1,325 @@
+{
+  "title": "QUADRATICS,\n(FACTORISING QUADRATICS)",
+  "objective": "LO: I can factorise quadratic expressions of the form x&sup2; + bx + c and ax&sup2; + bx + c.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Factorising quadratics",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Factorising</span> a quadratic means writing it as a product of two brackets. For x&sup2; + bx + c, find two numbers that <span class=\"ul-k\">multiply to c</span> and <span class=\"ul-k\">add to b</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> List factor pairs of c. Find the pair that sums to b. Write in two brackets."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "x&sup2; + 7x + 12 = (x + 3)(x + 4)",
+          "desc": "3 &times; 4 = 12, 3 + 4 = 7"
+        },
+        {
+          "correct": true,
+          "expr": "x&sup2; &minus; 5x + 6 = (x &minus; 2)(x &minus; 3)",
+          "desc": "&minus;2 &times; &minus;3 = 6, &minus;2 + &minus;3 = &minus;5"
+        },
+        {
+          "correct": true,
+          "expr": "x&sup2; + x &minus; 12 = (x + 4)(x &minus; 3)",
+          "desc": "4 &times; &minus;3 = &minus;12, 4 + &minus;3 = 1"
+        },
+        {
+          "correct": false,
+          "expr": "x&sup2; + 7x + 12 = (x + 6)(x + 2)",
+          "desc": "6 + 2 = 8, not 7"
+        },
+        {
+          "correct": false,
+          "expr": "x&sup2; &minus; 5x + 6 = (x &minus; 6)(x + 1)",
+          "desc": "&minus;6 &times; 1 = &minus;6, not +6"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Find two numbers that multiply to c and add to b, then write x&sup2; + bx + c = (x + m)(x + n).",
+      "equation": "x&sup2; + bx + c = (x + <span class=\"ov\">m</span>)(x + <span class=\"ovr\">n</span>) where mn = c and m + n = b",
+      "caption": "Product = c, Sum = b"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; both positive",
+      "question": "Factorise x&sup2; + 8x + 15",
+      "steps": [
+        "Need two numbers: multiply to 15, add to 8",
+        "Factor pairs of 15: 1&times;15, 3&times;5",
+        "3 + 5 = 8, so (x + 3)(x + 5)"
+      ],
+      "answer": "(x + 3)(x + 5)",
+      "explanation": "Both numbers positive because b and c are both positive."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; both negative",
+      "question": "Factorise x&sup2; &minus; 7x + 12",
+      "steps": [
+        "Need: multiply to +12, add to &minus;7",
+        "Both must be negative: &minus;3 &times; &minus;4 = 12, &minus;3 + &minus;4 = &minus;7",
+        "= (x &minus; 3)(x &minus; 4)"
+      ],
+      "answer": "(x &minus; 3)(x &minus; 4)",
+      "explanation": "c positive but b negative means both numbers are negative."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; mixed signs",
+      "question": "Factorise x&sup2; + 2x &minus; 15",
+      "steps": [
+        "Need: multiply to &minus;15, add to +2",
+        "Try: 5 &times; (&minus;3) = &minus;15, 5 + (&minus;3) = 2",
+        "= (x + 5)(x &minus; 3)"
+      ],
+      "answer": "(x + 5)(x &minus; 3)",
+      "explanation": "c negative means one number positive, one negative."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; coefficient of x&sup2; not 1",
+      "question": "Factorise 2x&sup2; + 7x + 3",
+      "steps": [
+        "Multiply a &times; c = 2 &times; 3 = 6. Find pair: product 6, sum 7",
+        "6 and 1: split middle term: 2x&sup2; + 6x + x + 3",
+        "Factorise in pairs: 2x(x+3) + 1(x+3) = (2x+1)(x+3)"
+      ],
+      "answer": "(2x + 1)(x + 3)",
+      "explanation": "Use the grouping method when a &ne; 1."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Both terms positive",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Factorise each quadratic.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 5x + 6",
+          "answer": "(x + 2)(x + 3)"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; + 9x + 20",
+          "answer": "(x + 4)(x + 5)"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; + 11x + 30",
+          "answer": "(x + 5)(x + 6)"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; + 7x + 10",
+          "answer": "(x + 2)(x + 5)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Negative b, positive c",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Factorise each quadratic.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; &minus; 5x + 6",
+          "answer": "(x &minus; 2)(x &minus; 3)"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 8x + 15",
+          "answer": "(x &minus; 3)(x &minus; 5)"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; &minus; 9x + 14",
+          "answer": "(x &minus; 2)(x &minus; 7)"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; &minus; 11x + 18",
+          "answer": "(x &minus; 2)(x &minus; 9)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Negative c",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Factorise each quadratic.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 3x &minus; 10",
+          "answer": "(x + 5)(x &minus; 2)"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 2x &minus; 15",
+          "answer": "(x &minus; 5)(x + 3)"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; + x &minus; 20",
+          "answer": "(x + 5)(x &minus; 4)"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; &minus; x &minus; 12",
+          "answer": "(x &minus; 4)(x + 3)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Leading coefficient &ne; 1",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Factorise using the grouping method.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2x&sup2; + 5x + 3",
+          "answer": "(2x + 3)(x + 1)"
+        },
+        {
+          "id": "b",
+          "expression": "3x&sup2; + 10x + 3",
+          "answer": "(3x + 1)(x + 3)"
+        },
+        {
+          "id": "c",
+          "expression": "2x&sup2; + 7x + 6",
+          "answer": "(2x + 3)(x + 2)"
+        },
+        {
+          "id": "d",
+          "expression": "5x&sup2; + 11x + 2",
+          "answer": "(5x + 1)(x + 2)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed factorising",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Factorise each expression fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 4x &minus; 21",
+          "answer": "(x + 7)(x &minus; 3)"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 10x + 25",
+          "answer": "(x &minus; 5)&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; &minus; 49",
+          "answer": "(x + 7)(x &minus; 7)"
+        },
+        {
+          "id": "d",
+          "expression": "3x&sup2; &minus; 5x &minus; 2",
+          "answer": "(3x + 1)(x &minus; 2)"
+        },
+        {
+          "id": "e",
+          "expression": "6x&sup2; + x &minus; 2",
+          "answer": "(3x + 2)(2x &minus; 1)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "x&sup2; + 7x + 12 = (x + 3)(x + 4)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "x&sup2; &minus; 5x + 6 = (x &minus; 6)(x + 1)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "If c is negative, the signs in the brackets are different",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "x&sup2; + 7x + 12 = (x + 6)(x + 2)",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "x&sup2; &minus; 9 = (x + 3)(x &minus; 3) uses difference of two squares",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Factorise <strong>6x&sup2; + 17x + 12</strong> completely. Verify your answer by expanding. Then solve <strong>6x&sup2; + 17x + 12 = 0</strong>."
+      },
+      {
+        "id": "b",
+        "text": "The area of a rectangle is <strong>x&sup2; + 9x + 20</strong>. Write down two possible expressions for the length and width. If the perimeter is <strong>38 cm</strong>, find x and the dimensions of the rectangle."
+      }
+    ]
+  }
+}

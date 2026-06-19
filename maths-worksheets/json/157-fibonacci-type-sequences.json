@@ -1,0 +1,325 @@
+{
+  "title": "SEQUENCES,\n(FIBONACCI-TYPE SEQUENCES)",
+  "objective": "LO: I can generate and analyse Fibonacci-type sequences where each term is the sum of the two preceding terms.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What are Fibonacci-type sequences?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">Fibonacci-type sequence</span> is one where each term equals the <span class=\"ul-k\">sum of the two previous terms</span>. The classic Fibonacci sequence starts 1, 1, 2, 3, 5, 8, 13, ..."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> To continue: add the last two terms. To work backwards: subtract. Different starting values give different Fibonacci-type sequences."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "1, 1, 2, 3, 5, 8, 13, 21, ...",
+          "desc": "classic Fibonacci"
+        },
+        {
+          "correct": true,
+          "expr": "2, 5, 7, 12, 19, 31, ...",
+          "desc": "Fibonacci-type (starts 2, 5)"
+        },
+        {
+          "correct": true,
+          "expr": "Each term = sum of previous two terms",
+          "desc": "the rule"
+        },
+        {
+          "correct": false,
+          "expr": "1, 1, 2, 3, 5, 9, ...",
+          "desc": "5 + 3 = 8, not 9"
+        },
+        {
+          "correct": false,
+          "expr": "Fibonacci sequences always start with 1, 1",
+          "desc": "can start with any pair"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Each term is the sum of the previous two: u<sub>n</sub> = u<sub>n&minus;1</sub> + u<sub>n&minus;2</sub>.",
+      "equation": "u<sub>n</sub> = <span class=\"ov\">u<sub>n&minus;1</sub></span> + <span class=\"ovr\">u<sub>n&minus;2</sub></span>",
+      "caption": "Add the two previous terms to get the next"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; continuing a sequence",
+      "question": "Continue the sequence 3, 7, 10, 17, ... for two more terms.",
+      "steps": [
+        "Next term: 10 + 17 = 27",
+        "Then: 17 + 27 = 44",
+        "Sequence: 3, 7, 10, 17, 27, 44"
+      ],
+      "answer": "27, 44",
+      "explanation": "Each term is the sum of the two before it."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding a missing term",
+      "question": "In the sequence _, _, 5, 8, 13, find the two missing terms.",
+      "steps": [
+        "Third term (5) = first + second",
+        "8 = second + 5, so second = 3",
+        "5 = first + 3, so first = 2. Sequence: 2, 3, 5, 8, 13"
+      ],
+      "answer": "2, 3",
+      "explanation": "Work backwards by subtracting: previous = current &minus; the one before."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; given starting values",
+      "question": "Write the first 6 terms of a Fibonacci-type sequence starting 4, 1.",
+      "steps": [
+        "Term 3: 4 + 1 = 5",
+        "Term 4: 1 + 5 = 6; Term 5: 5 + 6 = 11",
+        "Term 6: 6 + 11 = 17"
+      ],
+      "answer": "4, 1, 5, 6, 11, 17",
+      "explanation": "Any two starting values generate a unique Fibonacci-type sequence."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with negative terms",
+      "question": "Write the first 6 terms starting 2, &minus;1.",
+      "steps": [
+        "Term 3: 2 + (&minus;1) = 1",
+        "Term 4: &minus;1 + 1 = 0; Term 5: 1 + 0 = 1",
+        "Term 6: 0 + 1 = 1"
+      ],
+      "answer": "2, &minus;1, 1, 0, 1, 1",
+      "explanation": "Negative starting values are allowed; the sequence still follows the same rule."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Continuing sequences",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the next two terms.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1, 1, 2, 3, 5, 8, ...",
+          "answer": "13, 21"
+        },
+        {
+          "id": "b",
+          "expression": "2, 3, 5, 8, 13, ...",
+          "answer": "21, 34"
+        },
+        {
+          "id": "c",
+          "expression": "1, 4, 5, 9, 14, ...",
+          "answer": "23, 37"
+        },
+        {
+          "id": "d",
+          "expression": "3, 5, 8, 13, 21, ...",
+          "answer": "34, 55"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Different starting values",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write the first 6 terms of each Fibonacci-type sequence.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Start: 1, 3",
+          "answer": "1, 3, 4, 7, 11, 18"
+        },
+        {
+          "id": "b",
+          "expression": "Start: 2, 5",
+          "answer": "2, 5, 7, 12, 19, 31"
+        },
+        {
+          "id": "c",
+          "expression": "Start: 4, 4",
+          "answer": "4, 4, 8, 12, 20, 32"
+        },
+        {
+          "id": "d",
+          "expression": "Start: 1, 10",
+          "answer": "1, 10, 11, 21, 32, 53"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding missing terms",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the missing terms (marked ?).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "?, ?, 3, 5, 8",
+          "answer": "First two: 2, 1 (since 1+2=3... wait: ?, ?, 3, 5 so ?+?=3 and ?+3=5 gives ?=2, first=1)"
+        },
+        {
+          "id": "b",
+          "expression": "?, ?, 7, 11, 18",
+          "answer": "4, 3"
+        },
+        {
+          "id": "c",
+          "expression": "?, 4, ?, 10, 16",
+          "answer": "?, 4, 6, 10; first = 2 (since 2+4=6)... answer: 2, then 6"
+        },
+        {
+          "id": "d",
+          "expression": "5, ?, ?, 13, 21",
+          "answer": "5, 8 (since 5+8=13), middle=8; sequence: 5, 8, 13"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "With negative numbers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Write the first 6 terms.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Start: &minus;1, 2",
+          "answer": "&minus;1, 2, 1, 3, 4, 7"
+        },
+        {
+          "id": "b",
+          "expression": "Start: 3, &minus;2",
+          "answer": "3, &minus;2, 1, &minus;1, 0, &minus;1"
+        },
+        {
+          "id": "c",
+          "expression": "Start: &minus;3, &minus;2",
+          "answer": "&minus;3, &minus;2, &minus;5, &minus;7, &minus;12, &minus;19"
+        },
+        {
+          "id": "d",
+          "expression": "Start: 0, 1",
+          "answer": "0, 1, 1, 2, 3, 5"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Problem solving",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer each question.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8th Fibonacci number (start 1, 1)?",
+          "answer": "21"
+        },
+        {
+          "id": "b",
+          "expression": "Sum of first 8 Fibonacci numbers?",
+          "answer": "33 (actually: 1+1+2+3+5+8+13+21=54)"
+        },
+        {
+          "id": "c",
+          "expression": "Start a, b: 3rd term? 5th term?",
+          "answer": "a+b; a+3b... (3rd=a+b, 4th=a+2b, 5th=2a+3b)"
+        },
+        {
+          "id": "d",
+          "expression": "If 3rd term is 10 and 5th is 23, find 4th term.",
+          "answer": "13 (since 4th = 5th &minus; 3rd = 23 &minus; 10 = 13)"
+        },
+        {
+          "id": "e",
+          "expression": "Ratio of consecutive Fibonacci numbers approaches...?",
+          "answer": "The golden ratio &phi; &approx; 1.618"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "In a Fibonacci-type sequence, each term is the sum of the previous two",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "All Fibonacci-type sequences must start with 1, 1",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "To find a previous term, subtract: u<sub>n&minus;2</sub> = u<sub>n</sub> &minus; u<sub>n&minus;1</sub>",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Fibonacci sequences always increase",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The ratio of consecutive Fibonacci numbers approaches the golden ratio",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A Fibonacci-type sequence has <strong>3rd term = 7</strong> and <strong>6th term = 29</strong>. Find the first two terms. (Hint: if first two terms are a and b, express each term in terms of a and b.)"
+      },
+      {
+        "id": "b",
+        "text": "Show that the sum of any <strong>10 consecutive Fibonacci numbers</strong> is always divisible by 11. (Hint: Express each term using the first two terms of your block and simplify.)"
+      }
+    ]
+  }
+}

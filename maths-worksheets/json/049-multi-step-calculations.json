@@ -1,0 +1,325 @@
+{
+  "title": "NUMBER OPERATIONS,\n(MULTI-STEP CALCULATIONS)",
+  "objective": "LO: I can solve problems that require more than one step, choosing the correct operations.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Multi-step problems",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">multi-step calculation</span> requires you to perform two or more <span class=\"ul-k\">operations</span> in sequence to reach the answer."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Read the problem carefully. Identify what you need to find. Break it into smaller steps. Use BIDMAS when needed."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Approach",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Read &rarr; Plan &rarr; Calculate &rarr; Check",
+          "desc": "4 steps"
+        },
+        {
+          "correct": true,
+          "expr": "Break complex problems into parts",
+          "desc": "simplify"
+        },
+        {
+          "correct": true,
+          "expr": "Use BIDMAS for order of operations",
+          "desc": "always"
+        },
+        {
+          "correct": false,
+          "expr": "Just do operations left to right",
+          "desc": "must use BIDMAS"
+        },
+        {
+          "correct": false,
+          "expr": "Only use one operation per problem",
+          "desc": "multi-step needs more"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Break the problem into steps. Solve each step in order. Check your answer makes sense.",
+      "equation": "<span class=\"ov\">Step 1</span> &rarr; <span class=\"ov\">Step 2</span> &rarr; <span class=\"ovr\">Answer</span>",
+      "caption": "One step at a time"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; shopping problem",
+      "question": "Buy 3 shirts at &pound;12 each and 2 pairs of socks at &pound;3.50. Total cost?",
+      "steps": [
+        "Shirts: 3 &times; 12 = &pound;36",
+        "Socks: 2 &times; 3.50 = &pound;7",
+        "Total: 36 + 7 = &pound;43"
+      ],
+      "answer": "= &pound;43",
+      "explanation": "Calculate each item separately, then add."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; with change",
+      "question": "You pay for a &pound;7.80 item with a &pound;20 note. How many 50p coins in your change?",
+      "steps": [
+        "Change: 20 &minus; 7.80 = &pound;12.20",
+        "Divide by 0.50: 12.20 &divide; 0.50 = 24.4",
+        "= 24 complete 50p coins (with 20p left)"
+      ],
+      "answer": "= 24 coins",
+      "explanation": "Find the change first, then divide by the coin value."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; distance/speed",
+      "question": "A car travels at 60 mph for 2.5 hours then 40 mph for 1.5 hours. Total distance?",
+      "steps": [
+        "Part 1: 60 &times; 2.5 = 150 miles",
+        "Part 2: 40 &times; 1.5 = 60 miles",
+        "Total: 150 + 60 = 210 miles"
+      ],
+      "answer": "= 210 miles",
+      "explanation": "Distance = speed &times; time for each section, then add."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; profit calculation",
+      "question": "Buy 50 items at &pound;3 each. Sell 40 at &pound;5 and 10 at &pound;2. Total profit?",
+      "steps": [
+        "Cost: 50 &times; 3 = &pound;150",
+        "Revenue: (40 &times; 5) + (10 &times; 2) = 200 + 20 = &pound;220",
+        "Profit: 220 &minus; 150 = &pound;70"
+      ],
+      "answer": "= &pound;70 profit",
+      "explanation": "Profit = revenue &minus; cost."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Two-step calculations",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Solve each two-step problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4 &times; 7 + 3 &times; 5",
+          "answer": "43"
+        },
+        {
+          "id": "b",
+          "expression": "100 &minus; 6 &times; 12",
+          "answer": "28"
+        },
+        {
+          "id": "c",
+          "expression": "(15 + 25) &divide; 8",
+          "answer": "5"
+        },
+        {
+          "id": "d",
+          "expression": "3 &times; (20 &minus; 8) + 4",
+          "answer": "40"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Money problems",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Show your working.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 items at &pound;4.50. Change from &pound;30?",
+          "answer": "&pound;7.50"
+        },
+        {
+          "id": "b",
+          "expression": "3 meals at &pound;8.95 + 2 drinks at &pound;2.30. Total?",
+          "answer": "&pound;31.45"
+        },
+        {
+          "id": "c",
+          "expression": "Earn &pound;9.50/hour for 8 hours. Spend &pound;45. Left?",
+          "answer": "&pound;31"
+        },
+        {
+          "id": "d",
+          "expression": "Buy 4 at &pound;6.25. Pay with 2 &times; &pound;20 notes. Change?",
+          "answer": "&pound;15"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Rate problems",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Calculate step by step.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "60 mph for 3 hours then 45 mph for 2 hours. Total miles?",
+          "answer": "270"
+        },
+        {
+          "id": "b",
+          "expression": "Type 50 words/min for 12 min. How many words?",
+          "answer": "600"
+        },
+        {
+          "id": "c",
+          "expression": "Fill 8 litres/min for 5 min, drain 3 litres/min for 4 min. Net?",
+          "answer": "28 litres"
+        },
+        {
+          "id": "d",
+          "expression": "Earn &pound;12/hr weekday, &pound;18/hr weekend. Work 30 + 8 hrs. Total?",
+          "answer": "&pound;504"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Real-life multi-step",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Read carefully and solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Bus fare &pound;2.40 each way, 5 days/week. Weekly cost?",
+          "answer": "&pound;24"
+        },
+        {
+          "id": "b",
+          "expression": "Recipe for 4: needs 300g flour. How much for 10 people?",
+          "answer": "750 g"
+        },
+        {
+          "id": "c",
+          "expression": "Pool: 25m. Swim 12 lengths. Total in km?",
+          "answer": "0.3 km"
+        },
+        {
+          "id": "d",
+          "expression": "6 eggs/box, need 50 eggs. How many boxes to buy?",
+          "answer": "9 boxes"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed multi-step",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem. Show steps.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Buy 3 at &pound;7.99, get 10% off total. Pay?",
+          "answer": "&pound;21.57"
+        },
+        {
+          "id": "b",
+          "expression": "Score 72, 85, 64. Need average of 75. What fourth score needed?",
+          "answer": "79"
+        },
+        {
+          "id": "c",
+          "expression": "Area of room 5m &times; 4m. Tiles are 0.5m &times; 0.5m. How many tiles?",
+          "answer": "80"
+        },
+        {
+          "id": "d",
+          "expression": "Train at 120 km/h for 45 min. Distance in km?",
+          "answer": "90 km"
+        },
+        {
+          "id": "e",
+          "expression": "12 sweets shared so ratio 1:2:3. Middle pile?",
+          "answer": "4 sweets"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Multi-step problems need more than one operation",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Always add all the numbers in a word problem",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Break problems into smaller steps",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The operations are always stated explicitly",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Check your answer makes sense in context",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A school trip costs <strong>&pound;15 per student</strong> plus a fixed <strong>&pound;200</strong> for the coach. There are <strong>32 students</strong>. They sell cakes for <strong>&pound;1.50 each</strong> to raise money. How many cakes must they sell to cover the full cost?"
+      },
+      {
+        "id": "b",
+        "text": "Paint covers <strong>12 m&sup2; per litre</strong>. A room has 4 walls each <strong>3 m &times; 2.5 m</strong>, minus a door (<strong>2 m &times; 0.8 m</strong>) and a window (<strong>1.5 m &times; 1 m</strong>). How many litres of paint are needed? (Round up to whole litres.)"
+      }
+    ]
+  }
+}

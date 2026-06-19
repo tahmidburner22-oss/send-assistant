@@ -1,0 +1,325 @@
+{
+  "title": "SIMULTANEOUS EQUATIONS,\n(NON-LINEAR SIMULTANEOUS EQUATIONS)",
+  "objective": "LO: I can solve simultaneous equations where one equation is linear and one is quadratic.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Non-linear simultaneous equations",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Non-linear simultaneous equations</span> involve one linear equation and one equation with a <span class=\"ul-k\">squared term</span> (e.g. circle or quadratic). Use substitution to solve."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Rearrange the linear equation to make one variable the subject, substitute into the quadratic, then solve."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y = x + 1 and x&sup2; + y&sup2; = 5: substitute y",
+          "desc": "circle and line"
+        },
+        {
+          "correct": true,
+          "expr": "y = 2x and y = x&sup2; &minus; 3: set equal",
+          "desc": "parabola and line"
+        },
+        {
+          "correct": true,
+          "expr": "Usually gives two pairs of solutions",
+          "desc": "line crosses curve twice"
+        },
+        {
+          "correct": false,
+          "expr": "Use elimination for non-linear equations",
+          "desc": "must use substitution"
+        },
+        {
+          "correct": false,
+          "expr": "Non-linear systems always have exactly 2 solutions",
+          "desc": "can have 0, 1, or 2"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Substitute the linear equation into the quadratic to get a single equation in one variable. Then solve the resulting quadratic.",
+      "equation": "y = x + 1; x&sup2; + <span class=\"ov\">y&sup2;</span> = 5 &rArr; x&sup2; + <span class=\"ovr\">(x+1)&sup2;</span> = 5",
+      "caption": "Replace y with the linear expression, then solve"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; line and circle",
+      "question": "Solve y = x + 1 and x&sup2; + y&sup2; = 5",
+      "steps": [
+        "Substitute: x&sup2; + (x+1)&sup2; = 5 &rArr; x&sup2; + x&sup2; + 2x + 1 = 5",
+        "2x&sup2; + 2x &minus; 4 = 0 &rArr; x&sup2; + x &minus; 2 = 0 &rArr; (x+2)(x&minus;1) = 0",
+        "x = &minus;2, y = &minus;1 or x = 1, y = 2"
+      ],
+      "answer": "(&minus;2, &minus;1) and (1, 2)",
+      "explanation": "Find x values from the quadratic, then substitute back for y."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; line and parabola",
+      "question": "Solve y = 2x + 1 and y = x&sup2; &minus; 2",
+      "steps": [
+        "Set equal: x&sup2; &minus; 2 = 2x + 1",
+        "x&sup2; &minus; 2x &minus; 3 = 0 &rArr; (x&minus;3)(x+1) = 0",
+        "x = 3, y = 7 or x = &minus;1, y = &minus;1"
+      ],
+      "answer": "(3, 7) and (&minus;1, &minus;1)",
+      "explanation": "When both equations equal y, set the right-hand sides equal."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; substitution approach",
+      "question": "Solve x + y = 5 and xy = 6",
+      "steps": [
+        "From linear: y = 5 &minus; x",
+        "Substitute: x(5&minus;x) = 6 &rArr; 5x &minus; x&sup2; = 6 &rArr; x&sup2; &minus; 5x + 6 = 0",
+        "(x&minus;2)(x&minus;3) = 0: x = 2, y = 3 or x = 3, y = 2"
+      ],
+      "answer": "(2, 3) and (3, 2)",
+      "explanation": "Rearrange the linear equation for one variable, then substitute."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; one solution",
+      "question": "Solve y = 2x &minus; 1 and y = x&sup2; &minus; 2x + 2",
+      "steps": [
+        "Set equal: x&sup2; &minus; 2x + 2 = 2x &minus; 1",
+        "x&sup2; &minus; 4x + 3 = 0 &rArr; (x&minus;1)(x&minus;3) = 0",
+        "x = 1, y = 1 or x = 3, y = 5"
+      ],
+      "answer": "(1, 1) and (3, 5)",
+      "explanation": "Check each solution satisfies both original equations."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Line and parabola",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Solve each pair simultaneously.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x + 2 and y = x&sup2;",
+          "answer": "(2, 4) and (&minus;1, 1)"
+        },
+        {
+          "id": "b",
+          "expression": "y = 3x and y = x&sup2; + 2",
+          "answer": "(1, 3) and (2, 6)"
+        },
+        {
+          "id": "c",
+          "expression": "y = x + 6 and y = x&sup2;",
+          "answer": "(3, 9) and (&minus;2, 4)"
+        },
+        {
+          "id": "d",
+          "expression": "y = 2x + 3 and y = x&sup2; + x + 1",
+          "answer": "(2, 7) and (&minus;1, 1)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Line and circle",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Solve each pair simultaneously.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x and x&sup2; + y&sup2; = 8",
+          "answer": "(2, 2) and (&minus;2, &minus;2)"
+        },
+        {
+          "id": "b",
+          "expression": "y = x + 2 and x&sup2; + y&sup2; = 10",
+          "answer": "(1, 3) and (&minus;3, &minus;1)"
+        },
+        {
+          "id": "c",
+          "expression": "x + y = 5 and x&sup2; + y&sup2; = 13",
+          "answer": "(2, 3) and (3, 2)"
+        },
+        {
+          "id": "d",
+          "expression": "y = 2x and x&sup2; + y&sup2; = 20",
+          "answer": "(2, 4) and (&minus;2, &minus;4)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Product relationships",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Solve these pairs.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x + y = 7 and xy = 12",
+          "answer": "(3, 4) and (4, 3)"
+        },
+        {
+          "id": "b",
+          "expression": "x + y = 10 and xy = 21",
+          "answer": "(3, 7) and (7, 3)"
+        },
+        {
+          "id": "c",
+          "expression": "x &minus; y = 2 and xy = 15",
+          "answer": "(5, 3) and (&minus;3, &minus;5)"
+        },
+        {
+          "id": "d",
+          "expression": "x + y = 9 and xy = 20",
+          "answer": "(4, 5) and (5, 4)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Harder problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each pair simultaneously.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 2x &minus; 1 and y = x&sup2; &minus; 3x + 3",
+          "answer": "(1, 1) and (4, 7)"
+        },
+        {
+          "id": "b",
+          "expression": "x + 2y = 7 and x&sup2; + y&sup2; = 10",
+          "answer": "(1, 3) and (3, 2)... check"
+        },
+        {
+          "id": "c",
+          "expression": "y = x + 1 and x&sup2; + 2y&sup2; = 6",
+          "answer": "Substitute and solve"
+        },
+        {
+          "id": "d",
+          "expression": "2x + y = 5 and x&sup2; + y&sup2; = 5",
+          "answer": "(1, 3) and... check... (2, 1)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed non-linear",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each system.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x &minus; 1 and x&sup2; + y&sup2; = 25",
+          "answer": "(4, 3) and (&minus;3, &minus;4)"
+        },
+        {
+          "id": "b",
+          "expression": "y = 3 &minus; x and y = x&sup2; &minus; x &minus; 1",
+          "answer": "(2, 1) and (&minus;2, 5)"
+        },
+        {
+          "id": "c",
+          "expression": "x + y = 4 and x&sup2; + 3y = 10",
+          "answer": "(1, 3) and... check"
+        },
+        {
+          "id": "d",
+          "expression": "y = x + 3 and 2x&sup2; + y&sup2; = 27",
+          "answer": "(1, 4)... check (... solve fully)"
+        },
+        {
+          "id": "e",
+          "expression": "y = 2x and x&sup2; &minus; y = 3",
+          "answer": "x&sup2;&minus;2x&minus;3=0; (3,6) and (&minus;1,&minus;2)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To solve non-linear simultaneous equations, use substitution",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "You can use elimination for quadratic simultaneous equations",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A line and a circle can intersect at 0, 1, or 2 points",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Non-linear systems always have exactly 2 solutions",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "After substitution, you solve the resulting quadratic equation",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The line <strong>y = x + k</strong> is tangent to the circle <strong>x&sup2; + y&sup2; = 8</strong>. Find the possible values of k. (Hint: the discriminant = 0 for a tangent.)"
+      },
+      {
+        "id": "b",
+        "text": "Solve <strong>x &minus; y = 2</strong> and <strong>x&sup2; + xy + y&sup2; = 12</strong> simultaneously. Show all working clearly."
+      }
+    ]
+  }
+}

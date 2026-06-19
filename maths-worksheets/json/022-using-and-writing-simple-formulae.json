@@ -1,0 +1,325 @@
+{
+  "title": "ALGEBRAIC EXPRESSIONS,\n(USING AND WRITING SIMPLE FORMULAE)",
+  "objective": "LO: I can write and use simple algebraic formulae to solve problems.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is a formula?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">formula</span> is a mathematical rule written with <span class=\"ul-k\">letters and numbers</span> that shows the relationship between quantities."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Remember:</span> The subject of a formula is the single letter on its own, usually on the left side of the equals sign."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "P = 2l + 2w",
+          "desc": "perimeter of a rectangle"
+        },
+        {
+          "correct": true,
+          "expr": "A = l &times; w",
+          "desc": "area of a rectangle"
+        },
+        {
+          "correct": true,
+          "expr": "C = 5n + 10",
+          "desc": "cost formula"
+        },
+        {
+          "correct": false,
+          "expr": "P = l + w",
+          "desc": "missing the 2s"
+        },
+        {
+          "correct": false,
+          "expr": "A = 2(l + w)",
+          "desc": "that is perimeter, not area"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Identify the variables, write the rule using letters, then substitute values to evaluate.",
+      "equation": "C = <span class=\"ov\">5n</span> + <span class=\"ovr\">10</span>",
+      "caption": "5 per item plus 10 fixed cost"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; using a formula",
+      "question": "Use P = 2l + 2w to find the perimeter when l = 8 and w = 5.",
+      "steps": [
+        "Substitute: P = 2 &times; 8 + 2 &times; 5",
+        "Calculate: P = 16 + 10",
+        "P = 26"
+      ],
+      "answer": "P = 26 cm",
+      "explanation": "Replace each letter with its value, then follow BIDMAS."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; writing a formula",
+      "question": "A taxi charges &pound;3 fixed plus &pound;2 per mile. Write a formula for cost C for m miles.",
+      "steps": [
+        "Fixed charge = 3",
+        "Cost per mile = 2m",
+        "Combine: C = 2m + 3"
+      ],
+      "answer": "C = 2m + 3",
+      "explanation": "Identify the fixed part and the variable part."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; evaluating",
+      "question": "If C = 2m + 3, find C when m = 7.",
+      "steps": [
+        "Substitute m = 7: C = 2 &times; 7 + 3",
+        "C = 14 + 3",
+        "C = 17"
+      ],
+      "answer": "C = &pound;17",
+      "explanation": "Multiply before adding (BIDMAS)."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; two-variable formula",
+      "question": "The area of a triangle is A = &frac{1}{2} &times; b &times; h. Find A when b = 10 and h = 6.",
+      "steps": [
+        "Substitute: A = &frac{1}{2} &times; 10 &times; 6",
+        "A = &frac{1}{2} &times; 60",
+        "A = 30"
+      ],
+      "answer": "A = 30 cm&sup2;",
+      "explanation": "Multiply base by height first, then halve."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Substituting into formulae",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use P = 2l + 2w. Find P for each pair of values.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "l = 6, w = 4",
+          "answer": "20"
+        },
+        {
+          "id": "b",
+          "expression": "l = 10, w = 3",
+          "answer": "26"
+        },
+        {
+          "id": "c",
+          "expression": "l = 7, w = 7",
+          "answer": "28"
+        },
+        {
+          "id": "d",
+          "expression": "l = 12, w = 5",
+          "answer": "34"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Cost formulae",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "A plumber charges C = 30 + 20h pounds for h hours. Find C.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "h = 2",
+          "answer": "&pound;70"
+        },
+        {
+          "id": "b",
+          "expression": "h = 5",
+          "answer": "&pound;130"
+        },
+        {
+          "id": "c",
+          "expression": "h = 0.5",
+          "answer": "&pound;40"
+        },
+        {
+          "id": "d",
+          "expression": "h = 8",
+          "answer": "&pound;190"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Writing formulae",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Write a formula for each situation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "n books at &pound;4 each, total cost T",
+          "answer": "T = 4n"
+        },
+        {
+          "id": "b",
+          "expression": "p pencils at 30p each plus 50p bag, total C",
+          "answer": "C = 30p + 50"
+        },
+        {
+          "id": "c",
+          "expression": "Perimeter of equilateral triangle side s",
+          "answer": "P = 3s"
+        },
+        {
+          "id": "d",
+          "expression": "Weekly pay: &pound;200 plus &pound;15 per overtime hour h",
+          "answer": "W = 200 + 15h"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Write and use a formula to answer each question.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Gym costs &pound;25/month + &pound;5 joining fee. Cost for m months?",
+          "answer": "C = 25m + 5"
+        },
+        {
+          "id": "b",
+          "expression": "Using your formula, find cost for 6 months.",
+          "answer": "&pound;155"
+        },
+        {
+          "id": "c",
+          "expression": "Rectangle: l = 9, w = 4. Find area using A = lw.",
+          "answer": "36"
+        },
+        {
+          "id": "d",
+          "expression": "Triangle: b = 12, h = 8. Find A = &frac{1}{2}bh.",
+          "answer": "48"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed formulae",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Evaluate each formula.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "v = u + at; u = 5, a = 3, t = 4",
+          "answer": "17"
+        },
+        {
+          "id": "b",
+          "expression": "A = &pi;r&sup2;; r = 3 (use &pi; = 3.14)",
+          "answer": "28.26"
+        },
+        {
+          "id": "c",
+          "expression": "S = &frac{d}{t}; d = 120, t = 4",
+          "answer": "30"
+        },
+        {
+          "id": "d",
+          "expression": "y = 3x&sup2; &minus; 2; x = 4",
+          "answer": "46"
+        },
+        {
+          "id": "e",
+          "expression": "V = lwh; l = 5, w = 3, h = 2",
+          "answer": "30"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "In C = 5n + 10, C means the cost",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "2l means 2 + l",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "P = 2l + 2w gives the perimeter of a rectangle",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A = lw gives the perimeter",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Substitution means replacing letters with numbers",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A mobile phone contract costs <strong>&pound;15 per month</strong> plus <strong>&pound;0.05 per text</strong>. Write a formula for the monthly cost C in terms of the number of texts t. Find the cost if you send <strong>200 texts</strong>."
+      },
+      {
+        "id": "b",
+        "text": "The formula for the area of a trapezium is <strong>A = &frac{1}{2}(a + b)h</strong>. A trapezium has parallel sides <strong>a = 8 cm</strong> and <strong>b = 14 cm</strong>, and height <strong>h = 6 cm</strong>. Find its area. Then rearrange to find h if A = 55, a = 6, b = 16."
+      }
+    ]
+  }
+}

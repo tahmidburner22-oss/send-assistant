@@ -1,0 +1,325 @@
+{
+  "title": "PYTHAGORAS,\n(FINDING A SHORTER SIDE)",
+  "objective": "LO: I can use Pythagoras' theorem to find a shorter side of a right-angled triangle.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding a shorter side",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "When the <span class=\"ul-b\">hypotenuse</span> and one shorter side are known, rearrange Pythagoras to find the other: <span class=\"ul-k\">a&sup2; = c&sup2; &minus; b&sup2;</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Remember:</span> Always subtract the known shorter side squared from the hypotenuse squared. The hypotenuse is the longest side."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "c = 13, b = 5: a = &radic;(169 &minus; 25) = &radic;144 = 12",
+          "desc": "subtract then root"
+        },
+        {
+          "correct": true,
+          "expr": "c = 10, b = 6: a = &radic;(100 &minus; 36) = &radic;64 = 8",
+          "desc": "rearranged formula"
+        },
+        {
+          "correct": true,
+          "expr": "c = 15, b = 9: a = &radic;(225 &minus; 81) = &radic;144 = 12",
+          "desc": "Pythagorean triple"
+        },
+        {
+          "correct": false,
+          "expr": "c = 13, b = 5: a = &radic;(169 + 25)",
+          "desc": "must subtract, not add"
+        },
+        {
+          "correct": false,
+          "expr": "a = c &minus; b = 13 &minus; 5 = 8",
+          "desc": "must square first, then subtract"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Rearrange a&sup2; + b&sup2; = c&sup2; to a&sup2; = c&sup2; &minus; b&sup2;, then take the square root.",
+      "equation": "a = &radic;(<span class=\"ov\">c&sup2;</span> &minus; <span class=\"ovr\">b&sup2;</span>)",
+      "caption": "Subtract known shorter side squared from hypotenuse squared"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; integer answer",
+      "question": "Find side a if c = 10 and b = 8.",
+      "steps": [
+        "a&sup2; = c&sup2; &minus; b&sup2; = 100 &minus; 64 = 36",
+        "a = &radic;36",
+        "a = 6"
+      ],
+      "answer": "a = 6",
+      "explanation": "Always square both known sides first, then subtract."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; non-integer answer",
+      "question": "Find side a if c = 9 and b = 5.",
+      "steps": [
+        "a&sup2; = 81 &minus; 25 = 56",
+        "a = &radic;56",
+        "a = 7.48 (2 d.p.)"
+      ],
+      "answer": "a = 7.48",
+      "explanation": "If the answer is not a perfect square, round appropriately."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; in context",
+      "question": "A rope 17 m long is tied to the top of a 15 m pole and pulled taut to the ground. How far from the base is it?",
+      "steps": [
+        "Hypotenuse (rope) = 17, vertical (pole) = 15",
+        "d&sup2; = 17&sup2; &minus; 15&sup2; = 289 &minus; 225 = 64",
+        "d = &radic;64 = 8 m"
+      ],
+      "answer": "8 m",
+      "explanation": "Identify the hypotenuse (always the longest side), then subtract."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; checking which is the hypotenuse",
+      "question": "A triangle has sides 20 cm, 16 cm, and an unknown third side. The 20 cm side is the hypotenuse. Find the third side.",
+      "steps": [
+        "a&sup2; = 20&sup2; &minus; 16&sup2; = 400 &minus; 256 = 144",
+        "a = &radic;144 = 12",
+        "Third side = 12 cm"
+      ],
+      "answer": "12 cm",
+      "explanation": "The hypotenuse is always stated or identified as the longest/opposite the right angle."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding a (integer answers)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing shorter side.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "c = 5, b = 3",
+          "answer": "a = 4"
+        },
+        {
+          "id": "b",
+          "expression": "c = 13, b = 12",
+          "answer": "a = 5"
+        },
+        {
+          "id": "c",
+          "expression": "c = 15, b = 12",
+          "answer": "a = 9"
+        },
+        {
+          "id": "d",
+          "expression": "c = 25, b = 7",
+          "answer": "a = 24"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding a (decimal answers)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing side to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "c = 8, b = 5",
+          "answer": "a = 6.2"
+        },
+        {
+          "id": "b",
+          "expression": "c = 12, b = 7",
+          "answer": "a = 9.7"
+        },
+        {
+          "id": "c",
+          "expression": "c = 10, b = 4",
+          "answer": "a = 9.2"
+        },
+        {
+          "id": "d",
+          "expression": "c = 20, b = 11",
+          "answer": "a = 16.7"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "In context",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ladder 10 m, reaches 8 m up wall. Distance from wall?",
+          "answer": "6 m"
+        },
+        {
+          "id": "b",
+          "expression": "Kite string 26 m, horizontal distance 10 m. Height?",
+          "answer": "24 m"
+        },
+        {
+          "id": "c",
+          "expression": "Ship sails: total journey 17 km, east 15 km. North?",
+          "answer": "8 km"
+        },
+        {
+          "id": "d",
+          "expression": "Slide 13 m, platform height 5 m. Ground distance?",
+          "answer": "12 m"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed triangles",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find x in each right-angled triangle.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Hypotenuse 17, one side x, other side 15",
+          "answer": "x = 8"
+        },
+        {
+          "id": "b",
+          "expression": "Hypotenuse 26, one side x, other side 24",
+          "answer": "x = 10"
+        },
+        {
+          "id": "c",
+          "expression": "Hypotenuse 20, one side x, other side 12",
+          "answer": "x = 16"
+        },
+        {
+          "id": "d",
+          "expression": "Hypotenuse 29, one side x, other side 21",
+          "answer": "x = 20"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Problem solving",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem. Round to 1 d.p. where needed.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Right triangle: hypotenuse 14, one leg 6. Other leg?",
+          "answer": "12.6"
+        },
+        {
+          "id": "b",
+          "expression": "Rectangle diagonal 15, width 9. Length?",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "Isosceles: equal sides 10, base 16. Height?",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "Right triangle: hypotenuse 11, one leg 7. Other leg?",
+          "answer": "8.5"
+        },
+        {
+          "id": "e",
+          "expression": "Square diagonal 8. Side length?",
+          "answer": "5.7"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To find a shorter side, rearrange to a&sup2; = c&sup2; &minus; b&sup2;",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "a = c &minus; b gives the missing side",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The hypotenuse is always the longest side in a right-angled triangle",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "a&sup2; = c&sup2; + b&sup2; when finding a shorter side",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "If the answer is not exact, round to an appropriate degree of accuracy",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A right-angled triangle has hypotenuse <strong>(2x + 1) cm</strong> and legs <strong>x cm</strong> and <strong>(x + 7) cm</strong>. Use Pythagoras to form an equation and find x. Hence find all three side lengths."
+      },
+      {
+        "id": "b",
+        "text": "Two vertical poles are <strong>8 m</strong> and <strong>14 m</strong> tall, standing <strong>8 m</strong> apart on level ground. A wire connects the tops of the two poles. Find the length of the wire."
+      }
+    ]
+  }
+}

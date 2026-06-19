@@ -1,0 +1,325 @@
+{
+  "title": "FRACTIONS, DECIMALS AND PERCENTAGES,\n(COMPARING FRACTIONS, DECIMALS AND PERCENTAGES)",
+  "objective": "LO: I can convert between fractions, decimals and percentages and compare their values.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Converting between forms",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Fractions</span>, <span class=\"ul-k\">decimals</span> and <span class=\"ul-k\">percentages</span> are three ways to express the same value. Convert to the same form to compare."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key conversions:</span> Fraction &rarr; decimal: divide top by bottom. Decimal &rarr; %: multiply by 100. % &rarr; fraction: put over 100 and simplify."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Equivalents",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&frac{1}{2} = 0.5 = 50%",
+          "desc": "half"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{1}{4} = 0.25 = 25%",
+          "desc": "quarter"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{3}{10} = 0.3 = 30%",
+          "desc": "three tenths"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{1}{3} = 0.3 = 30%",
+          "desc": "0.3 repeating, not 30%"
+        },
+        {
+          "correct": false,
+          "expr": "0.2 = 20 (not %)",
+          "desc": "must write 20%"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "To compare, convert all values to the same form (usually decimals or percentages).",
+      "equation": "<span class=\"ov\">Fraction</span> &rarr; &divide; &rarr; <span class=\"ov\">Decimal</span> &rarr; &times;100 &rarr; <span class=\"ovr\">%</span>",
+      "caption": "Divide then multiply to convert right"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; fraction to decimal",
+      "question": "Convert &frac{3}{8} to a decimal.",
+      "steps": [
+        "Divide numerator by denominator: 3 &divide; 8",
+        "= 0.375",
+        "So &frac{3}{8} = 0.375"
+      ],
+      "answer": "= 0.375",
+      "explanation": "Fraction means numerator divided by denominator."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; decimal to percentage",
+      "question": "Convert 0.45 to a percentage.",
+      "steps": [
+        "Multiply by 100",
+        "0.45 &times; 100 = 45",
+        "= 45%"
+      ],
+      "answer": "= 45%",
+      "explanation": "Move the decimal point two places right."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; percentage to fraction",
+      "question": "Convert 35% to a fraction in simplest form.",
+      "steps": [
+        "Write as &frac{35}{100}",
+        "HCF of 35 and 100 is 5",
+        "&frac{35}{100} = &frac{7}{20}"
+      ],
+      "answer": "= &frac{7}{20}",
+      "explanation": "Always simplify by dividing by the HCF."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; ordering",
+      "question": "Put in order: 0.6, &frac{5}{8}, 62%",
+      "steps": [
+        "Convert all to decimals: 0.6, 5&divide;8 = 0.625, 62% = 0.62",
+        "Order: 0.6, 0.62, 0.625",
+        "= 0.6, 62%, &frac{5}{8}"
+      ],
+      "answer": "0.6 &lt; 62% &lt; &frac{5}{8}",
+      "explanation": "Converting to the same form makes comparison easy."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Fractions to decimals",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Convert each fraction to a decimal.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{4}",
+          "answer": "0.25"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3}{5}",
+          "answer": "0.6"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{7}{10}",
+          "answer": "0.7"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{5}{8}",
+          "answer": "0.625"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Decimals to percentages",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Convert each decimal to a percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "0.35",
+          "answer": "35%"
+        },
+        {
+          "id": "b",
+          "expression": "0.8",
+          "answer": "80%"
+        },
+        {
+          "id": "c",
+          "expression": "0.05",
+          "answer": "5%"
+        },
+        {
+          "id": "d",
+          "expression": "0.125",
+          "answer": "12.5%"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Percentages to fractions",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Convert to a fraction in simplest form.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "40%",
+          "answer": "&frac{2}{5}"
+        },
+        {
+          "id": "b",
+          "expression": "75%",
+          "answer": "&frac{3}{4}"
+        },
+        {
+          "id": "c",
+          "expression": "12%",
+          "answer": "&frac{3}{25}"
+        },
+        {
+          "id": "d",
+          "expression": "65%",
+          "answer": "&frac{13}{20}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Ordering values",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Write in order from smallest to largest.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "0.7, &frac{3}{4}, 72%",
+          "answer": "0.7, 72%, &frac{3}{4}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{2}{5}, 0.45, 38%",
+          "answer": "38%, &frac{2}{5}, 0.45"
+        },
+        {
+          "id": "c",
+          "expression": "0.3, &frac{1}{3}, 30%",
+          "answer": "30%, 0.3, &frac{1}{3}"
+        },
+        {
+          "id": "d",
+          "expression": "60%, 0.59, &frac{3}{5}",
+          "answer": "0.59, 60% = &frac{3}{5}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed conversions",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Complete the table: fraction, decimal, percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{5} = ? decimal = ? %",
+          "answer": "0.2, 20%"
+        },
+        {
+          "id": "b",
+          "expression": "? fraction = 0.4 = ? %",
+          "answer": "&frac{2}{5}, 40%"
+        },
+        {
+          "id": "c",
+          "expression": "? fraction = ? decimal = 85%",
+          "answer": "&frac{17}{20}, 0.85"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{7}{8} = ? decimal = ? %",
+          "answer": "0.875, 87.5%"
+        },
+        {
+          "id": "e",
+          "expression": "? fraction = 0.15 = ? %",
+          "answer": "&frac{3}{20}, 15%"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&frac{1}{2} = 0.5 = 50%",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "0.4 = 4%",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "To convert decimal to %, multiply by 100",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&frac{1}{3} = 33%",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "75% = &frac{3}{4}",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Three students scored <strong>&frac{17}{20}</strong>, <strong>82%</strong>, and <strong>0.84</strong> on a test. Who scored highest? Show your conversion working."
+      },
+      {
+        "id": "b",
+        "text": "A shop offers <strong>&frac{1}{3} off</strong> and another offers <strong>30% off</strong> the same item priced at <strong>&pound;60</strong>. Which is the better deal? By how much?"
+      }
+    ]
+  }
+}

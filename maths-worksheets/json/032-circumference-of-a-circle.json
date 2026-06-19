@@ -1,0 +1,325 @@
+{
+  "title": "AREA AND PERIMETER,\n(CIRCUMFERENCE OF A CIRCLE)",
+  "objective": "LO: I can calculate the circumference of a circle using C = &pi;d or C = 2&pi;r.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Circumference",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">circumference</span> is the distance around a circle. The <span class=\"ul-k\">diameter</span> goes across through the centre; the <span class=\"ul-k\">radius</span> is half the diameter."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Formulae:</span> C = &pi;d or C = 2&pi;r (same thing because d = 2r). Use &pi; = 3.14159... or the &pi; button on a calculator."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "d = 10 &rarr; C = 10&pi; &approx; 31.4 cm",
+          "desc": "C = &pi;d"
+        },
+        {
+          "correct": true,
+          "expr": "r = 7 &rarr; C = 14&pi; &approx; 44.0 cm",
+          "desc": "C = 2&pi;r"
+        },
+        {
+          "correct": true,
+          "expr": "&pi; &approx; 3.14159...",
+          "desc": "irrational number"
+        },
+        {
+          "correct": false,
+          "expr": "C = &pi;r (not &pi;d)",
+          "desc": "that halves the answer"
+        },
+        {
+          "correct": false,
+          "expr": "C = &pi;r&sup2;",
+          "desc": "that is the area formula"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Circumference = &pi; &times; diameter. If given the radius, double it first (or use C = 2&pi;r).",
+      "equation": "C = <span class=\"ov\">&pi;</span> &times; <span class=\"ovr\">d</span>",
+      "caption": "&pi; is approximately 3.14"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; given diameter",
+      "question": "Find the circumference of a circle with diameter 8 cm.",
+      "steps": [
+        "C = &pi;d",
+        "C = &pi; &times; 8",
+        "C = 25.1 cm (1 d.p.)"
+      ],
+      "answer": "= 25.1 cm",
+      "explanation": "Multiply &pi; by the diameter."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; given radius",
+      "question": "Find the circumference of a circle with radius 5 cm.",
+      "steps": [
+        "C = 2&pi;r",
+        "C = 2 &times; &pi; &times; 5",
+        "C = 31.4 cm (1 d.p.)"
+      ],
+      "answer": "= 31.4 cm",
+      "explanation": "Double the radius to get the diameter, then multiply by &pi;."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding diameter",
+      "question": "A circle has circumference 50 cm. Find the diameter.",
+      "steps": [
+        "C = &pi;d, so d = C &divide; &pi;",
+        "d = 50 &divide; &pi;",
+        "d = 15.9 cm (1 d.p.)"
+      ],
+      "answer": "d = 15.9 cm",
+      "explanation": "Rearrange: divide circumference by &pi;."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; semicircle perimeter",
+      "question": "Find the perimeter of a semicircle with diameter 12 cm.",
+      "steps": [
+        "Curved part = &frac{1}{2} &times; &pi; &times; 12 = 6&pi; = 18.85 cm",
+        "Straight edge = 12 cm",
+        "Total perimeter = 18.85 + 12 = 30.85 cm"
+      ],
+      "answer": "= 30.8 cm (1 d.p.)",
+      "explanation": "Semicircle perimeter = half circumference + diameter."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Given diameter",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the circumference (1 d.p.). Use &pi; = 3.14.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "d = 10 cm",
+          "answer": "31.4 cm"
+        },
+        {
+          "id": "b",
+          "expression": "d = 6 cm",
+          "answer": "18.8 cm"
+        },
+        {
+          "id": "c",
+          "expression": "d = 15 cm",
+          "answer": "47.1 cm"
+        },
+        {
+          "id": "d",
+          "expression": "d = 25 cm",
+          "answer": "78.5 cm"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Given radius",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the circumference (1 d.p.). Use &pi; = 3.14.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 4 cm",
+          "answer": "25.1 cm"
+        },
+        {
+          "id": "b",
+          "expression": "r = 7 cm",
+          "answer": "44.0 cm"
+        },
+        {
+          "id": "c",
+          "expression": "r = 10 cm",
+          "answer": "62.8 cm"
+        },
+        {
+          "id": "d",
+          "expression": "r = 3.5 cm",
+          "answer": "22.0 cm"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding radius or diameter",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the missing measurement (1 d.p.).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "C = 62.8 cm; find d",
+          "answer": "20.0 cm"
+        },
+        {
+          "id": "b",
+          "expression": "C = 44.0 cm; find r",
+          "answer": "7.0 cm"
+        },
+        {
+          "id": "c",
+          "expression": "C = 100 cm; find d",
+          "answer": "31.8 cm"
+        },
+        {
+          "id": "d",
+          "expression": "C = 75 cm; find r",
+          "answer": "11.9 cm"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use &pi; = 3.14. Give answers to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A circular pond has diameter 4 m. Find circumference.",
+          "answer": "12.6 m"
+        },
+        {
+          "id": "b",
+          "expression": "A wheel has radius 30 cm. Distance in one turn?",
+          "answer": "188.5 cm"
+        },
+        {
+          "id": "c",
+          "expression": "A plate has circumference 78.5 cm. Find diameter.",
+          "answer": "25.0 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Circular track radius 50 m. Distance for 1 lap?",
+          "answer": "314.2 m"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed and semicircles",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find the perimeter of each shape (1 d.p.).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Circle: d = 20 cm",
+          "answer": "62.8 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Semicircle: d = 14 cm",
+          "answer": "36.0 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Quarter circle: r = 10 cm",
+          "answer": "35.7 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Circle: r = 8.5 cm",
+          "answer": "53.4 cm"
+        },
+        {
+          "id": "e",
+          "expression": "Semicircle: r = 6 cm",
+          "answer": "30.8 cm"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "C = &pi;d gives the circumference",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "C = &pi;r&sup2; gives the circumference",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Diameter = 2 &times; radius",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Semicircle perimeter = half the circumference only",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "&pi; is approximately 3.14",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A bicycle wheel has radius <strong>35 cm</strong>. How many complete turns does it make to travel <strong>1 km</strong>? Show your working."
+      },
+      {
+        "id": "b",
+        "text": "A running track consists of two straight sections of <strong>100 m</strong> and two semicircular ends. The total distance around the track is <strong>400 m</strong>. Find the radius of each semicircular end."
+      }
+    ]
+  }
+}

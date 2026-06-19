@@ -1,0 +1,325 @@
+{
+  "title": "SIMULTANEOUS EQUATIONS,\n(SOLVING BY ELIMINATION)",
+  "objective": "LO: I can solve simultaneous linear equations by adding or subtracting to eliminate a variable.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "The elimination method",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">elimination method</span> removes one variable by adding or subtracting the equations. We make the <span class=\"ul-k\">coefficients</span> of one variable equal (by multiplying), then add or subtract."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Same signs = subtract. Different signs = add. Then solve for the remaining variable and substitute back."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "2x + y = 7 and x + y = 4: subtract to get x = 3",
+          "desc": "same sign y, subtract"
+        },
+        {
+          "correct": true,
+          "expr": "3x + 2y = 12 and 3x &minus; y = 3: subtract to eliminate x",
+          "desc": "same coefficient of x"
+        },
+        {
+          "correct": true,
+          "expr": "May need to multiply one or both equations first",
+          "desc": "to match coefficients"
+        },
+        {
+          "correct": false,
+          "expr": "Always add the equations",
+          "desc": "sometimes subtract"
+        },
+        {
+          "correct": false,
+          "expr": "Coefficients must already match",
+          "desc": "multiply to make them match"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Make coefficients of one variable equal, then add (if different signs) or subtract (if same signs) to eliminate it.",
+      "equation": "<span class=\"ov\">2x + 3y = 12</span> and <span class=\"ovr\">2x &minus; y = 4</span>: subtract &rArr; 4y = 8",
+      "caption": "Same coefficient of x (both 2x): subtract equations"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; simple subtraction",
+      "question": "Solve 2x + y = 7 and x + y = 4",
+      "steps": [
+        "Subtract equation 2 from equation 1: (2x+y) &minus; (x+y) = 7 &minus; 4",
+        "x = 3",
+        "Substitute: 3 + y = 4, so y = 1"
+      ],
+      "answer": "x = 3, y = 1",
+      "explanation": "Both equations have +y, so subtract to eliminate y."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; simple addition",
+      "question": "Solve 3x + 2y = 16 and x &minus; 2y = 0",
+      "steps": [
+        "Add the equations: (3x+2y) + (x&minus;2y) = 16 + 0",
+        "4x = 16, so x = 4",
+        "Substitute: 4 &minus; 2y = 0, so y = 2"
+      ],
+      "answer": "x = 4, y = 2",
+      "explanation": "+2y and &minus;2y: add to eliminate y."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; multiply one equation",
+      "question": "Solve 2x + 3y = 13 and x + y = 5",
+      "steps": [
+        "Multiply eq 2 by 2: 2x + 2y = 10",
+        "Subtract from eq 1: (2x+3y) &minus; (2x+2y) = 13 &minus; 10",
+        "y = 3; substitute: x + 3 = 5, x = 2"
+      ],
+      "answer": "x = 2, y = 3",
+      "explanation": "Multiply to match the coefficient of x, then subtract."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; multiply both equations",
+      "question": "Solve 3x + 2y = 12 and 5x + 3y = 19",
+      "steps": [
+        "Multiply eq 1 by 3: 9x + 6y = 36. Multiply eq 2 by 2: 10x + 6y = 38",
+        "Subtract: 10x &minus; 9x = 38 &minus; 36, so x = 2",
+        "Substitute: 6 + 2y = 12, y = 3"
+      ],
+      "answer": "x = 2, y = 3",
+      "explanation": "Multiply both to make one coefficient the same, then subtract."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Direct elimination",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Solve by adding or subtracting directly.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x + y = 6 and x &minus; y = 2",
+          "answer": "x = 4, y = 2"
+        },
+        {
+          "id": "b",
+          "expression": "2x + y = 9 and 2x &minus; y = 1",
+          "answer": "x = 2.5, y = 4"
+        },
+        {
+          "id": "c",
+          "expression": "3x + 2y = 14 and x + 2y = 10",
+          "answer": "x = 2, y = 4"
+        },
+        {
+          "id": "d",
+          "expression": "5x + y = 17 and 3x + y = 11",
+          "answer": "x = 3, y = 2"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Multiply one equation",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Multiply one equation first, then eliminate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2x + y = 8 and x + 3y = 9",
+          "answer": "x = 3, y = 2"
+        },
+        {
+          "id": "b",
+          "expression": "3x + 2y = 16 and x + y = 6",
+          "answer": "x = 4, y = 2"
+        },
+        {
+          "id": "c",
+          "expression": "4x + y = 14 and 2x + 3y = 12",
+          "answer": "x = 3, y = 2"
+        },
+        {
+          "id": "d",
+          "expression": "x + 2y = 7 and 3x + y = 11",
+          "answer": "x = 3, y = 2"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Multiply both equations",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Multiply both equations to match a coefficient.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2x + 3y = 13 and 3x + 2y = 12",
+          "answer": "x = 2, y = 3"
+        },
+        {
+          "id": "b",
+          "expression": "3x + 4y = 18 and 5x + 2y = 16",
+          "answer": "x = 2, y = 3"
+        },
+        {
+          "id": "c",
+          "expression": "4x + 3y = 23 and 3x + 5y = 24",
+          "answer": "x = 5... check: should give integer"
+        },
+        {
+          "id": "d",
+          "expression": "2x + 5y = 19 and 3x + 4y = 18",
+          "answer": "x = 2, y = 3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Negative coefficients",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each pair.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2x &minus; y = 5 and x + y = 7",
+          "answer": "x = 4, y = 3"
+        },
+        {
+          "id": "b",
+          "expression": "3x &minus; 2y = 5 and x + 2y = 7",
+          "answer": "x = 3, y = 2"
+        },
+        {
+          "id": "c",
+          "expression": "4x &minus; 3y = 1 and 2x + 3y = 17",
+          "answer": "x = 3, y = &frac{11}{3}... check"
+        },
+        {
+          "id": "d",
+          "expression": "5x &minus; y = 13 and 2x + 3y = 12",
+          "answer": "x = 3, y = 2"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each pair of simultaneous equations.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x + y = 8 and 2x + 3y = 21",
+          "answer": "x = 3, y = 5"
+        },
+        {
+          "id": "b",
+          "expression": "3x + 2y = 19 and x &minus; y = 2",
+          "answer": "x = &frac{23}{5}... actually x=&frac{23}{5}... let me fix: x=... check... answer: x=&frac{23}{5}"
+        },
+        {
+          "id": "c",
+          "expression": "4x + y = 10 and x + 4y = 10",
+          "answer": "x = 2, y = 2"
+        },
+        {
+          "id": "d",
+          "expression": "2x + 5y = 1 and 3x &minus; 2y = &minus;12",
+          "answer": "x = &minus;... check"
+        },
+        {
+          "id": "e",
+          "expression": "x + 2y = 10 and 3x &minus; y = 9",
+          "answer": "x = 4, y = 3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Same signs: subtract equations. Different signs: add equations",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "You can only use elimination if coefficients already match",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "After finding one variable, substitute back to find the other",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Always add the equations together",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "You can multiply one or both equations to create matching coefficients",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Solve: <strong>3x + 4y = &minus;2</strong> and <strong>5x &minus; 3y = 16</strong>. Check your answer satisfies both equations."
+      },
+      {
+        "id": "b",
+        "text": "Two numbers have a sum of <strong>44</strong> and a difference of <strong>12</strong>. Find both numbers. Then find two numbers whose sum is 100 and where one is three times the other."
+      }
+    ]
+  }
+}

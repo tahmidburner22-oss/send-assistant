@@ -1,0 +1,325 @@
+{
+  "title": "ALGEBRAIC EXPRESSIONS,\n(FACTORISING EXPRESSIONS)",
+  "objective": "LO: I can factorise algebraic expressions by taking out common factors.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is factorising?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Factorising</span> is the reverse of expanding. We find a <span class=\"ul-k\">common factor</span> and write the expression as a product of terms."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Find the HCF of all terms (both numbers and letters), then divide each term by it."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "6x + 9 = 3(2x + 3)",
+          "desc": "HCF is 3"
+        },
+        {
+          "correct": true,
+          "expr": "x&sup2; + 5x = x(x + 5)",
+          "desc": "HCF is x"
+        },
+        {
+          "correct": true,
+          "expr": "4x&sup2; + 8x = 4x(x + 2)",
+          "desc": "HCF is 4x"
+        },
+        {
+          "correct": false,
+          "expr": "6x + 9 = 6(x + 3)",
+          "desc": "6 is not a factor of 9"
+        },
+        {
+          "correct": false,
+          "expr": "x&sup2; + 5x = x(x + 5x)",
+          "desc": "divided only first term"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Find the highest common factor (HCF) of all terms. Write it outside the bracket. Divide each term by the HCF to get what goes inside.",
+      "equation": "<span class=\"ov\">4x&sup2; + 8x</span> = <span class=\"ovr\">4x(x + 2)</span>",
+      "caption": "HCF = 4x; divide each term by 4x"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; number HCF",
+      "question": "Factorise 6x + 9",
+      "steps": [
+        "HCF of 6 and 9 is 3",
+        "6x &divide; 3 = 2x; 9 &divide; 3 = 3",
+        "Write: 3(2x + 3)"
+      ],
+      "answer": "= 3(2x + 3)",
+      "explanation": "Check by expanding: 3 &times; 2x + 3 &times; 3 = 6x + 9 &check;"
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; letter HCF",
+      "question": "Factorise x&sup2; + 5x",
+      "steps": [
+        "Both terms contain x",
+        "x&sup2; &divide; x = x; 5x &divide; x = 5",
+        "Write: x(x + 5)"
+      ],
+      "answer": "= x(x + 5)",
+      "explanation": "Take out the lowest power of x from each term."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; number and letter",
+      "question": "Factorise 4x&sup2; + 8x",
+      "steps": [
+        "HCF of 4 and 8 is 4; both have x: HCF = 4x",
+        "4x&sup2; &divide; 4x = x; 8x &divide; 4x = 2",
+        "Write: 4x(x + 2)"
+      ],
+      "answer": "= 4x(x + 2)",
+      "explanation": "Always take the highest common factor, including letters."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; three terms",
+      "question": "Factorise 6x&sup2; + 12x + 18",
+      "steps": [
+        "HCF of 6, 12, 18 is 6",
+        "6x&sup2; &divide; 6 = x&sup2;; 12x &divide; 6 = 2x; 18 &divide; 6 = 3",
+        "Write: 6(x&sup2; + 2x + 3)"
+      ],
+      "answer": "= 6(x&sup2; + 2x + 3)",
+      "explanation": "When all coefficients share a common factor, take it out."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Number common factor",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Factorise each expression.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4x + 8",
+          "answer": "4(x + 2)"
+        },
+        {
+          "id": "b",
+          "expression": "6x + 15",
+          "answer": "3(2x + 5)"
+        },
+        {
+          "id": "c",
+          "expression": "10x &minus; 5",
+          "answer": "5(2x &minus; 1)"
+        },
+        {
+          "id": "d",
+          "expression": "12x + 18",
+          "answer": "6(2x + 3)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Letter common factor",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Take out the highest power of the letter.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 3x",
+          "answer": "x(x + 3)"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 7x",
+          "answer": "x(x &minus; 7)"
+        },
+        {
+          "id": "c",
+          "expression": "2x&sup2; + x",
+          "answer": "x(2x + 1)"
+        },
+        {
+          "id": "d",
+          "expression": "5x&sup2; &minus; 10x",
+          "answer": "5x(x &minus; 2)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Number and letter HCF",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the full HCF (number and letter).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "6x&sup2; + 12x",
+          "answer": "6x(x + 2)"
+        },
+        {
+          "id": "b",
+          "expression": "8x&sup2; &minus; 4x",
+          "answer": "4x(2x &minus; 1)"
+        },
+        {
+          "id": "c",
+          "expression": "9x&sup2; + 3x",
+          "answer": "3x(3x + 1)"
+        },
+        {
+          "id": "d",
+          "expression": "10x&sup3; + 15x&sup2;",
+          "answer": "5x&sup2;(2x + 3)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Three-term expressions",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Factorise fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3x&sup2; + 6x + 9",
+          "answer": "3(x&sup2; + 2x + 3)"
+        },
+        {
+          "id": "b",
+          "expression": "5x&sup2; &minus; 10x + 15",
+          "answer": "5(x&sup2; &minus; 2x + 3)"
+        },
+        {
+          "id": "c",
+          "expression": "4x&sup2; + 8x + 12",
+          "answer": "4(x&sup2; + 2x + 3)"
+        },
+        {
+          "id": "d",
+          "expression": "2x&sup3; + 4x&sup2; + 6x",
+          "answer": "2x(x&sup2; + 2x + 3)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed factorising",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Factorise each expression fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "7x + 21",
+          "answer": "7(x + 3)"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; + 4x",
+          "answer": "x(x + 4)"
+        },
+        {
+          "id": "c",
+          "expression": "12x&sup2; &minus; 8x",
+          "answer": "4x(3x &minus; 2)"
+        },
+        {
+          "id": "d",
+          "expression": "15x&sup2; + 10x + 5",
+          "answer": "5(3x&sup2; + 2x + 1)"
+        },
+        {
+          "id": "e",
+          "expression": "6x&sup3; &minus; 9x&sup2;",
+          "answer": "3x&sup2;(2x &minus; 3)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "6x + 9 = 3(2x + 3)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "x&sup2; + 5x = x(x + 5x)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "4x&sup2; + 8x = 4x(x + 2)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "6x + 9 = 6(x + 1.5)",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Factorising is the reverse of expanding",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Factorise <strong>12x&sup2;y + 18xy&sup2;</strong> fully. Explain how you found the HCF of both the numbers and the letters."
+      },
+      {
+        "id": "b",
+        "text": "Show that <strong>n&sup2; + n</strong> is always even for any integer n. (Hint: factorise first, then explain why the product must be even.)"
+      }
+    ]
+  }
+}

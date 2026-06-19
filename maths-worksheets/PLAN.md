@@ -102,29 +102,29 @@ done
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
 | 21 | Substitution into expressions | `021-substitution-into-expressions.json` | ⬜ |
-| 22 | Using and writing simple formulae | `022-using-and-writing-simple-formulae.json` | ⬜ |
+| 22 | Using and writing simple formulae | `022-using-and-writing-simple-formulae.json` | ✅ |
 
 ### Topic 7: Algebraic Expressions
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 23 | Expanding double brackets | `023-expanding-double-brackets.json` | ⬜ |
+| 23 | Expanding double brackets | `023-expanding-double-brackets.json` | ✅ |
 | 24 | Expanding single brackets | `024-expanding-single-brackets.json` | ✅ |
-| 25 | Factorising expressions | `025-factorising-expressions.json` | ⬜ |
+| 25 | Factorising expressions | `025-factorising-expressions.json` | ✅ |
 
 ### Topic 8: Angles
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 26 | Angles in parallel lines | `026-angles-in-parallel-lines.json` | ⬜ |
-| 27 | Angles in polygons | `027-angles-in-polygons.json` | ⬜ |
-| 28 | Angles in triangles and quadrilaterals | `028-angles-in-triangles-and-quadrilaterals.json` | ⬜ |
-| 29 | Angles on a straight line and at a point | `029-angles-on-a-straight-line-and-at-a-point.json` | ⬜ |
+| 26 | Angles in parallel lines | `026-angles-in-parallel-lines.json` | ✅ |
+| 27 | Angles in polygons | `027-angles-in-polygons.json` | ✅ |
+| 28 | Angles in triangles and quadrilaterals | `028-angles-in-triangles-and-quadrilaterals.json` | ✅ |
+| 29 | Angles on a straight line and at a point | `029-angles-on-a-straight-line-and-at-a-point.json` | ✅ |
 
 ### Topic 9: Area and Perimeter
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 30 | Area of rectangles, triangles and parallelograms | `030-area-of-rectangles-triangles-and-parallelograms.json` | ⬜ |
-| 31 | Area of trapeziums and composite shapes | `031-area-of-trapeziums-and-composite-shapes.json` | ⬜ |
-| 32 | Circumference of a circle | `032-circumference-of-a-circle.json` | ⬜ |
+| 30 | Area of rectangles, triangles and parallelograms | `030-area-of-rectangles-triangles-and-parallelograms.json` | ✅ |
+| 31 | Area of trapeziums and composite shapes | `031-area-of-trapeziums-and-composite-shapes.json` | ✅ |
+| 32 | Circumference of a circle | `032-circumference-of-a-circle.json` | ✅ |
 
 ### Topic 10: Counting and Number Recognition (to 20)
 | # | Subtopic | JSON filename | Status |
@@ -143,33 +143,33 @@ done
 ### Topic 12: Decimals and Percentages
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 39 | Comparing fractions, decimals and percentages | `039-comparing-fractions-decimals-and-percentages.json` | ⬜ |
-| 40 | Finding percentages of amounts | `040-finding-percentages-of-amounts.json` | ⬜ |
-| 41 | Percentage increase and decrease | `041-percentage-increase-and-decrease.json` | ⬜ |
-| 42 | Percentages as fractions and decimals | `042-percentages-as-fractions-and-decimals.json` | ⬜ |
+| 39 | Comparing fractions, decimals and percentages | `039-comparing-fractions-decimals-and-percentages.json` | ✅ |
+| 40 | Finding percentages of amounts | `040-finding-percentages-of-amounts.json` | ✅ |
+| 41 | Percentage increase and decrease | `041-percentage-increase-and-decrease.json` | ✅ |
+| 42 | Percentages as fractions and decimals | `042-percentages-as-fractions-and-decimals.json` | ✅ |
 
 ### Topic 13: Decimals — All Operations
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 43 | Adding and subtracting decimals | `043-adding-and-subtracting-decimals.json` | ⬜ |
-| 44 | Dividing decimals | `044-dividing-decimals.json` | ⬜ |
-| 45 | Multiplying decimals | `045-multiplying-decimals.json` | ⬜ |
-| 46 | Rounding decimals to decimal places | `046-rounding-decimals-to-decimal-places.json` | ⬜ |
+| 43 | Adding and subtracting decimals | `043-adding-and-subtracting-decimals.json` | ✅ |
+| 44 | Dividing decimals | `044-dividing-decimals.json` | ✅ |
+| 45 | Multiplying decimals | `045-multiplying-decimals.json` | ✅ |
+| 46 | Rounding decimals to decimal places | `046-rounding-decimals-to-decimal-places.json` | ✅ |
 
 ### Topic 14: Four Operations and Order of Operations
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 47 | BIDMAS/BODMAS | `047-bidmas-bodmas.json` | ⬜ |
-| 48 | Checking answers using inverse operations | `048-checking-answers-using-inverse-operations.json` | ⬜ |
-| 49 | Multi-step calculations | `049-multi-step-calculations.json` | ⬜ |
+| 47 | BIDMAS/BODMAS | `047-bidmas-bodmas.json` | ✅ |
+| 48 | Checking answers using inverse operations | `048-checking-answers-using-inverse-operations.json` | ✅ |
+| 49 | Multi-step calculations | `049-multi-step-calculations.json` | ✅ |
 
 ### Topic 15: Fractions
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 50 | Adding and subtracting fractions | `050-adding-and-subtracting-fractions.json` | ⬜ |
-| 51 | Algebraic fractions | `051-algebraic-fractions.json` | ⬜ |
-| 52 | Dividing fractions | `052-dividing-fractions.json` | ⬜ |
-| 53 | Multiplying fractions | `053-multiplying-fractions.json` | ⬜ |
+| 50 | Adding and subtracting fractions | `050-adding-and-subtracting-fractions.json` | ✅ |
+| 51 | Algebraic fractions | `051-algebraic-fractions.json` | ✅ |
+| 52 | Dividing fractions | `052-dividing-fractions.json` | ✅ |
+| 53 | Multiplying fractions | `053-multiplying-fractions.json` | ✅ |
 
 ### Topic 16: Fractions (Halves, Quarters, Thirds)
 | # | Subtopic | JSON filename | Status |
@@ -206,10 +206,10 @@ done
 ### Topic 20: Fractions — Secondary
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 70 | Adding and subtracting algebraic fractions | `070-adding-and-subtracting-algebraic-fractions.json` | ⬜ |
-| 71 | Equations involving fractions | `071-equations-involving-fractions.json` | ⬜ |
-| 72 | Multiplying and dividing algebraic fractions | `072-multiplying-and-dividing-algebraic-fractions.json` | ⬜ |
-| 73 | Simplifying algebraic fractions | `073-simplifying-algebraic-fractions.json` | ⬜ |
+| 70 | Adding and subtracting algebraic fractions | `070-adding-and-subtracting-algebraic-fractions.json` | ✅ |
+| 71 | Equations involving fractions | `071-equations-involving-fractions.json` | ✅ |
+| 72 | Multiplying and dividing algebraic fractions | `072-multiplying-and-dividing-algebraic-fractions.json` | ✅ |
+| 73 | Simplifying algebraic fractions | `073-simplifying-algebraic-fractions.json` | ✅ |
 
 ### Topic 21: Fractions — Unit and Non-Unit Fractions
 | # | Subtopic | JSON filename | Status |
@@ -236,14 +236,14 @@ done
 ### Topic 24: Indices and Standard Form
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 84 | Calculations in standard form | `084-calculations-in-standard-form.json` | ⬜ |
+| 84 | Calculations in standard form | `084-calculations-in-standard-form.json` | ✅ |
 
 ### Topic 25: Linear Inequalities
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 85 | Double inequalities | `085-double-inequalities.json` | ⬜ |
-| 86 | Inequalities in two variables | `086-inequalities-in-two-variables.json` | ⬜ |
-| 87 | Representing inequalities on a number line | `087-representing-inequalities-on-a-number-line.json` | ⬜ |
+| 85 | Double inequalities | `085-double-inequalities.json` | ✅ |
+| 86 | Inequalities in two variables | `086-inequalities-in-two-variables.json` | ✅ |
+| 87 | Representing inequalities on a number line | `087-representing-inequalities-on-a-number-line.json` | ✅ |
 
 ### Topic 26: Multiplication and Division (2, 5, 10 Times Tables)
 | # | Subtopic | JSON filename | Status |
@@ -364,17 +364,17 @@ done
 ### Topic 41: Pythagoras' Theorem
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 144 | Applying Pythagoras in 2D problems | `144-applying-pythagoras-in-2d-problems.json` | ⬜ |
-| 145 | Applying Pythagoras in 3D problems | `145-applying-pythagoras-in-3d-problems.json` | ⬜ |
-| 146 | Finding a shorter side | `146-finding-a-shorter-side.json` | ⬜ |
-| 147 | Finding the hypotenuse | `147-finding-the-hypotenuse.json` | ⬜ |
+| 144 | Applying Pythagoras in 2D problems | `144-applying-pythagoras-in-2d-problems.json` | ✅ |
+| 145 | Applying Pythagoras in 3D problems | `145-applying-pythagoras-in-3d-problems.json` | ✅ |
+| 146 | Finding a shorter side | `146-finding-a-shorter-side.json` | ✅ |
+| 147 | Finding the hypotenuse | `147-finding-the-hypotenuse.json` | ✅ |
 
 ### Topic 42: Quadratic Equations
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 148 | Completing the square | `148-completing-the-square.json` | ⬜ |
-| 149 | Discriminant | `149-discriminant.json` | ⬜ |
-| 150 | Factorising quadratics | `150-factorising-quadratics.json` | ⬜ |
+| 148 | Completing the square | `148-completing-the-square.json` | ✅ |
+| 149 | Discriminant | `149-discriminant.json` | ✅ |
+| 150 | Factorising quadratics | `150-factorising-quadratics.json` | ✅ |
 
 ### Topic 43: Ratio
 | # | Subtopic | JSON filename | Status |
@@ -393,30 +393,30 @@ done
 ### Topic 45: Sequences
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 157 | Fibonacci-type sequences | `157-fibonacci-type-sequences.json` | ⬜ |
-| 158 | Geometric sequences | `158-geometric-sequences.json` | ⬜ |
-| 159 | Quadratic sequences | `159-quadratic-sequences.json` | ⬜ |
+| 157 | Fibonacci-type sequences | `157-fibonacci-type-sequences.json` | ✅ |
+| 158 | Geometric sequences | `158-geometric-sequences.json` | ✅ |
+| 159 | Quadratic sequences | `159-quadratic-sequences.json` | ✅ |
 
 ### Topic 46: Simultaneous Equations
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 160 | Non-linear simultaneous equations | `160-non-linear-simultaneous-equations.json` | ⬜ |
-| 161 | Solving by elimination | `161-solving-by-elimination.json` | ⬜ |
-| 162 | Solving by substitution | `162-solving-by-substitution.json` | ⬜ |
+| 160 | Non-linear simultaneous equations | `160-non-linear-simultaneous-equations.json` | ✅ |
+| 161 | Solving by elimination | `161-solving-by-elimination.json` | ✅ |
+| 162 | Solving by substitution | `162-solving-by-substitution.json` | ✅ |
 
 ### Topic 47: Solving Linear Equations
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 163 | Equations with brackets | `163-equations-with-brackets.json` | ⬜ |
-| 164 | Equations with unknowns on both sides | `164-equations-with-unknowns-on-both-sides.json` | ⬜ |
+| 163 | Equations with brackets | `163-equations-with-brackets.json` | ✅ |
+| 164 | Equations with unknowns on both sides | `164-equations-with-unknowns-on-both-sides.json` | ✅ |
 | 165 | One-step equations | `165-one-step-equations.json` | ✅ |
 | 166 | Two-step equations | `166-two-step-equations.json` | ✅ |
 
 ### Topic 48: Statistics
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 167 | Cumulative frequency and box plots | `167-cumulative-frequency-and-box-plots.json` | ⬜ |
-| 168 | Frequency tables and grouped data | `168-frequency-tables-and-grouped-data.json` | ⬜ |
+| 167 | Cumulative frequency and box plots | `167-cumulative-frequency-and-box-plots.json` | ✅ |
+| 168 | Frequency tables and grouped data | `168-frequency-tables-and-grouped-data.json` | ✅ |
 | 169 | Histograms | `169-histograms.json` | ⬜ |
 | 170 | Mean, median, mode and range | `170-mean-median-mode-and-range.json` | ⬜ |
 
@@ -475,9 +475,9 @@ done
 | Metric | Count |
 |--------|-------|
 | Total subtopics | 194 |
-| JSON created | 22 |
-| PDF generated | 22 |
-| Remaining | 172 |
+| JSON created | 72 |
+| PDF generated | 72 |
+| Remaining | 122 |
 
 ---
 

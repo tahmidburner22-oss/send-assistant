@@ -1,0 +1,325 @@
+{
+  "title": "STATISTICS,\n(CUMULATIVE FREQUENCY AND BOX PLOTS)",
+  "objective": "LO: I can draw and interpret cumulative frequency diagrams and box plots.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Cumulative frequency and box plots",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Cumulative frequency</span> is the running total of frequencies. A <span class=\"ul-k\">box plot</span> (box-and-whisker diagram) displays the minimum, lower quartile (Q1), median (Q2), upper quartile (Q3), and maximum."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Add frequencies cumulatively, plot against upper class boundaries, then read off Q1 (at &frac{n}{4}), Q2 (at &frac{n}{2}), Q3 (at &frac{3n}{4})."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "IQR = Q3 &minus; Q1 measures the spread of middle 50%",
+          "desc": "interquartile range"
+        },
+        {
+          "correct": true,
+          "expr": "Median is at the &frac{n}{2} position on the CF curve",
+          "desc": "reading the median"
+        },
+        {
+          "correct": true,
+          "expr": "Box plot shows min, Q1, Q2, Q3, max",
+          "desc": "five-number summary"
+        },
+        {
+          "correct": false,
+          "expr": "Plot CF against midpoints",
+          "desc": "plot against upper boundaries"
+        },
+        {
+          "correct": false,
+          "expr": "IQR = Q3 + Q1",
+          "desc": "IQR = Q3 MINUS Q1"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Cumulative frequency = running total. Read quartiles from the CF graph. IQR = Q3 &minus; Q1.",
+      "equation": "IQR = <span class=\"ov\">Q3</span> &minus; <span class=\"ovr\">Q1</span>",
+      "caption": "The interquartile range measures spread of the middle 50% of data"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; building a CF table",
+      "question": "Frequencies are 5, 8, 12, 10, 5. Build the cumulative frequency column.",
+      "steps": [
+        "CF: 5, 5+8=13, 13+12=25, 25+10=35, 35+5=40",
+        "Total n = 40",
+        "CF values: 5, 13, 25, 35, 40"
+      ],
+      "answer": "5, 13, 25, 35, 40",
+      "explanation": "Add each frequency to the running total."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; reading the median",
+      "question": "n = 40. Read the median from the CF graph.",
+      "steps": [
+        "Median position: &frac{40}{2} = 20th value",
+        "Go across from CF = 20 to the curve",
+        "Read down to the x-axis for the median"
+      ],
+      "answer": "Read at CF = 20",
+      "explanation": "The median is the value at the &frac{n}{2} position on the y-axis."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding IQR",
+      "question": "From a CF graph: Q1 = 35, Q3 = 58. Find the IQR.",
+      "steps": [
+        "Q1 is at &frac{n}{4}: value = 35",
+        "Q3 is at &frac{3n}{4}: value = 58",
+        "IQR = 58 &minus; 35 = 23"
+      ],
+      "answer": "IQR = 23",
+      "explanation": "The IQR tells us the range of the middle 50% of the data."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; drawing a box plot",
+      "question": "Min = 12, Q1 = 25, Q2 = 33, Q3 = 45, Max = 60. Describe the box plot.",
+      "steps": [
+        "Draw a number line from 10 to 65",
+        "Box from Q1 (25) to Q3 (45), line at median (33)",
+        "Whiskers from 12 (min) to box and box to 60 (max)"
+      ],
+      "answer": "Box: 25 to 45, median at 33, whiskers 12 and 60",
+      "explanation": "Five values define the entire box plot."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Building CF tables",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the cumulative frequencies.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Frequencies: 3, 7, 10, 5, 5",
+          "answer": "3, 10, 20, 25, 30"
+        },
+        {
+          "id": "b",
+          "expression": "Frequencies: 4, 6, 15, 8, 7",
+          "answer": "4, 10, 25, 33, 40"
+        },
+        {
+          "id": "c",
+          "expression": "Frequencies: 2, 8, 12, 14, 4",
+          "answer": "2, 10, 22, 36, 40"
+        },
+        {
+          "id": "d",
+          "expression": "Frequencies: 10, 15, 20, 10, 5",
+          "answer": "10, 25, 45, 55, 60"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding quartile positions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State the CF positions for Q1, Q2, Q3.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "n = 40",
+          "answer": "Q1 at 10, Q2 at 20, Q3 at 30"
+        },
+        {
+          "id": "b",
+          "expression": "n = 60",
+          "answer": "Q1 at 15, Q2 at 30, Q3 at 45"
+        },
+        {
+          "id": "c",
+          "expression": "n = 100",
+          "answer": "Q1 at 25, Q2 at 50, Q3 at 75"
+        },
+        {
+          "id": "d",
+          "expression": "n = 80",
+          "answer": "Q1 at 20, Q2 at 40, Q3 at 60"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Calculating IQR",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the IQR from the given quartiles.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Q1 = 15, Q3 = 35",
+          "answer": "IQR = 20"
+        },
+        {
+          "id": "b",
+          "expression": "Q1 = 42, Q3 = 68",
+          "answer": "IQR = 26"
+        },
+        {
+          "id": "c",
+          "expression": "Q1 = 3.5, Q3 = 7.2",
+          "answer": "IQR = 3.7"
+        },
+        {
+          "id": "d",
+          "expression": "Q1 = 120, Q3 = 185",
+          "answer": "IQR = 65"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Box plot interpretation",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "From the box plot, find the stated value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Min=10, Q1=20, Q2=35, Q3=50, Max=70. Range?",
+          "answer": "60"
+        },
+        {
+          "id": "b",
+          "expression": "Same data. IQR?",
+          "answer": "30"
+        },
+        {
+          "id": "c",
+          "expression": "Min=5, Q1=12, Q2=18, Q3=25, Max=40. Median?",
+          "answer": "18"
+        },
+        {
+          "id": "d",
+          "expression": "Same data. What fraction is between Q1 and Q3?",
+          "answer": "50%"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Comparing distributions",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Compare using the given statistics.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Set A: median 45, IQR 20. Set B: median 52, IQR 35. Which has higher average?",
+          "answer": "B (higher median)"
+        },
+        {
+          "id": "b",
+          "expression": "Same data. Which is more consistent?",
+          "answer": "A (smaller IQR)"
+        },
+        {
+          "id": "c",
+          "expression": "Boys: Q1=55, Q3=75. Girls: Q1=60, Q3=70. Compare.",
+          "answer": "Girls more consistent (IQR=10 vs 20)"
+        },
+        {
+          "id": "d",
+          "expression": "Dataset: min=3, Q1=5, Q2=7, Q3=9, max=15. Is it symmetric?",
+          "answer": "Roughly symmetric (Q2&minus;Q1=2, Q3&minus;Q2=2)"
+        },
+        {
+          "id": "e",
+          "expression": "If IQR = 0, what does this tell you?",
+          "answer": "75% of data has the same value (no spread in middle)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "IQR = Q3 &minus; Q1",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "CF should be plotted against class midpoints",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The median is read at the &frac{n}{2} position on the CF graph",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The box in a box plot always shows 25% of the data",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A box plot shows the five-number summary: min, Q1, Q2, Q3, max",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A CF diagram shows n = 80 students. From the curve: Q1 = 42 marks, median = 55, Q3 = 67. The pass mark is 50. Estimate the number who passed. Draw a box plot if min = 20 and max = 90."
+      },
+      {
+        "id": "b",
+        "text": "Two box plots compare test scores. Class A: min 25, Q1 40, Q2 55, Q3 70, max 95. Class B: min 35, Q1 50, Q2 60, Q3 65, max 80. Write three comparisons using correct statistical language (median, IQR, range, skewness)."
+      }
+    ]
+  }
+}

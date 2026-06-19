@@ -1,0 +1,325 @@
+{
+  "title": "ALGEBRAIC FRACTIONS,\n(SIMPLIFYING ALGEBRAIC FRACTIONS)",
+  "objective": "LO: I can simplify algebraic fractions by factorising and cancelling common factors.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Simplifying algebraic fractions",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"ul-b\">simplify</span> an algebraic fraction, factorise the numerator and denominator, then <span class=\"ul-k\">cancel common factors</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Look for common numerical factors first, then factorise any quadratic or linear expressions."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&frac{4x}{8} = &frac{x}{2}",
+          "desc": "divide by 4"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{x&sup2;+x}{x} = x + 1",
+          "desc": "factorise and cancel x"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{x&sup2;&minus;4}{x+2} = x &minus; 2",
+          "desc": "difference of two squares"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{x+3}{x+5} = &frac{3}{5}",
+          "desc": "cannot cancel x from a sum"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{x&sup2;+1}{x} = x + 1",
+          "desc": "x&sup2;+1 does not factorise over x"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Factorise numerator and denominator completely, then cancel any factors that appear in both.",
+      "equation": "&frac{x&sup2; &minus; 4}{x + 2} = &frac{<span class=\"ov\">(x+2)</span>(x&minus;2)}{<span class=\"ovr\">x+2</span>} = x &minus; 2",
+      "caption": "Cancel the common factor (x + 2)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; common numerical factor",
+      "question": "Simplify &frac{6x}{9}",
+      "steps": [
+        "HCF of 6 and 9 is 3",
+        "Divide both by 3",
+        "&frac{6x}{9} = &frac{2x}{3}"
+      ],
+      "answer": "&frac{2x}{3}",
+      "explanation": "Divide numerator and denominator by their HCF."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; common variable factor",
+      "question": "Simplify &frac{x&sup2; + 3x}{x}",
+      "steps": [
+        "Factorise numerator: x(x + 3)",
+        "Rewrite: &frac{x(x + 3)}{x}",
+        "Cancel x: = x + 3"
+      ],
+      "answer": "= x + 3",
+      "explanation": "Factorise the numerator to reveal the common factor."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; difference of two squares",
+      "question": "Simplify &frac{x&sup2; &minus; 9}{x + 3}",
+      "steps": [
+        "Factorise: x&sup2; &minus; 9 = (x + 3)(x &minus; 3)",
+        "Rewrite: &frac{(x+3)(x&minus;3)}{x+3}",
+        "Cancel (x + 3): = x &minus; 3"
+      ],
+      "answer": "= x &minus; 3",
+      "explanation": "Recognise the difference of two squares pattern: a&sup2; &minus; b&sup2; = (a+b)(a&minus;b)."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; quadratic numerator",
+      "question": "Simplify &frac{x&sup2; + 5x + 6}{x + 2}",
+      "steps": [
+        "Factorise: x&sup2; + 5x + 6 = (x + 2)(x + 3)",
+        "Rewrite: &frac{(x+2)(x+3)}{x+2}",
+        "Cancel (x + 2): = x + 3"
+      ],
+      "answer": "= x + 3",
+      "explanation": "Factorise the quadratic to find the common factor with the denominator."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Common numerical factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Simplify each fraction.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{8x}{12}",
+          "answer": "&frac{2x}{3}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{15x}{5}",
+          "answer": "3x"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{10x&sup2;}{2x}",
+          "answer": "5x"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{12x&sup2;}{4x}",
+          "answer": "3x"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Factorising the numerator",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Factorise and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{x&sup2; + 2x}{x}",
+          "answer": "x + 2"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3x + 6}{3}",
+          "answer": "x + 2"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{x&sup2; &minus; 5x}{x}",
+          "answer": "x &minus; 5"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{2x&sup2; + 4x}{2x}",
+          "answer": "x + 2"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Difference of two squares",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Simplify using DOTS.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{x&sup2; &minus; 4}{x + 2}",
+          "answer": "x &minus; 2"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{x&sup2; &minus; 16}{x &minus; 4}",
+          "answer": "x + 4"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{x&sup2; &minus; 25}{x + 5}",
+          "answer": "x &minus; 5"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{x&sup2; &minus; 1}{x + 1}",
+          "answer": "x &minus; 1"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Quadratic numerator",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Factorise and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{x&sup2; + 4x + 3}{x + 1}",
+          "answer": "x + 3"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{x&sup2; + 7x + 12}{x + 3}",
+          "answer": "x + 4"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{x&sup2; &minus; x &minus; 6}{x + 2}",
+          "answer": "x &minus; 3"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{x&sup2; + 2x &minus; 8}{x &minus; 2}",
+          "answer": "x + 4"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed simplification",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Simplify each algebraic fraction fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{5x + 10}{x + 2}",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{x&sup2; &minus; 9}{x&sup2; + 6x + 9}",
+          "answer": "&frac{x &minus; 3}{x + 3}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2x&sup2; &minus; 8}{2x + 4}",
+          "answer": "x &minus; 2"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{x&sup2; + x &minus; 12}{x&sup2; &minus; 16}",
+          "answer": "&frac{x &minus; 3}{x &minus; 4}"
+        },
+        {
+          "id": "e",
+          "expression": "&frac{x&sup2; &minus; 6x + 9}{x&sup2; &minus; 9}",
+          "answer": "&frac{x &minus; 3}{x + 3}"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&frac{x&sup2; &minus; 4}{x + 2} = x &minus; 2",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&frac{x + 3}{x + 5} = &frac{3}{5}",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "&frac{x&sup2; + 3x}{x} = x + 3",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&frac{x&sup2; + 4}{x + 2} = x + 2",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "You must factorise before cancelling",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Simplify <strong>&frac{x&sup2; + 2x &minus; 15}{x&sup2; &minus; 9}</strong> fully. State any values of x for which the fraction is undefined."
+      },
+      {
+        "id": "b",
+        "text": "Show that <strong>&frac{2x&sup2; + 7x + 3}{2x&sup2; + 5x + 2}</strong> simplifies to <strong>&frac{x + 3}{x + 2}</strong>. Explain each factorisation step."
+      }
+    ]
+  }
+}

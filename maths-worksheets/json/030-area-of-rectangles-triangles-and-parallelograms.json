@@ -1,0 +1,325 @@
+{
+  "title": "AREA AND PERIMETER,\n(AREA OF RECTANGLES, TRIANGLES AND PARALLELOGRAMS)",
+  "objective": "LO: I can calculate the area of rectangles, triangles and parallelograms.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Area formulae",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Area</span> is the amount of space inside a 2D shape, measured in <span class=\"ul-k\">square units</span> (cm&sup2;, m&sup2;)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Formulae:</span> Rectangle: A = l &times; w. Triangle: A = &frac{1}{2} &times; b &times; h. Parallelogram: A = b &times; h (perpendicular height)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key facts",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Rectangle: A = length &times; width",
+          "desc": "l &times; w"
+        },
+        {
+          "correct": true,
+          "expr": "Triangle: A = &frac{1}{2} &times; base &times; height",
+          "desc": "half of rectangle"
+        },
+        {
+          "correct": true,
+          "expr": "Parallelogram: A = base &times; height",
+          "desc": "perpendicular h"
+        },
+        {
+          "correct": false,
+          "expr": "Triangle: A = base &times; height",
+          "desc": "forgot &frac{1}{2}"
+        },
+        {
+          "correct": false,
+          "expr": "Parallelogram: use slant height",
+          "desc": "must be perpendicular"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Always use the PERPENDICULAR height (not the slant). Triangle is half of the enclosing rectangle.",
+      "equation": "A = <span class=\"ov\">&frac{1}{2}</span> &times; <span class=\"ov\">b</span> &times; <span class=\"ovr\">h</span>",
+      "caption": "Triangle: half base times height"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; rectangle",
+      "question": "Find the area of a rectangle 8 cm by 5 cm.",
+      "steps": [
+        "A = l &times; w",
+        "A = 8 &times; 5",
+        "A = 40 cm&sup2;"
+      ],
+      "answer": "= 40 cm&sup2;",
+      "explanation": "Multiply length by width."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; triangle",
+      "question": "Find the area of a triangle with base 10 cm and height 6 cm.",
+      "steps": [
+        "A = &frac{1}{2} &times; b &times; h",
+        "A = &frac{1}{2} &times; 10 &times; 6",
+        "A = 30 cm&sup2;"
+      ],
+      "answer": "= 30 cm&sup2;",
+      "explanation": "Half of base times height."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; parallelogram",
+      "question": "A parallelogram has base 12 cm and perpendicular height 7 cm. Find its area.",
+      "steps": [
+        "A = b &times; h",
+        "A = 12 &times; 7",
+        "A = 84 cm&sup2;"
+      ],
+      "answer": "= 84 cm&sup2;",
+      "explanation": "Use the perpendicular height, not the slant side."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; working backwards",
+      "question": "A triangle has area 24 cm&sup2; and base 8 cm. Find the height.",
+      "steps": [
+        "A = &frac{1}{2} &times; b &times; h",
+        "24 = &frac{1}{2} &times; 8 &times; h &rarr; 24 = 4h",
+        "h = 6 cm"
+      ],
+      "answer": "h = 6 cm",
+      "explanation": "Rearrange the formula: h = 2A &divide; b."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Area of rectangles",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the area.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "l = 7 cm, w = 4 cm",
+          "answer": "28 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "l = 12 cm, w = 5 cm",
+          "answer": "60 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "l = 9 cm, w = 9 cm",
+          "answer": "81 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "l = 15 cm, w = 3 cm",
+          "answer": "45 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Area of triangles",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the area. Use A = &frac{1}{2} &times; b &times; h.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "b = 6 cm, h = 4 cm",
+          "answer": "12 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "b = 10 cm, h = 8 cm",
+          "answer": "40 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "b = 14 cm, h = 5 cm",
+          "answer": "35 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "b = 9 cm, h = 12 cm",
+          "answer": "54 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Area of parallelograms",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the area. Use perpendicular height.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "b = 8 cm, h = 6 cm",
+          "answer": "48 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "b = 11 cm, h = 4 cm",
+          "answer": "44 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "b = 15 cm, h = 9 cm",
+          "answer": "135 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "b = 7.5 cm, h = 8 cm",
+          "answer": "60 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Finding missing measurements",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the missing length.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Rectangle: A = 36 cm&sup2;, l = 9 cm. Find w.",
+          "answer": "4 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Triangle: A = 20 cm&sup2;, b = 8 cm. Find h.",
+          "answer": "5 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Parallelogram: A = 72 cm&sup2;, h = 8 cm. Find b.",
+          "answer": "9 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Triangle: A = 30 cm&sup2;, h = 10 cm. Find b.",
+          "answer": "6 cm"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed area problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate each area.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Rectangle: 6.5 cm by 4 cm",
+          "answer": "26 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "Triangle: b = 16 cm, h = 7 cm",
+          "answer": "56 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "Parallelogram: b = 20 cm, h = 3.5 cm",
+          "answer": "70 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "Square: side 11 cm",
+          "answer": "121 cm&sup2;"
+        },
+        {
+          "id": "e",
+          "expression": "Triangle: b = 5 cm, h = 5 cm",
+          "answer": "12.5 cm&sup2;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Area of a triangle = &frac{1}{2} &times; base &times; height",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Area of a triangle = base &times; height",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Parallelogram area uses perpendicular height",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Area is measured in cm",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A square is a special rectangle",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A rectangular garden is <strong>12 m by 8 m</strong>. A triangular flower bed has base <strong>6 m</strong> and height <strong>4 m</strong>. What fraction of the garden is the flower bed?"
+      },
+      {
+        "id": "b",
+        "text": "A parallelogram and a triangle share the same <strong>base of 10 cm</strong> and the same <strong>height of 6 cm</strong>. What is the relationship between their areas? Will this always be true?"
+      }
+    ]
+  }
+}

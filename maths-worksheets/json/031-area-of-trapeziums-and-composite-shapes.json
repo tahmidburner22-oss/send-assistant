@@ -1,0 +1,325 @@
+{
+  "title": "AREA AND PERIMETER,\n(AREA OF TRAPEZIUMS AND COMPOSITE SHAPES)",
+  "objective": "LO: I can calculate the area of trapeziums and composite shapes by splitting into simpler shapes.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Trapezium and composite area",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">trapezium</span> has one pair of parallel sides (a and b). Its area is <span class=\"ul-k\">&frac{1}{2}(a + b) &times; h</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Composite shapes:</span> Split the shape into rectangles, triangles, and/or trapeziums. Find each area, then add (or subtract) them."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key facts",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Trapezium: A = &frac{1}{2}(a + b)h",
+          "desc": "parallel sides a, b"
+        },
+        {
+          "correct": true,
+          "expr": "Composite: split into known shapes",
+          "desc": "then add areas"
+        },
+        {
+          "correct": true,
+          "expr": "a = 5, b = 9, h = 4 &rarr; A = 28",
+          "desc": "&frac{1}{2}(14)&times;4"
+        },
+        {
+          "correct": false,
+          "expr": "Trapezium: A = a &times; b &times; h",
+          "desc": "wrong formula"
+        },
+        {
+          "correct": false,
+          "expr": "Composite: just add all lengths",
+          "desc": "that gives perimeter"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Trapezium: average the parallel sides, then multiply by the height.",
+      "equation": "A = <span class=\"ov\">&frac{1}{2}(a + b)</span> &times; <span class=\"ovr\">h</span>",
+      "caption": "Average of parallel sides times height"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; basic trapezium",
+      "question": "A trapezium has parallel sides 6 cm and 10 cm, height 4 cm. Find the area.",
+      "steps": [
+        "A = &frac{1}{2}(a + b) &times; h",
+        "A = &frac{1}{2}(6 + 10) &times; 4 = &frac{1}{2} &times; 16 &times; 4",
+        "A = 32 cm&sup2;"
+      ],
+      "answer": "= 32 cm&sup2;",
+      "explanation": "Add the parallel sides, halve, then multiply by height."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding height",
+      "question": "A trapezium has area 30 cm&sup2;, parallel sides 4 cm and 8 cm. Find h.",
+      "steps": [
+        "30 = &frac{1}{2}(4 + 8) &times; h",
+        "30 = 6h",
+        "h = 5 cm"
+      ],
+      "answer": "h = 5 cm",
+      "explanation": "Rearrange: h = A &divide; &frac{1}{2}(a + b)."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; L-shaped composite",
+      "question": "An L-shape: outer 8 cm &times; 6 cm, cut-out 3 cm &times; 4 cm. Find area.",
+      "steps": [
+        "Full rectangle: 8 &times; 6 = 48 cm&sup2;",
+        "Cut-out: 3 &times; 4 = 12 cm&sup2;",
+        "Area = 48 &minus; 12 = 36 cm&sup2;"
+      ],
+      "answer": "= 36 cm&sup2;",
+      "explanation": "Subtract the cut-out from the full rectangle."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; T-shaped composite",
+      "question": "A T-shape: top rectangle 10 cm &times; 2 cm, stem 3 cm &times; 6 cm.",
+      "steps": [
+        "Top: 10 &times; 2 = 20 cm&sup2;",
+        "Stem: 3 &times; 6 = 18 cm&sup2;",
+        "Total = 20 + 18 = 38 cm&sup2;"
+      ],
+      "answer": "= 38 cm&sup2;",
+      "explanation": "Split into two rectangles and add."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Trapezium area",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the area of each trapezium.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a = 5 cm, b = 9 cm, h = 4 cm",
+          "answer": "28 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "a = 3 cm, b = 7 cm, h = 6 cm",
+          "answer": "30 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "a = 8 cm, b = 12 cm, h = 5 cm",
+          "answer": "50 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "a = 4 cm, b = 10 cm, h = 3 cm",
+          "answer": "21 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding missing measurements",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the formula to find the missing value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A = 24, a = 4, b = 8. Find h.",
+          "answer": "4 cm"
+        },
+        {
+          "id": "b",
+          "expression": "A = 35, a = 3, h = 5. Find b.",
+          "answer": "11 cm"
+        },
+        {
+          "id": "c",
+          "expression": "A = 40, b = 12, h = 4. Find a.",
+          "answer": "8 cm"
+        },
+        {
+          "id": "d",
+          "expression": "A = 27, a = 5, b = 4. Find h.",
+          "answer": "6 cm"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "L-shapes and U-shapes",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the area of each composite shape.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "L-shape: 10&times;8, cut-out 4&times;5",
+          "answer": "60 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "L-shape: 12&times;6, cut-out 3&times;3",
+          "answer": "63 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "U-shape: 8&times;6, cut-out 4&times;3 (centre)",
+          "answer": "36 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "L-shape: 9&times;7, cut-out 5&times;4",
+          "answer": "43 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "T-shapes and plus signs",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Split into rectangles, then add.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "T-shape: top 8&times;2, stem 3&times;5",
+          "answer": "31 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "T-shape: top 12&times;3, stem 4&times;6",
+          "answer": "60 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "Plus: 10&times;2 and 2&times;10 overlap 2&times;2",
+          "answer": "36 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "Arrow: rectangle 6&times;4 + triangle b=6, h=3",
+          "answer": "33 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed composite and trapezium",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find each area.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Trapezium: a = 6, b = 14, h = 8",
+          "answer": "80 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "Composite: rectangle 5&times;10 + triangle b=5, h=4",
+          "answer": "60 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "Trapezium: a = 7, b = 11, h = 6",
+          "answer": "54 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "L-shape: 15&times;10, cut-out 8&times;6",
+          "answer": "102 cm&sup2;"
+        },
+        {
+          "id": "e",
+          "expression": "Pentagon (split): rectangle 8&times;5 + triangle b=8, h=3",
+          "answer": "52 cm&sup2;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Trapezium area = &frac{1}{2}(a + b) &times; h",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Composite area: add all the sides together",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Split composite shapes into rectangles and triangles",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Trapezium area = a &times; b &times; h",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "For an L-shape, subtract the cut-out from the full rectangle",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A trapezium has area <strong>60 cm&sup2;</strong>. One parallel side is <strong>twice</strong> the other. The height is <strong>8 cm</strong>. Find both parallel sides."
+      },
+      {
+        "id": "b",
+        "text": "A room is an L-shape with outer dimensions <strong>10 m &times; 8 m</strong> and a <strong>4 m &times; 3 m</strong> rectangular piece missing from one corner. Carpet costs <strong>&pound;12.50 per m&sup2;</strong>. How much will it cost to carpet the room?"
+      }
+    ]
+  }
+}

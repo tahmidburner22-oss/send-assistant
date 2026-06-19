@@ -1,0 +1,325 @@
+{
+  "title": "QUADRATICS,\n(THE DISCRIMINANT)",
+  "objective": "LO: I can use the discriminant to determine the number and nature of roots of a quadratic equation.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is the discriminant?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">discriminant</span> of ax&sup2; + bx + c = 0 is <span class=\"ul-k\">b&sup2; &minus; 4ac</span>. It tells us how many real roots (solutions) the quadratic has."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key results:</span> If b&sup2; &minus; 4ac &gt; 0: two distinct real roots. If = 0: one repeated root. If &lt; 0: no real roots."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "x&sup2; + 5x + 6: b&sup2;&minus;4ac = 25&minus;24 = 1 &gt; 0, two roots",
+          "desc": "positive discriminant"
+        },
+        {
+          "correct": true,
+          "expr": "x&sup2; &minus; 6x + 9: b&sup2;&minus;4ac = 36&minus;36 = 0, one root",
+          "desc": "zero discriminant"
+        },
+        {
+          "correct": true,
+          "expr": "x&sup2; + x + 1: b&sup2;&minus;4ac = 1&minus;4 = &minus;3 &lt; 0, no real roots",
+          "desc": "negative discriminant"
+        },
+        {
+          "correct": false,
+          "expr": "Discriminant = b&sup2; + 4ac",
+          "desc": "must be b&sup2; MINUS 4ac"
+        },
+        {
+          "correct": false,
+          "expr": "b&sup2; &minus; 4ac &lt; 0 means two real roots",
+          "desc": "negative means no real roots"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "The discriminant b&sup2; &minus; 4ac determines the nature of roots: positive = 2 roots, zero = 1, negative = none.",
+      "equation": "&Delta; = <span class=\"ov\">b&sup2;</span> &minus; <span class=\"ovr\">4ac</span>",
+      "caption": "&Delta; &gt; 0: two roots; &Delta; = 0: one root; &Delta; &lt; 0: no real roots"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; two real roots",
+      "question": "Find the discriminant of x&sup2; + 3x &minus; 10 = 0 and state the number of roots.",
+      "steps": [
+        "a = 1, b = 3, c = &minus;10",
+        "&Delta; = 3&sup2; &minus; 4(1)(&minus;10) = 9 + 40 = 49",
+        "&Delta; = 49 &gt; 0, so two distinct real roots"
+      ],
+      "answer": "Two distinct real roots",
+      "explanation": "Since 49 is a perfect square, the roots will be rational."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; repeated root",
+      "question": "Find the discriminant of x&sup2; &minus; 8x + 16 = 0.",
+      "steps": [
+        "a = 1, b = &minus;8, c = 16",
+        "&Delta; = (&minus;8)&sup2; &minus; 4(1)(16) = 64 &minus; 64 = 0",
+        "&Delta; = 0, so one repeated root"
+      ],
+      "answer": "One repeated root",
+      "explanation": "The quadratic is a perfect square: (x &minus; 4)&sup2; = 0."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; no real roots",
+      "question": "Show that 2x&sup2; + x + 3 = 0 has no real roots.",
+      "steps": [
+        "a = 2, b = 1, c = 3",
+        "&Delta; = 1&sup2; &minus; 4(2)(3) = 1 &minus; 24 = &minus;23",
+        "&Delta; = &minus;23 &lt; 0, so no real roots"
+      ],
+      "answer": "No real roots",
+      "explanation": "A negative discriminant means the parabola does not cross the x-axis."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; finding k for equal roots",
+      "question": "Find k if x&sup2; + kx + 9 = 0 has equal roots.",
+      "steps": [
+        "For equal roots: &Delta; = 0",
+        "k&sup2; &minus; 4(1)(9) = 0 &rArr; k&sup2; = 36",
+        "k = &plusmn;6"
+      ],
+      "answer": "k = 6 or k = &minus;6",
+      "explanation": "Set the discriminant to zero and solve for the parameter."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Calculating the discriminant",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find b&sup2; &minus; 4ac for each equation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 5x + 6 = 0",
+          "answer": "1"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 4x + 4 = 0",
+          "answer": "0"
+        },
+        {
+          "id": "c",
+          "expression": "2x&sup2; + 3x &minus; 5 = 0",
+          "answer": "49"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; + 2x + 5 = 0",
+          "answer": "&minus;16"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Stating number of roots",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the discriminant and state the number of real roots.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 7x + 10 = 0",
+          "answer": "&Delta; = 9 &gt; 0; two roots"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 6x + 9 = 0",
+          "answer": "&Delta; = 0; one root"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; + x + 1 = 0",
+          "answer": "&Delta; = &minus;3 &lt; 0; no real roots"
+        },
+        {
+          "id": "d",
+          "expression": "3x&sup2; &minus; 2x &minus; 1 = 0",
+          "answer": "&Delta; = 16 &gt; 0; two roots"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Proving no real roots",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Show each equation has no real roots.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 4x + 5 = 0",
+          "answer": "&Delta; = 16 &minus; 20 = &minus;4 &lt; 0"
+        },
+        {
+          "id": "b",
+          "expression": "2x&sup2; + x + 1 = 0",
+          "answer": "&Delta; = 1 &minus; 8 = &minus;7 &lt; 0"
+        },
+        {
+          "id": "c",
+          "expression": "3x&sup2; &minus; x + 2 = 0",
+          "answer": "&Delta; = 1 &minus; 24 = &minus;23 &lt; 0"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; + 6x + 10 = 0",
+          "answer": "&Delta; = 36 &minus; 40 = &minus;4 &lt; 0"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Finding parameters",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the value(s) of k for the stated condition.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + kx + 4 = 0, equal roots",
+          "answer": "k = &plusmn;4"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 6x + k = 0, equal roots",
+          "answer": "k = 9"
+        },
+        {
+          "id": "c",
+          "expression": "kx&sup2; + 2x + 1 = 0, equal roots (k &ne; 0)",
+          "answer": "k = 1"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; + 4x + k = 0, no real roots",
+          "answer": "k &gt; 4"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed discriminant problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use the discriminant to answer each question.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Does x&sup2; + 3x + 1 = 0 have real roots?",
+          "answer": "&Delta; = 5 &gt; 0; yes, two"
+        },
+        {
+          "id": "b",
+          "expression": "For what values of p does x&sup2; + px + 25 = 0 have one root?",
+          "answer": "p = &plusmn;10"
+        },
+        {
+          "id": "c",
+          "expression": "Show 5x&sup2; &minus; 3x + 1 = 0 has no real solutions.",
+          "answer": "&Delta; = 9 &minus; 20 = &minus;11 &lt; 0"
+        },
+        {
+          "id": "d",
+          "expression": "Find k if 2x&sup2; + kx + 8 = 0 has equal roots.",
+          "answer": "k = &plusmn;8"
+        },
+        {
+          "id": "e",
+          "expression": "Does 4x&sup2; &minus; 12x + 9 = 0 have one or two roots?",
+          "answer": "&Delta; = 144 &minus; 144 = 0; one root"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "b&sup2; &minus; 4ac = 0 means one repeated root",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The discriminant is b&sup2; + 4ac",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A negative discriminant means no real roots",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "b&sup2; &minus; 4ac &gt; 0 means no roots",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "If &Delta; is a perfect square, the roots are rational",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The equation <strong>kx&sup2; + (k + 3)x + 3 = 0</strong> has equal roots. Find the possible values of k."
+      },
+      {
+        "id": "b",
+        "text": "For the equation <strong>x&sup2; + 2px + (3p + 4) = 0</strong>, find the values of p for which the equation has real roots. Express your answer as an inequality."
+      }
+    ]
+  }
+}

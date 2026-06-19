@@ -1,0 +1,325 @@
+{
+  "title": "NUMBER OPERATIONS,\n(CHECKING ANSWERS USING INVERSE OPERATIONS)",
+  "objective": "LO: I can use inverse operations to check calculations and verify my answers.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What are inverse operations?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Inverse operations</span> are operations that <span class=\"ul-k\">undo</span> each other. Addition undoes subtraction. Multiplication undoes division."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Checking:</span> After solving a calculation, use the inverse to check. If 45 + 32 = 77, then 77 &minus; 32 should = 45."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Inverse pairs",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "+ and &minus; are inverses",
+          "desc": "undo each other"
+        },
+        {
+          "correct": true,
+          "expr": "&times; and &divide; are inverses",
+          "desc": "undo each other"
+        },
+        {
+          "correct": true,
+          "expr": "If 7 &times; 8 = 56, then 56 &divide; 8 = 7",
+          "desc": "check"
+        },
+        {
+          "correct": false,
+          "expr": "+ and &times; are inverses",
+          "desc": "wrong pairing"
+        },
+        {
+          "correct": false,
+          "expr": "Inverse of squaring is halving",
+          "desc": "it is square-rooting"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Use the inverse operation on your answer to get back to the starting number. If you do, your answer is correct.",
+      "equation": "<span class=\"ov\">45 + 32 = 77</span> &harr; check: <span class=\"ovr\">77 &minus; 32 = 45</span> &check;",
+      "caption": "Inverse undoes the operation"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; checking addition",
+      "question": "Check: 156 + 89 = 245",
+      "steps": [
+        "Use inverse: 245 &minus; 89",
+        "245 &minus; 89 = 156",
+        "156 matches &rarr; correct &check;"
+      ],
+      "answer": "Correct &check;",
+      "explanation": "Subtract one addend from the sum; you should get the other."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; checking multiplication",
+      "question": "Check: 23 &times; 15 = 345",
+      "steps": [
+        "Use inverse: 345 &divide; 15",
+        "345 &divide; 15 = 23",
+        "23 matches &rarr; correct &check;"
+      ],
+      "answer": "Correct &check;",
+      "explanation": "Divide the product by one factor; you should get the other."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding an error",
+      "question": "Check: 64 &divide; 8 = 9",
+      "steps": [
+        "Use inverse: 9 &times; 8 = 72",
+        "72 &ne; 64",
+        "The answer should be 8, not 9"
+      ],
+      "answer": "Incorrect &cross;",
+      "explanation": "The inverse check reveals the error: 64 &divide; 8 = 8."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; checking subtraction",
+      "question": "Check: 500 &minus; 237 = 263",
+      "steps": [
+        "Use inverse: 263 + 237",
+        "263 + 237 = 500",
+        "500 matches &rarr; correct &check;"
+      ],
+      "answer": "Correct &check;",
+      "explanation": "Add the result to the subtracted number; you should get the original."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Check additions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use inverse (subtraction) to check. Write correct or incorrect.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "78 + 45 = 123",
+          "answer": "correct"
+        },
+        {
+          "id": "b",
+          "expression": "156 + 89 = 245",
+          "answer": "correct"
+        },
+        {
+          "id": "c",
+          "expression": "234 + 178 = 402",
+          "answer": "incorrect (412)"
+        },
+        {
+          "id": "d",
+          "expression": "67 + 88 = 155",
+          "answer": "correct"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Check subtractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use inverse (addition) to check.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "200 &minus; 85 = 115",
+          "answer": "correct"
+        },
+        {
+          "id": "b",
+          "expression": "463 &minus; 198 = 265",
+          "answer": "correct"
+        },
+        {
+          "id": "c",
+          "expression": "500 &minus; 237 = 273",
+          "answer": "incorrect (263)"
+        },
+        {
+          "id": "d",
+          "expression": "1000 &minus; 456 = 544",
+          "answer": "correct"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Check multiplications",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use inverse (division) to check.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "12 &times; 15 = 180",
+          "answer": "correct"
+        },
+        {
+          "id": "b",
+          "expression": "25 &times; 13 = 325",
+          "answer": "correct"
+        },
+        {
+          "id": "c",
+          "expression": "34 &times; 7 = 248",
+          "answer": "incorrect (238)"
+        },
+        {
+          "id": "d",
+          "expression": "45 &times; 20 = 900",
+          "answer": "correct"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Check divisions",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use inverse (multiplication) to check.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "144 &divide; 12 = 12",
+          "answer": "correct"
+        },
+        {
+          "id": "b",
+          "expression": "256 &divide; 8 = 34",
+          "answer": "incorrect (32)"
+        },
+        {
+          "id": "c",
+          "expression": "630 &divide; 9 = 70",
+          "answer": "correct"
+        },
+        {
+          "id": "d",
+          "expression": "484 &divide; 22 = 22",
+          "answer": "correct"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed checking",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Check each calculation using the inverse. State correct or give the right answer.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "56 + 78 = 134",
+          "answer": "correct"
+        },
+        {
+          "id": "b",
+          "expression": "15 &times; 16 = 250",
+          "answer": "incorrect (240)"
+        },
+        {
+          "id": "c",
+          "expression": "900 &divide; 25 = 36",
+          "answer": "correct"
+        },
+        {
+          "id": "d",
+          "expression": "1000 &minus; 382 = 628",
+          "answer": "incorrect (618)"
+        },
+        {
+          "id": "e",
+          "expression": "17 &times; 19 = 323",
+          "answer": "correct"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "The inverse of addition is subtraction",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The inverse of multiplication is addition",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "If 7 &times; 8 = 56, then 56 &divide; 7 = 8",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The inverse of squaring is dividing by 2",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Checking answers helps find mistakes",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A student calculates <strong>345 &times; 27 = 9315</strong>. Without redoing the full multiplication, use <strong>inverse operations</strong> and <strong>estimation</strong> to check whether this is correct."
+      },
+      {
+        "id": "b",
+        "text": "The equation <strong>x&sup2; = 49</strong> has two solutions. Find both. Then use the inverse (squaring) to verify each solution. What is the inverse of squaring?"
+      }
+    ]
+  }
+}

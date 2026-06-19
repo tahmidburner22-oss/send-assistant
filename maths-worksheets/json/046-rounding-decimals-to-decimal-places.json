@@ -1,0 +1,325 @@
+{
+  "title": "DECIMALS,\n(ROUNDING DECIMALS TO DECIMAL PLACES)",
+  "objective": "LO: I can round decimal numbers to a given number of decimal places.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Rounding to decimal places",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Rounding</span> to decimal places (d.p.) means shortening a decimal to a given number of digits after the <span class=\"ul-k\">decimal point</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Rule:</span> Look at the NEXT digit. If it is 5 or more, round up. If less than 5, round down (keep the same)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3.147 to 1 d.p. = 3.1",
+          "desc": "4 &lt; 5, round down"
+        },
+        {
+          "correct": true,
+          "expr": "3.147 to 2 d.p. = 3.15",
+          "desc": "7 &ge; 5, round up"
+        },
+        {
+          "correct": true,
+          "expr": "6.998 to 2 d.p. = 7.00",
+          "desc": "rounds up to 7.00"
+        },
+        {
+          "correct": false,
+          "expr": "3.147 to 1 d.p. = 3.2",
+          "desc": "look at 4, not 7"
+        },
+        {
+          "correct": false,
+          "expr": "6.998 to 2 d.p. = 6.10",
+          "desc": "should be 7.00"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Look at the digit AFTER the one you want. 5 or above: round up. Below 5: round down.",
+      "equation": "<span class=\"ov\">3.147</span> to 2 d.p. &rarr; look at 7 (third d.p.) &ge; 5 &rarr; <span class=\"ovr\">3.15</span>",
+      "caption": "Critical digit decides"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; rounding to 1 d.p.",
+      "question": "Round 4.63 to 1 decimal place.",
+      "steps": [
+        "We want 1 d.p.: keep one digit after the point",
+        "Look at the 2nd d.p.: 3",
+        "3 &lt; 5, so round down: 4.6"
+      ],
+      "answer": "= 4.6",
+      "explanation": "The digit after is 3 (less than 5), so we keep 4.6."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; rounding to 2 d.p.",
+      "question": "Round 7.386 to 2 decimal places.",
+      "steps": [
+        "We want 2 d.p.: keep two digits after the point",
+        "Look at the 3rd d.p.: 6",
+        "6 &ge; 5, so round up: 7.39"
+      ],
+      "answer": "= 7.39",
+      "explanation": "The 6 forces the previous digit (8) to round up to 9."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; rounding up carries",
+      "question": "Round 2.997 to 2 decimal places.",
+      "steps": [
+        "Look at 3rd d.p.: 7 &ge; 5, round up",
+        "2.99 rounds up to 3.00",
+        "= 3.00"
+      ],
+      "answer": "= 3.00",
+      "explanation": "Rounding can carry through: 2.99 + 0.01 = 3.00."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; to 3 d.p.",
+      "question": "Round 0.12345 to 3 decimal places.",
+      "steps": [
+        "Want 3 d.p.: look at 4th digit: 4",
+        "4 &lt; 5, round down",
+        "= 0.123"
+      ],
+      "answer": "= 0.123",
+      "explanation": "The fourth decimal digit (4) is less than 5."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Round to 1 decimal place",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Round each number to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3.47",
+          "answer": "3.5"
+        },
+        {
+          "id": "b",
+          "expression": "8.12",
+          "answer": "8.1"
+        },
+        {
+          "id": "c",
+          "expression": "5.95",
+          "answer": "6.0"
+        },
+        {
+          "id": "d",
+          "expression": "0.68",
+          "answer": "0.7"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Round to 2 decimal places",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Round each number to 2 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4.567",
+          "answer": "4.57"
+        },
+        {
+          "id": "b",
+          "expression": "3.142",
+          "answer": "3.14"
+        },
+        {
+          "id": "c",
+          "expression": "7.995",
+          "answer": "8.00"
+        },
+        {
+          "id": "d",
+          "expression": "0.1234",
+          "answer": "0.12"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Round to 3 decimal places",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Round each number to 3 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2.71828",
+          "answer": "2.718"
+        },
+        {
+          "id": "b",
+          "expression": "0.12345",
+          "answer": "0.123"
+        },
+        {
+          "id": "c",
+          "expression": "9.99951",
+          "answer": "10.000"
+        },
+        {
+          "id": "d",
+          "expression": "6.54321",
+          "answer": "6.543"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Round the answer appropriately.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "10 &divide; 3 = 3.333... to 2 d.p.",
+          "answer": "3.33"
+        },
+        {
+          "id": "b",
+          "expression": "&pi; = 3.14159... to 3 d.p.",
+          "answer": "3.142"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;7 shared among 3 people (to nearest penny)",
+          "answer": "&pound;2.33"
+        },
+        {
+          "id": "d",
+          "expression": "22 &divide; 7 = 3.14285... to 2 d.p.",
+          "answer": "3.14"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed rounding",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Round to the number of d.p. stated.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "6.4812 to 1 d.p.",
+          "answer": "6.5"
+        },
+        {
+          "id": "b",
+          "expression": "3.0962 to 2 d.p.",
+          "answer": "3.10"
+        },
+        {
+          "id": "c",
+          "expression": "0.999 to 1 d.p.",
+          "answer": "1.0"
+        },
+        {
+          "id": "d",
+          "expression": "12.3456 to 3 d.p.",
+          "answer": "12.346"
+        },
+        {
+          "id": "e",
+          "expression": "7.005 to 2 d.p.",
+          "answer": "7.01"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3.147 to 1 d.p. = 3.1",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Look at the digit you want to keep, not the next one",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "6.998 rounded to 2 d.p. = 7.00",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "5 always rounds down",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Rounding 4.95 to 1 d.p. gives 5.0",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A calculator shows <strong>7 &divide; 6 = 1.1666666...</strong> Round this to 1, 2, and 3 decimal places. What pattern do you notice?"
+      },
+      {
+        "id": "b",
+        "text": "A measurement is <strong>3.45 cm</strong> rounded to 2 d.p. What are the minimum and maximum values the actual measurement could be? (This is the error interval.)"
+      }
+    ]
+  }
+}

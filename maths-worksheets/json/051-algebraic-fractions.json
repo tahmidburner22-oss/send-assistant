@@ -1,0 +1,325 @@
+{
+  "title": "FRACTIONS (SECONDARY),\n(ALGEBRAIC FRACTIONS)",
+  "objective": "LO: I can simplify, add, subtract, multiply and divide algebraic fractions.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What are algebraic fractions?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "An <span class=\"ul-b\">algebraic fraction</span> has <span class=\"ul-k\">expressions with letters</span> in the numerator, denominator, or both (e.g. &frac{x+2}{3} or &frac{2x}{x&minus;1})."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Same rules:</span> All fraction rules still apply. To add/subtract, find common denominator. To simplify, cancel common factors."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key operations",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&frac{6x}{3} = 2x",
+          "desc": "simplify by cancelling"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{x}{3} + &frac{x}{4} = &frac{7x}{12}",
+          "desc": "common denominator 12"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{x+2}{x+2} = 1",
+          "desc": "cancel identical factors"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{x+2}{x} = 2",
+          "desc": "cannot cancel part of a sum"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{x}{3} + &frac{x}{4} = &frac{2x}{7}",
+          "desc": "cannot add denominators"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Treat algebraic fractions like number fractions. Factorise first, then cancel common factors.",
+      "equation": "<span class=\"ov\">&frac{2x + 4}{2}</span> = &frac{2(x + 2)}{2} = <span class=\"ovr\">x + 2</span>",
+      "caption": "Factorise numerator, then cancel"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; simplifying",
+      "question": "Simplify &frac{8x}{4}",
+      "steps": [
+        "Divide numerator and denominator by 4",
+        "8x &divide; 4 = 2x; 4 &divide; 4 = 1",
+        "= 2x"
+      ],
+      "answer": "= 2x",
+      "explanation": "Cancel the common factor of 4."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; adding",
+      "question": "Simplify &frac{x}{3} + &frac{x}{4}",
+      "steps": [
+        "Common denominator = 12",
+        "&frac{4x}{12} + &frac{3x}{12}",
+        "= &frac{7x}{12}"
+      ],
+      "answer": "= &frac{7x}{12}",
+      "explanation": "Multiply each fraction to get denominator 12."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; subtracting",
+      "question": "Simplify &frac{2x}{5} &minus; &frac{x}{3}",
+      "steps": [
+        "Common denominator = 15",
+        "&frac{6x}{15} &minus; &frac{5x}{15}",
+        "= &frac{x}{15}"
+      ],
+      "answer": "= &frac{x}{15}",
+      "explanation": "Multiply tops and bottoms to get a common denominator."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; factorising to simplify",
+      "question": "Simplify &frac{x&sup2; + 3x}{x}",
+      "steps": [
+        "Factorise numerator: x(x + 3)",
+        "&frac{x(x + 3)}{x}",
+        "Cancel x: = x + 3"
+      ],
+      "answer": "= x + 3",
+      "explanation": "Factorise first, then cancel the common factor."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Simplifying algebraic fractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Simplify each fraction.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{10x}{5}",
+          "answer": "2x"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{6x}{2x}",
+          "answer": "3"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{4x + 8}{4}",
+          "answer": "x + 2"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{3x&sup2;}{x}",
+          "answer": "3x"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Adding algebraic fractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find a common denominator and add.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{x}{2} + &frac{x}{3}",
+          "answer": "&frac{5x}{6}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{x}{4} + &frac{x}{5}",
+          "answer": "&frac{9x}{20}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2x}{3} + &frac{x}{6}",
+          "answer": "&frac{5x}{6}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{x}{2} + &frac{3}{4}",
+          "answer": "&frac{2x + 3}{4}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Subtracting algebraic fractions",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find a common denominator and subtract.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{x}{2} &minus; &frac{x}{5}",
+          "answer": "&frac{3x}{10}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3x}{4} &minus; &frac{x}{3}",
+          "answer": "&frac{5x}{12}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{5x}{6} &minus; &frac{x}{2}",
+          "answer": "&frac{x}{3}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{x+1}{3} &minus; &frac{x}{4}",
+          "answer": "&frac{x+4}{12}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Factorising to simplify",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Factorise the numerator or denominator, then cancel.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{x&sup2; + 2x}{x}",
+          "answer": "x + 2"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3x + 6}{3}",
+          "answer": "x + 2"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{x&sup2; &minus; 4x}{x}",
+          "answer": "x &minus; 4"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{2x&sup2; + 6x}{2x}",
+          "answer": "x + 3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed algebraic fractions",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Simplify fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{12x}{4x}",
+          "answer": "3"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{x}{3} + &frac{2x}{9}",
+          "answer": "&frac{5x}{9}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{x&sup2; + 5x}{x}",
+          "answer": "x + 5"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{4x}{6} &minus; &frac{x}{3}",
+          "answer": "&frac{x}{3}"
+        },
+        {
+          "id": "e",
+          "expression": "&frac{2(x + 1)}{x + 1}",
+          "answer": "2"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&frac{6x}{3} = 2x",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&frac{x+2}{x} = 2 (cancel the x)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "&frac{x}{3} + &frac{x}{4} = &frac{7x}{12}",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&frac{x}{3} + &frac{x}{4} = &frac{2x}{7}",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Factorise before cancelling",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Simplify <strong>&frac{x&sup2; + 5x + 6}{x + 2}</strong>. (Hint: factorise the numerator as a quadratic first.)"
+      },
+      {
+        "id": "b",
+        "text": "Show that <strong>&frac{1}{x} + &frac{1}{x+1} = &frac{2x+1}{x(x+1)}</strong>. Hence find the value when <strong>x = 3</strong>."
+      }
+    ]
+  }
+}

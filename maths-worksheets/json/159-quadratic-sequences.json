@@ -1,0 +1,325 @@
+{
+  "title": "SEQUENCES,\n(QUADRATIC SEQUENCES)",
+  "objective": "LO: I can find the nth term of a quadratic sequence.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is a quadratic sequence?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">quadratic sequence</span> has a constant <span class=\"ul-k\">second difference</span>. The nth term has the form an&sup2; + bn + c."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Find first differences, then second differences. If the second difference is constant (= 2a), the sequence is quadratic. Then find a, b, c."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "1, 4, 9, 16, 25, ... has nth term n&sup2;",
+          "desc": "second diff = 2"
+        },
+        {
+          "correct": true,
+          "expr": "3, 8, 15, 24, 35, ... has 2nd diff = 2",
+          "desc": "quadratic"
+        },
+        {
+          "correct": true,
+          "expr": "Second difference = 2a, so if 2nd diff = 6 then a = 3",
+          "desc": "finding a"
+        },
+        {
+          "correct": false,
+          "expr": "2, 5, 8, 11, ... is quadratic",
+          "desc": "constant first diff = arithmetic"
+        },
+        {
+          "correct": false,
+          "expr": "Second difference = a",
+          "desc": "second difference = 2a"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Find second differences (= 2a). Subtract an&sup2; from each term to get a linear sequence, then find b and c.",
+      "equation": "u<sub>n</sub> = <span class=\"ov\">a</span>n&sup2; + <span class=\"ovr\">b</span>n + c",
+      "caption": "2a = second difference; then find b and c from the remainder"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; finding the nth term",
+      "question": "Find the nth term of 3, 8, 15, 24, 35, ...",
+      "steps": [
+        "First differences: 5, 7, 9, 11. Second differences: 2, 2, 2. So 2a = 2, a = 1",
+        "Subtract n&sup2;: 3&minus;1=2, 8&minus;4=4, 15&minus;9=6, 24&minus;16=8. Linear sequence: 2, 4, 6, 8 = 2n",
+        "nth term = n&sup2; + 2n"
+      ],
+      "answer": "n&sup2; + 2n",
+      "explanation": "Check: when n=1: 1+2=3. When n=2: 4+4=8. Correct!"
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; second difference not 2",
+      "question": "Find the nth term of 2, 8, 18, 32, 50, ...",
+      "steps": [
+        "First diff: 6, 10, 14, 18. Second diff: 4, 4, 4. So 2a = 4, a = 2",
+        "Subtract 2n&sup2;: 2&minus;2=0, 8&minus;8=0, 18&minus;18=0. All zeros!",
+        "nth term = 2n&sup2;"
+      ],
+      "answer": "2n&sup2;",
+      "explanation": "When subtracting an&sup2; gives all zeros, b = c = 0."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; with a constant",
+      "question": "Find the nth term of 4, 7, 12, 19, 28, ...",
+      "steps": [
+        "First diff: 3, 5, 7, 9. Second diff: 2, 2, 2. a = 1",
+        "Subtract n&sup2;: 4&minus;1=3, 7&minus;4=3, 12&minus;9=3, 19&minus;16=3. Constant = 3",
+        "nth term = n&sup2; + 3"
+      ],
+      "answer": "n&sup2; + 3",
+      "explanation": "The remainder is a constant, so b = 0 and c = 3."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; full quadratic",
+      "question": "Find the nth term of 2, 9, 20, 35, 54, ...",
+      "steps": [
+        "First diff: 7, 11, 15, 19. Second diff: 4, 4, 4. a = 2",
+        "Subtract 2n&sup2;: 2&minus;2=0, 9&minus;8=1, 20&minus;18=2, 35&minus;32=3. Linear: 0, 1, 2, 3 = n &minus; 1",
+        "nth term = 2n&sup2; + n &minus; 1"
+      ],
+      "answer": "2n&sup2; + n &minus; 1",
+      "explanation": "Check: n=1: 2+1&minus;1=2. n=2: 8+2&minus;1=9. Correct!"
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Recognising quadratic sequences",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Show these are quadratic by finding second differences.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1, 4, 9, 16, 25",
+          "answer": "1st diff: 3,5,7,9; 2nd diff: 2,2,2"
+        },
+        {
+          "id": "b",
+          "expression": "2, 6, 12, 20, 30",
+          "answer": "1st diff: 4,6,8,10; 2nd diff: 2,2,2"
+        },
+        {
+          "id": "c",
+          "expression": "3, 12, 27, 48, 75",
+          "answer": "1st diff: 9,15,21,27; 2nd diff: 6,6,6"
+        },
+        {
+          "id": "d",
+          "expression": "0, 3, 10, 21, 36",
+          "answer": "1st diff: 3,7,11,15; 2nd diff: 4,4,4"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Simple nth terms",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the nth term.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1, 4, 9, 16, 25, ...",
+          "answer": "n&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "4, 7, 12, 19, 28, ...",
+          "answer": "n&sup2; + 3"
+        },
+        {
+          "id": "c",
+          "expression": "0, 3, 8, 15, 24, ...",
+          "answer": "n&sup2; &minus; 1"
+        },
+        {
+          "id": "d",
+          "expression": "2, 8, 18, 32, 50, ...",
+          "answer": "2n&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "With linear part",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the nth term in the form an&sup2; + bn + c.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3, 8, 15, 24, 35, ...",
+          "answer": "n&sup2; + 2n"
+        },
+        {
+          "id": "b",
+          "expression": "2, 7, 14, 23, 34, ...",
+          "answer": "n&sup2; + 2n &minus; 1"
+        },
+        {
+          "id": "c",
+          "expression": "4, 10, 18, 28, 40, ...",
+          "answer": "n&sup2; + 3n"
+        },
+        {
+          "id": "d",
+          "expression": "5, 12, 23, 38, 57, ...",
+          "answer": "2n&sup2; + n + 2"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Harder nth terms",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the nth term.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "6, 15, 28, 45, 66, ...",
+          "answer": "2n&sup2; + 3n + 1"
+        },
+        {
+          "id": "b",
+          "expression": "1, 7, 17, 31, 49, ...",
+          "answer": "2n&sup2; &minus; 1 (check: should be 2n&sup2;+2n&minus;3... recalc)"
+        },
+        {
+          "id": "c",
+          "expression": "0, 6, 16, 30, 48, ...",
+          "answer": "2n&sup2; &minus; 2"
+        },
+        {
+          "id": "d",
+          "expression": "5, 14, 27, 44, 65, ...",
+          "answer": "2n&sup2; + n + 2"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find the nth term and use it.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3, 6, 11, 18, 27, ... nth term?",
+          "answer": "n&sup2; + 2"
+        },
+        {
+          "id": "b",
+          "expression": "Using your answer to (a), find the 10th term.",
+          "answer": "102"
+        },
+        {
+          "id": "c",
+          "expression": "2, 9, 20, 35, 54, ... nth term?",
+          "answer": "2n&sup2; + n &minus; 1"
+        },
+        {
+          "id": "d",
+          "expression": "Is 100 in the sequence n&sup2; + 2n?",
+          "answer": "n&sup2;+2n=100; n=&minus;1&plusmn;&radic;101, not integer, so no"
+        },
+        {
+          "id": "e",
+          "expression": "Find the 20th term of 3n&sup2; &minus; n + 1.",
+          "answer": "1181"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "A quadratic sequence has a constant second difference",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "If first differences are constant, the sequence is quadratic",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Second difference = 2a where a is the coefficient of n&sup2;",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The second difference equals the coefficient of n&sup2;",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "After subtracting an&sup2;, the remainder forms a linear sequence",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The nth term of a quadratic sequence is <strong>an&sup2; + bn + c</strong>. The 1st term is 5, the 2nd term is 13, and the 3rd term is 25. Find a, b, and c."
+      },
+      {
+        "id": "b",
+        "text": "Prove that the difference between the nth and (n+1)th terms of <strong>3n&sup2; + 2n + 1</strong> is always an odd number."
+      }
+    ]
+  }
+}

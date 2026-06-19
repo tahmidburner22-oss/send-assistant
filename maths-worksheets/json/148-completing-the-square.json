@@ -1,0 +1,325 @@
+{
+  "title": "QUADRATICS,\n(COMPLETING THE SQUARE)",
+  "objective": "LO: I can write a quadratic expression in completed square form.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is completing the square?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Completing the square</span> rewrites ax&sup2; + bx + c in the form <span class=\"ul-k\">(x + p)&sup2; + q</span>. This reveals the vertex (turning point) of the parabola."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Halve the coefficient of x to find p, then subtract p&sup2; and adjust the constant to find q."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "x&sup2; + 6x + 5 = (x + 3)&sup2; &minus; 4",
+          "desc": "half of 6 is 3, 5 &minus; 9 = &minus;4"
+        },
+        {
+          "correct": true,
+          "expr": "x&sup2; &minus; 4x + 1 = (x &minus; 2)&sup2; &minus; 3",
+          "desc": "half of &minus;4 is &minus;2, 1 &minus; 4 = &minus;3"
+        },
+        {
+          "correct": true,
+          "expr": "x&sup2; + 8x = (x + 4)&sup2; &minus; 16",
+          "desc": "no constant: q = &minus;16"
+        },
+        {
+          "correct": false,
+          "expr": "x&sup2; + 6x + 5 = (x + 6)&sup2; + 5",
+          "desc": "must halve the coefficient"
+        },
+        {
+          "correct": false,
+          "expr": "x&sup2; + 6x + 5 = (x + 3)&sup2; + 5",
+          "desc": "forgot to subtract 9"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "x&sup2; + bx + c = (x + &frac{b}{2})&sup2; + c &minus; (&frac{b}{2})&sup2;",
+      "equation": "x&sup2; + bx + c = (x + <span class=\"ov\">&frac{b}{2}</span>)&sup2; + <span class=\"ovr\">c &minus; &frac{b&sup2;}{4}</span>",
+      "caption": "Halve b for the bracket; subtract the square for q"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; positive coefficient of x",
+      "question": "Write x&sup2; + 8x + 10 in completed square form.",
+      "steps": [
+        "Half of 8 is 4, so bracket is (x + 4)&sup2;",
+        "(x + 4)&sup2; = x&sup2; + 8x + 16, so subtract 16",
+        "x&sup2; + 8x + 10 = (x + 4)&sup2; + 10 &minus; 16 = (x + 4)&sup2; &minus; 6"
+      ],
+      "answer": "(x + 4)&sup2; &minus; 6",
+      "explanation": "The vertex is at (&minus;4, &minus;6)."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative coefficient of x",
+      "question": "Write x&sup2; &minus; 6x + 2 in completed square form.",
+      "steps": [
+        "Half of &minus;6 is &minus;3, so bracket is (x &minus; 3)&sup2;",
+        "(x &minus; 3)&sup2; = x&sup2; &minus; 6x + 9, so subtract 9",
+        "x&sup2; &minus; 6x + 2 = (x &minus; 3)&sup2; + 2 &minus; 9 = (x &minus; 3)&sup2; &minus; 7"
+      ],
+      "answer": "(x &minus; 3)&sup2; &minus; 7",
+      "explanation": "The minimum value of this expression is &minus;7."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; no constant term",
+      "question": "Write x&sup2; + 10x in completed square form.",
+      "steps": [
+        "Half of 10 is 5, so bracket is (x + 5)&sup2;",
+        "(x + 5)&sup2; = x&sup2; + 10x + 25",
+        "x&sup2; + 10x = (x + 5)&sup2; &minus; 25"
+      ],
+      "answer": "(x + 5)&sup2; &minus; 25",
+      "explanation": "When c = 0, q equals the negative of p&sup2;."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; solving by completing the square",
+      "question": "Solve x&sup2; + 4x &minus; 5 = 0 by completing the square.",
+      "steps": [
+        "Complete: (x + 2)&sup2; &minus; 4 &minus; 5 = 0 &rArr; (x + 2)&sup2; = 9",
+        "x + 2 = &plusmn;3",
+        "x = 1 or x = &minus;5"
+      ],
+      "answer": "x = 1 or x = &minus;5",
+      "explanation": "Take the square root of both sides, remembering &plusmn;."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Positive x coefficient",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write in completed square form (x + p)&sup2; + q.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 4x + 1",
+          "answer": "(x + 2)&sup2; &minus; 3"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; + 6x + 7",
+          "answer": "(x + 3)&sup2; &minus; 2"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; + 10x + 20",
+          "answer": "(x + 5)&sup2; &minus; 5"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; + 2x &minus; 3",
+          "answer": "(x + 1)&sup2; &minus; 4"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Negative x coefficient",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write in completed square form.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; &minus; 4x + 3",
+          "answer": "(x &minus; 2)&sup2; &minus; 1"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 8x + 10",
+          "answer": "(x &minus; 4)&sup2; &minus; 6"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; &minus; 2x &minus; 5",
+          "answer": "(x &minus; 1)&sup2; &minus; 6"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; &minus; 12x + 30",
+          "answer": "(x &minus; 6)&sup2; &minus; 6"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "No constant term",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Complete the square.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 6x",
+          "answer": "(x + 3)&sup2; &minus; 9"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 10x",
+          "answer": "(x &minus; 5)&sup2; &minus; 25"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; + 14x",
+          "answer": "(x + 7)&sup2; &minus; 49"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; &minus; 20x",
+          "answer": "(x &minus; 10)&sup2; &minus; 100"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Solving equations",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve by completing the square.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 6x + 5 = 0",
+          "answer": "x = &minus;1 or x = &minus;5"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 4x &minus; 12 = 0",
+          "answer": "x = 6 or x = &minus;2"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; + 2x &minus; 8 = 0",
+          "answer": "x = 2 or x = &minus;4"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; &minus; 10x + 9 = 0",
+          "answer": "x = 9 or x = 1"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Finding the vertex",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Complete the square and state the minimum point (vertex).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x&sup2; + 4x + 7",
+          "answer": "(x+2)&sup2; + 3; vertex (&minus;2, 3)"
+        },
+        {
+          "id": "b",
+          "expression": "x&sup2; &minus; 6x + 11",
+          "answer": "(x&minus;3)&sup2; + 2; vertex (3, 2)"
+        },
+        {
+          "id": "c",
+          "expression": "x&sup2; + 8x + 20",
+          "answer": "(x+4)&sup2; + 4; vertex (&minus;4, 4)"
+        },
+        {
+          "id": "d",
+          "expression": "x&sup2; &minus; 2x &minus; 3",
+          "answer": "(x&minus;1)&sup2; &minus; 4; vertex (1, &minus;4)"
+        },
+        {
+          "id": "e",
+          "expression": "x&sup2; + 12x + 32",
+          "answer": "(x+6)&sup2; &minus; 4; vertex (&minus;6, &minus;4)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To complete the square, halve the coefficient of x",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "x&sup2; + 6x + 5 = (x + 6)&sup2; + 5",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "(x + 3)&sup2; = x&sup2; + 6x + 9",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "x&sup2; + 6x + 5 = (x + 3)&sup2; + 5",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The vertex of (x + p)&sup2; + q is at (&minus;p, q)",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Write <strong>2x&sup2; + 12x + 7</strong> in the form <strong>a(x + p)&sup2; + q</strong>. (Hint: factor out 2 first.) State the coordinates of the vertex."
+      },
+      {
+        "id": "b",
+        "text": "The equation <strong>x&sup2; + kx + 9 = 0</strong> has exactly one solution. Find the possible values of k by completing the square and setting the discriminant to zero."
+      }
+    ]
+  }
+}

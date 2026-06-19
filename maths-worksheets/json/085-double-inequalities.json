@@ -1,0 +1,325 @@
+{
+  "title": "INEQUALITIES,\n(DOUBLE INEQUALITIES)",
+  "objective": "LO: I can solve and represent double (compound) inequalities.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is a double inequality?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">double inequality</span> has the variable between two bounds, e.g. 3 &lt; x &le; 7. It means x is <span class=\"ul-k\">greater than 3 AND less than or equal to 7</span> simultaneously."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Solve by performing the same operation to all three parts of the inequality."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "2 &lt; x &le; 5 means x can be 3, 4, or 5 (integers)",
+          "desc": "inclusive of 5"
+        },
+        {
+          "correct": true,
+          "expr": "&minus;1 &le; x &lt; 4 includes &minus;1 but not 4",
+          "desc": "closed/open"
+        },
+        {
+          "correct": true,
+          "expr": "1 &lt; 2x + 1 &le; 9 gives 0 &lt; x &le; 4",
+          "desc": "solve all three parts"
+        },
+        {
+          "correct": false,
+          "expr": "2 &lt; x &le; 5 means x can be 2",
+          "desc": "strict inequality excludes 2"
+        },
+        {
+          "correct": false,
+          "expr": "To solve, only work on the middle part",
+          "desc": "must do same to all three parts"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Whatever you do to the middle, do the same to the left and right. If you multiply/divide by a negative, reverse both inequality signs.",
+      "equation": "a &lt; <span class=\"ov\">bx + c</span> &le; d &rArr; &frac{a &minus; c}{b} &lt; <span class=\"ovr\">x</span> &le; &frac{d &minus; c}{b}",
+      "caption": "Subtract c, then divide by b (all three parts)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; listing integers",
+      "question": "List the integers satisfying &minus;2 &lt; x &le; 3",
+      "steps": [
+        "x must be greater than &minus;2 (not including &minus;2)",
+        "x must be less than or equal to 3",
+        "Integers: &minus;1, 0, 1, 2, 3"
+      ],
+      "answer": "&minus;1, 0, 1, 2, 3",
+      "explanation": "Open circle at &minus;2 (not included), closed at 3 (included)."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; solving a double inequality",
+      "question": "Solve 4 &lt; 2x + 2 &le; 10",
+      "steps": [
+        "Subtract 2 from all parts: 2 &lt; 2x &le; 8",
+        "Divide all parts by 2: 1 &lt; x &le; 4",
+        "Solution: 1 &lt; x &le; 4"
+      ],
+      "answer": "1 &lt; x &le; 4",
+      "explanation": "Perform identical operations on all three parts."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; negative coefficient",
+      "question": "Solve &minus;6 &le; &minus;2x &lt; 4",
+      "steps": [
+        "Divide all parts by &minus;2",
+        "Reverse both inequality signs",
+        "3 &ge; x &gt; &minus;2, i.e. &minus;2 &lt; x &le; 3"
+      ],
+      "answer": "&minus;2 &lt; x &le; 3",
+      "explanation": "Dividing by a negative reverses the inequality signs."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; harder example",
+      "question": "Solve 5 &le; 3x &minus; 1 &lt; 14",
+      "steps": [
+        "Add 1 to all parts: 6 &le; 3x &lt; 15",
+        "Divide by 3: 2 &le; x &lt; 5",
+        "Solution: 2 &le; x &lt; 5"
+      ],
+      "answer": "2 &le; x &lt; 5",
+      "explanation": "Integers satisfying this are 2, 3, 4."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Listing integers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "List all integers satisfying each inequality.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1 &lt; x &le; 5",
+          "answer": "2, 3, 4, 5"
+        },
+        {
+          "id": "b",
+          "expression": "&minus;3 &le; x &lt; 2",
+          "answer": "&minus;3, &minus;2, &minus;1, 0, 1"
+        },
+        {
+          "id": "c",
+          "expression": "0 &lt; x &lt; 4",
+          "answer": "1, 2, 3"
+        },
+        {
+          "id": "d",
+          "expression": "&minus;1 &le; x &le; 3",
+          "answer": "&minus;1, 0, 1, 2, 3"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Solving (add/subtract)",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Solve each double inequality.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 &lt; x + 1 &le; 7",
+          "answer": "2 &lt; x &le; 6"
+        },
+        {
+          "id": "b",
+          "expression": "1 &le; x &minus; 2 &lt; 5",
+          "answer": "3 &le; x &lt; 7"
+        },
+        {
+          "id": "c",
+          "expression": "&minus;4 &lt; x + 3 &le; 6",
+          "answer": "&minus;7 &lt; x &le; 3"
+        },
+        {
+          "id": "d",
+          "expression": "0 &le; x &minus; 5 &lt; 3",
+          "answer": "5 &le; x &lt; 8"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Solving (multiply/divide)",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Solve each double inequality.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4 &lt; 2x &le; 10",
+          "answer": "2 &lt; x &le; 5"
+        },
+        {
+          "id": "b",
+          "expression": "6 &le; 3x &lt; 15",
+          "answer": "2 &le; x &lt; 5"
+        },
+        {
+          "id": "c",
+          "expression": "2 &lt; &frac{x}{2} &le; 5",
+          "answer": "4 &lt; x &le; 10"
+        },
+        {
+          "id": "d",
+          "expression": "1 &lt; 4x &le; 20",
+          "answer": "&frac{1}{4} &lt; x &le; 5"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Two-step solving",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve and list integer solutions.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 &lt; 2x + 1 &le; 11",
+          "answer": "2 &lt; x &le; 5; integers 3, 4, 5"
+        },
+        {
+          "id": "b",
+          "expression": "1 &le; 3x &minus; 2 &lt; 10",
+          "answer": "1 &le; x &lt; 4; integers 1, 2, 3"
+        },
+        {
+          "id": "c",
+          "expression": "&minus;3 &lt; 2x + 1 &le; 7",
+          "answer": "&minus;2 &lt; x &le; 3; integers &minus;1, 0, 1, 2, 3"
+        },
+        {
+          "id": "d",
+          "expression": "4 &le; 5x &minus; 1 &lt; 19",
+          "answer": "1 &le; x &lt; 4; integers 1, 2, 3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed and harder",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each inequality fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&minus;6 &le; &minus;3x &lt; 9",
+          "answer": "&minus;3 &lt; x &le; 2"
+        },
+        {
+          "id": "b",
+          "expression": "7 &lt; 4x &minus; 1 &le; 19",
+          "answer": "2 &lt; x &le; 5"
+        },
+        {
+          "id": "c",
+          "expression": "&minus;5 &le; 2x + 3 &lt; 11",
+          "answer": "&minus;4 &le; x &lt; 4"
+        },
+        {
+          "id": "d",
+          "expression": "0 &lt; &frac{x + 1}{2} &le; 3",
+          "answer": "&minus;1 &lt; x &le; 5"
+        },
+        {
+          "id": "e",
+          "expression": "&minus;8 &lt; &minus;2(x &minus; 1) &le; 6",
+          "answer": "&minus;2 &le; x &lt; 5"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "2 &lt; x &le; 5 means x can be 3, 4, or 5 (integers)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "2 &lt; x &le; 5 includes 2",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Dividing by a negative reverses both inequality signs",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "You only need to solve the right-hand inequality",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A double inequality can be split into two separate inequalities",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Find all integers satisfying <strong>&minus;3 &lt; 2x &minus; 1 &le; 9</strong> AND <strong>x &lt; 4</strong>. Show your working clearly."
+      },
+      {
+        "id": "b",
+        "text": "The perimeter of a rectangle is between <strong>20 cm and 36 cm</strong> (inclusive). The width is <strong>4 cm</strong>. Write a double inequality for the length l and solve it."
+      }
+    ]
+  }
+}
