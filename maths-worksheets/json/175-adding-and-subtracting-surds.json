@@ -1,0 +1,325 @@
+{
+  "title": "SURDS,\n(ADDING AND SUBTRACTING SURDS)",
+  "objective": "LO: I can add and subtract surds by collecting like surd terms.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Adding and subtracting surds",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">surd</span> is an irrational root such as &radic;2 or &radic;5. We can only <span class=\"ul-k\">add or subtract surds</span> that have the same number under the root sign (like terms)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Simplify first:</span> Sometimes surds need to be simplified before they can be combined. For example, &radic;8 = 2&radic;2."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3&radic;5 + 2&radic;5 = 5&radic;5",
+          "desc": "like surds, add coefficients"
+        },
+        {
+          "correct": true,
+          "expr": "&radic;12 + &radic;3 = 2&radic;3 + &radic;3 = 3&radic;3",
+          "desc": "simplify first"
+        },
+        {
+          "correct": true,
+          "expr": "7&radic;2 - 4&radic;2 = 3&radic;2",
+          "desc": "subtract coefficients"
+        },
+        {
+          "correct": false,
+          "expr": "&radic;3 + &radic;5 = &radic;8",
+          "desc": "cannot add unlike surds under one root"
+        },
+        {
+          "correct": false,
+          "expr": "2&radic;3 + 3&radic;2 = 5&radic;5",
+          "desc": "different surds cannot be combined"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Only like surds (same radicand) can be added or subtracted. Simplify surds first to reveal like terms.",
+      "equation": "a<span class=\"ov\">&radic;n</span> + b<span class=\"ovr\">&radic;n</span> = (a + b)&radic;n",
+      "caption": "Collect like surd terms"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; like surds",
+      "question": "Simplify 4&radic;3 + 7&radic;3.",
+      "steps": [
+        "Both terms have &radic;3",
+        "Add coefficients: 4 + 7 = 11",
+        "= 11&radic;3"
+      ],
+      "answer": "11&radic;3",
+      "explanation": "Treat surds like algebra: add the coefficients of like terms."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; subtraction",
+      "question": "Simplify 9&radic;2 - 5&radic;2.",
+      "steps": [
+        "Both terms have &radic;2",
+        "Subtract coefficients: 9 - 5 = 4",
+        "= 4&radic;2"
+      ],
+      "answer": "4&radic;2",
+      "explanation": "Same process for subtraction."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; simplify first",
+      "question": "Simplify &radic;18 + &radic;2.",
+      "steps": [
+        "&radic;18 = &radic;(9 &times; 2) = 3&radic;2",
+        "3&radic;2 + &radic;2 = 4&radic;2",
+        "Coefficients: 3 + 1 = 4"
+      ],
+      "answer": "4&radic;2",
+      "explanation": "Simplify surds before combining."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; mixed expression",
+      "question": "Simplify &radic;50 - &radic;8 + &radic;32.",
+      "steps": [
+        "&radic;50 = 5&radic;2, &radic;8 = 2&radic;2, &radic;32 = 4&radic;2",
+        "5&radic;2 - 2&radic;2 + 4&radic;2",
+        "= 7&radic;2"
+      ],
+      "answer": "7&radic;2",
+      "explanation": "Simplify each surd, then combine like terms."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Adding like surds",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Simplify each expression.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2&radic;5 + 3&radic;5",
+          "answer": "5&radic;5"
+        },
+        {
+          "id": "b",
+          "expression": "6&radic;7 + &radic;7",
+          "answer": "7&radic;7"
+        },
+        {
+          "id": "c",
+          "expression": "4&radic;3 + 5&radic;3",
+          "answer": "9&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;11 + 8&radic;11",
+          "answer": "9&radic;11"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Subtracting like surds",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Simplify each expression.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "8&radic;2 - 3&radic;2",
+          "answer": "5&radic;2"
+        },
+        {
+          "id": "b",
+          "expression": "10&radic;3 - 7&radic;3",
+          "answer": "3&radic;3"
+        },
+        {
+          "id": "c",
+          "expression": "5&radic;6 - 5&radic;6",
+          "answer": "0"
+        },
+        {
+          "id": "d",
+          "expression": "12&radic;5 - 4&radic;5",
+          "answer": "8&radic;5"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Simplify first, then combine",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Simplify each surd, then add or subtract.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;12 + &radic;3",
+          "answer": "3&radic;3"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;20 + &radic;5",
+          "answer": "3&radic;5"
+        },
+        {
+          "id": "c",
+          "expression": "&radic;27 - &radic;3",
+          "answer": "2&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;45 + &radic;20",
+          "answer": "5&radic;5"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Harder combinations",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Simplify fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&radic;50 + &radic;18",
+          "answer": "8&radic;2"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;48 - &radic;12",
+          "answer": "2&radic;3"
+        },
+        {
+          "id": "c",
+          "expression": "2&radic;8 + 3&radic;2",
+          "answer": "7&radic;2"
+        },
+        {
+          "id": "d",
+          "expression": "&radic;75 - &radic;27 + &radic;12",
+          "answer": "4&radic;3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed surd addition and subtraction",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Simplify each expression fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3&radic;2 + &radic;8 - &radic;18",
+          "answer": "2&radic;2"
+        },
+        {
+          "id": "b",
+          "expression": "&radic;63 + &radic;28 - &radic;7",
+          "answer": "4&radic;7"
+        },
+        {
+          "id": "c",
+          "expression": "2&radic;12 + &radic;48 - &radic;27",
+          "answer": "5&radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "5&radic;3 - &radic;12 + &radic;75",
+          "answer": "8&radic;3"
+        },
+        {
+          "id": "e",
+          "expression": "&radic;98 - &radic;50 + &radic;32",
+          "answer": "6&radic;2"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3&radic;5 + 2&radic;5 = 5&radic;5",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&radic;3 + &radic;5 = &radic;8",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "&radic;12 = 2&radic;3, so &radic;12 + &radic;3 = 3&radic;3",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "2&radic;3 + 3&radic;2 = 5&radic;6",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "&radic;50 = 5&radic;2",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Simplify <strong>&radic;200 + &radic;50 - &radic;72 + &radic;18</strong>. Express your answer in the form a&radic;2 where a is an integer."
+      },
+      {
+        "id": "b",
+        "text": "The sides of a triangle are <strong>&radic;48 cm</strong>, <strong>&radic;27 cm</strong>, and <strong>&radic;75 cm</strong>. Find the perimeter in simplified surd form. If the perimeter is doubled, write the new perimeter."
+      }
+    ]
+  }
+}

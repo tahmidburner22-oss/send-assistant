@@ -1,0 +1,325 @@
+{
+  "title": "PROPORTION,\n(PROPORTION GRAPHS)",
+  "objective": "LO: I can interpret and draw graphs showing direct and inverse proportion.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Proportion graphs",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"\u0001\">direct proportion</span> graph is a straight line through the origin. An <span class=\"\u0001\">inverse proportion</span> graph is a curve (hyperbola) that never touches the axes."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Key features:</span> Direct: y = kx (linear, through origin). Inverse: y = k/x (curve, asymptotes at axes)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Direct proportion: straight line through (0, 0)",
+          "desc": "y = kx"
+        },
+        {
+          "correct": true,
+          "expr": "Inverse proportion: curve approaching axes",
+          "desc": "y = k/x"
+        },
+        {
+          "correct": true,
+          "expr": "Gradient of direct proportion line = k",
+          "desc": "constant rate"
+        },
+        {
+          "correct": false,
+          "expr": "Any straight line shows direct proportion",
+          "desc": "must pass through origin"
+        },
+        {
+          "correct": false,
+          "expr": "Inverse proportion graphs are straight lines",
+          "desc": "they are curves"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Direct proportion: straight line through origin (gradient = k). Inverse proportion: reciprocal curve.",
+      "equation": "Direct: y = <span class=\"\u0001\">k</span>x | Inverse: y = <span class=\"\u0001\">&frac{k}{x}</span>",
+      "caption": "Recognise the shape to identify the type"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; direct proportion graph",
+      "question": "The graph of y against x passes through (0, 0) and (4, 12). Is this direct proportion? Find k.",
+      "steps": [
+        "Passes through origin: yes, could be direct proportion",
+        "k = y/x = 12/4 = 3",
+        "y = 3x"
+      ],
+      "answer": "Yes, k = 3",
+      "explanation": "A straight line through the origin confirms direct proportion."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; reading values from a graph",
+      "question": "A direct proportion graph passes through (5, 20). Find y when x = 8.",
+      "steps": [
+        "k = 20/5 = 4",
+        "y = 4x",
+        "When x = 8: y = 32"
+      ],
+      "answer": "y = 32",
+      "explanation": "Use any point on the line to find k."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; identifying inverse proportion",
+      "question": "A graph curves downward, approaching but never touching the x-axis. The point (2, 6) is on it. Find the equation.",
+      "steps": [
+        "Shape suggests inverse proportion: y = k/x",
+        "k = xy = 2 &times; 6 = 12",
+        "y = 12/x"
+      ],
+      "answer": "y = &frac{12}{x}",
+      "explanation": "A curve with axes as asymptotes suggests inverse proportion."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; comparing graph types",
+      "question": "Graph A is a line through origin. Graph B is a curve approaching axes. Which shows direct proportion?",
+      "steps": [
+        "Direct proportion: straight line through (0, 0)",
+        "Graph A is the direct proportion graph",
+        "Graph B is inverse proportion"
+      ],
+      "answer": "Graph A = direct, Graph B = inverse",
+      "explanation": "The shape tells you the type of proportion."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identifying direct proportion",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Does each graph show direct proportion? Explain.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Straight line through (0,0) and (3,9)",
+          "answer": "Yes, k = 3"
+        },
+        {
+          "id": "b",
+          "expression": "Straight line through (0,2) and (4,10)",
+          "answer": "No, does not pass through origin"
+        },
+        {
+          "id": "c",
+          "expression": "Curve through (1,6), (2,3), (3,2)",
+          "answer": "No, that is inverse proportion"
+        },
+        {
+          "id": "d",
+          "expression": "Straight line through (0,0) and (5,15)",
+          "answer": "Yes, k = 3"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding equations from graphs",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the equation of proportion from the given point.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Direct: passes through (4, 20)",
+          "answer": "y = 5x"
+        },
+        {
+          "id": "b",
+          "expression": "Direct: passes through (3, 7.5)",
+          "answer": "y = 2.5x"
+        },
+        {
+          "id": "c",
+          "expression": "Inverse: passes through (2, 10)",
+          "answer": "y = 20/x"
+        },
+        {
+          "id": "d",
+          "expression": "Inverse: passes through (5, 4)",
+          "answer": "y = 20/x"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Using proportion graphs",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the given equation to find missing values.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 4x. Find y when x = 7",
+          "answer": "28"
+        },
+        {
+          "id": "b",
+          "expression": "y = 4x. Find x when y = 30",
+          "answer": "7.5"
+        },
+        {
+          "id": "c",
+          "expression": "y = 24/x. Find y when x = 3",
+          "answer": "8"
+        },
+        {
+          "id": "d",
+          "expression": "y = 24/x. Find x when y = 2",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Real-world proportion graphs",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Identify the type and solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cost vs quantity (straight line through origin). k = 2.50. Cost of 7 items?",
+          "answer": "&pound;17.50"
+        },
+        {
+          "id": "b",
+          "expression": "Speed vs time for fixed distance. At 30 mph, takes 4 hours. Time at 50 mph?",
+          "answer": "2.4 hours"
+        },
+        {
+          "id": "c",
+          "expression": "Distance vs time at constant speed. Through (2, 100). Distance at t = 5?",
+          "answer": "250 km"
+        },
+        {
+          "id": "d",
+          "expression": "Workers vs days (curve). 4 workers, 10 days. Days for 8 workers?",
+          "answer": "5 days"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed proportion graphs",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Classify and calculate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y and x: (1,5), (2,10), (3,15). Type and equation?",
+          "answer": "Direct, y = 5x"
+        },
+        {
+          "id": "b",
+          "expression": "y and x: (1,12), (2,6), (3,4). Type and equation?",
+          "answer": "Inverse, y = 12/x"
+        },
+        {
+          "id": "c",
+          "expression": "y = 3x. What does the graph look like?",
+          "answer": "Straight line through origin, gradient 3"
+        },
+        {
+          "id": "d",
+          "expression": "y = 8/x. What does the graph look like?",
+          "answer": "Curve in Q1 approaching both axes"
+        },
+        {
+          "id": "e",
+          "expression": "A line through origin has gradient 7. Write the proportion equation.",
+          "answer": "y = 7x"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Direct proportion graphs pass through the origin",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Any straight line graph shows direct proportion",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Inverse proportion graphs are curves that approach the axes",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Inverse proportion graphs cross both axes",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The gradient of y = kx tells you k",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A taxi charges a <strong>&pound;3 fixed fee</strong> plus <strong>&pound;1.50 per mile</strong>. Draw the cost graph. Explain why this is NOT direct proportion despite being a straight line."
+      },
+      {
+        "id": "b",
+        "text": "Plot the points (1, 24), (2, 12), (3, 8), (4, 6), (6, 4), (8, 3). What type of proportion is this? Find the equation. Use it to predict: (i) y when x = 12, (ii) x when y = 1.5."
+      }
+    ]
+  }
+}

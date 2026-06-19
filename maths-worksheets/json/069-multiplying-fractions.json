@@ -1,0 +1,325 @@
+{
+  "title": "FRACTIONS ALL OPERATIONS,\n(MULTIPLYING FRACTIONS)",
+  "objective": "LO: I can multiply fractions and mixed numbers by multiplying numerators and denominators.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Multiplying fractions",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"\u0001\">multiply fractions</span>, multiply the <span class=\"\u0001\">numerators</span> together and multiply the <span class=\"\u0001\">denominators</span> together. Simplify if possible."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Tip:</span> You can cross-cancel before multiplying to keep numbers small."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&frac{2}{3} &times; &frac{4}{5} = &frac{8}{15}",
+          "desc": "multiply tops, multiply bottoms"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{3}{4} &times; &frac{2}{9} = &frac{1}{6}",
+          "desc": "cross-cancel 3 and 9"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{1}{2} &times; &frac{1}{3} = &frac{1}{6}",
+          "desc": "unit fractions"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{2}{3} &times; &frac{4}{5} = &frac{6}{8}",
+          "desc": "added instead of multiplied"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{3}{4} &times; &frac{2}{9} = &frac{6}{36}",
+          "desc": "correct but not simplified"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply the numerators together and the denominators together. Simplify the result.",
+      "equation": "<span class=\"\u0001\">&frac{a}{b}</span> &times; <span class=\"\u0001\">&frac{c}{d}</span> = &frac{a &times; c}{b &times; d}",
+      "caption": "Top times top, bottom times bottom"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; simple multiplication",
+      "question": "Calculate &frac{2}{5} &times; &frac{3}{4}",
+      "steps": [
+        "Multiply numerators: 2 &times; 3 = 6",
+        "Multiply denominators: 5 &times; 4 = 20",
+        "&frac{6}{20} = &frac{3}{10}"
+      ],
+      "answer": "= &frac{3}{10}",
+      "explanation": "Always simplify your final answer."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; cross-cancelling",
+      "question": "Calculate &frac{3}{8} &times; &frac{4}{9}",
+      "steps": [
+        "Cancel 3 and 9 (common factor 3): &frac{1}{8} &times; &frac{4}{3}",
+        "Cancel 4 and 8 (common factor 4): &frac{1}{2} &times; &frac{1}{3}",
+        "= &frac{1}{6}"
+      ],
+      "answer": "= &frac{1}{6}",
+      "explanation": "Cross-cancelling makes the multiplication simpler."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; multiplying by a whole number",
+      "question": "Calculate &frac{3}{7} &times; 5",
+      "steps": [
+        "Write 5 as &frac{5}{1}",
+        "&frac{3}{7} &times; &frac{5}{1} = &frac{15}{7}",
+        "= 2&frac{1}{7}"
+      ],
+      "answer": "= 2&frac{1}{7}",
+      "explanation": "Write whole numbers as fractions with denominator 1."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; mixed numbers",
+      "question": "Calculate 1&frac{1}{3} &times; 2&frac{1}{4}",
+      "steps": [
+        "Convert: &frac{4}{3} &times; &frac{9}{4}",
+        "Cancel 4s: &frac{1}{3} &times; &frac{9}{1}",
+        "Cancel 3 and 9: &frac{1}{1} &times; &frac{3}{1} = 3"
+      ],
+      "answer": "= 3",
+      "explanation": "Convert to improper fractions, then cross-cancel."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Unit fractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Multiply these unit fractions.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{2} &times; &frac{1}{3}",
+          "answer": "&frac{1}{6}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{1}{4} &times; &frac{1}{5}",
+          "answer": "&frac{1}{20}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{1}{3} &times; &frac{1}{7}",
+          "answer": "&frac{1}{21}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{1}{6} &times; &frac{1}{4}",
+          "answer": "&frac{1}{24}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Non-unit fractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Multiply and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{2}{3} &times; &frac{3}{5}",
+          "answer": "&frac{2}{5}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3}{4} &times; &frac{2}{7}",
+          "answer": "&frac{3}{14}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{4}{5} &times; &frac{5}{8}",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{5}{6} &times; &frac{3}{10}",
+          "answer": "&frac{1}{4}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Multiplying by whole numbers",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find each product.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{2}{5} &times; 4",
+          "answer": "1&frac{3}{5}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3}{8} &times; 6",
+          "answer": "2&frac{1}{4}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{5}{6} &times; 3",
+          "answer": "2&frac{1}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{7}{10} &times; 5",
+          "answer": "3&frac{1}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed numbers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Convert to improper fractions first.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1&frac{1}{2} &times; &frac{2}{3}",
+          "answer": "1"
+        },
+        {
+          "id": "b",
+          "expression": "2&frac{1}{4} &times; &frac{4}{9}",
+          "answer": "1"
+        },
+        {
+          "id": "c",
+          "expression": "1&frac{2}{5} &times; 2&frac{1}{2}",
+          "answer": "3&frac{1}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "3&frac{1}{3} &times; &frac{3}{5}",
+          "answer": "2"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed multiplication",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{4}{9} &times; &frac{3}{8}",
+          "answer": "&frac{1}{6}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{5}{7} &times; 14",
+          "answer": "10"
+        },
+        {
+          "id": "c",
+          "expression": "2&frac{1}{3} &times; 1&frac{2}{7}",
+          "answer": "3"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{6}{11} &times; &frac{11}{12}",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "e",
+          "expression": "1&frac{3}{4} &times; 2&frac{2}{7}",
+          "answer": "4"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&frac{2}{3} &times; &frac{4}{5} = &frac{8}{15}",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&frac{2}{3} &times; &frac{4}{5} = &frac{6}{8}",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "You can cross-cancel before multiplying",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Multiplying fractions always gives a bigger number",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "1&frac{1}{2} &times; &frac{2}{3} = 1",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A rectangular garden is <strong>4&frac{1}{2} m</strong> long and <strong>2&frac{2}{3} m</strong> wide. Find the area. If fencing costs <strong>&pound;8 per metre</strong>, how much does it cost to fence the perimeter?"
+      },
+      {
+        "id": "b",
+        "text": "In a class of <strong>30 pupils</strong>, <strong>&frac{2}{5}</strong> are boys. Of the boys, <strong>&frac{3}{4}</strong> play football. What fraction of the whole class are boys who play football? How many pupils is this?"
+      }
+    ]
+  }
+}

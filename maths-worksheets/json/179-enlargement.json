@@ -1,0 +1,325 @@
+{
+  "title": "TRANSFORMATIONS,\n(ENLARGEMENT)",
+  "objective": "LO: I can enlarge a shape by a given scale factor from a centre of enlargement.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Enlargement",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "An <span class=\"ul-b\">enlargement</span> changes the size of a shape by a <span class=\"ul-k\">scale factor</span> from a fixed point called the centre of enlargement."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key fact:</span> Scale factor > 1 makes the shape bigger. Scale factor between 0 and 1 makes it smaller. Negative scale factor also inverts the image."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "SF 2 from centre: all distances from centre doubled",
+          "desc": "shape is twice as big"
+        },
+        {
+          "correct": true,
+          "expr": "SF &frac{1}{2}: image is half the size",
+          "desc": "reduction"
+        },
+        {
+          "correct": true,
+          "expr": "SF -1: image inverted through the centre",
+          "desc": "rotated 180°"
+        },
+        {
+          "correct": false,
+          "expr": "Enlargement changes angles",
+          "desc": "angles stay the same"
+        },
+        {
+          "correct": false,
+          "expr": "SF 3 triples the area",
+          "desc": "area scales by SF² = 9"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply the distance from the centre to each vertex by the scale factor to find the image vertices.",
+      "equation": "<span class=\"ov\">image distance</span> = <span class=\"ovr\">SF &times; object distance</span> from centre",
+      "caption": "Measure distances from the centre of enlargement"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; scale factor 2 from origin",
+      "question": "Enlarge triangle (1,1), (3,1), (1,3) by SF 2 from (0,0).",
+      "steps": [
+        "Multiply each coordinate by 2",
+        "(1,1)&rarr;(2,2), (3,1)&rarr;(6,2), (1,3)&rarr;(2,6)",
+        "Image is twice the size"
+      ],
+      "answer": "(2,2), (6,2), (2,6)",
+      "explanation": "From the origin, just multiply all coordinates by the SF."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; scale factor 3 from a point",
+      "question": "Enlarge point (2,1) by SF 3 from centre (1,0).",
+      "steps": [
+        "Vector from centre to point: (2-1, 1-0) = (1, 1)",
+        "Multiply by 3: (3, 3)",
+        "Image = centre + (3,3) = (4, 3)"
+      ],
+      "answer": "(4, 3)",
+      "explanation": "Find the vector from centre to point, multiply by SF, add back to centre."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; fractional scale factor",
+      "question": "Enlarge (6,4) by SF &frac{1}{2} from centre (0,0).",
+      "steps": [
+        "Multiply each coordinate by &frac{1}{2}",
+        "(6 &times; &frac{1}{2}, 4 &times; &frac{1}{2})",
+        "= (3, 2)"
+      ],
+      "answer": "(3, 2)",
+      "explanation": "Fractional scale factors reduce the shape."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; negative scale factor",
+      "question": "Enlarge (3,1) by SF -2 from centre (1,1).",
+      "steps": [
+        "Vector from centre: (3-1, 1-1) = (2, 0)",
+        "Multiply by -2: (-4, 0)",
+        "Image = (1,1) + (-4,0) = (-3, 1)"
+      ],
+      "answer": "(-3, 1)",
+      "explanation": "Negative SF puts the image on the opposite side of the centre."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "SF 2 from origin",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Enlarge each point by SF 2 from (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(1, 2)",
+          "answer": "(2, 4)"
+        },
+        {
+          "id": "b",
+          "expression": "(3, 1)",
+          "answer": "(6, 2)"
+        },
+        {
+          "id": "c",
+          "expression": "(2, 4)",
+          "answer": "(4, 8)"
+        },
+        {
+          "id": "d",
+          "expression": "(0, 3)",
+          "answer": "(0, 6)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "SF 3 from origin",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Enlarge each point by SF 3 from (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(1, 1)",
+          "answer": "(3, 3)"
+        },
+        {
+          "id": "b",
+          "expression": "(2, 0)",
+          "answer": "(6, 0)"
+        },
+        {
+          "id": "c",
+          "expression": "(1, 3)",
+          "answer": "(3, 9)"
+        },
+        {
+          "id": "d",
+          "expression": "(4, 2)",
+          "answer": "(12, 6)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "From a non-origin centre",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Enlarge by SF 2 from the given centre.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Point (3,2), centre (1,1)",
+          "answer": "(5, 3)"
+        },
+        {
+          "id": "b",
+          "expression": "Point (4,3), centre (2,1)",
+          "answer": "(6, 5)"
+        },
+        {
+          "id": "c",
+          "expression": "Point (5,1), centre (3,1)",
+          "answer": "(7, 1)"
+        },
+        {
+          "id": "d",
+          "expression": "Point (1,4), centre (0,2)",
+          "answer": "(2, 6)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Fractional scale factors",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Enlarge by the given SF from (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(4, 6) SF &frac{1}{2}",
+          "answer": "(2, 3)"
+        },
+        {
+          "id": "b",
+          "expression": "(9, 3) SF &frac{1}{3}",
+          "answer": "(3, 1)"
+        },
+        {
+          "id": "c",
+          "expression": "(8, 4) SF &frac{1}{4}",
+          "answer": "(2, 1)"
+        },
+        {
+          "id": "d",
+          "expression": "(10, 6) SF &frac{1}{2}",
+          "answer": "(5, 3)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed enlargement",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Perform each enlargement.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2,3) SF 2 from (0,0)",
+          "answer": "(4, 6)"
+        },
+        {
+          "id": "b",
+          "expression": "(4,1) SF 3 from (1,0)",
+          "answer": "(10, 3)"
+        },
+        {
+          "id": "c",
+          "expression": "(6,8) SF &frac{1}{2} from (0,0)",
+          "answer": "(3, 4)"
+        },
+        {
+          "id": "d",
+          "expression": "(3,2) SF -1 from (2,2)",
+          "answer": "(1, 2)"
+        },
+        {
+          "id": "e",
+          "expression": "(5,1) SF -2 from (3,1)",
+          "answer": "(-1, 1)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "An enlargement with SF 2 doubles all lengths",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Enlargement with SF 2 doubles the area",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Angles remain the same after enlargement",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A negative scale factor puts the image on the same side",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "SF between 0 and 1 makes the shape smaller",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Triangle ABC has vertices A(1,1), B(3,1), C(1,4). It is enlarged by <strong>SF 2 from (0,0)</strong>. Find the area of both triangles and verify that image area = SF² &times; original area."
+      },
+      {
+        "id": "b",
+        "text": "A shape is enlarged by <strong>SF -2 from centre (3,2)</strong>. The image of point P is at <strong>(-1, 6)</strong>. Find the original position of P."
+      }
+    ]
+  }
+}

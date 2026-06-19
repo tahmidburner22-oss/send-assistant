@@ -1,0 +1,325 @@
+{
+  "title": "PERCENTAGES OF AMOUNTS,\n(FINDING ANY PERCENTAGE OF AN AMOUNT)",
+  "objective": "LO: I can find any percentage of an amount using a calculator or written method.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding any percentage",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To find <span class=\"\u0001\">any percentage</span> of an amount, write the percentage as a <span class=\"\u0001\">decimal</span> or fraction and multiply. This method works for whole and decimal percentages."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Method:</span> Convert the percentage to a decimal (divide by 100), then multiply by the amount."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "23% of 400 = 0.23 &times; 400 = 92",
+          "desc": "decimal multiplier"
+        },
+        {
+          "correct": true,
+          "expr": "7.5% of 80 = 0.075 &times; 80 = 6",
+          "desc": "decimal percentage"
+        },
+        {
+          "correct": true,
+          "expr": "110% of 50 = 1.10 &times; 50 = 55",
+          "desc": "more than 100%"
+        },
+        {
+          "correct": false,
+          "expr": "23% of 400 = 23 &times; 400",
+          "desc": "must divide 23 by 100 first"
+        },
+        {
+          "correct": false,
+          "expr": "7.5% of 80 = 7.5 &times; 80 = 600",
+          "desc": "forgot to convert to decimal"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Any percentage can be found by converting to a decimal and multiplying.",
+      "equation": "<span class=\"\u0001\">P</span>% of n = <span class=\"\u0001\">&frac{P}{100}</span> &times; n",
+      "caption": "Works for any P, including decimals and values over 100"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; whole number percentage",
+      "question": "Find 37% of 250",
+      "steps": [
+        "Convert: 37% = 0.37",
+        "0.37 &times; 250",
+        "= 92.5"
+      ],
+      "answer": "= 92.5",
+      "explanation": "Divide the percentage by 100 to get the decimal multiplier."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; decimal percentage",
+      "question": "Find 3.5% of 600",
+      "steps": [
+        "Convert: 3.5% = 0.035",
+        "0.035 &times; 600",
+        "= 21"
+      ],
+      "answer": "= 21",
+      "explanation": "Decimal percentages work the same way."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; percentage over 100",
+      "question": "Find 125% of 80",
+      "steps": [
+        "Convert: 125% = 1.25",
+        "1.25 &times; 80",
+        "= 100"
+      ],
+      "answer": "= 100",
+      "explanation": "Percentages over 100% give values larger than the original."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; real-world context",
+      "question": "A phone costs &pound;480. There is 3.5% cashback. How much cashback?",
+      "steps": [
+        "Convert: 3.5% = 0.035",
+        "0.035 &times; 480",
+        "= &pound;16.80"
+      ],
+      "answer": "= &pound;16.80",
+      "explanation": "Same decimal multiplier method applied to money."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Whole number percentages",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Convert to a decimal and multiply.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "23% of 300",
+          "answer": "69"
+        },
+        {
+          "id": "b",
+          "expression": "47% of 200",
+          "answer": "94"
+        },
+        {
+          "id": "c",
+          "expression": "68% of 50",
+          "answer": "34"
+        },
+        {
+          "id": "d",
+          "expression": "89% of 400",
+          "answer": "356"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Decimal percentages",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find each percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2.5% of 800",
+          "answer": "20"
+        },
+        {
+          "id": "b",
+          "expression": "4.5% of 200",
+          "answer": "9"
+        },
+        {
+          "id": "c",
+          "expression": "0.5% of 1000",
+          "answer": "5"
+        },
+        {
+          "id": "d",
+          "expression": "12.5% of 64",
+          "answer": "8"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Percentages over 100",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Calculate percentages greater than 100%.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "150% of 60",
+          "answer": "90"
+        },
+        {
+          "id": "b",
+          "expression": "200% of 45",
+          "answer": "90"
+        },
+        {
+          "id": "c",
+          "expression": "175% of 80",
+          "answer": "140"
+        },
+        {
+          "id": "d",
+          "expression": "110% of 250",
+          "answer": "275"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Real-world percentages",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A meal costs &pound;65. Service charge is 12.5%. How much is the charge?",
+          "answer": "&pound;8.13"
+        },
+        {
+          "id": "b",
+          "expression": "A savings account has &pound;3400. Interest rate is 1.5%. How much interest?",
+          "answer": "&pound;51"
+        },
+        {
+          "id": "c",
+          "expression": "33% of 270 students walk to school. How many?",
+          "answer": "89"
+        },
+        {
+          "id": "d",
+          "expression": "A laptop was &pound;800. It has lost 17.5% of value. Loss in pounds?",
+          "answer": "&pound;140"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed percentage questions",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate each one.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "78% of 150",
+          "answer": "117"
+        },
+        {
+          "id": "b",
+          "expression": "0.1% of 5000",
+          "answer": "5"
+        },
+        {
+          "id": "c",
+          "expression": "6.25% of 480",
+          "answer": "30"
+        },
+        {
+          "id": "d",
+          "expression": "130% of 90",
+          "answer": "117"
+        },
+        {
+          "id": "e",
+          "expression": "99% of 300",
+          "answer": "297"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "37% of 250 = 0.37 &times; 250",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "7.5% = 0.75 as a decimal",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "125% of 80 is greater than 80",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "0.5% of 1000 = 50",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "3.5% = 0.035 as a decimal",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A company increases salaries by <strong>3.2%</strong>. An employee earns <strong>&pound;28500</strong>. What is their new salary? Another employee wants to earn at least <strong>&pound;30000</strong> after the rise. What minimum current salary do they need?"
+      },
+      {
+        "id": "b",
+        "text": "In a survey of <strong>850 people</strong>, <strong>37.6%</strong> prefer tea, <strong>28.8%</strong> prefer coffee, and the rest prefer water. How many people prefer each drink? Round to the nearest whole number."
+      }
+    ]
+  }
+}

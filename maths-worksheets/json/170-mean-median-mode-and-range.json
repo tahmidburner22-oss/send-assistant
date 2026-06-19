@@ -1,0 +1,325 @@
+{
+  "title": "STATISTICS,\n(MEAN, MEDIAN, MODE AND RANGE)",
+  "objective": "LO: I can calculate the mean, median, mode and range from a set of data.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Averages and range",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">mean</span> is the sum of values divided by the count. The <span class=\"ul-k\">median</span> is the middle value when data is ordered. The <span class=\"ul-b\">mode</span> is the most frequent value."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Range</span> = highest value minus lowest value. It measures the spread of the data."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Mean of 2, 4, 6 = 12 &divide; 3 = 4",
+          "desc": "sum &divide; count"
+        },
+        {
+          "correct": true,
+          "expr": "Median of 3, 5, 7, 9, 11 = 7",
+          "desc": "middle value"
+        },
+        {
+          "correct": true,
+          "expr": "Mode of 2, 3, 3, 5, 7 = 3",
+          "desc": "most frequent"
+        },
+        {
+          "correct": false,
+          "expr": "Median of 2, 4, 6, 8 = 6",
+          "desc": "should be (4+6)&divide;2 = 5"
+        },
+        {
+          "correct": false,
+          "expr": "Range of 3, 7, 10, 2 = 10",
+          "desc": "range = 10 - 2 = 8"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Mean = total &divide; number of values. Median = middle value (or mean of two middle values for even counts).",
+      "equation": "<span class=\"ov\">Mean</span> = <span class=\"ovr\">&sum;x &divide; n</span>",
+      "caption": "Sum all values and divide by how many there are"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; finding the mean",
+      "question": "Find the mean of 5, 8, 3, 12, 7.",
+      "steps": [
+        "Sum = 5 + 8 + 3 + 12 + 7 = 35",
+        "Count = 5",
+        "Mean = 35 &divide; 5 = 7"
+      ],
+      "answer": "Mean = 7",
+      "explanation": "Add all values then divide by how many there are."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding the median",
+      "question": "Find the median of 9, 3, 7, 1, 5, 8, 2.",
+      "steps": [
+        "Order: 1, 2, 3, 5, 7, 8, 9",
+        "7 values, middle is the 4th",
+        "Median = 5"
+      ],
+      "answer": "Median = 5",
+      "explanation": "Always put the data in order first."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; even number of values",
+      "question": "Find the median of 4, 7, 10, 13.",
+      "steps": [
+        "Data is already ordered",
+        "Two middle values: 7 and 10",
+        "Median = (7 + 10) &divide; 2 = 8.5"
+      ],
+      "answer": "Median = 8.5",
+      "explanation": "For an even count, average the two middle values."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; from a frequency table",
+      "question": "Scores: 1(freq 2), 2(freq 5), 3(freq 8), 4(freq 3), 5(freq 2). Find the mean.",
+      "steps": [
+        "Total = 1&times;2 + 2&times;5 + 3&times;8 + 4&times;3 + 5&times;2 = 2+10+24+12+10 = 58",
+        "Total freq = 2+5+8+3+2 = 20",
+        "Mean = 58 &divide; 20 = 2.9"
+      ],
+      "answer": "Mean = 2.9",
+      "explanation": "Multiply each value by its frequency, then divide by total frequency."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding the mean",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate the mean of each data set.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4, 6, 8, 10, 12",
+          "answer": "8"
+        },
+        {
+          "id": "b",
+          "expression": "3, 7, 5, 9, 11",
+          "answer": "7"
+        },
+        {
+          "id": "c",
+          "expression": "15, 20, 25, 30",
+          "answer": "22.5"
+        },
+        {
+          "id": "d",
+          "expression": "1, 1, 2, 3, 5, 8",
+          "answer": "3.3 (to 1dp)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Median and mode",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the median and mode.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3, 5, 5, 7, 9",
+          "answer": "Median 5, Mode 5"
+        },
+        {
+          "id": "b",
+          "expression": "2, 4, 6, 8, 10, 12",
+          "answer": "Median 7, No mode"
+        },
+        {
+          "id": "c",
+          "expression": "1, 3, 3, 5, 7, 7, 9",
+          "answer": "Median 5, Modes 3 and 7"
+        },
+        {
+          "id": "d",
+          "expression": "10, 20, 20, 30, 40",
+          "answer": "Median 20, Mode 20"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Range and comparing data",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the range. Compare the data sets.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5, 8, 12, 3, 15",
+          "answer": "Range = 12"
+        },
+        {
+          "id": "b",
+          "expression": "22, 25, 21, 28, 24",
+          "answer": "Range = 7"
+        },
+        {
+          "id": "c",
+          "expression": "Set A: mean 50, range 20. Set B: mean 50, range 5. Which is more consistent?",
+          "answer": "Set B"
+        },
+        {
+          "id": "d",
+          "expression": "100, 102, 98, 105, 95",
+          "answer": "Range = 10"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "From frequency tables",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Calculate the mean from each frequency table.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Score 1(f=3), 2(f=5), 3(f=7), 4(f=4), 5(f=1)",
+          "answer": "Mean = 2.75"
+        },
+        {
+          "id": "b",
+          "expression": "Goals 0(f=4), 1(f=6), 2(f=3), 3(f=2)",
+          "answer": "Mean = 1.2"
+        },
+        {
+          "id": "c",
+          "expression": "Shoe size 5(f=2), 6(f=5), 7(f=8), 8(f=3), 9(f=2)",
+          "answer": "Mean = 6.9"
+        },
+        {
+          "id": "d",
+          "expression": "Hours 0(f=1), 1(f=4), 2(f=6), 3(f=5), 4(f=4)",
+          "answer": "Mean = 2.35"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed averages",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Mean of 5 numbers is 8. Sum?",
+          "answer": "40"
+        },
+        {
+          "id": "b",
+          "expression": "6 numbers have mean 10. A 7th number (17) is added. New mean?",
+          "answer": "11"
+        },
+        {
+          "id": "c",
+          "expression": "Data: 3, 5, x, 9, 11. Mean is 7. Find x.",
+          "answer": "x = 7"
+        },
+        {
+          "id": "d",
+          "expression": "Median of 2, 5, x, 12, 15 is 8. Find x.",
+          "answer": "x = 8"
+        },
+        {
+          "id": "e",
+          "expression": "Range is 12, lowest value is 5. Highest value?",
+          "answer": "17"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Mean = sum of values &divide; number of values",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The median of 2, 4, 6, 8 is 6",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The mode can be more than one value",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Range = highest value",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "For an even set, the median is the mean of the two middle values",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A class of <strong>28 students</strong> has a mean test score of <strong>65</strong>. Two students who scored <strong>90 and 85</strong> leave. What is the new mean score for the remaining students? Round to 1 decimal place."
+      },
+      {
+        "id": "b",
+        "text": "Five numbers have a mean of <strong>12</strong>, a median of <strong>11</strong>, a mode of <strong>9</strong>, and a range of <strong>10</strong>. Find all five numbers."
+      }
+    ]
+  }
+}

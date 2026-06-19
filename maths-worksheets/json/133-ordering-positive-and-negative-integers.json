@@ -1,0 +1,325 @@
+{
+  "title": "PLACE VALUE AND ORDERING INTEGERS,\n(ORDERING POSITIVE AND NEGATIVE INTEGERS)",
+  "objective": "LO: I can order and compare positive and negative integers using a number line.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Ordering integers",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Integers</span> are whole numbers including negatives, zero, and positives. On a number line, numbers increase from <span class=\"\u0001\">left to right</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Key rule:</span> A negative number is always less than a positive number. The further left on the number line, the smaller the value."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "-5 < -2 < 0 < 3 < 7",
+          "desc": "ordered smallest to largest"
+        },
+        {
+          "correct": true,
+          "expr": "-10 is less than -3",
+          "desc": "further from zero = smaller"
+        },
+        {
+          "correct": true,
+          "expr": "0 is greater than any negative number",
+          "desc": "zero is not negative"
+        },
+        {
+          "correct": false,
+          "expr": "-5 > -2 because 5 > 2",
+          "desc": "ignore the sign is wrong"
+        },
+        {
+          "correct": false,
+          "expr": "-3 is greater than 0",
+          "desc": "all negatives are less than 0"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Picture a number line: numbers to the right are always bigger. Negative numbers are to the left of zero.",
+      "equation": "<span class=\"\u0001\">-8</span> < <span class=\"\u0001\">-3</span> < <span class=\"\u0001\">0</span> < 4 < 9",
+      "caption": "Left = smaller, Right = bigger"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; ordering negatives",
+      "question": "Put these in order from smallest to largest: -3, 5, -7, 2, -1",
+      "steps": [
+        "Most negative = smallest: -7",
+        "Then -3, -1, 2, 5",
+        "-7, -3, -1, 2, 5"
+      ],
+      "answer": "-7, -3, -1, 2, 5",
+      "explanation": "The more negative a number, the smaller it is."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; comparing two integers",
+      "question": "Which is greater: -4 or -9?",
+      "steps": [
+        "-4 is closer to zero than -9",
+        "On the number line, -4 is to the right of -9",
+        "-4 > -9"
+      ],
+      "answer": "-4 is greater",
+      "explanation": "Closer to zero means bigger for negative numbers."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; using inequality symbols",
+      "question": "Insert < or >: -6 ___ -2",
+      "steps": [
+        "On the number line, -6 is to the left of -2",
+        "Left means smaller",
+        "-6 < -2"
+      ],
+      "answer": "-6 < -2",
+      "explanation": "The open end of < points to the bigger number."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; temperature context",
+      "question": "Order these temperatures from coldest to warmest: 3&deg;C, -5&deg;C, -1&deg;C, 8&deg;C, -8&deg;C",
+      "steps": [
+        "Most negative = coldest: -8&deg;C",
+        "Then -5&deg;C, -1&deg;C, 3&deg;C, 8&deg;C",
+        "Coldest to warmest: -8, -5, -1, 3, 8"
+      ],
+      "answer": "-8&deg;C, -5&deg;C, -1&deg;C, 3&deg;C, 8&deg;C",
+      "explanation": "Same as ordering on a number line."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Ordering integers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Put in order from smallest to largest.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3, -2, 5, -4, 0",
+          "answer": "-4, -2, 0, 3, 5"
+        },
+        {
+          "id": "b",
+          "expression": "-7, -1, 4, -3, 6",
+          "answer": "-7, -3, -1, 4, 6"
+        },
+        {
+          "id": "c",
+          "expression": "8, -8, 3, -3, 0",
+          "answer": "-8, -3, 0, 3, 8"
+        },
+        {
+          "id": "d",
+          "expression": "-10, -5, -15, 2, -1",
+          "answer": "-15, -10, -5, -1, 2"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Comparing integers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Insert < or > between each pair.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "-3 ___ 2",
+          "answer": "<"
+        },
+        {
+          "id": "b",
+          "expression": "-5 ___ -8",
+          "answer": ">"
+        },
+        {
+          "id": "c",
+          "expression": "0 ___ -4",
+          "answer": ">"
+        },
+        {
+          "id": "d",
+          "expression": "-12 ___ -7",
+          "answer": "<"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Ordering with larger numbers",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Order from smallest to largest.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "-25, -30, 15, -10, 20",
+          "answer": "-30, -25, -10, 15, 20"
+        },
+        {
+          "id": "b",
+          "expression": "100, -200, 50, -50, -100",
+          "answer": "-200, -100, -50, 50, 100"
+        },
+        {
+          "id": "c",
+          "expression": "-1, -11, -111, 1, 11",
+          "answer": "-111, -11, -1, 1, 11"
+        },
+        {
+          "id": "d",
+          "expression": "0, -1000, 500, -500, 1",
+          "answer": "-1000, -500, 0, 1, 500"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Real-world contexts",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Order from smallest to largest.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Temperatures: -3&deg;C, 7&deg;C, -12&deg;C, 0&deg;C, 4&deg;C",
+          "answer": "-12, -3, 0, 4, 7"
+        },
+        {
+          "id": "b",
+          "expression": "Bank balance: -&pound;50, &pound;20, -&pound;15, &pound;0, -&pound;80",
+          "answer": "-80, -50, -15, 0, 20"
+        },
+        {
+          "id": "c",
+          "expression": "Sea level (m): -40, 120, -120, 5, -5",
+          "answer": "-120, -40, -5, 5, 120"
+        },
+        {
+          "id": "d",
+          "expression": "Floor levels: -2, 3, -1, 0, 5",
+          "answer": "-2, -1, 0, 3, 5"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed ordering",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer each question.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Which is smaller: -99 or -100?",
+          "answer": "-100"
+        },
+        {
+          "id": "b",
+          "expression": "Order: 4, -4, 40, -40, 0",
+          "answer": "-40, -4, 0, 4, 40"
+        },
+        {
+          "id": "c",
+          "expression": "Find a number between -5 and -3",
+          "answer": "-4"
+        },
+        {
+          "id": "d",
+          "expression": "How many integers between -3 and 3 (not including -3 and 3)?",
+          "answer": "5"
+        },
+        {
+          "id": "e",
+          "expression": "Order: -2.5, -3, 1, -1.5, 0.5",
+          "answer": "-3, -2.5, -1.5, 0.5, 1"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "-5 is less than -2",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "-5 > -2 because 5 > 2",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "0 is greater than any negative number",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "-100 is greater than -1",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "On a number line, right means bigger",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Five cities have temperatures: Moscow <strong>-15&deg;C</strong>, London <strong>4&deg;C</strong>, Reykjavik <strong>-3&deg;C</strong>, Dubai <strong>28&deg;C</strong>, Oslo <strong>-8&deg;C</strong>. Order them coldest to warmest. Find the difference between the warmest and coldest."
+      },
+      {
+        "id": "b",
+        "text": "A lift starts at floor <strong>-2</strong> (underground car park). It goes up <strong>5 floors</strong>, then down <strong>3 floors</strong>, then down <strong>4 floors</strong>. Which floor is it on? Write the floor numbers visited in order from lowest to highest."
+      }
+    ]
+  }
+}

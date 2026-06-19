@@ -1,0 +1,325 @@
+{
+  "title": "RATIO,\n(RATIO AND PROPORTION PROBLEMS)",
+  "objective": "LO: I can solve problems involving ratio and proportion in context.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Ratio and proportion problems",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">ratio</span> compares two or more quantities. <span class=\"ul-k\">Proportion problems</span> ask us to use a known ratio to find unknown amounts."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Method:</span> Find the value of one part first, then scale up or down to answer the question."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Purple paint: red to blue = 3 : 5",
+          "desc": "for every 3 parts red, use 5 parts blue"
+        },
+        {
+          "correct": true,
+          "expr": "If 4 books cost £12, then 7 books cost £21",
+          "desc": "find the cost of one book first"
+        },
+        {
+          "correct": true,
+          "expr": "Share £40 in ratio 3 : 5 gives £15 and £25",
+          "desc": "8 parts total, one part = £5"
+        },
+        {
+          "correct": false,
+          "expr": "3 : 5 means 3 out of 5",
+          "desc": "it means 3 out of 8 total parts"
+        },
+        {
+          "correct": false,
+          "expr": "Double one side of a ratio without doubling the other",
+          "desc": "both sides must scale equally"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Find the total number of parts, then divide the quantity by the total to find the value of one part.",
+      "equation": "<span class=\"ov\">one part</span> = total &divide; <span class=\"ovr\">sum of ratio parts</span>",
+      "caption": "Then multiply one part by each side of the ratio"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; sharing money",
+      "question": "Share £60 in the ratio 2 : 3",
+      "steps": [
+        "Total parts = 2 + 3 = 5",
+        "One part = £60 &divide; 5 = £12",
+        "2 parts = £24, 3 parts = £36"
+      ],
+      "answer": "£24 and £36",
+      "explanation": "Always check the shares add to the original total."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; scaling a recipe",
+      "question": "A recipe for 4 people uses 300 g flour. How much for 6 people?",
+      "steps": [
+        "Find amount per person: 300 &divide; 4 = 75 g",
+        "Multiply for 6: 75 &times; 6 = 450 g",
+        "Answer: 450 g of flour"
+      ],
+      "answer": "450 g",
+      "explanation": "Find the unitary value (for one), then scale up."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding a missing quantity",
+      "question": "Red and blue paint are mixed in ratio 2 : 5. If 10 litres of red are used, how much blue?",
+      "steps": [
+        "2 parts = 10 litres, so 1 part = 5 litres",
+        "Blue = 5 parts = 5 &times; 5 = 25 litres",
+        "Check: 10 : 25 = 2 : 5 ✓"
+      ],
+      "answer": "25 litres",
+      "explanation": "Use the known quantity to find one part, then find the unknown."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; three-part ratio",
+      "question": "Share 72 sweets in the ratio 1 : 2 : 3",
+      "steps": [
+        "Total parts = 1 + 2 + 3 = 6",
+        "One part = 72 &divide; 6 = 12",
+        "Shares: 12, 24, and 36"
+      ],
+      "answer": "12, 24, and 36",
+      "explanation": "Three-part ratios work the same way as two-part ratios."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Sharing in a ratio",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Share each amount in the given ratio.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "£30 in ratio 1 : 2",
+          "answer": "£10 and £20"
+        },
+        {
+          "id": "b",
+          "expression": "£56 in ratio 3 : 4",
+          "answer": "£24 and £32"
+        },
+        {
+          "id": "c",
+          "expression": "80 kg in ratio 2 : 3",
+          "answer": "32 kg and 48 kg"
+        },
+        {
+          "id": "d",
+          "expression": "£100 in ratio 3 : 7",
+          "answer": "£30 and £70"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Scaling recipes",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use proportion to find the missing amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 cakes need 200 g sugar. How much for 8 cakes?",
+          "answer": "320 g"
+        },
+        {
+          "id": "b",
+          "expression": "3 shirts cost £45. How much for 7 shirts?",
+          "answer": "£105"
+        },
+        {
+          "id": "c",
+          "expression": "4 tins paint cover 20 m². How many for 35 m²?",
+          "answer": "7 tins"
+        },
+        {
+          "id": "d",
+          "expression": "6 workers finish in 12 days. How long for 9 workers?",
+          "answer": "8 days"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding missing quantities",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the ratio to find the unknown.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a : b = 3 : 5. If a = 21, find b.",
+          "answer": "35"
+        },
+        {
+          "id": "b",
+          "expression": "x : y = 4 : 7. If y = 42, find x.",
+          "answer": "24"
+        },
+        {
+          "id": "c",
+          "expression": "Cement : sand = 1 : 4. If sand = 60 kg, find cement.",
+          "answer": "15 kg"
+        },
+        {
+          "id": "d",
+          "expression": "Boys : Girls = 5 : 3. If 20 boys, find girls.",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Three-part ratios",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Share in the given three-part ratio.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "£60 in ratio 1 : 2 : 3",
+          "answer": "£10, £20, £30"
+        },
+        {
+          "id": "b",
+          "expression": "120 cm in ratio 2 : 3 : 5",
+          "answer": "24 cm, 36 cm, 60 cm"
+        },
+        {
+          "id": "c",
+          "expression": "£150 in ratio 1 : 2 : 2",
+          "answer": "£30, £60, £60"
+        },
+        {
+          "id": "d",
+          "expression": "90 kg in ratio 3 : 4 : 2",
+          "answer": "30 kg, 40 kg, 20 kg"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed ratio problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ratio of cats to dogs is 3 : 5. There are 24 cats. How many dogs?",
+          "answer": "40"
+        },
+        {
+          "id": "b",
+          "expression": "Share £200 between A, B, C in ratio 2 : 3 : 5",
+          "answer": "£40, £60, £100"
+        },
+        {
+          "id": "c",
+          "expression": "A map scale is 1 : 25000. A path is 8 cm on the map. How far in real life?",
+          "answer": "2 km"
+        },
+        {
+          "id": "d",
+          "expression": "Concentrate : water = 1 : 4. How much water for 50 ml concentrate?",
+          "answer": "200 ml"
+        },
+        {
+          "id": "e",
+          "expression": "Angles in a triangle are in ratio 2 : 3 : 4. Find each angle.",
+          "answer": "40°, 60°, 80°"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To share £40 in ratio 3 : 5, find total parts = 8, one part = £5",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The ratio 3 : 5 means there are 5 items in total",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Doubling a recipe means doubling all ingredients",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "In ratio 2 : 3, the first quantity is always larger",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The unitary method finds the value of one part first",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A fruit drink is made by mixing orange juice and lemonade in the ratio <strong>2 : 5</strong>. Sam makes <strong>2.1 litres</strong> of the drink. How much of each ingredient does he use? If orange juice costs <strong>£1.20 per litre</strong> and lemonade costs <strong>80p per litre</strong>, what is the total cost?"
+      },
+      {
+        "id": "b",
+        "text": "Three friends share a prize in the ratio <strong>3 : 4 : 5</strong>. The largest share is <strong>£15 more</strong> than the smallest share. How much is the total prize? If they then donate <strong>&frac{1}{4}</strong> of each share to charity, how much does each donate?"
+      }
+    ]
+  }
+}

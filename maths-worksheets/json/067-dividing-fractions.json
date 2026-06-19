@@ -1,0 +1,325 @@
+{
+  "title": "FRACTIONS ALL OPERATIONS,\n(DIVIDING FRACTIONS)",
+  "objective": "LO: I can divide fractions by flipping the second fraction and multiplying.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Dividing fractions",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"\u0001\">divide</span> by a fraction, we <span class=\"\u0001\">keep, change, flip</span>: keep the first fraction, change division to multiplication, and flip (find the reciprocal of) the second fraction."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Remember:</span> The reciprocal of &frac{a}{b} is &frac{b}{a}. Dividing by a fraction makes the answer bigger."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&frac{2}{3} &divide; &frac{1}{4} = &frac{8}{3}",
+          "desc": "flip and multiply"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{3}{5} &divide; &frac{2}{7} = &frac{21}{10}",
+          "desc": "keep, change, flip"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{1}{2} &divide; 3 = &frac{1}{6}",
+          "desc": "3 = &frac{3}{1}, flip to &frac{1}{3}"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{2}{3} &divide; &frac{1}{4} = &frac{2}{12}",
+          "desc": "multiplied without flipping"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{3}{5} &divide; &frac{2}{7} = &frac{6}{35}",
+          "desc": "did not flip second fraction"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Keep the first fraction, change the operation to multiplication, flip the second fraction.",
+      "equation": "<span class=\"\u0001\">&frac{a}{b}</span> &divide; <span class=\"\u0001\">&frac{c}{d}</span> = &frac{a}{b} &times; &frac{d}{c}",
+      "caption": "Keep, Change, Flip"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; simple division",
+      "question": "Calculate &frac{2}{3} &divide; &frac{1}{4}",
+      "steps": [
+        "Keep &frac{2}{3}, change to &times;, flip &frac{1}{4} to &frac{4}{1}",
+        "&frac{2}{3} &times; &frac{4}{1} = &frac{8}{3}",
+        "= 2&frac{2}{3}"
+      ],
+      "answer": "= 2&frac{2}{3}",
+      "explanation": "Flip the second fraction then multiply across."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; both non-unit",
+      "question": "Calculate &frac{3}{5} &divide; &frac{2}{7}",
+      "steps": [
+        "Keep &frac{3}{5}, change to &times;, flip &frac{2}{7} to &frac{7}{2}",
+        "&frac{3}{5} &times; &frac{7}{2} = &frac{21}{10}",
+        "= 2&frac{1}{10}"
+      ],
+      "answer": "= 2&frac{1}{10}",
+      "explanation": "Multiply numerators and denominators separately."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; dividing by a whole number",
+      "question": "Calculate &frac{4}{5} &divide; 2",
+      "steps": [
+        "Write 2 as &frac{2}{1}",
+        "Keep &frac{4}{5}, change to &times;, flip to &frac{1}{2}",
+        "&frac{4}{5} &times; &frac{1}{2} = &frac{4}{10} = &frac{2}{5}"
+      ],
+      "answer": "= &frac{2}{5}",
+      "explanation": "A whole number is just a fraction with denominator 1."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; mixed numbers",
+      "question": "Calculate 1&frac{1}{2} &divide; &frac{3}{4}",
+      "steps": [
+        "Convert: &frac{3}{2} &divide; &frac{3}{4}",
+        "Keep &frac{3}{2}, change to &times;, flip to &frac{4}{3}",
+        "&frac{3}{2} &times; &frac{4}{3} = &frac{12}{6} = 2"
+      ],
+      "answer": "= 2",
+      "explanation": "Convert mixed numbers to improper fractions first."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Dividing unit fractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use keep, change, flip.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{2} &divide; &frac{1}{3}",
+          "answer": "1&frac{1}{2}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{1}{4} &divide; &frac{1}{5}",
+          "answer": "1&frac{1}{4}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{1}{3} &divide; &frac{1}{6}",
+          "answer": "2"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{1}{5} &divide; &frac{1}{2}",
+          "answer": "&frac{2}{5}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Non-unit fractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Divide. Simplify your answer.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{3}{4} &divide; &frac{1}{2}",
+          "answer": "1&frac{1}{2}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{2}{3} &divide; &frac{4}{5}",
+          "answer": "&frac{5}{6}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{5}{8} &divide; &frac{3}{4}",
+          "answer": "&frac{5}{6}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{4}{7} &divide; &frac{2}{3}",
+          "answer": "&frac{6}{7}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Dividing by whole numbers",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Divide each fraction by the whole number.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{3}{4} &divide; 3",
+          "answer": "&frac{1}{4}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{5}{6} &divide; 5",
+          "answer": "&frac{1}{6}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2}{3} &divide; 4",
+          "answer": "&frac{1}{6}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{7}{8} &divide; 7",
+          "answer": "&frac{1}{8}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed numbers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Convert to improper fractions first.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1&frac{1}{2} &divide; &frac{1}{4}",
+          "answer": "6"
+        },
+        {
+          "id": "b",
+          "expression": "2&frac{1}{3} &divide; &frac{2}{3}",
+          "answer": "3&frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "1&frac{3}{4} &divide; &frac{7}{8}",
+          "answer": "2"
+        },
+        {
+          "id": "d",
+          "expression": "3&frac{1}{5} &divide; 4",
+          "answer": "&frac{4}{5}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed division",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Divide and simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{5}{6} &divide; &frac{2}{3}",
+          "answer": "1&frac{1}{4}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{9}{10} &divide; &frac{3}{5}",
+          "answer": "1&frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "2&frac{1}{2} &divide; 1&frac{1}{4}",
+          "answer": "2"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{7}{12} &divide; &frac{7}{6}",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "e",
+          "expression": "4 &divide; &frac{2}{5}",
+          "answer": "10"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To divide by a fraction, flip the second fraction and multiply",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&frac{2}{3} &divide; &frac{1}{4} = &frac{2}{12}",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The reciprocal of &frac{3}{5} is &frac{5}{3}",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Dividing by a fraction always gives a smaller answer",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "&frac{1}{2} &divide; 3 = &frac{1}{6}",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A ribbon is <strong>&frac{3}{4} m</strong> long. It is cut into pieces that are each <strong>&frac{1}{8} m</strong> long. How many pieces can be cut? If each piece costs <strong>25p</strong>, what is the total cost?"
+      },
+      {
+        "id": "b",
+        "text": "A jug holds <strong>2&frac{1}{2} litres</strong> of juice. Each glass holds <strong>&frac{1}{3} litre</strong>. How many full glasses can be poured? How much juice is left over?"
+      }
+    ]
+  }
+}

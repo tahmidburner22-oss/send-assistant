@@ -1,0 +1,325 @@
+{
+  "title": "VECTORS,\n(MULTIPLYING VECTORS BY A SCALAR)",
+  "objective": "LO: I can multiply a vector by a scalar and understand its geometric effect.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Scalar multiplication of vectors",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Multiplying a vector by a <span class=\"ul-b\">scalar</span> (number) multiplies each component by that number. This <span class=\"ul-k\">scales</span> the vector: changing its magnitude but not its direction (unless negative)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key fact:</span> A negative scalar reverses the direction. Vectors that are scalar multiples of each other are parallel."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3(2, 4) = (6, 12)",
+          "desc": "multiply each component by 3"
+        },
+        {
+          "correct": true,
+          "expr": "-2(1, 3) = (-2, -6)",
+          "desc": "negative scalar reverses direction"
+        },
+        {
+          "correct": true,
+          "expr": "(4, 6) and (2, 3) are parallel",
+          "desc": "one is 2 times the other"
+        },
+        {
+          "correct": false,
+          "expr": "3(2, 4) = (6, 4)",
+          "desc": "must multiply both components"
+        },
+        {
+          "correct": false,
+          "expr": "-1(3, 2) = (3, 2)",
+          "desc": "should be (-3, -2)"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply each component by the scalar. Parallel vectors are scalar multiples of each other.",
+      "equation": "k<span class=\"ov\">(a, b)</span> = <span class=\"ovr\">(ka, kb)</span>",
+      "caption": "Scales magnitude by |k|, reverses direction if k < 0"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; positive scalar",
+      "question": "Calculate 4(2, 3).",
+      "steps": [
+        "Multiply x: 4 &times; 2 = 8",
+        "Multiply y: 4 &times; 3 = 12",
+        "Result: (8, 12)"
+      ],
+      "answer": "(8, 12)",
+      "explanation": "Each component is multiplied by the scalar."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative scalar",
+      "question": "Calculate -3(1, -2).",
+      "steps": [
+        "Multiply x: -3 &times; 1 = -3",
+        "Multiply y: -3 &times; (-2) = 6",
+        "Result: (-3, 6)"
+      ],
+      "answer": "(-3, 6)",
+      "explanation": "Negative scalar reverses direction."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; showing vectors are parallel",
+      "question": "Show that (6, 9) and (2, 3) are parallel.",
+      "steps": [
+        "Check if one is a scalar multiple of the other",
+        "(6, 9) = 3(2, 3)",
+        "Since (6, 9) = 3 &times; (2, 3), they are parallel"
+      ],
+      "answer": "Parallel (scalar factor 3)",
+      "explanation": "If a = kb for some scalar k, the vectors are parallel."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; combining scalar and addition",
+      "question": "If a = (3, 1) and b = (2, -4), find 2a - 3b.",
+      "steps": [
+        "2a = 2(3, 1) = (6, 2)",
+        "3b = 3(2, -4) = (6, -12)",
+        "2a - 3b = (6, 2) - (6, -12) = (0, 14)"
+      ],
+      "answer": "(0, 14)",
+      "explanation": "Scalar multiply first, then subtract."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Positive scalars",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate each scalar multiple.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2(3, 5)",
+          "answer": "(6, 10)"
+        },
+        {
+          "id": "b",
+          "expression": "5(1, -2)",
+          "answer": "(5, -10)"
+        },
+        {
+          "id": "c",
+          "expression": "3(-4, 2)",
+          "answer": "(-12, 6)"
+        },
+        {
+          "id": "d",
+          "expression": "4(0, 7)",
+          "answer": "(0, 28)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Negative scalars",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "-2(4, 1)",
+          "answer": "(-8, -2)"
+        },
+        {
+          "id": "b",
+          "expression": "-1(5, -3)",
+          "answer": "(-5, 3)"
+        },
+        {
+          "id": "c",
+          "expression": "-3(2, 6)",
+          "answer": "(-6, -18)"
+        },
+        {
+          "id": "d",
+          "expression": "-4(-1, 2)",
+          "answer": "(4, -8)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Fractional scalars",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Calculate each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{2}(6, 4)",
+          "answer": "(3, 2)"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{1}{3}(9, -6)",
+          "answer": "(3, -2)"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2}{3}(12, 9)",
+          "answer": "(8, 6)"
+        },
+        {
+          "id": "d",
+          "expression": "-&frac{1}{2}(8, -10)",
+          "answer": "(-4, 5)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Parallel vectors",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "State whether the vectors are parallel. If so, give the scalar.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(4, 6) and (2, 3)",
+          "answer": "Parallel, factor 2"
+        },
+        {
+          "id": "b",
+          "expression": "(3, 5) and (6, 10)",
+          "answer": "Parallel, factor &frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "(1, 2) and (3, 5)",
+          "answer": "Not parallel"
+        },
+        {
+          "id": "d",
+          "expression": "(-4, 8) and (2, -4)",
+          "answer": "Parallel, factor -2"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Combined operations",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Given a = (2, 3) and b = (4, -1), calculate:",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3a",
+          "answer": "(6, 9)"
+        },
+        {
+          "id": "b",
+          "expression": "a + 2b",
+          "answer": "(10, 1)"
+        },
+        {
+          "id": "c",
+          "expression": "3a - b",
+          "answer": "(2, 10)"
+        },
+        {
+          "id": "d",
+          "expression": "2a + 3b",
+          "answer": "(16, 3)"
+        },
+        {
+          "id": "e",
+          "expression": "-a + 4b",
+          "answer": "(14, -7)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3(2, 4) = (6, 12)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "3(2, 4) = (6, 4)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Parallel vectors are scalar multiples of each other",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "-1(3, 2) = (3, 2)",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "If a = 2b, then a and b are parallel and a is twice as long",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Vectors p = <strong>(2, 5)</strong> and q = <strong>(k, 15)</strong> are parallel. Find the value of k. Write q as a scalar multiple of p."
+      },
+      {
+        "id": "b",
+        "text": "Points A, B, C have position vectors a = <strong>(1, 2)</strong>, b = <strong>(4, 5)</strong>, c = <strong>(10, 11)</strong>. Show that A, B, and C are collinear by showing that AB is a scalar multiple of AC."
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "PROPORTION,\n(PROPORTION IN CONTEXT)",
+  "objective": "LO: I can solve real-world proportion problems involving recipes, maps, scales, and exchange rates.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Proportion in real life",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Proportion</span> in context means scaling quantities up or down while keeping the same <span class=\"\u0001\">ratio</span> between ingredients, distances, or values."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Applications:</span> Recipes (scaling ingredients), maps (scale factors), currency exchange, and mixing ratios."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Scale 1:50000 means 1 cm = 50000 cm = 500 m",
+          "desc": "map scale"
+        },
+        {
+          "correct": true,
+          "expr": "Recipe for 4 &rarr; for 6: multiply by 1.5",
+          "desc": "scale factor"
+        },
+        {
+          "correct": true,
+          "expr": "&pound;1 = .25 means &pound;40 = 0",
+          "desc": "exchange rate"
+        },
+        {
+          "correct": false,
+          "expr": "Scale 1:50000 means 1 cm = 50 m",
+          "desc": "forgot a zero: 500 m"
+        },
+        {
+          "correct": false,
+          "expr": "Recipe for 4 to 6: add 2 to each amount",
+          "desc": "must multiply by scale factor"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Find the scale factor (new &divide; original) and multiply all quantities by it.",
+      "equation": "Scale factor = <span class=\"\u0001\">&frac{new amount}{original}</span>",
+      "caption": "Then multiply each ingredient/measurement by <span class=\"\u0001\">SF</span>"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; scaling a recipe",
+      "question": "A recipe for 4 uses 200g flour, 100g sugar, 2 eggs. Make it for 6.",
+      "steps": [
+        "Scale factor: 6 &divide; 4 = 1.5",
+        "Flour: 200 &times; 1.5 = 300g, Sugar: 100 &times; 1.5 = 150g",
+        "Eggs: 2 &times; 1.5 = 3"
+      ],
+      "answer": "300g flour, 150g sugar, 3 eggs",
+      "explanation": "Multiply every ingredient by the same scale factor."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; map scale",
+      "question": "A map has scale 1:25000. Two towns are 8 cm apart on the map. Find the real distance in km.",
+      "steps": [
+        "8 cm &times; 25000 = 200000 cm",
+        "200000 cm = 2000 m",
+        "2000 m = 2 km"
+      ],
+      "answer": "= 2 km",
+      "explanation": "Convert from cm to km: divide by 100000."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; currency exchange",
+      "question": "&pound;1 = 1.15 euros. Convert &pound;85 to euros.",
+      "steps": [
+        "Multiply by the exchange rate",
+        "85 &times; 1.15",
+        "= 97.75 euros"
+      ],
+      "answer": "= 97.75 euros",
+      "explanation": "To convert from pounds to euros, multiply by the rate."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; best buy using proportion",
+      "question": "Shop A: 500ml for &pound;2.40. Shop B: 750ml for &pound;3.30. Which is better value?",
+      "steps": [
+        "Shop A: 2.40 &divide; 500 = 0.48p per ml",
+        "Shop B: 3.30 &divide; 750 = 0.44p per ml",
+        "Shop B is cheaper per ml"
+      ],
+      "answer": "Shop B is better value",
+      "explanation": "Compare unit prices to find the best deal."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Scaling recipes",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Scale the recipe from 4 servings to the target.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "200g flour for 4. Amount for 10?",
+          "answer": "500g"
+        },
+        {
+          "id": "b",
+          "expression": "150ml milk for 4. Amount for 6?",
+          "answer": "225ml"
+        },
+        {
+          "id": "c",
+          "expression": "3 eggs for 4. Eggs for 12?",
+          "answer": "9"
+        },
+        {
+          "id": "d",
+          "expression": "80g butter for 4. Amount for 3?",
+          "answer": "60g"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Map scales",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate real distances from map measurements.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Scale 1:50000. Map distance 6 cm. Real distance?",
+          "answer": "3 km"
+        },
+        {
+          "id": "b",
+          "expression": "Scale 1:25000. Map distance 12 cm. Real distance?",
+          "answer": "3 km"
+        },
+        {
+          "id": "c",
+          "expression": "Scale 1:100000. Real distance 8 km. Map distance?",
+          "answer": "8 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Scale 1:20000. Map distance 4.5 cm. Real distance?",
+          "answer": "0.9 km"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Currency exchange",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Convert using the given exchange rate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;1 = .25. Convert &pound;60 to dollars",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;1 = 1.15 euros. Convert &pound;200 to euros",
+          "answer": "230 euros"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;1 = .25. Convert 00 to pounds",
+          "answer": "&pound;80"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;1 = 1.15 euros. Convert 460 euros to pounds",
+          "answer": "&pound;400"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixing and ratios",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use proportion to solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Concrete mix: 1 cement : 3 sand. Need 20 kg total. How much cement?",
+          "answer": "5 kg"
+        },
+        {
+          "id": "b",
+          "expression": "Paint: 3 red : 2 white = pink. Need 2.5 L total. How much red?",
+          "answer": "1.5 L"
+        },
+        {
+          "id": "c",
+          "expression": "Squash: 1 part cordial to 4 parts water. Make 2 litres. Cordial needed?",
+          "answer": "400 ml"
+        },
+        {
+          "id": "d",
+          "expression": "Model scale 1:72. Real plane 36 m. Model length?",
+          "answer": "50 cm"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed proportion in context",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each real-world problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Recipe for 8: 600g pasta. Amount for 5?",
+          "answer": "375g"
+        },
+        {
+          "id": "b",
+          "expression": "Map scale 1:40000. Towns 7.5 cm apart. Real distance?",
+          "answer": "3 km"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;1 = 145 yen. Convert &pound;35 to yen",
+          "answer": "5075 yen"
+        },
+        {
+          "id": "d",
+          "expression": "A car uses 5 litres per 60 km. Fuel for 210 km?",
+          "answer": "17.5 litres"
+        },
+        {
+          "id": "e",
+          "expression": "Scale model 1:200. Building height 4.5 cm. Real height?",
+          "answer": "9 m"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Scale 1:25000 means 1 cm represents 250 m",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "To scale a recipe from 4 to 6, add 2 to each ingredient",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "To convert &pound; to euros, multiply by the exchange rate",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Scale 1:50000 means 1 cm = 50 m",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The scale factor for 4 servings to 6 is 1.5",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A recipe for <strong>6 people</strong> uses: 450g chicken, 200g rice, 150ml sauce, 3 peppers. You have <strong>750g chicken</strong> and want to use it all. How much of each other ingredient do you need? How many people does this serve?"
+      },
+      {
+        "id": "b",
+        "text": "On a map with scale <strong>1:50000</strong>, a lake has area <strong>12 cm&sup2;</strong> on the map. Find the real area in km&sup2;. If a runner goes around the lake and it measures <strong>14 cm</strong> on the map, how far do they actually run?"
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "TRIGONOMETRY,\n(SINE AND COSINE RULES)",
+  "objective": "LO: I can apply the sine rule and cosine rule to find unknown sides and angles in non-right-angled triangles.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Sine and cosine rules",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">sine rule</span> is used when you have a side and its opposite angle: a/sin A = b/sin B = c/sin C. The <span class=\"ul-k\">cosine rule</span> is used when you know two sides and the included angle (or all three sides)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Cosine rule:</span> a² = b² + c² - 2bc cos A. To find an angle: cos A = (b² + c² - a²) &divide; 2bc."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Sine rule: a/sin A = b/sin B",
+          "desc": "for matching pairs of side and angle"
+        },
+        {
+          "correct": true,
+          "expr": "Cosine rule: a² = b² + c² - 2bc cos A",
+          "desc": "SAS or SSS"
+        },
+        {
+          "correct": true,
+          "expr": "Use sine rule for AAS or ASA",
+          "desc": "when you can match a pair"
+        },
+        {
+          "correct": false,
+          "expr": "Sine rule works with two sides and included angle",
+          "desc": "use cosine rule for SAS"
+        },
+        {
+          "correct": false,
+          "expr": "a² = b² + c² + 2bc cos A",
+          "desc": "sign should be minus"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Sine rule for matched pairs (side + opposite angle). Cosine rule for SAS or SSS.",
+      "equation": "<span class=\"ov\">&frac{a}{sin A}</span> = <span class=\"ovr\">&frac{b}{sin B}</span>",
+      "caption": "Each side is proportional to the sine of its opposite angle"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; sine rule finding a side",
+      "question": "In triangle ABC, A = 40°, B = 70°, a = 8. Find b.",
+      "steps": [
+        "a/sin A = b/sin B",
+        "8/sin 40° = b/sin 70°",
+        "b = 8 sin 70° / sin 40° = 11.7 (1 dp)"
+      ],
+      "answer": "b = 11.7",
+      "explanation": "Cross-multiply to find the unknown side."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; sine rule finding an angle",
+      "question": "In triangle, a = 10, b = 7, A = 50°. Find B.",
+      "steps": [
+        "sin B / b = sin A / a",
+        "sin B = 7 sin 50° / 10 = 0.536",
+        "B = sin⁻¹(0.536) = 32.4°"
+      ],
+      "answer": "B = 32.4°",
+      "explanation": "Use the sine rule flipped to find the angle."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; cosine rule finding a side",
+      "question": "b = 5, c = 7, A = 60°. Find a.",
+      "steps": [
+        "a² = 5² + 7² - 2(5)(7)cos 60°",
+        "= 25 + 49 - 70(0.5) = 39",
+        "a = &radic;39 = 6.2 (1 dp)"
+      ],
+      "answer": "a = 6.2",
+      "explanation": "Substitute into the cosine rule formula."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; cosine rule finding an angle",
+      "question": "a = 8, b = 6, c = 5. Find angle A.",
+      "steps": [
+        "cos A = (b² + c² - a²) / 2bc",
+        "= (36 + 25 - 64) / (2 &times; 6 &times; 5) = -3/60",
+        "A = cos⁻¹(-0.05) = 92.9°"
+      ],
+      "answer": "A = 92.9°",
+      "explanation": "A negative value of cos means the angle is obtuse."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Sine rule - finding sides",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the sine rule to find the unknown side (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A = 50°, B = 60°, a = 10. Find b.",
+          "answer": "11.3"
+        },
+        {
+          "id": "b",
+          "expression": "A = 30°, C = 80°, a = 6. Find c.",
+          "answer": "11.8"
+        },
+        {
+          "id": "c",
+          "expression": "B = 45°, C = 75°, b = 9. Find c.",
+          "answer": "12.3"
+        },
+        {
+          "id": "d",
+          "expression": "A = 40°, B = 55°, b = 12. Find a.",
+          "answer": "9.4"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Sine rule - finding angles",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the sine rule to find the unknown angle (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a = 8, b = 6, A = 50°. Find B.",
+          "answer": "35.0°"
+        },
+        {
+          "id": "b",
+          "expression": "a = 12, b = 9, A = 70°. Find B.",
+          "answer": "44.8°"
+        },
+        {
+          "id": "c",
+          "expression": "b = 10, c = 7, B = 65°. Find C.",
+          "answer": "39.4°"
+        },
+        {
+          "id": "d",
+          "expression": "a = 15, c = 11, A = 80°. Find C.",
+          "answer": "46.3°"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Cosine rule - finding sides",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Use the cosine rule to find the unknown side (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "b = 7, c = 9, A = 50°. Find a.",
+          "answer": "7.0"
+        },
+        {
+          "id": "b",
+          "expression": "a = 6, c = 10, B = 80°. Find b.",
+          "answer": "10.9"
+        },
+        {
+          "id": "c",
+          "expression": "a = 5, b = 8, C = 120°. Find c.",
+          "answer": "11.4"
+        },
+        {
+          "id": "d",
+          "expression": "b = 4, c = 6, A = 45°. Find a.",
+          "answer": "4.3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Cosine rule - finding angles",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use the cosine rule to find the unknown angle (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a = 7, b = 5, c = 8. Find A.",
+          "answer": "60.0°"
+        },
+        {
+          "id": "b",
+          "expression": "a = 10, b = 8, c = 6. Find A.",
+          "answer": "97.9°"
+        },
+        {
+          "id": "c",
+          "expression": "a = 4, b = 5, c = 6. Find C.",
+          "answer": "82.8°"
+        },
+        {
+          "id": "d",
+          "expression": "a = 9, b = 7, c = 5. Find A.",
+          "answer": "95.7°"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Choose and apply the correct rule (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A = 35°, B = 85°, a = 7. Find b.",
+          "answer": "12.2"
+        },
+        {
+          "id": "b",
+          "expression": "a = 10, b = 12, C = 70°. Find c.",
+          "answer": "12.7"
+        },
+        {
+          "id": "c",
+          "expression": "a = 8, b = 9, c = 11. Find largest angle.",
+          "answer": "C = 84.3°"
+        },
+        {
+          "id": "d",
+          "expression": "B = 40°, b = 8, c = 10. Find C.",
+          "answer": "53.5°"
+        },
+        {
+          "id": "e",
+          "expression": "a = 5, c = 7, B = 100°. Find b.",
+          "answer": "9.5"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "The sine rule uses matching pairs of side and opposite angle",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Use the sine rule when you know two sides and the included angle",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "a² = b² + c² - 2bc cos A is the cosine rule",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The cosine rule has a plus sign: a² = b² + c² + 2bc cos A",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "If cos A is negative, then angle A is obtuse",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Two ships leave a port. Ship A sails <strong>12 km</strong> on bearing <strong>060°</strong>. Ship B sails <strong>8 km</strong> on bearing <strong>130°</strong>. Find the distance between the two ships."
+      },
+      {
+        "id": "b",
+        "text": "In triangle PQR, PQ = <strong>9 cm</strong>, QR = <strong>11 cm</strong>, and angle PQR = <strong>75°</strong>. Find PR. Then find angle QPR."
+      }
+    ]
+  }
+}

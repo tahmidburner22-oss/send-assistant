@@ -1,0 +1,325 @@
+{
+  "title": "PROBABILITY,\n(MUTUALLY EXCLUSIVE EVENTS)",
+  "objective": "LO: I can identify mutually exclusive events and use the addition rule for probability.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Mutually exclusive events",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Mutually exclusive</span> events cannot happen at the same time. If one occurs, the other <span class=\"\u0001\">cannot</span> occur."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Addition rule:</span> If A and B are mutually exclusive, P(A or B) = P(A) + P(B)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Rolling a 3 and rolling a 5 on one die: mutually exclusive",
+          "desc": "cannot get both"
+        },
+        {
+          "correct": true,
+          "expr": "P(A or B) = P(A) + P(B) when mutually exclusive",
+          "desc": "addition rule"
+        },
+        {
+          "correct": true,
+          "expr": "All probabilities in a sample space sum to 1",
+          "desc": "exhaustive"
+        },
+        {
+          "correct": false,
+          "expr": "Drawing a red card and a king are mutually exclusive",
+          "desc": "king of hearts is both"
+        },
+        {
+          "correct": false,
+          "expr": "P(A or B) = P(A) + P(B) always",
+          "desc": "only when mutually exclusive"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Mutually exclusive events have no overlap: P(A and B) = 0. So P(A or B) = P(A) + P(B).",
+      "equation": "P(A or B) = <span class=\"\u0001\">P(A)</span> + <span class=\"\u0001\">P(B)</span>",
+      "caption": "Only when A and B cannot happen together"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; identifying mutually exclusive",
+      "question": "A die is rolled. Are 'rolling a 2' and 'rolling an even number' mutually exclusive?",
+      "steps": [
+        "Rolling a 2 IS an even number",
+        "Both can happen on the same roll",
+        "NOT mutually exclusive"
+      ],
+      "answer": "Not mutually exclusive",
+      "explanation": "2 is contained within the set of even numbers."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; addition rule",
+      "question": "P(red) = 0.3, P(blue) = 0.45. If colours are mutually exclusive, find P(red or blue).",
+      "steps": [
+        "Mutually exclusive: use addition rule",
+        "P(red or blue) = 0.3 + 0.45",
+        "= 0.75"
+      ],
+      "answer": "= 0.75",
+      "explanation": "Simply add the probabilities when events cannot overlap."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding a missing probability",
+      "question": "A spinner has P(red) = 0.2, P(blue) = 0.35, P(green) = 0.15. Find P(yellow).",
+      "steps": [
+        "All probabilities sum to 1",
+        "0.2 + 0.35 + 0.15 + P(yellow) = 1",
+        "P(yellow) = 1 - 0.7 = 0.3"
+      ],
+      "answer": "= 0.3",
+      "explanation": "The sample space is exhaustive so all probabilities total 1."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; or probability from a table",
+      "question": "A bag: 5 red, 3 blue, 2 green (total 10). Find P(red or green).",
+      "steps": [
+        "Red and green are mutually exclusive (a ball is one colour)",
+        "P(red) = &frac{5}{10}, P(green) = &frac{2}{10}",
+        "P(red or green) = &frac{7}{10}"
+      ],
+      "answer": "= &frac{7}{10}",
+      "explanation": "Each ball is only one colour, so colours are mutually exclusive."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identifying mutually exclusive",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State whether each pair is mutually exclusive (Yes/No).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Rolling a 6 and rolling a 3 (one die)",
+          "answer": "Yes"
+        },
+        {
+          "id": "b",
+          "expression": "Picking a heart and picking a queen (cards)",
+          "answer": "No"
+        },
+        {
+          "id": "c",
+          "expression": "Getting heads and getting tails (one coin)",
+          "answer": "Yes"
+        },
+        {
+          "id": "d",
+          "expression": "Being left-handed and being female",
+          "answer": "No"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Using the addition rule",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Events are mutually exclusive. Find P(A or B).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A) = 0.3, P(B) = 0.4",
+          "answer": "0.7"
+        },
+        {
+          "id": "b",
+          "expression": "P(A) = &frac{1}{5}, P(B) = &frac{2}{5}",
+          "answer": "&frac{3}{5}"
+        },
+        {
+          "id": "c",
+          "expression": "P(A) = 0.15, P(B) = 0.25",
+          "answer": "0.4"
+        },
+        {
+          "id": "d",
+          "expression": "P(A) = &frac{1}{4}, P(B) = &frac{1}{3}",
+          "answer": "&frac{7}{12}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding missing probabilities",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "All outcomes are mutually exclusive and exhaustive.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A) = 0.4, P(B) = 0.35, P(C) = ?",
+          "answer": "0.25"
+        },
+        {
+          "id": "b",
+          "expression": "P(X) = &frac{1}{3}, P(Y) = &frac{1}{4}, P(Z) = ?",
+          "answer": "&frac{5}{12}"
+        },
+        {
+          "id": "c",
+          "expression": "P(R) = 0.1, P(S) = 0.3, P(T) = 0.25, P(U) = ?",
+          "answer": "0.35"
+        },
+        {
+          "id": "d",
+          "expression": "P(1) = P(2) = P(3) = P(4). Find P(1)",
+          "answer": "0.25"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each probability problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Bag: 6 red, 4 blue, 5 green. P(red or blue)?",
+          "answer": "&frac{2}{3}"
+        },
+        {
+          "id": "b",
+          "expression": "Die: P(less than 3 or greater than 4)?",
+          "answer": "&frac{2}{3}"
+        },
+        {
+          "id": "c",
+          "expression": "Cards: P(ace or king)?",
+          "answer": "&frac{2}{13}"
+        },
+        {
+          "id": "d",
+          "expression": "Spinner 1-8: P(2 or prime)?",
+          "answer": "&frac{1}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed mutually exclusive",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer each question.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A) = 0.4, P(B) = 0.3, P(A and B) = 0. Find P(A or B)",
+          "answer": "0.7"
+        },
+        {
+          "id": "b",
+          "expression": "P(A) = 0.5, P(A or B) = 0.8. A and B mutually exclusive. P(B)?",
+          "answer": "0.3"
+        },
+        {
+          "id": "c",
+          "expression": "Three mutually exclusive events with P = x, 2x, 3x. Find x",
+          "answer": "&frac{1}{6}"
+        },
+        {
+          "id": "d",
+          "expression": "Bag: 4 red, n blue. P(red) = &frac{1}{3}. Find n",
+          "answer": "8"
+        },
+        {
+          "id": "e",
+          "expression": "P(A or B or C) = 1, P(A) = 0.5, P(B) = 0.3. P(C)?",
+          "answer": "0.2"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Mutually exclusive events cannot happen at the same time",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "P(A or B) = P(A) + P(B) works for all events",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "If events are exhaustive, their probabilities sum to 1",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Rolling even and rolling a 6 are mutually exclusive",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Mutually exclusive events have P(A and B) = 0",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A bag has red, blue, and green balls. P(red) = <strong>0.35</strong>, P(blue) = <strong>0.4</strong>. Find P(green). If there are <strong>8 green balls</strong>, how many balls are in the bag total? How many are red?"
+      },
+      {
+        "id": "b",
+        "text": "Events A, B, C are mutually exclusive and exhaustive. <strong>P(A) = 2P(B)</strong> and <strong>P(C) = 3P(B)</strong>. Find P(A), P(B) and P(C). If the experiment is done <strong>120 times</strong>, how many times would you expect each event?"
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "STATISTICS,\n(HISTOGRAMS)",
+  "objective": "LO: I can draw and interpret histograms with equal and unequal class widths.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Histograms",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">histogram</span> displays continuous data using bars with no gaps. The <span class=\"ul-k\">frequency density</span> is plotted on the y-axis when class widths are unequal."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key formula:</span> Frequency density = frequency &divide; class width. The area of each bar represents the frequency."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Freq density = 20 &divide; 5 = 4",
+          "desc": "frequency 20, class width 5"
+        },
+        {
+          "correct": true,
+          "expr": "Frequency = density &times; width",
+          "desc": "area of bar = frequency"
+        },
+        {
+          "correct": true,
+          "expr": "No gaps between bars",
+          "desc": "data is continuous"
+        },
+        {
+          "correct": false,
+          "expr": "Plot frequency on y-axis for unequal widths",
+          "desc": "must use frequency density"
+        },
+        {
+          "correct": false,
+          "expr": "Leave gaps between bars",
+          "desc": "gaps are for bar charts, not histograms"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Frequency density = frequency divided by class width. Area of bar = frequency.",
+      "equation": "<span class=\"ov\">Frequency density</span> = <span class=\"ovr\">frequency &divide; class width</span>",
+      "caption": "Area of each bar gives the frequency for that class"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; calculating frequency density",
+      "question": "Class 10-20 has frequency 30. Find the frequency density.",
+      "steps": [
+        "Class width = 20 - 10 = 10",
+        "Frequency density = 30 &divide; 10",
+        "= 3"
+      ],
+      "answer": "Frequency density = 3",
+      "explanation": "Divide the frequency by the class width."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding frequency from a histogram",
+      "question": "A bar has height (density) 4 and width 5. Find the frequency.",
+      "steps": [
+        "Frequency = density &times; width",
+        "= 4 &times; 5",
+        "= 20"
+      ],
+      "answer": "Frequency = 20",
+      "explanation": "The area of the bar gives the frequency."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; unequal class widths",
+      "question": "Classes 0-10 (freq 15), 10-30 (freq 40). Find densities.",
+      "steps": [
+        "0-10: width 10, density = 15 &divide; 10 = 1.5",
+        "10-30: width 20, density = 40 &divide; 20 = 2",
+        "Bar heights: 1.5 and 2"
+      ],
+      "answer": "1.5 and 2",
+      "explanation": "Each class has its own width; calculate density separately."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; estimating from a histogram",
+      "question": "Estimate how many values fall between 15 and 25 if the density is 3 across that range.",
+      "steps": [
+        "Width of interest = 25 - 15 = 10",
+        "Frequency = density &times; width = 3 &times; 10",
+        "= 30 values"
+      ],
+      "answer": "30 values",
+      "explanation": "Use area to estimate frequencies within part of a class."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Calculating frequency density",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the frequency density for each class.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Class 0-10, frequency 25",
+          "answer": "2.5"
+        },
+        {
+          "id": "b",
+          "expression": "Class 10-30, frequency 60",
+          "answer": "3"
+        },
+        {
+          "id": "c",
+          "expression": "Class 30-50, frequency 44",
+          "answer": "2.2"
+        },
+        {
+          "id": "d",
+          "expression": "Class 50-80, frequency 90",
+          "answer": "3"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding frequency from density",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the frequency (area of bar).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Density 4, width 10",
+          "answer": "40"
+        },
+        {
+          "id": "b",
+          "expression": "Density 2.5, width 20",
+          "answer": "50"
+        },
+        {
+          "id": "c",
+          "expression": "Density 1.8, width 15",
+          "answer": "27"
+        },
+        {
+          "id": "d",
+          "expression": "Density 6, width 5",
+          "answer": "30"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Completing a table",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the missing values.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Class 0-5, freq ?, density 4",
+          "answer": "freq = 20"
+        },
+        {
+          "id": "b",
+          "expression": "Class 5-15, freq 30, density ?",
+          "answer": "density = 3"
+        },
+        {
+          "id": "c",
+          "expression": "Class 15-25, freq ?, density 2.5",
+          "answer": "freq = 25"
+        },
+        {
+          "id": "d",
+          "expression": "Class 25-50, freq 75, density ?",
+          "answer": "density = 3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Interpreting histograms",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use the histogram data to answer.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Total frequency if densities are 2, 3, 4 for widths 10, 10, 5?",
+          "answer": "70"
+        },
+        {
+          "id": "b",
+          "expression": "Which class has highest frequency: density 5 width 4, or density 3 width 8?",
+          "answer": "density 3, width 8 (freq 24)"
+        },
+        {
+          "id": "c",
+          "expression": "Estimate median class if total freq = 60, first two classes have freq 15 and 25.",
+          "answer": "Second class"
+        },
+        {
+          "id": "d",
+          "expression": "Bar area = 36, width = 12. What is the height?",
+          "answer": "3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed histogram problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Class 0-20 has density 1.5. Class 20-25 has density 6. Which has more data?",
+          "answer": "0-20 (freq 30 vs 30, equal)"
+        },
+        {
+          "id": "b",
+          "expression": "Three classes: 0-10 (d=2), 10-20 (d=4), 20-50 (d=1). Total frequency?",
+          "answer": "20 + 40 + 30 = 90"
+        },
+        {
+          "id": "c",
+          "expression": "Frequency of 45 in class width 15. Density?",
+          "answer": "3"
+        },
+        {
+          "id": "d",
+          "expression": "Bar height 2.4, class 5-25. Frequency?",
+          "answer": "48"
+        },
+        {
+          "id": "e",
+          "expression": "Two bars: 0-10 (d=3), 10-40 (d=2). Estimate how many in 5-20.",
+          "answer": "approx 35"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Frequency density = frequency &divide; class width",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The height of a histogram bar always shows the frequency",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Histogram bars have no gaps because data is continuous",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Wider bars always represent more data",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The area of each bar represents the frequency",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A histogram shows times (minutes): 0-5 (density 4), 5-15 (density 3), 15-30 (density 2), 30-60 (density 1). Find the total number of people surveyed. Estimate how many took between <strong>10 and 20 minutes</strong>."
+      },
+      {
+        "id": "b",
+        "text": "80 students took a test. The results: 0-40 marks (density 0.5), 40-60 marks (density 2), 60-80 marks (density d), 80-100 marks (density 0.75). Find the value of d and estimate the median mark."
+      }
+    ]
+  }
+}

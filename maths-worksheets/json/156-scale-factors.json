@@ -1,0 +1,325 @@
+{
+  "title": "RATIO AND PROPORTION,\n(SCALE FACTORS)",
+  "objective": "LO: I can use scale factors to enlarge or reduce shapes and interpret map scales.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Scale factors",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">scale factor</span> is the multiplier that converts an original length to a new length. A scale factor greater than 1 <span class=\"ul-k\">enlarges</span>; between 0 and 1 it reduces."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Maps and models:</span> A scale of 1 : 50 000 means 1 cm on the map represents 50 000 cm (500 m) in real life."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "SF = 3 means new = original &times; 3",
+          "desc": "enlargement"
+        },
+        {
+          "correct": true,
+          "expr": "SF = &frac{1}{2} means new = original &times; &frac{1}{2}",
+          "desc": "reduction"
+        },
+        {
+          "correct": true,
+          "expr": "SF = new length &divide; original length",
+          "desc": "finding the scale factor"
+        },
+        {
+          "correct": false,
+          "expr": "SF = 2 doubles the area",
+          "desc": "area scales by SF² = 4"
+        },
+        {
+          "correct": false,
+          "expr": "SF < 1 makes the shape bigger",
+          "desc": "it makes it smaller"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Scale factor = new length divided by original length. Multiply every length by the scale factor.",
+      "equation": "SF = <span class=\"ov\">new length</span> &divide; <span class=\"ovr\">original length</span>",
+      "caption": "All lengths scale by the same factor"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; finding a scale factor",
+      "question": "A shape has side 4 cm. The enlargement has side 12 cm. Find the scale factor.",
+      "steps": [
+        "SF = new &divide; original",
+        "SF = 12 &divide; 4",
+        "SF = 3"
+      ],
+      "answer": "SF = 3",
+      "explanation": "Divide the new length by the original length."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; using a scale factor",
+      "question": "Enlarge a triangle with sides 3, 4, 5 cm by scale factor 2.",
+      "steps": [
+        "Multiply each side by 2",
+        "3 &times; 2 = 6, 4 &times; 2 = 8, 5 &times; 2 = 10",
+        "New sides: 6, 8, 10 cm"
+      ],
+      "answer": "6, 8, 10 cm",
+      "explanation": "Every side is multiplied by the same scale factor."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; fractional scale factor",
+      "question": "Reduce a rectangle 12 cm by 8 cm using SF = &frac{1}{4}.",
+      "steps": [
+        "Length: 12 &times; &frac{1}{4} = 3 cm",
+        "Width: 8 &times; &frac{1}{4} = 2 cm",
+        "New rectangle: 3 cm by 2 cm"
+      ],
+      "answer": "3 cm by 2 cm",
+      "explanation": "Fractional scale factors make shapes smaller."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; map scales",
+      "question": "A map scale is 1 : 25 000. Two towns are 6 cm apart on the map. Find the real distance.",
+      "steps": [
+        "Real distance = 6 &times; 25 000 = 150 000 cm",
+        "Convert: 150 000 cm = 1500 m",
+        "= 1.5 km"
+      ],
+      "answer": "1.5 km",
+      "explanation": "Map distance &times; scale = real distance. Then convert units."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding scale factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the scale factor from original to image.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Original 5 cm, image 15 cm",
+          "answer": "SF = 3"
+        },
+        {
+          "id": "b",
+          "expression": "Original 8 cm, image 2 cm",
+          "answer": "SF = &frac{1}{4}"
+        },
+        {
+          "id": "c",
+          "expression": "Original 6 cm, image 18 cm",
+          "answer": "SF = 3"
+        },
+        {
+          "id": "d",
+          "expression": "Original 10 cm, image 4 cm",
+          "answer": "SF = &frac{2}{5}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Applying scale factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the new length after enlargement.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Length 7 cm, SF = 3",
+          "answer": "21 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Length 12 cm, SF = &frac{1}{3}",
+          "answer": "4 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Length 9 cm, SF = 4",
+          "answer": "36 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Length 20 cm, SF = &frac{1}{5}",
+          "answer": "4 cm"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Reverse problems",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the original length.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "New length 24 cm, SF = 4. Original?",
+          "answer": "6 cm"
+        },
+        {
+          "id": "b",
+          "expression": "New length 5 cm, SF = &frac{1}{3}. Original?",
+          "answer": "15 cm"
+        },
+        {
+          "id": "c",
+          "expression": "New length 30 cm, SF = 6. Original?",
+          "answer": "5 cm"
+        },
+        {
+          "id": "d",
+          "expression": "New length 3 cm, SF = &frac{1}{5}. Original?",
+          "answer": "15 cm"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Map scales",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use the map scale to find real distances.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Scale 1 : 50 000. Map distance 4 cm. Real distance?",
+          "answer": "2 km"
+        },
+        {
+          "id": "b",
+          "expression": "Scale 1 : 25 000. Map distance 8 cm. Real distance?",
+          "answer": "2 km"
+        },
+        {
+          "id": "c",
+          "expression": "Scale 1 : 100 000. Real distance 5 km. Map distance?",
+          "answer": "5 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Scale 1 : 20 000. Map distance 12 cm. Real distance?",
+          "answer": "2.4 km"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed scale problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A model car is SF &frac{1}{20}. Real car is 4 m long. Model length?",
+          "answer": "20 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Sides 5, 7, 9 cm enlarged by SF 3. Find new perimeter.",
+          "answer": "63 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Photo 6 cm wide enlarged to 15 cm. Find SF.",
+          "answer": "2.5"
+        },
+        {
+          "id": "d",
+          "expression": "Rectangle 4 cm by 6 cm. SF = 2. Find new area.",
+          "answer": "192 cm²"
+        },
+        {
+          "id": "e",
+          "expression": "Map scale 1 : 40 000. Area on map = 2 cm². Real area?",
+          "answer": "320 000 m²"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Scale factor = new length &divide; original length",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "A scale factor of 2 doubles the area",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A scale factor between 0 and 1 reduces the shape",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "1 : 50 000 means 1 cm on map = 50 000 cm in real life",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "A scale factor less than 1 makes the shape bigger",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A rectangular garden is <strong>8 m by 12 m</strong>. An architect draws it with scale factor <strong>&frac{1}{200}</strong>. What are the dimensions on the plan in cm? If the garden area in real life is turfed at <strong>£5 per m²</strong>, find the total cost."
+      },
+      {
+        "id": "b",
+        "text": "Two similar triangles have areas <strong>9 cm²</strong> and <strong>81 cm²</strong>. The smaller triangle has a base of <strong>6 cm</strong>. Find the scale factor of enlargement and the base of the larger triangle."
+      }
+    ]
+  }
+}

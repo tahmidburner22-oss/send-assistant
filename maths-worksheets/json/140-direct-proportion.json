@@ -1,0 +1,325 @@
+{
+  "title": "PROPORTION,\n(DIRECT PROPORTION)",
+  "objective": "LO: I can solve problems involving direct proportion using the unitary method and formulae.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Direct proportion",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Two quantities are in <span class=\"\u0001\">direct proportion</span> if when one doubles, the other <span class=\"\u0001\">doubles too</span>. Their ratio stays constant."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Unitary method:</span> Find the value of ONE unit first, then multiply to find the amount you need."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "If 3 pens cost &pound;6, then 1 pen costs &pound;2",
+          "desc": "unitary method"
+        },
+        {
+          "correct": true,
+          "expr": "y = kx means y is directly proportional to x",
+          "desc": "formula"
+        },
+        {
+          "correct": true,
+          "expr": "Doubling x doubles y in direct proportion",
+          "desc": "constant ratio"
+        },
+        {
+          "correct": false,
+          "expr": "If 3 pens cost &pound;6, then 5 pens cost &pound;8",
+          "desc": "added 2 instead of using ratio"
+        },
+        {
+          "correct": false,
+          "expr": "y = kx + c is direct proportion",
+          "desc": "must pass through origin"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "If y is directly proportional to x, then y = kx where k is the constant of proportionality.",
+      "equation": "y = <span class=\"\u0001\">k</span> &times; <span class=\"\u0001\">x</span>",
+      "caption": "k = y &divide; x (the constant ratio)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; unitary method",
+      "question": "5 books cost &pound;35. Find the cost of 8 books.",
+      "steps": [
+        "Cost of 1 book: 35 &divide; 5 = &pound;7",
+        "Cost of 8 books: 7 &times; 8",
+        "= &pound;56"
+      ],
+      "answer": "= &pound;56",
+      "explanation": "Find the cost of one first, then multiply."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding k",
+      "question": "y is directly proportional to x. When x = 4, y = 20. Find y when x = 7.",
+      "steps": [
+        "y = kx, so k = 20 &divide; 4 = 5",
+        "y = 5x",
+        "When x = 7: y = 5 &times; 7 = 35"
+      ],
+      "answer": "y = 35",
+      "explanation": "Find k first, write the formula, then substitute."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; scaling",
+      "question": "A recipe for 4 people uses 300g flour. How much for 6 people?",
+      "steps": [
+        "For 1 person: 300 &divide; 4 = 75g",
+        "For 6 people: 75 &times; 6",
+        "= 450g"
+      ],
+      "answer": "= 450g",
+      "explanation": "Scale down to 1, then up to the number needed."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; direct proportion squared",
+      "question": "y is directly proportional to x&sup2;. When x = 3, y = 36. Find y when x = 5.",
+      "steps": [
+        "y = kx&sup2;, so 36 = k &times; 9, k = 4",
+        "y = 4x&sup2;",
+        "When x = 5: y = 4 &times; 25 = 100"
+      ],
+      "answer": "y = 100",
+      "explanation": "Proportional to x squared means y = kx&sup2;."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Unitary method",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the value of one, then scale up.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 pens cost &pound;4.50. Cost of 7?",
+          "answer": "&pound;10.50"
+        },
+        {
+          "id": "b",
+          "expression": "5 kg costs &pound;12.50. Cost of 8 kg?",
+          "answer": "&pound;20"
+        },
+        {
+          "id": "c",
+          "expression": "4 tickets cost &pound;60. Cost of 10?",
+          "answer": "&pound;150"
+        },
+        {
+          "id": "d",
+          "expression": "6 oranges cost &pound;1.80. Cost of 9?",
+          "answer": "&pound;2.70"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding the constant",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "y is directly proportional to x. Find k and the missing value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x = 3, y = 12. Find y when x = 5",
+          "answer": "20"
+        },
+        {
+          "id": "b",
+          "expression": "x = 4, y = 28. Find y when x = 6",
+          "answer": "42"
+        },
+        {
+          "id": "c",
+          "expression": "x = 10, y = 45. Find x when y = 27",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "x = 2, y = 9. Find y when x = 8",
+          "answer": "36"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Scaling recipes",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Scale each ingredient.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Recipe for 4: 200g flour. Amount for 10?",
+          "answer": "500g"
+        },
+        {
+          "id": "b",
+          "expression": "Recipe for 6: 450ml milk. Amount for 4?",
+          "answer": "300ml"
+        },
+        {
+          "id": "c",
+          "expression": "Recipe for 8: 320g sugar. Amount for 5?",
+          "answer": "200g"
+        },
+        {
+          "id": "d",
+          "expression": "Recipe for 3: 150g butter. Amount for 12?",
+          "answer": "600g"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Direct proportion problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each proportion problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A car uses 6 litres for 72 km. How far on 10 litres?",
+          "answer": "120 km"
+        },
+        {
+          "id": "b",
+          "expression": "3 workers build a wall in 12 hours. How long for 1 worker?",
+          "answer": "36 hours"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;1 = 1.15 euros. Convert &pound;45 to euros.",
+          "answer": "51.75 euros"
+        },
+        {
+          "id": "d",
+          "expression": "A map scale: 2 cm = 5 km. What is 7 cm in km?",
+          "answer": "17.5 km"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed direct proportion",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y &prop; x. x = 6, y = 18. Find y when x = 11",
+          "answer": "33"
+        },
+        {
+          "id": "b",
+          "expression": "y &prop; x&sup2;. x = 2, y = 12. Find y when x = 5",
+          "answer": "75"
+        },
+        {
+          "id": "c",
+          "expression": "8 identical books weigh 2.4 kg. Weight of 15?",
+          "answer": "4.5 kg"
+        },
+        {
+          "id": "d",
+          "expression": "A journey of 150 miles takes 2.5 hours. Time for 210 miles?",
+          "answer": "3.5 hours"
+        },
+        {
+          "id": "e",
+          "expression": "y &prop; &radic;x. x = 9, y = 6. Find y when x = 25",
+          "answer": "10"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Direct proportion means y = kx",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "In direct proportion, as x increases y decreases",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The graph of direct proportion passes through the origin",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "If 3 costs &pound;6, then 5 costs &pound;6 + &pound;2 = &pound;8",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "k = y &divide; x is the constant of proportionality",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The cost of fuel is directly proportional to the volume bought. <strong>25 litres</strong> costs <strong>&pound;36.25</strong>. Find the cost of <strong>40 litres</strong>. If you have <strong>&pound;50</strong>, how many litres can you buy (to 1 d.p.)?"
+      },
+      {
+        "id": "b",
+        "text": "y is directly proportional to x&sup2;. When x = 4, y = 80. Find: (i) the formula, (ii) y when x = 6, (iii) x when y = 500."
+      }
+    ]
+  }
+}

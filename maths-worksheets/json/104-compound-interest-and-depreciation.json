@@ -1,0 +1,325 @@
+{
+  "title": "PERCENTAGES,\n(COMPOUND INTEREST AND DEPRECIATION)",
+  "objective": "LO: I can calculate compound interest and depreciation using repeated percentage change.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Compound interest and depreciation",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Compound interest</span> is earned on the original amount AND on previous interest. <span class=\"\u0001\">Depreciation</span> is when a value decreases by a fixed percentage each year."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Formula:</span> Final value = Original &times; (multiplier)&lt;sup&gt;n&lt;/sup&gt;, where n is the number of years."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "5% increase: multiply by 1.05",
+          "desc": "compound growth multiplier"
+        },
+        {
+          "correct": true,
+          "expr": "10% depreciation: multiply by 0.90",
+          "desc": "depreciation multiplier"
+        },
+        {
+          "correct": true,
+          "expr": "&pound;1000 at 3% for 2 years = 1000 &times; 1.03&sup2;",
+          "desc": "compound formula"
+        },
+        {
+          "correct": false,
+          "expr": "5% for 3 years = 15% total",
+          "desc": "that is simple interest"
+        },
+        {
+          "correct": false,
+          "expr": "10% depreciation for 10 years = worthless",
+          "desc": "it never reaches zero"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Use the multiplier raised to the power of years. Growth: 1 + r. Depreciation: 1 - r.",
+      "equation": "A = P &times; <span class=\"\u0001\">(1 + r)</span><span class=\"\u0001\"><sup>n</sup></span>",
+      "caption": "P = principal, r = rate as decimal, n = years"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; compound interest",
+      "question": "&pound;2000 is invested at 4% compound interest for 3 years. Find the final amount.",
+      "steps": [
+        "Multiplier = 1 + 0.04 = 1.04",
+        "A = 2000 &times; 1.04&sup3;",
+        "A = 2000 &times; 1.124864 = &pound;2249.73"
+      ],
+      "answer": "= &pound;2249.73",
+      "explanation": "Multiply by the growth multiplier for each year."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding interest earned",
+      "question": "&pound;5000 at 3% compound interest for 2 years. How much interest is earned?",
+      "steps": [
+        "A = 5000 &times; 1.03&sup2; = 5000 &times; 1.0609",
+        "A = &pound;5304.50",
+        "Interest = 5304.50 - 5000 = &pound;304.50"
+      ],
+      "answer": "= &pound;304.50 interest",
+      "explanation": "Subtract the original to find just the interest."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; depreciation",
+      "question": "A car worth &pound;12000 depreciates by 15% per year. Find its value after 4 years.",
+      "steps": [
+        "Multiplier = 1 - 0.15 = 0.85",
+        "V = 12000 &times; 0.85&sup4;",
+        "V = 12000 &times; 0.52200625 = &pound;6264.08"
+      ],
+      "answer": "= &pound;6264.08",
+      "explanation": "Depreciation uses a multiplier less than 1."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; finding the rate",
+      "question": "A painting increases from &pound;500 to &pound;605 in 2 years compound. Find the annual rate.",
+      "steps": [
+        "605 = 500 &times; r&sup2;, so r&sup2; = 1.21",
+        "r = &radic;1.21 = 1.1",
+        "Rate = 10% per year"
+      ],
+      "answer": "= 10% per year",
+      "explanation": "Divide by the original, then take the nth root."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Compound interest",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the final amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;1000 at 5% for 2 years",
+          "answer": "&pound;1102.50"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;3000 at 4% for 3 years",
+          "answer": "&pound;3374.59"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;500 at 6% for 2 years",
+          "answer": "&pound;561.80"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;8000 at 2% for 4 years",
+          "answer": "&pound;8659.46"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Interest earned",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the interest earned (final amount minus principal).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;2000 at 3% for 3 years",
+          "answer": "&pound;185.45"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;4500 at 5% for 2 years",
+          "answer": "&pound;461.25"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;10000 at 2.5% for 4 years",
+          "answer": "&pound;1038.13"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;750 at 8% for 3 years",
+          "answer": "&pound;194.86"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Depreciation",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the value after depreciation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;15000 car, 20% depreciation, 3 years",
+          "answer": "&pound;7680"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;800 laptop, 25% depreciation, 2 years",
+          "answer": "&pound;450"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;6000 motorbike, 10% depreciation, 4 years",
+          "answer": "&pound;3936.60"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;20000 van, 12% depreciation, 5 years",
+          "answer": "&pound;10554.05"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Comparing simple and compound",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Calculate both simple and compound interest, then find the difference.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;1000 at 5% for 3 years: difference?",
+          "answer": "&pound;7.63"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;2000 at 4% for 4 years: difference?",
+          "answer": "&pound;26.26"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;5000 at 3% for 5 years: difference?",
+          "answer": "&pound;27.27"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;10000 at 6% for 3 years: difference?",
+          "answer": "&pound;91.02"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each compound percentage problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;3000 invested at 4% for 5 years. Final amount?",
+          "answer": "&pound;3649.96"
+        },
+        {
+          "id": "b",
+          "expression": "A phone worth &pound;600 depreciates 30% yearly. Value after 3 years?",
+          "answer": "&pound;205.80"
+        },
+        {
+          "id": "c",
+          "expression": "Population 50000 grows 2% per year. Population after 10 years?",
+          "answer": "60950"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;4000 grows to &pound;4410 in 2 years. Annual rate?",
+          "answer": "5%"
+        },
+        {
+          "id": "e",
+          "expression": "House worth &pound;200000 increases 6% per year for 3 years. New value?",
+          "answer": "&pound;238203.20"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Compound interest grows faster than simple interest",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "5% compound interest for 3 years is 15% total increase",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Depreciation of 20% per year uses multiplier 0.8",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "After 100% depreciation the item is worthless",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The compound interest formula is A = P(1 + r)^n",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Priya invests <strong>&pound;5000</strong> at <strong>3.5% compound interest</strong>. After how many complete years will her investment first exceed <strong>&pound;6000</strong>? Show your working."
+      },
+      {
+        "id": "b",
+        "text": "A car loses <strong>20%</strong> of its value each year. It is currently worth <strong>&pound;24000</strong>. How many years until it is worth less than <strong>&pound;10000</strong>? What will its value be at that point?"
+      }
+    ]
+  }
+}

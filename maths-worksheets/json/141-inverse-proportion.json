@@ -1,0 +1,325 @@
+{
+  "title": "PROPORTION,\n(INVERSE PROPORTION)",
+  "objective": "LO: I can solve problems involving inverse proportion.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Inverse proportion",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Two quantities are <span class=\"\u0001\">inversely proportional</span> if when one doubles, the other <span class=\"\u0001\">halves</span>. Their product stays constant."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Formula:</span> y = &frac{k}{x} where k is constant. As x increases, y decreases."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y = &frac{k}{x} means y is inversely proportional to x",
+          "desc": "formula"
+        },
+        {
+          "correct": true,
+          "expr": "If 4 workers take 6 hours, 2 workers take 12 hours",
+          "desc": "inverse"
+        },
+        {
+          "correct": true,
+          "expr": "x &times; y = k (constant product)",
+          "desc": "defining property"
+        },
+        {
+          "correct": false,
+          "expr": "Inverse proportion means y = kx",
+          "desc": "that is direct"
+        },
+        {
+          "correct": false,
+          "expr": "If 4 workers take 6 hours, 8 workers take 12 hours",
+          "desc": "should be 3 hours"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "In inverse proportion, the product xy is always constant. y = k &divide; x.",
+      "equation": "y = <span class=\"\u0001\">&frac{k}{x}</span>",
+      "caption": "k = x &times; y (constant product), x<span class=\"\u0001\">&uarr;</span> means y&darr;"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; workers and time",
+      "question": "4 builders take 15 days to build a wall. How long for 6 builders?",
+      "steps": [
+        "k = 4 &times; 15 = 60 (worker-days)",
+        "6 builders: time = 60 &divide; 6",
+        "= 10 days"
+      ],
+      "answer": "= 10 days",
+      "explanation": "More workers means less time: inverse proportion."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding k",
+      "question": "y is inversely proportional to x. When x = 3, y = 8. Find y when x = 6.",
+      "steps": [
+        "k = x &times; y = 3 &times; 8 = 24",
+        "y = 24 &divide; x",
+        "When x = 6: y = 24 &divide; 6 = 4"
+      ],
+      "answer": "y = 4",
+      "explanation": "Find the constant product, then divide."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; speed and time",
+      "question": "At 60 mph, a journey takes 2 hours. How long at 40 mph?",
+      "steps": [
+        "k = speed &times; time = 60 &times; 2 = 120 (distance)",
+        "At 40 mph: time = 120 &divide; 40",
+        "= 3 hours"
+      ],
+      "answer": "= 3 hours",
+      "explanation": "Speed and time are inversely proportional for a fixed distance."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; inverse square",
+      "question": "y is inversely proportional to x&sup2;. When x = 2, y = 5. Find y when x = 4.",
+      "steps": [
+        "y = k/x&sup2;. k = y &times; x&sup2; = 5 &times; 4 = 20",
+        "y = 20/x&sup2;",
+        "When x = 4: y = 20/16 = 1.25"
+      ],
+      "answer": "y = 1.25",
+      "explanation": "Inversely proportional to x&sup2; means y = k/x&sup2;."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Workers and time",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the constant, then solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 workers take 12 hours. Time for 4 workers?",
+          "answer": "9 hours"
+        },
+        {
+          "id": "b",
+          "expression": "5 machines take 8 hours. Time for 10 machines?",
+          "answer": "4 hours"
+        },
+        {
+          "id": "c",
+          "expression": "6 people take 5 days. Time for 2 people?",
+          "answer": "15 days"
+        },
+        {
+          "id": "d",
+          "expression": "8 taps fill a pool in 3 hours. Time for 6 taps?",
+          "answer": "4 hours"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding k and using the formula",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "y is inversely proportional to x. Find the missing value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x = 4, y = 10. Find y when x = 8",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "x = 5, y = 12. Find y when x = 3",
+          "answer": "20"
+        },
+        {
+          "id": "c",
+          "expression": "x = 2, y = 18. Find x when y = 6",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "x = 6, y = 4. Find y when x = 12",
+          "answer": "2"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Speed and time",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Distance is fixed. Find the missing value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "At 30 mph takes 4 hours. Time at 60 mph?",
+          "answer": "2 hours"
+        },
+        {
+          "id": "b",
+          "expression": "At 50 km/h takes 3 hours. Speed to take 2 hours?",
+          "answer": "75 km/h"
+        },
+        {
+          "id": "c",
+          "expression": "At 80 km/h takes 1.5 hours. Time at 40 km/h?",
+          "answer": "3 hours"
+        },
+        {
+          "id": "d",
+          "expression": "At 45 mph takes 2 hours. Time at 90 mph?",
+          "answer": "1 hour"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Identify inverse proportion and solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "12 sweets shared among 4 children gives 3 each. Shared among 6?",
+          "answer": "2 each"
+        },
+        {
+          "id": "b",
+          "expression": "A food supply lasts 10 days for 6 people. How long for 4 people?",
+          "answer": "15 days"
+        },
+        {
+          "id": "c",
+          "expression": "Pressure doubles when volume halves (gas law). Vol = 8 at P = 3. Vol at P = 6?",
+          "answer": "4"
+        },
+        {
+          "id": "d",
+          "expression": "A pipe fills a tank in 12 min. 3 identical pipes fill it in?",
+          "answer": "4 min"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed inverse proportion",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y &prop; &frac{1}{x}. x = 3, y = 8. Find y when x = 12",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "y &prop; &frac{1}{x&sup2;}. x = 2, y = 9. Find y when x = 3",
+          "answer": "4"
+        },
+        {
+          "id": "c",
+          "expression": "5 workers take 24 days. How many workers for 10 days?",
+          "answer": "12"
+        },
+        {
+          "id": "d",
+          "expression": "At speed v, time t. If v triples, what happens to t?",
+          "answer": "t divides by 3"
+        },
+        {
+          "id": "e",
+          "expression": "y &prop; &frac{1}{x}. x = 4, y = 15. Find x when y = 20",
+          "answer": "3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "In inverse proportion, xy = constant",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Inverse proportion means y = kx",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "More workers means less time (inverse proportion)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The graph of y = k/x is a straight line",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "If x doubles, y halves in inverse proportion",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "<strong>8 workers</strong> can paint a school in <strong>6 days</strong>. The head teacher wants it done in <strong>4 days</strong>. How many workers are needed? If each worker costs <strong>&pound;120 per day</strong>, what is the total cost for 6 days vs 4 days?"
+      },
+      {
+        "id": "b",
+        "text": "y is inversely proportional to &radic;x. When x = 4, y = 9. Find: (i) the formula, (ii) y when x = 16, (iii) x when y = 6."
+      }
+    ]
+  }
+}

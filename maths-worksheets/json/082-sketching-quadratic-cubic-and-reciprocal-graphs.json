@@ -1,0 +1,325 @@
+{
+  "title": "FUNCTIONS AND GRAPHS,\n(SKETCHING QUADRATIC, CUBIC AND RECIPROCAL GRAPHS)",
+  "objective": "LO: I can recognise and sketch quadratic, cubic and reciprocal graphs from their equations.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Types of graphs",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"\u0001\">quadratic</span> graph (y = ax&sup2; + bx + c) forms a U-shape (parabola). A <span class=\"\u0001\">cubic</span> graph (y = ax&sup3;) has an S-shape. A <span class=\"\u0001\">reciprocal</span> graph (y = &frac{a}{x}) has two separate curves."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Key features:</span> Look for the y-intercept, turning points, and asymptotes to sketch each graph accurately."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Graph shapes",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y = x&sup2; is a U-shaped parabola",
+          "desc": "minimum at origin"
+        },
+        {
+          "correct": true,
+          "expr": "y = x&sup3; passes through the origin with S-shape",
+          "desc": "point of inflection"
+        },
+        {
+          "correct": true,
+          "expr": "y = &frac{1}{x} has two branches in Q1 and Q3",
+          "desc": "asymptotes at axes"
+        },
+        {
+          "correct": false,
+          "expr": "y = x&sup2; is a straight line",
+          "desc": "it is a curve"
+        },
+        {
+          "correct": false,
+          "expr": "y = &frac{1}{x} crosses the y-axis",
+          "desc": "undefined at x = 0"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "The highest power of x tells you the shape: x&sup2; = parabola, x&sup3; = cubic curve, &frac{1}{x} = reciprocal (hyperbola).",
+      "equation": "y = <span class=\"\u0001\">ax&sup2;</span> + bx + <span class=\"\u0001\">c</span>",
+      "caption": "a determines direction, c is the y-intercept"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; quadratic graph",
+      "question": "Sketch y = x&sup2; - 4",
+      "steps": [
+        "Shape: U-shaped parabola (positive x&sup2;)",
+        "y-intercept: when x = 0, y = -4",
+        "x-intercepts: x&sup2; = 4, so x = 2 and x = -2"
+      ],
+      "answer": "U-shape crossing x-axis at (-2, 0) and (2, 0), vertex at (0, -4)",
+      "explanation": "The -4 shifts the parabola down by 4 units."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative quadratic",
+      "question": "Sketch y = -x&sup2; + 9",
+      "steps": [
+        "Shape: inverted U (negative x&sup2;)",
+        "y-intercept: (0, 9)",
+        "x-intercepts: x&sup2; = 9, so x = &plusmn;3"
+      ],
+      "answer": "Inverted U with maximum at (0, 9), crossing at (-3, 0) and (3, 0)",
+      "explanation": "Negative coefficient of x&sup2; flips the parabola."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; cubic graph",
+      "question": "Sketch y = x&sup3; - x",
+      "steps": [
+        "Factorise: y = x(x&sup2; - 1) = x(x - 1)(x + 1)",
+        "x-intercepts: x = -1, 0, 1",
+        "Shape: S-curve (positive x&sup3;) through these three roots"
+      ],
+      "answer": "S-curve crossing x-axis at -1, 0, and 1",
+      "explanation": "Factorising helps find where the cubic crosses the x-axis."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; reciprocal graph",
+      "question": "Sketch y = &frac{3}{x}",
+      "steps": [
+        "Asymptotes at x = 0 and y = 0",
+        "When x = 1, y = 3; when x = 3, y = 1",
+        "When x = -1, y = -3; curves in Q1 and Q3"
+      ],
+      "answer": "Two branches: one in Q1, one in Q3, never touching the axes",
+      "explanation": "The graph gets closer to the axes but never reaches them."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identifying graph types",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State whether each equation gives a quadratic, cubic, or reciprocal graph.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 2x&sup2; + 1",
+          "answer": "Quadratic"
+        },
+        {
+          "id": "b",
+          "expression": "y = x&sup3; - 3",
+          "answer": "Cubic"
+        },
+        {
+          "id": "c",
+          "expression": "y = &frac{5}{x}",
+          "answer": "Reciprocal"
+        },
+        {
+          "id": "d",
+          "expression": "y = -x&sup2; + 4x",
+          "answer": "Quadratic"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Key features of quadratics",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the y-intercept and direction (U or inverted U).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x&sup2; + 3",
+          "answer": "y-int = 3, U-shape"
+        },
+        {
+          "id": "b",
+          "expression": "y = -x&sup2; + 5",
+          "answer": "y-int = 5, inverted U"
+        },
+        {
+          "id": "c",
+          "expression": "y = 2x&sup2; - 8",
+          "answer": "y-int = -8, U-shape"
+        },
+        {
+          "id": "d",
+          "expression": "y = -3x&sup2;",
+          "answer": "y-int = 0, inverted U"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding x-intercepts",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find where each graph crosses the x-axis (set y = 0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x&sup2; - 9",
+          "answer": "x = 3, x = -3"
+        },
+        {
+          "id": "b",
+          "expression": "y = x&sup2; - 5x + 6",
+          "answer": "x = 2, x = 3"
+        },
+        {
+          "id": "c",
+          "expression": "y = x&sup3; - 4x",
+          "answer": "x = 0, x = 2, x = -2"
+        },
+        {
+          "id": "d",
+          "expression": "y = x&sup2; + 2x - 8",
+          "answer": "x = 2, x = -4"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Sketching from features",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "List the key features needed to sketch each graph.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x&sup2; - 2x - 3",
+          "answer": "U-shape, y-int = -3, roots at x = 3 and x = -1"
+        },
+        {
+          "id": "b",
+          "expression": "y = x&sup3;",
+          "answer": "S-curve through origin"
+        },
+        {
+          "id": "c",
+          "expression": "y = &frac{2}{x}",
+          "answer": "Reciprocal, branches in Q1 and Q3, asymptotes at axes"
+        },
+        {
+          "id": "d",
+          "expression": "y = -x&sup3;",
+          "answer": "Inverted S-curve through origin"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed graph problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer each question about graphs.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "How many turning points does y = x&sup3; - 3x have?",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "What is the vertex of y = (x - 2)&sup2; + 1?",
+          "answer": "(2, 1)"
+        },
+        {
+          "id": "c",
+          "expression": "Does y = &frac{1}{x} have any lines of symmetry?",
+          "answer": "Yes: y = x and y = -x"
+        },
+        {
+          "id": "d",
+          "expression": "What happens to y = &frac{1}{x} as x gets very large?",
+          "answer": "y approaches 0"
+        },
+        {
+          "id": "e",
+          "expression": "Vertex of y = x&sup2; - 6x + 8?",
+          "answer": "(3, -1)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "y = x&sup2; + 1 never crosses the x-axis",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "y = &frac{1}{x} passes through the origin",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A negative coefficient of x&sup2; flips the parabola upside down",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Cubic graphs always have three x-intercepts",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The y-intercept is found by setting x = 0",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The height of a ball thrown upwards is modelled by <strong>h = -5t&sup2; + 20t</strong> where h is height in metres and t is time in seconds. Sketch the graph. What is the maximum height? When does the ball land?"
+      },
+      {
+        "id": "b",
+        "text": "A graph passes through (1, 6), (2, 3), and (3, 2). Show that this could be a reciprocal graph of the form <strong>y = &frac{k}{x}</strong>. Find k and predict the y-value when x = 6."
+      }
+    ]
+  }
+}

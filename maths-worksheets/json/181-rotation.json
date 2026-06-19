@@ -1,0 +1,325 @@
+{
+  "title": "TRANSFORMATIONS,\n(ROTATION)",
+  "objective": "LO: I can rotate shapes about a given centre by 90, 180, or 270 degrees.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Rotation",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">rotation</span> turns a shape around a fixed point called the <span class=\"ul-k\">centre of rotation</span>. You need to know the centre, angle, and direction (clockwise or anticlockwise)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key rules:</span> 90° clockwise: (x,y)&rarr;(y,-x). 90° anticlockwise: (x,y)&rarr;(-y,x). 180°: (x,y)&rarr;(-x,-y) about the origin."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "(3, 1) rotated 90° clockwise about origin = (1, -3)",
+          "desc": "(x,y)&rarr;(y,-x)"
+        },
+        {
+          "correct": true,
+          "expr": "(3, 1) rotated 180° about origin = (-3, -1)",
+          "desc": "negate both"
+        },
+        {
+          "correct": true,
+          "expr": "Rotation preserves shape and size",
+          "desc": "congruent image"
+        },
+        {
+          "correct": false,
+          "expr": "90° clockwise is the same as 90° anticlockwise",
+          "desc": "they are opposite directions"
+        },
+        {
+          "correct": false,
+          "expr": "Rotation changes the size of the shape",
+          "desc": "size is preserved"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "To describe a rotation, state: centre, angle, and direction. The shape does not change size.",
+      "equation": "90° CW about O: <span class=\"ov\">(x, y)</span> &rarr; <span class=\"ovr\">(y, -x)</span>",
+      "caption": "180°: (x, y) &rarr; (-x, -y)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; 90 clockwise about origin",
+      "question": "Rotate (2, 5) by 90° clockwise about (0, 0).",
+      "steps": [
+        "Rule: (x, y) &rarr; (y, -x)",
+        "(2, 5) &rarr; (5, -2)",
+        "Image is at (5, -2)"
+      ],
+      "answer": "(5, -2)",
+      "explanation": "Swap coordinates and negate the new y."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; 180 about origin",
+      "question": "Rotate (3, -1) by 180° about (0, 0).",
+      "steps": [
+        "Rule: (x, y) &rarr; (-x, -y)",
+        "(3, -1) &rarr; (-3, 1)",
+        "Image is at (-3, 1)"
+      ],
+      "answer": "(-3, 1)",
+      "explanation": "Negate both coordinates."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; 90 anticlockwise about origin",
+      "question": "Rotate (4, 2) by 90° anticlockwise about (0, 0).",
+      "steps": [
+        "Rule: (x, y) &rarr; (-y, x)",
+        "(4, 2) &rarr; (-2, 4)",
+        "Image is at (-2, 4)"
+      ],
+      "answer": "(-2, 4)",
+      "explanation": "Swap and negate the new x."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; rotation about a different centre",
+      "question": "Rotate (5, 2) by 180° about (3, 1).",
+      "steps": [
+        "Translate to origin: (5-3, 2-1) = (2, 1)",
+        "Apply 180°: (-2, -1)",
+        "Translate back: (-2+3, -1+1) = (1, 0)"
+      ],
+      "answer": "(1, 0)",
+      "explanation": "Translate to origin, rotate, translate back."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "90° clockwise about origin",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Rotate each point 90° clockwise about (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(1, 3)",
+          "answer": "(3, -1)"
+        },
+        {
+          "id": "b",
+          "expression": "(4, 2)",
+          "answer": "(2, -4)"
+        },
+        {
+          "id": "c",
+          "expression": "(-1, 5)",
+          "answer": "(5, 1)"
+        },
+        {
+          "id": "d",
+          "expression": "(0, 4)",
+          "answer": "(4, 0)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "180° about origin",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Rotate each point 180° about (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3, 2)",
+          "answer": "(-3, -2)"
+        },
+        {
+          "id": "b",
+          "expression": "(-1, 4)",
+          "answer": "(1, -4)"
+        },
+        {
+          "id": "c",
+          "expression": "(5, -3)",
+          "answer": "(-5, 3)"
+        },
+        {
+          "id": "d",
+          "expression": "(-2, -6)",
+          "answer": "(2, 6)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "90° anticlockwise about origin",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Rotate each point 90° anticlockwise about (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2, 3)",
+          "answer": "(-3, 2)"
+        },
+        {
+          "id": "b",
+          "expression": "(5, 1)",
+          "answer": "(-1, 5)"
+        },
+        {
+          "id": "c",
+          "expression": "(-3, 4)",
+          "answer": "(-4, -3)"
+        },
+        {
+          "id": "d",
+          "expression": "(6, 0)",
+          "answer": "(0, 6)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "About a non-origin centre",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Rotate 180° about the given centre.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(4, 3) about (2, 2)",
+          "answer": "(0, 1)"
+        },
+        {
+          "id": "b",
+          "expression": "(5, 1) about (3, 3)",
+          "answer": "(1, 5)"
+        },
+        {
+          "id": "c",
+          "expression": "(1, 4) about (3, 2)",
+          "answer": "(5, 0)"
+        },
+        {
+          "id": "d",
+          "expression": "(6, 5) about (4, 3)",
+          "answer": "(2, 1)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed rotations",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Perform each rotation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3, 1) 90° CW about origin",
+          "answer": "(1, -3)"
+        },
+        {
+          "id": "b",
+          "expression": "(2, 4) 180° about origin",
+          "answer": "(-2, -4)"
+        },
+        {
+          "id": "c",
+          "expression": "(1, 5) 90° ACW about origin",
+          "answer": "(-5, 1)"
+        },
+        {
+          "id": "d",
+          "expression": "(4, 2) 90° CW about (2, 1)",
+          "answer": "(3, -1)"
+        },
+        {
+          "id": "e",
+          "expression": "(1, 3) 180° about (2, 2)",
+          "answer": "(3, 1)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "180° rotation about origin: (x,y) becomes (-x,-y)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "90° clockwise and 90° anticlockwise give the same image",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Rotation preserves the shape and size",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A 360° rotation returns the shape to a different position",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The centre of rotation does not move",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Point A(3, 1) is rotated <strong>90° clockwise</strong> about (1, 2) to get A′. Find A′. Then rotate A′ by <strong>90° clockwise</strong> about the same centre. What single rotation maps A to A′′?"
+      },
+      {
+        "id": "b",
+        "text": "A square has vertices at (1,1), (3,1), (3,3), (1,3). It is rotated <strong>90° anticlockwise about (2,2)</strong>. Find the image vertices and verify the image is still a square."
+      }
+    ]
+  }
+}

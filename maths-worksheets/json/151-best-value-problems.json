@@ -1,0 +1,325 @@
+{
+  "title": "RATIO,\n(BEST VALUE PROBLEMS)",
+  "objective": "LO: I can compare unit prices to determine which product offers the best value.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Best value problems",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Best value</span> means finding which option gives you the most for your money. Compare by finding the <span class=\"\u0001\">price per unit</span> (or amount per penny)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"\u0001\">Method:</span> Divide price by quantity to find cost per unit. The lowest unit price is the best value."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "500ml for &pound;2 = 0.4p/ml",
+          "desc": "price per ml"
+        },
+        {
+          "correct": true,
+          "expr": "750ml for &pound;2.70 = 0.36p/ml",
+          "desc": "cheaper per ml"
+        },
+        {
+          "correct": true,
+          "expr": "Lower unit price = better value",
+          "desc": "comparison rule"
+        },
+        {
+          "correct": false,
+          "expr": "The cheapest item is always best value",
+          "desc": "must compare unit price"
+        },
+        {
+          "correct": false,
+          "expr": "Bigger is always better value",
+          "desc": "not necessarily"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Calculate the cost per unit for each option. The one with the lowest unit cost is the best value.",
+      "equation": "Unit price = <span class=\"\u0001\">&frac{cost}{quantity}</span>",
+      "caption": "Compare unit prices: <span class=\"\u0001\">lowest = best value</span>"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; two sizes",
+      "question": "Juice: 500ml for &pound;1.20 or 1.5L for &pound;3.00. Which is better value?",
+      "steps": [
+        "Small: 120p &divide; 500 = 0.24p per ml",
+        "Large: 300p &divide; 1500 = 0.20p per ml",
+        "Large is cheaper per ml"
+      ],
+      "answer": "1.5L is better value",
+      "explanation": "Compare price per ml to find the best deal."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; three options",
+      "question": "Cereal: 400g for &pound;2.80, 750g for &pound;4.50, 1kg for &pound;6.50. Best value?",
+      "steps": [
+        "400g: 280 &divide; 400 = 0.70p/g",
+        "750g: 450 &divide; 750 = 0.60p/g",
+        "1kg: 650 &divide; 1000 = 0.65p/g"
+      ],
+      "answer": "750g is best value (0.60p/g)",
+      "explanation": "The biggest size is not always the best value."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; with special offer",
+      "question": "Milk: 2 pints for &pound;1.10 or 4 pints for &pound;1.80 (buy 2 get 10% off). Which?",
+      "steps": [
+        "2 pints: 110 &divide; 2 = 55p per pint",
+        "4 pints with 10% off: &pound;1.62, so 162 &divide; 4 = 40.5p per pint",
+        "4 pints with offer is better value"
+      ],
+      "answer": "4 pints (with offer) is better value",
+      "explanation": "Apply the discount before calculating unit price."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; amount per pound",
+      "question": "Shop A: 6 apples for &pound;1.50. Shop B: 10 apples for &pound;2.80. Best value?",
+      "steps": [
+        "Shop A: 150 &divide; 6 = 25p per apple",
+        "Shop B: 280 &divide; 10 = 28p per apple",
+        "Shop A is cheaper per apple"
+      ],
+      "answer": "Shop A is better value",
+      "explanation": "You can also compare apples per pound if preferred."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Comparing two sizes",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the unit price and state which is better value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Water: 500ml for 80p or 1.5L for &pound;2.10",
+          "answer": "1.5L (0.14p/ml vs 0.16p/ml)"
+        },
+        {
+          "id": "b",
+          "expression": "Rice: 1kg for &pound;1.80 or 2kg for &pound;3.20",
+          "answer": "2kg (0.16p/g vs 0.18p/g)"
+        },
+        {
+          "id": "c",
+          "expression": "Pasta: 500g for &pound;1.35 or 1kg for &pound;2.50",
+          "answer": "1kg (0.25p/g vs 0.27p/g)"
+        },
+        {
+          "id": "d",
+          "expression": "Soap: 3 bars for &pound;1.50 or 8 bars for &pound;3.60",
+          "answer": "8 bars (45p vs 50p each)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Three options",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the best value from three options.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Juice: 250ml &pound;0.60, 500ml &pound;1.10, 1L &pound;1.90",
+          "answer": "500ml (0.22p/ml)"
+        },
+        {
+          "id": "b",
+          "expression": "Crisps: 25g 50p, 50g 85p, 150g &pound;2.10",
+          "answer": "50g (1.7p/g)"
+        },
+        {
+          "id": "c",
+          "expression": "Eggs: 6 for &pound;1.50, 10 for &pound;2.30, 15 for &pound;3.60",
+          "answer": "10 (23p each)"
+        },
+        {
+          "id": "d",
+          "expression": "Pens: 3 for &pound;2.40, 5 for &pound;3.75, 10 for &pound;7.00",
+          "answer": "5 (75p each)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "With offers and discounts",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Include the offer in your calculation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A: &pound;3.60 for 6, B: &pound;4.80 for 8 with 25% off. Better value?",
+          "answer": "B (45p vs 60p each)"
+        },
+        {
+          "id": "b",
+          "expression": "A: 2L for &pound;2.20, B: 3L for &pound;3.60 buy-one-get-one-free. Better value?",
+          "answer": "B (60p/L vs &pound;1.10/L)"
+        },
+        {
+          "id": "c",
+          "expression": "A: 500g at &pound;4.00, B: 750g at &pound;5.40 with 10% off. Better value?",
+          "answer": "B (0.648p/g vs 0.8p/g)"
+        },
+        {
+          "id": "d",
+          "expression": "A: 12 pack &pound;6, B: 20 pack &pound;9 with buy 2 get 1 free. Better value?",
+          "answer": "B (15p each vs 50p)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Real-world best value",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each best value problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Taxi A: &pound;3 + &pound;1.50/km. Taxi B: &pound;5 + &pound;1.00/km. Which is cheaper for 8 km?",
+          "answer": "Taxi B (&pound;13 vs &pound;15)"
+        },
+        {
+          "id": "b",
+          "expression": "Phone plan A: &pound;15/month + 5p/text. B: &pound;20/month unlimited. Crossover texts?",
+          "answer": "100 texts"
+        },
+        {
+          "id": "c",
+          "expression": "Petrol A: 145.9p/L. Petrol B: 142.5p/L but 3 miles further. Saving on 40L?",
+          "answer": "&pound;1.36 saved at B"
+        },
+        {
+          "id": "d",
+          "expression": "Gym A: &pound;30/month. Gym B: &pound;5 per visit. Break-even visits per month?",
+          "answer": "6 visits"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed best value",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Determine the best value option.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Shampoo: 200ml &pound;2.50, 400ml &pound;4.20, 500ml &pound;5.50",
+          "answer": "400ml (1.05p/ml)"
+        },
+        {
+          "id": "b",
+          "expression": "Dog food: 400g &pound;1.60, 1.2kg &pound;4.20, 2kg &pound;7.50",
+          "answer": "1.2kg (0.35p/g)"
+        },
+        {
+          "id": "c",
+          "expression": "Cinema: adult &pound;12, family (2+2) &pound;38, 5-ticket bundle &pound;50",
+          "answer": "5-ticket (&pound;10 each)"
+        },
+        {
+          "id": "d",
+          "expression": "Internet: 30GB for &pound;15 or unlimited for &pound;22. Use 50GB. Which?",
+          "answer": "Unlimited"
+        },
+        {
+          "id": "e",
+          "expression": "Paint: 1L for &pound;8, 2.5L for &pound;18, 5L for &pound;32. Need 4L. Cheapest option?",
+          "answer": "2.5L + 1L + 1L = &pound;34 vs 5L = &pound;32"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Best value means lowest unit price",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The biggest pack is always best value",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "To compare, divide price by quantity",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The cheapest total price is always the best value",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Buy-one-get-one-free halves the unit price",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A family needs <strong>5 litres of milk</strong> per week. Options: 1 pint (568ml) for <strong>55p</strong>, 2 pints for <strong>&pound;1.00</strong>, 4 pints for <strong>&pound;1.75</strong>, 6 pints for <strong>&pound;2.40</strong>. What is the cheapest way to buy at least 5 litres?"
+      },
+      {
+        "id": "b",
+        "text": "Two phone contracts: <strong>Plan A</strong>: &pound;25/month, 10GB data, unlimited calls. <strong>Plan B</strong>: &pound;18/month, 5GB data, 500 minutes. Extra data costs &pound;5/GB, extra minutes cost 3p/min. Which plan is better value if you use <strong>8GB data</strong> and <strong>400 minutes</strong> per month?"
+      }
+    ]
+  }
+}
