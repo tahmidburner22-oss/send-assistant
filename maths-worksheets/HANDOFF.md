@@ -25,8 +25,8 @@ Topics 1, 2, 3, 4, 5, 10, 11, 16, 17, 18, 21, 26, 27, 31, 32, 33, 34, 35, 36, 37
 **Past batches that already shipped KS2 content** (Batch 1's single times tables 088–100 and Batch 2's long/short ×÷ 097/098/102/103) are kept as bonus content — no need to remove them. But future batches must be KS3 / KS4 only.
 
 ### KS3/KS4 progress
-- KS3/KS4 subtopics already done: **107** (57 from batches 1-3 + 50 new from batch 4)
-- KS3/KS4 subtopics remaining: **~5** (190, 191, 192, 193, 194)
+- KS3/KS4 subtopics already done: **112** (57 from batches 1-3 + 50 from batch 4 + 5 from batch 5)
+- KS3/KS4 subtopics remaining: **0** (ALL KS3/KS4 subtopics complete)
 - Plus KS1/KS2 bonus already shipped: 15 (single times tables, long/short x÷)
 
 ---
@@ -102,8 +102,8 @@ Page margins: `5mm 6mm` (was `7mm 9mm`). `.page` size: `285mm × 200mm`.
 
 | Status | Count | List |
 |--------|-------|------|
-| ✅ Done | **123** | 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 039, 040, 041, 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 052, 053, 066, 067, 068, 069, 070, 071, 072, 073, 078, 079, 080, 081, 082, 083, 084, 085, 086, 087, 088, 089, 090, 091, 092, 093, 094, 095, 096, 097, 098, 099, 100, 102, 103, 104, 105, 106, 107, 108, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189 |
-| ⬜ Remaining | **71** | see `PLAN.md` for the numbered list |
+| ✅ Done | **128** | 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 039, 040, 041, 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 052, 053, 066, 067, 068, 069, 070, 071, 072, 073, 078, 079, 080, 081, 082, 083, 084, 085, 086, 087, 088, 089, 090, 091, 092, 093, 094, 095, 096, 097, 098, 099, 100, 102, 103, 104, 105, 106, 107, 108, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194 |
+| ⬜ Remaining | **66** | see `PLAN.md` for the numbered list |
 
 ### Topics fully complete
 - **Algebra -- Simple Formulae and Sequences** (Topic 6 -- all 2 subtopics)
@@ -138,9 +138,11 @@ Page margins: `5mm 6mm` (was `7mm 9mm`). `.page` size: `285mm × 200mm`.
 - **Surds** (Topic 50 -- all 4 subtopics)
 - **Transformations** (Topic 51 -- all 4 subtopics)
 - **Trigonometry** (Topic 52 -- all 4 subtopics)
+- **Vectors** (Topic 53 -- all 4 subtopics)
+- **Volume and Surface Area** (Topic 54 -- all 4 subtopics)
 
 ### Topics partially complete
-- **Vectors** (Topic 53): 3 of 4 -- adding/subtracting ✅, multiplying by scalar ✅, geometry proofs ✅; writing and representing vectors (190) remaining
+- (None remaining for KS3/KS4)
 
 ### Topics not yet started
 - Topics 1-5 (lower-primary addition/subtraction)
@@ -149,7 +151,6 @@ Page margins: `5mm 6mm` (was `7mm 9mm`). `.page` size: `285mm × 200mm`.
 - Topic 21 (Fractions -- Unit and Non-Unit)
 - Topics 26-29 Factor pairs (101) only
 - Topics 32-37 (Place Value primary)
-- Topic 54 (Volume and Surface Area)
 
 ---
 

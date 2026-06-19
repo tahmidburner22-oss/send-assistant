@@ -458,15 +458,15 @@ done
 | 187 | Adding and subtracting vectors | `187-adding-and-subtracting-vectors.json` | ✅ |
 | 188 | Multiplying vectors by a scalar | `188-multiplying-vectors-by-a-scalar.json` | ✅ |
 | 189 | Vector geometry proofs | `189-vector-geometry-proofs.json` | ✅ |
-| 190 | Writing and representing vectors | `190-writing-and-representing-vectors.json` | ⬜ |
+| 190 | Writing and representing vectors | `190-writing-and-representing-vectors.json` | ✅ |
 
 ### Topic 54: Volume and Surface Area
 | # | Subtopic | JSON filename | Status |
 |---|----------|---------------|--------|
-| 191 | Surface area of cylinders and spheres | `191-surface-area-of-cylinders-and-spheres.json` | ⬜ |
-| 192 | Surface area of prisms | `192-surface-area-of-prisms.json` | ⬜ |
-| 193 | Volume of prisms and cylinders | `193-volume-of-prisms-and-cylinders.json` | ⬜ |
-| 194 | Volume of pyramids, cones and spheres | `194-volume-of-pyramids-cones-and-spheres.json` | ⬜ |
+| 191 | Surface area of cylinders and spheres | `191-surface-area-of-cylinders-and-spheres.json` | ✅ |
+| 192 | Surface area of prisms | `192-surface-area-of-prisms.json` | ✅ |
+| 193 | Volume of prisms and cylinders | `193-volume-of-prisms-and-cylinders.json` | ✅ |
+| 194 | Volume of pyramids, cones and spheres | `194-volume-of-pyramids-cones-and-spheres.json` | ✅ |
 
 ---
 
@@ -475,9 +475,9 @@ done
 | Metric | Count |
 |--------|-------|
 | Total subtopics | 194 |
-| JSON created | 123 |
-| PDF generated | 123 |
-| Remaining | 71 |
+| JSON created | 128 |
+| PDF generated | 128 |
+| Remaining | 66 |
 
 ---
 

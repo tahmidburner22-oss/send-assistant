@@ -1,0 +1,325 @@
+{
+  "title": "VOLUME AND SURFACE AREA,\n(VOLUME OF PRISMS AND CYLINDERS)",
+  "objective": "LO: I can calculate the volume of prisms and cylinders using the formula V = area of cross-section times length.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Volume of prisms and cylinders",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">volume</span> of a prism equals the area of its cross-section multiplied by its length. A <span class=\"ul-k\">cylinder</span> is a circular prism, so its volume = πr²h."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key formulae:</span> Prism: V = A × l (A = cross-section area, l = length). Cylinder: V = πr²h. Volume is measured in cubic units (cm³, m³)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Cuboid: V = l × w × h",
+          "desc": "rectangle cross-section × length"
+        },
+        {
+          "correct": true,
+          "expr": "Cylinder: V = πr²h",
+          "desc": "circle area × height"
+        },
+        {
+          "correct": true,
+          "expr": "Triangular prism: V = ½ × b × h × l",
+          "desc": "triangle area × length"
+        },
+        {
+          "correct": false,
+          "expr": "Volume = surface area × height",
+          "desc": "volume uses cross-section area, not surface area"
+        },
+        {
+          "correct": false,
+          "expr": "Cylinder V = 2πrh",
+          "desc": "that is the curved surface area, not volume"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Volume of any prism = area of cross-section multiplied by the length (or height) of the prism.",
+      "equation": "V = <span class=\"ov\">A</span> × <span class=\"ovr\">l</span>",
+      "caption": "A = area of the uniform cross-section, l = length of the prism"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; cuboid",
+      "question": "Find the volume of a cuboid 8 cm by 5 cm by 3 cm.",
+      "steps": [
+        "Cross-section area = 8 × 5 = 40 cm²",
+        "Volume = 40 × 3",
+        "= 120 cm³"
+      ],
+      "answer": "120 cm³",
+      "explanation": "A cuboid is a rectangular prism."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; cylinder",
+      "question": "Find the volume of a cylinder with radius 4 cm and height 10 cm. Round to 1 d.p.",
+      "steps": [
+        "Cross-section area = πr² = π × 4² = 16π",
+        "Volume = 16π × 10 = 160π",
+        "= 502.7 cm³"
+      ],
+      "answer": "502.7 cm³",
+      "explanation": "Substitute into V = πr²h."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; triangular prism",
+      "question": "Find the volume of a triangular prism with base 6 cm, height 4 cm, and length 15 cm.",
+      "steps": [
+        "Triangle area = ½ × 6 × 4 = 12 cm²",
+        "Volume = 12 × 15",
+        "= 180 cm³"
+      ],
+      "answer": "180 cm³",
+      "explanation": "Find the triangle area first, then multiply by the length."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; trapezoidal prism",
+      "question": "A prism has a trapezium cross-section with parallel sides 5 cm and 9 cm, height 4 cm, and length 12 cm.",
+      "steps": [
+        "Trapezium area = ½(5 + 9) × 4 = 28 cm²",
+        "Volume = 28 × 12",
+        "= 336 cm³"
+      ],
+      "answer": "336 cm³",
+      "explanation": "Use the trapezium formula for the cross-section."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Cuboids",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the volume of each cuboid.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "6 cm × 4 cm × 3 cm",
+          "answer": "72 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "10 cm × 5 cm × 2 cm",
+          "answer": "100 cm³"
+        },
+        {
+          "id": "c",
+          "expression": "8 cm × 8 cm × 8 cm",
+          "answer": "512 cm³"
+        },
+        {
+          "id": "d",
+          "expression": "12 cm × 3 cm × 5 cm",
+          "answer": "180 cm³"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Cylinders",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the volume of each cylinder. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 3 cm, h = 10 cm",
+          "answer": "282.7 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "r = 5 cm, h = 8 cm",
+          "answer": "628.3 cm³"
+        },
+        {
+          "id": "c",
+          "expression": "r = 2 cm, h = 15 cm",
+          "answer": "188.5 cm³"
+        },
+        {
+          "id": "d",
+          "expression": "r = 7 cm, h = 6 cm",
+          "answer": "923.6 cm³"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Triangular prisms",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the volume of each triangular prism.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Base 8, height 5, length 12 cm",
+          "answer": "240 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "Base 10, height 6, length 9 cm",
+          "answer": "270 cm³"
+        },
+        {
+          "id": "c",
+          "expression": "Base 7, height 4, length 20 cm",
+          "answer": "280 cm³"
+        },
+        {
+          "id": "d",
+          "expression": "Base 12, height 3, length 8 cm",
+          "answer": "144 cm³"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Other prisms",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the volume using V = A × l.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Trapezium: parallel sides 4, 8; height 3; length 10 cm",
+          "answer": "180 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "Cross-section area 25 cm², length 14 cm",
+          "answer": "350 cm³"
+        },
+        {
+          "id": "c",
+          "expression": "L-shape cross-section area 32 cm², length 6 cm",
+          "answer": "192 cm³"
+        },
+        {
+          "id": "d",
+          "expression": "Hexagonal cross-section area 42 cm², length 9 cm",
+          "answer": "378 cm³"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed volume problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cylinder: diameter 10 cm, height 7 cm. Volume?",
+          "answer": "549.8 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "Prism volume = 360 cm³. Cross-section area = 30 cm². Find length.",
+          "answer": "12 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Cylinder volume = 200π cm³. Height = 8 cm. Find the radius.",
+          "answer": "5 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Cuboid: l = 9, w = 4. Volume = 252 cm³. Find h.",
+          "answer": "7 cm"
+        },
+        {
+          "id": "e",
+          "expression": "Triangular prism: base 6, length 10. Volume = 180 cm³. Find height of triangle.",
+          "answer": "6 cm"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Volume of a prism = area of cross-section × length",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Volume of a cylinder = 2πrh",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "V = πr²h requires the radius, not the diameter",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Volume and surface area use the same formula",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Volume is measured in cubic units such as cm³",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A cylindrical tank of radius <strong>0.5 m</strong> and height <strong>1.2 m</strong> is filled with water. The water is poured into a rectangular tank measuring <strong>1 m by 0.8 m</strong>. What depth does the water reach? Give your answer to the nearest cm."
+      },
+      {
+        "id": "b",
+        "text": "A triangular prism-shaped chocolate bar has a cross-section that is an equilateral triangle with side <strong>4 cm</strong>. The bar is <strong>18 cm</strong> long. If chocolate weighs <strong>1.3 g per cm³</strong>, find the mass of the bar to the nearest gram."
+      }
+    ]
+  }
+}

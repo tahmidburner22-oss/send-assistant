@@ -1,0 +1,325 @@
+{
+  "title": "VOLUME AND SURFACE AREA,\n(SURFACE AREA OF CYLINDERS AND SPHERES)",
+  "objective": "LO: I can calculate the surface area of cylinders and spheres using formulae.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Surface area of cylinders and spheres",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">surface area</span> of a 3D shape is the total area of all its faces. A cylinder has two circular ends and a curved surface that unfolds into a rectangle. A <span class=\"ul-k\">sphere</span> has a single curved surface."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Formulae:</span> Cylinder SA = 2πr² + 2πrh. Sphere SA = 4πr². Always include units² in your answer."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Cylinder: 2πr² + 2πrh",
+          "desc": "two circles plus curved surface"
+        },
+        {
+          "correct": true,
+          "expr": "Sphere: 4πr²",
+          "desc": "four times the area of a great circle"
+        },
+        {
+          "correct": true,
+          "expr": "Curved surface of cylinder = 2πrh",
+          "desc": "rectangle when unrolled"
+        },
+        {
+          "correct": false,
+          "expr": "Cylinder SA = πr²h",
+          "desc": "that is the volume formula"
+        },
+        {
+          "correct": false,
+          "expr": "Sphere SA = 2πr²",
+          "desc": "must be 4πr²"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Surface area is the total area covering the outside of a 3D shape. Use the correct formula for each shape.",
+      "equation": "Cylinder SA = <span class=\"ov\">2πr²</span> + <span class=\"ovr\">2πrh</span>",
+      "caption": "Two circular ends plus the curved surface area"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; cylinder surface area",
+      "question": "Find the surface area of a cylinder with radius 5 cm and height 8 cm. Give your answer to 1 d.p.",
+      "steps": [
+        "Two circles: 2πr² = 2 × π × 5² = 50π",
+        "Curved surface: 2πrh = 2 × π × 5 × 8 = 80π",
+        "Total = 50π + 80π = 130π = 408.4 cm²"
+      ],
+      "answer": "408.4 cm²",
+      "explanation": "Add the area of both circles and the curved surface."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; sphere surface area",
+      "question": "Find the surface area of a sphere with radius 6 cm. Give your answer to 1 d.p.",
+      "steps": [
+        "SA = 4πr²",
+        "= 4 × π × 6²",
+        "= 144π = 452.4 cm²"
+      ],
+      "answer": "452.4 cm²",
+      "explanation": "Substitute the radius into 4πr²."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; hemisphere surface area",
+      "question": "Find the total surface area of a solid hemisphere with radius 4 cm. Give your answer to 1 d.p.",
+      "steps": [
+        "Curved surface = half sphere = 2πr² = 2 × π × 16 = 32π",
+        "Flat circle = πr² = 16π",
+        "Total = 32π + 16π = 48π = 150.8 cm²"
+      ],
+      "answer": "150.8 cm²",
+      "explanation": "A solid hemisphere has a curved part plus a flat circular base."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; cylinder with no top",
+      "question": "A tin can (open top) has radius 3 cm and height 10 cm. Find the surface area to 1 d.p.",
+      "steps": [
+        "One circle (base): πr² = 9π",
+        "Curved surface: 2πrh = 2 × π × 3 × 10 = 60π",
+        "Total = 9π + 60π = 69π = 216.8 cm²"
+      ],
+      "answer": "216.8 cm²",
+      "explanation": "Open-top means only one circular end is included."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Cylinder surface area",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the total surface area of each cylinder. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 3 cm, h = 7 cm",
+          "answer": "188.5 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "r = 4 cm, h = 10 cm",
+          "answer": "351.9 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "r = 2 cm, h = 9 cm",
+          "answer": "138.2 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "r = 6 cm, h = 5 cm",
+          "answer": "414.7 cm²"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Sphere surface area",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the surface area of each sphere. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 5 cm",
+          "answer": "314.2 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "r = 3 cm",
+          "answer": "113.1 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "r = 10 cm",
+          "answer": "1256.6 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "r = 7 cm",
+          "answer": "615.8 cm²"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Hemispheres",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the total surface area of each solid hemisphere. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 5 cm",
+          "answer": "235.6 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "r = 8 cm",
+          "answer": "603.2 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "r = 2 cm",
+          "answer": "37.7 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "r = 6 cm",
+          "answer": "339.3 cm²"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Open cylinders",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the surface area of each open-top cylinder. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 4 cm, h = 6 cm",
+          "answer": "201.1 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "r = 5 cm, h = 12 cm",
+          "answer": "455.5 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "r = 3 cm, h = 8 cm",
+          "answer": "179.1 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "r = 7 cm, h = 4 cm",
+          "answer": "330.0 cm²"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each surface area problem. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cylinder: r = 2.5 cm, h = 6 cm. Total SA?",
+          "answer": "133.5 cm²"
+        },
+        {
+          "id": "b",
+          "expression": "Sphere with diameter 14 cm. SA?",
+          "answer": "615.8 cm²"
+        },
+        {
+          "id": "c",
+          "expression": "Hemisphere: r = 9 cm. Total SA?",
+          "answer": "763.4 cm²"
+        },
+        {
+          "id": "d",
+          "expression": "Cylinder with no ends: r = 4 cm, h = 10 cm. Curved SA?",
+          "answer": "251.3 cm²"
+        },
+        {
+          "id": "e",
+          "expression": "Sphere with circumference 31.4 cm. Find r, then SA.",
+          "answer": "r = 5 cm, SA = 314.2 cm²"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Cylinder SA = 2πr² + 2πrh includes both circles and the curved surface",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Sphere SA = 2πr²",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The curved surface area of a cylinder equals 2πrh",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A hemisphere has surface area exactly half of a full sphere",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Surface area is always measured in square units",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A cylindrical water tank has radius <strong>1.2 m</strong> and height <strong>2 m</strong>. The outside (including top and base) needs painting. Paint covers <strong>8 m² per litre</strong> and costs <strong>£7.50 per litre</strong>. Find the total cost of paint needed."
+      },
+      {
+        "id": "b",
+        "text": "A solid shape is made from a hemisphere of radius <strong>5 cm</strong> joined to a cylinder of the same radius and height <strong>8 cm</strong>. Find the total surface area of the shape. (The join between hemisphere and cylinder is not an external surface.)"
+      }
+    ]
+  }
+}

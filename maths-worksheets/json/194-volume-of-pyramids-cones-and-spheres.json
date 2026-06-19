@@ -1,0 +1,325 @@
+{
+  "title": "VOLUME AND SURFACE AREA,\n(VOLUME OF PYRAMIDS, CONES AND SPHERES)",
+  "objective": "LO: I can calculate the volume of pyramids, cones and spheres using standard formulae.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Volume of pyramids, cones and spheres",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">pyramid</span> has a polygon base and triangular faces meeting at an apex. A <span class=\"ul-k\">cone</span> is a circular pyramid. Their volumes are one-third of the corresponding prism or cylinder."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key formulae:</span> Pyramid: V = &frac{1}{3} × base area × height. Cone: V = &frac{1}{3}πr²h. Sphere: V = &frac{4}{3}πr³."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Pyramid: V = &frac{1}{3} × base area × h",
+          "desc": "one-third of the prism with same base"
+        },
+        {
+          "correct": true,
+          "expr": "Cone: V = &frac{1}{3}πr²h",
+          "desc": "one-third of the cylinder"
+        },
+        {
+          "correct": true,
+          "expr": "Sphere: V = &frac{4}{3}πr³",
+          "desc": "uses radius cubed"
+        },
+        {
+          "correct": false,
+          "expr": "Cone V = πr²h",
+          "desc": "must include the &frac{1}{3} factor"
+        },
+        {
+          "correct": false,
+          "expr": "Sphere V = 4πr²",
+          "desc": "that is surface area, not volume"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Pyramids and cones have volume equal to one-third of the corresponding prism or cylinder. A sphere uses its own formula with r cubed.",
+      "equation": "V = <span class=\"ov\">&frac{1}{3}</span> × <span class=\"ovr\">base area × h</span>",
+      "caption": "The &frac{1}{3} factor applies to all pyramids and cones"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; square-based pyramid",
+      "question": "Find the volume of a pyramid with a square base of side 6 cm and height 10 cm.",
+      "steps": [
+        "Base area = 6 × 6 = 36 cm²",
+        "V = &frac{1}{3} × 36 × 10",
+        "= 120 cm³"
+      ],
+      "answer": "120 cm³",
+      "explanation": "Find the base area first, then multiply by one-third of the height."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; cone",
+      "question": "Find the volume of a cone with radius 5 cm and height 12 cm. Round to 1 d.p.",
+      "steps": [
+        "V = &frac{1}{3}πr²h",
+        "= &frac{1}{3} × π × 25 × 12",
+        "= 100π = 314.2 cm³"
+      ],
+      "answer": "314.2 cm³",
+      "explanation": "Substitute into the cone formula and evaluate."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; sphere",
+      "question": "Find the volume of a sphere with radius 3 cm. Round to 1 d.p.",
+      "steps": [
+        "V = &frac{4}{3}πr³",
+        "= &frac{4}{3} × π × 27",
+        "= 36π = 113.1 cm³"
+      ],
+      "answer": "113.1 cm³",
+      "explanation": "Cube the radius, then multiply by &frac{4}{3}π."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; hemisphere",
+      "question": "Find the volume of a hemisphere with radius 6 cm. Round to 1 d.p.",
+      "steps": [
+        "Full sphere: V = &frac{4}{3}π × 6³ = &frac{4}{3}π × 216 = 288π",
+        "Hemisphere = half: &frac{1}{2} × 288π = 144π",
+        "= 452.4 cm³"
+      ],
+      "answer": "452.4 cm³",
+      "explanation": "Find the full sphere volume, then halve it."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Pyramids",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the volume of each pyramid.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Square base side 4 cm, height 9 cm",
+          "answer": "48 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "Square base side 10 cm, height 12 cm",
+          "answer": "400 cm³"
+        },
+        {
+          "id": "c",
+          "expression": "Rectangular base 6 × 8 cm, height 15 cm",
+          "answer": "240 cm³"
+        },
+        {
+          "id": "d",
+          "expression": "Triangular base area 20 cm², height 9 cm",
+          "answer": "60 cm³"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Cones",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the volume of each cone. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 3 cm, h = 7 cm",
+          "answer": "66.0 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "r = 4 cm, h = 9 cm",
+          "answer": "150.8 cm³"
+        },
+        {
+          "id": "c",
+          "expression": "r = 6 cm, h = 10 cm",
+          "answer": "377.0 cm³"
+        },
+        {
+          "id": "d",
+          "expression": "r = 5 cm, h = 15 cm",
+          "answer": "392.7 cm³"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Spheres",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the volume of each sphere. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 4 cm",
+          "answer": "268.1 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "r = 6 cm",
+          "answer": "904.8 cm³"
+        },
+        {
+          "id": "c",
+          "expression": "r = 10 cm",
+          "answer": "4188.8 cm³"
+        },
+        {
+          "id": "d",
+          "expression": "Diameter 14 cm",
+          "answer": "1436.8 cm³"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Hemispheres and composite shapes",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the volume. Round to 1 d.p.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Hemisphere: r = 5 cm",
+          "answer": "261.8 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "Hemisphere: r = 8 cm",
+          "answer": "1072.3 cm³"
+        },
+        {
+          "id": "c",
+          "expression": "Cone on top of hemisphere, both r = 3 cm, cone h = 4 cm",
+          "answer": "93.8 cm³"
+        },
+        {
+          "id": "d",
+          "expression": "Cylinder r = 4, h = 10 plus hemisphere r = 4 on top",
+          "answer": "637.7 cm³"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed volume problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem. Round to 1 d.p. where needed.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cone: diameter 8 cm, height 12 cm. Volume?",
+          "answer": "201.1 cm³"
+        },
+        {
+          "id": "b",
+          "expression": "Sphere volume = 288π cm³. Find the radius.",
+          "answer": "6 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Pyramid base 5 × 5 cm, volume = 75 cm³. Find height.",
+          "answer": "9 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Cone volume = 150 cm³, height = 10 cm. Find radius to 1 d.p.",
+          "answer": "3.8 cm"
+        },
+        {
+          "id": "e",
+          "expression": "How many times bigger is a sphere of radius 6 than one of radius 3?",
+          "answer": "8 times"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Volume of a cone = &frac{1}{3}πr²h",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Volume of a cone = πr²h",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Volume of a sphere uses r³ (radius cubed)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Doubling the radius of a sphere doubles its volume",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A hemisphere volume is half of &frac{4}{3}πr³",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "An ice cream cone has radius <strong>3 cm</strong> and height <strong>12 cm</strong>. A hemisphere of ice cream (same radius) sits on top. Find the total volume of cone plus ice cream. If the ice cream melts into the cone, will it overflow? Show your working."
+      },
+      {
+        "id": "b",
+        "text": "A solid metal cone has base radius <strong>6 cm</strong> and height <strong>10 cm</strong>. It is melted down and recast into a sphere. Find the radius of the sphere. Give your answer to 1 decimal place."
+      }
+    ]
+  }
+}

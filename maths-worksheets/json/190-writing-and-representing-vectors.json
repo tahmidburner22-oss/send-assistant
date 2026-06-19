@@ -1,0 +1,325 @@
+{
+  "title": "VECTORS,\n(WRITING AND REPRESENTING VECTORS)",
+  "objective": "LO: I can write vectors using column notation and represent them on a grid.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Writing and representing vectors",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">vector</span> describes a movement with both magnitude (size) and direction. We write column vectors as <span class=\"ul-k\">(x, y)</span> where x is the horizontal movement and y is the vertical movement."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Convention:</span> Positive x means right, negative x means left. Positive y means up, negative y means down. Vectors are equal if they have the same magnitude and direction."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "(3, 2) means 3 right and 2 up",
+          "desc": "positive components"
+        },
+        {
+          "correct": true,
+          "expr": "(-1, 4) means 1 left and 4 up",
+          "desc": "negative x means left"
+        },
+        {
+          "correct": true,
+          "expr": "(3, 2) and (3, 2) drawn at different points are equal",
+          "desc": "same magnitude and direction"
+        },
+        {
+          "correct": false,
+          "expr": "(3, 2) means 3 up and 2 right",
+          "desc": "x is horizontal (first), y is vertical (second)"
+        },
+        {
+          "correct": false,
+          "expr": "(2, 5) and (-2, -5) are the same vector",
+          "desc": "they have opposite directions"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "A column vector gives horizontal then vertical displacement. Equal vectors have the same column vector regardless of starting point.",
+      "equation": "<span class=\"ov\">vector</span> = <span class=\"ovr\">(horizontal, vertical)</span>",
+      "caption": "Right and up are positive; left and down are negative"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; writing a column vector",
+      "question": "Write the vector that moves from A(1, 3) to B(4, 7) as a column vector.",
+      "steps": [
+        "Horizontal: 4 - 1 = 3 (right)",
+        "Vertical: 7 - 3 = 4 (up)",
+        "Column vector: (3, 4)"
+      ],
+      "answer": "(3, 4)",
+      "explanation": "Subtract the start coordinates from the end coordinates."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative components",
+      "question": "Write the vector from P(5, 6) to Q(2, 1).",
+      "steps": [
+        "Horizontal: 2 - 5 = -3 (left)",
+        "Vertical: 1 - 6 = -5 (down)",
+        "Column vector: (-3, -5)"
+      ],
+      "answer": "(-3, -5)",
+      "explanation": "Negative values show movement left or down."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; drawing a vector on a grid",
+      "question": "Draw the vector (4, -2) starting from point (1, 5).",
+      "steps": [
+        "Start at (1, 5)",
+        "Move 4 right: x = 1 + 4 = 5",
+        "Move 2 down: y = 5 + (-2) = 3. End at (5, 3)"
+      ],
+      "answer": "Arrow from (1, 5) to (5, 3)",
+      "explanation": "Plot the start, apply the vector, mark the end with an arrow."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; identifying equal vectors",
+      "question": "Are (2, 3) from A(0, 0) and (2, 3) from B(4, 1) equal vectors?",
+      "steps": [
+        "First vector: same column (2, 3)",
+        "Second vector: same column (2, 3)",
+        "Same magnitude and direction, so they are equal"
+      ],
+      "answer": "Yes, they are equal",
+      "explanation": "Position does not matter; only magnitude and direction define a vector."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Writing column vectors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write each movement as a column vector.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 right, 5 up",
+          "answer": "(3, 5)"
+        },
+        {
+          "id": "b",
+          "expression": "2 left, 4 up",
+          "answer": "(-2, 4)"
+        },
+        {
+          "id": "c",
+          "expression": "6 right, 1 down",
+          "answer": "(6, -1)"
+        },
+        {
+          "id": "d",
+          "expression": "4 left, 3 down",
+          "answer": "(-4, -3)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "From coordinates",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the column vector from the first point to the second.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(1, 2) to (4, 6)",
+          "answer": "(3, 4)"
+        },
+        {
+          "id": "b",
+          "expression": "(5, 7) to (2, 3)",
+          "answer": "(-3, -4)"
+        },
+        {
+          "id": "c",
+          "expression": "(0, 0) to (6, -2)",
+          "answer": "(6, -2)"
+        },
+        {
+          "id": "d",
+          "expression": "(3, 8) to (3, 1)",
+          "answer": "(0, -7)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Negative and zero components",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Write the column vector.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(7, 4) to (7, 9)",
+          "answer": "(0, 5)"
+        },
+        {
+          "id": "b",
+          "expression": "(3, 5) to (-2, 5)",
+          "answer": "(-5, 0)"
+        },
+        {
+          "id": "c",
+          "expression": "(-1, -3) to (2, -6)",
+          "answer": "(3, -3)"
+        },
+        {
+          "id": "d",
+          "expression": "(-4, 2) to (-1, -4)",
+          "answer": "(3, -6)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Drawing vectors",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Starting from the given point, state the end point after applying the vector.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Start (2, 3), vector (4, 1)",
+          "answer": "(6, 4)"
+        },
+        {
+          "id": "b",
+          "expression": "Start (5, 6), vector (-3, 2)",
+          "answer": "(2, 8)"
+        },
+        {
+          "id": "c",
+          "expression": "Start (0, 4), vector (2, -4)",
+          "answer": "(2, 0)"
+        },
+        {
+          "id": "d",
+          "expression": "Start (7, 1), vector (-5, -1)",
+          "answer": "(2, 0)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed vector problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Write the return vector (opposite) of (3, -2)",
+          "answer": "(-3, 2)"
+        },
+        {
+          "id": "b",
+          "expression": "A to B is (4, 5). B to C is (1, -3). Find A to C.",
+          "answer": "(5, 2)"
+        },
+        {
+          "id": "c",
+          "expression": "P to Q is (-2, 6). What is Q to P?",
+          "answer": "(2, -6)"
+        },
+        {
+          "id": "d",
+          "expression": "Vector (a, 3) moves (2, 1) to (5, 4). Find a.",
+          "answer": "3"
+        },
+        {
+          "id": "e",
+          "expression": "Are (4, -1) and (-4, 1) equal, opposite, or neither?",
+          "answer": "Opposite"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "(3, -2) means 3 right and 2 down",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "(3, -2) means 3 up and 2 left",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Two vectors with the same column vector are equal regardless of position",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "(0, 5) means no movement at all",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The negative of (a, b) is (-a, -b)",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A drone starts at position <strong>(2, 3)</strong> on a grid. It follows three vectors in sequence: <strong>(4, 1)</strong>, then <strong>(-2, 5)</strong>, then <strong>(1, -3)</strong>. What is the drone’s final position? Write a single vector that would take the drone directly from start to finish."
+      },
+      {
+        "id": "b",
+        "text": "Points A(1, 2), B(4, 6), C(7, 10) lie on a grid. Write the vectors AB and BC as column vectors. What do you notice? Explain why A, B, and C must be collinear (lie on the same straight line)."
+      }
+    ]
+  }
+}
