@@ -1,0 +1,325 @@
+{
+  "title": "PLACE VALUE AND ORDERING INTEGERS,\n(READING AND WRITING LARGE INTEGERS)",
+  "objective": "LO: I can read and write integers up to millions using digits and words.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Place value in large numbers",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "Each digit in a number has a <span class=\"ul-b\">place value</span> that depends on its position. From right to left the columns are: ones, tens, hundreds, thousands, ten-thousands, hundred-thousands, millions."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Tip:</span> Group digits in threes from the right (using commas or spaces) to make large numbers easier to read: 3,450,000 is <span class=\"ul-k\">three million four hundred and fifty thousand</span>."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "250,000 = two hundred and fifty thousand",
+          "desc": "correctly read"
+        },
+        {
+          "correct": true,
+          "expr": "3,004,500 = three million four thousand five hundred",
+          "desc": "note the zero place holders"
+        },
+        {
+          "correct": true,
+          "expr": "47,000 = forty-seven thousand",
+          "desc": "no hundreds, tens or ones"
+        },
+        {
+          "correct": false,
+          "expr": "6,300 = sixty-three hundred",
+          "desc": "should be six thousand three hundred"
+        },
+        {
+          "correct": false,
+          "expr": "1,000,000 = one hundred thousand",
+          "desc": "that is 100,000 not 1,000,000"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Break the number into groups of three digits: millions | thousands | ones, then read each group.",
+      "equation": "4,<span class=\"ov\">567</span>,<span class=\"ovr\">890</span> &rarr; 4 million, 567 thousand, 890",
+      "caption": "Split at the commas, read each group"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; reading a large number",
+      "question": "Write 3,250,000 in words.",
+      "steps": [
+        "Split: 3 | 250 | 000",
+        "3 million, 250 thousand, 0 ones",
+        "In words: three million two hundred and fifty thousand"
+      ],
+      "answer": "Three million two hundred and fifty thousand",
+      "explanation": "Group into millions, thousands and ones, then read each section."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; writing from words",
+      "question": "Write 'seven million forty-five thousand' in digits.",
+      "steps": [
+        "Seven million = 7,000,000",
+        "Forty-five thousand = 45,000",
+        "Combine: 7,045,000"
+      ],
+      "answer": "7,045,000",
+      "explanation": "Write each section as digits, using zeros as place holders."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; identifying digit value",
+      "question": "What is the value of the digit 6 in 2,600,450?",
+      "steps": [
+        "Position the digit: 2, 6 0 0, 4 5 0",
+        "6 is in the hundred-thousands column",
+        "Value = 6 &times; 100,000 = 600,000"
+      ],
+      "answer": "600,000 (six hundred thousand)",
+      "explanation": "The value of a digit depends on its position in the number."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; ordering large numbers",
+      "question": "Write these in ascending order: 1,450,000; 1,045,000; 1,500,000; 1,405,000.",
+      "steps": [
+        "Compare millions: all are 1 million",
+        "Compare hundred-thousands: 0, 4, 4, 5",
+        "Refine: 1,045,000 &lt; 1,405,000 &lt; 1,450,000 &lt; 1,500,000"
+      ],
+      "answer": "1,045,000; 1,405,000; 1,450,000; 1,500,000",
+      "explanation": "When millions are equal, compare the next place value column."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Reading numbers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write each number in words.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "450,000",
+          "answer": "Four hundred and fifty thousand"
+        },
+        {
+          "id": "b",
+          "expression": "2,300,000",
+          "answer": "Two million three hundred thousand"
+        },
+        {
+          "id": "c",
+          "expression": "5,060,200",
+          "answer": "Five million sixty thousand two hundred"
+        },
+        {
+          "id": "d",
+          "expression": "10,500,000",
+          "answer": "Ten million five hundred thousand"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Writing numbers",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write each number using digits.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Six hundred thousand",
+          "answer": "600,000"
+        },
+        {
+          "id": "b",
+          "expression": "Three million twenty thousand",
+          "answer": "3,020,000"
+        },
+        {
+          "id": "c",
+          "expression": "Nine million five hundred and one",
+          "answer": "9,000,501"
+        },
+        {
+          "id": "d",
+          "expression": "Forty-two million",
+          "answer": "42,000,000"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Digit values",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "State the value of the underlined digit.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "The 7 in 7,230,000",
+          "answer": "7,000,000 (seven million)"
+        },
+        {
+          "id": "b",
+          "expression": "The 4 in 1,403,000",
+          "answer": "400,000 (four hundred thousand)"
+        },
+        {
+          "id": "c",
+          "expression": "The 5 in 6,050,800",
+          "answer": "50,000 (fifty thousand)"
+        },
+        {
+          "id": "d",
+          "expression": "The 9 in 3,009,100",
+          "answer": "9,000 (nine thousand)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Ordering large numbers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Arrange each set in ascending order.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "320,000; 302,000; 230,000; 300,200",
+          "answer": "230,000; 300,200; 302,000; 320,000"
+        },
+        {
+          "id": "b",
+          "expression": "5,100,000; 5,010,000; 5,001,000; 5,110,000",
+          "answer": "5,001,000; 5,010,000; 5,100,000; 5,110,000"
+        },
+        {
+          "id": "c",
+          "expression": "48,000; 408,000; 4,800,000; 480,000",
+          "answer": "48,000; 408,000; 480,000; 4,800,000"
+        },
+        {
+          "id": "d",
+          "expression": "1,999,000; 2,000,000; 1,990,000; 1,909,000",
+          "answer": "1,909,000; 1,990,000; 1,999,000; 2,000,000"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Answer each question about large numbers.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Write 2.5 million in digits",
+          "answer": "2,500,000"
+        },
+        {
+          "id": "b",
+          "expression": "How many thousands in 3,000,000?",
+          "answer": "3,000"
+        },
+        {
+          "id": "c",
+          "expression": "Round 4,567,890 to the nearest million",
+          "answer": "5,000,000"
+        },
+        {
+          "id": "d",
+          "expression": "What number is 100,000 more than 2,900,000?",
+          "answer": "3,000,000"
+        },
+        {
+          "id": "e",
+          "expression": "Write the number that is halfway between 1,000,000 and 2,000,000",
+          "answer": "1,500,000"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "In 3,450,000 the digit 4 represents four hundred thousand",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "One million is written as 100,000",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "5,060,000 in words is five million and sixty thousand",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The number 7,000,300 has no thousands",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Grouping digits in threes from the right helps read large numbers",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The population of a city is <strong>2,450,000</strong>. Write this in words. If the population grows by <strong>150,000</strong> each year, write the population after 3 years in both digits and words."
+      },
+      {
+        "id": "b",
+        "text": "A country's national debt is reported as <strong>&pound;45,200,000,000</strong> (45.2 billion). Write this number in words. If the debt decreases by <strong>&pound;1,500,000,000</strong> per year, what will it be after 2 years? Write your answer in digits."
+      }
+    ]
+  }
+}

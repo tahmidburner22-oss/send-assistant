@@ -25,9 +25,9 @@ Topics 1, 2, 3, 4, 5, 10, 11, 16, 17, 18, 21, 26, 27, 31, 32, 33, 34, 35, 36, 37
 **Past batches that already shipped KS2 content** (Batch 1's single times tables 088–100 and Batch 2's long/short ×÷ 097/098/102/103) are kept as bonus content — no need to remove them. But future batches must be KS3 / KS4 only.
 
 ### KS3/KS4 progress
-- KS3/KS4 subtopics already done: **57** (7 original + 50 new from batch 3)
-- KS3/KS4 subtopics remaining: **~55**
-- Plus KS1/KS2 bonus already shipped: 15 (single times tables, long/short x÷)
+- KS3/KS4 subtopics already done: **109** (57 original/batch 3 + 50 batch 4 + 2 batch 5)
+- KS3/KS4 subtopics remaining: **0** (all KS3/KS4 complete)
+- Plus KS1/KS2 bonus already shipped: 16 (single times tables, long/short x÷, factor pairs)
 
 ---
 
@@ -102,10 +102,11 @@ Page margins: `5mm 6mm` (was `7mm 9mm`). `.page` size: `285mm × 200mm`.
 
 | Status | Count | List |
 |--------|-------|------|
-| ✅ Done | **72** | 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 039, 040, 041, 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 052, 053, 070, 071, 072, 073, 078, 079, 080, 081, 084, 085, 086, 087, 088, 089, 090, 091, 092, 093, 094, 095, 096, 097, 098, 099, 100, 102, 103, 144, 145, 146, 147, 148, 149, 150, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168 |
-| ⬜ Remaining | **122** | see `PLAN.md` for the numbered list |
+| ✅ Done | **125** | 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 039, 040, 041, 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 052, 053, 070, 071, 072, 073, 078, 079, 080, 081, 082, 083, 084, 085, 086, 087, 088, 089, 090, 091, 092, 093, 094, 095, 096, 097, 098, 099, 100, 101, 102, 103, 104, 105, 106, 107, 108, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194 |
+| ⬜ Remaining | **69** | All KS1/KS2 subtopics (001-020, 033-038, 054-069, 074-077, 109-131) -- see `PLAN.md` |
 
 ### Topics fully complete
+- **Algebra -- Simple Formulae and Sequences** (Topic 6 -- all 2 subtopics)
 - **Algebraic Expressions** (Topic 7 -- all 3 subtopics)
 - **Angles** (Topic 8 -- all 4 subtopics)
 - **Area and Perimeter** (Topic 9 -- all 3 subtopics)
@@ -115,30 +116,39 @@ Page margins: `5mm 6mm` (was `7mm 9mm`). `.page` size: `285mm × 200mm`.
 - **Fractions** (Topic 15 -- all 4 subtopics)
 - **Fractions -- Secondary** (Topic 20 -- all 4 subtopics)
 - **Fractions, Decimals and Percentages** (Topic 22 -- all 4 subtopics)
+- **Functions and Graphs** (Topic 23 -- all 2 subtopics)
 - **Indices and Standard Form** (Topic 24 -- all 1 subtopic)
 - **Linear Inequalities** (Topic 25 -- all 3 subtopics)
-- **Multiplication & division foundation** (Topics 26, 27, 28, 29 -- all but Factor pairs/commutativity)
+- **Multiplication & Division -- Times Tables to 12x12** (Topic 29 -- all subtopics)
+- **Multiplication & Division -- Long/Short Methods** (Topics 26, 27, 28 -- all subtopics)
+- **Percentages** (Topics 30, 31 -- all subtopics)
+- **Place Value and Ordering Integers** (Topic 38 -- all 4 subtopics)
+- **Probability** (Topic 39 -- all 4 subtopics)
+- **Proportion** (Topic 40 -- all 4 subtopics)
 - **Pythagoras' Theorem** (Topic 41 -- all 4 subtopics)
 - **Quadratic Equations** (Topic 42 -- all 3 subtopics)
+- **Ratio** (Topics 43, 44 -- all 6 subtopics)
 - **Sequences** (Topic 45 -- all 3 subtopics)
 - **Simultaneous Equations** (Topic 46 -- all 3 subtopics)
 - **Solving Linear Equations** (Topic 47 -- all 4 subtopics)
+- **Statistics** (Topic 48 -- all 4 subtopics)
+- **Straight-Line Graphs** (Topic 49 -- all 4 subtopics)
+- **Surds** (Topic 50 -- all 4 subtopics)
+- **Transformations** (Topic 51 -- all 4 subtopics)
+- **Trigonometry** (Topic 52 -- all 4 subtopics)
+- **Vectors** (Topic 53 -- all 4 subtopics)
+- **Volume and Surface Area** (Topic 54 -- all 4 subtopics)
+- **Estimation** (Topic 37 -- all 1 subtopic)
 
 ### Topics partially complete
-- **Statistics** (Topic 48): 2 of 4 -- cumulative frequency ✅, frequency tables ✅; histograms and mean/median/mode remaining
-- **Algebra -- Simple Formulae and Sequences** (Topic 6): 1 of 2 -- using and writing simple formulae ✅; substitution remaining (021 not yet done in this batch)
+(none -- all KS3/KS4 topics are fully complete)
 
-### Topics not yet started
+### Topics not yet started (KS1/KS2 -- out of scope)
 - Topics 1-5 (lower-primary addition/subtraction)
 - Topics 10-11 (Counting, Number Recognition)
 - Topics 16-19 (Primary fractions)
 - Topic 21 (Fractions -- Unit and Non-Unit)
-- Topic 23 (Functions and Graphs)
-- Topics 26-29 Factor pairs (101) only
-- Topics 30-31 (Percentages)
-- Topics 32-40 (Place Value, Probability, Proportion)
-- Topics 43-44 (Ratio)
-- Topics 49-54 (Straight-Line Graphs, Surds, Transformations, Trigonometry, Vectors, Volume & Surface Area)
+- Topics 32-36 (Primary place value and counting)
 
 ---
 

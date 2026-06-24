@@ -1,0 +1,325 @@
+{
+  "title": "MULTIPLICATION AND DIVISION — TIMES TABLES TO 12&times;12,\n(FACTOR PAIRS AND COMMUTATIVITY)",
+  "objective": "LO: I can identify factor pairs of a number and use the commutative law of multiplication.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Factors and commutativity",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">factor</span> is a whole number that divides exactly into another number. <span class=\"ul-k\">Factor pairs</span> are two factors that multiply together to give a particular product."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Commutativity</span> means the order of multiplication does not change the answer: a &times; b = b &times; a. This makes it easier to learn times tables because every fact gives you two results."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "1 &times; 12 = 12",
+          "desc": "factor pair of 12"
+        },
+        {
+          "correct": true,
+          "expr": "3 &times; 4 = 4 &times; 3 = 12",
+          "desc": "commutativity shown"
+        },
+        {
+          "correct": true,
+          "expr": "2 &times; 6 = 12",
+          "desc": "another factor pair of 12"
+        },
+        {
+          "correct": false,
+          "expr": "5 &times; 3 = 12",
+          "desc": "5 &times; 3 = 15, not 12"
+        },
+        {
+          "correct": false,
+          "expr": "3 + 4 = 3 &times; 4",
+          "desc": "addition and multiplication are different operations"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "To find all factor pairs, start from 1 and work up; stop when the factors begin to repeat.",
+      "equation": "24 = <span class=\"ov\">1 &times; 24</span> = <span class=\"ov\">2 &times; 12</span> = <span class=\"ov\">3 &times; 8</span> = <span class=\"ovr\">4 &times; 6</span>",
+      "caption": "Four factor pairs of 24"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; listing factor pairs",
+      "question": "Find all the factor pairs of 18.",
+      "steps": [
+        "Start: 1 &times; 18",
+        "Check 2: 2 &times; 9",
+        "Check 3: 3 &times; 6; 4 does not divide 18 exactly, so stop"
+      ],
+      "answer": "Factor pairs: (1, 18), (2, 9), (3, 6)",
+      "explanation": "Work systematically from 1 upwards until factors repeat."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; using commutativity",
+      "question": "Use the commutative law to write two multiplication facts from 7 &times; 8 = 56.",
+      "steps": [
+        "First fact: 7 &times; 8 = 56",
+        "Swap: 8 &times; 7 = 56",
+        "Both give the same product"
+      ],
+      "answer": "7 &times; 8 = 56 and 8 &times; 7 = 56",
+      "explanation": "The commutative law means a &times; b = b &times; a always."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; identifying missing factors",
+      "question": "Find the missing number: ___ &times; 9 = 36.",
+      "steps": [
+        "We need a number that multiplies by 9 to give 36",
+        "36 &divide; 9 = 4",
+        "Check: 4 &times; 9 = 36 &#10003;"
+      ],
+      "answer": "The missing number is 4",
+      "explanation": "Division is the inverse of multiplication; use it to find a missing factor."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; factor pairs of a larger number",
+      "question": "List all factor pairs of 36.",
+      "steps": [
+        "1 &times; 36, 2 &times; 18, 3 &times; 12, 4 &times; 9, 6 &times; 6",
+        "Stop at 6 &times; 6 because 7 does not divide 36 exactly",
+        "There are 5 factor pairs (including the square root pair)"
+      ],
+      "answer": "Factor pairs: (1, 36), (2, 18), (3, 12), (4, 9), (6, 6)",
+      "explanation": "36 is a square number so one pair has the same factor repeated."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding factor pairs",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "List all the factor pairs of each number.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "12",
+          "answer": "(1,12), (2,6), (3,4)"
+        },
+        {
+          "id": "b",
+          "expression": "20",
+          "answer": "(1,20), (2,10), (4,5)"
+        },
+        {
+          "id": "c",
+          "expression": "30",
+          "answer": "(1,30), (2,15), (3,10), (5,6)"
+        },
+        {
+          "id": "d",
+          "expression": "16",
+          "answer": "(1,16), (2,8), (4,4)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Using commutativity",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write two multiplication facts for each product.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Product = 42 (use 6 and 7)",
+          "answer": "6 &times; 7 = 42 and 7 &times; 6 = 42"
+        },
+        {
+          "id": "b",
+          "expression": "Product = 54 (use 6 and 9)",
+          "answer": "6 &times; 9 = 54 and 9 &times; 6 = 54"
+        },
+        {
+          "id": "c",
+          "expression": "Product = 72 (use 8 and 9)",
+          "answer": "8 &times; 9 = 72 and 9 &times; 8 = 72"
+        },
+        {
+          "id": "d",
+          "expression": "Product = 48 (use 6 and 8)",
+          "answer": "6 &times; 8 = 48 and 8 &times; 6 = 48"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Missing factors",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the missing number in each multiplication.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "___ &times; 7 = 63",
+          "answer": "9"
+        },
+        {
+          "id": "b",
+          "expression": "8 &times; ___ = 96",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "___ &times; 11 = 132",
+          "answer": "12"
+        },
+        {
+          "id": "d",
+          "expression": "4 &times; ___ = 48",
+          "answer": "12"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Factors of larger numbers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "List all factor pairs. State how many factors each number has.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "48",
+          "answer": "(1,48),(2,24),(3,16),(4,12),(6,8) &mdash; 10 factors"
+        },
+        {
+          "id": "b",
+          "expression": "60",
+          "answer": "(1,60),(2,30),(3,20),(4,15),(5,12),(6,10) &mdash; 12 factors"
+        },
+        {
+          "id": "c",
+          "expression": "25",
+          "answer": "(1,25),(5,5) &mdash; 3 factors"
+        },
+        {
+          "id": "d",
+          "expression": "100",
+          "answer": "(1,100),(2,50),(4,25),(5,20),(10,10) &mdash; 9 factors"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "True or false",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "State whether each statement is true or false. Explain your answer.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "7 is a factor of 49",
+          "answer": "True (7 &times; 7 = 49)"
+        },
+        {
+          "id": "b",
+          "expression": "5 &times; 8 = 8 &times; 5 because multiplication is commutative",
+          "answer": "True"
+        },
+        {
+          "id": "c",
+          "expression": "The factor pairs of 9 are (1,9) and (3,3)",
+          "answer": "True"
+        },
+        {
+          "id": "d",
+          "expression": "15 has exactly 4 factors",
+          "answer": "True (1, 3, 5, 15)"
+        },
+        {
+          "id": "e",
+          "expression": "Division is commutative",
+          "answer": "False (e.g. 12 &divide; 3 &ne; 3 &divide; 12)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "3 &times; 5 = 5 &times; 3 because multiplication is commutative",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "12 &divide; 4 = 4 &divide; 12 because division is also commutative",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Factor pairs of 24 include (3, 8) and (4, 6)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "7 is a factor of 50",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Every number has at least two factors: 1 and itself",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A teacher has <strong>36 exercise books</strong> to arrange into equal piles. List all the ways she can arrange them into equal piles (each pile having the same number of books). Which arrangement uses the most piles?"
+      },
+      {
+        "id": "b",
+        "text": "Two numbers have a product of <strong>144</strong>. One number is <strong>twice</strong> the other. Use factor pairs to find the two numbers. Explain how commutativity helps you check your answer."
+      }
+    ]
+  }
+}
