@@ -1,0 +1,325 @@
+{
+  "title": "RATIO AND PROPORTION,\n(DIVIDING QUANTITIES IN A GIVEN RATIO)",
+  "objective": "LO: I can divide quantities in a given ratio and solve related problems.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Dividing quantities",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"ul-b\">divide a quantity</span> in a ratio, add the parts to find the <span class=\"ul-k\">total number of shares</span>. Divide the quantity by this total to find <span class=\"ul-k\">one share</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Then:</span> Multiply each ratio number by the value of one share to find each portion."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&pound;120 in 3:5 &rarr; shares = 8, one share = 15",
+          "desc": "120 &divide; 8 = 15"
+        },
+        {
+          "correct": true,
+          "expr": "Result: &pound;45 and &pound;75",
+          "desc": "3&times;15 and 5&times;15"
+        },
+        {
+          "correct": true,
+          "expr": "Check: 45 + 75 = 120 &check;",
+          "desc": "always verify"
+        },
+        {
+          "correct": false,
+          "expr": "&pound;120 in 3:5 gives &pound;40 each",
+          "desc": "not equal sharing"
+        },
+        {
+          "correct": false,
+          "expr": "Total shares for 3:5 is 15",
+          "desc": "total shares = 3 + 5 = 8"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Total shares = sum of ratio. One share = quantity &divide; total shares. Each portion = ratio number &times; one share.",
+      "equation": "<span class=\"ov\">Quantity</span> &divide; (a + b) = one share; portions = a &times; share, b &times; share",
+      "caption": "Always check the portions add to the original"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; basic division",
+      "question": "Divide 200 ml in the ratio 3:7.",
+      "steps": [
+        "Total shares = 3 + 7 = 10",
+        "One share = 200 &divide; 10 = 20 ml",
+        "3 shares = 60 ml, 7 shares = 140 ml"
+      ],
+      "answer": "60 ml and 140 ml",
+      "explanation": "Check: 60 + 140 = 200 ml."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; money sharing",
+      "question": "&pound;240 is shared between Amy and Bella in ratio 5:3. How much does each get?",
+      "steps": [
+        "Total shares = 5 + 3 = 8",
+        "One share = 240 &divide; 8 = &pound;30",
+        "Amy: 5 &times; 30 = &pound;150, Bella: 3 &times; 30 = &pound;90"
+      ],
+      "answer": "Amy &pound;150, Bella &pound;90",
+      "explanation": "Check: 150 + 90 = 240."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding total from one part",
+      "question": "Jo and Kim share sweets in ratio 2:5. Kim gets 35 sweets. How many in total?",
+      "steps": [
+        "Kim's 5 shares = 35",
+        "One share = 35 &divide; 5 = 7",
+        "Total = (2 + 5) &times; 7 = 49"
+      ],
+      "answer": "49 sweets total",
+      "explanation": "Work backwards: divide the known amount by its share number."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; three-way split",
+      "question": "Split 450 g into the ratio 2:3:4.",
+      "steps": [
+        "Total shares = 2 + 3 + 4 = 9",
+        "One share = 450 &divide; 9 = 50 g",
+        "Portions: 100 g, 150 g, 200 g"
+      ],
+      "answer": "100 g, 150 g, 200 g",
+      "explanation": "Check: 100 + 150 + 200 = 450."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Two-part divisions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Divide each quantity in the given ratio.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;90 in 1:2",
+          "answer": "&pound;30 and &pound;60"
+        },
+        {
+          "id": "b",
+          "expression": "180 cm in 4:5",
+          "answer": "80 cm and 100 cm"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;350 in 3:4",
+          "answer": "&pound;150 and &pound;200"
+        },
+        {
+          "id": "d",
+          "expression": "1 kg in 2:3",
+          "answer": "400 g and 600 g"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Three-part divisions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Divide each quantity in the given ratio.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;180 in 1:2:3",
+          "answer": "&pound;30, &pound;60, &pound;90"
+        },
+        {
+          "id": "b",
+          "expression": "400 ml in 2:3:5",
+          "answer": "80, 120, 200 ml"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;600 in 3:4:5",
+          "answer": "&pound;150, &pound;200, &pound;250"
+        },
+        {
+          "id": "d",
+          "expression": "72 in 1:3:5",
+          "answer": "8, 24, 40"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Working backwards",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the total or the other part.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ratio 2:3. Smaller part = 18. Total?",
+          "answer": "45"
+        },
+        {
+          "id": "b",
+          "expression": "Ratio 4:5. Larger part = 60. Smaller?",
+          "answer": "48"
+        },
+        {
+          "id": "c",
+          "expression": "Ratio 1:6. Smaller = 9. Total?",
+          "answer": "63"
+        },
+        {
+          "id": "d",
+          "expression": "Ratio 3:7. Difference = 20. Total?",
+          "answer": "50"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each ratio problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cordial:water = 1:5. Make 900 ml. Cordial needed?",
+          "answer": "150 ml"
+        },
+        {
+          "id": "b",
+          "expression": "Boys:Girls = 5:4 in a class of 36.",
+          "answer": "20 boys, 16 girls"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;1500 inheritance split 2:3. Larger share?",
+          "answer": "&pound;900"
+        },
+        {
+          "id": "d",
+          "expression": "Paint: red:yellow 3:1. Need 2 litres total. Red?",
+          "answer": "1.5 L"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Harder problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Angles of triangle in ratio 2:3:5. Find each angle.",
+          "answer": "36, 54, 90 degrees"
+        },
+        {
+          "id": "b",
+          "expression": "Ratio 3:4. Sum = 91. Find each part.",
+          "answer": "39 and 52"
+        },
+        {
+          "id": "c",
+          "expression": "3 people share &pound;270 in ratio 2:3:4. Middle share?",
+          "answer": "&pound;90"
+        },
+        {
+          "id": "d",
+          "expression": "Cement:sand = 1:4. Need 15 kg total. How much sand?",
+          "answer": "12 kg"
+        },
+        {
+          "id": "e",
+          "expression": "Age ratio 3:5. In 6 years it becomes 2:3. Current ages?",
+          "answer": "18 and 30"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Total shares for ratio 3:5 = 8",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Dividing &pound;100 in ratio 1:4 gives &pound;25 and &pound;75",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "One share = total &divide; sum of ratio parts",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Ratio 2:3 means 2 out of 3",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The portions must add up to the original total",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Three charities share a <strong>&pound;12,000</strong> donation in the ratio <strong>2:3:7</strong>. The largest charity then donates <strong>20%</strong> of its share to the smallest. How much does each charity have now?"
+      },
+      {
+        "id": "b",
+        "text": "A rectangular garden has length to width in ratio <strong>4:3</strong>. The perimeter is <strong>56 m</strong>. Find the dimensions and the area of the garden."
+      }
+    ]
+  }
+}

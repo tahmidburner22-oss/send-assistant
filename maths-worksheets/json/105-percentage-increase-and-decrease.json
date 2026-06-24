@@ -1,0 +1,325 @@
+{
+  "title": "PERCENTAGES,\n(PERCENTAGE INCREASE AND DECREASE)",
+  "objective": "LO: I can increase and decrease amounts by a given percentage using multipliers.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Percentage change",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"ul-b\">increase</span> by a percentage, multiply by <span class=\"ul-k\">1 + (percentage as decimal)</span>. For example, increase by 20% means multiply by 1.20."
+        },
+        {
+          "type": "paragraph",
+          "text": "To <span class=\"ul-b\">decrease</span> by a percentage, multiply by <span class=\"ul-k\">1 &minus; (percentage as decimal)</span>. For example, decrease by 15% means multiply by 0.85."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&pound;80 increased by 25% = 80 &times; 1.25 = &pound;100",
+          "desc": "multiply by 1.25"
+        },
+        {
+          "correct": true,
+          "expr": "&pound;60 decreased by 10% = 60 &times; 0.9 = &pound;54",
+          "desc": "multiply by 0.90"
+        },
+        {
+          "correct": true,
+          "expr": "VAT at 20%: &pound;50 &times; 1.20 = &pound;60",
+          "desc": "add 20%"
+        },
+        {
+          "correct": false,
+          "expr": "&pound;80 + 25% = &pound;105",
+          "desc": "25% of 80 is 20, not 25"
+        },
+        {
+          "correct": false,
+          "expr": "Decrease by 50% then increase by 50% gives original",
+          "desc": "it gives 75% of original"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Use a single multiplier for efficiency. Increase: multiplier > 1. Decrease: multiplier < 1.",
+      "equation": "New amount = Original &times; <span class=\"ov\">multiplier</span>",
+      "caption": "e.g. +30% &rarr; &times;1.30, &minus;30% &rarr; &times;0.70"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; percentage increase",
+      "question": "Increase &pound;450 by 12%.",
+      "steps": [
+        "Multiplier = 1 + 0.12 = 1.12",
+        "450 &times; 1.12",
+        "= &pound;504"
+      ],
+      "answer": "&pound;504",
+      "explanation": "Add the percentage rate as a decimal to 1."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; percentage decrease",
+      "question": "A &pound;85 jacket has 20% off in a sale. Find the sale price.",
+      "steps": [
+        "Multiplier = 1 &minus; 0.20 = 0.80",
+        "85 &times; 0.80",
+        "= &pound;68"
+      ],
+      "answer": "&pound;68",
+      "explanation": "Subtract the decimal from 1 for a decrease."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding percentage change",
+      "question": "A house was bought for &pound;200,000 and sold for &pound;230,000. Find the percentage increase.",
+      "steps": [
+        "Change = 230,000 &minus; 200,000 = 30,000",
+        "Percentage = (30,000 &divide; 200,000) &times; 100",
+        "= 15%"
+      ],
+      "answer": "15% increase",
+      "explanation": "Divide the change by the original, then multiply by 100."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; reverse percentage",
+      "question": "After a 20% increase, a price is &pound;96. Find the original price.",
+      "steps": [
+        "&pound;96 = original &times; 1.20",
+        "Original = 96 &divide; 1.20",
+        "= &pound;80"
+      ],
+      "answer": "&pound;80",
+      "explanation": "Divide by the multiplier to reverse a percentage change."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Percentage increase",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Increase each amount by the given percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;200 by 15%",
+          "answer": "&pound;230"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;350 by 8%",
+          "answer": "&pound;378"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;120 by 25%",
+          "answer": "&pound;150"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;600 by 5%",
+          "answer": "&pound;630"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Percentage decrease",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Decrease each amount by the given percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;500 by 10%",
+          "answer": "&pound;450"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;80 by 25%",
+          "answer": "&pound;60"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;240 by 15%",
+          "answer": "&pound;204"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;1200 by 30%",
+          "answer": "&pound;840"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding percentage change",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the percentage change (state increase or decrease).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "From &pound;40 to &pound;50",
+          "answer": "25% increase"
+        },
+        {
+          "id": "b",
+          "expression": "From &pound;80 to &pound;60",
+          "answer": "25% decrease"
+        },
+        {
+          "id": "c",
+          "expression": "From &pound;120 to &pound;150",
+          "answer": "25% increase"
+        },
+        {
+          "id": "d",
+          "expression": "From &pound;200 to &pound;170",
+          "answer": "15% decrease"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Reverse percentages",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the original amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "After 10% increase, price is &pound;55",
+          "answer": "&pound;50"
+        },
+        {
+          "id": "b",
+          "expression": "After 20% decrease, price is &pound;64",
+          "answer": "&pound;80"
+        },
+        {
+          "id": "c",
+          "expression": "After 25% increase, price is &pound;75",
+          "answer": "&pound;60"
+        },
+        {
+          "id": "d",
+          "expression": "After 15% decrease, price is &pound;510",
+          "answer": "&pound;600"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Real-world problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A &pound;45 shirt has 20% off. Find sale price.",
+          "answer": "&pound;36"
+        },
+        {
+          "id": "b",
+          "expression": "A meal costs &pound;35 plus 12.5% service. Find total.",
+          "answer": "&pound;39.38"
+        },
+        {
+          "id": "c",
+          "expression": "A population of 50,000 grows by 3%. New population?",
+          "answer": "51,500"
+        },
+        {
+          "id": "d",
+          "expression": "After a 5% pay rise, salary is &pound;31,500. Original?",
+          "answer": "&pound;30,000"
+        },
+        {
+          "id": "e",
+          "expression": "House value increases 8% to &pound;270,000. Original?",
+          "answer": "&pound;250,000"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To increase by 15%, multiply by 1.15",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Decreasing by 20% then increasing by 20% returns to the original",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Percentage change = (change &divide; original) &times; 100",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "To decrease by 30%, multiply by 1.30",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A reverse percentage problem requires dividing by the multiplier",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A shop has a sale with <strong>30% off</strong> everything. A customer also has a <strong>10% loyalty discount</strong> applied after the sale price. If the original price is <strong>&pound;200</strong>, what is the final price? Is this the same as 40% off?"
+      },
+      {
+        "id": "b",
+        "text": "The population of a town was <strong>45,000</strong>. It increased by <strong>12%</strong> one year and then decreased by <strong>8%</strong> the next. Find the population after 2 years. Has the overall population increased or decreased?"
+      }
+    ]
+  }
+}

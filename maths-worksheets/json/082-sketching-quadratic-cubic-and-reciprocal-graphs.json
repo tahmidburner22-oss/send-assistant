@@ -1,0 +1,325 @@
+{
+  "title": "FUNCTIONS AND GRAPHS,\n(SKETCHING QUADRATIC, CUBIC AND RECIPROCAL GRAPHS)",
+  "objective": "LO: I can sketch quadratic, cubic and reciprocal graphs from their equations.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Types of graph",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">quadratic</span> graph has the form y = ax&sup2; + bx + c and is a <span class=\"ul-k\">U-shape (parabola)</span>. A <span class=\"ul-b\">cubic</span> has the form y = ax&sup3; and has an S-shaped curve."
+        },
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">reciprocal</span> graph has the form y = <span class=\"ul-k\">a/x</span> and has two separate curves (hyperbola) that never touch the axes."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Recognising graphs",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y = x&sup2; &minus; 3",
+          "desc": "quadratic, U-shape shifted down 3"
+        },
+        {
+          "correct": true,
+          "expr": "y = x&sup3;",
+          "desc": "cubic, S-shape through origin"
+        },
+        {
+          "correct": true,
+          "expr": "y = 1/x",
+          "desc": "reciprocal, two curves in opposite quadrants"
+        },
+        {
+          "correct": false,
+          "expr": "y = x&sup2; is a straight line",
+          "desc": "it is a parabola"
+        },
+        {
+          "correct": false,
+          "expr": "y = 1/x passes through (0, 0)",
+          "desc": "x = 0 is undefined"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "To sketch a graph, find key points (intercepts, turning points) and know the general shape from the highest power of x.",
+      "equation": "y = <span class=\"ov\">ax&sup2;</span> + bx + c &rarr; <span class=\"ovr\">parabola</span>",
+      "caption": "The highest power tells you the shape"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; quadratic graph",
+      "question": "Sketch y = x&sup2; &minus; 4",
+      "steps": [
+        "Find y-intercept: when x = 0, y = &minus;4",
+        "Find x-intercepts: x&sup2; &minus; 4 = 0, so x = 2 or x = &minus;2",
+        "Minimum point at (0, &minus;4); U-shape opening upwards"
+      ],
+      "answer": "U-shaped parabola crossing x-axis at (&minus;2, 0) and (2, 0), vertex at (0, &minus;4)",
+      "explanation": "Plot the intercepts and vertex, then draw a smooth curve."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative quadratic",
+      "question": "Sketch y = &minus;x&sup2; + 9",
+      "steps": [
+        "y-intercept: when x = 0, y = 9",
+        "x-intercepts: &minus;x&sup2; + 9 = 0, x&sup2; = 9, x = &plusmn;3",
+        "Maximum at (0, 9); inverted U-shape"
+      ],
+      "answer": "Inverted parabola with maximum at (0, 9), crossing x-axis at (&minus;3, 0) and (3, 0)",
+      "explanation": "Negative coefficient of x&sup2; means the parabola opens downwards."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; cubic graph",
+      "question": "Sketch y = x&sup3; &minus; x",
+      "steps": [
+        "Factorise: y = x(x&sup2; &minus; 1) = x(x + 1)(x &minus; 1)",
+        "x-intercepts at x = &minus;1, 0, 1",
+        "S-shaped curve passing through all three roots"
+      ],
+      "answer": "S-shaped cubic crossing x-axis at &minus;1, 0, and 1",
+      "explanation": "Factorising a cubic helps find the roots for sketching."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; reciprocal graph",
+      "question": "Sketch y = 3/x",
+      "steps": [
+        "When x = 1, y = 3; when x = 3, y = 1; when x = &minus;1, y = &minus;3",
+        "As x &rarr; 0, y &rarr; &infin;; as x &rarr; &infin;, y &rarr; 0",
+        "Two curves: one in quadrant 1 and one in quadrant 3"
+      ],
+      "answer": "Hyperbola with curves in quadrants 1 and 3, asymptotes along both axes",
+      "explanation": "The axes are asymptotes; the graph never touches or crosses them."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identifying graph types",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State whether each equation gives a quadratic, cubic or reciprocal graph.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 2x&sup2; + 1",
+          "answer": "Quadratic"
+        },
+        {
+          "id": "b",
+          "expression": "y = x&sup3; &minus; 2x",
+          "answer": "Cubic"
+        },
+        {
+          "id": "c",
+          "expression": "y = 5/x",
+          "answer": "Reciprocal"
+        },
+        {
+          "id": "d",
+          "expression": "y = &minus;x&sup2; + 4x &minus; 3",
+          "answer": "Quadratic"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding intercepts",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the y-intercept and x-intercepts for each quadratic.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x&sup2; &minus; 9",
+          "answer": "y-int: (0, &minus;9); x-int: (&minus;3, 0), (3, 0)"
+        },
+        {
+          "id": "b",
+          "expression": "y = x&sup2; &minus; 5x + 6",
+          "answer": "y-int: (0, 6); x-int: (2, 0), (3, 0)"
+        },
+        {
+          "id": "c",
+          "expression": "y = x&sup2; + 2x &minus; 8",
+          "answer": "y-int: (0, &minus;8); x-int: (&minus;4, 0), (2, 0)"
+        },
+        {
+          "id": "d",
+          "expression": "y = &minus;x&sup2; + 4",
+          "answer": "y-int: (0, 4); x-int: (&minus;2, 0), (2, 0)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Cubic graphs",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the x-intercepts of each cubic by factorising.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x&sup3; &minus; 4x",
+          "answer": "x = 0, 2, &minus;2"
+        },
+        {
+          "id": "b",
+          "expression": "y = x&sup3; &minus; 9x",
+          "answer": "x = 0, 3, &minus;3"
+        },
+        {
+          "id": "c",
+          "expression": "y = x&sup3; + x&sup2; &minus; 6x",
+          "answer": "x = 0, 2, &minus;3"
+        },
+        {
+          "id": "d",
+          "expression": "y = 2x&sup3; &minus; 8x",
+          "answer": "x = 0, 2, &minus;2"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Reciprocal values",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "For y = 6/x, find y for each value of x.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x = 1",
+          "answer": "y = 6"
+        },
+        {
+          "id": "b",
+          "expression": "x = 2",
+          "answer": "y = 3"
+        },
+        {
+          "id": "c",
+          "expression": "x = 6",
+          "answer": "y = 1"
+        },
+        {
+          "id": "d",
+          "expression": "x = &minus;3",
+          "answer": "y = &minus;2"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed sketching",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Describe the key features of each graph.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = x&sup2; &minus; 1",
+          "answer": "U-shape, vertex (0, &minus;1), roots at &plusmn;1"
+        },
+        {
+          "id": "b",
+          "expression": "y = &minus;x&sup3;",
+          "answer": "S-shape reflected, passes through origin"
+        },
+        {
+          "id": "c",
+          "expression": "y = 4/x",
+          "answer": "Hyperbola, asymptotes on axes"
+        },
+        {
+          "id": "d",
+          "expression": "y = (x &minus; 2)&sup2;",
+          "answer": "U-shape, vertex at (2, 0)"
+        },
+        {
+          "id": "e",
+          "expression": "y = x&sup3; &minus; x",
+          "answer": "S-shape, roots at &minus;1, 0, 1"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "y = x&sup2; produces a U-shaped parabola",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "y = 1/x passes through the origin",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A cubic graph can cross the x-axis up to 3 times",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "y = &minus;x&sup2; opens upwards",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The reciprocal graph y = a/x has asymptotes at x = 0 and y = 0",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A ball is thrown upwards. Its height h metres after t seconds is given by <strong>h = 20t &minus; 5t&sup2;</strong>. Sketch the graph. What is the maximum height and when does the ball land?"
+      },
+      {
+        "id": "b",
+        "text": "The time T hours to travel 120 miles at speed v mph is given by <strong>T = 120/v</strong>. Sketch the graph for v from 20 to 120. How does doubling the speed affect the journey time?"
+      }
+    ]
+  }
+}

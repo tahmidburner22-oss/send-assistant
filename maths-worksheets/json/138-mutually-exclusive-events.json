@@ -1,0 +1,325 @@
+{
+  "title": "PROBABILITY,\n(MUTUALLY EXCLUSIVE EVENTS)",
+  "objective": "LO: I can identify mutually exclusive events and use the addition rule.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Mutually exclusive events",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Mutually exclusive</span> events cannot happen at the same time. If one occurs, the other <span class=\"ul-k\">cannot</span> occur. For example, rolling a 3 and rolling a 5 on one die."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Addition rule:</span> If A and B are mutually exclusive, P(A or B) = P(A) + P(B). No need to subtract an intersection because it is zero."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "P(2 or 5 on a die) = &frac{1}{6} + &frac{1}{6} = &frac{1}{3}",
+          "desc": "mutually exclusive"
+        },
+        {
+          "correct": true,
+          "expr": "Rolling odd and rolling even are ME",
+          "desc": "cannot be both"
+        },
+        {
+          "correct": true,
+          "expr": "P(A or B) = P(A) + P(B) when ME",
+          "desc": "addition rule"
+        },
+        {
+          "correct": false,
+          "expr": "Getting a 3 and getting odd are ME",
+          "desc": "3 IS odd, so not ME"
+        },
+        {
+          "correct": false,
+          "expr": "P(A or B) always = P(A) + P(B)",
+          "desc": "only if mutually exclusive"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Mutually exclusive events have no overlap: P(A and B) = 0. Use simple addition for P(A or B).",
+      "equation": "P(A or B) = <span class=\"ov\">P(A)</span> + <span class=\"ovr\">P(B)</span>",
+      "caption": "Only when A and B cannot both happen"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; identifying ME events",
+      "question": "State whether rolling a 6 and rolling an odd number on a die are mutually exclusive.",
+      "steps": [
+        "6 is even, so it is not odd",
+        "They cannot happen together",
+        "Yes, they are mutually exclusive"
+      ],
+      "answer": "Yes, mutually exclusive",
+      "explanation": "6 and odd numbers share no outcomes."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; addition rule",
+      "question": "A bag has 3 red, 4 blue, 2 green, 1 yellow marble. Find P(red or green).",
+      "steps": [
+        "P(red) = 3/10, P(green) = 2/10",
+        "Events are ME (a marble cannot be two colours)",
+        "P(red or green) = 3/10 + 2/10 = &frac{1}{2}"
+      ],
+      "answer": "P(red or green) = &frac{1}{2}",
+      "explanation": "Since a marble is one colour only, add the probabilities."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; not mutually exclusive",
+      "question": "Are 'rolling greater than 3' and 'rolling even' mutually exclusive?",
+      "steps": [
+        "Greater than 3: {4, 5, 6}",
+        "Even: {2, 4, 6}",
+        "Overlap: {4, 6} &ne; empty, so NOT ME"
+      ],
+      "answer": "Not mutually exclusive (4 and 6 are in both)",
+      "explanation": "If they share any outcome, they are not mutually exclusive."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; exhaustive events",
+      "question": "A card is drawn. Find P(red or black).",
+      "steps": [
+        "P(red) = &frac{1}{2}, P(black) = &frac{1}{2}",
+        "Red and black are ME (a card is one colour)",
+        "P(red or black) = &frac{1}{2} + &frac{1}{2} = 1"
+      ],
+      "answer": "P(red or black) = 1 (certain)",
+      "explanation": "When ME events cover all outcomes, they are also exhaustive."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identifying ME events",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State whether each pair is mutually exclusive (Yes/No) for rolling a die.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Rolling a 2 and rolling a 5",
+          "answer": "Yes"
+        },
+        {
+          "id": "b",
+          "expression": "Rolling even and rolling a 4",
+          "answer": "No"
+        },
+        {
+          "id": "c",
+          "expression": "Rolling odd and rolling greater than 5",
+          "answer": "No"
+        },
+        {
+          "id": "d",
+          "expression": "Rolling a 1 and rolling greater than 4",
+          "answer": "Yes"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Addition rule",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use P(A or B) = P(A) + P(B) for these ME events.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(1 or 6) on a die",
+          "answer": "&frac{1}{3}"
+        },
+        {
+          "id": "b",
+          "expression": "P(red or blue) from 5 red, 3 blue, 2 green",
+          "answer": "&frac{4}{5}"
+        },
+        {
+          "id": "c",
+          "expression": "P(vowel or Z) from 26 letters",
+          "answer": "&frac{6}{26}"
+        },
+        {
+          "id": "d",
+          "expression": "P(2 or 3 or 4) on a die",
+          "answer": "&frac{1}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Not mutually exclusive",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find P(A or B) when the events are NOT mutually exclusive.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(even or >3) on a die",
+          "answer": "&frac{2}{3}"
+        },
+        {
+          "id": "b",
+          "expression": "P(heart or king) from a deck of 52",
+          "answer": "&frac{4}{13}"
+        },
+        {
+          "id": "c",
+          "expression": "P(prime or odd) from 1-10",
+          "answer": "&frac{3}{5}"
+        },
+        {
+          "id": "d",
+          "expression": "P(multiple of 2 or 3) from 1-12",
+          "answer": "&frac{2}{3}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Word problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(rain) = 0.3, P(snow) = 0.1 (ME). P(rain or snow)?",
+          "answer": "0.4"
+        },
+        {
+          "id": "b",
+          "expression": "P(bus) = 0.45, P(train) = 0.3, P(walk) = 0.25 (ME). P(not walk)?",
+          "answer": "0.75"
+        },
+        {
+          "id": "c",
+          "expression": "P(A) = 0.2, P(B) = 0.5, A and B are ME. P(neither)?",
+          "answer": "0.3"
+        },
+        {
+          "id": "d",
+          "expression": "A spinner: P(1) = 0.1, P(2) = 0.3, P(3) = 0.4. P(4)?",
+          "answer": "0.2"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Determine if events are ME and find the required probability.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Die: P(prime or even)",
+          "answer": "&frac{5}{6}"
+        },
+        {
+          "id": "b",
+          "expression": "Cards: P(ace or king)",
+          "answer": "&frac{2}{13}"
+        },
+        {
+          "id": "c",
+          "expression": "Spinner 1-8: P(odd or multiple of 4)",
+          "answer": "&frac{3}{4}"
+        },
+        {
+          "id": "d",
+          "expression": "Bag: 4R, 3B, 3G. P(not green)",
+          "answer": "&frac{7}{10}"
+        },
+        {
+          "id": "e",
+          "expression": "P(A) + P(B) + P(C) = 1, P(A) = 0.45, P(B) = 0.3. Find P(C).",
+          "answer": "0.25"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Mutually exclusive events cannot happen at the same time",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Rolling a 4 and rolling an even number are mutually exclusive",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "For ME events, P(A or B) = P(A) + P(B)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "All probabilities in a sample space must add up to 2",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "If P(A and B) = 0, then A and B are mutually exclusive",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A spinner has 5 colours. P(red) = 0.2, P(blue) = 0.15, P(green) = 0.3, P(yellow) = 0.25. Find P(purple). Then find P(red or blue or purple). Are red and purple mutually exclusive? Explain."
+      },
+      {
+        "id": "b",
+        "text": "A card is drawn from a standard <strong>52-card deck</strong>. Explain why 'drawing a heart' and 'drawing a king' are NOT mutually exclusive. Calculate P(heart or king) using the addition rule for non-ME events."
+      }
+    ]
+  }
+}

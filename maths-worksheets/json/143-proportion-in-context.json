@@ -1,0 +1,325 @@
+{
+  "title": "PROPORTION,\n(PROPORTION IN CONTEXT)",
+  "objective": "LO: I can solve real-world problems involving proportion including recipes, maps and scale.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Proportion in real life",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Proportion</span> in context means using <span class=\"ul-k\">scaling</span> to solve everyday problems: adapting recipes, reading maps, converting currencies, or comparing rates."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Method:</span> Find the value of one unit (unitary method), then multiply to find the amount needed."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Recipe for 4: use &frac{1}{4} amounts for 1 person",
+          "desc": "unitary method"
+        },
+        {
+          "correct": true,
+          "expr": "Map 1:50,000 means 1 cm = 500 m",
+          "desc": "scale conversion"
+        },
+        {
+          "correct": true,
+          "expr": "&pound;1 = &euro;1.15; &pound;80 = &euro;92",
+          "desc": "currency conversion"
+        },
+        {
+          "correct": false,
+          "expr": "1:25,000 means 1 cm = 25 km",
+          "desc": "1 cm = 25,000 cm = 250 m"
+        },
+        {
+          "correct": false,
+          "expr": "Double recipe for 4 gives recipe for 6",
+          "desc": "doubling gives 8"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Find the value of 1 unit first (divide), then scale up to the amount needed (multiply).",
+      "equation": "For 1: <span class=\"ov\">total &divide; n</span> | For m: <span class=\"ovr\">&times; m</span>",
+      "caption": "Unitary method: divide then multiply"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; scaling a recipe",
+      "question": "A recipe for 6 people needs 300 g flour. How much for 10 people?",
+      "steps": [
+        "For 1 person: 300 &divide; 6 = 50 g",
+        "For 10 people: 50 &times; 10",
+        "= 500 g"
+      ],
+      "answer": "500 g",
+      "explanation": "Find the amount per person, then multiply by the new number."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; map scales",
+      "question": "A map has scale 1:25,000. Two towns are 8 cm apart on the map. Find the real distance.",
+      "steps": [
+        "1 cm = 25,000 cm",
+        "8 cm = 8 &times; 25,000 = 200,000 cm",
+        "200,000 cm = 2000 m = 2 km"
+      ],
+      "answer": "2 km",
+      "explanation": "Multiply the map distance by the scale factor, then convert units."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; currency conversion",
+      "question": "&pound;1 = &euro;1.12. Convert &pound;65 to euros.",
+      "steps": [
+        "&pound;1 = &euro;1.12",
+        "&pound;65 = 65 &times; 1.12",
+        "= &euro;72.80"
+      ],
+      "answer": "&euro;72.80",
+      "explanation": "Multiply the amount by the exchange rate."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; best buy",
+      "question": "Pack A: 500 g for &pound;1.80. Pack B: 750 g for &pound;2.55. Which is better value?",
+      "steps": [
+        "A: &pound;1.80 &divide; 500 = 0.36p per gram",
+        "B: &pound;2.55 &divide; 750 = 0.34p per gram",
+        "Pack B is cheaper per gram"
+      ],
+      "answer": "Pack B is better value",
+      "explanation": "Compare price per unit (per gram or per ml)."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Scaling recipes",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "A recipe for 4 people needs: 200 g butter, 150 g sugar, 3 eggs, 250 g flour. Find amounts for:",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2 people",
+          "answer": "100g, 75g, 1.5, 125g"
+        },
+        {
+          "id": "b",
+          "expression": "6 people",
+          "answer": "300g, 225g, 4.5, 375g"
+        },
+        {
+          "id": "c",
+          "expression": "10 people",
+          "answer": "500g, 375g, 7.5, 625g"
+        },
+        {
+          "id": "d",
+          "expression": "1 person",
+          "answer": "50g, 37.5g, 0.75, 62.5g"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Map scales",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "A map has scale 1:50,000. Find the real distance for each map measurement.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3 cm",
+          "answer": "1.5 km"
+        },
+        {
+          "id": "b",
+          "expression": "7 cm",
+          "answer": "3.5 km"
+        },
+        {
+          "id": "c",
+          "expression": "12 cm",
+          "answer": "6 km"
+        },
+        {
+          "id": "d",
+          "expression": "0.5 cm",
+          "answer": "250 m"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Currency conversion",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "&pound;1 = $1.25. Convert each amount.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;40 to dollars",
+          "answer": "$50"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;120 to dollars",
+          "answer": "$150"
+        },
+        {
+          "id": "c",
+          "expression": "$75 to pounds",
+          "answer": "&pound;60"
+        },
+        {
+          "id": "d",
+          "expression": "$200 to pounds",
+          "answer": "&pound;160"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Best value",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the price per unit and state which is better value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "500 ml for &pound;1.20 or 750 ml for &pound;1.65",
+          "answer": "750 ml (0.22p/ml vs 0.24p/ml)"
+        },
+        {
+          "id": "b",
+          "expression": "6-pack for &pound;3.60 or 10-pack for &pound;5.50",
+          "answer": "6-pack (60p each vs 55p each) - 10-pack is better"
+        },
+        {
+          "id": "c",
+          "expression": "400 g for &pound;2.80 or 1 kg for &pound;6.50",
+          "answer": "400 g (0.7p/g vs 0.65p/g) - 1 kg is better"
+        },
+        {
+          "id": "d",
+          "expression": "2 litres for &pound;1.50 or 3 litres for &pound;2.10",
+          "answer": "3 litres (70p/L vs 75p/L)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed proportion problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each real-world proportion problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A car uses 6 litres per 100 km. Fuel for 350 km?",
+          "answer": "21 litres"
+        },
+        {
+          "id": "b",
+          "expression": "Map 1:200,000. Real distance 15 km. Map distance?",
+          "answer": "7.5 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Recipe for 8: 400 g. Amount for 5?",
+          "answer": "250 g"
+        },
+        {
+          "id": "d",
+          "expression": "&euro;1 = &pound;0.87. Convert &euro;50.",
+          "answer": "&pound;43.50"
+        },
+        {
+          "id": "e",
+          "expression": "3 painters take 8 hours. How long for 4 painters?",
+          "answer": "6 hours"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "The unitary method finds the value of 1 unit first",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "A scale of 1:50,000 means 1 cm represents 50 km",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "To compare value, find price per unit",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Doubling a recipe for 4 gives enough for 6",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Map scale 1:25,000 means 1 cm = 250 m",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A recipe for <strong>12 cupcakes</strong> uses 225 g flour, 175 g sugar and 200 ml milk. You want to make <strong>30 cupcakes</strong> but only have <strong>500 g flour</strong>. Is that enough? What is the maximum number you can make with 500 g flour?"
+      },
+      {
+        "id": "b",
+        "text": "A model car is built to a scale of <strong>1:18</strong>. The real car is <strong>4.5 m long</strong> and <strong>1.8 m wide</strong>. Find the model dimensions. If the model weighs <strong>1.2 kg</strong>, can you determine the real car's weight from this information alone? Explain."
+      }
+    ]
+  }
+}

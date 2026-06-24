@@ -1,0 +1,325 @@
+{
+  "title": "RATIO,\n(BEST VALUE PROBLEMS)",
+  "objective": "LO: I can compare products using unit pricing to determine the best value.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Best value",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">best value</span> problem asks you to compare products by finding the <span class=\"ul-k\">price per unit</span> (per gram, per ml, per item) or the <span class=\"ul-k\">amount per pound</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Method:</span> Divide the price by the quantity (or vice versa) to find a common rate for comparison."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "500 g for &pound;2.00 = 0.4p/g",
+          "desc": "price per gram"
+        },
+        {
+          "correct": true,
+          "expr": "750 ml for &pound;1.50 = 0.2p/ml",
+          "desc": "price per ml"
+        },
+        {
+          "correct": true,
+          "expr": "Lower price per unit = better value",
+          "desc": "compare rates"
+        },
+        {
+          "correct": false,
+          "expr": "Bigger pack is always better value",
+          "desc": "not always true"
+        },
+        {
+          "correct": false,
+          "expr": "Cheapest total price = best value",
+          "desc": "must compare per unit"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Best value = lowest price per unit. Divide price by quantity to compare.",
+      "equation": "Price per unit = <span class=\"ov\">Price</span> &divide; <span class=\"ovr\">Quantity</span>",
+      "caption": "The lowest rate is the best deal"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; price per gram",
+      "question": "Pack A: 400 g for &pound;2.80. Pack B: 600 g for &pound;3.90. Which is better value?",
+      "steps": [
+        "A: 280p &divide; 400 = 0.70p per gram",
+        "B: 390p &divide; 600 = 0.65p per gram",
+        "Pack B is cheaper per gram"
+      ],
+      "answer": "Pack B (0.65p/g vs 0.70p/g)",
+      "explanation": "Compare the price per gram to find the best deal."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; price per item",
+      "question": "6-pack of juice for &pound;2.70 or 10-pack for &pound;4.20. Best value?",
+      "steps": [
+        "6-pack: 270p &divide; 6 = 45p each",
+        "10-pack: 420p &divide; 10 = 42p each",
+        "10-pack is better value"
+      ],
+      "answer": "10-pack (42p vs 45p each)",
+      "explanation": "Divide total price by number of items."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; amount per pound",
+      "question": "Shop A: 250 g of cheese for &pound;2.50. Shop B: 300 g for &pound;2.70.",
+      "steps": [
+        "A: 250 &divide; 2.50 = 100 g per pound",
+        "B: 300 &divide; 2.70 = 111.1 g per pound",
+        "Shop B gives more per pound"
+      ],
+      "answer": "Shop B (111 g/&pound; vs 100 g/&pound;)",
+      "explanation": "You can also compare grams per pound."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; with offers",
+      "question": "Normal: &pound;1.50 for 330 ml. Offer: 3 for &pound;4.00 (330 ml each). Better value?",
+      "steps": [
+        "Normal: 150p &divide; 330 = 0.45p/ml",
+        "Offer: 400p &divide; 990 = 0.40p/ml",
+        "Offer is better value"
+      ],
+      "answer": "Offer is better (0.40p/ml vs 0.45p/ml)",
+      "explanation": "Calculate the total volume in the offer, then find price per ml."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Price per gram",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the price per gram and state which is better value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "200 g for &pound;1.60 or 350 g for &pound;2.45",
+          "answer": "350g (0.7p/g vs 0.8p/g)"
+        },
+        {
+          "id": "b",
+          "expression": "500 g for &pound;3.00 or 1.2 kg for &pound;6.60",
+          "answer": "1.2 kg (0.55p/g vs 0.6p/g)"
+        },
+        {
+          "id": "c",
+          "expression": "150 g for &pound;1.80 or 400 g for &pound;4.40",
+          "answer": "150 g (1.2p/g vs 1.1p/g) - 400g is better"
+        },
+        {
+          "id": "d",
+          "expression": "750 g for &pound;4.50 or 1 kg for &pound;5.80",
+          "answer": "1 kg (0.58p/g vs 0.6p/g)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Price per ml or litre",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the price per ml and state which is better value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "500 ml for &pound;1.20 or 1.5 L for &pound;3.00",
+          "answer": "500 ml (0.24p/ml vs 0.2p/ml) - 1.5L better"
+        },
+        {
+          "id": "b",
+          "expression": "330 ml for &pound;0.89 or 2 L for &pound;4.50",
+          "answer": "330 ml (0.27p/ml vs 0.225p/ml) - 2L better"
+        },
+        {
+          "id": "c",
+          "expression": "750 ml for &pound;1.95 or 1 L for &pound;2.40",
+          "answer": "1L (0.24p/ml vs 0.26p/ml)"
+        },
+        {
+          "id": "d",
+          "expression": "250 ml for &pound;0.75 or 400 ml for &pound;1.08",
+          "answer": "400 ml (0.27p/ml vs 0.3p/ml)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Price per item",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the price per item.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4-pack for &pound;3.20 or 6-pack for &pound;4.50",
+          "answer": "6-pack (75p vs 80p)"
+        },
+        {
+          "id": "b",
+          "expression": "8 rolls for &pound;3.60 or 12 rolls for &pound;4.80",
+          "answer": "12 rolls (40p vs 45p)"
+        },
+        {
+          "id": "c",
+          "expression": "Box of 10 for &pound;5.50 or box of 15 for &pound;7.80",
+          "answer": "15-box (52p vs 55p)"
+        },
+        {
+          "id": "d",
+          "expression": "3 for &pound;2.25 or 5 for &pound;3.50",
+          "answer": "5 for &pound;3.50 (70p vs 75p)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "With special offers",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Compare the standard price with the offer.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&pound;2.00 each or 3 for &pound;5.00",
+          "answer": "3 for &pound;5 (&pound;1.67 vs &pound;2.00)"
+        },
+        {
+          "id": "b",
+          "expression": "&pound;1.50 for 500 ml or buy 2 get 1 free at &pound;1.50",
+          "answer": "Offer (500 ml for &pound;1 vs &pound;1.50)"
+        },
+        {
+          "id": "c",
+          "expression": "&pound;3.00 for 400 g or 25% extra free (500 g) for &pound;3.00",
+          "answer": "25% extra (0.6p/g vs 0.75p/g)"
+        },
+        {
+          "id": "d",
+          "expression": "&pound;4.50 for 6 or &pound;8.00 for 12",
+          "answer": "12-pack (67p vs 75p)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed best-value problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Juice: 1 L for &pound;1.10 or 1.5 L for &pound;1.50",
+          "answer": "1.5 L (0.1p/ml vs 0.11p/ml)"
+        },
+        {
+          "id": "b",
+          "expression": "Cereal: 500 g for &pound;2.49 or 750 g for &pound;3.49",
+          "answer": "750g (0.465p/g vs 0.498p/g)"
+        },
+        {
+          "id": "c",
+          "expression": "Petrol: 40 L for &pound;58 or 35 L for &pound;52.50",
+          "answer": "40L (&pound;1.45/L vs &pound;1.50/L)"
+        },
+        {
+          "id": "d",
+          "expression": "Tiles: 20 for &pound;18 or 50 for &pound;42",
+          "answer": "50 tiles (84p vs 90p each)"
+        },
+        {
+          "id": "e",
+          "expression": "Internet: &pound;25/month for 50 GB or &pound;35/month for 100 GB",
+          "answer": "&pound;35 (35p/GB vs 50p/GB)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Best value means lowest price per unit",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The cheapest total price is always the best value",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "To compare, find price &divide; quantity for each",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Bigger packs are always better value",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "You can compare grams per pound or price per gram",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A supermarket sells orange juice in 3 sizes: <strong>Small 330 ml &pound;0.85</strong>, <strong>Medium 1 L &pound;2.20</strong>, <strong>Large 2 L &pound;3.90</strong>. Which is the best value? A family needs 4 L per week. What is the cheapest combination?"
+      },
+      {
+        "id": "b",
+        "text": "Brand A washing powder costs <strong>&pound;4.50 for 30 washes</strong>. Brand B costs <strong>&pound;7.20 for 50 washes</strong>. Brand A has an offer: buy 2 get 1 free. Which is the cheapest per wash with the offer applied?"
+      }
+    ]
+  }
+}

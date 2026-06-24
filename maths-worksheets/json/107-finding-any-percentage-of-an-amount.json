@@ -1,0 +1,325 @@
+{
+  "title": "PERCENTAGES OF AMOUNTS,\n(FINDING ANY PERCENTAGE OF AN AMOUNT)",
+  "objective": "LO: I can find any percentage of an amount using appropriate methods.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Methods for finding percentages",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To find <span class=\"ul-b\">any percentage</span> of an amount, you can use the <span class=\"ul-k\">decimal method</span> (convert % to a decimal and multiply) or the <span class=\"ul-k\">building-up method</span> (use 10%, 5%, 1% blocks)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Calculator method:</span> amount &times; percentage &divide; 100. Or simply amount &times; decimal."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "23% of 400 = 400 &times; 0.23 = 92",
+          "desc": "decimal method"
+        },
+        {
+          "correct": true,
+          "expr": "17% of 300 = 30 + 21 = 51",
+          "desc": "10% + 7%"
+        },
+        {
+          "correct": true,
+          "expr": "8.5% of 200 = 17",
+          "desc": "200 &times; 0.085"
+        },
+        {
+          "correct": false,
+          "expr": "23% of 400 = 23 &times; 4 = 92 but method was % &divide; amount",
+          "desc": "method matters"
+        },
+        {
+          "correct": false,
+          "expr": "0.7% of 1000 = 70",
+          "desc": "0.7% = 0.007, answer is 7"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Convert the percentage to a decimal by dividing by 100, then multiply by the amount.",
+      "equation": "<span class=\"ov\">23%</span> of 400 = 0.23 &times; 400 = <span class=\"ovr\">92</span>",
+      "caption": "Percentage &divide; 100 = decimal multiplier"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; decimal method",
+      "question": "Find 34% of &pound;650.",
+      "steps": [
+        "Convert: 34% = 0.34",
+        "650 &times; 0.34",
+        "= &pound;221"
+      ],
+      "answer": "&pound;221",
+      "explanation": "Convert the percentage to a decimal and multiply."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; building-up method",
+      "question": "Find 17% of &pound;400.",
+      "steps": [
+        "10% of 400 = 40",
+        "5% = 20; 2% = 8",
+        "17% = 40 + 20 + 8 &minus; 12... Actually: 10% + 5% + 2% = 40 + 20 + 8 = 68"
+      ],
+      "answer": "&pound;68",
+      "explanation": "Build percentages from 10%, 5%, and 1% blocks."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; small percentage",
+      "question": "Find 3.5% of &pound;2000.",
+      "steps": [
+        "1% of 2000 = 20",
+        "3% = 60; 0.5% = 10",
+        "3.5% = 60 + 10 = &pound;70"
+      ],
+      "answer": "&pound;70",
+      "explanation": "For decimal percentages, use 1% and halves as building blocks."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; in context",
+      "question": "A bank charges 2.8% interest on a &pound;5000 loan. Find the annual interest.",
+      "steps": [
+        "Convert: 2.8% = 0.028",
+        "5000 &times; 0.028",
+        "= &pound;140"
+      ],
+      "answer": "&pound;140",
+      "explanation": "Always multiply by the decimal equivalent of the percentage."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Decimal method",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the decimal method to find each percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "14% of &pound;300",
+          "answer": "&pound;42"
+        },
+        {
+          "id": "b",
+          "expression": "23% of &pound;500",
+          "answer": "&pound;115"
+        },
+        {
+          "id": "c",
+          "expression": "37% of &pound;200",
+          "answer": "&pound;74"
+        },
+        {
+          "id": "d",
+          "expression": "9% of &pound;450",
+          "answer": "&pound;40.50"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Building-up method",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use 10%, 5% and 1% to calculate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "16% of &pound;400",
+          "answer": "&pound;64"
+        },
+        {
+          "id": "b",
+          "expression": "21% of &pound;300",
+          "answer": "&pound;63"
+        },
+        {
+          "id": "c",
+          "expression": "35% of &pound;180",
+          "answer": "&pound;63"
+        },
+        {
+          "id": "d",
+          "expression": "12% of &pound;550",
+          "answer": "&pound;66"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Decimal percentages",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find each percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2.5% of &pound;800",
+          "answer": "&pound;20"
+        },
+        {
+          "id": "b",
+          "expression": "7.5% of &pound;240",
+          "answer": "&pound;18"
+        },
+        {
+          "id": "c",
+          "expression": "0.5% of &pound;6000",
+          "answer": "&pound;30"
+        },
+        {
+          "id": "d",
+          "expression": "4.5% of &pound;1000",
+          "answer": "&pound;45"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Larger amounts",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Calculate each percentage.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "18% of &pound;3500",
+          "answer": "&pound;630"
+        },
+        {
+          "id": "b",
+          "expression": "6% of &pound;12,000",
+          "answer": "&pound;720"
+        },
+        {
+          "id": "c",
+          "expression": "22% of &pound;4500",
+          "answer": "&pound;990"
+        },
+        {
+          "id": "d",
+          "expression": "3% of &pound;25,000",
+          "answer": "&pound;750"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Real-world problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A &pound;680 TV has 12% off. Find the discount.",
+          "answer": "&pound;81.60"
+        },
+        {
+          "id": "b",
+          "expression": "Commission is 3.5% of &pound;8000 sales. Find the commission.",
+          "answer": "&pound;280"
+        },
+        {
+          "id": "c",
+          "expression": "Tax is 19% on &pound;42,000 income. Find the tax.",
+          "answer": "&pound;7980"
+        },
+        {
+          "id": "d",
+          "expression": "A 7% tip on a &pound;55 meal.",
+          "answer": "&pound;3.85"
+        },
+        {
+          "id": "e",
+          "expression": "Insurance is 4.2% of a &pound;15,000 car value.",
+          "answer": "&pound;630"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To find 23% of a number, multiply by 0.23",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "0.5% of 1000 = 50",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "17% can be found as 10% + 5% + 2%",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "8% as a decimal is 0.8",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Finding 1% means dividing by 100",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A company makes <strong>&pound;84,000</strong> profit. They pay <strong>19% corporation tax</strong>, then distribute <strong>35%</strong> of the remaining profit as dividends. How much is paid in dividends?"
+      },
+      {
+        "id": "b",
+        "text": "Three shops sell the same TV. Shop A: <strong>&pound;600 with 15% off</strong>. Shop B: <strong>&pound;550 with 8% off</strong>. Shop C: <strong>&pound;520 with 2% off</strong>. Which shop offers the best deal?"
+      }
+    ]
+  }
+}

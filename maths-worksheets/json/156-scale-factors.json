@@ -1,0 +1,325 @@
+{
+  "title": "RATIO AND PROPORTION,\n(SCALE FACTORS)",
+  "objective": "LO: I can use scale factors to find missing lengths in similar shapes and on maps.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Scale factors",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">scale factor</span> is the number you multiply by to enlarge or reduce a shape. It is the <span class=\"ul-k\">ratio of corresponding lengths</span> between two similar shapes."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Finding it:</span> Scale factor = new length &divide; original length. If SF > 1, the shape is enlarged. If SF < 1, it is reduced."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "SF = new &divide; original = 12 &divide; 4 = 3",
+          "desc": "enlarged by 3"
+        },
+        {
+          "correct": true,
+          "expr": "Missing length = original &times; SF",
+          "desc": "multiply to find new"
+        },
+        {
+          "correct": true,
+          "expr": "Area SF = (length SF)&sup2;",
+          "desc": "area scales by square"
+        },
+        {
+          "correct": false,
+          "expr": "SF 2 means add 2 to each side",
+          "desc": "multiply, not add"
+        },
+        {
+          "correct": false,
+          "expr": "SF for area is same as for length",
+          "desc": "area uses SF&sup2;"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Scale factor = new &divide; original. Multiply any original length by the SF to get the new length.",
+      "equation": "SF = <span class=\"ov\">new</span> &divide; <span class=\"ovr\">original</span>",
+      "caption": "For area: &times; SF&sup2;. For volume: &times; SF&sup3;."
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; finding scale factor",
+      "question": "Triangle A has sides 3, 4, 5 cm. Triangle B has sides 9, 12, 15 cm. Find the scale factor.",
+      "steps": [
+        "SF = 9 &divide; 3 = 3",
+        "Check: 12 &divide; 4 = 3 &check;; 15 &divide; 5 = 3 &check;",
+        "Scale factor = 3"
+      ],
+      "answer": "Scale factor = 3",
+      "explanation": "Divide any corresponding pair of sides."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding missing length",
+      "question": "Two similar rectangles. First: 5 cm by 8 cm. Second: 15 cm by ? cm.",
+      "steps": [
+        "SF = 15 &divide; 5 = 3",
+        "Missing length = 8 &times; 3",
+        "= 24 cm"
+      ],
+      "answer": "24 cm",
+      "explanation": "Find the SF from known corresponding sides, then multiply."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; map scale",
+      "question": "A map uses scale 1:50,000. A park is 4 cm on the map. Find real length.",
+      "steps": [
+        "1 cm = 50,000 cm = 500 m",
+        "4 cm = 4 &times; 500",
+        "= 2000 m = 2 km"
+      ],
+      "answer": "2 km",
+      "explanation": "Multiply the map measurement by the scale factor."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; area and scale factor",
+      "question": "Two similar shapes have SF = 2. Small shape area = 15 cm&sup2;. Find larger area.",
+      "steps": [
+        "Area SF = 2&sup2; = 4",
+        "Larger area = 15 &times; 4",
+        "= 60 cm&sup2;"
+      ],
+      "answer": "60 cm&sup2;",
+      "explanation": "Area scales by the square of the linear scale factor."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding scale factors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the scale factor from shape A to shape B.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A: 4 cm, B: 12 cm",
+          "answer": "SF = 3"
+        },
+        {
+          "id": "b",
+          "expression": "A: 10 cm, B: 25 cm",
+          "answer": "SF = 2.5"
+        },
+        {
+          "id": "c",
+          "expression": "A: 6 cm, B: 2 cm",
+          "answer": "SF = &frac{1}{3}"
+        },
+        {
+          "id": "d",
+          "expression": "A: 8 cm, B: 20 cm",
+          "answer": "SF = 2.5"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding missing lengths",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Use the scale factor to find the missing length.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "SF = 4. Original = 3 cm. New?",
+          "answer": "12 cm"
+        },
+        {
+          "id": "b",
+          "expression": "SF = 2. Original = 7 cm. New?",
+          "answer": "14 cm"
+        },
+        {
+          "id": "c",
+          "expression": "SF = &frac{1}{2}. Original = 16 cm. New?",
+          "answer": "8 cm"
+        },
+        {
+          "id": "d",
+          "expression": "SF = 3. New = 21 cm. Original?",
+          "answer": "7 cm"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Similar shapes",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the missing side in each pair of similar shapes.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Triangles: 5, 12, 13 and 10, 24, ?",
+          "answer": "26"
+        },
+        {
+          "id": "b",
+          "expression": "Rectangles: 4 by 7 and 12 by ?",
+          "answer": "21"
+        },
+        {
+          "id": "c",
+          "expression": "Triangles: 6, 8, 10 and ?, 4, 5",
+          "answer": "3"
+        },
+        {
+          "id": "d",
+          "expression": "Rectangles: 9 by 15 and 6 by ?",
+          "answer": "10"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Maps and models",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use the given scale to find real or map distances.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1:25,000. Map = 6 cm. Real?",
+          "answer": "1.5 km"
+        },
+        {
+          "id": "b",
+          "expression": "1:50,000. Real = 3 km. Map?",
+          "answer": "6 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Model 1:100. Real building = 45 m. Model?",
+          "answer": "45 cm"
+        },
+        {
+          "id": "d",
+          "expression": "1:200,000. Map = 4.5 cm. Real?",
+          "answer": "9 km"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Area and volume scale factors",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find areas or volumes using scale factors.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Length SF = 3. Area of small = 8 cm&sup2;. Large area?",
+          "answer": "72 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "Length SF = 2. Volume of small = 10 cm&sup3;. Large volume?",
+          "answer": "80 cm&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "Areas: 9 cm&sup2; and 81 cm&sup2;. Length SF?",
+          "answer": "3"
+        },
+        {
+          "id": "d",
+          "expression": "Volumes: 27 cm&sup3; and 216 cm&sup3;. Length SF?",
+          "answer": "2"
+        },
+        {
+          "id": "e",
+          "expression": "Length SF = 4. Large area = 320 cm&sup2;. Small area?",
+          "answer": "20 cm&sup2;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Scale factor = new length &divide; original length",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "A scale factor of 2 means add 2 to each length",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Area scale factor = (length scale factor)&sup2;",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "If the scale factor is &frac{1}{3}, the shape gets bigger",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Volume scale factor = (length scale factor)&sup3;",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Two similar cylinders have heights in ratio <strong>2:5</strong>. The smaller has volume <strong>80 cm&sup3;</strong>. Find the volume of the larger cylinder."
+      },
+      {
+        "id": "b",
+        "text": "On a map of scale <strong>1:40,000</strong>, a lake has area <strong>3.2 cm&sup2;</strong>. Find the real area in m&sup2; and km&sup2;."
+      }
+    ]
+  }
+}

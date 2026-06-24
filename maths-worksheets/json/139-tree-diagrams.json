@@ -1,0 +1,325 @@
+{
+  "title": "PROBABILITY,\n(TREE DIAGRAMS)",
+  "objective": "LO: I can use tree diagrams to find probabilities of combined events.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Tree diagrams",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">tree diagram</span> shows all possible outcomes of two or more events. Each <span class=\"ul-k\">branch</span> represents one outcome and is labelled with its probability."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Rules:</span> Multiply along branches (AND). Add between paths (OR). Branches from one point always sum to 1."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "P(A and B) = P(A) &times; P(B)",
+          "desc": "multiply along branches"
+        },
+        {
+          "correct": true,
+          "expr": "P(A or B) = add separate paths",
+          "desc": "add outcomes"
+        },
+        {
+          "correct": true,
+          "expr": "Branches from a node sum to 1",
+          "desc": "all possibilities covered"
+        },
+        {
+          "correct": false,
+          "expr": "P(A and B) = P(A) + P(B)",
+          "desc": "should multiply for AND"
+        },
+        {
+          "correct": false,
+          "expr": "Each branch has probability &frac{1}{2}",
+          "desc": "only if equally likely"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply along branches for combined events. Add between separate paths for 'or' questions.",
+      "equation": "P(A then B) = <span class=\"ov\">P(A)</span> &times; <span class=\"ovr\">P(B)</span>",
+      "caption": "AND = multiply; OR = add"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; two coins",
+      "question": "A coin is flipped twice. Find P(two heads).",
+      "steps": [
+        "P(H) = &frac{1}{2} for each flip",
+        "P(HH) = &frac{1}{2} &times; &frac{1}{2}",
+        "= &frac{1}{4}"
+      ],
+      "answer": "P(two heads) = &frac{1}{4}",
+      "explanation": "Multiply along the HH branch."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; with replacement",
+      "question": "A bag has 3 red, 2 blue counters. One is drawn, replaced, then another drawn. Find P(both red).",
+      "steps": [
+        "P(red) = &frac{3}{5} each time (replaced)",
+        "P(RR) = &frac{3}{5} &times; &frac{3}{5}",
+        "= &frac{9}{25}"
+      ],
+      "answer": "P(both red) = &frac{9}{25}",
+      "explanation": "With replacement, probabilities stay the same."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; without replacement",
+      "question": "Same bag (3R, 2B). Without replacement, find P(both red).",
+      "steps": [
+        "First pick: P(R) = &frac{3}{5}",
+        "Second pick (one red gone): P(R) = &frac{2}{4} = &frac{1}{2}",
+        "P(RR) = &frac{3}{5} &times; &frac{1}{2} = &frac{3}{10}"
+      ],
+      "answer": "P(both red) = &frac{3}{10}",
+      "explanation": "Without replacement, the second probability changes."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; at least one",
+      "question": "Two coins are flipped. Find P(at least one head).",
+      "steps": [
+        "P(no heads) = P(TT) = &frac{1}{2} &times; &frac{1}{2} = &frac{1}{4}",
+        "P(at least one H) = 1 &minus; P(TT)",
+        "= 1 &minus; &frac{1}{4} = &frac{3}{4}"
+      ],
+      "answer": "P(at least one head) = &frac{3}{4}",
+      "explanation": "Use the complement: 1 &minus; P(none)."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Independent events",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "A coin is flipped and a die is rolled. Find each probability.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(head and 6)",
+          "answer": "&frac{1}{12}"
+        },
+        {
+          "id": "b",
+          "expression": "P(tail and even)",
+          "answer": "&frac{1}{4}"
+        },
+        {
+          "id": "c",
+          "expression": "P(head and prime)",
+          "answer": "&frac{1}{4}"
+        },
+        {
+          "id": "d",
+          "expression": "P(tail and greater than 4)",
+          "answer": "&frac{1}{6}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "With replacement",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Bag: 4 red, 6 blue. Draw one, replace, draw another.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(red, red)",
+          "answer": "&frac{4}{25}"
+        },
+        {
+          "id": "b",
+          "expression": "P(blue, blue)",
+          "answer": "&frac{9}{25}"
+        },
+        {
+          "id": "c",
+          "expression": "P(red, blue)",
+          "answer": "&frac{6}{25}"
+        },
+        {
+          "id": "d",
+          "expression": "P(same colour)",
+          "answer": "&frac{13}{25}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Without replacement",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Bag: 5 red, 3 blue. Draw two without replacement.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(red, red)",
+          "answer": "&frac{5}{14}"
+        },
+        {
+          "id": "b",
+          "expression": "P(blue, blue)",
+          "answer": "&frac{3}{28}"
+        },
+        {
+          "id": "c",
+          "expression": "P(red then blue)",
+          "answer": "&frac{15}{56}"
+        },
+        {
+          "id": "d",
+          "expression": "P(different colours)",
+          "answer": "&frac{15}{28}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "At least one",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use P(at least one) = 1 &minus; P(none).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Two coins: P(at least one tail)",
+          "answer": "&frac{3}{4}"
+        },
+        {
+          "id": "b",
+          "expression": "Two dice: P(at least one 6)",
+          "answer": "&frac{11}{36}"
+        },
+        {
+          "id": "c",
+          "expression": "P(rain) = 0.3 each day, 2 days: P(at least one rainy day)",
+          "answer": "0.51"
+        },
+        {
+          "id": "d",
+          "expression": "Three coins: P(at least one head)",
+          "answer": "&frac{7}{8}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed tree diagram problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem using a tree diagram.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(win) = 0.6. Two games. P(win both)?",
+          "answer": "0.36"
+        },
+        {
+          "id": "b",
+          "expression": "Bag: 2R, 3B. Two draws without replacement. P(one of each colour)?",
+          "answer": "&frac{3}{5}"
+        },
+        {
+          "id": "c",
+          "expression": "P(bus late) = 0.2. Mon and Tue. P(late at least once)?",
+          "answer": "0.36"
+        },
+        {
+          "id": "d",
+          "expression": "Spinner: P(red) = &frac{1}{3}. Spun twice. P(no reds)?",
+          "answer": "&frac{4}{9}"
+        },
+        {
+          "id": "e",
+          "expression": "Coin and spinner (1,2,3,4). P(head and even)?",
+          "answer": "&frac{1}{4}"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "For combined events, multiply along branches",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "P(A and B) = P(A) + P(B)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Without replacement, the probabilities change for the second pick",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Branches from one node always add to more than 1",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "P(at least one) = 1 &minus; P(none)",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A bag contains <strong>4 red and 6 blue</strong> balls. Two balls are drawn without replacement. Draw a complete tree diagram and find the probability of getting <strong>exactly one red</strong> ball."
+      },
+      {
+        "id": "b",
+        "text": "The probability that a bus is late is <strong>0.15</strong>. On three consecutive days, find the probability that the bus is late on <strong>exactly two</strong> of the three days."
+      }
+    ]
+  }
+}

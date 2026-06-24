@@ -1,0 +1,325 @@
+{
+  "title": "PROBABILITY,\n(CONDITIONAL PROBABILITY AND VENN DIAGRAMS)",
+  "objective": "LO: I can use Venn diagrams to find conditional probabilities.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Conditional probability",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Conditional probability</span> is the probability of an event occurring <span class=\"ul-k\">given that</span> another event has already occurred. Written P(A|B) meaning 'probability of A given B'."
+        },
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">Venn diagram</span> shows overlapping sets. The <span class=\"ul-k\">intersection</span> shows elements in both sets."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Reading Venn diagrams",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "P(A|B) = P(A and B) &divide; P(B)",
+          "desc": "conditional formula"
+        },
+        {
+          "correct": true,
+          "expr": "Intersection = elements in BOTH sets",
+          "desc": "overlap region"
+        },
+        {
+          "correct": true,
+          "expr": "P(A or B) = P(A) + P(B) &minus; P(A and B)",
+          "desc": "addition rule"
+        },
+        {
+          "correct": false,
+          "expr": "P(A|B) = P(A) &times; P(B)",
+          "desc": "that is for independent events only"
+        },
+        {
+          "correct": false,
+          "expr": "Union means elements in both",
+          "desc": "union means in A OR B or both"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "P(A|B) means restrict to only those outcomes in B, then find how many are also in A.",
+      "equation": "P(A|B) = <span class=\"ov\">n(A &cap; B)</span> &divide; <span class=\"ovr\">n(B)</span>",
+      "caption": "Restrict the sample space to B"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; from a Venn diagram",
+      "question": "In a class: 12 play football, 8 play tennis, 5 play both, 30 total. Find P(football | tennis).",
+      "steps": [
+        "Those who play tennis = 8",
+        "Of those, 5 also play football",
+        "P(football | tennis) = 5/8"
+      ],
+      "answer": "P(football | tennis) = &frac{5}{8}",
+      "explanation": "Given they play tennis (8 people), how many also play football (5)."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; P(A or B)",
+      "question": "Using the same data, find P(football or tennis).",
+      "steps": [
+        "P(F or T) = P(F) + P(T) &minus; P(F and T)",
+        "= 12/30 + 8/30 &minus; 5/30",
+        "= 15/30 = &frac{1}{2}"
+      ],
+      "answer": "P(football or tennis) = &frac{1}{2}",
+      "explanation": "Subtract the intersection to avoid counting it twice."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; neither event",
+      "question": "Find P(neither football nor tennis).",
+      "steps": [
+        "In at least one sport: 12 + 8 &minus; 5 = 15",
+        "Neither: 30 &minus; 15 = 15",
+        "P(neither) = 15/30 = &frac{1}{2}"
+      ],
+      "answer": "P(neither) = &frac{1}{2}",
+      "explanation": "Subtract those in at least one set from the total."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; given information",
+      "question": "P(A) = 0.6, P(B) = 0.4, P(A and B) = 0.2. Find P(B|A).",
+      "steps": [
+        "P(B|A) = P(A and B) &divide; P(A)",
+        "= 0.2 &divide; 0.6",
+        "= &frac{1}{3}"
+      ],
+      "answer": "P(B|A) = &frac{1}{3}",
+      "explanation": "Divide the intersection probability by the condition probability."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Reading Venn diagrams",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "A Venn diagram shows: A only = 7, B only = 5, A and B = 3, neither = 5. Total = 20.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A)",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "b",
+          "expression": "P(B)",
+          "answer": "&frac{2}{5}"
+        },
+        {
+          "id": "c",
+          "expression": "P(A and B)",
+          "answer": "&frac{3}{20}"
+        },
+        {
+          "id": "d",
+          "expression": "P(A or B)",
+          "answer": "&frac{3}{4}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Conditional probability",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Using the same data: A only = 7, B only = 5, both = 3, neither = 5.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A|B)",
+          "answer": "&frac{3}{8}"
+        },
+        {
+          "id": "b",
+          "expression": "P(B|A)",
+          "answer": "&frac{3}{10}"
+        },
+        {
+          "id": "c",
+          "expression": "P(A|not B)",
+          "answer": "&frac{7}{12}"
+        },
+        {
+          "id": "d",
+          "expression": "P(neither|not A)",
+          "answer": "&frac{1}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "From probabilities",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "P(A) = 0.5, P(B) = 0.3, P(A and B) = 0.1. Find:",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A or B)",
+          "answer": "0.7"
+        },
+        {
+          "id": "b",
+          "expression": "P(A|B)",
+          "answer": "&frac{1}{3}"
+        },
+        {
+          "id": "c",
+          "expression": "P(B|A)",
+          "answer": "0.2"
+        },
+        {
+          "id": "d",
+          "expression": "P(neither A nor B)",
+          "answer": "0.3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Two-way tables to Venn diagrams",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "60 students: 25 study French, 20 study Spanish, 10 study both.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(French only)",
+          "answer": "&frac{1}{4}"
+        },
+        {
+          "id": "b",
+          "expression": "P(Spanish|French)",
+          "answer": "&frac{2}{5}"
+        },
+        {
+          "id": "c",
+          "expression": "P(at least one language)",
+          "answer": "&frac{7}{12}"
+        },
+        {
+          "id": "d",
+          "expression": "P(French|Spanish)",
+          "answer": "&frac{1}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed conditional problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each conditional probability problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A) = 0.7, P(A and B) = 0.35. Find P(B|A).",
+          "answer": "0.5"
+        },
+        {
+          "id": "b",
+          "expression": "P(B) = 0.4, P(A|B) = 0.5. Find P(A and B).",
+          "answer": "0.2"
+        },
+        {
+          "id": "c",
+          "expression": "100 people: 40 like tea, 30 like coffee, 15 like both. P(tea|coffee)?",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "P(A or B) = 0.8, P(A) = 0.5, P(B) = 0.4. Find P(A and B).",
+          "answer": "0.1"
+        },
+        {
+          "id": "e",
+          "expression": "P(pass|revised) = 0.9, P(revised) = 0.6. Find P(pass and revised).",
+          "answer": "0.54"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "P(A|B) means the probability of A given B has occurred",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "P(A and B) = P(A) + P(B)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "P(A or B) = P(A) + P(B) &minus; P(A and B)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "P(A|B) = P(B|A) always",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "In a Venn diagram, the intersection shows elements in both sets",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "In a school, <strong>70%</strong> of students have a phone, <strong>50%</strong> have a tablet, and <strong>30%</strong> have both. A student is chosen at random. Given they have a phone, what is the probability they also have a tablet?"
+      },
+      {
+        "id": "b",
+        "text": "A medical test is <strong>95% accurate</strong> (P(positive|disease) = 0.95). The disease affects <strong>1%</strong> of the population. If a person tests positive, what is P(disease|positive)? (Hint: consider false positives with P(positive|no disease) = 0.05.)"
+      }
+    ]
+  }
+}

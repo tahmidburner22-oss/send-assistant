@@ -1,0 +1,325 @@
+{
+  "title": "PROBABILITY,\n(BASIC PROBABILITY — SINGLE EVENTS)",
+  "objective": "LO: I can calculate the probability of single events and place them on a probability scale.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "What is probability?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Probability</span> measures how likely an event is to happen, on a scale from <span class=\"ul-k\">0 (impossible) to 1 (certain)</span>. It can be written as a fraction, decimal or percentage."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Formula:</span> P(event) = number of favourable outcomes &divide; total number of possible outcomes."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "P(heads) = &frac{1}{2}",
+          "desc": "one favourable out of two outcomes"
+        },
+        {
+          "correct": true,
+          "expr": "P(6 on a die) = &frac{1}{6}",
+          "desc": "one out of six"
+        },
+        {
+          "correct": true,
+          "expr": "P(red from 3 red, 2 blue) = &frac{3}{5}",
+          "desc": "3 out of 5"
+        },
+        {
+          "correct": false,
+          "expr": "P(6 on a die) = &frac{1}{3}",
+          "desc": "there are 6 outcomes, not 3"
+        },
+        {
+          "correct": false,
+          "expr": "P(impossible) = &minus;1",
+          "desc": "probability is never negative"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Probability = favourable outcomes divided by total outcomes. All probabilities lie between 0 and 1.",
+      "equation": "P(event) = <span class=\"ov\">favourable</span> &divide; <span class=\"ovr\">total</span>",
+      "caption": "Always simplify the fraction where possible"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; fair die",
+      "question": "A fair die is rolled. Find P(even number).",
+      "steps": [
+        "Even numbers: 2, 4, 6 = 3 outcomes",
+        "Total outcomes = 6",
+        "P(even) = 3/6 = &frac{1}{2}"
+      ],
+      "answer": "P(even) = &frac{1}{2}",
+      "explanation": "Count the favourable outcomes and divide by the total."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; bag of counters",
+      "question": "A bag has 4 red, 3 blue, 2 green counters. Find P(blue).",
+      "steps": [
+        "Favourable (blue) = 3",
+        "Total = 4 + 3 + 2 = 9",
+        "P(blue) = &frac{3}{9} = &frac{1}{3}"
+      ],
+      "answer": "P(blue) = &frac{1}{3}",
+      "explanation": "Add all counters for the total, then simplify."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; complement",
+      "question": "P(rain tomorrow) = 0.35. Find P(no rain).",
+      "steps": [
+        "P(not A) = 1 &minus; P(A)",
+        "P(no rain) = 1 &minus; 0.35",
+        "= 0.65"
+      ],
+      "answer": "P(no rain) = 0.65",
+      "explanation": "The probabilities of an event and its complement always sum to 1."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; spinner",
+      "question": "A spinner has sections: 2 red, 3 blue, 5 yellow. Find P(not yellow).",
+      "steps": [
+        "Total sections = 2 + 3 + 5 = 10",
+        "Not yellow = 2 + 3 = 5",
+        "P(not yellow) = &frac{5}{10} = &frac{1}{2}"
+      ],
+      "answer": "P(not yellow) = &frac{1}{2}",
+      "explanation": "P(not yellow) = 1 &minus; P(yellow) = 1 &minus; &frac{1}{2} = &frac{1}{2}."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Fair dice",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "A fair six-sided die is rolled. Find each probability as a fraction.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(3)",
+          "answer": "&frac{1}{6}"
+        },
+        {
+          "id": "b",
+          "expression": "P(odd)",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "P(greater than 4)",
+          "answer": "&frac{1}{3}"
+        },
+        {
+          "id": "d",
+          "expression": "P(less than 5)",
+          "answer": "&frac{2}{3}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Counters in a bag",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "A bag has 5 red, 3 blue, 2 white counters. Find each probability.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(red)",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "b",
+          "expression": "P(white)",
+          "answer": "&frac{1}{5}"
+        },
+        {
+          "id": "c",
+          "expression": "P(blue or white)",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "P(not red)",
+          "answer": "&frac{1}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Complements",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the probability of the complement.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(A) = 0.3, find P(not A)",
+          "answer": "0.7"
+        },
+        {
+          "id": "b",
+          "expression": "P(B) = &frac{2}{5}, find P(not B)",
+          "answer": "&frac{3}{5}"
+        },
+        {
+          "id": "c",
+          "expression": "P(C) = 0.85, find P(not C)",
+          "answer": "0.15"
+        },
+        {
+          "id": "d",
+          "expression": "P(D) = &frac{7}{10}, find P(not D)",
+          "answer": "&frac{3}{10}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Spinners",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "A spinner has 8 equal sections: 3 red, 2 green, 1 blue, 2 yellow.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "P(red)",
+          "answer": "&frac{3}{8}"
+        },
+        {
+          "id": "b",
+          "expression": "P(green or yellow)",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "P(not blue)",
+          "answer": "&frac{7}{8}"
+        },
+        {
+          "id": "d",
+          "expression": "P(blue or red)",
+          "answer": "&frac{1}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each probability problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cards: P(heart) from a standard deck",
+          "answer": "&frac{1}{4}"
+        },
+        {
+          "id": "b",
+          "expression": "Letters in MATHEMATICS: P(choosing M)",
+          "answer": "&frac{2}{11}"
+        },
+        {
+          "id": "c",
+          "expression": "Numbers 1-20: P(multiple of 3)",
+          "answer": "&frac{3}{10}"
+        },
+        {
+          "id": "d",
+          "expression": "P(rain) = 0.4, P(not rain)?",
+          "answer": "0.6"
+        },
+        {
+          "id": "e",
+          "expression": "A bag has 6 red, 4 blue. P(red)?",
+          "answer": "&frac{3}{5}"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Probability ranges from 0 to 1",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "P(event) + P(not event) = 2",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "P(heads on a fair coin) = 0.5",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "If something is unlikely, P = 0",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "P(event) = favourable outcomes &divide; total outcomes",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A bag contains <strong>red, blue and green</strong> counters. P(red) = 0.35 and P(blue) = 0.25. There are <strong>40 counters</strong> in total. How many green counters are in the bag?"
+      },
+      {
+        "id": "b",
+        "text": "A spinner has sections labelled 1 to 8. The probability of landing on a prime number is <strong>&frac{1}{2}</strong>. Verify this is correct by listing all prime numbers from 1 to 8."
+      }
+    ]
+  }
+}

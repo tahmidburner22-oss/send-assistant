@@ -1,0 +1,325 @@
+{
+  "title": "STATISTICS,\n(HISTOGRAMS)",
+  "objective": "LO: I can draw and interpret histograms with unequal class widths using frequency density.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Histograms",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">histogram</span> displays continuous data using bars where the <span class=\"ul-k\">area</span> of each bar represents frequency. The y-axis shows <span class=\"ul-k\">frequency density</span>, not frequency."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Formula:</span> Frequency density = frequency &divide; class width. Frequency = frequency density &times; class width."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "FD = frequency &divide; class width",
+          "desc": "frequency density formula"
+        },
+        {
+          "correct": true,
+          "expr": "Frequency = FD &times; class width",
+          "desc": "reverse calculation"
+        },
+        {
+          "correct": true,
+          "expr": "Area of bar = frequency",
+          "desc": "area represents count"
+        },
+        {
+          "correct": false,
+          "expr": "Height of bar = frequency",
+          "desc": "height = frequency density"
+        },
+        {
+          "correct": false,
+          "expr": "All bars must be the same width",
+          "desc": "widths can vary"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Frequency density = frequency &divide; class width. The AREA of each bar (not height) represents the frequency.",
+      "equation": "FD = <span class=\"ov\">f</span> &divide; <span class=\"ovr\">w</span>",
+      "caption": "f = frequency, w = class width"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; calculating frequency density",
+      "question": "Class 10-20 has frequency 30. Find the frequency density.",
+      "steps": [
+        "Class width = 20 &minus; 10 = 10",
+        "FD = frequency &divide; class width",
+        "FD = 30 &divide; 10 = 3"
+      ],
+      "answer": "FD = 3",
+      "explanation": "Divide frequency by class width."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding frequency from histogram",
+      "question": "A bar has height (FD) 4 and width 5. Find the frequency.",
+      "steps": [
+        "Frequency = FD &times; width",
+        "= 4 &times; 5",
+        "= 20"
+      ],
+      "answer": "Frequency = 20",
+      "explanation": "Multiply frequency density by class width to get frequency."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; completing a table",
+      "question": "Class 0-10, frequency 15; class 10-30, frequency 40. Find FDs.",
+      "steps": [
+        "0-10: width = 10, FD = 15/10 = 1.5",
+        "10-30: width = 20, FD = 40/20 = 2",
+        "Draw bars at heights 1.5 and 2"
+      ],
+      "answer": "FD: 1.5 and 2",
+      "explanation": "Different class widths give different frequency densities."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; estimating from histogram",
+      "question": "A histogram bar covers 20-35 with FD = 2.4. Estimate the number in 20-25.",
+      "steps": [
+        "Total frequency for 20-35: 2.4 &times; 15 = 36",
+        "Assume uniform: proportion in 20-25 = 5/15",
+        "Estimate = 36 &times; 5/15 = 12"
+      ],
+      "answer": "Approximately 12",
+      "explanation": "Assume data is evenly spread within each class for estimates."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Calculating frequency density",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the frequency density for each class.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Class 0-5, frequency 20",
+          "answer": "FD = 4"
+        },
+        {
+          "id": "b",
+          "expression": "Class 5-15, frequency 30",
+          "answer": "FD = 3"
+        },
+        {
+          "id": "c",
+          "expression": "Class 15-25, frequency 45",
+          "answer": "FD = 4.5"
+        },
+        {
+          "id": "d",
+          "expression": "Class 25-50, frequency 50",
+          "answer": "FD = 2"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding frequency",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the frequency from the frequency density and class width.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "FD = 3, class width = 10",
+          "answer": "30"
+        },
+        {
+          "id": "b",
+          "expression": "FD = 1.5, class width = 20",
+          "answer": "30"
+        },
+        {
+          "id": "c",
+          "expression": "FD = 5, class width = 4",
+          "answer": "20"
+        },
+        {
+          "id": "d",
+          "expression": "FD = 2.5, class width = 8",
+          "answer": "20"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Completing tables",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Complete the frequency density column.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "0-10 (f=25), 10-20 (f=35), 20-40 (f=30)",
+          "answer": "2.5, 3.5, 1.5"
+        },
+        {
+          "id": "b",
+          "expression": "0-5 (f=10), 5-15 (f=40), 15-30 (f=45)",
+          "answer": "2, 4, 3"
+        },
+        {
+          "id": "c",
+          "expression": "0-20 (f=60), 20-30 (f=50), 30-50 (f=80)",
+          "answer": "3, 5, 4"
+        },
+        {
+          "id": "d",
+          "expression": "0-4 (f=12), 4-10 (f=24), 10-25 (f=30)",
+          "answer": "3, 4, 2"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Reading histograms",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "A histogram has these bars. Find the total frequency.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "0-10 FD=2, 10-30 FD=3, 30-50 FD=1",
+          "answer": "20 + 60 + 20 = 100"
+        },
+        {
+          "id": "b",
+          "expression": "0-5 FD=4, 5-20 FD=2, 20-25 FD=6",
+          "answer": "20 + 30 + 30 = 80"
+        },
+        {
+          "id": "c",
+          "expression": "0-15 FD=3, 15-25 FD=5, 25-40 FD=2",
+          "answer": "45 + 50 + 30 = 125"
+        },
+        {
+          "id": "d",
+          "expression": "0-8 FD=2.5, 8-12 FD=4, 12-20 FD=1.5",
+          "answer": "20 + 16 + 12 = 48"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Estimation problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Use the histogram data to estimate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Bar 10-30, FD=3. Estimate frequency for 10-15.",
+          "answer": "15"
+        },
+        {
+          "id": "b",
+          "expression": "Bar 0-20, FD=2. Estimate frequency for 5-10.",
+          "answer": "10"
+        },
+        {
+          "id": "c",
+          "expression": "Bar 20-50, FD=4. Estimate frequency for 30-40.",
+          "answer": "40"
+        },
+        {
+          "id": "d",
+          "expression": "Bar 0-12, FD=5. Total frequency in 0-12?",
+          "answer": "60"
+        },
+        {
+          "id": "e",
+          "expression": "Two bars: 0-10 FD=3, 10-25 FD=2. Total?",
+          "answer": "30 + 30 = 60"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Frequency density = frequency &divide; class width",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "The height of a bar in a histogram represents the frequency",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The area of a bar represents the frequency",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "All classes in a histogram must be the same width",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Frequency = frequency density &times; class width",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A histogram shows journey times. Class 0-10 has FD 1.5, class 10-20 has FD 3, class 20-40 has FD 2, class 40-60 has FD 0.5. Find the total number of journeys and estimate the percentage that took less than 15 minutes."
+      },
+      {
+        "id": "b",
+        "text": "80 students took a test. The results are shown in a histogram with classes: 0-30 (FD = 0.4), 30-50 (FD = 1.5), 50-70 (FD = k), 70-100 (FD = 0.6). Find k."
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "PROPORTION,\n(INVERSE PROPORTION)",
+  "objective": "LO: I can solve problems involving inverse proportion.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Inverse proportion",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Inverse proportion</span> means as one quantity <span class=\"ul-k\">increases</span>, the other <span class=\"ul-k\">decreases</span> at the same rate. If one doubles, the other halves."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Formula:</span> y &prop; 1/x gives y = k/x. The product xy = k is always constant."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y = k/x where k = xy",
+          "desc": "product is constant"
+        },
+        {
+          "correct": true,
+          "expr": "4 workers take 6 hours; 8 workers take 3 hours",
+          "desc": "inverse"
+        },
+        {
+          "correct": true,
+          "expr": "Speed &times; time = distance (fixed)",
+          "desc": "s and t inversely related"
+        },
+        {
+          "correct": false,
+          "expr": "Inverse proportion: y = kx",
+          "desc": "that is direct proportion"
+        },
+        {
+          "correct": false,
+          "expr": "If one halves, the other halves too",
+          "desc": "the other doubles"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "For inverse proportion, y = k/x. Find k by multiplying: k = x &times; y.",
+      "equation": "y = <span class=\"ov\">k</span> &divide; x &rarr; k = <span class=\"ovr\">x &times; y</span>",
+      "caption": "The product of x and y is always constant"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; finding k",
+      "question": "y is inversely proportional to x. When x = 4, y = 9. Find k.",
+      "steps": [
+        "y = k/x so k = xy",
+        "k = 4 &times; 9",
+        "k = 36, so y = 36/x"
+      ],
+      "answer": "k = 36, y = 36/x",
+      "explanation": "For inverse proportion, multiply x and y to find k."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; using the formula",
+      "question": "Using y = 36/x, find y when x = 12.",
+      "steps": [
+        "y = 36/x",
+        "y = 36/12",
+        "y = 3"
+      ],
+      "answer": "y = 3",
+      "explanation": "Substitute into the formula and divide."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; workers problem",
+      "question": "6 workers build a wall in 10 days. How long for 15 workers?",
+      "steps": [
+        "k = workers &times; days = 6 &times; 10 = 60",
+        "days = 60 &divide; workers",
+        "60 &divide; 15 = 4 days"
+      ],
+      "answer": "4 days",
+      "explanation": "More workers means fewer days (inverse relationship)."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; speed-time",
+      "question": "A journey takes 3 hours at 60 mph. How long at 90 mph?",
+      "steps": [
+        "k = speed &times; time = 60 &times; 3 = 180 (distance)",
+        "time = 180 &divide; 90",
+        "= 2 hours"
+      ],
+      "answer": "2 hours",
+      "explanation": "The distance (product) stays constant; faster speed means less time."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding k",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "y &prop; 1/x. Find k and write the formula.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "x = 3, y = 12",
+          "answer": "k = 36, y = 36/x"
+        },
+        {
+          "id": "b",
+          "expression": "x = 5, y = 8",
+          "answer": "k = 40, y = 40/x"
+        },
+        {
+          "id": "c",
+          "expression": "x = 10, y = 6",
+          "answer": "k = 60, y = 60/x"
+        },
+        {
+          "id": "d",
+          "expression": "x = 4, y = 15",
+          "answer": "k = 60, y = 60/x"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Using the formula",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the missing value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 36/x, find y when x = 9",
+          "answer": "4"
+        },
+        {
+          "id": "b",
+          "expression": "y = 40/x, find x when y = 10",
+          "answer": "4"
+        },
+        {
+          "id": "c",
+          "expression": "y = 60/x, find y when x = 12",
+          "answer": "5"
+        },
+        {
+          "id": "d",
+          "expression": "y = 60/x, find x when y = 3",
+          "answer": "20"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Workers and time",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Solve each workers/time problem (inverse proportion).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4 workers, 12 days. How long for 6 workers?",
+          "answer": "8 days"
+        },
+        {
+          "id": "b",
+          "expression": "8 workers, 5 days. How long for 10 workers?",
+          "answer": "4 days"
+        },
+        {
+          "id": "c",
+          "expression": "3 workers, 20 days. How many workers for 5 days?",
+          "answer": "12"
+        },
+        {
+          "id": "d",
+          "expression": "12 workers, 6 days. How long for 9 workers?",
+          "answer": "8 days"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Speed and time",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Distance = speed &times; time. Find the missing value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "60 mph for 2 hours. Time at 40 mph?",
+          "answer": "3 hours"
+        },
+        {
+          "id": "b",
+          "expression": "80 km/h for 3 hours. Speed to do it in 2 hours?",
+          "answer": "120 km/h"
+        },
+        {
+          "id": "c",
+          "expression": "50 mph for 4 hours. Time at 100 mph?",
+          "answer": "2 hours"
+        },
+        {
+          "id": "d",
+          "expression": "90 km/h for 2 hours. Time at 60 km/h?",
+          "answer": "3 hours"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed inverse proportion",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y &prop; 1/x. x = 2, y = 18. Find y when x = 6.",
+          "answer": "6"
+        },
+        {
+          "id": "b",
+          "expression": "5 taps fill a tank in 12 minutes. How long for 4 taps?",
+          "answer": "15 minutes"
+        },
+        {
+          "id": "c",
+          "expression": "y &prop; 1/x&sup2;. x = 2, y = 50. Find y when x = 5.",
+          "answer": "8"
+        },
+        {
+          "id": "d",
+          "expression": "A car at 70 mph takes 3 hours. Time at 50 mph?",
+          "answer": "4.2 hours"
+        },
+        {
+          "id": "e",
+          "expression": "y &prop; 1/x. y = 8 when x = 5. Find x when y = 20.",
+          "answer": "2"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "In inverse proportion, the product xy is constant",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "y &prop; 1/x means y = kx",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "More workers means a job takes less time (inverse proportion)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "If x doubles and y doubles, this is inverse proportion",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The graph of y = k/x is a curve that never touches the axes",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A farmer has enough feed to last <strong>12 cows for 20 days</strong>. The farmer buys 4 more cows. How many days will the feed now last?"
+      },
+      {
+        "id": "b",
+        "text": "The intensity of light I is inversely proportional to the <strong>square of the distance d</strong> from the source. At <strong>d = 2 m</strong>, I = 100 units. Find I at <strong>d = 5 m</strong>."
+      }
+    ]
+  }
+}

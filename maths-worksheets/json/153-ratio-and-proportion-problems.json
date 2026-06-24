@@ -1,0 +1,325 @@
+{
+  "title": "RATIO,\n(RATIO AND PROPORTION PROBLEMS)",
+  "objective": "LO: I can solve multi-step problems involving ratio and proportion.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Ratio and proportion problems",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Ratio</span> compares parts to parts. <span class=\"ul-b\">Proportion</span> compares a part to the <span class=\"ul-k\">whole</span>. Both are used to solve sharing and scaling problems."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Strategy:</span> Identify what you know, find one part or unit, then scale to find what is needed."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Ratio 2:3 &rarr; proportions are 2/5 and 3/5",
+          "desc": "convert ratio to fractions"
+        },
+        {
+          "correct": true,
+          "expr": "If 3 parts = 45, then 1 part = 15",
+          "desc": "unitary method"
+        },
+        {
+          "correct": true,
+          "expr": "Scale factor = new &divide; original",
+          "desc": "for enlargement"
+        },
+        {
+          "correct": false,
+          "expr": "Ratio 2:3 means 2/3 of the total",
+          "desc": "it is 2/5 of the total"
+        },
+        {
+          "correct": false,
+          "expr": "Ratio problems always have whole-number answers",
+          "desc": "not always"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Convert between ratio and proportion: ratio a:b means fractions a/(a+b) and b/(a+b) of the total.",
+      "equation": "Ratio <span class=\"ov\">a:b</span> &rarr; fractions <span class=\"ovr\">a/(a+b)</span> and b/(a+b)",
+      "caption": "Sum the parts to find the whole"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; ratio to proportion",
+      "question": "In a class, boys to girls = 3:5. What fraction are boys?",
+      "steps": [
+        "Total parts = 3 + 5 = 8",
+        "Boys = 3/8 of the class",
+        "If 32 students, boys = 3/8 &times; 32 = 12"
+      ],
+      "answer": "Boys are &frac{3}{8} of the class",
+      "explanation": "The ratio 3:5 means 8 parts in total."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; given one part",
+      "question": "Purple paint is mixed red:blue = 2:5. You have 400 ml of blue. How much red?",
+      "steps": [
+        "Blue = 5 parts = 400 ml",
+        "1 part = 400 &divide; 5 = 80 ml",
+        "Red = 2 parts = 2 &times; 80 = 160 ml"
+      ],
+      "answer": "160 ml of red",
+      "explanation": "Use the known quantity to find one part."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; difference given",
+      "question": "Two numbers are in ratio 3:8. Their difference is 30. Find the numbers.",
+      "steps": [
+        "Difference in parts = 8 &minus; 3 = 5 parts",
+        "5 parts = 30, so 1 part = 6",
+        "Numbers: 3 &times; 6 = 18 and 8 &times; 6 = 48"
+      ],
+      "answer": "18 and 48",
+      "explanation": "The difference between the ratio parts helps find one part."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; multi-step",
+      "question": "A drink is made from concentrate and water in ratio 1:4. 750 ml of drink is needed.",
+      "steps": [
+        "Total parts = 1 + 4 = 5",
+        "One part = 750 &divide; 5 = 150 ml",
+        "Concentrate = 150 ml, water = 600 ml"
+      ],
+      "answer": "150 ml concentrate, 600 ml water",
+      "explanation": "The total drink amount is split into ratio parts."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Ratio to fractions",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write each ratio as fractions of the whole.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "1:3",
+          "answer": "&frac{1}{4} and &frac{3}{4}"
+        },
+        {
+          "id": "b",
+          "expression": "2:5",
+          "answer": "&frac{2}{7} and &frac{5}{7}"
+        },
+        {
+          "id": "c",
+          "expression": "4:1",
+          "answer": "&frac{4}{5} and &frac{1}{5}"
+        },
+        {
+          "id": "d",
+          "expression": "3:3:4",
+          "answer": "&frac{3}{10}, &frac{3}{10}, &frac{4}{10}"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding amounts from one part",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Given one part of the ratio, find the other.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ratio 2:7. Smaller = 14. Find larger.",
+          "answer": "49"
+        },
+        {
+          "id": "b",
+          "expression": "Ratio 3:4. Larger = 60. Find smaller.",
+          "answer": "45"
+        },
+        {
+          "id": "c",
+          "expression": "Ratio 1:5. Smaller = 8. Find total.",
+          "answer": "48"
+        },
+        {
+          "id": "d",
+          "expression": "Ratio 5:2. Total = 63. Find each.",
+          "answer": "45 and 18"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Difference problems",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "The difference between two parts is given. Find the amounts.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ratio 2:5, difference = 21",
+          "answer": "14 and 35"
+        },
+        {
+          "id": "b",
+          "expression": "Ratio 1:4, difference = 36",
+          "answer": "12 and 48"
+        },
+        {
+          "id": "c",
+          "expression": "Ratio 3:7, difference = 20",
+          "answer": "15 and 35"
+        },
+        {
+          "id": "d",
+          "expression": "Ratio 5:9, difference = 32",
+          "answer": "40 and 72"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "In context",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Mortar: cement to sand 1:6. Need 3.5 kg total. Cement?",
+          "answer": "0.5 kg"
+        },
+        {
+          "id": "b",
+          "expression": "Boys:girls 5:4. 36 students total. How many boys?",
+          "answer": "20"
+        },
+        {
+          "id": "c",
+          "expression": "Money split 3:2. Larger share is &pound;45. Total?",
+          "answer": "&pound;75"
+        },
+        {
+          "id": "d",
+          "expression": "Recipe: sugar to flour 2:3. Use 600 g flour. Sugar?",
+          "answer": "400 g"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Multi-step ratio problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each multi-step problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A:B = 3:4 and B:C = 2:5. Find A:B:C.",
+          "answer": "3:4:10"
+        },
+        {
+          "id": "b",
+          "expression": "Squash:water = 1:7. Make 2 litres. How much squash?",
+          "answer": "250 ml"
+        },
+        {
+          "id": "c",
+          "expression": "Ratio 2:3:5. Largest share is &pound;75. Find smallest.",
+          "answer": "&pound;30"
+        },
+        {
+          "id": "d",
+          "expression": "Men:Women = 5:3. 12 more men than women. Total?",
+          "answer": "48"
+        },
+        {
+          "id": "e",
+          "expression": "Blue:yellow paint 3:2 makes green. Need 1.5 L green. Blue?",
+          "answer": "900 ml"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Ratio 3:5 means 3 parts out of 8 total",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Ratio 3:5 means 3 out of 5",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "If the difference is given, subtract ratio numbers to find one part",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Ratio 2:3 and proportion 2/3 mean the same thing",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "You can compare ratios by writing equivalent ratios",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "In a school, the ratio of boys to girls is <strong>5:4</strong>. If there are <strong>24 more boys</strong> than girls, how many students are in the school?"
+      },
+      {
+        "id": "b",
+        "text": "A recipe uses flour, sugar, and butter in the ratio <strong>5:3:2</strong>. You have <strong>800 g of flour</strong>, <strong>500 g of sugar</strong>, and <strong>400 g of butter</strong>. What is the maximum amount of the recipe you can make? Which ingredient limits you?"
+      }
+    ]
+  }
+}

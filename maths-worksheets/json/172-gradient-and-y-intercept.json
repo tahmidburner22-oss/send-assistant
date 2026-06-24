@@ -1,0 +1,325 @@
+{
+  "title": "STRAIGHT-LINE GRAPHS,\n(GRADIENT AND Y-INTERCEPT)",
+  "objective": "LO: I can find the gradient and y-intercept of a line from its graph or equation.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Gradient and y-intercept",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">gradient</span> measures how steep a line is. Positive gradient goes up from left to right; negative goes down. The <span class=\"ul-k\">y-intercept</span> is where the line crosses the y-axis (x = 0)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Reading from a graph:</span> Pick two points, count the rise (up/down) and run (across). Gradient = rise &divide; run."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Rise 6, run 2 &rarr; gradient = 3",
+          "desc": "divide rise by run"
+        },
+        {
+          "correct": true,
+          "expr": "Line goes down left to right &rarr; negative gradient",
+          "desc": "sign matters"
+        },
+        {
+          "correct": true,
+          "expr": "Crosses y-axis at (0, &minus;4) &rarr; c = &minus;4",
+          "desc": "read from graph"
+        },
+        {
+          "correct": false,
+          "expr": "Rise 2, run 6 &rarr; gradient = 6",
+          "desc": "gradient = 2/6 = 1/3"
+        },
+        {
+          "correct": false,
+          "expr": "Steeper line has smaller gradient",
+          "desc": "steeper = larger |m|"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Gradient = rise &divide; run (vertical change &divide; horizontal change). Read the y-intercept where x = 0.",
+      "equation": "gradient = <span class=\"ov\">rise</span> &divide; <span class=\"ovr\">run</span>",
+      "caption": "Positive = uphill, negative = downhill (left to right)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; positive gradient from graph",
+      "question": "A line passes through (1, 2) and (4, 8). Find the gradient.",
+      "steps": [
+        "Rise = 8 &minus; 2 = 6",
+        "Run = 4 &minus; 1 = 3",
+        "Gradient = 6 &divide; 3 = 2"
+      ],
+      "answer": "Gradient = 2",
+      "explanation": "Count squares up (rise) and across (run) between two clear points."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative gradient",
+      "question": "A line passes through (0, 6) and (3, 0). Find the gradient.",
+      "steps": [
+        "Rise = 0 &minus; 6 = &minus;6",
+        "Run = 3 &minus; 0 = 3",
+        "Gradient = &minus;6 &divide; 3 = &minus;2"
+      ],
+      "answer": "Gradient = &minus;2",
+      "explanation": "The line goes down, so the gradient is negative."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; y-intercept from graph",
+      "question": "A line crosses the y-axis at (0, &minus;3). What is c?",
+      "steps": [
+        "The y-intercept is where x = 0",
+        "The line crosses at y = &minus;3",
+        "So c = &minus;3"
+      ],
+      "answer": "c = &minus;3",
+      "explanation": "Read the y-coordinate where the line meets the y-axis."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; from equation",
+      "question": "Find the gradient and y-intercept of 2y = 6x &minus; 8.",
+      "steps": [
+        "Divide by 2: y = 3x &minus; 4",
+        "Compare with y = mx + c",
+        "Gradient = 3, y-intercept = &minus;4"
+      ],
+      "answer": "Gradient = 3, y-intercept = &minus;4",
+      "explanation": "Rearrange to y = mx + c form to read off m and c."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Gradient from two points",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the gradient of the line through each pair.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(0, 1) and (3, 7)",
+          "answer": "2"
+        },
+        {
+          "id": "b",
+          "expression": "(1, 5) and (4, 11)",
+          "answer": "2"
+        },
+        {
+          "id": "c",
+          "expression": "(0, 8) and (4, 0)",
+          "answer": "&minus;2"
+        },
+        {
+          "id": "d",
+          "expression": "(2, 3) and (5, 12)",
+          "answer": "3"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Identifying positive and negative",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State whether the gradient is positive, negative, or zero.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Line goes uphill left to right",
+          "answer": "Positive"
+        },
+        {
+          "id": "b",
+          "expression": "Line goes downhill left to right",
+          "answer": "Negative"
+        },
+        {
+          "id": "c",
+          "expression": "Horizontal line",
+          "answer": "Zero"
+        },
+        {
+          "id": "d",
+          "expression": "y = 5 &minus; 3x",
+          "answer": "Negative"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "y-intercept",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the y-intercept of each line.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 4x + 7",
+          "answer": "7"
+        },
+        {
+          "id": "b",
+          "expression": "y = &minus;x &minus; 2",
+          "answer": "&minus;2"
+        },
+        {
+          "id": "c",
+          "expression": "y = 3x",
+          "answer": "0"
+        },
+        {
+          "id": "d",
+          "expression": "2y = 4x + 6",
+          "answer": "3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Complete the equation",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the equation y = mx + c from the gradient and y-intercept.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Gradient 4, y-intercept 3",
+          "answer": "y = 4x + 3"
+        },
+        {
+          "id": "b",
+          "expression": "Gradient &minus;2, y-intercept 5",
+          "answer": "y = &minus;2x + 5"
+        },
+        {
+          "id": "c",
+          "expression": "Gradient &frac{1}{2}, y-intercept &minus;1",
+          "answer": "y = &frac{1}{2}x &minus; 1"
+        },
+        {
+          "id": "d",
+          "expression": "Gradient &minus;3, y-intercept 0",
+          "answer": "y = &minus;3x"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed gradient problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Points (0, 2) and (5, 12). Find gradient and equation.",
+          "answer": "m = 2, y = 2x + 2"
+        },
+        {
+          "id": "b",
+          "expression": "A line has gradient 3 and passes through (2, 8). Find c.",
+          "answer": "c = 2"
+        },
+        {
+          "id": "c",
+          "expression": "Which is steeper: y = 5x + 1 or y = 3x &minus; 4?",
+          "answer": "y = 5x + 1"
+        },
+        {
+          "id": "d",
+          "expression": "Line through (&minus;1, 7) and (1, 3). Gradient?",
+          "answer": "&minus;2"
+        },
+        {
+          "id": "e",
+          "expression": "A horizontal line through (3, 5). Equation?",
+          "answer": "y = 5"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Gradient = rise &divide; run",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "A line going downhill has positive gradient",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The y-intercept is where the line crosses the y-axis",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A steeper line always has a smaller gradient",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A horizontal line has gradient 0",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A line passes through <strong>(3, 7)</strong> and has gradient <strong>&minus;2</strong>. Find its equation. At what point does it cross the x-axis? What is the area of the triangle formed by this line and the two axes?"
+      },
+      {
+        "id": "b",
+        "text": "Three points are given: A(&minus;1, 1), B(2, 7), C(5, 13). Show that all three points lie on the same straight line (are collinear). Find the equation of this line."
+      }
+    ]
+  }
+}
