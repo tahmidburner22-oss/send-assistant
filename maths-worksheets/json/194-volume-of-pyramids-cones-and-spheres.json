@@ -1,0 +1,325 @@
+{
+  "title": "VOLUME AND SURFACE AREA,\n(VOLUME OF PYRAMIDS, CONES AND SPHERES)",
+  "objective": "LO: I can calculate the volume of pyramids, cones and spheres.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Volume formulae",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Pyramid</span> V = &frac{1}{3} &times; base area &times; height. <span class=\"ul-b\">Cone</span> V = &frac{1}{3}&pi;r&sup2;h. <span class=\"ul-b\">Sphere</span> V = &frac{4}{3}&pi;r&sup3;."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key pattern:</span> Pyramids and cones are &frac{1}{3} of the equivalent prism/cylinder."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key formulae",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Cone V = &frac{1}{3}&pi;r&sup2;h",
+          "desc": "third of cylinder"
+        },
+        {
+          "correct": true,
+          "expr": "Sphere V = &frac{4}{3}&pi;r&sup3;",
+          "desc": "four-thirds pi r cubed"
+        },
+        {
+          "correct": true,
+          "expr": "Pyramid V = &frac{1}{3} &times; base &times; h",
+          "desc": "third of prism"
+        },
+        {
+          "correct": false,
+          "expr": "Cone V = &pi;r&sup2;h",
+          "desc": "that is cylinder volume"
+        },
+        {
+          "correct": false,
+          "expr": "Sphere V = 4&pi;r&sup3;",
+          "desc": "must be &frac{4}{3}&pi;r&sup3;"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Pyramids and cones = &frac{1}{3} of the prism/cylinder. Sphere = &frac{4}{3}&pi;r&sup3;.",
+      "equation": "Cone: <span class=\"ov\">&frac{1}{3}&pi;r&sup2;h</span> | Sphere: <span class=\"ovr\">&frac{4}{3}&pi;r&sup3;</span>",
+      "caption": "Remember the &frac{1}{3} for pointed shapes"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; cone",
+      "question": "Find the volume of a cone with r=3, h=8.",
+      "steps": [
+        "V = &frac{1}{3}&pi;r&sup2;h",
+        "= &frac{1}{3} &times; &pi; &times; 9 &times; 8",
+        "= 24&pi; = 75.4 cm&sup3;"
+      ],
+      "answer": "75.4 cm&sup3;",
+      "explanation": "One-third of the equivalent cylinder."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; sphere",
+      "question": "Find the volume of a sphere with r=6.",
+      "steps": [
+        "V = &frac{4}{3}&pi;r&sup3;",
+        "= &frac{4}{3} &times; &pi; &times; 216",
+        "= 288&pi; = 904.8 cm&sup3;"
+      ],
+      "answer": "904.8 cm&sup3;",
+      "explanation": "Cube the radius, multiply by 4/3 and &pi;."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; pyramid",
+      "question": "Square-based pyramid: base 10&times;10, height 12.",
+      "steps": [
+        "Base area = 100",
+        "V = &frac{1}{3} &times; 100 &times; 12",
+        "= 400 cm&sup3;"
+      ],
+      "answer": "400 cm&sup3;",
+      "explanation": "One-third of base area times height."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; hemisphere",
+      "question": "Find the volume of a hemisphere with r=5.",
+      "steps": [
+        "V = &frac{1}{2} &times; &frac{4}{3}&pi;r&sup3;",
+        "= &frac{2}{3}&pi; &times; 125",
+        "= &frac{250}{3}&pi; = 261.8 cm&sup3;"
+      ],
+      "answer": "261.8 cm&sup3;",
+      "explanation": "Half of a full sphere volume."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Cones",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the volume (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r=4, h=9",
+          "answer": "150.8 cm&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "r=5, h=12",
+          "answer": "314.2 cm&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "r=6, h=10",
+          "answer": "376.8 cm&sup3;"
+        },
+        {
+          "id": "d",
+          "expression": "r=2, h=15",
+          "answer": "62.8 cm&sup3;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Spheres",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the volume (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r=3",
+          "answer": "113.1 cm&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "r=5",
+          "answer": "523.6 cm&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "r=10",
+          "answer": "4188.8 cm&sup3;"
+        },
+        {
+          "id": "d",
+          "expression": "d=8 (r=4)",
+          "answer": "268.1 cm&sup3;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Pyramids",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the volume.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Square base 6&times;6, h=9",
+          "answer": "108 cm&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "Rectangular base 8&times;5, h=12",
+          "answer": "160 cm&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "Triangular base area 24, h=10",
+          "answer": "80 cm&sup3;"
+        },
+        {
+          "id": "d",
+          "expression": "Square base 4&times;4, h=6",
+          "answer": "32 cm&sup3;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Hemispheres",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the volume (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r=4",
+          "answer": "134.0 cm&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "r=6",
+          "answer": "452.4 cm&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "r=9",
+          "answer": "1526.8 cm&sup3;"
+        },
+        {
+          "id": "d",
+          "expression": "d=10 (r=5)",
+          "answer": "261.8 cm&sup3;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cone: r=3, h=7",
+          "answer": "66.0 cm&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "Sphere: V=36&pi;. Find r.",
+          "answer": "3 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Pyramid: V=200, base=50. Find h.",
+          "answer": "12 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Football r=11 cm. Volume?",
+          "answer": "5575.3 cm&sup3;"
+        },
+        {
+          "id": "e",
+          "expression": "Ice cream cone r=3, h=10 + hemisphere. Total V?",
+          "answer": "150.8 cm&sup3;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Cone volume = &frac{1}{3}&pi;r&sup2;h",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Sphere volume = 4&pi;r&sup3;",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A pyramid is &frac{1}{3} of the equivalent prism",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Doubling the radius of a sphere doubles the volume",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Hemisphere volume = &frac{2}{3}&pi;r&sup3;",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A cone and a sphere have the same radius <strong>r = 6 cm</strong>. The cone has height <strong>h = 24 cm</strong>. Show that the cone has the same volume as the sphere."
+      },
+      {
+        "id": "b",
+        "text": "A solid is made of a cone (r=5, h=12) on top of a hemisphere (r=5). Find the total volume and total surface area."
+      }
+    ]
+  }
+}

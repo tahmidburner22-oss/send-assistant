@@ -1,0 +1,325 @@
+{
+  "title": "TRIGONOMETRY,\n(EXACT TRIGONOMETRIC VALUES)",
+  "objective": "LO: I can recall and use exact trigonometric values for 0, 30, 45, 60 and 90 degrees.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Exact trig values",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">exact trigonometric values</span> for common angles (0&deg;, 30&deg;, 45&deg;, 60&deg;, 90&deg;) can be expressed as <span class=\"ul-k\">fractions and surds</span> rather than decimals."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key values:</span> sin 30&deg; = &frac{1}{2}, cos 60&deg; = &frac{1}{2}, tan 45&deg; = 1, sin 45&deg; = &frac{&radic;2}{2}."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Values to memorise",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "sin 30&deg; = &frac{1}{2}",
+          "desc": "from 30-60-90 triangle"
+        },
+        {
+          "correct": true,
+          "expr": "cos 45&deg; = &frac{&radic;2}{2}",
+          "desc": "from 45-45-90 triangle"
+        },
+        {
+          "correct": true,
+          "expr": "tan 60&deg; = &radic;3",
+          "desc": "sin 60 / cos 60"
+        },
+        {
+          "correct": false,
+          "expr": "sin 45&deg; = &frac{1}{2}",
+          "desc": "sin 45 = &radic;2/2"
+        },
+        {
+          "correct": false,
+          "expr": "cos 90&deg; = 1",
+          "desc": "cos 90 = 0"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Learn the exact values from the 30-60-90 and 45-45-90 triangles.",
+      "equation": "sin 60&deg; = <span class=\"ov\">&frac{&radic;3}{2}</span> | cos 30&deg; = <span class=\"ovr\">&frac{&radic;3}{2}</span>",
+      "caption": "sin and cos are complementary: sin x = cos(90 &minus; x)"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; sin values",
+      "question": "State the exact value of sin 60&deg;.",
+      "steps": [
+        "From the 30-60-90 triangle",
+        "Opposite = &radic;3, hypotenuse = 2",
+        "sin 60&deg; = &frac{&radic;3}{2}"
+      ],
+      "answer": "sin 60&deg; = &frac{&radic;3}{2}",
+      "explanation": "The 30-60-90 triangle has sides 1, &radic;3, 2."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; cos values",
+      "question": "Find the exact value of cos 30&deg;.",
+      "steps": [
+        "From the 30-60-90 triangle",
+        "Adjacent = &radic;3, hypotenuse = 2",
+        "cos 30&deg; = &frac{&radic;3}{2}"
+      ],
+      "answer": "cos 30&deg; = &frac{&radic;3}{2}",
+      "explanation": "cos 30 = sin 60 (complementary angles)."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; tan values",
+      "question": "Find the exact value of tan 45&deg;.",
+      "steps": [
+        "From the 45-45-90 triangle",
+        "Opposite = adjacent = 1",
+        "tan 45&deg; = 1/1 = 1"
+      ],
+      "answer": "tan 45&deg; = 1",
+      "explanation": "In a 45-45-90 triangle, the two legs are equal."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; using exact values",
+      "question": "Find the hypotenuse when the opposite is 8 and angle is 30&deg;.",
+      "steps": [
+        "sin 30&deg; = opp/hyp = 8/hyp",
+        "&frac{1}{2} = 8/hyp",
+        "hyp = 16"
+      ],
+      "answer": "Hypotenuse = 16",
+      "explanation": "Substitute the exact value of sin 30&deg; = &frac{1}{2}."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Recall sin values",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State the exact value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "sin 0&deg;",
+          "answer": "0"
+        },
+        {
+          "id": "b",
+          "expression": "sin 30&deg;",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "sin 45&deg;",
+          "answer": "&frac{&radic;2}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "sin 90&deg;",
+          "answer": "1"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Recall cos values",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State the exact value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "cos 0&deg;",
+          "answer": "1"
+        },
+        {
+          "id": "b",
+          "expression": "cos 30&deg;",
+          "answer": "&frac{&radic;3}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "cos 60&deg;",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "cos 90&deg;",
+          "answer": "0"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Recall tan values",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "State the exact value.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "tan 0&deg;",
+          "answer": "0"
+        },
+        {
+          "id": "b",
+          "expression": "tan 30&deg;",
+          "answer": "&frac{&radic;3}{3}"
+        },
+        {
+          "id": "c",
+          "expression": "tan 45&deg;",
+          "answer": "1"
+        },
+        {
+          "id": "d",
+          "expression": "tan 60&deg;",
+          "answer": "&radic;3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Finding lengths",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Use exact values to find the unknown.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "sin 30&deg; = x/10. Find x.",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "cos 60&deg; = 6/h. Find h.",
+          "answer": "12"
+        },
+        {
+          "id": "c",
+          "expression": "tan 45&deg; = y/7. Find y.",
+          "answer": "7"
+        },
+        {
+          "id": "d",
+          "expression": "sin 60&deg; = 9/h. Find h.",
+          "answer": "6&radic;3"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed exact values",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate exactly.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "sin 30&deg; + cos 60&deg;",
+          "answer": "1"
+        },
+        {
+          "id": "b",
+          "expression": "sin&sup2; 45&deg; + cos&sup2; 45&deg;",
+          "answer": "1"
+        },
+        {
+          "id": "c",
+          "expression": "2 sin 30&deg; cos 30&deg;",
+          "answer": "&frac{&radic;3}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "tan 60&deg; &minus; tan 30&deg;",
+          "answer": "&frac{2&radic;3}{3}"
+        },
+        {
+          "id": "e",
+          "expression": "sin 60&deg; &divide; cos 60&deg;",
+          "answer": "&radic;3"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "sin 30&deg; = cos 60&deg; = &frac{1}{2}",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "sin 45&deg; = &frac{1}{2}",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "tan 45&deg; = 1",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "sin 90&deg; = 0",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "sin&sup2; x + cos&sup2; x = 1 for any angle x",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "An equilateral triangle has side length <strong>10 cm</strong>. Using exact values, find the height and area."
+      },
+      {
+        "id": "b",
+        "text": "Show that <strong>sin&sup2; 60&deg; + cos&sup2; 60&deg; = 1</strong>. Find <strong>sin 60&deg; cos 30&deg; + sin 30&deg; cos 60&deg;</strong>."
+      }
+    ]
+  }
+}

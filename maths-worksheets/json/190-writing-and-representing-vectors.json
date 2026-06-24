@@ -1,0 +1,325 @@
+{
+  "title": "VECTORS,\n(WRITING AND REPRESENTING VECTORS)",
+  "objective": "LO: I can write vectors in column form and represent them on a grid.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Representing vectors",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">vector</span> represents a movement with both <span class=\"ul-k\">magnitude</span> (size) and <span class=\"ul-k\">direction</span>. Written as a column vector (x, y) or using letters like <strong>a</strong> or AB with an arrow."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">On a grid:</span> The top number is horizontal movement (+ right, &minus; left). The bottom is vertical (+ up, &minus; down)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Right 3, up 4 = (3, 4)",
+          "desc": "positive both"
+        },
+        {
+          "correct": true,
+          "expr": "Left 2, down 5 = (&minus;2, &minus;5)",
+          "desc": "negative both"
+        },
+        {
+          "correct": true,
+          "expr": "|a| = &radic;(x&sup2; + y&sup2;)",
+          "desc": "magnitude formula"
+        },
+        {
+          "correct": false,
+          "expr": "Left 3 = (3, 0)",
+          "desc": "left is negative: (&minus;3, 0)"
+        },
+        {
+          "correct": false,
+          "expr": "Vectors must start at the origin",
+          "desc": "can start anywhere"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Column vector (x, y): x = horizontal, y = vertical. Magnitude = &radic;(x&sup2; + y&sup2;).",
+      "equation": "|<span class=\"ov\">(x, y)</span>| = <span class=\"ovr\">&radic;(x&sup2; + y&sup2;)</span>",
+      "caption": "Use Pythagoras to find the magnitude"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; writing from grid",
+      "question": "A point moves right 4 and up 3. Write as a column vector.",
+      "steps": [
+        "Horizontal: +4 (right)",
+        "Vertical: +3 (up)",
+        "Vector = (4, 3)"
+      ],
+      "answer": "(4, 3)",
+      "explanation": "Right and up are positive."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative components",
+      "question": "A point moves left 2 and down 6. Write as a column vector.",
+      "steps": [
+        "Horizontal: &minus;2 (left)",
+        "Vertical: &minus;6 (down)",
+        "Vector = (&minus;2, &minus;6)"
+      ],
+      "answer": "(&minus;2, &minus;6)",
+      "explanation": "Left and down are negative."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding magnitude",
+      "question": "Find the magnitude of (3, 4).",
+      "steps": [
+        "|a| = &radic;(3&sup2; + 4&sup2;)",
+        "= &radic;(9 + 16)",
+        "= &radic;25 = 5"
+      ],
+      "answer": "|a| = 5",
+      "explanation": "Use Pythagoras: &radic;(x&sup2; + y&sup2;)."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; from coordinates",
+      "question": "A = (1, 2), B = (5, 5). Find vector AB.",
+      "steps": [
+        "AB = B &minus; A",
+        "= (5&minus;1, 5&minus;2)",
+        "= (4, 3)"
+      ],
+      "answer": "AB = (4, 3)",
+      "explanation": "Subtract start from end."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Writing vectors from movement",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write each movement as a column vector.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Right 5, up 2",
+          "answer": "(5, 2)"
+        },
+        {
+          "id": "b",
+          "expression": "Left 3, up 7",
+          "answer": "(&minus;3, 7)"
+        },
+        {
+          "id": "c",
+          "expression": "Right 1, down 4",
+          "answer": "(1, &minus;4)"
+        },
+        {
+          "id": "d",
+          "expression": "Left 6, down 3",
+          "answer": "(&minus;6, &minus;3)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "From coordinates",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the vector from A to B.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A(1,3), B(4,7)",
+          "answer": "(3, 4)"
+        },
+        {
+          "id": "b",
+          "expression": "A(5,2), B(1,6)",
+          "answer": "(&minus;4, 4)"
+        },
+        {
+          "id": "c",
+          "expression": "A(0,0), B(3,&minus;2)",
+          "answer": "(3, &minus;2)"
+        },
+        {
+          "id": "d",
+          "expression": "A(7,4), B(2,1)",
+          "answer": "(&minus;5, &minus;3)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding magnitude",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the magnitude of each vector.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3, 4)",
+          "answer": "5"
+        },
+        {
+          "id": "b",
+          "expression": "(5, 12)",
+          "answer": "13"
+        },
+        {
+          "id": "c",
+          "expression": "(6, 8)",
+          "answer": "10"
+        },
+        {
+          "id": "d",
+          "expression": "(&minus;4, 3)",
+          "answer": "5"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Equal vectors",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "State which vectors are equal.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3,2) from (0,0) and (3,2) from (1,5)",
+          "answer": "Equal (same column vector)"
+        },
+        {
+          "id": "b",
+          "expression": "(4,1) and (1,4)",
+          "answer": "Not equal"
+        },
+        {
+          "id": "c",
+          "expression": "AB where A(1,2) B(4,5) and CD where C(0,1) D(3,4)",
+          "answer": "Equal: both (3,3)"
+        },
+        {
+          "id": "d",
+          "expression": "(5,0) and (0,5)",
+          "answer": "Not equal"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Vector (a, 3) has magnitude 5. Find a.",
+          "answer": "a = 4"
+        },
+        {
+          "id": "b",
+          "expression": "AB = (4, &minus;3). If A = (2, 5), find B.",
+          "answer": "(6, 2)"
+        },
+        {
+          "id": "c",
+          "expression": "Magnitude of (1, 1)",
+          "answer": "&radic;2"
+        },
+        {
+          "id": "d",
+          "expression": "Vector from (3, 7) to (3, 2)",
+          "answer": "(0, &minus;5)"
+        },
+        {
+          "id": "e",
+          "expression": "Unit vector in direction (3, 4)",
+          "answer": "(0.6, 0.8)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "A column vector (x, y) means right x and up y",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Vectors must start at the origin",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Magnitude = &radic;(x&sup2; + y&sup2;)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Left 3 is written as (3, 0)",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Equal vectors have the same magnitude AND direction",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A vector has magnitude <strong>10</strong> and makes an angle of <strong>30&deg;</strong> with the positive x-axis. Write it as a column vector using exact trig values."
+      },
+      {
+        "id": "b",
+        "text": "Points A(2,1), B(6,4), C(10,7). Show that A, B, C are collinear and find the ratio AB:BC."
+      }
+    ]
+  }
+}

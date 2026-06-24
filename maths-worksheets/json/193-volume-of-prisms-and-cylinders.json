@@ -1,0 +1,325 @@
+{
+  "title": "VOLUME AND SURFACE AREA,\n(VOLUME OF PRISMS AND CYLINDERS)",
+  "objective": "LO: I can calculate the volume of prisms and cylinders.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Volume of prisms",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">volume</span> of a prism = <span class=\"ul-k\">cross-section area &times; length</span>. For a cylinder, V = &pi;r&sup2;h."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Units:</span> Volume is measured in cubic units (cm&sup3;, m&sup3;)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key formulae",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Prism: V = area &times; length",
+          "desc": "cross-section &times; depth"
+        },
+        {
+          "correct": true,
+          "expr": "Cylinder: V = &pi;r&sup2;h",
+          "desc": "circle area &times; height"
+        },
+        {
+          "correct": true,
+          "expr": "Cuboid: V = lwh",
+          "desc": "special case of prism"
+        },
+        {
+          "correct": false,
+          "expr": "V = 2&pi;rh",
+          "desc": "that is curved surface area"
+        },
+        {
+          "correct": false,
+          "expr": "Cylinder V = &pi;rh",
+          "desc": "must square the radius"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Volume = cross-section area &times; length (or height for vertical prisms).",
+      "equation": "V = <span class=\"ov\">A</span> &times; <span class=\"ovr\">l</span>",
+      "caption": "A = area of cross-section, l = length/height"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; cuboid",
+      "question": "Find the volume of a cuboid 8 &times; 5 &times; 3 cm.",
+      "steps": [
+        "V = l &times; w &times; h",
+        "= 8 &times; 5 &times; 3",
+        "= 120 cm&sup3;"
+      ],
+      "answer": "120 cm&sup3;",
+      "explanation": "Multiply length &times; width &times; height."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; cylinder",
+      "question": "Find the volume of a cylinder r=4, h=10.",
+      "steps": [
+        "V = &pi;r&sup2;h",
+        "= &pi; &times; 16 &times; 10",
+        "= 160&pi; = 502.7 cm&sup3;"
+      ],
+      "answer": "502.7 cm&sup3;",
+      "explanation": "Square the radius, then multiply by &pi; and height."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; triangular prism",
+      "question": "Triangle: base 6, height 4. Prism length 10. Volume?",
+      "steps": [
+        "Cross-section = &frac{1}{2} &times; 6 &times; 4 = 12 cm&sup2;",
+        "V = 12 &times; 10",
+        "= 120 cm&sup3;"
+      ],
+      "answer": "120 cm&sup3;",
+      "explanation": "Find the triangle area first, then multiply by length."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; finding height",
+      "question": "Cylinder V=300&pi;, r=5. Find h.",
+      "steps": [
+        "300&pi; = &pi; &times; 25 &times; h",
+        "300 = 25h",
+        "h = 12 cm"
+      ],
+      "answer": "h = 12 cm",
+      "explanation": "Rearrange: h = V/(&pi;r&sup2;)."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Cuboids",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the volume.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "5 &times; 4 &times; 3",
+          "answer": "60 cm&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "10 &times; 6 &times; 2",
+          "answer": "120 cm&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "8 &times; 8 &times; 8",
+          "answer": "512 cm&sup3;"
+        },
+        {
+          "id": "d",
+          "expression": "12 &times; 5 &times; 4",
+          "answer": "240 cm&sup3;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Cylinders",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the volume (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r=3, h=7",
+          "answer": "197.9 cm&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "r=5, h=12",
+          "answer": "942.5 cm&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "r=2, h=15",
+          "answer": "188.5 cm&sup3;"
+        },
+        {
+          "id": "d",
+          "expression": "d=10, h=8",
+          "answer": "628.3 cm&sup3;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Triangular prisms",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the volume.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Triangle: b=8, h=3, length=10",
+          "answer": "120 cm&sup3;"
+        },
+        {
+          "id": "b",
+          "expression": "Triangle: b=6, h=5, length=12",
+          "answer": "180 cm&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "Triangle: b=10, h=4, length=7",
+          "answer": "140 cm&sup3;"
+        },
+        {
+          "id": "d",
+          "expression": "Right triangle: 3,4,5, length=9",
+          "answer": "54 cm&sup3;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Finding missing dimensions",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the unknown.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cuboid V=180, l=9, w=5. Find h.",
+          "answer": "4 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Cylinder V=200&pi;, r=5. Find h.",
+          "answer": "8 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Prism V=240, cross-section=30. Length?",
+          "answer": "8 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Cube V=343. Find side.",
+          "answer": "7 cm"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Swimming pool 25&times;10&times;2 m. Volume in litres?",
+          "answer": "500,000 L"
+        },
+        {
+          "id": "b",
+          "expression": "Cylindrical tank r=3m, h=5m. Volume?",
+          "answer": "141.4 m&sup3;"
+        },
+        {
+          "id": "c",
+          "expression": "Prism: trapezium (a=4,b=8,h=3), length=10",
+          "answer": "180 cm&sup3;"
+        },
+        {
+          "id": "d",
+          "expression": "Cylinder V=500 cm&sup3;, h=10. Find r.",
+          "answer": "3.99 cm"
+        },
+        {
+          "id": "e",
+          "expression": "Cube SA=150. Find volume.",
+          "answer": "125 cm&sup3;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Volume of a prism = cross-section area &times; length",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Cylinder volume = &pi;rh",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Volume is measured in cubic units",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Doubling the radius doubles the volume",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "A cuboid is a type of prism",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A cylindrical glass has radius <strong>4 cm</strong> and height <strong>12 cm</strong>. It is filled to &frac{3}{4} full. How many ml of water does it contain? (1 cm&sup3; = 1 ml)"
+      },
+      {
+        "id": "b",
+        "text": "A prism has an L-shaped cross-section made from two rectangles: 6&times;2 and 4&times;2 (total area 20 cm&sup2;). The prism is 15 cm long. Find its volume and total surface area."
+      }
+    ]
+  }
+}

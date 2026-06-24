@@ -1,0 +1,325 @@
+{
+  "title": "TRIGONOMETRY,\n(SINE AND COSINE RULES)",
+  "objective": "LO: I can use the sine and cosine rules to find sides and angles in non-right-angled triangles.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Sine and cosine rules",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">sine rule</span>: a/sin A = b/sin B = c/sin C. Used when you know a side and its opposite angle. The <span class=\"ul-b\">cosine rule</span>: a&sup2; = b&sup2; + c&sup2; &minus; 2bc cos A."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">When to use:</span> Sine rule for ASA/AAS. Cosine rule for SAS (find side) or SSS (find angle)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "When to use each",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Sine rule: know a side-angle pair",
+          "desc": "a/sin A = b/sin B"
+        },
+        {
+          "correct": true,
+          "expr": "Cosine rule: know SAS or SSS",
+          "desc": "a&sup2; = b&sup2; + c&sup2; &minus; 2bc cos A"
+        },
+        {
+          "correct": true,
+          "expr": "Area = &frac{1}{2}ab sin C",
+          "desc": "area formula"
+        },
+        {
+          "correct": false,
+          "expr": "SOH CAH TOA works in all triangles",
+          "desc": "only right-angled"
+        },
+        {
+          "correct": false,
+          "expr": "Cosine rule only finds sides",
+          "desc": "can find angles too"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Sine rule: a/sin A = b/sin B. Cosine rule: a&sup2; = b&sup2; + c&sup2; &minus; 2bc cos A.",
+      "equation": "<span class=\"ov\">a/sin A = b/sin B</span> | a&sup2; = b&sup2; + c&sup2; &minus; <span class=\"ovr\">2bc cos A</span>",
+      "caption": "Choose based on what you know"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; sine rule - side",
+      "question": "A = 40&deg;, B = 70&deg;, a = 8. Find b.",
+      "steps": [
+        "a/sin A = b/sin B",
+        "8/sin 40&deg; = b/sin 70&deg;",
+        "b = 8 sin 70&deg;/sin 40&deg; = 11.7"
+      ],
+      "answer": "b = 11.7",
+      "explanation": "Cross-multiply to find the unknown."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; sine rule - angle",
+      "question": "a = 10, b = 7, A = 50&deg;. Find B.",
+      "steps": [
+        "sin B/b = sin A/a",
+        "sin B = 7 sin 50&deg;/10 = 0.536",
+        "B = sin&minus;&sup1;(0.536) = 32.4&deg;"
+      ],
+      "answer": "B = 32.4&deg;",
+      "explanation": "Rearrange to find sin B, then use inverse."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; cosine rule - side",
+      "question": "b = 8, c = 6, A = 55&deg;. Find a.",
+      "steps": [
+        "a&sup2; = 64 + 36 &minus; 2(8)(6)cos 55&deg;",
+        "= 100 &minus; 55.1 = 44.9",
+        "a = &radic;44.9 = 6.7"
+      ],
+      "answer": "a = 6.7",
+      "explanation": "Substitute into cosine rule and simplify."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; cosine rule - angle",
+      "question": "a = 7, b = 9, c = 5. Find A.",
+      "steps": [
+        "cos A = (81 + 25 &minus; 49)/(2 &times; 9 &times; 5)",
+        "= 57/90 = 0.633",
+        "A = cos&minus;&sup1;(0.633) = 50.7&deg;"
+      ],
+      "answer": "A = 50.7&deg;",
+      "explanation": "Rearrange cosine rule to find cos A."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Sine rule - sides",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the marked side (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A=50&deg;, B=60&deg;, a=10. Find b.",
+          "answer": "11.3"
+        },
+        {
+          "id": "b",
+          "expression": "A=40&deg;, C=80&deg;, a=8. Find c.",
+          "answer": "12.3"
+        },
+        {
+          "id": "c",
+          "expression": "B=35&deg;, C=75&deg;, b=6. Find c.",
+          "answer": "10.1"
+        },
+        {
+          "id": "d",
+          "expression": "A=45&deg;, B=65&deg;, a=12. Find b.",
+          "answer": "15.4"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Sine rule - angles",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the marked angle (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a=9, b=7, A=55&deg;. Find B.",
+          "answer": "39.5&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "a=12, c=8, A=70&deg;. Find C.",
+          "answer": "38.8&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "b=10, c=13, B=40&deg;. Find C.",
+          "answer": "56.7&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "a=15, b=11, A=80&deg;. Find B.",
+          "answer": "46.2&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Cosine rule - sides",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the marked side (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "b=7, c=9, A=50&deg;. Find a.",
+          "answer": "7.1"
+        },
+        {
+          "id": "b",
+          "expression": "a=10, c=8, B=60&deg;. Find b.",
+          "answer": "9.2"
+        },
+        {
+          "id": "c",
+          "expression": "a=6, b=8, C=120&deg;. Find c.",
+          "answer": "12.2"
+        },
+        {
+          "id": "d",
+          "expression": "b=11, c=14, A=35&deg;. Find a.",
+          "answer": "8.1"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Cosine rule - angles",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the marked angle (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a=5, b=7, c=9. Find C.",
+          "answer": "101.5&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "a=8, b=6, c=10. Find A.",
+          "answer": "52.4&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "a=12, b=9, c=7. Find A.",
+          "answer": "92.9&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "a=4, b=5, c=6. Find C.",
+          "answer": "82.8&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Choose the rule and solve.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Sides 8, 10, included angle 45&deg;. Third side?",
+          "answer": "7.1"
+        },
+        {
+          "id": "b",
+          "expression": "A=38&deg;, B=72&deg;, c=15. Find a.",
+          "answer": "10.0"
+        },
+        {
+          "id": "c",
+          "expression": "Sides 5, 7, 9. Largest angle?",
+          "answer": "101.5&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "A=110&deg;, a=20, b=12. Find B.",
+          "answer": "34.2&deg;"
+        },
+        {
+          "id": "e",
+          "expression": "b=8, c=11, A=65&deg;. Area?",
+          "answer": "39.8"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Sine rule needs a known side-angle pair",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Cosine rule can only find sides",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "SOH CAH TOA only works in right-angled triangles",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "a/sin A = b/sin B is the sine rule",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "If you know all 3 sides, use sine rule",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Two ships leave port. Ship A sails <strong>12 km on 060&deg;</strong>, Ship B sails <strong>8 km on 130&deg;</strong>. Find the distance between them."
+      },
+      {
+        "id": "b",
+        "text": "Triangle sides <strong>a = 10, b = 14, c = 8</strong>. Find all three angles and verify they sum to 180&deg;."
+      }
+    ]
+  }
+}

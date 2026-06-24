@@ -1,0 +1,325 @@
+{
+  "title": "VECTORS,\n(MULTIPLYING VECTORS BY A SCALAR)",
+  "objective": "LO: I can multiply a vector by a scalar and understand the geometric effect.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Scalar multiplication",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">scalar</span> is just a number (no direction). Multiplying a vector by a scalar <span class=\"ul-k\">scales</span> its magnitude. The direction stays the same (or reverses if negative)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Rule:</span> k(a, b) = (ka, kb). Multiply each component by the scalar."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3(2, 4) = (6, 12)",
+          "desc": "multiply both by 3"
+        },
+        {
+          "correct": true,
+          "expr": "&minus;2(1, 3) = (&minus;2, &minus;6)",
+          "desc": "reverses direction"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{1}{2}(6, 4) = (3, 2)",
+          "desc": "halves the vector"
+        },
+        {
+          "correct": false,
+          "expr": "3(2, 4) = (6, 4)",
+          "desc": "must multiply both"
+        },
+        {
+          "correct": false,
+          "expr": "&minus;1(3, 2) = (3, 2)",
+          "desc": "should be (&minus;3, &minus;2)"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "k(a, b) = (ka, kb). Positive k keeps direction; negative k reverses it.",
+      "equation": "k<span class=\"ov\">(a, b)</span> = <span class=\"ovr\">(ka, kb)</span>",
+      "caption": "Scale both components by the same factor"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; positive scalar",
+      "question": "Find 3(2, 5).",
+      "steps": [
+        "Multiply x: 3 &times; 2 = 6",
+        "Multiply y: 3 &times; 5 = 15",
+        "= (6, 15)"
+      ],
+      "answer": "(6, 15)",
+      "explanation": "Multiply each component by the scalar."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative scalar",
+      "question": "Find &minus;2(4, &minus;1).",
+      "steps": [
+        "&minus;2 &times; 4 = &minus;8",
+        "&minus;2 &times; (&minus;1) = 2",
+        "= (&minus;8, 2)"
+      ],
+      "answer": "(&minus;8, 2)",
+      "explanation": "Negative scalar reverses direction."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; fractional scalar",
+      "question": "Find &frac{1}{2}(8, &minus;6).",
+      "steps": [
+        "&frac{1}{2} &times; 8 = 4",
+        "&frac{1}{2} &times; (&minus;6) = &minus;3",
+        "= (4, &minus;3)"
+      ],
+      "answer": "(4, &minus;3)",
+      "explanation": "Fractional scalar reduces the magnitude."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; parallel vectors",
+      "question": "Show that (4, 6) is parallel to (2, 3).",
+      "steps": [
+        "(4, 6) = 2(2, 3)",
+        "One is a scalar multiple of the other",
+        "So they are parallel"
+      ],
+      "answer": "Parallel: (4,6) = 2 &times; (2,3)",
+      "explanation": "Parallel vectors are scalar multiples of each other."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Positive scalars",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate each scalar multiplication.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2(3, 4)",
+          "answer": "(6, 8)"
+        },
+        {
+          "id": "b",
+          "expression": "4(1, &minus;2)",
+          "answer": "(4, &minus;8)"
+        },
+        {
+          "id": "c",
+          "expression": "5(2, 0)",
+          "answer": "(10, 0)"
+        },
+        {
+          "id": "d",
+          "expression": "3(&minus;1, 5)",
+          "answer": "(&minus;3, 15)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Negative scalars",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Calculate each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&minus;1(3, 7)",
+          "answer": "(&minus;3, &minus;7)"
+        },
+        {
+          "id": "b",
+          "expression": "&minus;3(2, &minus;4)",
+          "answer": "(&minus;6, 12)"
+        },
+        {
+          "id": "c",
+          "expression": "&minus;2(&minus;5, 1)",
+          "answer": "(10, &minus;2)"
+        },
+        {
+          "id": "d",
+          "expression": "&minus;4(1, 2)",
+          "answer": "(&minus;4, &minus;8)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Fractional scalars",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Calculate each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{2}(4, 10)",
+          "answer": "(2, 5)"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{1}{3}(9, &minus;6)",
+          "answer": "(3, &minus;2)"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2}{3}(6, 9)",
+          "answer": "(4, 6)"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{1}{4}(8, &minus;12)",
+          "answer": "(2, &minus;3)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Identifying parallel vectors",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Are these vectors parallel? If yes, state the scalar.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2,3) and (6,9)",
+          "answer": "Yes, scalar 3"
+        },
+        {
+          "id": "b",
+          "expression": "(4,1) and (8,3)",
+          "answer": "No"
+        },
+        {
+          "id": "c",
+          "expression": "(1,&minus;2) and (&minus;3,6)",
+          "answer": "Yes, scalar &minus;3"
+        },
+        {
+          "id": "d",
+          "expression": "(5,10) and (1,2)",
+          "answer": "Yes, scalar 5"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Combined operations",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Calculate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2(3,1) + (4,2)",
+          "answer": "(10, 4)"
+        },
+        {
+          "id": "b",
+          "expression": "3(1,2) &minus; 2(4,&minus;1)",
+          "answer": "(&minus;5, 8)"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{1}{2}(4,6) + &frac{1}{3}(9,&minus;3)",
+          "answer": "(5, 2)"
+        },
+        {
+          "id": "d",
+          "expression": "2a &minus; b where a=(3,&minus;1), b=(2,4)",
+          "answer": "(4, &minus;6)"
+        },
+        {
+          "id": "e",
+          "expression": "a + 3b where a=(1,5), b=(2,&minus;1)",
+          "answer": "(7, 2)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "k(a, b) = (ka, kb)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "3(2, 4) = (6, 4)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Parallel vectors are scalar multiples",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "A negative scalar keeps the same direction",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "&frac{1}{2}a has half the magnitude of a",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Points A, B, C have position vectors <strong>a = (1, 2), b = (4, 5), c = (7, 8)</strong>. Show that A, B, C are collinear by proving AB is parallel to AC."
+      },
+      {
+        "id": "b",
+        "text": "Vector a = <strong>(3, 4)</strong>. Find the magnitude |a|. Find a unit vector in the direction of a (divide by magnitude)."
+      }
+    ]
+  }
+}

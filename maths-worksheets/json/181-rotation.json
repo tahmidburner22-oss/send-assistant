@@ -1,0 +1,325 @@
+{
+  "title": "TRANSFORMATIONS,\n(ROTATION)",
+  "objective": "LO: I can rotate shapes about a given centre and describe rotations.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Rotation",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">rotation</span> turns a shape about a fixed point called the <span class=\"ul-k\">centre of rotation</span>. You need to know the centre, the <span class=\"ul-k\">angle</span> and the <span class=\"ul-k\">direction</span> (clockwise or anticlockwise)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key rotations:</span> 90&deg; CW: (x,y)&rarr;(y,&minus;x). 90&deg; ACW: (x,y)&rarr;(&minus;y,x). 180&deg;: (x,y)&rarr;(&minus;x,&minus;y). All about the origin."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "90&deg; CW about (0,0): (3,1) &rarr; (1,&minus;3)",
+          "desc": "(x,y)&rarr;(y,&minus;x)"
+        },
+        {
+          "correct": true,
+          "expr": "180&deg; about (0,0): (3,1) &rarr; (&minus;3,&minus;1)",
+          "desc": "negate both"
+        },
+        {
+          "correct": true,
+          "expr": "90&deg; ACW about (0,0): (3,1) &rarr; (&minus;1,3)",
+          "desc": "(x,y)&rarr;(&minus;y,x)"
+        },
+        {
+          "correct": false,
+          "expr": "90&deg; CW: (3,1) &rarr; (&minus;3,&minus;1)",
+          "desc": "that is 180&deg;"
+        },
+        {
+          "correct": false,
+          "expr": "Rotation changes the size of the shape",
+          "desc": "size stays the same"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "To describe a rotation: state the centre, angle, and direction. Size and shape are preserved.",
+      "equation": "90&deg; CW: (x,y) &rarr; <span class=\"ov\">(y, &minus;x)</span> about origin",
+      "caption": "Every point stays the same distance from the centre"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; 90 CW about origin",
+      "question": "Rotate (2, 5) by 90&deg; clockwise about (0,0).",
+      "steps": [
+        "Rule: (x, y) &rarr; (y, &minus;x)",
+        "(2, 5) &rarr; (5, &minus;2)",
+        "Image is (5, &minus;2)"
+      ],
+      "answer": "(5, &minus;2)",
+      "explanation": "Apply the 90&deg; CW rule: swap and negate the new y."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; 180 about origin",
+      "question": "Rotate (&minus;3, 4) by 180&deg; about (0,0).",
+      "steps": [
+        "Rule: (x, y) &rarr; (&minus;x, &minus;y)",
+        "(&minus;3, 4) &rarr; (3, &minus;4)",
+        "Image is (3, &minus;4)"
+      ],
+      "answer": "(3, &minus;4)",
+      "explanation": "180&deg; rotation negates both coordinates."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; 90 ACW about origin",
+      "question": "Rotate (4, &minus;1) by 90&deg; anticlockwise about (0,0).",
+      "steps": [
+        "Rule: (x, y) &rarr; (&minus;y, x)",
+        "(4, &minus;1) &rarr; (1, 4)",
+        "Image is (1, 4)"
+      ],
+      "answer": "(1, 4)",
+      "explanation": "90&deg; ACW: negate y then swap."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; about another centre",
+      "question": "Rotate (5, 3) by 180&deg; about (2, 1).",
+      "steps": [
+        "Translate to origin: (5&minus;2, 3&minus;1) = (3, 2)",
+        "Apply 180&deg;: (&minus;3, &minus;2)",
+        "Translate back: (&minus;3+2, &minus;2+1) = (&minus;1, &minus;1)"
+      ],
+      "answer": "(&minus;1, &minus;1)",
+      "explanation": "Subtract centre, rotate, then add centre back."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "90&deg; CW about origin",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Rotate each point 90&deg; clockwise about (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(1, 3)",
+          "answer": "(3, &minus;1)"
+        },
+        {
+          "id": "b",
+          "expression": "(4, 2)",
+          "answer": "(2, &minus;4)"
+        },
+        {
+          "id": "c",
+          "expression": "(&minus;2, 5)",
+          "answer": "(5, 2)"
+        },
+        {
+          "id": "d",
+          "expression": "(0, &minus;3)",
+          "answer": "(&minus;3, 0)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "180&deg; about origin",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Rotate each point 180&deg; about (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3, 1)",
+          "answer": "(&minus;3, &minus;1)"
+        },
+        {
+          "id": "b",
+          "expression": "(&minus;2, 4)",
+          "answer": "(2, &minus;4)"
+        },
+        {
+          "id": "c",
+          "expression": "(5, &minus;3)",
+          "answer": "(&minus;5, 3)"
+        },
+        {
+          "id": "d",
+          "expression": "(&minus;1, &minus;6)",
+          "answer": "(1, 6)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "90&deg; ACW about origin",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Rotate each point 90&deg; anticlockwise about (0,0).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2, 4)",
+          "answer": "(&minus;4, 2)"
+        },
+        {
+          "id": "b",
+          "expression": "(5, 1)",
+          "answer": "(&minus;1, 5)"
+        },
+        {
+          "id": "c",
+          "expression": "(&minus;3, 2)",
+          "answer": "(&minus;2, &minus;3)"
+        },
+        {
+          "id": "d",
+          "expression": "(6, &minus;2)",
+          "answer": "(2, 6)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "About other centres",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Rotate 180&deg; about the given centre.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(4, 3) about (2, 2)",
+          "answer": "(0, 1)"
+        },
+        {
+          "id": "b",
+          "expression": "(5, 1) about (3, 3)",
+          "answer": "(1, 5)"
+        },
+        {
+          "id": "c",
+          "expression": "(1, 6) about (3, 4)",
+          "answer": "(5, 2)"
+        },
+        {
+          "id": "d",
+          "expression": "(7, 2) about (4, 3)",
+          "answer": "(1, 4)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Describing rotations",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Describe the single rotation that maps A to B (about origin).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2, 3) &rarr; (3, &minus;2)",
+          "answer": "90&deg; clockwise"
+        },
+        {
+          "id": "b",
+          "expression": "(4, 1) &rarr; (&minus;4, &minus;1)",
+          "answer": "180&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "(1, 5) &rarr; (&minus;5, 1)",
+          "answer": "90&deg; anticlockwise"
+        },
+        {
+          "id": "d",
+          "expression": "(&minus;3, 2) &rarr; (2, 3)",
+          "answer": "90&deg; clockwise"
+        },
+        {
+          "id": "e",
+          "expression": "(6, &minus;2) &rarr; (&minus;6, 2)",
+          "answer": "180&deg;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "A rotation preserves the size and shape of a figure",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "90&deg; CW about origin: (x,y) &rarr; (&minus;x, &minus;y)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "180&deg; rotation about origin: (x,y) &rarr; (&minus;x, &minus;y)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "You don't need to state direction for a 180&deg; rotation",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "90&deg; CW is the same as 270&deg; ACW",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Triangle PQR has vertices <strong>P(1,1), Q(4,1), R(4,3)</strong>. Rotate it 90&deg; anticlockwise about <strong>(1,1)</strong>. Find the new vertices."
+      },
+      {
+        "id": "b",
+        "text": "A point (a, b) is rotated 90&deg; clockwise about <strong>(2, 3)</strong>. Its image is <strong>(5, 1)</strong>. Find the original point (a, b)."
+      }
+    ]
+  }
+}

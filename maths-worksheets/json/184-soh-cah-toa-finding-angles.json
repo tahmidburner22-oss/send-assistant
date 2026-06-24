@@ -1,0 +1,325 @@
+{
+  "title": "TRIGONOMETRY,\n(SOH CAH TOA — FINDING ANGLES)",
+  "objective": "LO: I can use inverse trigonometric functions to find missing angles in right-angled triangles.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding angles",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To find a missing <span class=\"ul-b\">angle</span> in a right-angled triangle, use the <span class=\"ul-k\">inverse trig functions</span>: sin⁻¹, cos⁻¹, or tan⁻¹."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">SOH CAH TOA:</span> Choose the ratio that uses the two known sides. Then apply the inverse function to find the angle."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "sin x = 5/10 &rarr; x = sin&minus;&sup1;(0.5) = 30&deg;",
+          "desc": "inverse sin"
+        },
+        {
+          "correct": true,
+          "expr": "cos x = 8/10 &rarr; x = cos&minus;&sup1;(0.8) = 36.9&deg;",
+          "desc": "inverse cos"
+        },
+        {
+          "correct": true,
+          "expr": "tan x = 7/4 &rarr; x = tan&minus;&sup1;(1.75) = 60.3&deg;",
+          "desc": "inverse tan"
+        },
+        {
+          "correct": false,
+          "expr": "sin x = 5/10 means x = 0.5&deg;",
+          "desc": "must use inverse sin"
+        },
+        {
+          "correct": false,
+          "expr": "Use sin when you have adj and hyp",
+          "desc": "that needs cos"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Identify which sides you know (O, A, H), choose the correct ratio, then use the inverse function.",
+      "equation": "&theta; = <span class=\"ov\">sin&minus;&sup1;</span>(<span class=\"ovr\">O/H</span>)",
+      "caption": "SOH: sin = Opp/Hyp, CAH: cos = Adj/Hyp, TOA: tan = Opp/Adj"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; using sin",
+      "question": "Find angle x. Opposite = 6 cm, hypotenuse = 12 cm.",
+      "steps": [
+        "Opp and Hyp: use sin",
+        "sin x = 6/12 = 0.5",
+        "x = sin&minus;&sup1;(0.5) = 30&deg;"
+      ],
+      "answer": "x = 30&deg;",
+      "explanation": "Label the sides relative to the angle, then choose the correct ratio."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; using cos",
+      "question": "Find angle x. Adjacent = 8 cm, hypotenuse = 10 cm.",
+      "steps": [
+        "Adj and Hyp: use cos",
+        "cos x = 8/10 = 0.8",
+        "x = cos&minus;&sup1;(0.8) = 36.9&deg;"
+      ],
+      "answer": "x = 36.9&deg;",
+      "explanation": "CAH: cos = adjacent / hypotenuse."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; using tan",
+      "question": "Find angle x. Opposite = 9 cm, adjacent = 5 cm.",
+      "steps": [
+        "Opp and Adj: use tan",
+        "tan x = 9/5 = 1.8",
+        "x = tan&minus;&sup1;(1.8) = 60.9&deg;"
+      ],
+      "answer": "x = 60.9&deg;",
+      "explanation": "TOA: tan = opposite / adjacent."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; third angle",
+      "question": "In a right triangle, one angle is 53.1&deg;. Find the other acute angle.",
+      "steps": [
+        "Angles sum to 180&deg;",
+        "Third = 180 &minus; 90 &minus; 53.1",
+        "= 36.9&deg;"
+      ],
+      "answer": "36.9&deg;",
+      "explanation": "Angles in a triangle sum to 180&deg;."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Using sin inverse",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find angle x (1 dp). Given opp and hyp.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "opp = 5, hyp = 10",
+          "answer": "30&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "opp = 7, hyp = 14",
+          "answer": "30&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "opp = 4, hyp = 9",
+          "answer": "26.4&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "opp = 12, hyp = 15",
+          "answer": "53.1&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Using cos inverse",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find angle x (1 dp). Given adj and hyp.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "adj = 6, hyp = 10",
+          "answer": "53.1&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "adj = 9, hyp = 12",
+          "answer": "41.4&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "adj = 3, hyp = 7",
+          "answer": "64.6&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "adj = 5, hyp = 13",
+          "answer": "67.4&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Using tan inverse",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find angle x (1 dp). Given opp and adj.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "opp = 5, adj = 5",
+          "answer": "45&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "opp = 8, adj = 3",
+          "answer": "69.4&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "opp = 4, adj = 7",
+          "answer": "29.7&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "opp = 11, adj = 6",
+          "answer": "61.4&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Choose the ratio",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find angle x (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "opp = 6, hyp = 9",
+          "answer": "41.8&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "adj = 5, hyp = 13",
+          "answer": "67.4&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "opp = 10, adj = 4",
+          "answer": "68.2&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "adj = 7, opp = 7",
+          "answer": "45&deg;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "In context",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Find each angle to 1 dp.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ladder 5 m, reaches 4 m up wall. Angle with ground?",
+          "answer": "53.1&deg;"
+        },
+        {
+          "id": "b",
+          "expression": "Ramp rises 2 m over 8 m horizontal. Angle?",
+          "answer": "14.0&deg;"
+        },
+        {
+          "id": "c",
+          "expression": "Kite string 30 m, height 18 m. Angle of elevation?",
+          "answer": "36.9&deg;"
+        },
+        {
+          "id": "d",
+          "expression": "Shadow 12 m, pole 5 m. Sun angle?",
+          "answer": "22.6&deg;"
+        },
+        {
+          "id": "e",
+          "expression": "Roof height 3 m, half-span 5 m. Pitch angle?",
+          "answer": "31.0&deg;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To find an angle, use the inverse trig function",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "sin&minus;&sup1;(0.5) = 2",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "tan is used when you know opposite and adjacent",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "cos&minus;&sup1; is used when you know opp and hyp",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Angles in a triangle sum to 180&deg;",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A rectangular field is <strong>80 m by 60 m</strong>. Find the angle between the diagonal and the longer side."
+      },
+      {
+        "id": "b",
+        "text": "From the top of a <strong>25 m</strong> cliff, the angle of depression to a boat is <strong>32&deg;</strong>. How far is the boat from the base of the cliff?"
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "VOLUME AND SURFACE AREA,\n(SURFACE AREA OF PRISMS)",
+  "objective": "LO: I can calculate the surface area of prisms by finding the area of each face.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Surface area of prisms",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">prism</span> has a uniform cross-section. Its <span class=\"ul-k\">surface area</span> is the total area of all faces: two identical end faces plus rectangular side faces."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Method:</span> Draw the net. Find the area of each face. Add them all together."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Cuboid SA = 2(lw + lh + wh)",
+          "desc": "three pairs of faces"
+        },
+        {
+          "correct": true,
+          "expr": "Triangular prism: 2 triangles + 3 rectangles",
+          "desc": "5 faces total"
+        },
+        {
+          "correct": true,
+          "expr": "SA = 2 &times; cross-section + perimeter &times; length",
+          "desc": "general formula"
+        },
+        {
+          "correct": false,
+          "expr": "SA = cross-section &times; length",
+          "desc": "that is volume"
+        },
+        {
+          "correct": false,
+          "expr": "All faces of a prism are rectangles",
+          "desc": "end faces match cross-section"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "SA = 2 &times; (area of cross-section) + (perimeter of cross-section) &times; length.",
+      "equation": "SA = <span class=\"ov\">2A</span> + <span class=\"ovr\">P &times; l</span>",
+      "caption": "A = cross-section area, P = perimeter, l = length"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; cuboid",
+      "question": "Find the SA of a cuboid 5 cm &times; 3 cm &times; 4 cm.",
+      "steps": [
+        "SA = 2(5&times;3 + 5&times;4 + 3&times;4)",
+        "= 2(15 + 20 + 12)",
+        "= 2 &times; 47 = 94 cm&sup2;"
+      ],
+      "answer": "94 cm&sup2;",
+      "explanation": "A cuboid has 3 pairs of rectangular faces."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; triangular prism",
+      "question": "Find SA: triangle base 6, height 4, slant sides 5, length 10.",
+      "steps": [
+        "2 triangles: 2 &times; &frac{1}{2}(6)(4) = 24",
+        "3 rectangles: 6&times;10 + 5&times;10 + 5&times;10 = 160",
+        "Total = 24 + 160 = 184 cm&sup2;"
+      ],
+      "answer": "184 cm&sup2;",
+      "explanation": "Find area of each face and add."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; L-shaped prism",
+      "question": "An L-shape cross-section has area 20 cm&sup2; and perimeter 24 cm. Length = 8 cm.",
+      "steps": [
+        "End faces: 2 &times; 20 = 40",
+        "Side faces: 24 &times; 8 = 192",
+        "Total = 232 cm&sup2;"
+      ],
+      "answer": "232 cm&sup2;",
+      "explanation": "Use the general formula for any prism."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; hexagonal prism",
+      "question": "Regular hexagon: side 3 cm, area 23.4 cm&sup2;. Length 7 cm.",
+      "steps": [
+        "2 hexagons: 2 &times; 23.4 = 46.8",
+        "Perimeter = 6 &times; 3 = 18; sides: 18 &times; 7 = 126",
+        "Total = 172.8 cm&sup2;"
+      ],
+      "answer": "172.8 cm&sup2;",
+      "explanation": "Perimeter of hexagon = 6 &times; side."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Cuboids",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the surface area of each cuboid.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4 &times; 3 &times; 2",
+          "answer": "52 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "6 &times; 5 &times; 3",
+          "answer": "126 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "10 &times; 4 &times; 2",
+          "answer": "136 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "8 &times; 8 &times; 8 (cube)",
+          "answer": "384 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Triangular prisms",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find SA. Triangle: base b, height h, hypotenuse s. Length l.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "b=6, h=4, s=5, l=10",
+          "answer": "184 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "b=8, h=3, s=5, l=12",
+          "answer": "240 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "b=5, h=4, sides 4.5, l=8",
+          "answer": "132 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "Equilateral side 6, l=15",
+          "answer": "301.2 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Using the formula",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Cross-section area A, perimeter P, length l. Find SA.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "A=15, P=20, l=6",
+          "answer": "150 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "A=24, P=22, l=10",
+          "answer": "268 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "A=30, P=28, l=5",
+          "answer": "200 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "A=18, P=18, l=9",
+          "answer": "198 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Cubes",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the surface area or side length.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cube side 5",
+          "answer": "150 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "Cube side 12",
+          "answer": "864 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "Cube SA = 54. Find side.",
+          "answer": "3 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Cube SA = 600. Find side.",
+          "answer": "10 cm"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Cuboid 10&times;5&times;2. SA?",
+          "answer": "160 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "Triangular prism: right triangle 3,4,5, length 8.",
+          "answer": "108 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "Pentagonal prism: A=35, P=25, l=6.",
+          "answer": "220 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "Open-top cuboid 4&times;3&times;2. SA?",
+          "answer": "40 cm&sup2;"
+        },
+        {
+          "id": "e",
+          "expression": "Cube volume 125. SA?",
+          "answer": "150 cm&sup2;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "SA of a prism = 2 &times; cross-section + perimeter &times; length",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Volume and surface area use the same formula",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "A cube has 6 equal square faces",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "SA of a cuboid = length &times; width &times; height",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Surface area is measured in squared units",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A cuboid has SA = <strong>142 cm&sup2;</strong>. Its length is 7, width is 5. Find the height."
+      },
+      {
+        "id": "b",
+        "text": "A triangular prism has an equilateral triangle cross-section (side 8 cm) and length 15 cm. Find its total surface area."
+      }
+    ]
+  }
+}

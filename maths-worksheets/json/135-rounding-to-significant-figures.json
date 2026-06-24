@@ -1,0 +1,325 @@
+{
+  "title": "PLACE VALUE AND ORDERING INTEGERS,\n(ROUNDING TO SIGNIFICANT FIGURES)",
+  "objective": "LO: I can round numbers to a given number of significant figures.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Significant figures",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Significant figures</span> (sf) are the meaningful digits in a number. The first sf is the first <span class=\"ul-k\">non-zero digit</span>. Count from there."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Leading zeros</span> are not significant. Trailing zeros after a decimal point ARE significant."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "3456 to 2 sf = 3500",
+          "desc": "round at 2nd digit"
+        },
+        {
+          "correct": true,
+          "expr": "0.00347 to 2 sf = 0.0035",
+          "desc": "leading zeros not significant"
+        },
+        {
+          "correct": true,
+          "expr": "45.83 to 1 sf = 50",
+          "desc": "round up"
+        },
+        {
+          "correct": false,
+          "expr": "0.0034 has 4 sf",
+          "desc": "only 2 sf (3 and 4)"
+        },
+        {
+          "correct": false,
+          "expr": "3456 to 1 sf = 3",
+          "desc": "should be 3000"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Find the first significant (non-zero) digit. Count the required number of digits from there. Round using the next digit.",
+      "equation": "<span class=\"ov\">3</span>456 to 1 sf = <span class=\"ovr\">3000</span>",
+      "caption": "Keep 1 digit, replace rest with zeros"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; large numbers",
+      "question": "Round 4728 to 2 sf.",
+      "steps": [
+        "1st sf = 4, 2nd sf = 7",
+        "Look at next digit: 2 (less than 5)",
+        "Round down: 4700"
+      ],
+      "answer": "4700",
+      "explanation": "The 3rd digit (2) tells us to round down."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; decimals",
+      "question": "Round 0.003856 to 2 sf.",
+      "steps": [
+        "Leading zeros not significant",
+        "1st sf = 3, 2nd sf = 8",
+        "Next digit = 5, round up: 0.0039"
+      ],
+      "answer": "0.0039",
+      "explanation": "Start counting from the first non-zero digit."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; one sf",
+      "question": "Round 67.3 to 1 sf.",
+      "steps": [
+        "1st sf = 6",
+        "Next digit = 7 (5 or more)",
+        "Round up: 70"
+      ],
+      "answer": "70",
+      "explanation": "One significant figure means one meaningful digit."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; trailing zeros",
+      "question": "Round 0.05049 to 3 sf.",
+      "steps": [
+        "1st sf = 5, 2nd = 0, 3rd = 4",
+        "Next digit = 9 (round up)",
+        "0.0505"
+      ],
+      "answer": "0.0505",
+      "explanation": "The zero between 5 and 4 IS significant."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "To 1 significant figure",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Round to 1 sf.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "47",
+          "answer": "50"
+        },
+        {
+          "id": "b",
+          "expression": "832",
+          "answer": "800"
+        },
+        {
+          "id": "c",
+          "expression": "5.6",
+          "answer": "6"
+        },
+        {
+          "id": "d",
+          "expression": "0.073",
+          "answer": "0.07"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "To 2 significant figures",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Round to 2 sf.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3456",
+          "answer": "3500"
+        },
+        {
+          "id": "b",
+          "expression": "0.0678",
+          "answer": "0.068"
+        },
+        {
+          "id": "c",
+          "expression": "12.45",
+          "answer": "12"
+        },
+        {
+          "id": "d",
+          "expression": "0.005032",
+          "answer": "0.0050"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "To 3 significant figures",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Round to 3 sf.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "45678",
+          "answer": "45700"
+        },
+        {
+          "id": "b",
+          "expression": "0.04563",
+          "answer": "0.0456"
+        },
+        {
+          "id": "c",
+          "expression": "7.0049",
+          "answer": "7.00"
+        },
+        {
+          "id": "d",
+          "expression": "123456",
+          "answer": "123000"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Counting significant figures",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "How many sf does each number have?",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "3.40",
+          "answer": "3 sf"
+        },
+        {
+          "id": "b",
+          "expression": "0.005",
+          "answer": "1 sf"
+        },
+        {
+          "id": "c",
+          "expression": "2000",
+          "answer": "1 sf (ambiguous)"
+        },
+        {
+          "id": "d",
+          "expression": "6.020",
+          "answer": "4 sf"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed rounding",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Round to the stated accuracy.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "56789 to 3 sf",
+          "answer": "56800"
+        },
+        {
+          "id": "b",
+          "expression": "0.003067 to 2 sf",
+          "answer": "0.0031"
+        },
+        {
+          "id": "c",
+          "expression": "99.6 to 2 sf",
+          "answer": "100"
+        },
+        {
+          "id": "d",
+          "expression": "0.1005 to 3 sf",
+          "answer": "0.101"
+        },
+        {
+          "id": "e",
+          "expression": "5555 to 1 sf",
+          "answer": "6000"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Leading zeros are not significant",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "0.0045 has 4 significant figures",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "3.50 has 3 significant figures",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "4728 to 1 sf is 4",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The first sf is the first non-zero digit",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A calculator shows <strong>0.00784532</strong>. Round this to: (i) 1 sf, (ii) 2 sf, (iii) 3 sf. Which rounding gives the best balance of accuracy and simplicity?"
+      },
+      {
+        "id": "b",
+        "text": "The speed of light is <strong>299,792,458 m/s</strong>. Express this to 1, 2, 3, and 4 significant figures. Scientists often use 3 &times; 10&sup8;. What does this represent in terms of sf?"
+      }
+    ]
+  }
+}

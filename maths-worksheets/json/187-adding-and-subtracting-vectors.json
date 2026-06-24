@@ -1,0 +1,325 @@
+{
+  "title": "VECTORS,\n(ADDING AND SUBTRACTING VECTORS)",
+  "objective": "LO: I can add and subtract column vectors and represent the results geometrically.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Vector addition and subtraction",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">vector</span> has both magnitude and direction. <span class=\"ul-k\">Column vectors</span> are written as (x, y) where x is horizontal and y is vertical movement."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Rules:</span> To add vectors, add corresponding components. To subtract, subtract components. a + b means 'go along a then along b'."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "(2,3) + (4,1) = (6,4)",
+          "desc": "add components"
+        },
+        {
+          "correct": true,
+          "expr": "(5,2) &minus; (3,1) = (2,1)",
+          "desc": "subtract components"
+        },
+        {
+          "correct": true,
+          "expr": "&minus;a is vector a reversed",
+          "desc": "negate both parts"
+        },
+        {
+          "correct": false,
+          "expr": "(2,3) + (4,1) = (8,3)",
+          "desc": "add each part separately"
+        },
+        {
+          "correct": false,
+          "expr": "Vectors can only be positive",
+          "desc": "can have negative components"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Add or subtract the x-components and y-components separately.",
+      "equation": "(a,b) + (c,d) = <span class=\"ov\">(a+c, b+d)</span>",
+      "caption": "Component-wise addition"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; adding vectors",
+      "question": "Find (3,2) + (4,&minus;1).",
+      "steps": [
+        "Add x: 3 + 4 = 7",
+        "Add y: 2 + (&minus;1) = 1",
+        "Result: (7, 1)"
+      ],
+      "answer": "(7, 1)",
+      "explanation": "Add each component separately."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; subtracting vectors",
+      "question": "Find (5,3) &minus; (2,7).",
+      "steps": [
+        "Subtract x: 5 &minus; 2 = 3",
+        "Subtract y: 3 &minus; 7 = &minus;4",
+        "Result: (3, &minus;4)"
+      ],
+      "answer": "(3, &minus;4)",
+      "explanation": "Subtract each component."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; negative vector",
+      "question": "If a = (4, &minus;2), find &minus;a.",
+      "steps": [
+        "Negate x: &minus;4",
+        "Negate y: 2",
+        "Result: (&minus;4, 2)"
+      ],
+      "answer": "(&minus;4, 2)",
+      "explanation": "Reverse both components."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; resultant vector",
+      "question": "Go from A to B using a = (3,1) then b = (2,4). Find the resultant.",
+      "steps": [
+        "Resultant = a + b",
+        "= (3+2, 1+4)",
+        "= (5, 5)"
+      ],
+      "answer": "(5, 5)",
+      "explanation": "The resultant goes directly from start to finish."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Adding vectors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find a + b.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a=(2,5), b=(3,1)",
+          "answer": "(5,6)"
+        },
+        {
+          "id": "b",
+          "expression": "a=(4,&minus;2), b=(1,6)",
+          "answer": "(5,4)"
+        },
+        {
+          "id": "c",
+          "expression": "a=(&minus;3,2), b=(5,&minus;4)",
+          "answer": "(2,&minus;2)"
+        },
+        {
+          "id": "d",
+          "expression": "a=(7,0), b=(&minus;3,4)",
+          "answer": "(4,4)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Subtracting vectors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find a &minus; b.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "a=(6,3), b=(2,1)",
+          "answer": "(4,2)"
+        },
+        {
+          "id": "b",
+          "expression": "a=(4,5), b=(7,2)",
+          "answer": "(&minus;3,3)"
+        },
+        {
+          "id": "c",
+          "expression": "a=(1,&minus;3), b=(&minus;2,4)",
+          "answer": "(3,&minus;7)"
+        },
+        {
+          "id": "d",
+          "expression": "a=(0,8), b=(5,&minus;1)",
+          "answer": "(&minus;5,9)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Negative vectors",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the negative of each vector.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3, 7)",
+          "answer": "(&minus;3, &minus;7)"
+        },
+        {
+          "id": "b",
+          "expression": "(&minus;2, 5)",
+          "answer": "(2, &minus;5)"
+        },
+        {
+          "id": "c",
+          "expression": "(4, &minus;6)",
+          "answer": "(&minus;4, 6)"
+        },
+        {
+          "id": "d",
+          "expression": "(&minus;1, &minus;8)",
+          "answer": "(1, 8)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Combined operations",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Calculate each expression.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2a + b where a=(1,3), b=(4,&minus;2)",
+          "answer": "(6,4)"
+        },
+        {
+          "id": "b",
+          "expression": "a &minus; 2b where a=(5,1), b=(2,3)",
+          "answer": "(1,&minus;5)"
+        },
+        {
+          "id": "c",
+          "expression": "a + b + c where a=(1,2), b=(3,&minus;1), c=(&minus;2,4)",
+          "answer": "(2,5)"
+        },
+        {
+          "id": "d",
+          "expression": "3a &minus; b where a=(2,1), b=(4,&minus;3)",
+          "answer": "(2,6)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed vector problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "AB = (3,4). Find BA.",
+          "answer": "(&minus;3,&minus;4)"
+        },
+        {
+          "id": "b",
+          "expression": "AB=(2,5), BC=(3,&minus;1). Find AC.",
+          "answer": "(5,4)"
+        },
+        {
+          "id": "c",
+          "expression": "a+b = (7,3), a = (4,1). Find b.",
+          "answer": "(3,2)"
+        },
+        {
+          "id": "d",
+          "expression": "If OA=(3,2) and OB=(7,5), find AB.",
+          "answer": "(4,3)"
+        },
+        {
+          "id": "e",
+          "expression": "Midpoint of AB where A=(2,4), B=(8,10). Position vector of M?",
+          "answer": "(5,7)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To add vectors, add corresponding components",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "(2,3) + (4,1) = (6,3)",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "AB + BA = 0 (zero vector)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Vectors must have positive components",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The resultant vector gives the direct path",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "ABCD is a parallelogram. AB = <strong>(4, 2)</strong> and AD = <strong>(1, 5)</strong>. Find the vectors AC and BD. Show that the diagonals bisect each other."
+      },
+      {
+        "id": "b",
+        "text": "Three forces act on an object: F1 = <strong>(3, &minus;2)</strong>, F2 = <strong>(&minus;1, 5)</strong>, F3 = <strong>(&minus;4, &minus;1)</strong>. Find the resultant force. What fourth force would balance the system?"
+      }
+    ]
+  }
+}

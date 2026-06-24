@@ -1,0 +1,325 @@
+{
+  "title": "TRANSFORMATIONS,\n(TRANSLATION)",
+  "objective": "LO: I can translate shapes using column vectors and describe translations.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Translation",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "A <span class=\"ul-b\">translation</span> slides every point of a shape the same distance in the same direction. It is described by a <span class=\"ul-k\">column vector</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Column vector:</span> The top number is horizontal movement (+ right, &minus; left). The bottom is vertical (+ up, &minus; down)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Vector (3, &minus;2): right 3, down 2",
+          "desc": "positive x, negative y"
+        },
+        {
+          "correct": true,
+          "expr": "(2,5) translated by (3,1) = (5,6)",
+          "desc": "add vector"
+        },
+        {
+          "correct": true,
+          "expr": "Translation preserves size, shape and orientation",
+          "desc": "no rotation"
+        },
+        {
+          "correct": false,
+          "expr": "Vector (3, &minus;2) means left 3, up 2",
+          "desc": "positive = right/up"
+        },
+        {
+          "correct": false,
+          "expr": "Translation changes the size of the shape",
+          "desc": "only position changes"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Add the column vector to each point: new point = original + vector.",
+      "equation": "(x, y) + <span class=\"ov\">(a, b)</span> = <span class=\"ovr\">(x+a, y+b)</span>",
+      "caption": "a = horizontal shift, b = vertical shift"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; applying a vector",
+      "question": "Translate (3, 2) by the vector (4, &minus;1).",
+      "steps": [
+        "Add horizontal: 3 + 4 = 7",
+        "Add vertical: 2 + (&minus;1) = 1",
+        "Image: (7, 1)"
+      ],
+      "answer": "(7, 1)",
+      "explanation": "Add each component of the vector to the corresponding coordinate."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; negative vector",
+      "question": "Translate (5, 3) by the vector (&minus;2, &minus;4).",
+      "steps": [
+        "Add horizontal: 5 + (&minus;2) = 3",
+        "Add vertical: 3 + (&minus;4) = &minus;1",
+        "Image: (3, &minus;1)"
+      ],
+      "answer": "(3, &minus;1)",
+      "explanation": "Negative components move left or down."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; describing a translation",
+      "question": "(1, 4) is mapped to (5, 2). Describe the translation.",
+      "steps": [
+        "Horizontal: 5 &minus; 1 = 4 (right)",
+        "Vertical: 2 &minus; 4 = &minus;2 (down)",
+        "Vector: (4, &minus;2)"
+      ],
+      "answer": "Translation by vector (4, &minus;2)",
+      "explanation": "Subtract original from image to find the vector."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; translating a shape",
+      "question": "Triangle (1,1), (3,1), (2,4) translated by (&minus;3, 2).",
+      "steps": [
+        "(1,1) &rarr; (&minus;2, 3)",
+        "(3,1) &rarr; (0, 3)",
+        "(2,4) &rarr; (&minus;1, 6)"
+      ],
+      "answer": "(&minus;2,3), (0,3), (&minus;1,6)",
+      "explanation": "Apply the same vector to every vertex."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Applying vectors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Translate each point by the given vector.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(2, 3) by (4, 1)",
+          "answer": "(6, 4)"
+        },
+        {
+          "id": "b",
+          "expression": "(5, 1) by (&minus;3, 2)",
+          "answer": "(2, 3)"
+        },
+        {
+          "id": "c",
+          "expression": "(&minus;1, 4) by (3, &minus;5)",
+          "answer": "(2, &minus;1)"
+        },
+        {
+          "id": "d",
+          "expression": "(0, 0) by (&minus;2, &minus;3)",
+          "answer": "(&minus;2, &minus;3)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding the vector",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the translation vector from the first point to the second.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(1, 2) to (4, 5)",
+          "answer": "(3, 3)"
+        },
+        {
+          "id": "b",
+          "expression": "(5, 3) to (2, 7)",
+          "answer": "(&minus;3, 4)"
+        },
+        {
+          "id": "c",
+          "expression": "(3, &minus;1) to (&minus;2, 4)",
+          "answer": "(&minus;5, 5)"
+        },
+        {
+          "id": "d",
+          "expression": "(&minus;4, 6) to (1, 1)",
+          "answer": "(5, &minus;5)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Translating shapes",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Translate each set of vertices by vector (2, &minus;3).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(1,4), (3,4), (2,6)",
+          "answer": "(3,1), (5,1), (4,3)"
+        },
+        {
+          "id": "b",
+          "expression": "(0,5), (4,5), (4,7), (0,7)",
+          "answer": "(2,2), (6,2), (6,4), (2,4)"
+        },
+        {
+          "id": "c",
+          "expression": "(2,1), (5,1), (5,3)",
+          "answer": "(4,&minus;2), (7,&minus;2), (7,0)"
+        },
+        {
+          "id": "d",
+          "expression": "(&minus;1,3), (2,3), (2,5), (&minus;1,5)",
+          "answer": "(1,0), (4,0), (4,2), (1,2)"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Reverse translations",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the original point before the translation.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Image (7, 2), vector (3, &minus;1). Original?",
+          "answer": "(4, 3)"
+        },
+        {
+          "id": "b",
+          "expression": "Image (1, 5), vector (&minus;4, 2). Original?",
+          "answer": "(5, 3)"
+        },
+        {
+          "id": "c",
+          "expression": "Image (&minus;2, 0), vector (&minus;5, &minus;3). Original?",
+          "answer": "(3, 3)"
+        },
+        {
+          "id": "d",
+          "expression": "Image (6, &minus;1), vector (2, &minus;4). Original?",
+          "answer": "(4, 3)"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed translation problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "(3, 7) translated by (&minus;5, 3)",
+          "answer": "(&minus;2, 10)"
+        },
+        {
+          "id": "b",
+          "expression": "Vector to map (2, &minus;1) to (6, 4)?",
+          "answer": "(4, 5)"
+        },
+        {
+          "id": "c",
+          "expression": "After vector (a, 3), (1, 2) maps to (4, 5). Find a.",
+          "answer": "3"
+        },
+        {
+          "id": "d",
+          "expression": "Two translations: (2, 1) then (3, &minus;4). Combined vector?",
+          "answer": "(5, &minus;3)"
+        },
+        {
+          "id": "e",
+          "expression": "Reverse of vector (3, &minus;2)?",
+          "answer": "(&minus;3, 2)"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "A translation is described by a column vector",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "A positive x-component means move left",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Translation preserves size, shape and orientation",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Translating by (0, 0) moves the shape to the origin",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "To find the vector, subtract original from image",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A shape is translated by vector <strong>(3, &minus;2)</strong> and then by vector <strong>(&minus;5, 4)</strong>. Find the single vector that has the same effect as both translations combined."
+      },
+      {
+        "id": "b",
+        "text": "Point A(2, 1) is translated to A'(5, 4). Point B is translated by the same vector to B'(1, 7). Find the coordinates of B and the length of AB."
+      }
+    ]
+  }
+}

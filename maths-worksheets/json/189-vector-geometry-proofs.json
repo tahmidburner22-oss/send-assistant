@@ -1,0 +1,325 @@
+{
+  "title": "VECTORS,\n(VECTOR GEOMETRY PROOFS)",
+  "objective": "LO: I can use vectors to prove geometric properties such as collinearity and parallelism.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Vector proofs",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "In vector geometry, we prove properties by showing vectors are <span class=\"ul-b\">parallel</span> (scalar multiples) or that points are <span class=\"ul-k\">collinear</span> (lie on the same line)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key technique:</span> Express vectors in terms of given vectors a and b. If one vector is a scalar multiple of another, they are parallel."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Proof techniques",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "If AB = kAC, then A, B, C are collinear",
+          "desc": "same direction, common point"
+        },
+        {
+          "correct": true,
+          "expr": "If PQ = kRS, then PQ is parallel to RS",
+          "desc": "scalar multiple"
+        },
+        {
+          "correct": true,
+          "expr": "Midpoint M: OM = &frac{1}{2}(OA + OB)",
+          "desc": "midpoint formula"
+        },
+        {
+          "correct": false,
+          "expr": "Same magnitude means parallel",
+          "desc": "direction must match"
+        },
+        {
+          "correct": false,
+          "expr": "AB = BA",
+          "desc": "AB = &minus;BA"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Express unknown vectors using known ones. Show scalar multiples for parallel/collinear.",
+      "equation": "AB = <span class=\"ov\">OB &minus; OA</span> = <span class=\"ovr\">b &minus; a</span>",
+      "caption": "Route from A to B via the origin"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; expressing vectors",
+      "question": "OA = a, OB = b. Find AB.",
+      "steps": [
+        "AB = AO + OB",
+        "= &minus;a + b",
+        "= b &minus; a"
+      ],
+      "answer": "AB = b &minus; a",
+      "explanation": "Go backwards along a, then forwards along b."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; midpoint",
+      "question": "M is the midpoint of AB. OA = a, OB = b. Find OM.",
+      "steps": [
+        "OM = OA + AM",
+        "AM = &frac{1}{2}AB = &frac{1}{2}(b &minus; a)",
+        "OM = a + &frac{1}{2}(b &minus; a) = &frac{1}{2}(a + b)"
+      ],
+      "answer": "OM = &frac{1}{2}(a + b)",
+      "explanation": "The midpoint formula in vectors."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; proving parallel",
+      "question": "OA = a, OB = b, OC = 3a, OD = 3b. Show AB is parallel to CD.",
+      "steps": [
+        "AB = b &minus; a",
+        "CD = OD &minus; OC = 3b &minus; 3a = 3(b &minus; a)",
+        "CD = 3 &times; AB, so parallel"
+      ],
+      "answer": "CD = 3AB, so AB parallel to CD",
+      "explanation": "CD is a scalar multiple of AB."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; proving collinear",
+      "question": "OA = 2a + b, OB = 5a + 4b, OC = 8a + 7b. Prove A, B, C collinear.",
+      "steps": [
+        "AB = OB &minus; OA = 3a + 3b",
+        "AC = OC &minus; OA = 6a + 6b = 2(3a + 3b)",
+        "AC = 2AB, common point A, so collinear"
+      ],
+      "answer": "AC = 2AB, collinear",
+      "explanation": "AC is a scalar multiple of AB and they share point A."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Expressing vectors",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "OA = a, OB = b. Express in terms of a and b.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "AB",
+          "answer": "b &minus; a"
+        },
+        {
+          "id": "b",
+          "expression": "BA",
+          "answer": "a &minus; b"
+        },
+        {
+          "id": "c",
+          "expression": "Midpoint M of AB: OM",
+          "answer": "&frac{1}{2}(a + b)"
+        },
+        {
+          "id": "d",
+          "expression": "Point P where OP = 2a + b: AP",
+          "answer": "a + b"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Scalar multiples",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State if the vectors are parallel.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "2a + 4b and a + 2b",
+          "answer": "Yes (scalar 2)"
+        },
+        {
+          "id": "b",
+          "expression": "3a &minus; b and 6a &minus; 2b",
+          "answer": "Yes (scalar 2)"
+        },
+        {
+          "id": "c",
+          "expression": "a + 3b and 2a + 3b",
+          "answer": "No"
+        },
+        {
+          "id": "d",
+          "expression": "4a &minus; 2b and &minus;2a + b",
+          "answer": "Yes (scalar &minus;2)"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding ratios",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the ratio AB:AC.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "AB = 2a, AC = 6a",
+          "answer": "1:3"
+        },
+        {
+          "id": "b",
+          "expression": "AB = b &minus; a, AC = 3b &minus; 3a",
+          "answer": "1:3"
+        },
+        {
+          "id": "c",
+          "expression": "AB = 4a + 2b, AC = 8a + 4b",
+          "answer": "1:2"
+        },
+        {
+          "id": "d",
+          "expression": "AB = a + b, AC = 3a + 3b",
+          "answer": "1:3"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Midpoints and ratios",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "M is midpoint of AB. OA = a, OB = b.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Find AM",
+          "answer": "&frac{1}{2}(b &minus; a)"
+        },
+        {
+          "id": "b",
+          "expression": "Find OM",
+          "answer": "&frac{1}{2}(a + b)"
+        },
+        {
+          "id": "c",
+          "expression": "P divides AB in ratio 1:2. Find OP.",
+          "answer": "&frac{2}{3}a + &frac{1}{3}b"
+        },
+        {
+          "id": "d",
+          "expression": "Q divides AB in ratio 2:1. Find OQ.",
+          "answer": "&frac{1}{3}a + &frac{2}{3}b"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Proof problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "OA=a, OB=b, OC=a+b. What shape is OACB?",
+          "answer": "Parallelogram"
+        },
+        {
+          "id": "b",
+          "expression": "AB = 3a+6b, CD = a+2b. Relationship?",
+          "answer": "AB = 3CD, parallel"
+        },
+        {
+          "id": "c",
+          "expression": "P = a, Q = 4a. Are O, P, Q collinear?",
+          "answer": "Yes (all multiples of a)"
+        },
+        {
+          "id": "d",
+          "expression": "AB = 2i+3j, AC = 4i+6j. Collinear?",
+          "answer": "Yes: AC = 2AB"
+        },
+        {
+          "id": "e",
+          "expression": "Show ABCD is a parallelogram if AB = DC",
+          "answer": "AB = DC means parallel and equal"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "AB = OB &minus; OA = b &minus; a",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "AB = BA",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "Parallel vectors are scalar multiples of each other",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Collinear points must share a common vector direction",
+        "correct": true
+      },
+      {
+        "id": "e",
+        "statement": "If |AB| = |CD| then AB = CD",
+        "correct": false
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "In triangle OAB, OA = <strong>a</strong> and OB = <strong>b</strong>. P is the midpoint of OA. Q is the point on AB such that AQ:QB = 1:2. Express PQ in terms of a and b."
+      },
+      {
+        "id": "b",
+        "text": "OABC is a parallelogram with OA = <strong>a</strong> and OC = <strong>c</strong>. M is the midpoint of AB. Prove that OM and AC intersect at a point that divides both in ratio 2:1."
+      }
+    ]
+  }
+}

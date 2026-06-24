@@ -1,0 +1,325 @@
+{
+  "title": "STRAIGHT-LINE GRAPHS,\n(PARALLEL AND PERPENDICULAR LINES)",
+  "objective": "LO: I can identify and find equations of parallel and perpendicular lines.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Parallel and perpendicular",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Parallel lines</span> have the <span class=\"ul-k\">same gradient</span>. They never meet. <span class=\"ul-b\">Perpendicular lines</span> meet at right angles (90&deg;)."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key rule:</span> If one line has gradient m, a perpendicular line has gradient <span class=\"ul-k\">&minus;1/m</span> (negative reciprocal). The product of their gradients is &minus;1."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "y = 2x + 1 and y = 2x &minus; 3 are parallel",
+          "desc": "same gradient"
+        },
+        {
+          "correct": true,
+          "expr": "m&sub1; &times; m&sub2; = &minus;1 for perpendicular",
+          "desc": "product rule"
+        },
+        {
+          "correct": true,
+          "expr": "gradient 3 &rarr; perpendicular gradient &minus;&frac{1}{3}",
+          "desc": "negative reciprocal"
+        },
+        {
+          "correct": false,
+          "expr": "y = 2x + 1 and y = &minus;2x + 3 are perpendicular",
+          "desc": "2 &times; (&minus;2) = &minus;4 &ne; &minus;1"
+        },
+        {
+          "correct": false,
+          "expr": "Parallel lines have gradients that multiply to &minus;1",
+          "desc": "that is perpendicular"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Parallel: same gradient. Perpendicular: gradients multiply to give &minus;1 (negative reciprocal).",
+      "equation": "m&sub1; &times; m&sub2; = <span class=\"ov\">&minus;1</span> &rarr; m&sub2; = <span class=\"ovr\">&minus;1/m&sub1;</span>",
+      "caption": "Perpendicular gradients are negative reciprocals"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; parallel lines",
+      "question": "Find the equation of the line parallel to y = 3x + 2 passing through (1, 7).",
+      "steps": [
+        "Parallel means same gradient: m = 3",
+        "y = 3x + c; substitute (1, 7): 7 = 3 + c, c = 4",
+        "Equation: y = 3x + 4"
+      ],
+      "answer": "y = 3x + 4",
+      "explanation": "Parallel lines share the same gradient."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; perpendicular gradient",
+      "question": "A line has gradient 4. Find the gradient of a perpendicular line.",
+      "steps": [
+        "Perpendicular gradient = &minus;1/m",
+        "&minus;1/4",
+        "The perpendicular gradient is &minus;&frac{1}{4}"
+      ],
+      "answer": "Gradient = &minus;&frac{1}{4}",
+      "explanation": "Flip the fraction and change the sign."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; perpendicular equation",
+      "question": "Find the equation perpendicular to y = 2x &minus; 5 through (4, 3).",
+      "steps": [
+        "Original gradient = 2; perpendicular = &minus;&frac{1}{2}",
+        "y = &minus;&frac{1}{2}x + c; 3 = &minus;&frac{1}{2}(4) + c; 3 = &minus;2 + c; c = 5",
+        "y = &minus;&frac{1}{2}x + 5"
+      ],
+      "answer": "y = &minus;&frac{1}{2}x + 5",
+      "explanation": "Find the perpendicular gradient, then use the point to find c."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; checking perpendicular",
+      "question": "Are y = 3x + 1 and y = &minus;&frac{1}{3}x + 4 perpendicular?",
+      "steps": [
+        "m&sub1; = 3, m&sub2; = &minus;&frac{1}{3}",
+        "Product = 3 &times; (&minus;&frac{1}{3}) = &minus;1",
+        "Yes, they are perpendicular"
+      ],
+      "answer": "Yes (product of gradients = &minus;1)",
+      "explanation": "If m&sub1; &times; m&sub2; = &minus;1, the lines are perpendicular."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Identifying parallel lines",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "State which pairs are parallel.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "y = 5x + 2 and y = 5x &minus; 1",
+          "answer": "Parallel (both m = 5)"
+        },
+        {
+          "id": "b",
+          "expression": "y = 3x + 4 and y = &minus;3x + 4",
+          "answer": "Not parallel"
+        },
+        {
+          "id": "c",
+          "expression": "y = &frac{1}{2}x + 1 and y = &frac{1}{2}x &minus; 6",
+          "answer": "Parallel (both m = &frac{1}{2})"
+        },
+        {
+          "id": "d",
+          "expression": "y = 2x + 3 and 2y = 4x + 1",
+          "answer": "Parallel (both m = 2)"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding perpendicular gradients",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the perpendicular gradient.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "m = 2",
+          "answer": "&minus;&frac{1}{2}"
+        },
+        {
+          "id": "b",
+          "expression": "m = &minus;3",
+          "answer": "&frac{1}{3}"
+        },
+        {
+          "id": "c",
+          "expression": "m = &frac{1}{4}",
+          "answer": "&minus;4"
+        },
+        {
+          "id": "d",
+          "expression": "m = &minus;&frac{2}{5}",
+          "answer": "&frac{5}{2}"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Equations of parallel lines",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the equation of the parallel line through the given point.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Parallel to y = 4x + 1, through (2, 11)",
+          "answer": "y = 4x + 3"
+        },
+        {
+          "id": "b",
+          "expression": "Parallel to y = &minus;x + 6, through (3, 1)",
+          "answer": "y = &minus;x + 4"
+        },
+        {
+          "id": "c",
+          "expression": "Parallel to y = &frac{1}{2}x &minus; 3, through (4, 5)",
+          "answer": "y = &frac{1}{2}x + 3"
+        },
+        {
+          "id": "d",
+          "expression": "Parallel to y = 3x, through (1, 8)",
+          "answer": "y = 3x + 5"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Equations of perpendicular lines",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the equation perpendicular to the given line through the given point.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Perpendicular to y = 2x + 1, through (4, 3)",
+          "answer": "y = &minus;&frac{1}{2}x + 5"
+        },
+        {
+          "id": "b",
+          "expression": "Perpendicular to y = &minus;3x + 2, through (6, 4)",
+          "answer": "y = &frac{1}{3}x + 2"
+        },
+        {
+          "id": "c",
+          "expression": "Perpendicular to y = &frac{1}{5}x + 3, through (5, &minus;2)",
+          "answer": "y = &minus;5x + 23"
+        },
+        {
+          "id": "d",
+          "expression": "Perpendicular to y = x &minus; 4, through (2, 6)",
+          "answer": "y = &minus;x + 8"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Are y = 4x + 1 and y = &minus;&frac{1}{4}x + 3 perpendicular?",
+          "answer": "Yes (4 &times; &minus;&frac{1}{4} = &minus;1)"
+        },
+        {
+          "id": "b",
+          "expression": "Line through (0, 5) parallel to y = 7x &minus; 2",
+          "answer": "y = 7x + 5"
+        },
+        {
+          "id": "c",
+          "expression": "Perpendicular to y = &minus;2x + 8, y-intercept 3",
+          "answer": "y = &frac{1}{2}x + 3"
+        },
+        {
+          "id": "d",
+          "expression": "A line has equation 3x + y = 6. Find its gradient.",
+          "answer": "&minus;3"
+        },
+        {
+          "id": "e",
+          "expression": "Find equation perpendicular to 3x + y = 6 through (3, 1)",
+          "answer": "y = &frac{1}{3}x"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Parallel lines have the same gradient",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Perpendicular gradients add to &minus;1",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "If m&sub1; &times; m&sub2; = &minus;1, the lines are perpendicular",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "The perpendicular gradient of 2 is &minus;2",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Parallel lines never intersect",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Triangle ABC has vertices <strong>A(1, 2)</strong>, <strong>B(5, 4)</strong>, <strong>C(3, 8)</strong>. Show that AB is perpendicular to BC. Find the equations of lines AB and BC."
+      },
+      {
+        "id": "b",
+        "text": "The perpendicular bisector of a line segment passes through the midpoint at right angles. Find the equation of the perpendicular bisector of the segment joining <strong>(2, 3)</strong> and <strong>(6, 7)</strong>."
+      }
+    ]
+  }
+}

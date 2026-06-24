@@ -1,0 +1,325 @@
+{
+  "title": "VOLUME AND SURFACE AREA,\n(SURFACE AREA OF CYLINDERS AND SPHERES)",
+  "objective": "LO: I can calculate the surface area of cylinders and spheres.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Surface area formulae",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The <span class=\"ul-b\">surface area</span> of a <span class=\"ul-k\">cylinder</span> = 2&pi;r&sup2; + 2&pi;rh (two circles + curved surface). The surface area of a <span class=\"ul-k\">sphere</span> = 4&pi;r&sup2;."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Units:</span> Surface area is measured in square units (cm&sup2;, m&sup2;)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Key formulae",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "Cylinder SA = 2&pi;r&sup2; + 2&pi;rh",
+          "desc": "two circles + rectangle"
+        },
+        {
+          "correct": true,
+          "expr": "Sphere SA = 4&pi;r&sup2;",
+          "desc": "four times pi r squared"
+        },
+        {
+          "correct": true,
+          "expr": "Hemisphere SA = 3&pi;r&sup2;",
+          "desc": "half sphere + circle base"
+        },
+        {
+          "correct": false,
+          "expr": "Cylinder SA = &pi;r&sup2;h",
+          "desc": "that is volume"
+        },
+        {
+          "correct": false,
+          "expr": "Sphere SA = 2&pi;r&sup2;",
+          "desc": "must be 4&pi;r&sup2;"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Cylinder: unwrap to get rectangle (2&pi;rh) plus two circles (2&pi;r&sup2;). Sphere: 4&pi;r&sup2;.",
+      "equation": "Cylinder: <span class=\"ov\">2&pi;r(r + h)</span> | Sphere: <span class=\"ovr\">4&pi;r&sup2;</span>",
+      "caption": "Remember: surface area uses squared units"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; cylinder SA",
+      "question": "Find the SA of a cylinder with r = 3, h = 10.",
+      "steps": [
+        "SA = 2&pi;r&sup2; + 2&pi;rh",
+        "= 2&pi;(9) + 2&pi;(3)(10)",
+        "= 18&pi; + 60&pi; = 78&pi; = 245.0 cm&sup2;"
+      ],
+      "answer": "245.0 cm&sup2;",
+      "explanation": "Add the areas of two circles and the curved surface."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; sphere SA",
+      "question": "Find the SA of a sphere with radius 5 cm.",
+      "steps": [
+        "SA = 4&pi;r&sup2;",
+        "= 4&pi;(25)",
+        "= 100&pi; = 314.2 cm&sup2;"
+      ],
+      "answer": "314.2 cm&sup2;",
+      "explanation": "Substitute into 4&pi;r&sup2;."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; hemisphere",
+      "question": "Find the total SA of a hemisphere with radius 4 cm.",
+      "steps": [
+        "Curved surface = 2&pi;r&sup2; = 2&pi;(16) = 32&pi;",
+        "Flat circle = &pi;r&sup2; = 16&pi;",
+        "Total = 48&pi; = 150.8 cm&sup2;"
+      ],
+      "answer": "150.8 cm&sup2;",
+      "explanation": "Hemisphere = half sphere surface + flat circular base."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; open cylinder",
+      "question": "A cylindrical can (no lid) has r = 4, h = 8. Find SA.",
+      "steps": [
+        "Base circle: &pi;r&sup2; = 16&pi;",
+        "Curved surface: 2&pi;rh = 64&pi;",
+        "Total = 80&pi; = 251.3 cm&sup2;"
+      ],
+      "answer": "251.3 cm&sup2;",
+      "explanation": "Open cylinder: one circle + curved surface."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Cylinder surface area",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the total SA (1 dp). Use &pi; = 3.14.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 2, h = 5",
+          "answer": "87.9 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "r = 4, h = 10",
+          "answer": "351.7 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "r = 3, h = 7",
+          "answer": "188.5 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "r = 6, h = 4",
+          "answer": "376.8 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Sphere surface area",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the SA (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 3",
+          "answer": "113.1 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "r = 7",
+          "answer": "615.8 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "r = 10",
+          "answer": "1256.6 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "d = 8 (r = 4)",
+          "answer": "201.1 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Hemispheres",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the total SA including the flat base (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "r = 5",
+          "answer": "235.6 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "r = 2",
+          "answer": "37.7 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "r = 6",
+          "answer": "339.3 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "r = 8",
+          "answer": "603.2 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Open/closed cylinders",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find SA for each container (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Closed cylinder: r=5, h=12",
+          "answer": "534.1 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "Open cylinder (no lid): r=3, h=8",
+          "answer": "207.3 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "Pipe (no ends): r=2, h=20",
+          "answer": "251.3 cm&sup2;"
+        },
+        {
+          "id": "d",
+          "expression": "Closed cylinder: r=1.5, h=6",
+          "answer": "70.7 cm&sup2;"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each problem (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Tennis ball r = 3.3 cm. Surface area?",
+          "answer": "136.8 cm&sup2;"
+        },
+        {
+          "id": "b",
+          "expression": "Tin can r = 4, h = 11. SA for label (curved only)?",
+          "answer": "276.5 cm&sup2;"
+        },
+        {
+          "id": "c",
+          "expression": "Sphere SA = 200 cm&sup2;. Find radius.",
+          "answer": "3.99 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Cylinder r=5, SA = 440&pi;. Find h.",
+          "answer": "39 cm"
+        },
+        {
+          "id": "e",
+          "expression": "Earth radius &asymp; 6371 km. Surface area?",
+          "answer": "5.10 &times; 10&sup8; km&sup2;"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Cylinder SA = 2&pi;r&sup2; + 2&pi;rh",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "Sphere SA = 2&pi;r&sup2;",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The curved surface of a cylinder unwraps to a rectangle",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "Surface area of a hemisphere is exactly half the sphere",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Surface area is measured in square units",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A cylinder has the same radius and height (r = h). If the total surface area is <strong>150&pi; cm&sup2;</strong>, find the radius."
+      },
+      {
+        "id": "b",
+        "text": "A sphere and cylinder have the same radius r and the cylinder height equals the diameter (h = 2r). Show that the sphere and cylinder have the same surface area."
+      }
+    ]
+  }
+}

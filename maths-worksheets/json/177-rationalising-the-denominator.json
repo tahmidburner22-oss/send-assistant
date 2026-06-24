@@ -1,0 +1,325 @@
+{
+  "title": "SURDS,\n(RATIONALISING THE DENOMINATOR)",
+  "objective": "LO: I can rationalise the denominator of a surd fraction.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Rationalising",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Rationalising</span> means removing the surd from the <span class=\"ul-k\">denominator</span> (bottom) of a fraction by multiplying top and bottom by an appropriate expression."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Methods:</span> For &frac{a}{&radic;b}, multiply by &frac{&radic;b}{&radic;b}. For &frac{a}{c + &radic;d}, multiply by &frac{c &minus; &radic;d}{c &minus; &radic;d} (conjugate)."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&frac{1}{&radic;2} = &frac{&radic;2}{2}",
+          "desc": "multiply by &radic;2/&radic;2"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{6}{&radic;3} = &frac{6&radic;3}{3} = 2&radic;3",
+          "desc": "simplify after"
+        },
+        {
+          "correct": true,
+          "expr": "&frac{1}{2+&radic;3} uses conjugate 2&minus;&radic;3",
+          "desc": "difference of squares"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{1}{&radic;5} = &frac{1}{5}",
+          "desc": "must multiply properly"
+        },
+        {
+          "correct": false,
+          "expr": "&frac{3}{&radic;2} = 3&radic;2",
+          "desc": "= &frac{3&radic;2}{2}"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Multiply numerator and denominator by the surd (or conjugate) to eliminate the irrational denominator.",
+      "equation": "&frac{a}{&radic;b} &times; <span class=\"ov\">&frac{&radic;b}{&radic;b}</span> = <span class=\"ovr\">&frac{a&radic;b}{b}</span>",
+      "caption": "The denominator becomes rational"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; simple rationalising",
+      "question": "Rationalise &frac{5}{&radic;3}.",
+      "steps": [
+        "Multiply by &frac{&radic;3}{&radic;3}",
+        "= &frac{5&radic;3}{&radic;3 &times; &radic;3}",
+        "= &frac{5&radic;3}{3}"
+      ],
+      "answer": "&frac{5&radic;3}{3}",
+      "explanation": "Multiply top and bottom by &radic;3."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; simplify after",
+      "question": "Rationalise &frac{6}{&radic;2}.",
+      "steps": [
+        "Multiply by &frac{&radic;2}{&radic;2}: &frac{6&radic;2}{2}",
+        "Simplify: 6/2 = 3",
+        "= 3&radic;2"
+      ],
+      "answer": "3&radic;2",
+      "explanation": "Always simplify the fraction after rationalising."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; conjugate method",
+      "question": "Rationalise &frac{1}{3 + &radic;2}.",
+      "steps": [
+        "Multiply by &frac{3 &minus; &radic;2}{3 &minus; &radic;2}",
+        "Numerator: 3 &minus; &radic;2",
+        "Denominator: 9 &minus; 2 = 7"
+      ],
+      "answer": "&frac{3 &minus; &radic;2}{7}",
+      "explanation": "Use the conjugate: (a + b)(a &minus; b) = a&sup2; &minus; b&sup2;."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; harder conjugate",
+      "question": "Rationalise &frac{4}{&radic;5 &minus; 1}.",
+      "steps": [
+        "Multiply by &frac{&radic;5 + 1}{&radic;5 + 1}",
+        "Num: 4(&radic;5 + 1) = 4&radic;5 + 4",
+        "Den: 5 &minus; 1 = 4"
+      ],
+      "answer": "&radic;5 + 1",
+      "explanation": "Simplify the fraction: &frac{4&radic;5 + 4}{4} = &radic;5 + 1."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Simple rationalising",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Rationalise the denominator.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{&radic;5}",
+          "answer": "&frac{&radic;5}{5}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3}{&radic;7}",
+          "answer": "&frac{3&radic;7}{7}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{4}{&radic;2}",
+          "answer": "2&radic;2"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{10}{&radic;5}",
+          "answer": "2&radic;5"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Simplify after rationalising",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Rationalise and fully simplify.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{6}{&radic;3}",
+          "answer": "2&radic;3"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{8}{&radic;2}",
+          "answer": "4&radic;2"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{12}{&radic;6}",
+          "answer": "2&radic;6"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{15}{&radic;5}",
+          "answer": "3&radic;5"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Conjugate method (addition)",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Rationalise using the conjugate.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{1 + &radic;2}",
+          "answer": "&radic;2 &minus; 1"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{1}{3 + &radic;5}",
+          "answer": "&frac{3 &minus; &radic;5}{4}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{2}{4 + &radic;3}",
+          "answer": "&frac{8 &minus; 2&radic;3}{13}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{5}{2 + &radic;7}",
+          "answer": "&frac{10 &minus; 5&radic;7}{&minus;3}"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Conjugate method (subtraction)",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Rationalise the denominator.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{1}{&radic;3 &minus; 1}",
+          "answer": "&frac{&radic;3 + 1}{2}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{3}{&radic;5 &minus; 2}",
+          "answer": "3(&radic;5 + 2)"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{4}{&radic;7 &minus; &radic;3}",
+          "answer": "&radic;7 + &radic;3"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{6}{5 &minus; &radic;2}",
+          "answer": "&frac{6(5 + &radic;2)}{23}"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed rationalising",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Rationalise and simplify fully.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&frac{2}{&radic;8}",
+          "answer": "&frac{&radic;2}{2}"
+        },
+        {
+          "id": "b",
+          "expression": "&frac{&radic;3}{&radic;12}",
+          "answer": "&frac{1}{2}"
+        },
+        {
+          "id": "c",
+          "expression": "&frac{1}{1 + &radic;3}",
+          "answer": "&frac{&radic;3 &minus; 1}{2}"
+        },
+        {
+          "id": "d",
+          "expression": "&frac{&radic;5 + 1}{&radic;5 &minus; 1}",
+          "answer": "&frac{3 + &radic;5}{2}"
+        },
+        {
+          "id": "e",
+          "expression": "&frac{6}{3&radic;2}",
+          "answer": "&radic;2"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "To rationalise &frac{a}{&radic;b}, multiply top and bottom by &radic;b",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&frac{1}{&radic;2} = &frac{1}{2}",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "The conjugate of (a + &radic;b) is (a &minus; &radic;b)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&frac{4}{&radic;2} = 4&radic;2",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "(a + &radic;b)(a &minus; &radic;b) = a&sup2; &minus; b",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "Show that <strong>&frac{1}{&radic;2 + 1} + &frac{1}{&radic;2 &minus; 1} = 2&radic;2</strong> by rationalising each fraction."
+      },
+      {
+        "id": "b",
+        "text": "Simplify <strong>&frac{&radic;3 + 1}{&radic;3 &minus; 1} &minus; &frac{&radic;3 &minus; 1}{&radic;3 + 1}</strong>. Give your answer in the form a&radic;b."
+      }
+    ]
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "title": "TRIGONOMETRY,\n(SOH CAH TOA — FINDING SIDES)",
+  "objective": "LO: I can use trigonometric ratios to find missing sides in right-angled triangles.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Finding sides",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "To find a missing <span class=\"ul-b\">side</span>, identify the angle and which sides are involved. Set up the equation using <span class=\"ul-k\">SOH CAH TOA</span> and solve."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Rearranging:</span> If the unknown is the numerator, multiply. If the denominator, divide."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "sin 40&deg; = x/10 &rarr; x = 10 sin 40&deg;",
+          "desc": "opp = hyp &times; sin"
+        },
+        {
+          "correct": true,
+          "expr": "cos 35&deg; = x/8 &rarr; x = 8 cos 35&deg;",
+          "desc": "adj = hyp &times; cos"
+        },
+        {
+          "correct": true,
+          "expr": "tan 50&deg; = 7/x &rarr; x = 7/tan 50&deg;",
+          "desc": "adj = opp/tan"
+        },
+        {
+          "correct": false,
+          "expr": "sin 40&deg; = 10/x means x = 10 sin 40&deg;",
+          "desc": "x = 10/sin 40"
+        },
+        {
+          "correct": false,
+          "expr": "Always multiply by the trig ratio",
+          "desc": "divide if unknown is denominator"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "Set up the ratio, then rearrange. Multiply if unknown is numerator, divide if denominator.",
+      "equation": "O = H &times; <span class=\"ov\">sin &theta;</span> | A = H &times; <span class=\"ovr\">cos &theta;</span>",
+      "caption": "SOH: O = H sin &theta; | CAH: A = H cos &theta; | TOA: O = A tan &theta;"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; finding opposite",
+      "question": "Angle 35&deg;, hypotenuse = 12 cm. Find the opposite.",
+      "steps": [
+        "sin 35&deg; = x/12",
+        "x = 12 &times; sin 35&deg;",
+        "x = 12 &times; 0.574 = 6.9 cm"
+      ],
+      "answer": "x = 6.9 cm",
+      "explanation": "Opposite = hypotenuse &times; sin(angle)."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; finding adjacent",
+      "question": "Angle 42&deg;, hypotenuse = 15 cm. Find the adjacent.",
+      "steps": [
+        "cos 42&deg; = x/15",
+        "x = 15 &times; cos 42&deg;",
+        "x = 15 &times; 0.743 = 11.1 cm"
+      ],
+      "answer": "x = 11.1 cm",
+      "explanation": "Adjacent = hypotenuse &times; cos(angle)."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; finding hypotenuse",
+      "question": "Angle 30&deg;, opposite = 8 cm. Find the hypotenuse.",
+      "steps": [
+        "sin 30&deg; = 8/h",
+        "h = 8/sin 30&deg;",
+        "h = 8/0.5 = 16 cm"
+      ],
+      "answer": "h = 16 cm",
+      "explanation": "When the unknown is the denominator, divide."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; using tan",
+      "question": "Angle 55&deg;, adjacent = 6 cm. Find the opposite.",
+      "steps": [
+        "tan 55&deg; = x/6",
+        "x = 6 &times; tan 55&deg;",
+        "x = 6 &times; 1.428 = 8.6 cm"
+      ],
+      "answer": "x = 8.6 cm",
+      "explanation": "Opposite = adjacent &times; tan(angle)."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Finding the opposite",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the opposite side (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Angle 40&deg;, hyp = 10",
+          "answer": "6.4 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Angle 25&deg;, hyp = 20",
+          "answer": "8.5 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Angle 60&deg;, hyp = 14",
+          "answer": "12.1 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Angle 50&deg;, adj = 8",
+          "answer": "9.5 cm"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Finding the adjacent",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Find the adjacent side (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Angle 35&deg;, hyp = 12",
+          "answer": "9.8 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Angle 55&deg;, hyp = 9",
+          "answer": "5.2 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Angle 70&deg;, opp = 15",
+          "answer": "5.5 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Angle 20&deg;, hyp = 16",
+          "answer": "15.0 cm"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Finding the hypotenuse",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Find the hypotenuse (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Angle 30&deg;, opp = 5",
+          "answer": "10 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Angle 45&deg;, opp = 7",
+          "answer": "9.9 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Angle 60&deg;, adj = 4",
+          "answer": "8 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Angle 38&deg;, opp = 9",
+          "answer": "14.6 cm"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Mixed",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Find the marked side (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Angle 48&deg;, hyp = 13, find opp",
+          "answer": "9.7 cm"
+        },
+        {
+          "id": "b",
+          "expression": "Angle 33&deg;, opp = 11, find hyp",
+          "answer": "20.2 cm"
+        },
+        {
+          "id": "c",
+          "expression": "Angle 62&deg;, adj = 7, find opp",
+          "answer": "13.2 cm"
+        },
+        {
+          "id": "d",
+          "expression": "Angle 72&deg;, hyp = 20, find adj",
+          "answer": "6.2 cm"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Word problems",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each (1 dp).",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Ladder 6 m at 70&deg; to ground. Height reached?",
+          "answer": "5.6 m"
+        },
+        {
+          "id": "b",
+          "expression": "Angle of elevation 40&deg;, 50 m from tower. Height?",
+          "answer": "42.0 m"
+        },
+        {
+          "id": "c",
+          "expression": "Plane at 8&deg; climb, 2000 m travel. Altitude?",
+          "answer": "278.3 m"
+        },
+        {
+          "id": "d",
+          "expression": "Zip line at 25&deg;, horizontal 80 m. Wire length?",
+          "answer": "88.3 m"
+        },
+        {
+          "id": "e",
+          "expression": "Ramp at 12&deg;, height 1.5 m. Length?",
+          "answer": "7.2 m"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "Opposite = hypotenuse &times; sin(angle)",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "If unknown is hypotenuse, always multiply",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "tan is used when you have opp and adj (no hyp)",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "sin 30&deg; = 30/hypotenuse",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "The hypotenuse is always the longest side",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "A ship sails <strong>15 km</strong> on a bearing of <strong>040&deg;</strong>. How far east and how far north has it travelled?"
+      },
+      {
+        "id": "b",
+        "text": "An isosceles triangle has two equal sides of <strong>10 cm</strong> and angle between them <strong>50&deg;</strong>. Find the base length and area."
+      }
+    ]
+  }
+}

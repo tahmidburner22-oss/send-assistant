@@ -1,0 +1,325 @@
+{
+  "title": "PLACE VALUE AND ORDERING INTEGERS,\n(ORDERING POSITIVE AND NEGATIVE INTEGERS)",
+  "objective": "LO: I can order positive and negative integers and place them on a number line.",
+  "send_mode": false,
+  "info_boxes": {
+    "key_terms": {
+      "id": "key_terms",
+      "title": "Ordering integers",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "<span class=\"ul-b\">Integers</span> are whole numbers including negatives: ... &minus;3, &minus;2, &minus;1, 0, 1, 2, 3 ... On a number line, numbers <span class=\"ul-k\">increase to the right</span>."
+        },
+        {
+          "type": "paragraph",
+          "text": "<span class=\"rb\">Key rule:</span> All negative numbers are less than zero. A larger negative magnitude means a smaller value: &minus;5 < &minus;2."
+        }
+      ]
+    },
+    "what_we_learn": {
+      "id": "what_we_learn",
+      "title": "Quick examples",
+      "examples": [
+        {
+          "correct": true,
+          "expr": "&minus;3 < 2",
+          "desc": "negatives are less than positives"
+        },
+        {
+          "correct": true,
+          "expr": "&minus;7 < &minus;2",
+          "desc": "further from zero = smaller"
+        },
+        {
+          "correct": true,
+          "expr": "0 > &minus;4",
+          "desc": "zero is greater than any negative"
+        },
+        {
+          "correct": false,
+          "expr": "&minus;5 > &minus;2",
+          "desc": "&minus;5 is further left, so smaller"
+        },
+        {
+          "correct": false,
+          "expr": "&minus;1 < &minus;8",
+          "desc": "&minus;1 is closer to zero, so larger"
+        }
+      ]
+    },
+    "key_idea": {
+      "id": "key_idea",
+      "title": "Key idea",
+      "text": "On a number line, left is smaller. For negatives, bigger digit = smaller value.",
+      "equation": "&minus;5 < &minus;3 < <span class=\"ov\">0</span> < 2 < <span class=\"ovr\">5</span>",
+      "caption": "Further left = smaller value"
+    }
+  },
+  "modelled_examples": [
+    {
+      "id": "ex1",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 1 &ndash; comparing two integers",
+      "question": "Which is larger: &minus;4 or &minus;1?",
+      "steps": [
+        "On number line, &minus;1 is to the right of &minus;4",
+        "Right = larger",
+        "&minus;1 > &minus;4"
+      ],
+      "answer": "&minus;1 is larger",
+      "explanation": "&minus;1 is closer to zero."
+    },
+    {
+      "id": "ex2",
+      "card_color": "#1F5FA6",
+      "card_bg": "#EEF3FF",
+      "label": "Example 2 &ndash; ordering a set",
+      "question": "Put in order: 3, &minus;5, 0, &minus;2, 7.",
+      "steps": [
+        "Smallest to largest: &minus;5, &minus;2, 0, 3, 7",
+        "&minus;5 is furthest left",
+        "7 is furthest right"
+      ],
+      "answer": "&minus;5, &minus;2, 0, 3, 7",
+      "explanation": "Place on number line from left to right."
+    },
+    {
+      "id": "ex3",
+      "card_color": "#CC0000",
+      "card_bg": "#FFF0F0",
+      "label": "Example 3 &ndash; temperature context",
+      "question": "Temperatures: &minus;3&deg;C, 2&deg;C, &minus;7&deg;C, 5&deg;C. Order from coldest.",
+      "steps": [
+        "Coldest = smallest = &minus;7",
+        "Then &minus;3, then 2, then 5",
+        "Coldest to warmest: &minus;7, &minus;3, 2, 5"
+      ],
+      "answer": "&minus;7, &minus;3, 2, 5",
+      "explanation": "Lower temperature = further left on number line."
+    },
+    {
+      "id": "ex4",
+      "card_color": "#1E7D2E",
+      "card_bg": "#EDFAEE",
+      "label": "Example 4 &ndash; finding between",
+      "question": "Name an integer between &minus;4 and &minus;1.",
+      "steps": [
+        "Integers between: &minus;3, &minus;2",
+        "Both are greater than &minus;4 and less than &minus;1",
+        "Either &minus;3 or &minus;2"
+      ],
+      "answer": "&minus;3 or &minus;2",
+      "explanation": "Between means strictly greater and strictly less."
+    }
+  ],
+  "practice": [
+    {
+      "id": "p1",
+      "number": 1,
+      "heading": "Comparing pairs",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Write < or > between each pair.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&minus;3 __ 2",
+          "answer": "<"
+        },
+        {
+          "id": "b",
+          "expression": "&minus;5 __ &minus;1",
+          "answer": "<"
+        },
+        {
+          "id": "c",
+          "expression": "0 __ &minus;6",
+          "answer": ">"
+        },
+        {
+          "id": "d",
+          "expression": "&minus;8 __ &minus;10",
+          "answer": ">"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "number": 2,
+      "heading": "Ordering smallest to largest",
+      "heading_color": "#1F5FA6",
+      "bg_color": "#EEF3FF",
+      "border_color": "#1F5FA6",
+      "instruction": "Order from smallest to largest.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "4, &minus;2, 0, &minus;5, 3",
+          "answer": "&minus;5, &minus;2, 0, 3, 4"
+        },
+        {
+          "id": "b",
+          "expression": "&minus;1, &minus;8, 6, &minus;3, 2",
+          "answer": "&minus;8, &minus;3, &minus;1, 2, 6"
+        },
+        {
+          "id": "c",
+          "expression": "10, &minus;10, 0, 5, &minus;5",
+          "answer": "&minus;10, &minus;5, 0, 5, 10"
+        },
+        {
+          "id": "d",
+          "expression": "&minus;4, &minus;2, &minus;7, &minus;1, &minus;9",
+          "answer": "&minus;9, &minus;7, &minus;4, &minus;2, &minus;1"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "number": 3,
+      "heading": "Ordering largest to smallest",
+      "heading_color": "#CC0000",
+      "bg_color": "#FFF0F0",
+      "border_color": "#CC0000",
+      "instruction": "Order from largest to smallest.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "&minus;6, 3, &minus;1, 0, 8",
+          "answer": "8, 3, 0, &minus;1, &minus;6"
+        },
+        {
+          "id": "b",
+          "expression": "&minus;12, &minus;5, 4, &minus;20, 15",
+          "answer": "15, 4, &minus;5, &minus;12, &minus;20"
+        },
+        {
+          "id": "c",
+          "expression": "1, &minus;1, 11, &minus;11, 0",
+          "answer": "11, 1, 0, &minus;1, &minus;11"
+        },
+        {
+          "id": "d",
+          "expression": "&minus;3, &minus;30, 3, 30, 0",
+          "answer": "30, 3, 0, &minus;3, &minus;30"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "number": 4,
+      "heading": "Temperature problems",
+      "heading_color": "#1E7D2E",
+      "bg_color": "#EDFAEE",
+      "border_color": "#1E7D2E",
+      "instruction": "Solve each temperature problem.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Coldest: &minus;2, 5, &minus;8, 1, &minus;4",
+          "answer": "&minus;8&deg;C"
+        },
+        {
+          "id": "b",
+          "expression": "Warmest: &minus;1, &minus;5, 3, &minus;10, 0",
+          "answer": "3&deg;C"
+        },
+        {
+          "id": "c",
+          "expression": "How many degrees from &minus;4 to 3?",
+          "answer": "7 degrees"
+        },
+        {
+          "id": "d",
+          "expression": "Temperature drops 5 from &minus;2. New temp?",
+          "answer": "&minus;7&deg;C"
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "number": 5,
+      "heading": "Mixed ordering",
+      "heading_color": "#7B3FA0",
+      "bg_color": "#F5EEFF",
+      "border_color": "#7B3FA0",
+      "instruction": "Solve each.",
+      "linked_example": "ex1",
+      "questions": [
+        {
+          "id": "a",
+          "expression": "Integer between &minus;5 and &minus;3",
+          "answer": "&minus;4"
+        },
+        {
+          "id": "b",
+          "expression": "3 integers less than &minus;2",
+          "answer": "e.g. &minus;3, &minus;4, &minus;5"
+        },
+        {
+          "id": "c",
+          "expression": "Smallest: &minus;100, 1, &minus;1, 100, 0",
+          "answer": "&minus;100"
+        },
+        {
+          "id": "d",
+          "expression": "How many integers from &minus;3 to 4 inclusive?",
+          "answer": "8"
+        },
+        {
+          "id": "e",
+          "expression": "|&minus;7| compared to |3|",
+          "answer": "|&minus;7| > |3|"
+        }
+      ]
+    }
+  ],
+  "misconceptions": {
+    "items": [
+      {
+        "id": "a",
+        "statement": "&minus;5 is less than &minus;2",
+        "correct": true
+      },
+      {
+        "id": "b",
+        "statement": "&minus;3 > 0",
+        "correct": false
+      },
+      {
+        "id": "c",
+        "statement": "On a number line, left means smaller",
+        "correct": true
+      },
+      {
+        "id": "d",
+        "statement": "&minus;10 is greater than &minus;1 because 10 > 1",
+        "correct": false
+      },
+      {
+        "id": "e",
+        "statement": "Zero is greater than any negative number",
+        "correct": true
+      }
+    ]
+  },
+  "challenge": {
+    "problems": [
+      {
+        "id": "a",
+        "text": "The temperatures in 5 cities are: Moscow <strong>&minus;15&deg;C</strong>, London <strong>4&deg;C</strong>, Oslo <strong>&minus;8&deg;C</strong>, Cairo <strong>18&deg;C</strong>, Reykjavik <strong>&minus;3&deg;C</strong>. Order from coldest to warmest. Find the difference between the coldest and warmest."
+      },
+      {
+        "id": "b",
+        "text": "A submarine is at <strong>&minus;200 m</strong>. It rises 75 m, then dives 120 m, then rises 50 m. What is its final depth? Express all depths as integers and order them."
+      }
+    ]
+  }
+}
