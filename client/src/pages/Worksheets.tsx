@@ -21,6 +21,15 @@ import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline, buildAnswerKeyHtml } from "@/lib/pdf-generator-v2";
 import { DEFAULT_A11Y_PROFILES, getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
+import GoldWorksheetFrame from "@/components/GoldWorksheetFrame";
+// ── Gold maths layout (2-page A4 landscape, JSON-driven) ──────────────────
+// For maths subtopics that ship a bundled JSON worksheet we render the
+// "gold-standard" landscape spread instead of the section-flow layout. SEND
+// is applied as a non-destructive typography/colour overlay only.
+import { findGoldEntry, loadGoldWorksheet, type GoldManifestEntry } from "@/data/maths-gold/manifest";
+import { renderGoldWorksheetHtml } from "@/lib/mathsGoldRenderer";
+import { getGoldSendTheme } from "@/lib/mathsGoldSend";
+import { downloadGoldWorksheetPdf, printGoldWorksheet } from "@/lib/mathsGoldPdf";
 import ProgressionStrip from "@/components/ProgressionStrip";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
@@ -892,6 +901,19 @@ export default function Worksheets() {
     });
   }, [subject, topic, yearGroup, sendNeed, difficulty, examBoard]);
 
+  // ── Gold maths layout state ───────────────────────────────────────────────
+  // When set, the worksheet display area renders the JSON-driven 2-page A4
+  // landscape spread (via GoldWorksheetFrame) instead of WorksheetRenderer,
+  // and the PDF/print handlers route through mathsGoldPdf. null = use the
+  // standard section-flow layout. Always cleared at the start of a generation
+  // and only repopulated by the gold branch in handleGenerate.
+  const [goldWorksheet, setGoldWorksheet] = useState<{
+    html: string;
+    title: string;
+    entry: GoldManifestEntry;
+    sendNeed?: string;
+  } | null>(null);
+
   // ── Phase A · PR-4 — Week Ahead handoff ───────────────────────────────────
   // When the user clicks a card in WeekAheadPanel we navigate here with
   // `?weekAhead=1`. The panel has already pre-generated (or live-generated)
@@ -1712,6 +1734,60 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setRating(0);
     setSavedWorksheetId(null);
     setVoiceAnswers({});
+    // Clear any previous gold spread; only the gold branch below re-populates it.
+    setGoldWorksheet(null);
+
+    // ── GOLD MATHS LAYOUT ─────────────────────────────────────────────────────
+    // For a Maths subject whose topic+subtopic has a bundled JSON worksheet,
+    // render the gold-standard 2-page A4 landscape spread directly from JSON.
+    // This bypasses the library/AI/pipeline path entirely. Maths subtopics
+    // without a JSON (and all non-maths subjects) fall through to the existing
+    // generator below. SEND is applied as a non-destructive typography/colour
+    // overlay — it can never alter the fixed 2-page structure.
+    if (!examStyle && isMathsSubject(subject) && subtopic) {
+      const goldEntry = findGoldEntry(topic, subtopic);
+      if (goldEntry) {
+        try {
+          setGenerationStatus("Building gold-standard worksheet...");
+          const data = await loadGoldWorksheet(goldEntry.slug);
+          if (data) {
+            const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
+            const theme = getGoldSendTheme(activeSend);
+            const html = renderGoldWorksheetHtml(data, theme);
+            const flatTitle = (data.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
+            setGoldWorksheet({ html, title: flatTitle, entry: goldEntry, sendNeed: activeSend });
+            // Seed a minimal worksheet record so the surrounding toolbar (title,
+            // download, print, save) has something to act on. The visual render
+            // and PDF/print are driven by goldWorksheet, not these sections.
+            setGenerated({
+              title: flatTitle,
+              sections: [],
+              metadata: {
+                subject,
+                topic,
+                subtopic,
+                yearGroup,
+                sendNeed: activeSend,
+                difficulty,
+                examBoard: examBoard !== "none" ? examBoard : "General",
+              },
+              isAI: false,
+            } as unknown as AnyWorksheet);
+            setHiddenSections(new Set());
+            setHideHeader(false);
+            setDiffVersions({});
+            toast.success("Gold-standard maths worksheet ready!");
+            setLoading(false);
+            setGenerationStatus("");
+            return;
+          }
+        } catch (goldErr) {
+          // Non-fatal: fall through to the standard generator below.
+          console.warn("[Gold] failed to build gold worksheet, falling back:", goldErr);
+          setGoldWorksheet(null);
+        }
+      }
+    }
 
     // ── LIBRARY LOOKUP: Check if a master worksheet exists for this topic ──────
     // Always try the library first (even when SEND need is selected, or year group differs).
@@ -2893,6 +2969,20 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
   const handleDownloadPdf = async () => {
     if (!generated) { toast.error("No worksheet loaded"); return; }
+    // ── Gold maths layout — export the pre-built landscape document directly,
+    // so the PDF is pixel-identical to the on-screen spread. ──────────────────
+    if (goldWorksheet) {
+      try {
+        const fname = `${goldWorksheet.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}.pdf`;
+        toast.loading("Generating PDF...", { id: "gold-pdf" });
+        await downloadGoldWorksheetPdf(goldWorksheet.html, fname);
+        toast.success("PDF downloaded!", { id: "gold-pdf" });
+      } catch (err) {
+        console.error("[Gold] PDF export failed:", err);
+        toast.error("PDF export failed. Try Print instead.", { id: "gold-pdf" });
+      }
+      return;
+    }
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) { toast.error("Worksheet not found"); return; }
     const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
@@ -3198,6 +3288,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   };
 
   const handlePrintWithOptions = (options: PrintOptions) => {
+    // ── Gold maths layout — print the pre-built landscape document verbatim. ──
+    if (goldWorksheet) {
+      if (currentPupilHash) setLastPrintedPupilHash(currentPupilHash);
+      printGoldWorksheet(goldWorksheet.html);
+      return;
+    }
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) return;
     // Lane 1.4 — record the pupil-facing snapshot at the moment of
@@ -3237,6 +3333,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   };
   // ─── Paginated Print Preview ────────────────────────────────────────────────
   const handleOpenPrintPreview = async (previewViewMode: "teacher" | "student" = "teacher") => {
+    // ── Gold maths layout — the document is already a print-ready landscape
+    // spread; show it directly in the preview rather than re-paginating. ──────
+    if (goldWorksheet) {
+      setPrintPreviewViewMode(previewViewMode);
+      setPrintPreviewHtml(goldWorksheet.html);
+      setPrintPreviewLoading(false);
+      setShowPrintPreview(true);
+      return;
+    }
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) { toast.error("No worksheet loaded"); return; }
     setPrintPreviewViewMode(previewViewMode);
@@ -6690,8 +6795,14 @@ ${s.content}`).join("\n\n"),
           <div ref={worksheetRef} className="worksheet-content" style={{ backgroundColor: overlayBg }}>
             <Card className="border-border/50 overflow-hidden" style={{ backgroundColor: overlayBg }}>
               <CardContent className="p-2 sm:p-3" style={{ backgroundColor: overlayBg }}>
+                {/* Gold maths layout — JSON-driven 2-page A4 landscape spread.
+                    Rendered in a scaled iframe (self-contained HTML document),
+                    so it replaces the section-flow renderer entirely. */}
+                {goldWorksheet && (
+                  <GoldWorksheetFrame html={goldWorksheet.html} title={goldWorksheet.title} />
+                )}
                 {/* Show WorksheetRenderer only when NOT in edit mode */}
-                {!editMode && (
+                {!goldWorksheet && !editMode && (
                   <WorksheetRenderer
                     worksheet={{
                       title: generated.title,
@@ -6752,7 +6863,7 @@ ${s.content}`).join("\n\n"),
                   />
                 )}
                 {/* Inline section edit rendering (Manual + AI) */}
-                {editMode && (
+                {!goldWorksheet && editMode && (
                   <div className="mt-4 space-y-3">
                     {(generated.sections || []).map((section, i) => {
                       if (hiddenSections.has(i)) return null;
