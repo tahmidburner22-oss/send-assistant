@@ -1799,7 +1799,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     //
     // SEND formatting (font/size/spacing) is applied as a display overlay by
     // WorksheetRenderer via getSendFormatting — the content is never rewritten for SEND.
-    if (!examStyle) {
+    if (!examStyle && !additionalInstructions?.trim()) {
       try {
         const authHeaders: Record<string, string> = {};
         // Map difficulty to library tier:
@@ -1881,6 +1881,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               .replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "")
               .replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "")
               .trim() || libData.title || entry.title;
+            const correctedTitle = strippedTitle.replace(/Year\s*\d+/gi, yearGroup);
 
             const manifest = libData.worksheetManifest || {
               sourceLibraryId: libData.libraryId || entry.id,
@@ -1893,8 +1894,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               readingAge: readingAge > 0 ? String(readingAge) : null,
             };
 
-            const libWorksheet = {
-              title: strippedTitle,
+            let libWorksheet = {
+              title: correctedTitle,
               subtitle: libData.subtitle || `${yearGroup} | ${subject}`,
               sections: sectionsToUse,
               metadata: {
@@ -1926,6 +1927,27 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 featureFlags: manifest.featureFlags || null,
               },
             } as any;
+            // Run the validation pipeline on library worksheets too
+            try {
+              const yearNum = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
+              const pipelineInput = normaliseWorksheetForRender(libWorksheet, { subject, topic, yearGroup, sendNeed, difficulty, examBoard }) as GeneratedWorksheet;
+              const pipelineResult = runWorksheetPipeline(
+                {
+                  topic,
+                  subject,
+                  yearGroup,
+                  phase: yearNum <= 6 ? 'primary' : 'secondary',
+                  durationMins: parseInt(worksheetLength) || 30,
+                  sendNeed: sendNeed && sendNeed !== 'none-selected' ? sendNeed : undefined,
+                  priorTopic: recallTopic?.trim() || undefined,
+                  difficulty,
+                },
+                pipelineInput
+              );
+              libWorksheet = { ...libWorksheet, ...pipelineResult.worksheet, fromLibrary: true };
+            } catch (pipelineErr) {
+              console.warn('[Library Pipeline] Error (non-fatal):', pipelineErr);
+            }
             setGenerated(libWorksheet);
             setHiddenSections(new Set());
             setHideHeader(false);
