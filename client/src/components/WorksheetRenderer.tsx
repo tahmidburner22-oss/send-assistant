@@ -1304,6 +1304,7 @@ export interface WorksheetData {
   isAI?: boolean;
   provider?: string;
   fromLibrary?: boolean;
+  libraryCurated?: boolean;
   libraryId?: string;
   canonicalTopicKey?: string;
   structuralHash?: string;
@@ -5358,6 +5359,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   // as Maths worksheets are strictly question-based with no vocabulary section.
   const subjectLower = (metadata.subject || "").toLowerCase();
   const isMathsSubject = /^maths?$|^mathematics$|^math$/.test(subjectLower.trim());
+  // Curated library maths worksheets use the full section renderer (not MathsCompactLayout)
+  // because their rich structure (vocabulary, examples, misconceptions) matches the PDF reference layout.
+  const isCuratedLibraryMaths = isMathsSubject && !isPrimary && !!worksheet.fromLibrary && !!worksheet.libraryCurated;
   const yrNumMatch = yg.match(/(\d+)/);
   const yrNum = yrNumMatch ? parseInt(yrNumMatch[1]) : (isPrimary ? 5 : 8);
 
@@ -6429,7 +6433,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       )}
 
       {/* ── MathsGenie-style compact layout for secondary Maths worksheets ── */}
-      {!isRevisionMat && isMathsSubject && !isPrimary && (
+      {!isRevisionMat && isMathsSubject && !isPrimary && !isCuratedLibraryMaths && (
         <MathsCompactLayout
           worksheet={worksheet}
           fmt={fmt}
@@ -6446,11 +6450,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       )}
 
       {/* ── VL-FEAT-01: Visual Language Legend — shown on teacher view only, not on revision mats or maths compact ── */}
-      {!isRevisionMat && !(isMathsSubject && !isPrimary) && isTeacherView && !examStyle && (
+      {!isRevisionMat && (!(isMathsSubject && !isPrimary) || isCuratedLibraryMaths) && isTeacherView && !examStyle && (
         <VisualLanguageLegend fmt={fmt} overlayColor={overlayColor} />
       )}
       {/* ── Sections (normal portrait layout — hidden when revision mat active or maths compact active) ── */}
-      {!isRevisionMat && !(isMathsSubject && !isPrimary) && (worksheet.sections || []).map((section, i) => {
+      {!isRevisionMat && (!(isMathsSubject && !isPrimary) || isCuratedLibraryMaths) && (worksheet.sections || []).map((section, i) => {
         // Preserve the original type BEFORE normalisation so we can detect
         // "diagram-a" vs "diagram-b" for page-layout purposes (both normalise
         // to "diagram" but need different CSS classes).
