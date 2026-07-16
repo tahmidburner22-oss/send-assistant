@@ -1301,13 +1301,16 @@ export function computeStructuralHash(sections: WorksheetSection[]): string {
 
 // ── Strong structural assertion ──────────────────────────────────────────────
 // Verifies that every non-overlay base section survives verbatim — same id,
-// type, content, marks, imageUrl, assetRef. If a SEND overlay ever mutated a
-// question the academic integrity contract would be broken. In development we
-// throw so the bug is loud; in production we log and continue so a single
-// regression doesn't take out the whole worksheet pipeline.
+// type, marks, imageUrl, assetRef. Content changes are allowed when reading age
+// or bilingual overlays are applied (they legitimately append support cues to
+// question text). If a SEND overlay ever mutated a question the academic
+// integrity contract would be broken. In development we throw so the bug is
+// loud; in production we log and continue so a single regression doesn't take
+// out the whole worksheet pipeline.
 export function assertBaseSectionsPreserved(
   baseSections: WorksheetSection[],
-  finalSections: WorksheetSection[]
+  finalSections: WorksheetSection[],
+  opts?: { allowContentAppend?: boolean }
 ): void {
   const baseMap = new Map<string, WorksheetSection>();
   for (const s of baseSections) if (!s.isOverlay) baseMap.set(s.id, s);
@@ -1323,6 +1326,13 @@ export function assertBaseSectionsPreserved(
     for (const k of keys) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((after as any)[k] !== (base as any)[k]) {
+        // Reading age and bilingual overlays append to content (the original text
+        // is preserved at the start). This is allowed when opts.allowContentAppend is set.
+        if (opts?.allowContentAppend && (k === "content" || k === "title")) {
+          const baseVal = String((base as any)[k] || "");
+          const afterVal = String((after as any)[k] || "");
+          if (afterVal.startsWith(baseVal)) continue; // content was only appended to
+        }
         mismatches.push(`${id}.${String(k)} changed`);
       }
     }
@@ -1442,7 +1452,10 @@ export function applyOverlays(baseSections: WorksheetSection[], overlays: Overla
 
   // Stronger post-condition: every non-overlay base section must survive
   // verbatim. This catches any overlay that accidentally mutates a question.
-  assertBaseSectionsPreserved(baseSections, result);
+  // Allow content append when reading age or bilingual overlays are applied
+  // (they legitimately append scaffolding cues or bilingual keywords to content).
+  const hasContentModifyingOverlay = Boolean(overlays.readingAge) || Boolean(requestedLanguage);
+  assertBaseSectionsPreserved(baseSections, result, { allowContentAppend: hasContentModifyingOverlay });
 
   return {
     sections: result,

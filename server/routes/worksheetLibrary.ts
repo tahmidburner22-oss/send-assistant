@@ -1115,10 +1115,12 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
       }
     }
 
-    // ── Maths structure enforcement: filter out vocabulary/key-terms sections.
-    // Maths worksheets are strictly question-based with no vocabulary section.
+    // ── Maths structure enforcement: filter out vocabulary/key-terms sections
+    // for AI-generated worksheets only. Curated worksheets retain their vocabulary
+    // sections since they were intentionally included by the content author.
     const isMathsEntry = /^maths?$|^mathematics$|^math$/i.test((entry.subject || "").trim());
-    const filteredSections = isMathsEntry
+    const isCurated = entry.curated === 1 || entry.source === "curated";
+    const filteredSections = (isMathsEntry && !isCurated)
       ? sections.filter((s: any) => {
           const t = (s.type || "").toLowerCase();
           // Maths structure: Header, LO, Common Mistakes, Worked Example, Section 1/2/3 Questions, Challenge, Self Reflection, Teacher Key
