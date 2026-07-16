@@ -127,16 +127,80 @@ async function main() {
     process.exit(1);
   }
 
-  // Read all worksheet files
+  // Read all worksheet files (sorted alphabetically so first-per-topic is deterministic)
   const files = fs
     .readdirSync(WORKSHEETS_DIR)
     .filter((f) => f.endsWith(".json"))
     .sort();
 
-  console.log(`Found ${files.length} worksheet files to import`);
+  console.log(`Found ${files.length} worksheet files in directory`);
+
+  // ─── Deduplication ─────────────────────────────────────────────────────────
+  //
+  // The worksheet_library table has a UNIQUE constraint on (subject, topic,
+  // year_group, tier). Multiple subtopics share the same topic/yearGroup/tier
+  // (e.g., 4 "Angles" subtopics all map to Angles/Year 9/mixed).
+  //
+  // The gold worksheet system (client/src/data/maths-gold/) already handles
+  // per-subtopic rendering with PDF-accurate layout + SEND CSS themes for all
+  // 128 entries. The library import is a FALLBACK used when:
+  //   1. No subtopic is selected (just a topic)
+  //   2. Gold entry lookup fails
+  //
+  // To avoid unique constraint violations, we import only ONE representative
+  // worksheet per unique (subject, topic, yearGroup, tier) combination. We
+  // pick the first alphabetically from each group. All 128 JSON files are
+  // retained in the directory as documentation/reference.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  const deduplicatedFiles: string[] = [];
+  const seenKeys = new Set<string>();
+  const skippedFiles: Array<{ file: string; key: string; reason: string }> = [];
+
+  for (const file of files) {
+    const filePath = path.join(WORKSHEETS_DIR, file);
+    try {
+      const raw = fs.readFileSync(filePath, "utf-8");
+      const data: WorksheetFile = JSON.parse(raw);
+      const key = [
+        (data.subject || "").toLowerCase(),
+        (data.topic || "").toLowerCase(),
+        (data.yearGroup || "").toLowerCase(),
+        (data.tier || "mixed").toLowerCase(),
+      ].join("|");
+
+      if (seenKeys.has(key)) {
+        skippedFiles.push({
+          file,
+          key,
+          reason: `Duplicate key - gold system handles subtopic "${data.subtopic}" directly`,
+        });
+      } else {
+        seenKeys.add(key);
+        deduplicatedFiles.push(file);
+      }
+    } catch (err: any) {
+      // Still include files with parse errors so they get reported below
+      deduplicatedFiles.push(file);
+    }
+  }
+
+  console.log(
+    `Deduplicated: ${deduplicatedFiles.length} unique (subject, topic, yearGroup, tier) entries`
+  );
+  console.log(
+    `Skipped: ${skippedFiles.length} duplicate subtopics (handled by gold worksheet system)`
+  );
 
   if (DRY_RUN) {
-    console.log("=== DRY RUN MODE - validating only ===\n");
+    console.log("\n=== DRY RUN MODE - validating only ===\n");
+    if (skippedFiles.length > 0) {
+      console.log("Skipped files (duplicate topic keys):");
+      for (const { file, reason } of skippedFiles) {
+        console.log(`  SKIP: ${file} - ${reason}`);
+      }
+      console.log("");
+    }
   }
 
   let pool: pg.Pool | null = null;
@@ -153,7 +217,7 @@ async function main() {
   let errorCount = 0;
   const errors: Array<{ file: string; error: string }> = [];
 
-  for (const file of files) {
+  for (const file of deduplicatedFiles) {
     const filePath = path.join(WORKSHEETS_DIR, file);
     try {
       const raw = fs.readFileSync(filePath, "utf-8");
@@ -179,7 +243,9 @@ async function main() {
       const topicKey = canonicalTopicKey(data.topic);
 
       if (!DRY_RUN && pool) {
-        // Upsert: use ON CONFLICT to make idempotent
+        // Upsert: use ON CONFLICT to make idempotent.
+        // Only one representative subtopic per topic is stored here; the gold
+        // worksheet system renders the specific subtopic when selected.
         await pool.query(
           `INSERT INTO worksheet_library (
             id, subject, topic, year_group, title, subtitle,
@@ -241,7 +307,7 @@ async function main() {
       successCount++;
       if (DRY_RUN) {
         console.log(
-          `  VALID: ${file} -> topic="${data.topic}", subtopic="${data.subtopic}"`
+          `  VALID: ${file} -> topic="${data.topic}", subtopic="${data.subtopic}" [REPRESENTATIVE]`
         );
       } else {
         console.log(`  IMPORTED: ${file}`);
@@ -259,7 +325,10 @@ async function main() {
 
   console.log(`\n${"=".repeat(60)}`);
   console.log(
-    `${DRY_RUN ? "Validated" : "Imported"}: ${successCount}/${files.length} files`
+    `${DRY_RUN ? "Validated" : "Imported"}: ${successCount}/${deduplicatedFiles.length} unique entries (from ${files.length} total files)`
+  );
+  console.log(
+    `Skipped duplicates: ${skippedFiles.length} (served by gold worksheet system)`
   );
   if (errors.length > 0) {
     console.log(`Errors: ${errorCount}`);
