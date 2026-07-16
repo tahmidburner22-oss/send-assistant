@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Statistics",
+  "subtopic": "Histograms",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Histograms",
+  "subtitle": "Statistics · GCSE Maths",
+  "learning_objective": "I can draw and interpret histograms with equal and unequal class widths.",
+  "key_vocab": [
+    {
+      "term": "histogram",
+      "definition": "A histogram displays continuous data using bars with no gaps. The frequency density is plotted on the y-axis when class widths are unequal."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can draw and interpret histograms with equal and unequal class widths."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "histogram -- A histogram displays continuous data using bars with no gaps. The frequency density is plotted on the y-axis when class widths are unequal."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Frequency density = frequency divided by class width. Area of bar = frequency.\nFrequency density = frequency ÷ class width\nArea of each bar gives the frequency for that class\n\nKey examples:\n  ✓ Freq density = 20 ÷ 5 = 4  (frequency 20, class width 5)\n  ✓ Frequency = density × width  (area of bar = frequency)\n  ✓ No gaps between bars  (data is continuous)\n  ✗ Plot frequency on y-axis for unequal widths  (must use frequency density)\n  ✗ Leave gaps between bars  (gaps are for bar charts, not histograms)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – calculating frequency density\n  Class 10-20 has frequency 30. Find the frequency density.\n  Class width = 20 - 10 = 10\n  Frequency density = 30 ÷ 10\n  = 3\n  Frequency density = 3\n  (Divide the frequency by the class width.)\n\nExample 2 – finding frequency from a histogram\n  A bar has height (density) 4 and width 5. Find the frequency.\n  Frequency = density × width\n  = 4 × 5\n  = 20\n  Frequency = 20\n  (The area of the bar gives the frequency.)"
+    },
+    {
+      "id": "s5",
+      "title": "Calculating frequency density",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the frequency density for each class.\n\n(a) Class 0-10, frequency 25\n(b) Class 10-30, frequency 60\n(c) Class 30-50, frequency 44\n(d) Class 50-80, frequency 90"
+    },
+    {
+      "id": "s6",
+      "title": "Finding frequency from density",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the frequency (area of bar).\n\n(a) Density 4, width 10\n(b) Density 2.5, width 20\n(c) Density 1.8, width 15\n(d) Density 6, width 5"
+    },
+    {
+      "id": "s7",
+      "title": "Completing a table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing values.\n\n(a) Class 0-5, freq ?, density 4\n(b) Class 5-15, freq 30, density ?\n(c) Class 15-25, freq ?, density 2.5\n(d) Class 25-50, freq 75, density ?"
+    },
+    {
+      "id": "s8",
+      "title": "Interpreting histograms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the histogram data to answer.\n\n(a) Total frequency if densities are 2, 3, 4 for widths 10, 10, 5?\n(b) Which class has highest frequency: density 5 width 4, or density 3 width 8?\n(c) Estimate median class if total freq = 60, first two classes have freq 15 and 25.\n(d) Bar area = 36, width = 12. What is the height?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed histogram problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Class 0-20 has density 1.5. Class 20-25 has density 6. Which has more data?\n(b) Three classes: 0-10 (d=2), 10-20 (d=4), 20-50 (d=1). Total frequency?\n(c) Frequency of 45 in class width 15. Density?\n(d) Bar height 2.4, class 5-25. Frequency?\n(e) Two bars: 0-10 (d=3), 10-40 (d=2). Estimate how many in 5-20."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Frequency density = frequency ÷ class width\n✗ The height of a histogram bar always shows the frequency\n✓ Histogram bars have no gaps because data is continuous\n✗ Wider bars always represent more data\n✓ The area of each bar represents the frequency"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCalculating frequency density:\n  (a) 2.5\n  (b) 3\n  (c) 2.2\n  (d) 3\n\nFinding frequency from density:\n  (a) 40\n  (b) 50\n  (c) 27\n  (d) 30\n\nCompleting a table:\n  (a) freq = 20\n  (b) density = 3\n  (c) freq = 25\n  (d) density = 3\n\nInterpreting histograms:\n  (a) 70\n  (b) density 3, width 8 (freq 24)\n  (c) Second class\n  (d) 3\n\nMixed histogram problems:\n  (a) 0-20 (freq 30 vs 30, equal)\n  (b) 20 + 40 + 30 = 90\n  (c) 3\n  (d) 48\n  (e) approx 35"
+    }
+  ]
+}

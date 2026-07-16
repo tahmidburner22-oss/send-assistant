@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Straight-Line Graphs",
+  "subtopic": "Equation of a straight line (y = mx + c)",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Equation of a straight line (y = mx + c)",
+  "subtitle": "Straight-Line Graphs · GCSE Maths",
+  "learning_objective": "I can identify and write the equation of a straight line in the form y = mx + c.",
+  "key_vocab": [
+    {
+      "term": "y = mx + c",
+      "definition": "Every straight line can be written as y = mx + c, where m is the gradient (slope) and c is the y-intercept."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can identify and write the equation of a straight line in the form y = mx + c."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "y = mx + c -- Every straight line can be written as y = mx + c, where m is the gradient (slope) and c is the y-intercept."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "In y = mx + c, m is the gradient (how steep) and c is where the line crosses the y-axis.\ny = mx + c\nm = gradient, c = y-intercept\n\nKey examples:\n  ✓ y = 2x + 3 has gradient 2 and y-intercept 3  (m = 2, c = 3)\n  ✓ y = -x + 5 has gradient -1  (line slopes downward)\n  ✓ y = &frac{1}{2}x has gradient &frac{1}{2} and y-intercept 0  (passes through origin)\n  ✗ y = 3x + 2 has gradient 2  (gradient is 3, not 2)\n  ✗ y = 4 - 2x has positive gradient  (gradient is -2 (negative))"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – identifying m and c\n  State the gradient and y-intercept of y = 3x - 2.\n  Compare with y = mx + c\n  m = 3 (gradient)\n  c = -2 (y-intercept)\n  Gradient = 3, y-intercept = -2\n  (Read m and c directly from the equation.)\n\nExample 2 – writing the equation\n  A line has gradient 4 and y-intercept -1. Write its equation.\n  Use y = mx + c\n  Substitute m = 4 and c = -1\n  y = 4x - 1\n  y = 4x - 1\n  (Plug the gradient and y-intercept into the formula.)"
+    },
+    {
+      "id": "s5",
+      "title": "Identifying gradient and y-intercept",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State m and c for each equation.\n\n(a) y = 5x + 2\n(b) y = -3x + 1\n(c) y = &frac{1}{2}x - 4\n(d) y = x"
+    },
+    {
+      "id": "s6",
+      "title": "Writing equations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write the equation y = mx + c.\n\n(a) Gradient 2, y-intercept 5\n(b) Gradient -1, y-intercept 3\n(c) Gradient &frac{3}{4}, y-intercept -2\n(d) Gradient 0, y-intercept 6"
+    },
+    {
+      "id": "s7",
+      "title": "Rearranging equations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write in the form y = mx + c.\n\n(a) 3x + y = 10\n(b) 2y = 6x - 4\n(c) x + 2y = 8\n(d) 4x - 2y = 6"
+    },
+    {
+      "id": "s8",
+      "title": "From two points",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the equation of the line through these points.\n\n(a) (0, 1) and (2, 5)\n(b) (0, -3) and (3, 6)\n(c) (1, 4) and (3, 10)\n(d) (2, 1) and (6, 9)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Line passes through (0, 4) with gradient -2. Equation?\n(b) Which line is steeper: y = 3x + 1 or y = 5x - 2?\n(c) Does (2, 7) lie on y = 3x + 1?\n(d) Find where y = 2x - 1 crosses the x-axis.\n(e) Write 6x + 3y = 9 in y = mx + c form."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ In y = mx + c, m is the gradient and c is the y-intercept\n✗ y = 3x + 2 has y-intercept 3\n✓ A line with gradient 0 is horizontal\n✗ y = 5 - 2x has a positive gradient\n✓ The y-intercept is found by setting x = 0"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nIdentifying gradient and y-intercept:\n  (a) m = 5, c = 2\n  (b) m = -3, c = 1\n  (c) m = &frac{1}{2}, c = -4\n  (d) m = 1, c = 0\n\nWriting equations:\n  (a) y = 2x + 5\n  (b) y = -x + 3\n  (c) y = &frac{3}{4}x - 2\n  (d) y = 6\n\nRearranging equations:\n  (a) y = -3x + 10\n  (b) y = 3x - 2\n  (c) y = -&frac{1}{2}x + 4\n  (d) y = 2x - 3\n\nFrom two points:\n  (a) y = 2x + 1\n  (b) y = 3x - 3\n  (c) y = 3x + 1\n  (d) y = 2x - 3\n\nMixed problems:\n  (a) y = -2x + 4\n  (b) y = 5x - 2\n  (c) Yes (3(2)+1=7)\n  (d) x = &frac{1}{2}\n  (e) y = -2x + 3"
+    }
+  ]
+}

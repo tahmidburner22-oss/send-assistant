@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (Multi-Digit)",
+  "subtopic": "Long multiplication",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Long multiplication",
+  "subtitle": "Multiplication and Division (Multi-Digit) · KS3 Maths",
+  "learning_objective": "I can multiply 2- and 3-digit numbers using the long multiplication (column) method.",
+  "key_vocab": [
+    {
+      "term": "Long multiplication",
+      "definition": "Long multiplication is the column method for multi-digit × multi-digit. We multiply by each digit separately, then add."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can multiply 2- and 3-digit numbers using the long multiplication (column) method."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Long multiplication -- Long multiplication is the column method for multi-digit × multi-digit. We multiply by each digit separately, then add."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply by each digit of the bottom number separately. Each new row shifts left by one column (place value).\n23 × 45 = 1035\nTwo rows, then add\n\nKey examples:\n  ✓ 23 × 45 = 1035  (2-digit)\n  ✓ 146 × 27 = 3942  (3-by-2 digit)\n  ✓ Multiply units, then tens  (two rows then add)\n  ✗ Forget the placeholder 0  (answer wrong)\n  ✗ Multiply only the units  (incomplete)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – 2 by 2 digit\n  Calculate 23 × 45\n  23 × 5 = 115 (units row)\n  23 × 40 = 920 (tens row, with 0 placeholder)\n  115 + 920 = 1035\n  = 1035\n  (Always add a placeholder 0 when multiplying by the tens digit.)\n\nExample 2 – with carrying\n  Calculate 47 × 36\n  47 × 6 = 282 (units row)\n  47 × 30 = 1410 (tens row)\n  282 + 1410 = 1692\n  = 1692\n  (Show carries clearly above each column.)"
+    },
+    {
+      "id": "s5",
+      "title": "2 by 1 digit",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use column method.\n\n(a) 34 × 7\n(b) 56 × 8\n(c) 73 × 9\n(d) 85 × 6"
+    },
+    {
+      "id": "s6",
+      "title": "2 by 2 digit",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Two rows, then add. Don't forget the placeholder 0.\n\n(a) 23 × 45\n(b) 62 × 38\n(c) 47 × 26\n(d) 84 × 19"
+    },
+    {
+      "id": "s7",
+      "title": "3 by 2 digit",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Same method, more digits.\n\n(a) 146 × 27\n(b) 234 × 35\n(c) 508 × 14\n(d) 672 × 25"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Set up a multiplication, solve.\n\n(a) 27 boxes of 36 = ___\n(b) School trip: 14 coaches × 52 seats = ___\n(c) 8 weeks at 175 mins/week = ___\n(d) 23 packs of 48 stickers = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use the column method.\n\n(a) 39 × 46\n(b) 125 × 16\n(c) 78 × 53\n(d) 246 × 18\n(e) 100 × 100"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 23 × 45 = 23 × 4 × 5\n✓ Add a placeholder 0 when multiplying by tens\n✓ 47 × 36 = 1692\n✓ Multiplication is commutative: 23×45 = 45×23\n✗ 304 × 25 = 760 (forget last 0)"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\n2 by 1 digit:\n  (a) 238\n  (b) 448\n  (c) 657\n  (d) 510\n\n2 by 2 digit:\n  (a) 1035\n  (b) 2356\n  (c) 1222\n  (d) 1596\n\n3 by 2 digit:\n  (a) 3942\n  (b) 8190\n  (c) 7112\n  (d) 16800\n\nWord problems:\n  (a) 972\n  (b) 728\n  (c) 1400\n  (d) 1104\n\nMixed:\n  (a) 1794\n  (b) 2000\n  (c) 4134\n  (d) 4428\n  (e) 10000"
+    }
+  ]
+}

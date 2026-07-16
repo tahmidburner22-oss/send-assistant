@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Proportion",
+  "subtopic": "Inverse proportion",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Inverse proportion",
+  "subtitle": "Proportion · GCSE Maths",
+  "learning_objective": "I can solve problems involving inverse proportion.",
+  "key_vocab": [
+    {
+      "term": "Inverse proportion",
+      "definition": "Two quantities are inversely proportional if when one doubles, the other halves. Their product stays constant."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve problems involving inverse proportion."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Inverse proportion -- Two quantities are inversely proportional if when one doubles, the other halves. Their product stays constant."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "In inverse proportion, the product xy is always constant. y = k ÷ x.\ny = &frac{k}{x}\nk = x × y (constant product), x↑ means y↓\n\nKey examples:\n  ✓ y = &frac{k}{x} means y is inversely proportional to x  (formula)\n  ✓ If 4 workers take 6 hours, 2 workers take 12 hours  (inverse)\n  ✓ x × y = k (constant product)  (defining property)\n  ✗ Inverse proportion means y = kx  (that is direct)\n  ✗ If 4 workers take 6 hours, 8 workers take 12 hours  (should be 3 hours)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – workers and time\n  4 builders take 15 days to build a wall. How long for 6 builders?\n  k = 4 × 15 = 60 (worker-days)\n  6 builders: time = 60 ÷ 6\n  = 10 days\n  = 10 days\n  (More workers means less time: inverse proportion.)\n\nExample 2 – finding k\n  y is inversely proportional to x. When x = 3, y = 8. Find y when x = 6.\n  k = x × y = 3 × 8 = 24\n  y = 24 ÷ x\n  When x = 6: y = 24 ÷ 6 = 4\n  y = 4\n  (Find the constant product, then divide.)"
+    },
+    {
+      "id": "s5",
+      "title": "Workers and time",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the constant, then solve.\n\n(a) 3 workers take 12 hours. Time for 4 workers?\n(b) 5 machines take 8 hours. Time for 10 machines?\n(c) 6 people take 5 days. Time for 2 people?\n(d) 8 taps fill a pool in 3 hours. Time for 6 taps?"
+    },
+    {
+      "id": "s6",
+      "title": "Finding k and using the formula",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "y is inversely proportional to x. Find the missing value.\n\n(a) x = 4, y = 10. Find y when x = 8\n(b) x = 5, y = 12. Find y when x = 3\n(c) x = 2, y = 18. Find x when y = 6\n(d) x = 6, y = 4. Find y when x = 12"
+    },
+    {
+      "id": "s7",
+      "title": "Speed and time",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Distance is fixed. Find the missing value.\n\n(a) At 30 mph takes 4 hours. Time at 60 mph?\n(b) At 50 km/h takes 3 hours. Speed to take 2 hours?\n(c) At 80 km/h takes 1.5 hours. Time at 40 km/h?\n(d) At 45 mph takes 2 hours. Time at 90 mph?"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Identify inverse proportion and solve.\n\n(a) 12 sweets shared among 4 children gives 3 each. Shared among 6?\n(b) A food supply lasts 10 days for 6 people. How long for 4 people?\n(c) Pressure doubles when volume halves (gas law). Vol = 8 at P = 3. Vol at P = 6?\n(d) A pipe fills a tank in 12 min. 3 identical pipes fill it in?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed inverse proportion",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) y ∝ &frac{1}{x}. x = 3, y = 8. Find y when x = 12\n(b) y ∝ &frac{1}{x²}. x = 2, y = 9. Find y when x = 3\n(c) 5 workers take 24 days. How many workers for 10 days?\n(d) At speed v, time t. If v triples, what happens to t?\n(e) y ∝ &frac{1}{x}. x = 4, y = 15. Find x when y = 20"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ In inverse proportion, xy = constant\n✗ Inverse proportion means y = kx\n✓ More workers means less time (inverse proportion)\n✗ The graph of y = k/x is a straight line\n✓ If x doubles, y halves in inverse proportion"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nWorkers and time:\n  (a) 9 hours\n  (b) 4 hours\n  (c) 15 days\n  (d) 4 hours\n\nFinding k and using the formula:\n  (a) 5\n  (b) 20\n  (c) 6\n  (d) 2\n\nSpeed and time:\n  (a) 2 hours\n  (b) 75 km/h\n  (c) 3 hours\n  (d) 1 hour\n\nWord problems:\n  (a) 2 each\n  (b) 15 days\n  (c) 4\n  (d) 4 min\n\nMixed inverse proportion:\n  (a) 2\n  (b) 4\n  (c) 12\n  (d) t divides by 3\n  (e) 3"
+    }
+  ]
+}

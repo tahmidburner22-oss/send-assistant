@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Linear Inequalities",
+  "subtopic": "Representing inequalities on a number line",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Representing inequalities on a number line",
+  "subtitle": "Linear Inequalities · GCSE Maths",
+  "learning_objective": "I can represent linear inequalities on a number line using open and closed circles.",
+  "key_vocab": [
+    {
+      "term": "open circle",
+      "definition": "On a number line, an open circle (○) means the value is NOT included (). A closed circle (●) means the value IS included (≤ or ≥)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can represent linear inequalities on a number line using open and closed circles."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "open circle -- On a number line, an open circle (○) means the value is NOT included (). A closed circle (●) means the value IS included (≤ or ≥)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Open circle = not included (strict). Closed circle = included (or equal to). Arrow shows the direction of valid values.\n○ for ; ● for ≤ ≥\nOpen = excluded, Closed = included\n\nKey examples:\n  ✓ x > 3: open circle at 3, arrow right  (not including 3)\n  ✓ x ≤ 5: closed circle at 5, arrow left  (including 5)\n  ✓ 2 < x ≤ 6: open at 2, closed at 6, line between  (compound)\n  ✗ x > 3 uses a closed circle at 3  (strict means open)\n  ✗ x ≤ 5 means arrow pointing right from 5  (less than means left)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – simple inequality\n  Represent x > 2 on a number line\n  Draw a number line with 2 marked\n  Place an open circle at 2 (not included)\n  Draw an arrow pointing right from 2\n  Open circle at 2, arrow right\n  (The open circle shows that 2 itself is not a solution.)\n\nExample 2 – less than or equal\n  Represent x ≤ 4 on a number line\n  Draw a number line with 4 marked\n  Place a closed circle at 4 (included)\n  Draw an arrow pointing left from 4\n  Closed circle at 4, arrow left\n  (The closed circle shows that 4 IS a solution.)"
+    },
+    {
+      "id": "s5",
+      "title": "Drawing simple inequalities",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Describe the number line representation.\n\n(a) x > 5\n(b) x ≤ 2\n(c) x ≥ −3\n(d) x < 0"
+    },
+    {
+      "id": "s6",
+      "title": "Reading number lines",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write the inequality shown.\n\n(a) Closed circle at 4, arrow right\n(b) Open circle at −2, arrow left\n(c) Open at 1, closed at 5, line between\n(d) Closed at −3, open at 2, line between"
+    },
+    {
+      "id": "s7",
+      "title": "Compound inequalities",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Describe the number line for each compound inequality.\n\n(a) 1 < x < 4\n(b) −2 ≤ x ≤ 3\n(c) 0 < x ≤ 5\n(d) −4 ≤ x < −1"
+    },
+    {
+      "id": "s8",
+      "title": "Solve then represent",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve the inequality, then describe the number line.\n\n(a) 3x > 12\n(b) x + 5 ≤ 8\n(c) 2x − 1 ≥ 5\n(d) 4x + 3 < 15"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve and represent on a number line.\n\n(a) 5 ≤ 2x + 1 < 11\n(b) −3 < x + 2 ≤ 4\n(c) x ≥ −1 and x < 4\n(d) 3x − 2 > 1 and 2x < 10\n(e) −4 ≤ 3x + 2 ≤ 11"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ An open circle means the value is NOT included\n✗ x > 3 uses a closed circle at 3\n✓ x ≤ 5 means closed circle at 5 with arrow pointing left\n✗ For x < 4, the arrow points right from 4\n✓ A compound inequality has two endpoints and a line between them"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nDrawing simple inequalities:\n  (a) Open circle at 5, arrow right\n  (b) Closed circle at 2, arrow left\n  (c) Closed circle at −3, arrow right\n  (d) Open circle at 0, arrow left\n\nReading number lines:\n  (a) x ≥ 4\n  (b) x < −2\n  (c) 1 < x ≤ 5\n  (d) −3 ≤ x < 2\n\nCompound inequalities:\n  (a) Open at 1, open at 4, line between\n  (b) Closed at −2, closed at 3, line between\n  (c) Open at 0, closed at 5, line between\n  (d) Closed at −4, open at −1, line between\n\nSolve then represent:\n  (a) x > 4: open at 4, arrow right\n  (b) x ≤ 3: closed at 3, arrow left\n  (c) x ≥ 3: closed at 3, arrow right\n  (d) x < 3: open at 3, arrow left\n\nMixed problems:\n  (a) 2 ≤ x < 5: closed at 2, open at 5\n  (b) −5 < x ≤ 2: open at −5, closed at 2\n  (c) Closed at −1, open at 4, line between\n  (d) 1 < x < 5: open at 1, open at 5\n  (e) −2 ≤ x ≤ 3: closed at −2, closed at 3"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Straight-Line Graphs",
+  "subtopic": "Plotting straight-line graphs",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Plotting straight-line graphs",
+  "subtitle": "Straight-Line Graphs · GCSE Maths",
+  "learning_objective": "I can plot straight-line graphs by generating a table of values and drawing the line.",
+  "key_vocab": [
+    {
+      "term": "plot a straight line",
+      "definition": "To plot a straight line, substitute values of x into the equation to find corresponding y-values. Plot these coordinate pairs and join with a ruler."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can plot straight-line graphs by generating a table of values and drawing the line."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "plot a straight line -- To plot a straight line, substitute values of x into the equation to find corresponding y-values. Plot these coordinate pairs and join with a ruler."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Substitute at least three x-values into the equation. Plot the (x, y) pairs and join with a straight line.\nx = 0 ⇒ y = c, x = 1 ⇒ y = m + c\nStart with x = 0 to find the y-intercept\n\nKey examples:\n  ✓ y = 2x + 1: when x = 0, y = 1; when x = 2, y = 5  (substitute x values)\n  ✓ Use x = 0, 1, 2, 3 to make a table of values  (systematic approach)\n  ✓ Three collinear points confirms the line  (error check)\n  ✗ Only need one point to draw a line  (need at least two)\n  ✗ Join the points freehand  (always use a ruler)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – table of values\n  Complete a table for y = 3x - 1 with x = 0, 1, 2, 3.\n  x = 0: y = -1; x = 1: y = 2\n  x = 2: y = 5; x = 3: y = 8\n  Points: (0,-1), (1,2), (2,5), (3,8)\n  y values: -1, 2, 5, 8\n  (Substitute each x-value into the equation.)\n\nExample 2 – using intercepts\n  Plot y = 2x - 4 using x and y intercepts.\n  y-intercept: x = 0, y = -4 gives (0, -4)\n  x-intercept: y = 0, 2x = 4, x = 2 gives (2, 0)\n  Plot (0, -4) and (2, 0) and join\n  Line through (0, -4) and (2, 0)\n  (Intercepts give two quick points without a full table.)"
+    },
+    {
+      "id": "s5",
+      "title": "Completing tables",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete the table of values for x = 0, 1, 2, 3.\n\n(a) y = 2x + 3\n(b) y = x - 2\n(c) y = 4x - 1\n(d) y = -2x + 5"
+    },
+    {
+      "id": "s6",
+      "title": "Finding intercepts",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the x-intercept and y-intercept.\n\n(a) y = 3x - 6\n(b) y = -2x + 8\n(c) y = x + 4\n(d) y = 5x - 10"
+    },
+    {
+      "id": "s7",
+      "title": "Negative and fractional gradients",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete values for x = -2, 0, 2, 4.\n\n(a) y = -3x + 2\n(b) y = &frac{1}{2}x + 3\n(c) y = -&frac{1}{2}x + 4\n(d) y = &frac{3}{2}x - 1"
+    },
+    {
+      "id": "s8",
+      "title": "Identifying equations from points",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Which equation matches the points given?\n\n(a) (0, 2) and (1, 5)\n(b) (0, -1) and (2, 3)\n(c) (0, 4) and (2, 0)\n(d) (0, 0) and (3, 6)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed plotting problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) y = x + 3. Value of y when x = -2?\n(b) y = 2x - 5. When does y = 0?\n(c) Lines y = x + 1 and y = 3x - 3. Where do they meet?\n(d) y = -x + 6. Value of x when y = 2?\n(e) y = 4x - 8. Give 3 points on this line."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ You need at least two points to draw a straight line\n✗ You only need one point to plot a line\n✓ The y-intercept is found by setting x = 0\n✓ For y = &frac{1}{2}x + 1, when x = 1, y = 1.5\n✗ All straight lines pass through the origin"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCompleting tables:\n  (a) y = 3, 5, 7, 9\n  (b) y = -2, -1, 0, 1\n  (c) y = -1, 3, 7, 11\n  (d) y = 5, 3, 1, -1\n\nFinding intercepts:\n  (a) y-int (0, -6), x-int (2, 0)\n  (b) y-int (0, 8), x-int (4, 0)\n  (c) y-int (0, 4), x-int (-4, 0)\n  (d) y-int (0, -10), x-int (2, 0)\n\nNegative and fractional gradients:\n  (a) y = 8, 2, -4, -10\n  (b) y = 2, 3, 4, 5\n  (c) y = 5, 4, 3, 2\n  (d) y = -4, -1, 2, 5\n\nIdentifying equations from points:\n  (a) y = 3x + 2\n  (b) y = 2x - 1\n  (c) y = -2x + 4\n  (d) y = 2x\n\nMixed plotting problems:\n  (a) y = 1\n  (b) x = 2.5\n  (c) (2, 3)\n  (d) x = 4\n  (e) (0,-8), (2,0), (3,4)"
+    }
+  ]
+}

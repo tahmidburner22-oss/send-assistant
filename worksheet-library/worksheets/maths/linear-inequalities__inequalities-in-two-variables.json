@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Linear Inequalities",
+  "subtopic": "Inequalities in two variables",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Inequalities in two variables",
+  "subtitle": "Linear Inequalities · GCSE Maths",
+  "learning_objective": "I can represent and identify regions defined by linear inequalities in two variables.",
+  "key_vocab": [
+    {
+      "term": "inequality in two variables",
+      "definition": "An inequality in two variables such as y region on a coordinate grid, not just a line."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can represent and identify regions defined by linear inequalities in two variables."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "inequality in two variables -- An inequality in two variables such as y region on a coordinate grid, not just a line."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Draw the boundary line, choose dashed or solid, then test a point to determine which side to shade.\ny ≤ mx + c ⇒ solid line, shade below\nSolid line includes the boundary; shade the correct side\n\nKey examples:\n  ✓ y < x + 3: region below the line y = x + 3  (dashed line)\n  ✓ y ≥ 2x − 1: region above and including the line  (solid line)\n  ✓ x + y ≤ 5: test (0,0) gives 0 ≤ 5, true, so shade that side  (test point method)\n  ✗ y < x + 3 uses a solid boundary line  (strict inequality = dashed)\n  ✗ The line y = x is always the boundary for y > x  (y = x is correct boundary, but y > x is above)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – identifying the region\n  Describe the region y < x + 2\n  Boundary line: y = x + 2 (dashed, as strict <)\n  Test (0, 0): 0 < 0 + 2 = 2, true\n  Region: below the dashed line y = x + 2\n  Below dashed line y = x + 2\n  (Use a test point to verify which side satisfies the inequality.)\n\nExample 2 – solid boundary\n  Describe the region y ≥ 3x − 1\n  Boundary: y = 3x − 1 (solid, as ≥)\n  Test (0, 0): 0 ≥ −1, true\n  Region: above and on the solid line\n  Above/on solid line y = 3x − 1\n  (Solid line means points ON the line are included.)"
+    },
+    {
+      "id": "s5",
+      "title": "Identifying boundary lines",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State the boundary line and whether it is dashed or solid.\n\n(a) y < 3x + 1\n(b) y ≥ x − 4\n(c) x + y ≤ 10\n(d) 2x + y > 6"
+    },
+    {
+      "id": "s6",
+      "title": "Test point method",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Test (0, 0). Is it in the region?\n\n(a) y < x + 5\n(b) y > 2x + 3\n(c) x + y ≤ 4\n(d) 3x − y ≥ 1"
+    },
+    {
+      "id": "s7",
+      "title": "Describing regions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Describe the region (above/below, left/right of boundary).\n\n(a) y > 2\n(b) x ≤ 5\n(c) y < −x + 3\n(d) y ≥ &frac{1}{2}x"
+    },
+    {
+      "id": "s8",
+      "title": "Checking points",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Determine if the given point satisfies the inequality.\n\n(a) (1, 4) in y ≤ 3x + 2?\n(b) (3, 1) in y > x − 1?\n(c) (2, 3) in x + y < 6?\n(d) (−1, 2) in y ≥ 2x + 5?"
+    },
+    {
+      "id": "s9",
+      "title": "Combined regions",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Describe the region satisfying all given inequalities.\n\n(a) y ≥ 0, x ≥ 0, x + y ≤ 4\n(b) x > 1, y  x\n(c) y ≤ x + 2, y ≥ 0, x ≤ 3\n(d) x + y ≤ 8, x ≥ 2, y ≥ 1\n(e) y  −1, x < 3"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ A strict inequality () uses a dashed boundary line\n✗ y < x + 3 means the region above the line y = x + 3\n✓ Testing (0, 0) tells you which side of the line to shade\n✓ ≤ and ≥ both use solid lines because the boundary is included\n✗ y ≥ 2x means the region below the line y = 2x"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nIdentifying boundary lines:\n  (a) y = 3x + 1, dashed\n  (b) y = x − 4, solid\n  (c) x + y = 10, solid\n  (d) 2x + y = 6, dashed\n\nTest point method:\n  (a) 0 < 5, yes\n  (b) 0 > 3, no\n  (c) 0 ≤ 4, yes\n  (d) 0 ≥ 1, no\n\nDescribing regions:\n  (a) Above the line y = 2\n  (b) Left of and on the line x = 5\n  (c) Below the line y = −x + 3\n  (d) Above and on the line y = &frac{1}{2}x\n\nChecking points:\n  (a) 4 ≤ 5, yes\n  (b) 1 > 2, no\n  (c) 5 < 6, yes\n  (d) 2 ≥ 3, no\n\nCombined regions:\n  (a) Triangle with vertices (0,0), (4,0), (0,4)\n  (b) Region above y = x, below y = 5, right of x = 1\n  (c) Triangle-like region\n  (d) Enclosed region\n  (e) Region between y = −1 and y = 2x, left of x = 3"
+    }
+  ]
+}

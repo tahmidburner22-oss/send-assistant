@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Place Value and Ordering Integers",
+  "subtopic": "Ordering positive and negative integers",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Ordering positive and negative integers",
+  "subtitle": "Place Value and Ordering Integers · KS3 Maths",
+  "learning_objective": "I can order and compare positive and negative integers using a number line.",
+  "key_vocab": [
+    {
+      "term": "Ordering integers",
+      "definition": "Integers are whole numbers including negatives, zero, and positives. On a number line, numbers increase from left to right."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can order and compare positive and negative integers using a number line."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Ordering integers -- Integers are whole numbers including negatives, zero, and positives. On a number line, numbers increase from left to right."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Picture a number line: numbers to the right are always bigger. Negative numbers are to the left of zero.\n-8 -3 0 < 4 < 9\nLeft = smaller, Right = bigger\n\nKey examples:\n  ✓ -5 < -2 < 0 < 3 < 7  (ordered smallest to largest)\n  ✓ -10 is less than -3  (further from zero = smaller)\n  ✓ 0 is greater than any negative number  (zero is not negative)\n  ✗ -5 > -2 because 5 > 2  (ignore the sign is wrong)\n  ✗ -3 is greater than 0  (all negatives are less than 0)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – ordering negatives\n  Put these in order from smallest to largest: -3, 5, -7, 2, -1\n  Most negative = smallest: -7\n  Then -3, -1, 2, 5\n  -7, -3, -1, 2, 5\n  -7, -3, -1, 2, 5\n  (The more negative a number, the smaller it is.)\n\nExample 2 – comparing two integers\n  Which is greater: -4 or -9?\n  -4 is closer to zero than -9\n  On the number line, -4 is to the right of -9\n  -4 > -9\n  -4 is greater\n  (Closer to zero means bigger for negative numbers.)"
+    },
+    {
+      "id": "s5",
+      "title": "Ordering integers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Put in order from smallest to largest.\n\n(a) 3, -2, 5, -4, 0\n(b) -7, -1, 4, -3, 6\n(c) 8, -8, 3, -3, 0\n(d) -10, -5, -15, 2, -1"
+    },
+    {
+      "id": "s6",
+      "title": "Comparing integers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Insert  between each pair.\n\n(a) -3 ___ 2\n(b) -5 ___ -8\n(c) 0 ___ -4\n(d) -12 ___ -7"
+    },
+    {
+      "id": "s7",
+      "title": "Ordering with larger numbers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Order from smallest to largest.\n\n(a) -25, -30, 15, -10, 20\n(b) 100, -200, 50, -50, -100\n(c) -1, -11, -111, 1, 11\n(d) 0, -1000, 500, -500, 1"
+    },
+    {
+      "id": "s8",
+      "title": "Real-world contexts",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Order from smallest to largest.\n\n(a) Temperatures: -3°C, 7°C, -12°C, 0°C, 4°C\n(b) Bank balance: -£50, £20, -£15, £0, -£80\n(c) Sea level (m): -40, 120, -120, 5, -5\n(d) Floor levels: -2, 3, -1, 0, 5"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed ordering",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Answer each question.\n\n(a) Which is smaller: -99 or -100?\n(b) Order: 4, -4, 40, -40, 0\n(c) Find a number between -5 and -3\n(d) How many integers between -3 and 3 (not including -3 and 3)?\n(e) Order: -2.5, -3, 1, -1.5, 0.5"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ -5 is less than -2\n✗ -5 > -2 because 5 > 2\n✓ 0 is greater than any negative number\n✗ -100 is greater than -1\n✓ On a number line, right means bigger"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nOrdering integers:\n  (a) -4, -2, 0, 3, 5\n  (b) -7, -3, -1, 4, 6\n  (c) -8, -3, 0, 3, 8\n  (d) -15, -10, -5, -1, 2\n\nComparing integers:\n  (a) <\n  (b) >\n  (c) >\n  (d) <\n\nOrdering with larger numbers:\n  (a) -30, -25, -10, 15, 20\n  (b) -200, -100, -50, 50, 100\n  (c) -111, -11, -1, 1, 11\n  (d) -1000, -500, 0, 1, 500\n\nReal-world contexts:\n  (a) -12, -3, 0, 4, 7\n  (b) -80, -50, -15, 0, 20\n  (c) -120, -40, -5, 5, 120\n  (d) -2, -1, 0, 3, 5\n\nMixed ordering:\n  (a) -100\n  (b) -40, -4, 0, 4, 40\n  (c) -4\n  (d) 5\n  (e) -3, -2.5, -1.5, 0.5, 1"
+    }
+  ]
+}

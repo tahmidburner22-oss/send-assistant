@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Ratio",
+  "subtopic": "Ratio and proportion problems",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Ratio and proportion problems",
+  "subtitle": "Ratio · GCSE Maths",
+  "learning_objective": "I can solve problems involving ratio and proportion in context.",
+  "key_vocab": [
+    {
+      "term": "ratio",
+      "definition": "A ratio compares two or more quantities. Proportion problems ask us to use a known ratio to find unknown amounts."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve problems involving ratio and proportion in context."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "ratio -- A ratio compares two or more quantities. Proportion problems ask us to use a known ratio to find unknown amounts."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Find the total number of parts, then divide the quantity by the total to find the value of one part.\none part = total ÷ sum of ratio parts\nThen multiply one part by each side of the ratio\n\nKey examples:\n  ✓ Purple paint: red to blue = 3 : 5  (for every 3 parts red, use 5 parts blue)\n  ✓ If 4 books cost £12, then 7 books cost £21  (find the cost of one book first)\n  ✓ Share £40 in ratio 3 : 5 gives £15 and £25  (8 parts total, one part = £5)\n  ✗ 3 : 5 means 3 out of 5  (it means 3 out of 8 total parts)\n  ✗ Double one side of a ratio without doubling the other  (both sides must scale equally)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – sharing money\n  Share £60 in the ratio 2 : 3\n  Total parts = 2 + 3 = 5\n  One part = £60 ÷ 5 = £12\n  2 parts = £24, 3 parts = £36\n  £24 and £36\n  (Always check the shares add to the original total.)\n\nExample 2 – scaling a recipe\n  A recipe for 4 people uses 300 g flour. How much for 6 people?\n  Find amount per person: 300 ÷ 4 = 75 g\n  Multiply for 6: 75 × 6 = 450 g\n  Answer: 450 g of flour\n  450 g\n  (Find the unitary value (for one), then scale up.)"
+    },
+    {
+      "id": "s5",
+      "title": "Sharing in a ratio",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Share each amount in the given ratio.\n\n(a) £30 in ratio 1 : 2\n(b) £56 in ratio 3 : 4\n(c) 80 kg in ratio 2 : 3\n(d) £100 in ratio 3 : 7"
+    },
+    {
+      "id": "s6",
+      "title": "Scaling recipes",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use proportion to find the missing amount.\n\n(a) 5 cakes need 200 g sugar. How much for 8 cakes?\n(b) 3 shirts cost £45. How much for 7 shirts?\n(c) 4 tins paint cover 20 m². How many for 35 m²?\n(d) 6 workers finish in 12 days. How long for 9 workers?"
+    },
+    {
+      "id": "s7",
+      "title": "Finding missing quantities",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the ratio to find the unknown.\n\n(a) a : b = 3 : 5. If a = 21, find b.\n(b) x : y = 4 : 7. If y = 42, find x.\n(c) Cement : sand = 1 : 4. If sand = 60 kg, find cement.\n(d) Boys : Girls = 5 : 3. If 20 boys, find girls."
+    },
+    {
+      "id": "s8",
+      "title": "Three-part ratios",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Share in the given three-part ratio.\n\n(a) £60 in ratio 1 : 2 : 3\n(b) 120 cm in ratio 2 : 3 : 5\n(c) £150 in ratio 1 : 2 : 2\n(d) 90 kg in ratio 3 : 4 : 2"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed ratio problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Ratio of cats to dogs is 3 : 5. There are 24 cats. How many dogs?\n(b) Share £200 between A, B, C in ratio 2 : 3 : 5\n(c) A map scale is 1 : 25000. A path is 8 cm on the map. How far in real life?\n(d) Concentrate : water = 1 : 4. How much water for 50 ml concentrate?\n(e) Angles in a triangle are in ratio 2 : 3 : 4. Find each angle."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To share £40 in ratio 3 : 5, find total parts = 8, one part = £5\n✗ The ratio 3 : 5 means there are 5 items in total\n✓ Doubling a recipe means doubling all ingredients\n✗ In ratio 2 : 3, the first quantity is always larger\n✓ The unitary method finds the value of one part first"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSharing in a ratio:\n  (a) £10 and £20\n  (b) £24 and £32\n  (c) 32 kg and 48 kg\n  (d) £30 and £70\n\nScaling recipes:\n  (a) 320 g\n  (b) £105\n  (c) 7 tins\n  (d) 8 days\n\nFinding missing quantities:\n  (a) 35\n  (b) 24\n  (c) 15 kg\n  (d) 12\n\nThree-part ratios:\n  (a) £10, £20, £30\n  (b) 24 cm, 36 cm, 60 cm\n  (c) £30, £60, £60\n  (d) 30 kg, 40 kg, 20 kg\n\nMixed ratio problems:\n  (a) 40\n  (b) £40, £60, £100\n  (c) 2 km\n  (d) 200 ml\n  (e) 40°, 60°, 80°"
+    }
+  ]
+}

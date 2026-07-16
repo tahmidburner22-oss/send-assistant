@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (3, 4, 8 Times Tables)",
+  "subtopic": "3 times table",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "3 times table",
+  "subtitle": "Multiplication and Division (3, 4, 8 Times Tables) · KS3 Maths",
+  "learning_objective": "I can recall and use the 3 times table to multiply and divide.",
+  "key_vocab": [
+    {
+      "term": "3 times table",
+      "definition": "The 3 times table is a list of multiples of 3: numbers we get when we count in 3s. The digits of every multiple of 3 add up to a multiple of 3 (e.g. 27 → 2+7 = 9)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recall and use the 3 times table to multiply and divide."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "3 times table -- The 3 times table is a list of multiples of 3: numbers we get when we count in 3s. The digits of every multiple of 3 add up to a multiple of 3 (e.g. 27 → 2+7 = 9)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiplication is repeated addition. 3 × 4 means ‘4 groups of 3’. You can also think of it as ‘3 groups of 4’ — the answer is the same.\n3 + 3 + 3 + 3 = 3×4 = 12\nFour groups of 3\n\nKey examples:\n  ✓ 1 × 3 = 3  (starting point)\n  ✓ 2 × 3 = 6  (double)\n  ✓ 5 × 3 = 15  (halfway to 10)\n  ✗ 3 × 3 = 10  (wrong)\n  ✗ 3 × 0 = 3  (any × 0 = 0)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – single multiplication\n  Calculate 7 × 3\n  7 groups of 3\n  3 + 3 + 3 + 3  ...\n  = 21\n  = 21\n  (Skip-count in 3s 7 times to reach 21.)\n\nExample 2 – missing factor\n  Solve: ___ × 3 = 15\n  How many 3s in 15?\n  Count up: 3, 6, 9, ...\n  = 5\n  = 5\n  (Divide: 15 ÷ 3 = 5.)"
+    },
+    {
+      "id": "s5",
+      "title": "Recall the 3 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete the calculation. Skip-count in 3s if you need to.\n\n(a) 3 × 3 = ___\n(b) 6 × 3 = ___\n(c) 8 × 3 = ___\n(d) 10 × 3 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "Missing factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing number.\n\n(a) ___ × 3 = 12\n(b) ___ × 3 = 21\n(c) ___ × 3 = 27\n(d) ___ × 3 = 33"
+    },
+    {
+      "id": "s7",
+      "title": "Dividing by 3",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the 3 times table to divide. 3 × ___ = ?\n\n(a) 6 ÷ 3 = ___\n(b) 15 ÷ 3 = ___\n(c) 24 ÷ 3 = ___\n(d) 36 ÷ 3 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "Two-step problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work out the answer step by step.\n\n(a) (2×3) + (3×3) = ___\n(b) (5×3) − (2×3) = ___\n(c) 12 ÷ 3 + 6 = ___\n(d) (3×3) × 2 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed practice",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use what you know about the 3 times table.\n\n(a) 3 × 7 = ___\n(b) 36 ÷ 3 = ___\n(c) ___ × 3 = 18\n(d) 9 ÷ 3 = ___\n(e) 27 ÷ 3 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 3 × 0 = 3\n✓ 3 × 1 = 3\n✓ 12 ÷ 3 = 4\n✓ 3 × 10 = 30 (i.e. 30)\n✗ 3 × 7 = 22"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRecall the 3 times table:\n  (a) 9\n  (b) 18\n  (c) 24\n  (d) 30\n\nMissing factors:\n  (a) 4\n  (b) 7\n  (c) 9\n  (d) 11\n\nDividing by 3:\n  (a) 2\n  (b) 5\n  (c) 8\n  (d) 12\n\nTwo-step problems:\n  (a) 15\n  (b) 9\n  (c) 10\n  (d) 18\n\nMixed practice:\n  (a) 21\n  (b) 12\n  (c) 6\n  (d) 3\n  (e) 9"
+    }
+  ]
+}

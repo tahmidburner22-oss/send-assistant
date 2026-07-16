@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (Times Tables to 12×12)",
+  "subtopic": "Short division",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Short division",
+  "subtitle": "Multiplication and Division (Times Tables to 12×12) · KS3 Maths",
+  "learning_objective": "I can use short division (bus-stop) to divide by a single-digit number.",
+  "key_vocab": [
+    {
+      "term": "Short division",
+      "definition": "Short division is a quick written method for dividing by a SINGLE-digit number. We carry remainders mentally."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use short division (bus-stop) to divide by a single-digit number."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Short division -- Short division is a quick written method for dividing by a SINGLE-digit number. We carry remainders mentally."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Divide each digit left-to-right. If a digit is too small, carry to the next as a remainder.\n936 ÷ 6 = 156\nLeft to right; carry small remainders\n\nKey examples:\n  ✓ 84 ÷ 4 = 21  (no remainder)\n  ✓ 85 ÷ 4 = 21 r 1  (with remainder)\n  ✓ 936 ÷ 6 = 156  (3-digit)\n  ✗ Carry to the LEFT  (carry to the RIGHT)\n  ✗ Skip a digit if too small  (write 0 above)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – no remainder\n  Calculate 84 ÷ 4\n  8 ÷ 4 = 2 (write above 8)\n  4 ÷ 4 = 1 (write above 4)\n  Read off: 21\n  = 21\n  (Check: 21 × 4 = 84 ✓)\n\nExample 2 – with carry\n  Calculate 75 ÷ 3\n  7 ÷ 3 = 2 r 1 (carry the 1 to next digit → 15)\n  15 ÷ 3 = 5\n  Read off: 25\n  = 25\n  (The remainder ‘1’ from 7÷3 joins the next digit 5 to make 15.)"
+    },
+    {
+      "id": "s5",
+      "title": "Short division (no carry)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Each digit divides exactly.\n\n(a) 48 ÷ 4\n(b) 96 ÷ 3\n(c) 84 ÷ 2\n(d) 636 ÷ 3"
+    },
+    {
+      "id": "s6",
+      "title": "With carry",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Carry small remainders to the next digit.\n\n(a) 75 ÷ 3\n(b) 92 ÷ 4\n(c) 68 ÷ 4\n(d) 238 ÷ 7"
+    },
+    {
+      "id": "s7",
+      "title": "With remainder",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write ‘quotient r remainder’.\n\n(a) 85 ÷ 4\n(b) 47 ÷ 5\n(c) 100 ÷ 7\n(d) 153 ÷ 6"
+    },
+    {
+      "id": "s8",
+      "title": "Writing zero in answer",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "If a digit doesn't divide, write 0 in the answer.\n\n(a) 612 ÷ 6\n(b) 509 ÷ 5\n(c) 303 ÷ 3\n(d) 808 ÷ 4"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed short division",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Choose carefully and check.\n\n(a) 744 ÷ 8\n(b) 925 ÷ 5\n(c) 486 ÷ 9\n(d) 327 ÷ 3\n(e) 1001 ÷ 7"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Carry remainders to the next digit on the RIGHT\n✗ 612 ÷ 6 = 12 (skip the 1)\n✓ 85 ÷ 4 = 21 r 1\n✗ Short division works for any divisor\n✓ Always check: quotient × divisor + remainder = dividend"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nShort division (no carry):\n  (a) 12\n  (b) 32\n  (c) 42\n  (d) 212\n\nWith carry:\n  (a) 25\n  (b) 23\n  (c) 17\n  (d) 34\n\nWith remainder:\n  (a) 21 r 1\n  (b) 9 r 2\n  (c) 14 r 2\n  (d) 25 r 3\n\nWriting zero in answer:\n  (a) 102\n  (b) 101 r 4\n  (c) 101\n  (d) 202\n\nMixed short division:\n  (a) 93\n  (b) 185\n  (c) 54\n  (d) 109\n  (e) 143"
+    }
+  ]
+}

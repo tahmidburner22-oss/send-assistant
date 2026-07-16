@@ -1,0 +1,102 @@
+{
+  "subject": "Maths",
+  "topic": "Angles",
+  "subtopic": "Angles on a straight line and at a point",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Angles on a straight line and at a point",
+  "subtitle": "Angles · KS3 Maths",
+  "learning_objective": "I can use the facts that angles on a straight line sum to 180° and angles at a point sum to 360°.",
+  "key_vocab": [
+    {
+      "term": "straight line",
+      "definition": "Angles on a straight line add up to 180°. Angles at a point add up to 360°."
+    },
+    {
+      "term": "point",
+      "definition": "Angles on a straight line add up to 180°. Angles at a point add up to 360°."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use the facts that angles on a straight line sum to 180° and angles at a point sum to 360°."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "straight line -- Angles on a straight line add up to 180°. Angles at a point add up to 360°.\npoint -- Angles on a straight line add up to 180°. Angles at a point add up to 360°."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Straight line = 180°. Full turn = 360°. Vertically opposite = equal.\na + b = 180° (on a line); a + b + c + d = 360° (at a point)\nTwo fundamental angle facts\n\nKey examples:\n  ✓ Angles on a straight line = 180°  (half turn)\n  ✓ Angles at a point = 360°  (full turn)\n  ✓ Vertically opposite angles are equal  (X-shape)\n  ✗ Angles on a line sum to 360°  (should be 180°)\n  ✗ Vertically opposite angles sum to 180°  (they are equal)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – angles on a straight line\n  Angles of 110° and x are on a straight line. Find x.\n  Angles on a straight line = 180°\n  110 + x = 180\n  x = 180 − 110 = 70°\n  x = 70°\n  (Subtract the known angle from 180°.)\n\nExample 2 – three angles on a line\n  Three angles on a straight line are 40°, 85° and x. Find x.\n  40 + 85 + x = 180\n  125 + x = 180\n  x = 55°\n  x = 55°\n  (Add the known angles, then subtract from 180°.)"
+    },
+    {
+      "id": "s5",
+      "title": "Two angles on a straight line",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find x.\n\n(a) x and 130°\n(b) x and 45°\n(c) x and 90°\n(d) x and 167°"
+    },
+    {
+      "id": "s6",
+      "title": "Three angles on a line",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find x.\n\n(a) 50°, 60°, x\n(b) 35°, 90°, x\n(c) 40°, 40°, x\n(d) 25°, 75°, x"
+    },
+    {
+      "id": "s7",
+      "title": "Angles at a point",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find x.\n\n(a) 90°, 120°, 80°, x\n(b) 100°, 100°, 100°, x\n(c) 45°, 135°, 90°, x\n(d) 150°, 70°, x"
+    },
+    {
+      "id": "s8",
+      "title": "Vertically opposite",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Two lines cross. One angle is given. Find the other three.\n\n(a) 40°\n(b) 72°\n(c) 115°\n(d) 90°"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Find x. State which rule you used.\n\n(a) 2x and 3x on a straight line\n(b) x, 2x, 3x at a point\n(c) 4x − 10 and 2x + 40 on a line\n(d) Vertically opposite: 3x + 5 = 50\n(e) x + 20, 2x + 10, x + 30 on a line"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Angles on a straight line add to 180°\n✗ Angles at a point add to 180°\n✓ Vertically opposite angles are equal\n✗ A straight line has an angle of 360°\n✗ When two lines cross, all four angles are equal"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nTwo angles on a straight line:\n  (a) 50°\n  (b) 135°\n  (c) 90°\n  (d) 13°\n\nThree angles on a line:\n  (a) 70°\n  (b) 55°\n  (c) 100°\n  (d) 80°\n\nAngles at a point:\n  (a) 70°\n  (b) 60°\n  (c) 90°\n  (d) 140°\n\nVertically opposite:\n  (a) 40°, 140°, 140°\n  (b) 72°, 108°, 108°\n  (c) 115°, 65°, 65°\n  (d) 90°, 90°, 90°\n\nMixed problems:\n  (a) 36°\n  (b) 60°\n  (c) 25°\n  (d) 15°\n  (e) 30°"
+    }
+  ]
+}

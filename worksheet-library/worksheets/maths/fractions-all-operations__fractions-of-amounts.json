@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Fractions — All Operations",
+  "subtopic": "Fractions of amounts",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Fractions of amounts",
+  "subtitle": "Fractions — All Operations · KS3 Maths",
+  "learning_objective": "I can find a fraction of a given amount by dividing and multiplying.",
+  "key_vocab": [
+    {
+      "term": "Finding a fraction of an amount",
+      "definition": "To find a fraction of an amount, divide the amount by the denominator then multiply by the numerator."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can find a fraction of a given amount by dividing and multiplying."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Finding a fraction of an amount -- To find a fraction of an amount, divide the amount by the denominator then multiply by the numerator."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Divide by the denominator first to find one part, then multiply by the numerator to find the required number of parts.\n&frac{a}{b} of n = n ÷ b × a\nDivide by bottom, multiply by top\n\nKey examples:\n  ✓ &frac{1}{4} of 60 = 15  (60 ÷ 4 = 15)\n  ✓ &frac{2}{5} of 30 = 12  (30 ÷ 5 = 6, then 6 × 2)\n  ✓ &frac{3}{4} of 80 = 60  (80 ÷ 4 = 20, then 20 × 3)\n  ✗ &frac{2}{5} of 30 = 6  (forgot to multiply by numerator)\n  ✗ &frac{3}{4} of 80 = 240  (multiplied by both 3 and 4)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – unit fraction\n  Find &frac{1}{5} of 45\n  Divide by the denominator: 45 ÷ 5\n  = 9\n  &frac{1}{5} of 45 = 9\n  = 9\n  (For unit fractions, just divide by the denominator.)\n\nExample 2 – non-unit fraction\n  Find &frac{3}{4} of 60\n  Divide by 4: 60 ÷ 4 = 15\n  Multiply by 3: 15 × 3 = 45\n  &frac{3}{4} of 60 = 45\n  = 45\n  (Divide by the bottom number, multiply by the top number.)"
+    },
+    {
+      "id": "s5",
+      "title": "Unit fractions of amounts",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each fraction of the amount.\n\n(a) &frac{1}{3} of 27\n(b) &frac{1}{4} of 48\n(c) &frac{1}{6} of 42\n(d) &frac{1}{8} of 56"
+    },
+    {
+      "id": "s6",
+      "title": "Non-unit fractions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the fraction of each amount.\n\n(a) &frac{2}{5} of 35\n(b) &frac{3}{4} of 44\n(c) &frac{4}{7} of 49\n(d) &frac{5}{8} of 72"
+    },
+    {
+      "id": "s7",
+      "title": "Fractions of money",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the fraction of each amount.\n\n(a) &frac{3}{5} of £40\n(b) &frac{2}{3} of £63\n(c) &frac{5}{6} of £54\n(d) &frac{7}{10} of £120"
+    },
+    {
+      "id": "s8",
+      "title": "Finding the whole amount",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work backwards to find the original amount.\n\n(a) &frac{1}{4} of a number = 9. Find the number.\n(b) &frac{2}{5} of a number = 18. Find the number.\n(c) &frac{3}{7} of a number = 21. Find the number.\n(d) &frac{5}{8} of a number = 30. Find the number."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) &frac{3}{10} of 80\n(b) &frac{4}{9} of 63\n(c) &frac{2}{3} of £99\n(d) &frac{5}{6} of a number = 35. Find it.\n(e) &frac{7}{8} of 64"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ &frac{2}{5} of 30 means 30 ÷ 5 × 2 = 12\n✗ &frac{2}{5} of 30 means 30 ÷ 5 = 6\n✓ &frac{3}{4} of 80 = 60\n✗ Finding a fraction of an amount always gives a smaller number\n✓ To find the whole, divide by numerator then multiply by denominator"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nUnit fractions of amounts:\n  (a) 9\n  (b) 12\n  (c) 7\n  (d) 7\n\nNon-unit fractions:\n  (a) 14\n  (b) 33\n  (c) 28\n  (d) 45\n\nFractions of money:\n  (a) £24\n  (b) £42\n  (c) £45\n  (d) £84\n\nFinding the whole amount:\n  (a) 36\n  (b) 45\n  (c) 49\n  (d) 48\n\nMixed problems:\n  (a) 24\n  (b) 28\n  (c) £66\n  (d) 42\n  (e) 56"
+    }
+  ]
+}

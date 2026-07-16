@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Decimals and Percentages",
+  "subtopic": "Finding percentages of amounts",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Finding percentages of amounts",
+  "subtitle": "Decimals and Percentages · KS3 Maths",
+  "learning_objective": "I can calculate a percentage of a given amount using mental and written methods.",
+  "key_vocab": [
+    {
+      "term": "percentage of an amount",
+      "definition": "Finding a percentage of an amount means finding that fraction of the total. 'Of' means multiply."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate a percentage of a given amount using mental and written methods."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "percentage of an amount -- Finding a percentage of an amount means finding that fraction of the total. 'Of' means multiply."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "To find x% of an amount: divide by 100, multiply by x. Or use 10% building blocks.\nx% of A = A × x ÷ 100\nPercentage means per hundred\n\nKey examples:\n  ✓ 50% of 80 = 40  (half)\n  ✓ 10% of 250 = 25  (÷ 10)\n  ✓ 25% of 60 = 15  (÷ 4)\n  ✗ 10% of 80 = 8.0 (move 2 places)  (only move 1 place)\n  ✗ 30% of 50 = 30 × 50 = 1500  (must divide by 100 too)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – simple percentage\n  Find 20% of £150.\n  10% of 150 = 15\n  20% = 2 × 10% = 2 × 15\n  = £30\n  = £30\n  (Find 10% first, then double it.)\n\nExample 2 – using division\n  Find 35% of 200.\n  200 ÷ 100 = 2 (this is 1%)\n  2 × 35 = 70\n  35% of 200 = 70\n  = 70\n  (Divide by 100 to get 1%, then multiply.)"
+    },
+    {
+      "id": "s5",
+      "title": "Simple percentages",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each percentage.\n\n(a) 50% of 60\n(b) 25% of 80\n(c) 10% of 350\n(d) 75% of 40"
+    },
+    {
+      "id": "s6",
+      "title": "Using 10% building blocks",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each percentage of the amount.\n\n(a) 20% of 90\n(b) 30% of 150\n(c) 40% of 200\n(d) 60% of 250"
+    },
+    {
+      "id": "s7",
+      "title": "Trickier percentages",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use 10% and 5% building blocks.\n\n(a) 15% of 120\n(b) 35% of 200\n(c) 45% of 80\n(d) 5% of 360"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate each amount.\n\n(a) 20% discount on £55\n(b) 15% tip on a £40 meal\n(c) VAT is 20% on £250\n(d) 65% of 120 students passed"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Find each percentage.\n\n(a) 12% of 300\n(b) 85% of 60\n(c) 2.5% of 400\n(d) 17.5% of 200\n(e) 33&frac{1}{3}% of 90"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 10% means divide by 10\n✗ 50% of 70 = 140\n✓ 25% is the same as &frac{1}{4}\n✗ To find 1%, divide by 10\n✓ 15% = 10% + 5%"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSimple percentages:\n  (a) 30\n  (b) 20\n  (c) 35\n  (d) 30\n\nUsing 10% building blocks:\n  (a) 18\n  (b) 45\n  (c) 80\n  (d) 150\n\nTrickier percentages:\n  (a) 18\n  (b) 70\n  (c) 36\n  (d) 18\n\nWord problems:\n  (a) £11\n  (b) £6\n  (c) £50\n  (d) 78 students\n\nMixed:\n  (a) 36\n  (b) 51\n  (c) 10\n  (d) 35\n  (e) 30"
+    }
+  ]
+}

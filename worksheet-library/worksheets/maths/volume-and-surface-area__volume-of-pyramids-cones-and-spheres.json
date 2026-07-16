@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Volume and Surface Area",
+  "subtopic": "Volume of pyramids, cones and spheres",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Volume of pyramids, cones and spheres",
+  "subtitle": "Volume and Surface Area · GCSE Maths",
+  "learning_objective": "I can calculate the volume of pyramids, cones and spheres using standard formulae.",
+  "key_vocab": [
+    {
+      "term": "pyramid",
+      "definition": "A pyramid has a polygon base and triangular faces meeting at an apex. A cone is a circular pyramid. Their volumes are one-third of the corresponding prism or cylinder."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the volume of pyramids, cones and spheres using standard formulae."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "pyramid -- A pyramid has a polygon base and triangular faces meeting at an apex. A cone is a circular pyramid. Their volumes are one-third of the corresponding prism or cylinder."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Pyramids and cones have volume equal to one-third of the corresponding prism or cylinder. A sphere uses its own formula with r cubed.\nV = &frac{1}{3} × base area × h\nThe &frac{1}{3} factor applies to all pyramids and cones\n\nKey examples:\n  ✓ Pyramid: V = &frac{1}{3} × base area × h  (one-third of the prism with same base)\n  ✓ Cone: V = &frac{1}{3}πr²h  (one-third of the cylinder)\n  ✓ Sphere: V = &frac{4}{3}πr³  (uses radius cubed)\n  ✗ Cone V = πr²h  (must include the &frac{1}{3} factor)\n  ✗ Sphere V = 4πr²  (that is surface area, not volume)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – square-based pyramid\n  Find the volume of a pyramid with a square base of side 6 cm and height 10 cm.\n  Base area = 6 × 6 = 36 cm²\n  V = &frac{1}{3} × 36 × 10\n  = 120 cm³\n  120 cm³\n  (Find the base area first, then multiply by one-third of the height.)\n\nExample 2 – cone\n  Find the volume of a cone with radius 5 cm and height 12 cm. Round to 1 d.p.\n  V = &frac{1}{3}πr²h\n  = &frac{1}{3} × π × 25 × 12\n  = 100π = 314.2 cm³\n  314.2 cm³\n  (Substitute into the cone formula and evaluate.)"
+    },
+    {
+      "id": "s5",
+      "title": "Pyramids",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the volume of each pyramid.\n\n(a) Square base side 4 cm, height 9 cm\n(b) Square base side 10 cm, height 12 cm\n(c) Rectangular base 6 × 8 cm, height 15 cm\n(d) Triangular base area 20 cm², height 9 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Cones",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the volume of each cone. Round to 1 d.p.\n\n(a) r = 3 cm, h = 7 cm\n(b) r = 4 cm, h = 9 cm\n(c) r = 6 cm, h = 10 cm\n(d) r = 5 cm, h = 15 cm"
+    },
+    {
+      "id": "s7",
+      "title": "Spheres",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the volume of each sphere. Round to 1 d.p.\n\n(a) r = 4 cm\n(b) r = 6 cm\n(c) r = 10 cm\n(d) Diameter 14 cm"
+    },
+    {
+      "id": "s8",
+      "title": "Hemispheres and composite shapes",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the volume. Round to 1 d.p.\n\n(a) Hemisphere: r = 5 cm\n(b) Hemisphere: r = 8 cm\n(c) Cone on top of hemisphere, both r = 3 cm, cone h = 4 cm\n(d) Cylinder r = 4, h = 10 plus hemisphere r = 4 on top"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed volume problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem. Round to 1 d.p. where needed.\n\n(a) Cone: diameter 8 cm, height 12 cm. Volume?\n(b) Sphere volume = 288π cm³. Find the radius.\n(c) Pyramid base 5 × 5 cm, volume = 75 cm³. Find height.\n(d) Cone volume = 150 cm³, height = 10 cm. Find radius to 1 d.p.\n(e) How many times bigger is a sphere of radius 6 than one of radius 3?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Volume of a cone = &frac{1}{3}πr²h\n✗ Volume of a cone = πr²h\n✓ Volume of a sphere uses r³ (radius cubed)\n✗ Doubling the radius of a sphere doubles its volume\n✓ A hemisphere volume is half of &frac{4}{3}πr³"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nPyramids:\n  (a) 48 cm³\n  (b) 400 cm³\n  (c) 240 cm³\n  (d) 60 cm³\n\nCones:\n  (a) 66.0 cm³\n  (b) 150.8 cm³\n  (c) 377.0 cm³\n  (d) 392.7 cm³\n\nSpheres:\n  (a) 268.1 cm³\n  (b) 904.8 cm³\n  (c) 4188.8 cm³\n  (d) 1436.8 cm³\n\nHemispheres and composite shapes:\n  (a) 261.8 cm³\n  (b) 1072.3 cm³\n  (c) 93.8 cm³\n  (d) 637.7 cm³\n\nMixed volume problems:\n  (a) 201.1 cm³\n  (b) 6 cm\n  (c) 9 cm\n  (d) 3.8 cm\n  (e) 8 times"
+    }
+  ]
+}

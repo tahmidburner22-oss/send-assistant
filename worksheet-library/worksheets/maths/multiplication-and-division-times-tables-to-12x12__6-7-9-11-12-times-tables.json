@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (Times Tables to 12×12)",
+  "subtopic": "6, 7, 9, 11, 12 times tables",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "6, 7, 9, 11, 12 times tables",
+  "subtitle": "Multiplication and Division (Times Tables to 12×12) · KS3 Maths",
+  "learning_objective": "I can recall the harder times tables (6, 7, 9, 11, 12) and use them to solve problems.",
+  "key_vocab": [
+    {
+      "term": "9 times table",
+      "definition": "The 9 times table trick: the digits of every multiple of 9 add to 9 (e.g. 36 → 3+6 = 9). Or use 10×n then subtract n: 9×7 = 70 − 7 = 63."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recall the harder times tables (6, 7, 9, 11, 12) and use them to solve problems."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "9 times table -- The 9 times table trick: the digits of every multiple of 9 add to 9 (e.g. 36 → 3+6 = 9). Or use 10×n then subtract n: 9×7 = 70 − 7 = 63."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Use friendly facts to bridge to harder ones. e.g. 7×6 = (7×5) + 7 = 35 + 7 = 42.\n9 × 8 = 10 × 8 − 8 = 72\n×10 then subtract\n\nKey examples:\n  ✓ 9 × 7 = 63 (6+3=9)  (9-trick)\n  ✓ 11 × 5 = 55  (doubled digit)\n  ✓ 12 × 6 = 72  (double 6 = 12, ×6 = 72)\n  ✗ 7 × 8 = 54  (should be 56)\n  ✗ 11 × 12 = 121  (should be 132)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – 9 times table trick\n  Calculate 9 × 6\n  10 × 6 = 60\n  Subtract one 6\n  60 − 6 = 54\n  = 54\n  (Multiples of 9 are always one less than 10×n.)\n\nExample 2 – 7 times table\n  Calculate 7 × 8\n  7 × 7 = 49\n  Add one more 7\n  49 + 7 = 56\n  = 56\n  (Use the square fact 7×7=49 as a stepping stone.)"
+    },
+    {
+      "id": "s5",
+      "title": "6 and 7 times tables",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Recall as fast as you can.\n\n(a) 6 × 8 = ___\n(b) 7 × 9 = ___\n(c) 6 × 12 = ___\n(d) 7 × 6 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "9 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the ×10−n trick if you need to.\n\n(a) 9 × 4 = ___\n(b) 9 × 7 = ___\n(c) 9 × 11 = ___\n(d) 9 × 12 = ___"
+    },
+    {
+      "id": "s7",
+      "title": "11 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Most are easy — just repeat the digit. Watch out for 11×10, 11×11, 11×12!\n\n(a) 11 × 6 = ___\n(b) 11 × 9 = ___\n(c) 11 × 11 = ___\n(d) 11 × 12 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "12 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Split 12 into 10 + 2 if needed.\n\n(a) 12 × 5 = ___\n(b) 12 × 7 = ___\n(c) 12 × 9 = ___\n(d) 12 × 12 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed harder tables",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "All 6/7/9/11/12 facts mixed.\n\n(a) 7 × 12 = ___\n(b) 9 × 6 = ___\n(c) 11 × 8 = ___\n(d) 6 × 9 = ___\n(e) 12 × 11 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 11 × 12 = 1212\n✓ 9 × 7 = 63 because 6+3 = 9\n✗ 7 × 8 = 54\n✓ 12 × 12 = 144\n✗ 6 × 7 ≠ 7 × 6"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\n6 and 7 times tables:\n  (a) 48\n  (b) 63\n  (c) 72\n  (d) 42\n\n9 times table:\n  (a) 36\n  (b) 63\n  (c) 99\n  (d) 108\n\n11 times table:\n  (a) 66\n  (b) 99\n  (c) 121\n  (d) 132\n\n12 times table:\n  (a) 60\n  (b) 84\n  (c) 108\n  (d) 144\n\nMixed harder tables:\n  (a) 84\n  (b) 54\n  (c) 88\n  (d) 54\n  (e) 132"
+    }
+  ]
+}

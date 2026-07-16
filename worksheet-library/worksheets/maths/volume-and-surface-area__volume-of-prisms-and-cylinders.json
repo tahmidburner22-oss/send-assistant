@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Volume and Surface Area",
+  "subtopic": "Volume of prisms and cylinders",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Volume of prisms and cylinders",
+  "subtitle": "Volume and Surface Area · GCSE Maths",
+  "learning_objective": "I can calculate the volume of prisms and cylinders using the formula V = area of cross-section times length.",
+  "key_vocab": [
+    {
+      "term": "volume",
+      "definition": "The volume of a prism equals the area of its cross-section multiplied by its length. A cylinder is a circular prism, so its volume = πr²h."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the volume of prisms and cylinders using the formula V = area of cross-section times length."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "volume -- The volume of a prism equals the area of its cross-section multiplied by its length. A cylinder is a circular prism, so its volume = πr²h."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Volume of any prism = area of cross-section multiplied by the length (or height) of the prism.\nV = A × l\nA = area of the uniform cross-section, l = length of the prism\n\nKey examples:\n  ✓ Cuboid: V = l × w × h  (rectangle cross-section × length)\n  ✓ Cylinder: V = πr²h  (circle area × height)\n  ✓ Triangular prism: V = ½ × b × h × l  (triangle area × length)\n  ✗ Volume = surface area × height  (volume uses cross-section area, not surface area)\n  ✗ Cylinder V = 2πrh  (that is the curved surface area, not volume)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – cuboid\n  Find the volume of a cuboid 8 cm by 5 cm by 3 cm.\n  Cross-section area = 8 × 5 = 40 cm²\n  Volume = 40 × 3\n  = 120 cm³\n  120 cm³\n  (A cuboid is a rectangular prism.)\n\nExample 2 – cylinder\n  Find the volume of a cylinder with radius 4 cm and height 10 cm. Round to 1 d.p.\n  Cross-section area = πr² = π × 4² = 16π\n  Volume = 16π × 10 = 160π\n  = 502.7 cm³\n  502.7 cm³\n  (Substitute into V = πr²h.)"
+    },
+    {
+      "id": "s5",
+      "title": "Cuboids",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the volume of each cuboid.\n\n(a) 6 cm × 4 cm × 3 cm\n(b) 10 cm × 5 cm × 2 cm\n(c) 8 cm × 8 cm × 8 cm\n(d) 12 cm × 3 cm × 5 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Cylinders",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the volume of each cylinder. Round to 1 d.p.\n\n(a) r = 3 cm, h = 10 cm\n(b) r = 5 cm, h = 8 cm\n(c) r = 2 cm, h = 15 cm\n(d) r = 7 cm, h = 6 cm"
+    },
+    {
+      "id": "s7",
+      "title": "Triangular prisms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the volume of each triangular prism.\n\n(a) Base 8, height 5, length 12 cm\n(b) Base 10, height 6, length 9 cm\n(c) Base 7, height 4, length 20 cm\n(d) Base 12, height 3, length 8 cm"
+    },
+    {
+      "id": "s8",
+      "title": "Other prisms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the volume using V = A × l.\n\n(a) Trapezium: parallel sides 4, 8; height 3; length 10 cm\n(b) Cross-section area 25 cm², length 14 cm\n(c) L-shape cross-section area 32 cm², length 6 cm\n(d) Hexagonal cross-section area 42 cm², length 9 cm"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed volume problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Cylinder: diameter 10 cm, height 7 cm. Volume?\n(b) Prism volume = 360 cm³. Cross-section area = 30 cm². Find length.\n(c) Cylinder volume = 200π cm³. Height = 8 cm. Find the radius.\n(d) Cuboid: l = 9, w = 4. Volume = 252 cm³. Find h.\n(e) Triangular prism: base 6, length 10. Volume = 180 cm³. Find height of triangle."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Volume of a prism = area of cross-section × length\n✗ Volume of a cylinder = 2πrh\n✓ V = πr²h requires the radius, not the diameter\n✗ Volume and surface area use the same formula\n✓ Volume is measured in cubic units such as cm³"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCuboids:\n  (a) 72 cm³\n  (b) 100 cm³\n  (c) 512 cm³\n  (d) 180 cm³\n\nCylinders:\n  (a) 282.7 cm³\n  (b) 628.3 cm³\n  (c) 188.5 cm³\n  (d) 923.6 cm³\n\nTriangular prisms:\n  (a) 240 cm³\n  (b) 270 cm³\n  (c) 280 cm³\n  (d) 144 cm³\n\nOther prisms:\n  (a) 180 cm³\n  (b) 350 cm³\n  (c) 192 cm³\n  (d) 378 cm³\n\nMixed volume problems:\n  (a) 549.8 cm³\n  (b) 12 cm\n  (c) 5 cm\n  (d) 7 cm\n  (e) 6 cm"
+    }
+  ]
+}

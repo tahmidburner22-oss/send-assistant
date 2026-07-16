@@ -1,0 +1,102 @@
+{
+  "subject": "Maths",
+  "topic": "Statistics",
+  "subtopic": "Mean, median, mode and range",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Mean, median, mode and range",
+  "subtitle": "Statistics · GCSE Maths",
+  "learning_objective": "I can calculate the mean, median, mode and range from a set of data.",
+  "key_vocab": [
+    {
+      "term": "mean",
+      "definition": "The mean is the sum of values divided by the count. The median is the middle value when data is ordered. The mode is the most frequent value."
+    },
+    {
+      "term": "mode",
+      "definition": "The mean is the sum of values divided by the count. The median is the middle value when data is ordered. The mode is the most frequent value."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the mean, median, mode and range from a set of data."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "mean -- The mean is the sum of values divided by the count. The median is the middle value when data is ordered. The mode is the most frequent value.\nmode -- The mean is the sum of values divided by the count. The median is the middle value when data is ordered. The mode is the most frequent value."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Mean = total ÷ number of values. Median = middle value (or mean of two middle values for even counts).\nMean = ∑x ÷ n\nSum all values and divide by how many there are\n\nKey examples:\n  ✓ Mean of 2, 4, 6 = 12 ÷ 3 = 4  (sum ÷ count)\n  ✓ Median of 3, 5, 7, 9, 11 = 7  (middle value)\n  ✓ Mode of 2, 3, 3, 5, 7 = 3  (most frequent)\n  ✗ Median of 2, 4, 6, 8 = 6  (should be (4+6)÷2 = 5)\n  ✗ Range of 3, 7, 10, 2 = 10  (range = 10 - 2 = 8)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – finding the mean\n  Find the mean of 5, 8, 3, 12, 7.\n  Sum = 5 + 8 + 3 + 12 + 7 = 35\n  Count = 5\n  Mean = 35 ÷ 5 = 7\n  Mean = 7\n  (Add all values then divide by how many there are.)\n\nExample 2 – finding the median\n  Find the median of 9, 3, 7, 1, 5, 8, 2.\n  Order: 1, 2, 3, 5, 7, 8, 9\n  7 values, middle is the 4th\n  Median = 5\n  Median = 5\n  (Always put the data in order first.)"
+    },
+    {
+      "id": "s5",
+      "title": "Finding the mean",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate the mean of each data set.\n\n(a) 4, 6, 8, 10, 12\n(b) 3, 7, 5, 9, 11\n(c) 15, 20, 25, 30\n(d) 1, 1, 2, 3, 5, 8"
+    },
+    {
+      "id": "s6",
+      "title": "Median and mode",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the median and mode.\n\n(a) 3, 5, 5, 7, 9\n(b) 2, 4, 6, 8, 10, 12\n(c) 1, 3, 3, 5, 7, 7, 9\n(d) 10, 20, 20, 30, 40"
+    },
+    {
+      "id": "s7",
+      "title": "Range and comparing data",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the range. Compare the data sets.\n\n(a) 5, 8, 12, 3, 15\n(b) 22, 25, 21, 28, 24\n(c) Set A: mean 50, range 20. Set B: mean 50, range 5. Which is more consistent?\n(d) 100, 102, 98, 105, 95"
+    },
+    {
+      "id": "s8",
+      "title": "From frequency tables",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate the mean from each frequency table.\n\n(a) Score 1(f=3), 2(f=5), 3(f=7), 4(f=4), 5(f=1)\n(b) Goals 0(f=4), 1(f=6), 2(f=3), 3(f=2)\n(c) Shoe size 5(f=2), 6(f=5), 7(f=8), 8(f=3), 9(f=2)\n(d) Hours 0(f=1), 1(f=4), 2(f=6), 3(f=5), 4(f=4)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed averages",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Mean of 5 numbers is 8. Sum?\n(b) 6 numbers have mean 10. A 7th number (17) is added. New mean?\n(c) Data: 3, 5, x, 9, 11. Mean is 7. Find x.\n(d) Median of 2, 5, x, 12, 15 is 8. Find x.\n(e) Range is 12, lowest value is 5. Highest value?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Mean = sum of values ÷ number of values\n✗ The median of 2, 4, 6, 8 is 6\n✓ The mode can be more than one value\n✗ Range = highest value\n✓ For an even set, the median is the mean of the two middle values"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nFinding the mean:\n  (a) 8\n  (b) 7\n  (c) 22.5\n  (d) 3.3 (to 1dp)\n\nMedian and mode:\n  (a) Median 5, Mode 5\n  (b) Median 7, No mode\n  (c) Median 5, Modes 3 and 7\n  (d) Median 20, Mode 20\n\nRange and comparing data:\n  (a) Range = 12\n  (b) Range = 7\n  (c) Set B\n  (d) Range = 10\n\nFrom frequency tables:\n  (a) Mean = 2.75\n  (b) Mean = 1.2\n  (c) Mean = 6.9\n  (d) Mean = 2.35\n\nMixed averages:\n  (a) 40\n  (b) 11\n  (c) x = 7\n  (d) x = 8\n  (e) 17"
+    }
+  ]
+}

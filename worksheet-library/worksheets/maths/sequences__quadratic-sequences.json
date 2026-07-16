@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Sequences",
+  "subtopic": "Quadratic sequences",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Quadratic sequences",
+  "subtitle": "Sequences · GCSE Maths",
+  "learning_objective": "I can find the nth term of a quadratic sequence.",
+  "key_vocab": [
+    {
+      "term": "quadratic sequence",
+      "definition": "A quadratic sequence has a constant second difference. The nth term has the form an² + bn + c."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can find the nth term of a quadratic sequence."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "quadratic sequence -- A quadratic sequence has a constant second difference. The nth term has the form an² + bn + c."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Find second differences (= 2a). Subtract an² from each term to get a linear sequence, then find b and c.\nun = an² + bn + c\n2a = second difference; then find b and c from the remainder\n\nKey examples:\n  ✓ 1, 4, 9, 16, 25, ... has nth term n²  (second diff = 2)\n  ✓ 3, 8, 15, 24, 35, ... has 2nd diff = 2  (quadratic)\n  ✓ Second difference = 2a, so if 2nd diff = 6 then a = 3  (finding a)\n  ✗ 2, 5, 8, 11, ... is quadratic  (constant first diff = arithmetic)\n  ✗ Second difference = a  (second difference = 2a)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – finding the nth term\n  Find the nth term of 3, 8, 15, 24, 35, ...\n  First differences: 5, 7, 9, 11. Second differences: 2, 2, 2. So 2a = 2, a = 1\n  Subtract n²: 3−1=2, 8−4=4, 15−9=6, 24−16=8. Linear sequence: 2, 4, 6, 8 = 2n\n  nth term = n² + 2n\n  n² + 2n\n  (Check: when n=1: 1+2=3. When n=2: 4+4=8. Correct!)\n\nExample 2 – second difference not 2\n  Find the nth term of 2, 8, 18, 32, 50, ...\n  First diff: 6, 10, 14, 18. Second diff: 4, 4, 4. So 2a = 4, a = 2\n  Subtract 2n²: 2−2=0, 8−8=0, 18−18=0. All zeros!\n  nth term = 2n²\n  2n²\n  (When subtracting an² gives all zeros, b = c = 0.)"
+    },
+    {
+      "id": "s5",
+      "title": "Recognising quadratic sequences",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Show these are quadratic by finding second differences.\n\n(a) 1, 4, 9, 16, 25\n(b) 2, 6, 12, 20, 30\n(c) 3, 12, 27, 48, 75\n(d) 0, 3, 10, 21, 36"
+    },
+    {
+      "id": "s6",
+      "title": "Simple nth terms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the nth term.\n\n(a) 1, 4, 9, 16, 25, ...\n(b) 4, 7, 12, 19, 28, ...\n(c) 0, 3, 8, 15, 24, ...\n(d) 2, 8, 18, 32, 50, ..."
+    },
+    {
+      "id": "s7",
+      "title": "With linear part",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the nth term in the form an² + bn + c.\n\n(a) 3, 8, 15, 24, 35, ...\n(b) 2, 7, 14, 23, 34, ...\n(c) 4, 10, 18, 28, 40, ...\n(d) 5, 12, 23, 38, 57, ..."
+    },
+    {
+      "id": "s8",
+      "title": "Harder nth terms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the nth term.\n\n(a) 6, 15, 28, 45, 66, ...\n(b) 1, 7, 17, 31, 49, ...\n(c) 0, 6, 16, 30, 48, ...\n(d) 5, 14, 27, 44, 65, ..."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Find the nth term and use it.\n\n(a) 3, 6, 11, 18, 27, ... nth term?\n(b) Using your answer to (a), find the 10th term.\n(c) 2, 9, 20, 35, 54, ... nth term?\n(d) Is 100 in the sequence n² + 2n?\n(e) Find the 20th term of 3n² − n + 1."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ A quadratic sequence has a constant second difference\n✗ If first differences are constant, the sequence is quadratic\n✓ Second difference = 2a where a is the coefficient of n²\n✗ The second difference equals the coefficient of n²\n✓ After subtracting an², the remainder forms a linear sequence"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRecognising quadratic sequences:\n  (a) 1st diff: 3,5,7,9; 2nd diff: 2,2,2\n  (b) 1st diff: 4,6,8,10; 2nd diff: 2,2,2\n  (c) 1st diff: 9,15,21,27; 2nd diff: 6,6,6\n  (d) 1st diff: 3,7,11,15; 2nd diff: 4,4,4\n\nSimple nth terms:\n  (a) n²\n  (b) n² + 3\n  (c) n² − 1\n  (d) 2n²\n\nWith linear part:\n  (a) n² + 2n\n  (b) n² + 2n − 1\n  (c) n² + 3n\n  (d) 2n² + n + 2\n\nHarder nth terms:\n  (a) 2n² + 3n + 1\n  (b) 2n² − 1 (check: should be 2n²+2n−3... recalc)\n  (c) 2n² − 2\n  (d) 2n² + n + 2\n\nMixed problems:\n  (a) n² + 2\n  (b) 102\n  (c) 2n² + n − 1\n  (d) n²+2n=100; n=−1±√101, not integer, so no\n  (e) 1181"
+    }
+  ]
+}

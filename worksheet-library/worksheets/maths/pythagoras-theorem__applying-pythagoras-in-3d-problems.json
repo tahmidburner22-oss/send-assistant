@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Pythagoras' Theorem",
+  "subtopic": "Applying Pythagoras in 3D problems",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Applying Pythagoras in 3D problems",
+  "subtitle": "Pythagoras' Theorem · GCSE Maths",
+  "learning_objective": "I can apply Pythagoras' theorem to find lengths in three-dimensional shapes.",
+  "key_vocab": [
+    {
+      "term": "3D problems",
+      "definition": "In 3D problems, we often need to apply Pythagoras' theorem twice: once on the base to find a diagonal, then again using that diagonal and the height."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can apply Pythagoras' theorem to find lengths in three-dimensional shapes."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "3D problems -- In 3D problems, we often need to apply Pythagoras' theorem twice: once on the base to find a diagonal, then again using that diagonal and the height."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "In 3D, apply Pythagoras twice or use the 3D formula: diagonal = √(l² + w² + h²).\nd = √(l² + w² + h²)\nFirst find base diagonal, then combine with height\n\nKey examples:\n  ✓ Cuboid diagonal: d = √(l² + w² + h²)  (3D diagonal formula)\n  ✓ Space diagonal of 3, 4, 12 cuboid = √(9+16+144) = 13  (apply twice or use formula)\n  ✓ Pyramid: slant height uses base half-diagonal and vertical height  (two-step approach)\n  ✗ 3D diagonal = l + w + h  (cannot add lengths directly)\n  ✗ Only need Pythagoras once in 3D  (usually need it twice)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – cuboid space diagonal\n  Find the space diagonal of a cuboid 3 cm by 4 cm by 12 cm.\n  Base diagonal: √(3² + 4²) = √(9 + 16) = √25 = 5\n  Now use base diagonal (5) and height (12)\n  Space diagonal = √(5² + 12²) = √(25 + 144) = √169 = 13 cm\n  13 cm\n  (Apply Pythagoras twice: once for the base, once with the height.)\n\nExample 2 – using the 3D formula\n  Find the space diagonal of a cuboid 2 cm by 6 cm by 9 cm.\n  d = √(2² + 6² + 9²)\n  d = √(4 + 36 + 81) = √121\n  d = 11 cm\n  11 cm\n  (The 3D formula combines both Pythagoras steps into one.)"
+    },
+    {
+      "id": "s5",
+      "title": "Cuboid space diagonals",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the space diagonal of each cuboid.\n\n(a) 1 cm × 2 cm × 2 cm\n(b) 2 cm × 3 cm × 6 cm\n(c) 4 cm × 4 cm × 7 cm\n(d) 6 cm × 6 cm × 7 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Cube diagonals",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the space diagonal of each cube (side length given).\n\n(a) Side = 1 cm\n(b) Side = 4 cm\n(c) Side = 5 cm\n(d) Side = 10 cm"
+    },
+    {
+      "id": "s7",
+      "title": "Pyramids",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the slant height of each square-based pyramid.\n\n(a) Base 8 cm, height 3 cm\n(b) Base 10 cm, height 12 cm\n(c) Base 6 cm, height 8 cm\n(d) Base 12 cm, height 5 cm"
+    },
+    {
+      "id": "s8",
+      "title": "Cones and cylinders",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing measurement.\n\n(a) Cone: radius 3, slant height 5. Vertical height?\n(b) Cone: radius 8, vertical height 15. Slant height?\n(c) Cone: slant 10, height 6. Radius?\n(d) Cylinder: radius 3, height 4. Diagonal across?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed 3D problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem. Give answers to 1 d.p. where necessary.\n\n(a) Room 5 m × 4 m × 3 m. Longest pole that fits?\n(b) Box 8 × 6 × 10. Can a 15 cm rod fit inside?\n(c) Square pyramid: base 10, slant edge to vertex 13. Height?\n(d) Cuboid 5 × 5 × h, space diagonal 15. Find h.\n(e) Cone: diameter 14, height 24. Slant height?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ A cuboid space diagonal requires Pythagoras applied twice\n✗ The space diagonal of a cuboid equals l + w + h\n✓ d = √(l² + w² + h²) gives the space diagonal\n✗ A pyramid slant height equals the vertical height\n✓ In a cone, the slant height is the hypotenuse"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCuboid space diagonals:\n  (a) 3 cm\n  (b) 7 cm\n  (c) 9 cm\n  (d) 11 cm\n\nCube diagonals:\n  (a) √3 = 1.73 cm (3 s.f.)\n  (b) 4√3 = 6.93 cm (3 s.f.)\n  (c) 5√3 = 8.66 cm (3 s.f.)\n  (d) 10√3 = 17.3 cm (3 s.f.)\n\nPyramids:\n  (a) 5 cm\n  (b) 13 cm\n  (c) √73 = 8.54 cm (3 s.f.)\n  (d) √61 = 7.81 cm (3 s.f.)\n\nCones and cylinders:\n  (a) 4 cm\n  (b) 17 cm\n  (c) 8 cm\n  (d) √(36+16) = √52 = 7.21 cm\n\nMixed 3D problems:\n  (a) 7.1 m\n  (b) Yes, diagonal = 14.1 cm... No\n  (c) 12\n  (d) h = √(225 − 50) = √175 = 13.2\n  (e) 25 cm"
+    }
+  ]
+}

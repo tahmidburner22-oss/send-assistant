@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (Multi-Digit)",
+  "subtopic": "Multiplying by 10, 100 and 1000",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Multiplying by 10, 100 and 1000",
+  "subtitle": "Multiplication and Division (Multi-Digit) · KS3 Maths",
+  "learning_objective": "I can multiply whole numbers and decimals by 10, 100 and 1000 by shifting place value.",
+  "key_vocab": [
+    {
+      "term": "10",
+      "definition": "Multiplying by 10 shifts every digit one column LEFT. The digits stay the same; their place value changes."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can multiply whole numbers and decimals by 10, 100 and 1000 by shifting place value."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "10 -- Multiplying by 10 shifts every digit one column LEFT. The digits stay the same; their place value changes."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiplying by 10 = shift digits 1 left. By 100 = shift 2 left. By 1000 = shift 3 left. The decimal point appears to move RIGHT.\n3.45 × 100 = 345\nDecimal point moves 2 places right\n\nKey examples:\n  ✓ 7 × 10 = 70  (shift L by 1)\n  ✓ 7 × 100 = 700  (shift L by 2)\n  ✓ 7 × 1000 = 7000  (shift L by 3)\n  ✓ 0.4 × 10 = 4  (decimal shifts too)\n  ✗ 3.4 × 10 = 3.40  (should be 34)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – whole × 10\n  Calculate 47 × 10\n  47 has digits 4 and 7\n  Shift each one column left\n  = 470\n  = 470\n  (Add a zero in the units column to mark the new place.)\n\nExample 2 – whole × 100\n  Calculate 23 × 100\n  Each digit shifts 2 places left\n  Add 2 zeros as placeholders\n  = 2300\n  = 2300\n  (Multiplying by 100 = multiplying by 10 twice.)"
+    },
+    {
+      "id": "s5",
+      "title": "× 10",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Shift digits one column left.\n\n(a) 8 × 10 = ___\n(b) 26 × 10 = ___\n(c) 0.7 × 10 = ___\n(d) 3.4 × 10 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "× 100",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Shift digits two columns left.\n\n(a) 5 × 100 = ___\n(b) 32 × 100 = ___\n(c) 0.06 × 100 = ___\n(d) 1.45 × 100 = ___"
+    },
+    {
+      "id": "s7",
+      "title": "× 1000",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Shift digits three columns left.\n\n(a) 4 × 1000 = ___\n(b) 12 × 1000 = ___\n(c) 0.005 × 1000 = ___\n(d) 2.34 × 1000 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "Mixed scales",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Spot the ×10/100/1000 pattern.\n\n(a) 7 × ___ = 700\n(b) 0.3 × ___ = 30\n(c) 0.06 × 1000 = ___\n(d) 8.4 × 100 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Two-step",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Apply the rule twice.\n\n(a) (2.5 × 10) × 100 = ___\n(b) (0.04 × 1000) × 10 = ___\n(c) (7 × 100) + (3 × 10) = ___\n(d) (0.6 × 1000) − (5 × 10) = ___\n(e) (1.2 × 100) × 10 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 3.4 × 10 = 3.40\n✓ 0.05 × 100 = 5\n✓ 47 × 100 = 4700\n✗ ×10 means ‘just add a zero’\n✓ 0.6 × 1000 = 600"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\n× 10:\n  (a) 80\n  (b) 260\n  (c) 7\n  (d) 34\n\n× 100:\n  (a) 500\n  (b) 3200\n  (c) 6\n  (d) 145\n\n× 1000:\n  (a) 4000\n  (b) 12000\n  (c) 5\n  (d) 2340\n\nMixed scales:\n  (a) 100\n  (b) 100\n  (c) 60\n  (d) 840\n\nTwo-step:\n  (a) 2500\n  (b) 400\n  (c) 730\n  (d) 550\n  (e) 1200"
+    }
+  ]
+}

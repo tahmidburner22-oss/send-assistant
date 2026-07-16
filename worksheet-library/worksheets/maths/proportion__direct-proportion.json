@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Proportion",
+  "subtopic": "Direct proportion",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Direct proportion",
+  "subtitle": "Proportion · GCSE Maths",
+  "learning_objective": "I can solve problems involving direct proportion using the unitary method and formulae.",
+  "key_vocab": [
+    {
+      "term": "Direct proportion",
+      "definition": "Two quantities are in direct proportion if when one doubles, the other doubles too. Their ratio stays constant."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve problems involving direct proportion using the unitary method and formulae."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Direct proportion -- Two quantities are in direct proportion if when one doubles, the other doubles too. Their ratio stays constant."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "If y is directly proportional to x, then y = kx where k is the constant of proportionality.\ny = k × x\nk = y ÷ x (the constant ratio)\n\nKey examples:\n  ✓ If 3 pens cost £6, then 1 pen costs £2  (unitary method)\n  ✓ y = kx means y is directly proportional to x  (formula)\n  ✓ Doubling x doubles y in direct proportion  (constant ratio)\n  ✗ If 3 pens cost £6, then 5 pens cost £8  (added 2 instead of using ratio)\n  ✗ y = kx + c is direct proportion  (must pass through origin)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – unitary method\n  5 books cost £35. Find the cost of 8 books.\n  Cost of 1 book: 35 ÷ 5 = £7\n  Cost of 8 books: 7 × 8\n  = £56\n  = £56\n  (Find the cost of one first, then multiply.)\n\nExample 2 – finding k\n  y is directly proportional to x. When x = 4, y = 20. Find y when x = 7.\n  y = kx, so k = 20 ÷ 4 = 5\n  y = 5x\n  When x = 7: y = 5 × 7 = 35\n  y = 35\n  (Find k first, write the formula, then substitute.)"
+    },
+    {
+      "id": "s5",
+      "title": "Unitary method",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the value of one, then scale up.\n\n(a) 3 pens cost £4.50. Cost of 7?\n(b) 5 kg costs £12.50. Cost of 8 kg?\n(c) 4 tickets cost £60. Cost of 10?\n(d) 6 oranges cost £1.80. Cost of 9?"
+    },
+    {
+      "id": "s6",
+      "title": "Finding the constant",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "y is directly proportional to x. Find k and the missing value.\n\n(a) x = 3, y = 12. Find y when x = 5\n(b) x = 4, y = 28. Find y when x = 6\n(c) x = 10, y = 45. Find x when y = 27\n(d) x = 2, y = 9. Find y when x = 8"
+    },
+    {
+      "id": "s7",
+      "title": "Scaling recipes",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Scale each ingredient.\n\n(a) Recipe for 4: 200g flour. Amount for 10?\n(b) Recipe for 6: 450ml milk. Amount for 4?\n(c) Recipe for 8: 320g sugar. Amount for 5?\n(d) Recipe for 3: 150g butter. Amount for 12?"
+    },
+    {
+      "id": "s8",
+      "title": "Direct proportion problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each proportion problem.\n\n(a) A car uses 6 litres for 72 km. How far on 10 litres?\n(b) 3 workers build a wall in 12 hours. How long for 1 worker?\n(c) £1 = 1.15 euros. Convert £45 to euros.\n(d) A map scale: 2 cm = 5 km. What is 7 cm in km?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed direct proportion",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) y ∝ x. x = 6, y = 18. Find y when x = 11\n(b) y ∝ x². x = 2, y = 12. Find y when x = 5\n(c) 8 identical books weigh 2.4 kg. Weight of 15?\n(d) A journey of 150 miles takes 2.5 hours. Time for 210 miles?\n(e) y ∝ √x. x = 9, y = 6. Find y when x = 25"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Direct proportion means y = kx\n✗ In direct proportion, as x increases y decreases\n✓ The graph of direct proportion passes through the origin\n✗ If 3 costs £6, then 5 costs £6 + £2 = £8\n✓ k = y ÷ x is the constant of proportionality"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nUnitary method:\n  (a) £10.50\n  (b) £20\n  (c) £150\n  (d) £2.70\n\nFinding the constant:\n  (a) 20\n  (b) 42\n  (c) 6\n  (d) 36\n\nScaling recipes:\n  (a) 500g\n  (b) 300ml\n  (c) 200g\n  (d) 600g\n\nDirect proportion problems:\n  (a) 120 km\n  (b) 36 hours\n  (c) 51.75 euros\n  (d) 17.5 km\n\nMixed direct proportion:\n  (a) 33\n  (b) 75\n  (c) 4.5 kg\n  (d) 3.5 hours\n  (e) 10"
+    }
+  ]
+}

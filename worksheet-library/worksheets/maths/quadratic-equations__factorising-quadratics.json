@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Quadratic Equations",
+  "subtopic": "Factorising quadratics",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Factorising quadratics",
+  "subtitle": "Quadratic Equations · GCSE Maths",
+  "learning_objective": "I can factorise quadratic expressions of the form x² + bx + c and ax² + bx + c.",
+  "key_vocab": [
+    {
+      "term": "Factorising",
+      "definition": "Factorising a quadratic means writing it as a product of two brackets. For x² + bx + c, find two numbers that multiply to c and add to b."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can factorise quadratic expressions of the form x² + bx + c and ax² + bx + c."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Factorising -- Factorising a quadratic means writing it as a product of two brackets. For x² + bx + c, find two numbers that multiply to c and add to b."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Find two numbers that multiply to c and add to b, then write x² + bx + c = (x + m)(x + n).\nx² + bx + c = (x + m)(x + n) where mn = c and m + n = b\nProduct = c, Sum = b\n\nKey examples:\n  ✓ x² + 7x + 12 = (x + 3)(x + 4)  (3 × 4 = 12, 3 + 4 = 7)\n  ✓ x² − 5x + 6 = (x − 2)(x − 3)  (−2 × −3 = 6, −2 + −3 = −5)\n  ✓ x² + x − 12 = (x + 4)(x − 3)  (4 × −3 = −12, 4 + −3 = 1)\n  ✗ x² + 7x + 12 = (x + 6)(x + 2)  (6 + 2 = 8, not 7)\n  ✗ x² − 5x + 6 = (x − 6)(x + 1)  (−6 × 1 = −6, not +6)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – both positive\n  Factorise x² + 8x + 15\n  Need two numbers: multiply to 15, add to 8\n  Factor pairs of 15: 1×15, 3×5\n  3 + 5 = 8, so (x + 3)(x + 5)\n  (x + 3)(x + 5)\n  (Both numbers positive because b and c are both positive.)\n\nExample 2 – both negative\n  Factorise x² − 7x + 12\n  Need: multiply to +12, add to −7\n  Both must be negative: −3 × −4 = 12, −3 + −4 = −7\n  = (x − 3)(x − 4)\n  (x − 3)(x − 4)\n  (c positive but b negative means both numbers are negative.)"
+    },
+    {
+      "id": "s5",
+      "title": "Both terms positive",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Factorise each quadratic.\n\n(a) x² + 5x + 6\n(b) x² + 9x + 20\n(c) x² + 11x + 30\n(d) x² + 7x + 10"
+    },
+    {
+      "id": "s6",
+      "title": "Negative b, positive c",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Factorise each quadratic.\n\n(a) x² − 5x + 6\n(b) x² − 8x + 15\n(c) x² − 9x + 14\n(d) x² − 11x + 18"
+    },
+    {
+      "id": "s7",
+      "title": "Negative c",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Factorise each quadratic.\n\n(a) x² + 3x − 10\n(b) x² − 2x − 15\n(c) x² + x − 20\n(d) x² − x − 12"
+    },
+    {
+      "id": "s8",
+      "title": "Leading coefficient ≠ 1",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Factorise using the grouping method.\n\n(a) 2x² + 5x + 3\n(b) 3x² + 10x + 3\n(c) 2x² + 7x + 6\n(d) 5x² + 11x + 2"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed factorising",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Factorise each expression fully.\n\n(a) x² + 4x − 21\n(b) x² − 10x + 25\n(c) x² − 49\n(d) 3x² − 5x − 2\n(e) 6x² + x − 2"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ x² + 7x + 12 = (x + 3)(x + 4)\n✗ x² − 5x + 6 = (x − 6)(x + 1)\n✓ If c is negative, the signs in the brackets are different\n✗ x² + 7x + 12 = (x + 6)(x + 2)\n✓ x² − 9 = (x + 3)(x − 3) uses difference of two squares"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nBoth terms positive:\n  (a) (x + 2)(x + 3)\n  (b) (x + 4)(x + 5)\n  (c) (x + 5)(x + 6)\n  (d) (x + 2)(x + 5)\n\nNegative b, positive c:\n  (a) (x − 2)(x − 3)\n  (b) (x − 3)(x − 5)\n  (c) (x − 2)(x − 7)\n  (d) (x − 2)(x − 9)\n\nNegative c:\n  (a) (x + 5)(x − 2)\n  (b) (x − 5)(x + 3)\n  (c) (x + 5)(x − 4)\n  (d) (x − 4)(x + 3)\n\nLeading coefficient ≠ 1:\n  (a) (2x + 3)(x + 1)\n  (b) (3x + 1)(x + 3)\n  (c) (2x + 3)(x + 2)\n  (d) (5x + 1)(x + 2)\n\nMixed factorising:\n  (a) (x + 7)(x − 3)\n  (b) (x − 5)²\n  (c) (x + 7)(x − 7)\n  (d) (3x + 1)(x − 2)\n  (e) (3x + 2)(2x − 1)"
+    }
+  ]
+}

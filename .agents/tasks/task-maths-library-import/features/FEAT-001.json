@@ -1,0 +1,30 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Build a Python conversion script that transforms all 128 maths-worksheets/json/*.json source files into the worksheet-library target format (SCHEMA.md), then write an import script that inserts them into the database via the POST /api/library/auto-save endpoint or direct SQL. Also create a topic mapping file to ensure source topic names map to SUBTOPICS_MAP keys.",
+  "status": "in_progress",
+  "steps": [
+    "Step 1: Create scripts/convert-maths-worksheets.py (or .ts) that reads each of the 128 JSON source files from maths-worksheets/json/ and transforms them into the worksheet-library format. The conversion must: (a) Parse the title field to extract topic and subtopic (split on ',\\n' or '\\n', remove parens from subtopic, title-case both). (b) Map source topic names (uppercase like 'SIMULTANEOUS EQUATIONS') to the exact SUBTOPICS_MAP keys in client/src/lib/subtopics-data.ts (like 'Simultaneous Equations'). (c) Map source subtopic names (uppercase like 'NON-LINEAR SIMULTANEOUS EQUATIONS') to exact SUBTOPICS_MAP subtopic entries (like 'Non-linear simultaneous equations'). (d) Build sections[] array following the gold standard pattern from simultaneous-equations__non-linear-simultaneous-equations.json: s1=objective, s2=vocabulary (from key_terms), s3=method/example (from key_idea + what_we_learn), s4=worked-example (from modelled_examples), s5-s12=questions (from practice sections - each practice question becomes a q-short-answer or q-extended section with marks), s13=common-mistakes (from misconceptions), s14=self-reflection. (e) Build teacher_sections[] with a mark-scheme (ts1) containing all answers from practice and modelled_examples. (f) Build key_vocab[] from info_boxes.key_terms content. (g) Set subject='Maths', yearGroup based on topic (KS3 topics=Year 9, KS4/GCSE topics=Year 10/11), tier='mixed'. (h) Generate proper section ids (s1..sN for student, ts1..tsN for teacher). (i) Write output to worksheet-library/worksheets/maths/<topic-slug>__<subtopic-slug>.json following SCHEMA.md naming.",
+    "Step 2: Create a comprehensive topic mapping (either as a JSON file or embedded in the script) that maps ALL source topic names to SUBTOPICS_MAP keys. Key mappings needed: 'ALGEBRAIC EXPRESSIONS' -> 'Algebraic Expressions' (but source also contains Topic 6 subtopics like 'Substitution into expressions' which are under 'Algebra -- Simple Formulae and Sequences' in SUBTOPICS_MAP). 'ANGLES AND GEOMETRY' -> 'Angles'. 'DECIMALS' -> 'Decimals -- All Operations'. 'NUMBER OPERATIONS' -> 'Four Operations and Order of Operations'. 'FRACTIONS (SECONDARY)' -> 'Fractions'. 'FRACTIONS ALL OPERATIONS' -> 'Fractions -- All Operations'. 'ALGEBRAIC FRACTIONS' -> 'Fractions -- Secondary'. 'INEQUALITIES' -> 'Linear Inequalities'. 'MULTIPLICATION' -> various times-table topics. 'DIVISION' -> 'Multiplication and Division (Multi-Digit)'. 'PYTHAGORAS' -> \"Pythagoras' Theorem\". 'QUADRATICS' -> 'Quadratic Equations'. 'STANDARD FORM' -> 'Indices and Standard Form'. 'PERCENTAGES OF AMOUNTS' -> 'Percentages of Amounts' in SUBTOPICS_MAP. Also map subtopics: 'BIDMAS / BODMAS' -> 'BIDMAS/BODMAS', 'SOH CAH TOA FINDING SIDES' -> 'SOH CAH TOA -- finding sides', etc. The mapping must be exhaustive for all 128 files.",
+    "Step 3: Create scripts/import-maths-worksheets.ts (TypeScript, runnable with tsx) that reads all converted JSON files from worksheet-library/worksheets/maths/ and inserts them into the worksheet_library database table. For each file: INSERT with id=uuidv4(), subject, topic, year_group, title, subtitle, sections (JSON string), teacher_sections (JSON string), key_vocab (JSON string), learning_objective, source='curated', curated=1, version=1, tier, canonical_topic_key (via canonicalTopicKey function). Use ON CONFLICT (subject, topic, year_group, tier) DO UPDATE to make it idempotent. The script should connect to the production database using the same connection logic as server/db/index.ts.",
+    "Step 4: Run the conversion script to generate all 128 output files. Validate that each output file: has >= 8 sections, has proper section ids (s1..sN), has a teacher_sections array with mark-scheme, has key_vocab populated, has topic/subtopic matching SUBTOPICS_MAP entries.",
+    "Step 5: Verify overlay engine compatibility by checking: all sections have 'id' fields, section types are from the canonical set (objective, vocabulary, example, q-short-answer, q-extended, common-mistakes, self-reflection), no section has isOverlay:true in the base. Test a sample worksheet through the applyOverlays() function (import and call directly or via API)."
+  ],
+  "acceptance_criteria": [
+    "128 converted JSON files exist in worksheet-library/worksheets/maths/ following the naming convention <topic-slug>__<subtopic-slug>.json",
+    "Each converted file matches the SCHEMA.md format: has subject, topic, subtopic, yearGroup, tier, title, subtitle, learning_objective, key_vocab[], sections[], teacher_sections[] fields",
+    "Every section has a stable 'id' field and a valid canonical 'type' field",
+    "Topic names in converted files exactly match keys in SUBTOPICS_MAP (case-sensitive)",
+    "Subtopic names in converted files exactly match entries under those topic keys in SUBTOPICS_MAP",
+    "The import script can be run to insert all 128 worksheets into the worksheet_library table",
+    "The conversion preserves all mathematical content, questions, answers, and worked examples from the source"
+  ],
+  "verification": [
+    "Run the conversion script and confirm 128 output files are generated without errors",
+    "Run a validation check that each output file parses as valid JSON with the required schema fields",
+    "Run the import script in dry-run mode (or against a test database) to confirm all 128 inserts succeed",
+    "Pick 3 sample files and manually verify the content matches the source (questions, answers, structure preserved)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

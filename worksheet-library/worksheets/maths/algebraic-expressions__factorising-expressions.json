@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Algebraic Expressions",
+  "subtopic": "Factorising expressions",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Factorising expressions",
+  "subtitle": "Algebraic Expressions · GCSE Maths",
+  "learning_objective": "I can factorise algebraic expressions by taking out common factors.",
+  "key_vocab": [
+    {
+      "term": "Factorising",
+      "definition": "Factorising is the reverse of expanding. We find a common factor and write the expression as a product of terms."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can factorise algebraic expressions by taking out common factors."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Factorising -- Factorising is the reverse of expanding. We find a common factor and write the expression as a product of terms."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Find the highest common factor (HCF) of all terms. Write it outside the bracket. Divide each term by the HCF to get what goes inside.\n4x² + 8x = 4x(x + 2)\nHCF = 4x; divide each term by 4x\n\nKey examples:\n  ✓ 6x + 9 = 3(2x + 3)  (HCF is 3)\n  ✓ x² + 5x = x(x + 5)  (HCF is x)\n  ✓ 4x² + 8x = 4x(x + 2)  (HCF is 4x)\n  ✗ 6x + 9 = 6(x + 3)  (6 is not a factor of 9)\n  ✗ x² + 5x = x(x + 5x)  (divided only first term)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – number HCF\n  Factorise 6x + 9\n  HCF of 6 and 9 is 3\n  6x ÷ 3 = 2x; 9 ÷ 3 = 3\n  Write: 3(2x + 3)\n  = 3(2x + 3)\n  (Check by expanding: 3 × 2x + 3 × 3 = 6x + 9 ✓)\n\nExample 2 – letter HCF\n  Factorise x² + 5x\n  Both terms contain x\n  x² ÷ x = x; 5x ÷ x = 5\n  Write: x(x + 5)\n  = x(x + 5)\n  (Take out the lowest power of x from each term.)"
+    },
+    {
+      "id": "s5",
+      "title": "Number common factor",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Factorise each expression.\n\n(a) 4x + 8\n(b) 6x + 15\n(c) 10x − 5\n(d) 12x + 18"
+    },
+    {
+      "id": "s6",
+      "title": "Letter common factor",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Take out the highest power of the letter.\n\n(a) x² + 3x\n(b) x² − 7x\n(c) 2x² + x\n(d) 5x² − 10x"
+    },
+    {
+      "id": "s7",
+      "title": "Number and letter HCF",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the full HCF (number and letter).\n\n(a) 6x² + 12x\n(b) 8x² − 4x\n(c) 9x² + 3x\n(d) 10x³ + 15x²"
+    },
+    {
+      "id": "s8",
+      "title": "Three-term expressions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Factorise fully.\n\n(a) 3x² + 6x + 9\n(b) 5x² − 10x + 15\n(c) 4x² + 8x + 12\n(d) 2x³ + 4x² + 6x"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed factorising",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Factorise each expression fully.\n\n(a) 7x + 21\n(b) x² + 4x\n(c) 12x² − 8x\n(d) 15x² + 10x + 5\n(e) 6x³ − 9x²"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 6x + 9 = 3(2x + 3)\n✗ x² + 5x = x(x + 5x)\n✓ 4x² + 8x = 4x(x + 2)\n✗ 6x + 9 = 6(x + 1.5)\n✓ Factorising is the reverse of expanding"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nNumber common factor:\n  (a) 4(x + 2)\n  (b) 3(2x + 5)\n  (c) 5(2x − 1)\n  (d) 6(2x + 3)\n\nLetter common factor:\n  (a) x(x + 3)\n  (b) x(x − 7)\n  (c) x(2x + 1)\n  (d) 5x(x − 2)\n\nNumber and letter HCF:\n  (a) 6x(x + 2)\n  (b) 4x(2x − 1)\n  (c) 3x(3x + 1)\n  (d) 5x²(2x + 3)\n\nThree-term expressions:\n  (a) 3(x² + 2x + 3)\n  (b) 5(x² − 2x + 3)\n  (c) 4(x² + 2x + 3)\n  (d) 2x(x² + 2x + 3)\n\nMixed factorising:\n  (a) 7(x + 3)\n  (b) x(x + 4)\n  (c) 4x(3x − 2)\n  (d) 5(3x² + 2x + 1)\n  (e) 3x²(2x − 3)"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Fractions",
+  "subtopic": "Multiplying fractions",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Multiplying fractions",
+  "subtitle": "Fractions · KS3 Maths",
+  "learning_objective": "I can multiply fractions and mixed numbers, simplifying my answers.",
+  "key_vocab": [
+    {
+      "term": "multiply fractions",
+      "definition": "To multiply fractions, multiply the numerators together and the denominators together. Simplify at the end (or cancel first)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can multiply fractions and mixed numbers, simplifying my answers."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "multiply fractions -- To multiply fractions, multiply the numerators together and the denominators together. Simplify at the end (or cancel first)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply tops together, multiply bottoms together. Cancel common factors for simpler working.\n&frac{a}{b} × &frac{c}{d} = &frac{a×c}{b×d}\nStraight across: top × top, bottom × bottom\n\nKey examples:\n  ✓ &frac{2}{3} × &frac{4}{5} = &frac{8}{15}  (multiply across)\n  ✓ &frac{3}{4} × &frac{2}{3} = &frac{1}{2}  (cancel 3s first)\n  ✓ 1&frac{1}{2} × &frac{2}{3} = &frac{3}{2} × &frac{2}{3} = 1  (convert then multiply)\n  ✗ &frac{2}{3} × &frac{4}{5} = &frac{6}{8}  (added instead of multiplied)\n  ✗ &frac{2}{3} × &frac{4}{5} = &frac{8}{5}  (only multiplied tops)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – simple multiplication\n  Calculate &frac{2}{5} × &frac{3}{4}\n  Multiply numerators: 2 × 3 = 6\n  Multiply denominators: 5 × 4 = 20\n  &frac{6}{20} = &frac{3}{10}\n  = &frac{3}{10}\n  (Simplify by dividing top and bottom by 2.)\n\nExample 2 – cancelling first\n  Calculate &frac{3}{8} × &frac{4}{9}\n  Cancel: 3 and 9 share factor 3; 4 and 8 share factor 4\n  &frac{1}{2} × &frac{1}{3}\n  = &frac{1}{6}\n  = &frac{1}{6}\n  (Cross-cancel before multiplying keeps numbers small.)"
+    },
+    {
+      "id": "s5",
+      "title": "Simple fraction multiplication",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Multiply and simplify.\n\n(a) &frac{1}{2} × &frac{3}{4}\n(b) &frac{2}{3} × &frac{1}{5}\n(c) &frac{3}{4} × &frac{2}{3}\n(d) &frac{5}{6} × &frac{3}{10}"
+    },
+    {
+      "id": "s6",
+      "title": "Fraction of a whole number",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each fraction of the number.\n\n(a) &frac{1}{3} × 12\n(b) &frac{2}{5} × 30\n(c) &frac{3}{4} × 24\n(d) &frac{5}{8} × 40"
+    },
+    {
+      "id": "s7",
+      "title": "Cross-cancelling",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Cancel common factors before multiplying.\n\n(a) &frac{4}{9} × &frac{3}{8}\n(b) &frac{5}{12} × &frac{6}{10}\n(c) &frac{7}{10} × &frac{5}{14}\n(d) &frac{8}{15} × &frac{5}{4}"
+    },
+    {
+      "id": "s8",
+      "title": "Mixed numbers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert to improper fractions first.\n\n(a) 1&frac{1}{2} × &frac{2}{3}\n(b) 2&frac{1}{4} × &frac{2}{3}\n(c) 1&frac{1}{3} × 1&frac{1}{2}\n(d) 3&frac{1}{3} × &frac{3}{5}"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed multiplication",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Calculate. Give answers in simplest form.\n\n(a) &frac{2}{7} × &frac{7}{8}\n(b) 4 × &frac{3}{8}\n(c) &frac{9}{16} × &frac{4}{3}\n(d) 2&frac{1}{2} × 1&frac{3}{5}\n(e) &frac{5}{6} × &frac{2}{5} × &frac{3}{4}"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ &frac{2}{3} × &frac{4}{5} = &frac{8}{15}\n✓ Multiply tops and multiply bottoms\n✗ &frac{2}{3} × &frac{4}{5} = &frac{6}{8}\n✗ You need a common denominator to multiply\n✓ Cross-cancel before multiplying to simplify"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSimple fraction multiplication:\n  (a) &frac{3}{8}\n  (b) &frac{2}{15}\n  (c) &frac{1}{2}\n  (d) &frac{1}{4}\n\nFraction of a whole number:\n  (a) 4\n  (b) 12\n  (c) 18\n  (d) 25\n\nCross-cancelling:\n  (a) &frac{1}{6}\n  (b) &frac{1}{4}\n  (c) &frac{1}{4}\n  (d) &frac{2}{3}\n\nMixed numbers:\n  (a) 1\n  (b) 1&frac{1}{2}\n  (c) 2\n  (d) 2\n\nMixed multiplication:\n  (a) &frac{1}{4}\n  (b) 1&frac{1}{2}\n  (c) &frac{3}{4}\n  (d) 4\n  (e) &frac{1}{4}"
+    }
+  ]
+}

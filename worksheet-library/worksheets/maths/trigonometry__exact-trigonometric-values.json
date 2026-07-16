@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Trigonometry",
+  "subtopic": "Exact trigonometric values",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Exact trigonometric values",
+  "subtitle": "Trigonometry · GCSE Maths",
+  "learning_objective": "I can recall and use exact values of sin, cos, and tan for 0, 30, 45, 60, and 90 degrees.",
+  "key_vocab": [
+    {
+      "term": "exact values",
+      "definition": "The exact values of sin, cos, and tan at key angles (0°, 30°, 45°, 60°, 90°) can be expressed as surds or fractions without a calculator."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recall and use exact values of sin, cos, and tan for 0, 30, 45, 60, and 90 degrees."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "exact values -- The exact values of sin, cos, and tan at key angles (0°, 30°, 45°, 60°, 90°) can be expressed as surds or fractions without a calculator."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Learn the exact values from the 30-60-90 triangle (sides 1, √3, 2) and the 45-45-90 triangle (sides 1, 1, √2).\nsin 60° = &frac{√3}{2}, cos 60° = &frac{1}{2}\nDerived from half an equilateral triangle\n\nKey examples:\n  ✓ sin 30° = &frac{1}{2}  (half the hypotenuse)\n  ✓ cos 45° = &frac{√2}{2}  (from isosceles right triangle)\n  ✓ tan 60° = √3  (from equilateral triangle)\n  ✗ sin 45° = &frac{1}{2}  (sin 45° = &frac{√2}{2})\n  ✗ cos 30° = &frac{1}{2}  (cos 30° = &frac{√3}{2})"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – finding sin values\n  State the exact value of sin 60°.\n  Use the 30-60-90 triangle: sides 1, √3, 2\n  sin 60° = opposite/hypotenuse = √3/2\n  = &frac{√3}{2}\n  &frac{√3}{2}\n  (The side opposite 60° is √3, hypotenuse is 2.)\n\nExample 2 – finding cos values\n  State the exact value of cos 45°.\n  Use the 45-45-90 triangle: sides 1, 1, √2\n  cos 45° = adjacent/hypotenuse = 1/√2\n  = &frac{√2}{2} (rationalised)\n  &frac{√2}{2}\n  (Both sin and cos of 45° are equal.)"
+    },
+    {
+      "id": "s5",
+      "title": "Recall sin values",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State the exact value of each.\n\n(a) sin 0°\n(b) sin 30°\n(c) sin 45°\n(d) sin 90°"
+    },
+    {
+      "id": "s6",
+      "title": "Recall cos values",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State the exact value of each.\n\n(a) cos 0°\n(b) cos 30°\n(c) cos 60°\n(d) cos 90°"
+    },
+    {
+      "id": "s7",
+      "title": "Recall tan values",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State the exact value of each.\n\n(a) tan 0°\n(b) tan 30°\n(c) tan 45°\n(d) tan 60°"
+    },
+    {
+      "id": "s8",
+      "title": "Using exact values in triangles",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the exact length.\n\n(a) Hypotenuse 8, angle 30°. Find opposite side.\n(b) Hypotenuse 6, angle 60°. Find adjacent side.\n(c) Adjacent 5, angle 45°. Find opposite side.\n(d) Opposite 4, angle 30°. Find hypotenuse."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed exact values",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Evaluate without a calculator.\n\n(a) sin 30° + cos 60°\n(b) tan 45° + sin 90°\n(c) 2 sin 60°\n(d) sin² 45° + cos² 45°\n(e) tan 60° ÷ tan 30°"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ sin 30° = &frac{1}{2}\n✗ sin 45° = &frac{1}{2}\n✓ tan 45° = 1\n✗ cos 30° = &frac{1}{2}\n✓ sin²θ + cos²θ = 1 for all angles"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRecall sin values:\n  (a) 0\n  (b) &frac{1}{2}\n  (c) &frac{√2}{2}\n  (d) 1\n\nRecall cos values:\n  (a) 1\n  (b) &frac{√3}{2}\n  (c) &frac{1}{2}\n  (d) 0\n\nRecall tan values:\n  (a) 0\n  (b) &frac{√3}{3}\n  (c) 1\n  (d) √3\n\nUsing exact values in triangles:\n  (a) 4\n  (b) 3\n  (c) 5\n  (d) 8\n\nMixed exact values:\n  (a) 1\n  (b) 2\n  (c) √3\n  (d) 1\n  (e) 3"
+    }
+  ]
+}

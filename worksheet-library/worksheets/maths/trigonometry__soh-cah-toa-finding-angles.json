@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Trigonometry",
+  "subtopic": "SOH CAH TOA — finding angles",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "SOH CAH TOA — finding angles",
+  "subtitle": "Trigonometry · GCSE Maths",
+  "learning_objective": "I can use inverse trigonometric functions to find unknown angles in right-angled triangles.",
+  "key_vocab": [
+    {
+      "term": "unknown angle",
+      "definition": "To find an unknown angle, use the inverse trig functions: sin⁻¹, cos⁻¹, or tan⁻¹. Choose which ratio to use based on which two sides are known."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use inverse trigonometric functions to find unknown angles in right-angled triangles."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "unknown angle -- To find an unknown angle, use the inverse trig functions: sin⁻¹, cos⁻¹, or tan⁻¹. Choose which ratio to use based on which two sides are known."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Identify the two known sides, choose the correct ratio, then apply the inverse function.\nθ = sin⁻¹(opp ÷ hyp)\nOr cos⁻¹(adj/hyp) or tan⁻¹(opp/adj)\n\nKey examples:\n  ✓ opp = 3, hyp = 6: angle = sin⁻¹(3/6) = 30°  (use SOH)\n  ✓ adj = 4, hyp = 8: angle = cos⁻¹(4/8) = 60°  (use CAH)\n  ✓ opp = 5, adj = 5: angle = tan⁻¹(1) = 45°  (use TOA)\n  ✗ Use sin when you have adjacent and hypotenuse  (that is cos (CAH))\n  ✗ sin⁻¹(0.5) = 60°  (sin⁻¹(0.5) = 30°)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – using sin inverse\n  Find angle x: opposite = 4, hypotenuse = 8.\n  Have opposite and hypotenuse: use sin\n  sin x = 4/8 = 0.5\n  x = sin⁻¹(0.5) = 30°\n  x = 30°\n  (Opposite and hypotenuse means SOH.)\n\nExample 2 – using cos inverse\n  Find angle x: adjacent = 5, hypotenuse = 10.\n  Have adjacent and hypotenuse: use cos\n  cos x = 5/10 = 0.5\n  x = cos⁻¹(0.5) = 60°\n  x = 60°\n  (Adjacent and hypotenuse means CAH.)"
+    },
+    {
+      "id": "s5",
+      "title": "Using sin⁻¹",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each angle. Give exact values where possible.\n\n(a) opp = 5, hyp = 10\n(b) opp = 3, hyp = 6\n(c) opp = 4, hyp = 4√2\n(d) opp = 6, hyp = 12"
+    },
+    {
+      "id": "s6",
+      "title": "Using cos⁻¹",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each angle.\n\n(a) adj = 3, hyp = 6\n(b) adj = 5, hyp = 10\n(c) adj = 7, hyp = 14\n(d) adj = 4, hyp = 4√2"
+    },
+    {
+      "id": "s7",
+      "title": "Using tan⁻¹",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each angle.\n\n(a) opp = 8, adj = 8\n(b) opp = 5√3, adj = 5\n(c) opp = 3, adj = 3√3\n(d) opp = 10, adj = 10"
+    },
+    {
+      "id": "s8",
+      "title": "Choosing the correct ratio",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Identify which ratio to use, then find the angle (1 dp).\n\n(a) opp = 7, hyp = 11\n(b) adj = 6, hyp = 9\n(c) opp = 8, adj = 5\n(d) adj = 12, hyp = 15"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed angle problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Find angle x in each triangle (1 dp where needed).\n\n(a) opp = 4, adj = 3\n(b) opp = 5, hyp = 13\n(c) adj = 8, hyp = 10\n(d) opp = 12, adj = 9\n(e) opp = 1, hyp = 2"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To find an angle, use the inverse trig function\n✗ sin⁻¹(0.5) = 60°\n✓ tan⁻¹(1) = 45°\n✗ Use SOH when you know the adjacent and hypotenuse\n✓ cos⁻¹(0.5) = 60°"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nUsing sin⁻¹:\n  (a) 30°\n  (b) 30°\n  (c) 45°\n  (d) 30°\n\nUsing cos⁻¹:\n  (a) 60°\n  (b) 60°\n  (c) 60°\n  (d) 45°\n\nUsing tan⁻¹:\n  (a) 45°\n  (b) 60°\n  (c) 30°\n  (d) 45°\n\nChoosing the correct ratio:\n  (a) 39.5° (sin)\n  (b) 48.2° (cos)\n  (c) 58.0° (tan)\n  (d) 36.9° (cos)\n\nMixed angle problems:\n  (a) 53.1°\n  (b) 22.6°\n  (c) 36.9°\n  (d) 53.1°\n  (e) 30°"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Fractions — Secondary",
+  "subtopic": "Adding and subtracting algebraic fractions",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Adding and subtracting algebraic fractions",
+  "subtitle": "Fractions — Secondary · GCSE Maths",
+  "learning_objective": "I can add and subtract algebraic fractions by finding a common denominator.",
+  "key_vocab": [
+    {
+      "term": "algebraic fraction",
+      "definition": "An algebraic fraction has a variable (letter) in the numerator, denominator, or both. To add or subtract them, we need a common denominator, just like with number fractions."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can add and subtract algebraic fractions by finding a common denominator."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "algebraic fraction -- An algebraic fraction has a variable (letter) in the numerator, denominator, or both. To add or subtract them, we need a common denominator, just like with number fractions."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Find the lowest common denominator (LCD), rewrite each fraction over the LCD, then combine the numerators.\n&frac{a}{x} + &frac{b}{y} = &frac{ay + bx}{xy}\nCross-multiply to find common denominator xy\n\nKey examples:\n  ✓ &frac{1}{x} + &frac{2}{x} = &frac{3}{x}  (same denominator)\n  ✓ &frac{1}{x} + &frac{1}{y} = &frac{y + x}{xy}  (different denominators)\n  ✓ &frac{2}{x+1} + &frac{3}{x+2} = &frac{2(x+2)+3(x+1)}{(x+1)(x+2)}  (linear denominators)\n  ✗ &frac{1}{x} + &frac{1}{y} = &frac{2}{x+y}  (cannot add denominators)\n  ✗ &frac{2}{x} + &frac{3}{x} = &frac{5}{2x}  (denominator stays the same)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – same denominator\n  Simplify &frac{3}{x} + &frac{5}{x}\n  Denominators are the same: x\n  Add numerators: 3 + 5 = 8\n  Answer: &frac{8}{x}\n  &frac{8}{x}\n  (When denominators match, simply add the numerators.)\n\nExample 2 – different single-term denominators\n  Simplify &frac{2}{x} + &frac{3}{y}\n  LCD = xy\n  Rewrite: &frac{2y}{xy} + &frac{3x}{xy}\n  Combine: &frac{2y + 3x}{xy}\n  &frac{2y + 3x}{xy}\n  (Multiply each fraction by the other denominator over itself.)"
+    },
+    {
+      "id": "s5",
+      "title": "Same denominator",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify each expression.\n\n(a) &frac{2}{x} + &frac{5}{x}\n(b) &frac{7}{a} − &frac{3}{a}\n(c) &frac{4}{x+1} + &frac{2}{x+1}\n(d) &frac{9}{2x} − &frac{5}{2x}"
+    },
+    {
+      "id": "s6",
+      "title": "Different single-term denominators",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find a common denominator and simplify.\n\n(a) &frac{1}{x} + &frac{1}{y}\n(b) &frac{3}{a} + &frac{2}{b}\n(c) &frac{5}{x} − &frac{1}{2x}\n(d) &frac{2}{3x} + &frac{1}{x}"
+    },
+    {
+      "id": "s7",
+      "title": "Linear expression denominators",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify. Write as a single fraction.\n\n(a) &frac{1}{x+1} + &frac{1}{x+2}\n(b) &frac{2}{x+3} + &frac{1}{x+1}\n(c) &frac{3}{x+4} − &frac{1}{x+2}\n(d) &frac{4}{x−1} + &frac{2}{x+3}"
+    },
+    {
+      "id": "s8",
+      "title": "Harder subtraction",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify fully.\n\n(a) &frac{5}{x+2} − &frac{2}{x+1}\n(b) &frac{3}{x−2} − &frac{1}{x+4}\n(c) &frac{x}{x+1} + &frac{2}{x−1}\n(d) &frac{4}{2x+1} − &frac{1}{x+3}"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed algebraic fractions",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Write as a single fraction in simplest form.\n\n(a) &frac{1}{x} + &frac{1}{x+1}\n(b) &frac{3}{x+2} − &frac{2}{x−3}\n(c) &frac{x}{x+1} − &frac{x}{x+2}\n(d) &frac{2}{x−1} + &frac{3}{x+1}\n(e) &frac{1}{x} + &frac{1}{x+1} + &frac{1}{x+2}"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ &frac{1}{x} + &frac{2}{x} = &frac{3}{x}\n✗ &frac{1}{x} + &frac{1}{y} = &frac{2}{x+y}\n✓ To add fractions with different denominators, find the LCM first\n✗ &frac{a}{b} + &frac{c}{d} = &frac{a+c}{b+d}\n✓ &frac{3}{x+1} − &frac{1}{x+1} = &frac{2}{x+1}"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSame denominator:\n  (a) &frac{7}{x}\n  (b) &frac{4}{a}\n  (c) &frac{6}{x+1}\n  (d) &frac{4}{2x} = &frac{2}{x}\n\nDifferent single-term denominators:\n  (a) &frac{y+x}{xy}\n  (b) &frac{3b+2a}{ab}\n  (c) &frac{10 − 1}{2x} = &frac{9}{2x}\n  (d) &frac{2+3}{3x} = &frac{5}{3x}\n\nLinear expression denominators:\n  (a) &frac{2x+3}{(x+1)(x+2)}\n  (b) &frac{3x+5}{(x+3)(x+1)}\n  (c) &frac{2x+2}{(x+4)(x+2)}\n  (d) &frac{6x+14}{(x−1)(x+3)}\n\nHarder subtraction:\n  (a) &frac{3x+1}{(x+2)(x+1)}\n  (b) &frac{2x+14}{(x−2)(x+4)}\n  (c) &frac{x² − x + 2}{(x+1)(x−1)}\n  (d) &frac{2x+11}{(2x+1)(x+3)}\n\nMixed algebraic fractions:\n  (a) &frac{2x+1}{x(x+1)}\n  (b) &frac{x−13}{(x+2)(x−3)}\n  (c) &frac{x}{(x+1)(x+2)}\n  (d) &frac{5x−1}{(x−1)(x+1)}\n  (e) &frac{3x²+6x+2}{x(x+1)(x+2)}"
+    }
+  ]
+}

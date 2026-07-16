@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Decimals — All Operations",
+  "subtopic": "Adding and subtracting decimals",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Adding and subtracting decimals",
+  "subtitle": "Decimals — All Operations · KS3 Maths",
+  "learning_objective": "I can add and subtract decimals using column methods, lining up the decimal points.",
+  "key_vocab": [
+    {
+      "term": "decimals",
+      "definition": "When adding or subtracting decimals, line up the decimal points so that digits with the same place value are in the same column."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can add and subtract decimals using column methods, lining up the decimal points."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "decimals -- When adding or subtracting decimals, line up the decimal points so that digits with the same place value are in the same column."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Line up the decimal points. Fill empty places with zeros. Then add or subtract as normal.\n12.45 + 3.60 = 16.05\nPad with zeros to match decimal places\n\nKey examples:\n  ✓ 3.5 + 2.7 = 6.2  (line up points)\n  ✓ 5.0 − 1.3 = 3.7  (use placeholder 0)\n  ✓ 12.45 + 3.6 = 16.05  (3.6 = 3.60)\n  ✗ 3.5 + 2.7 = 5.12  (not place value error)\n  ✗ 1.3 + 2.45 lined up without point  (must align decimals)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – adding\n  Calculate 4.3 + 2.8\n  Line up: 4.3 + 2.8\n  3 + 8 = 11, write 1 carry 1\n  4 + 2 + 1 = 7 → 7.1\n  = 7.1\n  (Carry works exactly the same as with whole numbers.)\n\nExample 2 – different decimal places\n  Calculate 5.6 + 3.45\n  Write as 5.60 + 3.45\n  0 + 5 = 5; 6 + 4 = 10, write 0 carry 1\n  5 + 3 + 1 = 9 → 9.05\n  = 9.05\n  (Pad 5.6 with a zero to make 5.60.)"
+    },
+    {
+      "id": "s5",
+      "title": "Adding decimals (same d.p.)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate each sum.\n\n(a) 3.4 + 2.5\n(b) 6.7 + 1.8\n(c) 4.25 + 3.14\n(d) 8.63 + 5.29"
+    },
+    {
+      "id": "s6",
+      "title": "Adding (different d.p.)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Pad with zeros first.\n\n(a) 4.5 + 2.35\n(b) 7 + 3.62\n(c) 12.4 + 0.85\n(d) 9.1 + 4.275"
+    },
+    {
+      "id": "s7",
+      "title": "Subtracting decimals",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate each difference.\n\n(a) 7.8 − 3.5\n(b) 9.4 − 2.7\n(c) 6.32 − 4.18\n(d) 10 − 4.65"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Show your column working.\n\n(a) Buy items at £3.49 and £2.75. Total?\n(b) Had £20; spent £13.62. Change?\n(c) Run 3.5 km then 2.75 km. Total?\n(d) Rope 8 m; cut off 2.35 m. Left?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed addition and subtraction",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Calculate.\n\n(a) 5.6 + 3.45 − 2.1\n(b) 10 − 3.7 + 1.25\n(c) 7.82 + 4.5 − 6.07\n(d) 20 − 8.45 − 3.2\n(e) 0.75 + 0.8 + 0.125"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Line up decimal points when adding\n✗ 3.5 + 2.7 = 5.12\n✓ 10 − 3.46 = 6.54\n✓ 4.5 is the same as 4.50\n✗ 1.3 + 2.45 = 3.48"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nAdding decimals (same d.p.):\n  (a) 5.9\n  (b) 8.5\n  (c) 7.39\n  (d) 13.92\n\nAdding (different d.p.):\n  (a) 6.85\n  (b) 10.62\n  (c) 13.25\n  (d) 13.375\n\nSubtracting decimals:\n  (a) 4.3\n  (b) 6.7\n  (c) 2.14\n  (d) 5.35\n\nWord problems:\n  (a) £6.24\n  (b) £6.38\n  (c) 6.25 km\n  (d) 5.65 m\n\nMixed addition and subtraction:\n  (a) 6.95\n  (b) 7.55\n  (c) 6.25\n  (d) 8.35\n  (e) 1.675"
+    }
+  ]
+}

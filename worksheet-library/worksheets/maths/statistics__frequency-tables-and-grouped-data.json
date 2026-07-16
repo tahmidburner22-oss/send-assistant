@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Statistics",
+  "subtopic": "Frequency tables and grouped data",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Frequency tables and grouped data",
+  "subtitle": "Statistics · GCSE Maths",
+  "learning_objective": "I can calculate averages and other statistics from frequency tables and grouped frequency tables.",
+  "key_vocab": [
+    {
+      "term": "frequency table",
+      "definition": "A frequency table shows how often each value (or group of values) occurs. For grouped data, use the midpoint of each class to estimate the mean."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate averages and other statistics from frequency tables and grouped frequency tables."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "frequency table -- A frequency table shows how often each value (or group of values) occurs. For grouped data, use the midpoint of each class to estimate the mean."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "For grouped data: estimate mean = sum of (frequency × midpoint) divided by total frequency.\nEstimated mean = Σfx ÷ Σf\nx = midpoint of each class; f = frequency\n\nKey examples:\n  ✓ Mean = Σfx ÷ Σf  (total of fx divided by total frequency)\n  ✓ Midpoint of 10–20 is 15  ((10 + 20) ÷ 2)\n  ✓ Modal class = class with highest frequency  (not the midpoint)\n  ✗ Mean of grouped data uses class boundaries  (use midpoints)\n  ✗ You can find the exact mean from grouped data  (only an estimate)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – ungrouped frequency table\n  Scores: 1(f=3), 2(f=5), 3(f=7), 4(f=4), 5(f=1). Find the mean.\n  Σfx = 1×3 + 2×5 + 3×7 + 4×4 + 5×1 = 3+10+21+16+5 = 55\n  Σf = 3+5+7+4+1 = 20\n  Mean = 55 ÷ 20 = 2.75\n  Mean = 2.75\n  (Multiply each value by its frequency, sum, then divide by total frequency.)\n\nExample 2 – grouped data mean\n  Heights (cm): 140–150 (f=4), 150–160 (f=10), 160–170 (f=8), 170–180 (f=3). Estimate the mean.\n  Midpoints: 145, 155, 165, 175\n  Σfx = 145×4 + 155×10 + 165×8 + 175×3 = 580+1550+1320+525 = 3975\n  Mean = 3975 ÷ 25 = 159\n  Estimated mean = 159 cm\n  (Use midpoints because we do not know exact values within groups.)"
+    },
+    {
+      "id": "s5",
+      "title": "Mean from ungrouped frequency tables",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate the mean.\n\n(a) x: 1,2,3,4; f: 5,8,4,3\n(b) x: 0,1,2,3,4; f: 2,6,9,7,1\n(c) x: 5,6,7,8; f: 4,10,8,3\n(d) x: 10,20,30; f: 7,5,8"
+    },
+    {
+      "id": "s6",
+      "title": "Estimated mean (grouped)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the estimated mean using midpoints.\n\n(a) 0–10 (f=6), 10–20 (f=10), 20–30 (f=4)\n(b) 0–5 (f=3), 5–10 (f=8), 10–15 (f=9)\n(c) 50–60 (f=5), 60–70 (f=12), 70–80 (f=8), 80–90 (f=5)\n(d) 100–120 (f=4), 120–140 (f=7), 140–160 (f=9)"
+    },
+    {
+      "id": "s7",
+      "title": "Modal class and median class",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Identify the modal class and the class containing the median.\n\n(a) 0–10(f=4), 10–20(f=11), 20–30(f=5)\n(b) 0–5(f=2), 5–10(f=8), 10–15(f=6), 15–20(f=4)\n(c) 20–30(f=7), 30–40(f=13), 40–50(f=10)\n(d) 0–100(f=5), 100–200(f=15), 200–300(f=10)"
+    },
+    {
+      "id": "s8",
+      "title": "Median and mode from ungrouped",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the median and mode.\n\n(a) x: 1,2,3,4,5; f: 2,5,8,3,2\n(b) x: 0,1,2,3; f: 4,6,6,4\n(c) x: 10,11,12,13,14; f: 1,3,7,5,4\n(d) x: 2,4,6,8; f: 5,10,3,2"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed frequency table problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Answer each question.\n\n(a) n=30, Σfx = 450. Find the mean.\n(b) Mean = 8, n = 25. Find Σfx.\n(c) Classes: 0–20(f=8), 20–40(f=12), 40–60(f=5). Range estimate?\n(d) Modal class for: 1–3(f=4), 3–5(f=9), 5–7(f=6), 7–9(f=1)?\n(e) Estimated mean if all in class 10–20 are exactly 15?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Mean from a frequency table = Σfx ÷ Σf\n✗ For grouped data, use the class boundaries (not midpoints) for the mean\n✓ The modal class is the class with the highest frequency\n✗ You can find the exact mean from grouped data\n✓ The midpoint of a class 10–20 is 15"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nMean from ungrouped frequency tables:\n  (a) Mean = (5+16+12+12)/20 = 45/20 = 2.25\n  (b) Mean = (0+6+18+21+4)/25 = 49/25 = 1.96\n  (c) Mean = (20+60+56+24)/25 = 160/25 = 6.4\n  (d) Mean = (70+100+240)/20 = 410/20 = 20.5\n\nEstimated mean (grouped):\n  (a) Mean = (30+150+100)/20 = 280/20 = 14\n  (b) Mean = (7.5+60+112.5)/20 = 180/20 = 9\n  (c) Midpoints: 55,65,75,85; mean = (275+780+600+425)/30 = 2080/30 = 69.3\n  (d) Mean = (440+910+1350)/20 = 2700/20 = 135\n\nModal class and median class:\n  (a) Modal: 10–20; Median in 10–20\n  (b) Modal: 5–10; Median in 5–10\n  (c) Modal: 30–40; Median in 30–40\n  (d) Modal: 100–200; Median in 100–200\n\nMedian and mode from ungrouped:\n  (a) Mode=3; n=20, median at 10/11th, CF: 2,7,15... median=3\n  (b) Mode=1 and 2 (bimodal); n=20, median between 10th/11th = 1.5\n  (c) Mode=12; n=20, median at 10/11th = 12\n  (d) Mode=4; n=20, median at 10/11th = 4\n\nMixed frequency table problems:\n  (a) 15\n  (b) 200\n  (c) 60\n  (d) 3–5\n  (e) That is the midpoint assumption"
+    }
+  ]
+}

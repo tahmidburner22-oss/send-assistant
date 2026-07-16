@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Algebraic Expressions",
+  "subtopic": "Expanding double brackets",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Expanding double brackets",
+  "subtitle": "Algebraic Expressions · GCSE Maths",
+  "learning_objective": "I can expand the product of two binomials using the FOIL method or grid method.",
+  "key_vocab": [
+    {
+      "term": "Expanding double brackets",
+      "definition": "Expanding double brackets means multiplying two expressions like (x + 3)(x + 5) to remove the brackets and write as a single expression."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can expand the product of two binomials using the FOIL method or grid method."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Expanding double brackets -- Expanding double brackets means multiplying two expressions like (x + 3)(x + 5) to remove the brackets and write as a single expression."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply each term in the first bracket by each term in the second bracket, then simplify by collecting like terms.\n(x + a)(x + b) = x² + (a + b)x + ab\nMiddle term = sum, last term = product\n\nKey examples:\n  ✓ (x + 2)(x + 3) = x² + 5x + 6  (FOIL)\n  ✓ (x + 4)(x − 1) = x² + 3x − 4  (mixed signs)\n  ✓ (x − 3)(x − 2) = x² − 5x + 6  (both negative)\n  ✗ (x + 2)(x + 3) = x² + 6  (forgot middle term)\n  ✗ (x + 4)² = x² + 16  (must use FOIL)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – both positive\n  Expand (x + 2)(x + 5)\n  F: x × x = x², O: x × 5 = 5x, I: 2 × x = 2x, L: 2 × 5 = 10\n  Combine: x² + 5x + 2x + 10\n  Simplify: x² + 7x + 10\n  = x² + 7x + 10\n  (Collect the two middle terms: 5x + 2x = 7x.)\n\nExample 2 – one negative\n  Expand (x + 4)(x − 3)\n  F: x², O: −3x, I: 4x, L: 4 × (−3) = −12\n  Combine: x² − 3x + 4x − 12\n  Simplify: x² + x − 12\n  = x² + x − 12\n  (Be careful with signs: +4 × −3 = −12.)"
+    },
+    {
+      "id": "s5",
+      "title": "Both terms positive",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Expand and simplify.\n\n(a) (x + 1)(x + 3)\n(b) (x + 2)(x + 4)\n(c) (x + 5)(x + 2)\n(d) (x + 6)(x + 1)"
+    },
+    {
+      "id": "s6",
+      "title": "One negative term",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Expand and simplify. Watch the signs!\n\n(a) (x + 5)(x − 2)\n(b) (x + 3)(x − 4)\n(c) (x − 1)(x + 6)\n(d) (x + 7)(x − 3)"
+    },
+    {
+      "id": "s7",
+      "title": "Both terms negative",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Expand and simplify.\n\n(a) (x − 2)(x − 3)\n(b) (x − 5)(x − 1)\n(c) (x − 4)(x − 4)\n(d) (x − 6)(x − 2)"
+    },
+    {
+      "id": "s8",
+      "title": "Applied / special cases",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Expand and simplify.\n\n(a) (x + 3)²\n(b) (x − 4)²\n(c) (x + 2)(x − 2)\n(d) (2x + 1)(x + 3)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed expansion",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Expand and simplify each expression.\n\n(a) (x + 4)(x − 5)\n(b) (x − 7)(x + 2)\n(c) (x + 1)²\n(d) (x − 3)(x + 3)\n(e) (2x + 3)(x − 1)"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ (x + 2)(x + 3) = x² + 5x + 6\n✗ (x + 4)² = x² + 16\n✓ (x − 3)(x − 2) = x² − 5x + 6\n✗ (x + 5)(x − 5) = x² + 25\n✓ (x + a)(x + b) has middle term (a + b)x"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nBoth terms positive:\n  (a) x² + 4x + 3\n  (b) x² + 6x + 8\n  (c) x² + 7x + 10\n  (d) x² + 7x + 6\n\nOne negative term:\n  (a) x² + 3x − 10\n  (b) x² − x − 12\n  (c) x² + 5x − 6\n  (d) x² + 4x − 21\n\nBoth terms negative:\n  (a) x² − 5x + 6\n  (b) x² − 6x + 5\n  (c) x² − 8x + 16\n  (d) x² − 8x + 12\n\nApplied / special cases:\n  (a) x² + 6x + 9\n  (b) x² − 8x + 16\n  (c) x² − 4\n  (d) 2x² + 7x + 3\n\nMixed expansion:\n  (a) x² − x − 20\n  (b) x² − 5x − 14\n  (c) x² + 2x + 1\n  (d) x² − 9\n  (e) 2x² + x − 3"
+    }
+  ]
+}

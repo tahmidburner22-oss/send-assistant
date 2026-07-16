@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Four Operations and Order of Operations",
+  "subtopic": "Multi-step calculations",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Multi-step calculations",
+  "subtitle": "Four Operations and Order of Operations · KS3 Maths",
+  "learning_objective": "I can solve problems that require more than one step, choosing the correct operations.",
+  "key_vocab": [
+    {
+      "term": "multi-step calculation",
+      "definition": "A multi-step calculation requires you to perform two or more operations in sequence to reach the answer."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve problems that require more than one step, choosing the correct operations."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "multi-step calculation -- A multi-step calculation requires you to perform two or more operations in sequence to reach the answer."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Break the problem into steps. Solve each step in order. Check your answer makes sense.\nStep 1 → Step 2 → Answer\nOne step at a time\n\nKey examples:\n  ✓ Read → Plan → Calculate → Check  (4 steps)\n  ✓ Break complex problems into parts  (simplify)\n  ✓ Use BIDMAS for order of operations  (always)\n  ✗ Just do operations left to right  (must use BIDMAS)\n  ✗ Only use one operation per problem  (multi-step needs more)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – shopping problem\n  Buy 3 shirts at £12 each and 2 pairs of socks at £3.50. Total cost?\n  Shirts: 3 × 12 = £36\n  Socks: 2 × 3.50 = £7\n  Total: 36 + 7 = £43\n  = £43\n  (Calculate each item separately, then add.)\n\nExample 2 – with change\n  You pay for a £7.80 item with a £20 note. How many 50p coins in your change?\n  Change: 20 − 7.80 = £12.20\n  Divide by 0.50: 12.20 ÷ 0.50 = 24.4\n  = 24 complete 50p coins (with 20p left)\n  = 24 coins\n  (Find the change first, then divide by the coin value.)"
+    },
+    {
+      "id": "s5",
+      "title": "Two-step calculations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each two-step problem.\n\n(a) 4 × 7 + 3 × 5\n(b) 100 − 6 × 12\n(c) (15 + 25) ÷ 8\n(d) 3 × (20 − 8) + 4"
+    },
+    {
+      "id": "s6",
+      "title": "Money problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Show your working.\n\n(a) 5 items at £4.50. Change from £30?\n(b) 3 meals at £8.95 + 2 drinks at £2.30. Total?\n(c) Earn £9.50/hour for 8 hours. Spend £45. Left?\n(d) Buy 4 at £6.25. Pay with 2 × £20 notes. Change?"
+    },
+    {
+      "id": "s7",
+      "title": "Rate problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate step by step.\n\n(a) 60 mph for 3 hours then 45 mph for 2 hours. Total miles?\n(b) Type 50 words/min for 12 min. How many words?\n(c) Fill 8 litres/min for 5 min, drain 3 litres/min for 4 min. Net?\n(d) Earn £12/hr weekday, £18/hr weekend. Work 30 + 8 hrs. Total?"
+    },
+    {
+      "id": "s8",
+      "title": "Real-life multi-step",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Read carefully and solve.\n\n(a) Bus fare £2.40 each way, 5 days/week. Weekly cost?\n(b) Recipe for 4: needs 300g flour. How much for 10 people?\n(c) Pool: 25m. Swim 12 lengths. Total in km?\n(d) 6 eggs/box, need 50 eggs. How many boxes to buy?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed multi-step",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem. Show steps.\n\n(a) Buy 3 at £7.99, get 10% off total. Pay?\n(b) Score 72, 85, 64. Need average of 75. What fourth score needed?\n(c) Area of room 5m × 4m. Tiles are 0.5m × 0.5m. How many tiles?\n(d) Train at 120 km/h for 45 min. Distance in km?\n(e) 12 sweets shared so ratio 1:2:3. Middle pile?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Multi-step problems need more than one operation\n✗ Always add all the numbers in a word problem\n✓ Break problems into smaller steps\n✗ The operations are always stated explicitly\n✓ Check your answer makes sense in context"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nTwo-step calculations:\n  (a) 43\n  (b) 28\n  (c) 5\n  (d) 40\n\nMoney problems:\n  (a) £7.50\n  (b) £31.45\n  (c) £31\n  (d) £15\n\nRate problems:\n  (a) 270\n  (b) 600\n  (c) 28 litres\n  (d) £504\n\nReal-life multi-step:\n  (a) £24\n  (b) 750 g\n  (c) 0.3 km\n  (d) 9 boxes\n\nMixed multi-step:\n  (a) £21.57\n  (b) 79\n  (c) 80\n  (d) 90 km\n  (e) 4 sweets"
+    }
+  ]
+}

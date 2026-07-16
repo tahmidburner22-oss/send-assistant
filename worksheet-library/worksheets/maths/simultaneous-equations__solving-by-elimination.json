@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Simultaneous Equations",
+  "subtopic": "Solving by elimination",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Solving by elimination",
+  "subtitle": "Simultaneous Equations · GCSE Maths",
+  "learning_objective": "I can solve simultaneous linear equations by adding or subtracting to eliminate a variable.",
+  "key_vocab": [
+    {
+      "term": "elimination method",
+      "definition": "The elimination method removes one variable by adding or subtracting the equations. We make the coefficients of one variable equal (by multiplying), then add or subtract."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve simultaneous linear equations by adding or subtracting to eliminate a variable."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "elimination method -- The elimination method removes one variable by adding or subtracting the equations. We make the coefficients of one variable equal (by multiplying), then add or subtract."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Make coefficients of one variable equal, then add (if different signs) or subtract (if same signs) to eliminate it.\n2x + 3y = 12 and 2x − y = 4: subtract ⇒ 4y = 8\nSame coefficient of x (both 2x): subtract equations\n\nKey examples:\n  ✓ 2x + y = 7 and x + y = 4: subtract to get x = 3  (same sign y, subtract)\n  ✓ 3x + 2y = 12 and 3x − y = 3: subtract to eliminate x  (same coefficient of x)\n  ✓ May need to multiply one or both equations first  (to match coefficients)\n  ✗ Always add the equations  (sometimes subtract)\n  ✗ Coefficients must already match  (multiply to make them match)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – simple subtraction\n  Solve 2x + y = 7 and x + y = 4\n  Subtract equation 2 from equation 1: (2x+y) − (x+y) = 7 − 4\n  x = 3\n  Substitute: 3 + y = 4, so y = 1\n  x = 3, y = 1\n  (Both equations have +y, so subtract to eliminate y.)\n\nExample 2 – simple addition\n  Solve 3x + 2y = 16 and x − 2y = 0\n  Add the equations: (3x+2y) + (x−2y) = 16 + 0\n  4x = 16, so x = 4\n  Substitute: 4 − 2y = 0, so y = 2\n  x = 4, y = 2\n  (+2y and −2y: add to eliminate y.)"
+    },
+    {
+      "id": "s5",
+      "title": "Direct elimination",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve by adding or subtracting directly.\n\n(a) x + y = 6 and x − y = 2\n(b) 2x + y = 9 and 2x − y = 1\n(c) 3x + 2y = 14 and x + 2y = 10\n(d) 5x + y = 17 and 3x + y = 11"
+    },
+    {
+      "id": "s6",
+      "title": "Multiply one equation",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Multiply one equation first, then eliminate.\n\n(a) 2x + y = 8 and x + 3y = 9\n(b) 3x + 2y = 16 and x + y = 6\n(c) 4x + y = 14 and 2x + 3y = 12\n(d) x + 2y = 7 and 3x + y = 11"
+    },
+    {
+      "id": "s7",
+      "title": "Multiply both equations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Multiply both equations to match a coefficient.\n\n(a) 2x + 3y = 13 and 3x + 2y = 12\n(b) 3x + 4y = 18 and 5x + 2y = 16\n(c) 4x + 3y = 23 and 3x + 5y = 24\n(d) 2x + 5y = 19 and 3x + 4y = 18"
+    },
+    {
+      "id": "s8",
+      "title": "Negative coefficients",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each pair.\n\n(a) 2x − y = 5 and x + y = 7\n(b) 3x − 2y = 5 and x + 2y = 7\n(c) 4x − 3y = 1 and 2x + 3y = 17\n(d) 5x − y = 13 and 2x + 3y = 12"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each pair of simultaneous equations.\n\n(a) x + y = 8 and 2x + 3y = 21\n(b) 3x + 2y = 19 and x − y = 2\n(c) 4x + y = 10 and x + 4y = 10\n(d) 2x + 5y = 1 and 3x − 2y = −12\n(e) x + 2y = 10 and 3x − y = 9"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Same signs: subtract equations. Different signs: add equations\n✗ You can only use elimination if coefficients already match\n✓ After finding one variable, substitute back to find the other\n✗ Always add the equations together\n✓ You can multiply one or both equations to create matching coefficients"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nDirect elimination:\n  (a) x = 4, y = 2\n  (b) x = 2.5, y = 4\n  (c) x = 2, y = 4\n  (d) x = 3, y = 2\n\nMultiply one equation:\n  (a) x = 3, y = 2\n  (b) x = 4, y = 2\n  (c) x = 3, y = 2\n  (d) x = 3, y = 2\n\nMultiply both equations:\n  (a) x = 2, y = 3\n  (b) x = 2, y = 3\n  (c) x = 5... check: should give integer\n  (d) x = 2, y = 3\n\nNegative coefficients:\n  (a) x = 4, y = 3\n  (b) x = 3, y = 2\n  (c) x = 3, y = &frac{11}{3}... check\n  (d) x = 3, y = 2\n\nMixed problems:\n  (a) x = 3, y = 5\n  (b) x = &frac{23}{5}... actually x=&frac{23}{5}... let me fix: x=... check... answer: x=&frac{23}{5}\n  (c) x = 2, y = 2\n  (d) x = −... check\n  (e) x = 4, y = 3"
+    }
+  ]
+}

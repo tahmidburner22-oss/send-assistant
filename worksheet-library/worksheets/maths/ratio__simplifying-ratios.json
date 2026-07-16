@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Ratio",
+  "subtopic": "Simplifying ratios",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Simplifying ratios",
+  "subtitle": "Ratio · GCSE Maths",
+  "learning_objective": "I can simplify ratios by dividing both sides by their highest common factor.",
+  "key_vocab": [
+    {
+      "term": "simplify a ratio",
+      "definition": "To simplify a ratio, divide all parts by their highest common factor (HCF). A ratio is in its simplest form when the parts share no common factor other than 1."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can simplify ratios by dividing both sides by their highest common factor."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "simplify a ratio -- To simplify a ratio, divide all parts by their highest common factor (HCF). A ratio is in its simplest form when the parts share no common factor other than 1."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Divide every part of the ratio by the highest common factor to simplify.\na : b = &frac{a}{HCF} : &frac{b}{HCF}\nKeep dividing until no common factor remains\n\nKey examples:\n  ✓ 12 : 18 = 2 : 3  (divide both by HCF 6)\n  ✓ 1.5 : 2.5 = 3 : 5  (multiply by 2 first to remove decimals)\n  ✓ 40 cm : 1 m = 40 : 100 = 2 : 5  (convert to same unit)\n  ✗ 12 : 18 = 6 : 9  (not fully simplified)\n  ✗ 40 cm : 1 m = 40 : 1  (units not converted)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – whole numbers\n  Simplify 24 : 36\n  Find HCF of 24 and 36 = 12\n  24 ÷ 12 = 2\n  36 ÷ 12 = 3\n  2 : 3\n  (Always find the largest factor that divides both numbers.)\n\nExample 2 – three-part ratio\n  Simplify 10 : 15 : 25\n  Find HCF of 10, 15, and 25 = 5\n  Divide each: 10 ÷ 5 = 2, 15 ÷ 5 = 3, 25 ÷ 5 = 5\n  Simplified ratio: 2 : 3 : 5\n  2 : 3 : 5\n  (The same method works for three-part ratios.)"
+    },
+    {
+      "id": "s5",
+      "title": "Simple whole number ratios",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify each ratio fully.\n\n(a) 8 : 12\n(b) 15 : 25\n(c) 18 : 24\n(d) 30 : 45"
+    },
+    {
+      "id": "s6",
+      "title": "Larger numbers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the HCF and simplify.\n\n(a) 48 : 64\n(b) 72 : 108\n(c) 56 : 84\n(d) 90 : 126"
+    },
+    {
+      "id": "s7",
+      "title": "Decimals and fractions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify these ratios.\n\n(a) 0.4 : 0.6\n(b) 1.2 : 1.8\n(c) &frac{1}{2} : &frac{3}{4}\n(d) 2.5 : 3.5"
+    },
+    {
+      "id": "s8",
+      "title": "Different units",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert to the same unit, then simplify.\n\n(a) 50 cm : 2 m\n(b) 300 g : 1.5 kg\n(c) 20 min : 1 hour\n(d) 750 ml : 2 litres"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed simplifying",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Simplify each ratio fully.\n\n(a) 36 : 48 : 60\n(b) 0.8 : 1.2 : 2\n(c) &frac{2}{3} : &frac{5}{6}\n(d) 45 cm : 1.5 m : 2.25 m\n(e) 125 : 200 : 350"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 12 : 18 simplifies to 2 : 3 (divide by 6)\n✗ 12 : 18 simplifies to 6 : 9 and that is the simplest form\n✓ To simplify a ratio with decimals, multiply to make whole numbers first\n✗ 40 cm : 1 m = 40 : 1 because we just drop the units\n✓ A ratio is fully simplified when the HCF of all parts is 1"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSimple whole number ratios:\n  (a) 2 : 3\n  (b) 3 : 5\n  (c) 3 : 4\n  (d) 2 : 3\n\nLarger numbers:\n  (a) 3 : 4\n  (b) 2 : 3\n  (c) 2 : 3\n  (d) 5 : 7\n\nDecimals and fractions:\n  (a) 2 : 3\n  (b) 2 : 3\n  (c) 2 : 3\n  (d) 5 : 7\n\nDifferent units:\n  (a) 1 : 4\n  (b) 1 : 5\n  (c) 1 : 3\n  (d) 3 : 8\n\nMixed simplifying:\n  (a) 3 : 4 : 5\n  (b) 2 : 3 : 5\n  (c) 4 : 5\n  (d) 2 : 6 : 9\n  (e) 5 : 8 : 14"
+    }
+  ]
+}

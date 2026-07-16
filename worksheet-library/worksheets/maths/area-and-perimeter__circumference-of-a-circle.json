@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Area and Perimeter",
+  "subtopic": "Circumference of a circle",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Circumference of a circle",
+  "subtitle": "Area and Perimeter · KS3 Maths",
+  "learning_objective": "I can calculate the circumference of a circle using C = πd or C = 2πr.",
+  "key_vocab": [
+    {
+      "term": "circumference",
+      "definition": "The circumference is the distance around a circle. The diameter goes across through the centre; the radius is half the diameter."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the circumference of a circle using C = πd or C = 2πr."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "circumference -- The circumference is the distance around a circle. The diameter goes across through the centre; the radius is half the diameter."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Circumference = π × diameter. If given the radius, double it first (or use C = 2πr).\nC = π × d\nπ is approximately 3.14\n\nKey examples:\n  ✓ d = 10 → C = 10π ≈ 31.4 cm  (C = πd)\n  ✓ r = 7 → C = 14π ≈ 44.0 cm  (C = 2πr)\n  ✓ π ≈ 3.14159...  (irrational number)\n  ✗ C = πr (not πd)  (that halves the answer)\n  ✗ C = πr²  (that is the area formula)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – given diameter\n  Find the circumference of a circle with diameter 8 cm.\n  C = πd\n  C = π × 8\n  C = 25.1 cm (1 d.p.)\n  = 25.1 cm\n  (Multiply π by the diameter.)\n\nExample 2 – given radius\n  Find the circumference of a circle with radius 5 cm.\n  C = 2πr\n  C = 2 × π × 5\n  C = 31.4 cm (1 d.p.)\n  = 31.4 cm\n  (Double the radius to get the diameter, then multiply by π.)"
+    },
+    {
+      "id": "s5",
+      "title": "Given diameter",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the circumference (1 d.p.). Use π = 3.14.\n\n(a) d = 10 cm\n(b) d = 6 cm\n(c) d = 15 cm\n(d) d = 25 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Given radius",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the circumference (1 d.p.). Use π = 3.14.\n\n(a) r = 4 cm\n(b) r = 7 cm\n(c) r = 10 cm\n(d) r = 3.5 cm"
+    },
+    {
+      "id": "s7",
+      "title": "Finding radius or diameter",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing measurement (1 d.p.).\n\n(a) C = 62.8 cm; find d\n(b) C = 44.0 cm; find r\n(c) C = 100 cm; find d\n(d) C = 75 cm; find r"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use π = 3.14. Give answers to 1 d.p.\n\n(a) A circular pond has diameter 4 m. Find circumference.\n(b) A wheel has radius 30 cm. Distance in one turn?\n(c) A plate has circumference 78.5 cm. Find diameter.\n(d) Circular track radius 50 m. Distance for 1 lap?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed and semicircles",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Find the perimeter of each shape (1 d.p.).\n\n(a) Circle: d = 20 cm\n(b) Semicircle: d = 14 cm\n(c) Quarter circle: r = 10 cm\n(d) Circle: r = 8.5 cm\n(e) Semicircle: r = 6 cm"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ C = πd gives the circumference\n✗ C = πr² gives the circumference\n✓ Diameter = 2 × radius\n✗ Semicircle perimeter = half the circumference only\n✓ π is approximately 3.14"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nGiven diameter:\n  (a) 31.4 cm\n  (b) 18.8 cm\n  (c) 47.1 cm\n  (d) 78.5 cm\n\nGiven radius:\n  (a) 25.1 cm\n  (b) 44.0 cm\n  (c) 62.8 cm\n  (d) 22.0 cm\n\nFinding radius or diameter:\n  (a) 20.0 cm\n  (b) 7.0 cm\n  (c) 31.8 cm\n  (d) 11.9 cm\n\nWord problems:\n  (a) 12.6 m\n  (b) 188.5 cm\n  (c) 25.0 cm\n  (d) 314.2 m\n\nMixed and semicircles:\n  (a) 62.8 cm\n  (b) 36.0 cm\n  (c) 35.7 cm\n  (d) 53.4 cm\n  (e) 30.8 cm"
+    }
+  ]
+}

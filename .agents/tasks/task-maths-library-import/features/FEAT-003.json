@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "End-to-end Playwright verification: install Chromium, login to adaptly.co.uk, test worksheet generation with library worksheets, SEND overlays, reading age adjustment, and topic switching. Compare rendered output structure against the PDF reference documents.",
+  "status": "pending",
+  "steps": [
+    "Step 1: Install Playwright and Chromium globally: npm install -g playwright && npx playwright install chromium. Alternatively use the playwright dependency already in package.json.",
+    "Step 2: Write a Playwright test script (scripts/verify-library-worksheets.ts or .mjs) that: (a) Launches Chromium headful or headless, (b) Navigates to https://adaptly.co.uk, (c) Logs in with admin@adaptly.co.uk / Admin1234!, (d) Navigates to the worksheet generator page.",
+    "Step 3: Test library worksheet retrieval: (a) Select subject=Maths, (b) Select a KS4 topic like 'Simultaneous Equations', (c) Select year group Year 10 or Year 11, (d) Generate a worksheet, (e) Verify the page shows worksheet content (sections rendered, not an error or empty state), (f) Check that the worksheet title/content matches what is in the library (the simultaneous equations worksheet has 'Non-Linear Simultaneous Equations' or similar content).",
+    "Step 4: Test SEND overlay application: (a) With the same topic selected, enable a SEND need (e.g., dyslexia), (b) Regenerate the worksheet, (c) Verify that additional support sections appear in the rendered output (look for elements with overlay indicators like 'Hint', 'Steps to Follow', or send-support type sections), (d) Verify the base content (questions, marks) is unchanged.",
+    "Step 5: Test reading age adjustment: (a) Set reading age to 8 or 9, (b) Regenerate, (c) Verify reading support cues appear in the output.",
+    "Step 6: Test topic switcher across multiple topics: (a) Switch to 'Surds' topic, regenerate, verify worksheet loads. (b) Switch to 'Statistics' topic, regenerate, verify worksheet loads. (c) Switch to 'Pythagoras' Theorem' topic, regenerate, verify worksheet loads. Each should return a library worksheet (not fall through to AI generation).",
+    "Step 7: Compare the rendered worksheet structure against the PDF reference: (a) Open a PDF from maths-worksheets/pdf/ (e.g., 160-non-linear-simultaneous-equations.pdf), (b) Compare the structure: PDF page 1 has key terms, what we learn, key idea, 4 modelled examples. PDF page 2 has 5 practice sections + misconceptions + challenge. (c) The web-rendered version should follow the same logical structure even if the visual layout differs (it uses the WorksheetRenderer component rather than the WeasyPrint PDF layout). The key requirement is: all content from the source JSON must be present and correctly structured in the rendered output.",
+    "Step 8: Take screenshots of the rendered worksheets for documentation and report any issues found."
+  ],
+  "acceptance_criteria": [
+    "Playwright can successfully login to adaptly.co.uk and navigate to the worksheet generator",
+    "Selecting a maths topic that is in the library returns a worksheet (not an error or fallback to AI)",
+    "SEND overlay (dyslexia) adds visible support sections to the rendered worksheet",
+    "Reading age adjustment adds reading support cues",
+    "Topic switcher works for at least 3 different maths topics without errors",
+    "The rendered worksheet contains all the key structural elements from the source: learning objective, vocabulary/key terms, worked examples, practice questions with answers in teacher view, misconceptions, and challenge problems"
+  ],
+  "verification": [
+    "Run the Playwright verification script end-to-end without failures",
+    "Screenshots show worksheet content rendering correctly",
+    "No console errors or API failures during the test flow"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

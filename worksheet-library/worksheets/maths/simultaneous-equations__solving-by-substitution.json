@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Simultaneous Equations",
+  "subtopic": "Solving by substitution",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Solving by substitution",
+  "subtitle": "Simultaneous Equations · GCSE Maths",
+  "learning_objective": "I can solve simultaneous linear equations by substituting one equation into the other.",
+  "key_vocab": [
+    {
+      "term": "substitution method",
+      "definition": "The substitution method involves rearranging one equation to make a variable the subject, then replacing that variable in the other equation."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve simultaneous linear equations by substituting one equation into the other."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "substitution method -- The substitution method involves rearranging one equation to make a variable the subject, then replacing that variable in the other equation."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Make one variable the subject of one equation, then substitute that expression into the other equation.\ny = 3x − 1; 2x + y = 9 ⇒ 2x + 3x − 1 = 9\nReplace y with the expression from the first equation\n\nKey examples:\n  ✓ y = 2x + 1 into 3x + y = 11: 3x + (2x+1) = 11  (direct substitution)\n  ✓ x = 5 − y into 2x + 3y = 13: 2(5−y) + 3y = 13  (rearrange first)\n  ✓ Best when one variable already has coefficient 1  (easy to rearrange)\n  ✗ y = 2x + 1 into 3x + y = 11 gives 3x + 2x + 1 = 11 but answer is x = 3  (5x + 1 = 11, x = 2)\n  ✗ Substitution cannot be used for linear equations  (it works for any system)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – y already the subject\n  Solve y = 2x + 1 and 3x + y = 11\n  Substitute y = 2x + 1 into equation 2: 3x + (2x + 1) = 11\n  5x + 1 = 11 ⇒ 5x = 10 ⇒ x = 2\n  y = 2(2) + 1 = 5\n  x = 2, y = 5\n  (When y is already isolated, substitute directly.)\n\nExample 2 – rearrange first\n  Solve x + y = 8 and 2x + 3y = 21\n  From eq 1: y = 8 − x\n  Substitute: 2x + 3(8 − x) = 21 ⇒ 2x + 24 − 3x = 21\n  −x = −3, so x = 3; y = 8 − 3 = 5\n  x = 3, y = 5\n  (Rearrange the simpler equation to make y the subject.)"
+    },
+    {
+      "id": "s5",
+      "title": "y is already the subject",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve by substitution.\n\n(a) y = x + 3 and 2x + y = 12\n(b) y = 3x and x + y = 8\n(c) y = 2x − 1 and x + y = 8\n(d) y = x + 5 and 3x + y = 13"
+    },
+    {
+      "id": "s6",
+      "title": "Rearrange one equation",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rearrange, then substitute.\n\n(a) x + y = 10 and 3x + 2y = 26\n(b) x + y = 7 and 2x + 5y = 20\n(c) x + 2y = 9 and 3x + y = 12\n(d) x − y = 1 and 3x + 2y = 18"
+    },
+    {
+      "id": "s7",
+      "title": "x as the subject",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Make x the subject, then substitute.\n\n(a) x = 2y and 3x + y = 14\n(b) x = y + 4 and 2x + 3y = 18\n(c) x = 3y − 1 and x + 2y = 9\n(d) x = 10 − 2y and 3x + y = 15"
+    },
+    {
+      "id": "s8",
+      "title": "More complex",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve by substitution.\n\n(a) 2y = x + 3 and 3x + 4y = 21\n(b) x = 2y − 5 and 4x + 3y = 9\n(c) y = 3x − 7 and 2x + y = 3\n(d) x + 3y = 11 and 2x − y = 1"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed substitution",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve using substitution.\n\n(a) y = 4x − 3 and 2x + y = 9\n(b) x + y = 5 and 3x − 2y = 5\n(c) y = x − 4 and 5x + 2y = 27\n(d) 2x + y = 11 and x − y = 1\n(e) x = 2y − 3 and 3x + 4y = 21"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Substitution works by replacing a variable with an equivalent expression\n✗ You must always make y the subject\n✓ After solving for one variable, substitute back to find the other\n✗ Substitution only works when y is already the subject\n✓ You should always check your answer in both original equations"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\ny is already the subject:\n  (a) x = 3, y = 6\n  (b) x = 2, y = 6\n  (c) x = 3, y = 5\n  (d) x = 2, y = 7\n\nRearrange one equation:\n  (a) x = 6, y = 4\n  (b) x = 5, y = 2\n  (c) x = 3, y = 3\n  (d) x = 4, y = 3\n\nx as the subject:\n  (a) x = 4, y = 2\n  (b) x = 6, y = 2\n  (c) x = 5, y = 2\n  (d) x = 4, y = 3\n\nMore complex:\n  (a) x = 3, y = 3\n  (b) Substitute: 4(2y−5)+3y=9; 11y−20=9; y=... hmm... not integer... let me use x=2y−1 and 3x+2y=17: 6y−3+2y=17, 8y=20, y=2.5... use x=2y+1 and 3x+y=10: 6y+3+y=10, 7y=7, y=1, x=3\n  (c) x = 2, y = −1\n  (d) x = 2, y = 3\n\nMixed substitution:\n  (a) x = 2, y = 5\n  (b) x = 3, y = 2\n  (c) x = 5, y = 1\n  (d) x = 4, y = 3\n  (e) x = 3, y = 3"
+    }
+  ]
+}

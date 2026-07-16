@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (2, 5, 10 Times Tables)",
+  "subtopic": "2 times table",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "2 times table",
+  "subtitle": "Multiplication and Division (2, 5, 10 Times Tables) · KS3 Maths",
+  "learning_objective": "I can recall and use the 2 times table to multiply and divide.",
+  "key_vocab": [
+    {
+      "term": "2 times table",
+      "definition": "The 2 times table is a list of multiples of 2: numbers we get when we count in 2s. Numbers in the 2 times table are always even."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recall and use the 2 times table to multiply and divide."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "2 times table -- The 2 times table is a list of multiples of 2: numbers we get when we count in 2s. Numbers in the 2 times table are always even."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiplication is repeated addition. 2 × 4 means ‘4 groups of 2’. You can also think of it as ‘2 groups of 4’ — the answer is the same.\n2 + 2 + 2 + 2 = 2×4 = 8\nFour groups of 2\n\nKey examples:\n  ✓ 1 × 2 = 2  (starting point)\n  ✓ 2 × 2 = 4  (double)\n  ✓ 5 × 2 = 10  (halfway to 10)\n  ✗ 3 × 2 = 7  (wrong)\n  ✗ 2 × 0 = 2  (any × 0 = 0)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – single multiplication\n  Calculate 5 × 2\n  5 groups of 2\n  2 + 2 + 2 + 2  ...\n  = 10\n  = 10\n  (Skip-count in 2s 5 times to reach 10.)\n\nExample 2 – missing factor\n  Solve: ___ × 2 = 8\n  How many 2s in 8?\n  Count up: 2, 4, 6, ...\n  = 4\n  = 4\n  (Divide: 8 ÷ 2 = 4.)"
+    },
+    {
+      "id": "s5",
+      "title": "Recall the 2 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete the calculation. Skip-count in 2s if you need to.\n\n(a) 3 × 2 = ___\n(b) 6 × 2 = ___\n(c) 8 × 2 = ___\n(d) 10 × 2 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "Missing factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing number.\n\n(a) ___ × 2 = 8\n(b) ___ × 2 = 14\n(c) ___ × 2 = 18\n(d) ___ × 2 = 22"
+    },
+    {
+      "id": "s7",
+      "title": "Dividing by 2",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the 2 times table to divide. 2 × ___ = ?\n\n(a) 4 ÷ 2 = ___\n(b) 10 ÷ 2 = ___\n(c) 16 ÷ 2 = ___\n(d) 24 ÷ 2 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "Two-step problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work out the answer step by step.\n\n(a) (2×2) + (3×2) = ___\n(b) (5×2) − (2×2) = ___\n(c) 8 ÷ 2 + 6 = ___\n(d) (2×2) × 2 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed practice",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use what you know about the 2 times table.\n\n(a) 2 × 7 = ___\n(b) 24 ÷ 2 = ___\n(c) ___ × 2 = 12\n(d) 4 ÷ 2 = ___\n(e) 18 ÷ 2 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 2 × 0 = 2\n✓ 2 × 1 = 2\n✓ 8 ÷ 2 = 4\n✓ 2 × 10 = 20 (i.e. 20)\n✗ 2 × 7 = 15"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRecall the 2 times table:\n  (a) 6\n  (b) 12\n  (c) 16\n  (d) 20\n\nMissing factors:\n  (a) 4\n  (b) 7\n  (c) 9\n  (d) 11\n\nDividing by 2:\n  (a) 2\n  (b) 5\n  (c) 8\n  (d) 12\n\nTwo-step problems:\n  (a) 10\n  (b) 6\n  (c) 10\n  (d) 8\n\nMixed practice:\n  (a) 14\n  (b) 12\n  (c) 6\n  (d) 2\n  (e) 9"
+    }
+  ]
+}

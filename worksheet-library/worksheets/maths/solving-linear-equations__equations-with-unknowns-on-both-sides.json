@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Solving Linear Equations",
+  "subtopic": "Equations with unknowns on both sides",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Equations with unknowns on both sides",
+  "subtitle": "Solving Linear Equations · GCSE Maths",
+  "learning_objective": "I can solve linear equations where the unknown appears on both sides.",
+  "key_vocab": [
+    {
+      "term": "x appears on both sides",
+      "definition": "When x appears on both sides of the equation, collect all x terms on one side and all number terms on the other by using inverse operations."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve linear equations where the unknown appears on both sides."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "x appears on both sides -- When x appears on both sides of the equation, collect all x terms on one side and all number terms on the other by using inverse operations."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Collect x terms on one side, number terms on the other, then solve.\n5x + 3 = 2x + 12 ⇒ 3x = 9 ⇒ x = 3\nSubtract 2x from both sides, then subtract 3 from both sides\n\nKey examples:\n  ✓ 5x + 3 = 2x + 12: subtract 2x, get 3x + 3 = 12, x = 3  (collect x terms)\n  ✓ 7x − 4 = 3x + 8: subtract 3x, get 4x − 4 = 8, x = 3  (move smaller x)\n  ✓ Always move the smaller x coefficient to keep x positive  (good practice)\n  ✗ 5x + 3 = 2x + 12 gives 7x = 15  (cannot add x terms across =)\n  ✗ 5x + 3 = 2x + 12 gives 3x = 15 directly  (forgot to subtract 3 from both sides)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – x terms positive\n  Solve 5x + 2 = 3x + 10\n  Subtract 3x: 2x + 2 = 10\n  Subtract 2: 2x = 8\n  Divide by 2: x = 4\n  x = 4\n  (Move the smaller x term (3x) to get a positive coefficient.)\n\nExample 2 – larger coefficient on right\n  Solve 2x + 9 = 5x − 3\n  Subtract 2x: 9 = 3x − 3\n  Add 3: 12 = 3x\n  Divide by 3: x = 4\n  x = 4\n  (Move 2x to keep x positive on the right.)"
+    },
+    {
+      "id": "s5",
+      "title": "Simple equations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each equation.\n\n(a) 4x + 1 = 2x + 7\n(b) 6x + 3 = 4x + 11\n(c) 7x − 2 = 3x + 10\n(d) 5x + 4 = x + 20"
+    },
+    {
+      "id": "s6",
+      "title": "Larger coefficient on right",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Move x to the side with the larger coefficient.\n\n(a) 2x + 10 = 5x + 1\n(b) x + 9 = 4x\n(c) 3x + 1 = 7x − 11\n(d) x + 14 = 3x + 2"
+    },
+    {
+      "id": "s7",
+      "title": "With negatives",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve carefully.\n\n(a) 8x − 3 = 5x + 9\n(b) 6x − 7 = 2x + 5\n(c) 9x − 10 = 4x + 5\n(d) 3x − 8 = x − 2"
+    },
+    {
+      "id": "s8",
+      "title": "With brackets",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Expand, then solve.\n\n(a) 2(x + 5) = x + 13\n(b) 4(x + 1) = 2x + 10\n(c) 3(x + 2) = 2(x + 4)\n(d) 5(x − 1) = 3(x + 1)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each equation.\n\n(a) 10x + 3 = 7x + 12\n(b) 2(3x + 4) = 4(x + 5)\n(c) 9 − 2x = x − 6\n(d) 4x + 7 = 19 − 2x\n(e) 3(2x − 1) = 2(x + 3) + 7"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 5x + 3 = 2x + 12 becomes 3x + 3 = 12 (subtract 2x from both sides)\n✗ 5x + 3 = 2x + 12 becomes 7x + 3 = 12\n✓ Move the smaller x term to avoid negative coefficients\n✗ You can add x terms from different sides: 5x + 2x = 7x\n✓ After collecting terms, solve as a one-step or two-step equation"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSimple equations:\n  (a) x = 3\n  (b) x = 4\n  (c) x = 3\n  (d) x = 4\n\nLarger coefficient on right:\n  (a) x = 3\n  (b) x = 3\n  (c) x = 3\n  (d) x = 6\n\nWith negatives:\n  (a) x = 4\n  (b) x = 3\n  (c) x = 3\n  (d) x = 3\n\nWith brackets:\n  (a) x = 3\n  (b) x = 3\n  (c) x = 2\n  (d) x = 4\n\nMixed problems:\n  (a) x = 3\n  (b) x = 6\n  (c) x = 5\n  (d) x = 2\n  (e) x = 4"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Angles",
+  "subtopic": "Angles in polygons",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Angles in polygons",
+  "subtitle": "Angles · KS3 Maths",
+  "learning_objective": "I can find interior and exterior angles of regular and irregular polygons.",
+  "key_vocab": [
+    {
+      "term": "interior angles",
+      "definition": "The sum of interior angles of a polygon with n sides is (n − 2) × 180°."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can find interior and exterior angles of regular and irregular polygons."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "interior angles -- The sum of interior angles of a polygon with n sides is (n − 2) × 180°."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Interior angle sum = (n − 2) × 180°. Exterior angles always sum to 360°.\nSum = (n − 2) × 180°\nn = number of sides\n\nKey examples:\n  ✓ Triangle: (3−2)×180 = 180°  (angle sum)\n  ✓ Quadrilateral: (4−2)×180 = 360°  (angle sum)\n  ✓ Pentagon: (5−2)×180 = 540°  (angle sum)\n  ✗ Hexagon interior sum = 600°  (should be 720°)\n  ✗ Exterior angles sum to 180°  (always 360°)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – interior angle sum\n  Find the sum of interior angles of a hexagon.\n  A hexagon has 6 sides, so n = 6\n  (6 − 2) × 180 = 4 × 180\n  = 720°\n  = 720°\n  (Always subtract 2 from the number of sides first.)\n\nExample 2 – one interior angle (regular)\n  Find one interior angle of a regular octagon.\n  Sum = (8 − 2) × 180 = 1080°\n  Regular: all angles equal\n  1080 ÷ 8 = 135°\n  = 135°\n  (For regular polygons, divide the total by the number of sides.)"
+    },
+    {
+      "id": "s5",
+      "title": "Interior angle sums",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the sum of interior angles.\n\n(a) Triangle (3 sides)\n(b) Pentagon (5 sides)\n(c) Heptagon (7 sides)\n(d) Decagon (10 sides)"
+    },
+    {
+      "id": "s6",
+      "title": "One angle of a regular polygon",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find one interior angle of each regular polygon.\n\n(a) Equilateral triangle\n(b) Square\n(c) Regular hexagon\n(d) Regular nonagon (9)"
+    },
+    {
+      "id": "s7",
+      "title": "Exterior angles",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find one exterior angle of each regular polygon.\n\n(a) Regular triangle\n(b) Regular quadrilateral\n(c) Regular hexagon\n(d) Regular decagon"
+    },
+    {
+      "id": "s8",
+      "title": "Missing angles",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing angle x.\n\n(a) Triangle: 60°, 80°, x\n(b) Quadrilateral: 90°, 85°, 110°, x\n(c) Pentagon: 100°, 110°, 120°, 130°, x\n(d) Hexagon: 130°, 140°, 100°, 110°, 120°, x"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed polygon problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Answer each question.\n\n(a) How many sides if interior sum = 1260°?\n(b) Each exterior angle is 40°. How many sides?\n(c) Interior angle of regular polygon = 156°. How many sides?\n(d) Sum of exterior angles of a 100-sided polygon?\n(e) Interior angle of regular 12-sided polygon?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Interior angles of a hexagon sum to 720°\n✗ Exterior angles always sum to 180°\n✓ A regular polygon has all angles equal\n✗ Interior angle sum of a quadrilateral is 180°\n✓ Exterior angle = 360° ÷ n for regular polygons"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nInterior angle sums:\n  (a) 180°\n  (b) 540°\n  (c) 900°\n  (d) 1440°\n\nOne angle of a regular polygon:\n  (a) 60°\n  (b) 90°\n  (c) 120°\n  (d) 140°\n\nExterior angles:\n  (a) 120°\n  (b) 90°\n  (c) 60°\n  (d) 36°\n\nMissing angles:\n  (a) 40°\n  (b) 75°\n  (c) 80°\n  (d) 120°\n\nMixed polygon problems:\n  (a) 9\n  (b) 9\n  (c) 15\n  (d) 360°\n  (e) 150°"
+    }
+  ]
+}

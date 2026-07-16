@@ -1,0 +1,7 @@
+{
+  "task_id": "task-maths-library-import",
+  "task_description": "Convert 128 maths worksheets from maths-worksheets/json/ into worksheet-library format, import them into the database, wire up topic switching, verify SEND overlays and reading age work correctly, and validate end-to-end with Playwright on the live site.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

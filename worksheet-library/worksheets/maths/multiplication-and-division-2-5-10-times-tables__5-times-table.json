@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (2, 5, 10 Times Tables)",
+  "subtopic": "5 times table",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "5 times table",
+  "subtitle": "Multiplication and Division (2, 5, 10 Times Tables) · KS3 Maths",
+  "learning_objective": "I can recall and use the 5 times table to multiply and divide.",
+  "key_vocab": [
+    {
+      "term": "5 times table",
+      "definition": "The 5 times table is a list of multiples of 5: numbers we get when we count in 5s. Numbers in the 5 times table always end in 0 or 5."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recall and use the 5 times table to multiply and divide."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "5 times table -- The 5 times table is a list of multiples of 5: numbers we get when we count in 5s. Numbers in the 5 times table always end in 0 or 5."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiplication is repeated addition. 5 × 4 means ‘4 groups of 5’. You can also think of it as ‘5 groups of 4’ — the answer is the same.\n5 + 5 + 5 + 5 = 5×4 = 20\nFour groups of 5\n\nKey examples:\n  ✓ 1 × 5 = 5  (starting point)\n  ✓ 2 × 5 = 10  (double)\n  ✓ 5 × 5 = 25  (halfway to 10)\n  ✗ 3 × 5 = 16  (wrong)\n  ✗ 5 × 0 = 5  (any × 0 = 0)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – single multiplication\n  Calculate 6 × 5\n  6 groups of 5\n  5 + 5 + 5 + 5  ...\n  = 30\n  = 30\n  (Skip-count in 5s 6 times to reach 30.)\n\nExample 2 – missing factor\n  Solve: ___ × 5 = 20\n  How many 5s in 20?\n  Count up: 5, 10, 15, ...\n  = 4\n  = 4\n  (Divide: 20 ÷ 5 = 4.)"
+    },
+    {
+      "id": "s5",
+      "title": "Recall the 5 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete the calculation. Skip-count in 5s if you need to.\n\n(a) 3 × 5 = ___\n(b) 6 × 5 = ___\n(c) 8 × 5 = ___\n(d) 10 × 5 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "Missing factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing number.\n\n(a) ___ × 5 = 20\n(b) ___ × 5 = 35\n(c) ___ × 5 = 45\n(d) ___ × 5 = 55"
+    },
+    {
+      "id": "s7",
+      "title": "Dividing by 5",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the 5 times table to divide. 5 × ___ = ?\n\n(a) 10 ÷ 5 = ___\n(b) 25 ÷ 5 = ___\n(c) 40 ÷ 5 = ___\n(d) 60 ÷ 5 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "Two-step problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work out the answer step by step.\n\n(a) (2×5) + (3×5) = ___\n(b) (5×5) − (2×5) = ___\n(c) 20 ÷ 5 + 6 = ___\n(d) (5×5) × 2 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed practice",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use what you know about the 5 times table.\n\n(a) 5 × 7 = ___\n(b) 60 ÷ 5 = ___\n(c) ___ × 5 = 30\n(d) 25 ÷ 5 = ___\n(e) 45 ÷ 5 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 5 × 0 = 5\n✓ 5 × 1 = 5\n✓ 20 ÷ 5 = 4\n✓ 5 × 10 = 50 (i.e. 50)\n✗ 5 × 7 = 36"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRecall the 5 times table:\n  (a) 15\n  (b) 30\n  (c) 40\n  (d) 50\n\nMissing factors:\n  (a) 4\n  (b) 7\n  (c) 9\n  (d) 11\n\nDividing by 5:\n  (a) 2\n  (b) 5\n  (c) 8\n  (d) 12\n\nTwo-step problems:\n  (a) 25\n  (b) 15\n  (c) 10\n  (d) 50\n\nMixed practice:\n  (a) 35\n  (b) 12\n  (c) 6\n  (d) 5\n  (e) 9"
+    }
+  ]
+}

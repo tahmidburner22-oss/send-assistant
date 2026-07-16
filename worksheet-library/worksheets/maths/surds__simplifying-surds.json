@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Surds",
+  "subtopic": "Simplifying surds",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Simplifying surds",
+  "subtitle": "Surds · GCSE Maths",
+  "learning_objective": "I can simplify surds by finding the largest square factor.",
+  "key_vocab": [
+    {
+      "term": "simplify a surd",
+      "definition": "To simplify a surd, find the largest perfect square factor of the number under the root sign and take its square root outside."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can simplify surds by finding the largest square factor."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "simplify a surd -- To simplify a surd, find the largest perfect square factor of the number under the root sign and take its square root outside."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Find the largest perfect square that divides the number. Take its root outside the radical.\n√n = a√b where n = a² × b\nb should have no perfect square factors left\n\nKey examples:\n  ✓ √12 = √(4 × 3) = 2√3  (4 is the square factor)\n  ✓ √50 = √(25 × 2) = 5√2  (25 is the largest square factor)\n  ✓ √72 = √(36 × 2) = 6√2  (36 is the largest square factor)\n  ✗ √12 = √6 × √2  (not simplified; need square factors)\n  ✗ √50 = √(10 × 5) = √10√5  (neither factor is a perfect square)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – basic simplification\n  Simplify √20.\n  Find largest square factor of 20: 4\n  √20 = √(4 × 5)\n  = 2√5\n  2√5\n  (4 is the largest perfect square that divides 20.)\n\nExample 2 – larger number\n  Simplify √45.\n  Find largest square factor of 45: 9\n  √45 = √(9 × 5)\n  = 3√5\n  3√5\n  (9 is the largest perfect square that divides 45.)"
+    },
+    {
+      "id": "s5",
+      "title": "Basic simplification",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify each surd.\n\n(a) √8\n(b) √18\n(c) √32\n(d) √27"
+    },
+    {
+      "id": "s6",
+      "title": "Larger numbers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify each surd.\n\n(a) √48\n(b) √75\n(c) √98\n(d) √125"
+    },
+    {
+      "id": "s7",
+      "title": "With coefficients",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify fully.\n\n(a) 2√12\n(b) 5√8\n(c) 3√50\n(d) 4√45"
+    },
+    {
+      "id": "s8",
+      "title": "Expressing in surd form",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write in the form a√b.\n\n(a) √180\n(b) √128\n(c) √300\n(d) √242"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed surd simplification",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Simplify each expression fully.\n\n(a) √63\n(b) 2√54\n(c) √108\n(d) &frac{√72}{2}\n(e) √500"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ √12 = 2√3 because 12 = 4 × 3\n✗ √50 = 10√2\n✓ √72 = 6√2 because 72 = 36 × 2\n✗ √8 = 4√2\n✓ A surd is fully simplified when no perfect square divides the radicand"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nBasic simplification:\n  (a) 2√2\n  (b) 3√2\n  (c) 4√2\n  (d) 3√3\n\nLarger numbers:\n  (a) 4√3\n  (b) 5√3\n  (c) 7√2\n  (d) 5√5\n\nWith coefficients:\n  (a) 4√3\n  (b) 10√2\n  (c) 15√2\n  (d) 12√5\n\nExpressing in surd form:\n  (a) 6√5\n  (b) 8√2\n  (c) 10√3\n  (d) 11√2\n\nMixed surd simplification:\n  (a) 3√7\n  (b) 6√6\n  (c) 6√3\n  (d) 3√2\n  (e) 10√5"
+    }
+  ]
+}

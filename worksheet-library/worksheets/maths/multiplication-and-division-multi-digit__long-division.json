@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (Multi-Digit)",
+  "subtopic": "Long division",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Long division",
+  "subtitle": "Multiplication and Division (Multi-Digit) · KS3 Maths",
+  "learning_objective": "I can divide larger numbers using the long division algorithm (bus stop method).",
+  "key_vocab": [
+    {
+      "term": "Long division",
+      "definition": "Long division is a written method for dividing by 2-digit or larger numbers. We work digit-by-digit from left to right."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can divide larger numbers using the long division algorithm (bus stop method)."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Long division -- Long division is a written method for dividing by 2-digit or larger numbers. We work digit-by-digit from left to right."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Repeat the cycle: Divide, Multiply, Subtract, Bring down. Stop when no more digits to bring down.\nD → M → S → B\nRepeat until done\n\nKey examples:\n  ✓ Divide, multiply, subtract, bring down  (DMSB cycle)\n  ✓ 672 ÷ 12 = 56  (no remainder)\n  ✓ 415 ÷ 13 = 31 r 12  (with remainder)\n  ✗ Skip a step in DMSB  (leads to errors)\n  ✗ Forget place value alignment  (answer wrong)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – no remainder\n  Calculate 672 ÷ 12\n  12 into 6? No. 12 into 67? 5 (5×12=60)\n  67 − 60 = 7. Bring down 2 → 72\n  12 into 72? 6 (6×12=72)\n  = 56\n  (Answer: 56 (no remainder). Check: 56×12 = 672 ✓)\n\nExample 2 – with remainder\n  Calculate 415 ÷ 13\n  13 into 41? 3 (3×13=39)\n  41 − 39 = 2. Bring down 5 → 25\n  13 into 25? 1 (1×13=13). 25−13 = 12\n  = 31 r 12\n  (31 remainder 12. Check: 31×13 + 12 = 403+12 = 415 ✓)"
+    },
+    {
+      "id": "s5",
+      "title": "Single-digit divisor",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the bus-stop method.\n\n(a) 144 ÷ 6\n(b) 196 ÷ 7\n(c) 315 ÷ 9\n(d) 568 ÷ 8"
+    },
+    {
+      "id": "s6",
+      "title": "Two-digit divisor (no remainder)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Divide carefully — line up digits.\n\n(a) 672 ÷ 12\n(b) 936 ÷ 13\n(c) 1056 ÷ 16\n(d) 1638 ÷ 18"
+    },
+    {
+      "id": "s7",
+      "title": "With remainder",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write the answer as ‘quotient r remainder’.\n\n(a) 415 ÷ 13\n(b) 500 ÷ 17\n(c) 847 ÷ 23\n(d) 1234 ÷ 41"
+    },
+    {
+      "id": "s8",
+      "title": "Decimal answers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Continue past the decimal point until exact.\n\n(a) 35 ÷ 4\n(b) 63 ÷ 8\n(c) 27 ÷ 5\n(d) 100 ÷ 8"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed long division",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Choose the right method.\n\n(a) 504 ÷ 14\n(b) 725 ÷ 25\n(c) 847 ÷ 11\n(d) 1000 ÷ 8\n(e) 234 ÷ 18"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Always divide left to right\n✓ DMSB stands for Divide, Multiply, Subtract, Bring down\n✗ If divisor doesn't fit, skip the digit\n✓ Remainder must be smaller than divisor\n✗ 100 ÷ 8 has remainder 4"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSingle-digit divisor:\n  (a) 24\n  (b) 28\n  (c) 35\n  (d) 71\n\nTwo-digit divisor (no remainder):\n  (a) 56\n  (b) 72\n  (c) 66\n  (d) 91\n\nWith remainder:\n  (a) 31 r 12\n  (b) 29 r 7\n  (c) 36 r 19\n  (d) 30 r 4\n\nDecimal answers:\n  (a) 8.75\n  (b) 7.875\n  (c) 5.4\n  (d) 12.5\n\nMixed long division:\n  (a) 36\n  (b) 29\n  (c) 77\n  (d) 125\n  (e) 13"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Algebra — Simple Formulae and Sequences",
+  "subtopic": "Using and writing simple formulae",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Using and writing simple formulae",
+  "subtitle": "Algebra — Simple Formulae and Sequences · KS3 Maths",
+  "learning_objective": "I can write and use simple algebraic formulae to solve problems.",
+  "key_vocab": [
+    {
+      "term": "formula",
+      "definition": "A formula is a mathematical rule written with letters and numbers that shows the relationship between quantities."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can write and use simple algebraic formulae to solve problems."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "formula -- A formula is a mathematical rule written with letters and numbers that shows the relationship between quantities."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Identify the variables, write the rule using letters, then substitute values to evaluate.\nC = 5n + 10\n5 per item plus 10 fixed cost\n\nKey examples:\n  ✓ P = 2l + 2w  (perimeter of a rectangle)\n  ✓ A = l × w  (area of a rectangle)\n  ✓ C = 5n + 10  (cost formula)\n  ✗ P = l + w  (missing the 2s)\n  ✗ A = 2(l + w)  (that is perimeter, not area)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – using a formula\n  Use P = 2l + 2w to find the perimeter when l = 8 and w = 5.\n  Substitute: P = 2 × 8 + 2 × 5\n  Calculate: P = 16 + 10\n  P = 26\n  P = 26 cm\n  (Replace each letter with its value, then follow BIDMAS.)\n\nExample 2 – writing a formula\n  A taxi charges £3 fixed plus £2 per mile. Write a formula for cost C for m miles.\n  Fixed charge = 3\n  Cost per mile = 2m\n  Combine: C = 2m + 3\n  C = 2m + 3\n  (Identify the fixed part and the variable part.)"
+    },
+    {
+      "id": "s5",
+      "title": "Substituting into formulae",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use P = 2l + 2w. Find P for each pair of values.\n\n(a) l = 6, w = 4\n(b) l = 10, w = 3\n(c) l = 7, w = 7\n(d) l = 12, w = 5"
+    },
+    {
+      "id": "s6",
+      "title": "Cost formulae",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "A plumber charges C = 30 + 20h pounds for h hours. Find C.\n\n(a) h = 2\n(b) h = 5\n(c) h = 0.5\n(d) h = 8"
+    },
+    {
+      "id": "s7",
+      "title": "Writing formulae",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write a formula for each situation.\n\n(a) n books at £4 each, total cost T\n(b) p pencils at 30p each plus 50p bag, total C\n(c) Perimeter of equilateral triangle side s\n(d) Weekly pay: £200 plus £15 per overtime hour h"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write and use a formula to answer each question.\n\n(a) Gym costs £25/month + £5 joining fee. Cost for m months?\n(b) Using your formula, find cost for 6 months.\n(c) Rectangle: l = 9, w = 4. Find area using A = lw.\n(d) Triangle: b = 12, h = 8. Find A = &frac{1}{2}bh."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed formulae",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Evaluate each formula.\n\n(a) v = u + at; u = 5, a = 3, t = 4\n(b) A = πr²; r = 3 (use π = 3.14)\n(c) S = &frac{d}{t}; d = 120, t = 4\n(d) y = 3x² − 2; x = 4\n(e) V = lwh; l = 5, w = 3, h = 2"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ In C = 5n + 10, C means the cost\n✗ 2l means 2 + l\n✓ P = 2l + 2w gives the perimeter of a rectangle\n✗ A = lw gives the perimeter\n✓ Substitution means replacing letters with numbers"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSubstituting into formulae:\n  (a) 20\n  (b) 26\n  (c) 28\n  (d) 34\n\nCost formulae:\n  (a) £70\n  (b) £130\n  (c) £40\n  (d) £190\n\nWriting formulae:\n  (a) T = 4n\n  (b) C = 30p + 50\n  (c) P = 3s\n  (d) W = 200 + 15h\n\nWord problems:\n  (a) C = 25m + 5\n  (b) £155\n  (c) 36\n  (d) 48\n\nMixed formulae:\n  (a) 17\n  (b) 28.26\n  (c) 30\n  (d) 46\n  (e) 30"
+    }
+  ]
+}

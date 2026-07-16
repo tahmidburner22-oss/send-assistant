@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Four Operations and Order of Operations",
+  "subtopic": "Checking answers using inverse operations",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Checking answers using inverse operations",
+  "subtitle": "Four Operations and Order of Operations · KS3 Maths",
+  "learning_objective": "I can use inverse operations to check calculations and verify my answers.",
+  "key_vocab": [
+    {
+      "term": "Inverse operations",
+      "definition": "Inverse operations are operations that undo each other. Addition undoes subtraction. Multiplication undoes division."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use inverse operations to check calculations and verify my answers."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Inverse operations -- Inverse operations are operations that undo each other. Addition undoes subtraction. Multiplication undoes division."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Use the inverse operation on your answer to get back to the starting number. If you do, your answer is correct.\n45 + 32 = 77 ↔ check: 77 − 32 = 45 ✓\nInverse undoes the operation\n\nKey examples:\n  ✓ + and − are inverses  (undo each other)\n  ✓ × and ÷ are inverses  (undo each other)\n  ✓ If 7 × 8 = 56, then 56 ÷ 8 = 7  (check)\n  ✗ + and × are inverses  (wrong pairing)\n  ✗ Inverse of squaring is halving  (it is square-rooting)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – checking addition\n  Check: 156 + 89 = 245\n  Use inverse: 245 − 89\n  245 − 89 = 156\n  156 matches → correct ✓\n  Correct ✓\n  (Subtract one addend from the sum; you should get the other.)\n\nExample 2 – checking multiplication\n  Check: 23 × 15 = 345\n  Use inverse: 345 ÷ 15\n  345 ÷ 15 = 23\n  23 matches → correct ✓\n  Correct ✓\n  (Divide the product by one factor; you should get the other.)"
+    },
+    {
+      "id": "s5",
+      "title": "Check additions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use inverse (subtraction) to check. Write correct or incorrect.\n\n(a) 78 + 45 = 123\n(b) 156 + 89 = 245\n(c) 234 + 178 = 402\n(d) 67 + 88 = 155"
+    },
+    {
+      "id": "s6",
+      "title": "Check subtractions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use inverse (addition) to check.\n\n(a) 200 − 85 = 115\n(b) 463 − 198 = 265\n(c) 500 − 237 = 273\n(d) 1000 − 456 = 544"
+    },
+    {
+      "id": "s7",
+      "title": "Check multiplications",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use inverse (division) to check.\n\n(a) 12 × 15 = 180\n(b) 25 × 13 = 325\n(c) 34 × 7 = 248\n(d) 45 × 20 = 900"
+    },
+    {
+      "id": "s8",
+      "title": "Check divisions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use inverse (multiplication) to check.\n\n(a) 144 ÷ 12 = 12\n(b) 256 ÷ 8 = 34\n(c) 630 ÷ 9 = 70\n(d) 484 ÷ 22 = 22"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed checking",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Check each calculation using the inverse. State correct or give the right answer.\n\n(a) 56 + 78 = 134\n(b) 15 × 16 = 250\n(c) 900 ÷ 25 = 36\n(d) 1000 − 382 = 628\n(e) 17 × 19 = 323"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ The inverse of addition is subtraction\n✗ The inverse of multiplication is addition\n✓ If 7 × 8 = 56, then 56 ÷ 7 = 8\n✗ The inverse of squaring is dividing by 2\n✓ Checking answers helps find mistakes"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCheck additions:\n  (a) correct\n  (b) correct\n  (c) incorrect (412)\n  (d) correct\n\nCheck subtractions:\n  (a) correct\n  (b) correct\n  (c) incorrect (263)\n  (d) correct\n\nCheck multiplications:\n  (a) correct\n  (b) correct\n  (c) incorrect (238)\n  (d) correct\n\nCheck divisions:\n  (a) correct\n  (b) incorrect (32)\n  (c) correct\n  (d) correct\n\nMixed checking:\n  (a) correct\n  (b) incorrect (240)\n  (c) correct\n  (d) incorrect (618)\n  (e) correct"
+    }
+  ]
+}

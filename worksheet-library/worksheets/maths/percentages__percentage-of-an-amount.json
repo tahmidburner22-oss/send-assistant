@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Percentages",
+  "subtopic": "Percentage of an amount",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Percentage of an amount",
+  "subtitle": "Percentages · GCSE Maths",
+  "learning_objective": "I can calculate a percentage of an amount using mental and written methods.",
+  "key_vocab": [
+    {
+      "term": "Finding a percentage of an amount",
+      "definition": "To find a percentage of an amount, divide by 100 to find 1%, then multiply by the percentage needed. Or use the multiplier method."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate a percentage of an amount using mental and written methods."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Finding a percentage of an amount -- To find a percentage of an amount, divide by 100 to find 1%, then multiply by the percentage needed. Or use the multiplier method."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Percentage means per hundred. Divide by 100 to find 1%, then scale up.\nP% of A = &frac{P}{100} × A\nConvert percentage to decimal, then multiply\n\nKey examples:\n  ✓ 10% of 70 = 7  (divide by 10)\n  ✓ 25% of 60 = 15  (divide by 4)\n  ✓ 15% of 80 = 12  (10% + 5% = 8 + 4)\n  ✗ 10% of 70 = 70  (that is 100%)\n  ✗ 25% of 60 = 20  (divided by 3 not 4)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – using 10%\n  Find 30% of 90\n  10% of 90 = 9\n  30% = 3 × 10%\n  3 × 9 = 27\n  = 27\n  (Find 10% first, then multiply by 3 for 30%.)\n\nExample 2 – using the multiplier\n  Find 45% of 200\n  45% as a decimal = 0.45\n  0.45 × 200\n  = 90\n  = 90\n  (The multiplier method works for any percentage.)"
+    },
+    {
+      "id": "s5",
+      "title": "Common percentages",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use mental methods to find each percentage.\n\n(a) 50% of 84\n(b) 25% of 120\n(c) 10% of 65\n(d) 75% of 200"
+    },
+    {
+      "id": "s6",
+      "title": "Multiples of 10%",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find 10% first, then use it.\n\n(a) 20% of 150\n(b) 40% of 85\n(c) 60% of 45\n(d) 90% of 70"
+    },
+    {
+      "id": "s7",
+      "title": "Using the multiplier",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the decimal multiplier to calculate.\n\n(a) 35% of 80\n(b) 12% of 250\n(c) 85% of 60\n(d) 4% of 350"
+    },
+    {
+      "id": "s8",
+      "title": "Percentage of money",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each percentage amount.\n\n(a) 15% of £80\n(b) 8% of £450\n(c) 17.5% of £200\n(d) 33% of £600"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed percentage problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Calculate each percentage.\n\n(a) 5% of 320\n(b) 72% of 50\n(c) 2.5% of 400\n(d) 65% of £180\n(e) 11% of 900"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 10% of 45 = 4.5\n✗ 10% means divide by 100\n✓ 35% of 80 = 0.35 × 80 = 28\n✗ 25% of 60 = 60 ÷ 25 = 2.4\n✓ To find 1%, divide the amount by 100"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCommon percentages:\n  (a) 42\n  (b) 30\n  (c) 6.5\n  (d) 150\n\nMultiples of 10%:\n  (a) 30\n  (b) 34\n  (c) 27\n  (d) 63\n\nUsing the multiplier:\n  (a) 28\n  (b) 30\n  (c) 51\n  (d) 14\n\nPercentage of money:\n  (a) £12\n  (b) £36\n  (c) £35\n  (d) £198\n\nMixed percentage problems:\n  (a) 16\n  (b) 36\n  (c) 10\n  (d) £117\n  (e) 99"
+    }
+  ]
+}

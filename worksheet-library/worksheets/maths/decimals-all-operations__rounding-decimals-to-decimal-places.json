@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Decimals — All Operations",
+  "subtopic": "Rounding decimals to decimal places",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Rounding decimals to decimal places",
+  "subtitle": "Decimals — All Operations · KS3 Maths",
+  "learning_objective": "I can round decimal numbers to a given number of decimal places.",
+  "key_vocab": [
+    {
+      "term": "Rounding",
+      "definition": "Rounding to decimal places (d.p.) means shortening a decimal to a given number of digits after the decimal point."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can round decimal numbers to a given number of decimal places."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Rounding -- Rounding to decimal places (d.p.) means shortening a decimal to a given number of digits after the decimal point."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Look at the digit AFTER the one you want. 5 or above: round up. Below 5: round down.\n3.147 to 2 d.p. → look at 7 (third d.p.) ≥ 5 → 3.15\nCritical digit decides\n\nKey examples:\n  ✓ 3.147 to 1 d.p. = 3.1  (4 < 5, round down)\n  ✓ 3.147 to 2 d.p. = 3.15  (7 ≥ 5, round up)\n  ✓ 6.998 to 2 d.p. = 7.00  (rounds up to 7.00)\n  ✗ 3.147 to 1 d.p. = 3.2  (look at 4, not 7)\n  ✗ 6.998 to 2 d.p. = 6.10  (should be 7.00)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – rounding to 1 d.p.\n  Round 4.63 to 1 decimal place.\n  We want 1 d.p.: keep one digit after the point\n  Look at the 2nd d.p.: 3\n  3 < 5, so round down: 4.6\n  = 4.6\n  (The digit after is 3 (less than 5), so we keep 4.6.)\n\nExample 2 – rounding to 2 d.p.\n  Round 7.386 to 2 decimal places.\n  We want 2 d.p.: keep two digits after the point\n  Look at the 3rd d.p.: 6\n  6 ≥ 5, so round up: 7.39\n  = 7.39\n  (The 6 forces the previous digit (8) to round up to 9.)"
+    },
+    {
+      "id": "s5",
+      "title": "Round to 1 decimal place",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Round each number to 1 d.p.\n\n(a) 3.47\n(b) 8.12\n(c) 5.95\n(d) 0.68"
+    },
+    {
+      "id": "s6",
+      "title": "Round to 2 decimal places",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Round each number to 2 d.p.\n\n(a) 4.567\n(b) 3.142\n(c) 7.995\n(d) 0.1234"
+    },
+    {
+      "id": "s7",
+      "title": "Round to 3 decimal places",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Round each number to 3 d.p.\n\n(a) 2.71828\n(b) 0.12345\n(c) 9.99951\n(d) 6.54321"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Round the answer appropriately.\n\n(a) 10 ÷ 3 = 3.333... to 2 d.p.\n(b) π = 3.14159... to 3 d.p.\n(c) £7 shared among 3 people (to nearest penny)\n(d) 22 ÷ 7 = 3.14285... to 2 d.p."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed rounding",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Round to the number of d.p. stated.\n\n(a) 6.4812 to 1 d.p.\n(b) 3.0962 to 2 d.p.\n(c) 0.999 to 1 d.p.\n(d) 12.3456 to 3 d.p.\n(e) 7.005 to 2 d.p."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 3.147 to 1 d.p. = 3.1\n✗ Look at the digit you want to keep, not the next one\n✓ 6.998 rounded to 2 d.p. = 7.00\n✗ 5 always rounds down\n✓ Rounding 4.95 to 1 d.p. gives 5.0"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRound to 1 decimal place:\n  (a) 3.5\n  (b) 8.1\n  (c) 6.0\n  (d) 0.7\n\nRound to 2 decimal places:\n  (a) 4.57\n  (b) 3.14\n  (c) 8.00\n  (d) 0.12\n\nRound to 3 decimal places:\n  (a) 2.718\n  (b) 0.123\n  (c) 10.000\n  (d) 6.543\n\nWord problems:\n  (a) 3.33\n  (b) 3.142\n  (c) £2.33\n  (d) 3.14\n\nMixed rounding:\n  (a) 6.5\n  (b) 3.10\n  (c) 1.0\n  (d) 12.346\n  (e) 7.01"
+    }
+  ]
+}

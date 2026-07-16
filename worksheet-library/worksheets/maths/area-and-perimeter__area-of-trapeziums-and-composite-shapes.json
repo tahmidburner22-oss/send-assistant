@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Area and Perimeter",
+  "subtopic": "Area of trapeziums and composite shapes",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Area of trapeziums and composite shapes",
+  "subtitle": "Area and Perimeter · KS3 Maths",
+  "learning_objective": "I can calculate the area of trapeziums and composite shapes by splitting into simpler shapes.",
+  "key_vocab": [
+    {
+      "term": "trapezium",
+      "definition": "A trapezium has one pair of parallel sides (a and b). Its area is &frac{1}{2}(a + b) × h."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the area of trapeziums and composite shapes by splitting into simpler shapes."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "trapezium -- A trapezium has one pair of parallel sides (a and b). Its area is &frac{1}{2}(a + b) × h."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Trapezium: average the parallel sides, then multiply by the height.\nA = &frac{1}{2}(a + b) × h\nAverage of parallel sides times height\n\nKey examples:\n  ✓ Trapezium: A = &frac{1}{2}(a + b)h  (parallel sides a, b)\n  ✓ Composite: split into known shapes  (then add areas)\n  ✓ a = 5, b = 9, h = 4 → A = 28  (&frac{1}{2}(14)×4)\n  ✗ Trapezium: A = a × b × h  (wrong formula)\n  ✗ Composite: just add all lengths  (that gives perimeter)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – basic trapezium\n  A trapezium has parallel sides 6 cm and 10 cm, height 4 cm. Find the area.\n  A = &frac{1}{2}(a + b) × h\n  A = &frac{1}{2}(6 + 10) × 4 = &frac{1}{2} × 16 × 4\n  A = 32 cm²\n  = 32 cm²\n  (Add the parallel sides, halve, then multiply by height.)\n\nExample 2 – finding height\n  A trapezium has area 30 cm², parallel sides 4 cm and 8 cm. Find h.\n  30 = &frac{1}{2}(4 + 8) × h\n  30 = 6h\n  h = 5 cm\n  h = 5 cm\n  (Rearrange: h = A ÷ &frac{1}{2}(a + b).)"
+    },
+    {
+      "id": "s5",
+      "title": "Trapezium area",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the area of each trapezium.\n\n(a) a = 5 cm, b = 9 cm, h = 4 cm\n(b) a = 3 cm, b = 7 cm, h = 6 cm\n(c) a = 8 cm, b = 12 cm, h = 5 cm\n(d) a = 4 cm, b = 10 cm, h = 3 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Finding missing measurements",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the formula to find the missing value.\n\n(a) A = 24, a = 4, b = 8. Find h.\n(b) A = 35, a = 3, h = 5. Find b.\n(c) A = 40, b = 12, h = 4. Find a.\n(d) A = 27, a = 5, b = 4. Find h."
+    },
+    {
+      "id": "s7",
+      "title": "L-shapes and U-shapes",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the area of each composite shape.\n\n(a) L-shape: 10×8, cut-out 4×5\n(b) L-shape: 12×6, cut-out 3×3\n(c) U-shape: 8×6, cut-out 4×3 (centre)\n(d) L-shape: 9×7, cut-out 5×4"
+    },
+    {
+      "id": "s8",
+      "title": "T-shapes and plus signs",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Split into rectangles, then add.\n\n(a) T-shape: top 8×2, stem 3×5\n(b) T-shape: top 12×3, stem 4×6\n(c) Plus: 10×2 and 2×10 overlap 2×2\n(d) Arrow: rectangle 6×4 + triangle b=6, h=3"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed composite and trapezium",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Find each area.\n\n(a) Trapezium: a = 6, b = 14, h = 8\n(b) Composite: rectangle 5×10 + triangle b=5, h=4\n(c) Trapezium: a = 7, b = 11, h = 6\n(d) L-shape: 15×10, cut-out 8×6\n(e) Pentagon (split): rectangle 8×5 + triangle b=8, h=3"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Trapezium area = &frac{1}{2}(a + b) × h\n✗ Composite area: add all the sides together\n✓ Split composite shapes into rectangles and triangles\n✗ Trapezium area = a × b × h\n✓ For an L-shape, subtract the cut-out from the full rectangle"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nTrapezium area:\n  (a) 28 cm²\n  (b) 30 cm²\n  (c) 50 cm²\n  (d) 21 cm²\n\nFinding missing measurements:\n  (a) 4 cm\n  (b) 11 cm\n  (c) 8 cm\n  (d) 6 cm\n\nL-shapes and U-shapes:\n  (a) 60 cm²\n  (b) 63 cm²\n  (c) 36 cm²\n  (d) 43 cm²\n\nT-shapes and plus signs:\n  (a) 31 cm²\n  (b) 60 cm²\n  (c) 36 cm²\n  (d) 33 cm²\n\nMixed composite and trapezium:\n  (a) 80 cm²\n  (b) 60 cm²\n  (c) 54 cm²\n  (d) 102 cm²\n  (e) 52 cm²"
+    }
+  ]
+}

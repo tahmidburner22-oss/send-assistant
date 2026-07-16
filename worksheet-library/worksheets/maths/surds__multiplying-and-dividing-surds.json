@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Surds",
+  "subtopic": "Multiplying and dividing surds",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Multiplying and dividing surds",
+  "subtitle": "Surds · GCSE Maths",
+  "learning_objective": "I can multiply and divide surds using the rules of surds.",
+  "key_vocab": [
+    {
+      "term": "multiply surds",
+      "definition": "To multiply surds: √a × √b = √(ab). To divide surds: √a ÷ √b = √(a/b)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can multiply and divide surds using the rules of surds."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "multiply surds -- To multiply surds: √a × √b = √(ab). To divide surds: √a ÷ √b = √(a/b)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply or divide the numbers under the root sign. Multiply coefficients separately.\n√a × √b = √(a × b)\nSame rule works for division: √a ÷ √b = √(a ÷ b)\n\nKey examples:\n  ✓ √3 × √5 = √15  (multiply under the root)\n  ✓ √6 × √6 = 6  (square root times itself = integer)\n  ✓ √20 ÷ √5 = √4 = 2  (divide under the root)\n  ✗ √3 × √5 = √8  (multiply, not add)\n  ✗ 2√3 × 4√5 = 6√15  (should be 8√15)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – multiplying simple surds\n  Calculate √3 × √7.\n  Multiply under the root: 3 × 7 = 21\n  √3 × √7 = √21\n  √21 cannot be simplified\n  √21\n  (Multiply the radicands together.)\n\nExample 2 – with coefficients\n  Calculate 3√2 × 4√5.\n  Multiply coefficients: 3 × 4 = 12\n  Multiply surds: √2 × √5 = √10\n  = 12√10\n  12√10\n  (Coefficients multiply separately from the surds.)"
+    },
+    {
+      "id": "s5",
+      "title": "Multiplying simple surds",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Multiply and simplify where possible.\n\n(a) √2 × √3\n(b) √5 × √5\n(c) √7 × √3\n(d) √2 × √8"
+    },
+    {
+      "id": "s6",
+      "title": "With coefficients",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Multiply and simplify.\n\n(a) 2√3 × 5√3\n(b) 3√2 × 2√7\n(c) 4√5 × √5\n(d) 2√6 × 3√2"
+    },
+    {
+      "id": "s7",
+      "title": "Dividing surds",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Divide and simplify.\n\n(a) √12 ÷ √3\n(b) √50 ÷ √2\n(c) 6√10 ÷ 2√5\n(d) √75 ÷ √3"
+    },
+    {
+      "id": "s8",
+      "title": "Expanding brackets with surds",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Expand and simplify.\n\n(a) √3(√3 + 2)\n(b) √5(2√5 - 1)\n(c) 2√2(√2 + √3)\n(d) √7(3 - √7)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed multiplication and division",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Simplify fully.\n\n(a) √3 × √12\n(b) (2√3)²\n(c) √18 ÷ √6\n(d) (1 + √2)(1 - √2)\n(e) (√3 + √5)²"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ √3 × √5 = √15\n✗ √3 × √5 = √8\n✓ √a × √a = a\n✗ 2√3 × 4√5 = 6√15\n✓ √72 ÷ √2 = √36 = 6"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nMultiplying simple surds:\n  (a) √6\n  (b) 5\n  (c) √21\n  (d) 4\n\nWith coefficients:\n  (a) 30\n  (b) 6√14\n  (c) 20\n  (d) 6√12 = 12√3\n\nDividing surds:\n  (a) 2\n  (b) 5\n  (c) 3√2\n  (d) 5\n\nExpanding brackets with surds:\n  (a) 3 + 2√3\n  (b) 10 - √5\n  (c) 4 + 2√6\n  (d) 3√7 - 7\n\nMixed multiplication and division:\n  (a) 6\n  (b) 12\n  (c) √3\n  (d) -1\n  (e) 8 + 2√15"
+    }
+  ]
+}

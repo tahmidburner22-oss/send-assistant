@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Statistics",
+  "subtopic": "Cumulative frequency and box plots",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Cumulative frequency and box plots",
+  "subtitle": "Statistics · GCSE Maths",
+  "learning_objective": "I can draw and interpret cumulative frequency diagrams and box plots.",
+  "key_vocab": [
+    {
+      "term": "Cumulative frequency",
+      "definition": "Cumulative frequency is the running total of frequencies. A box plot (box-and-whisker diagram) displays the minimum, lower quartile (Q1), median (Q2), upper quartile (Q3), and maximum."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can draw and interpret cumulative frequency diagrams and box plots."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Cumulative frequency -- Cumulative frequency is the running total of frequencies. A box plot (box-and-whisker diagram) displays the minimum, lower quartile (Q1), median (Q2), upper quartile (Q3), and maximum."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Cumulative frequency = running total. Read quartiles from the CF graph. IQR = Q3 − Q1.\nIQR = Q3 − Q1\nThe interquartile range measures spread of the middle 50% of data\n\nKey examples:\n  ✓ IQR = Q3 − Q1 measures the spread of middle 50%  (interquartile range)\n  ✓ Median is at the &frac{n}{2} position on the CF curve  (reading the median)\n  ✓ Box plot shows min, Q1, Q2, Q3, max  (five-number summary)\n  ✗ Plot CF against midpoints  (plot against upper boundaries)\n  ✗ IQR = Q3 + Q1  (IQR = Q3 MINUS Q1)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – building a CF table\n  Frequencies are 5, 8, 12, 10, 5. Build the cumulative frequency column.\n  CF: 5, 5+8=13, 13+12=25, 25+10=35, 35+5=40\n  Total n = 40\n  CF values: 5, 13, 25, 35, 40\n  5, 13, 25, 35, 40\n  (Add each frequency to the running total.)\n\nExample 2 – reading the median\n  n = 40. Read the median from the CF graph.\n  Median position: &frac{40}{2} = 20th value\n  Go across from CF = 20 to the curve\n  Read down to the x-axis for the median\n  Read at CF = 20\n  (The median is the value at the &frac{n}{2} position on the y-axis.)"
+    },
+    {
+      "id": "s5",
+      "title": "Building CF tables",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the cumulative frequencies.\n\n(a) Frequencies: 3, 7, 10, 5, 5\n(b) Frequencies: 4, 6, 15, 8, 7\n(c) Frequencies: 2, 8, 12, 14, 4\n(d) Frequencies: 10, 15, 20, 10, 5"
+    },
+    {
+      "id": "s6",
+      "title": "Finding quartile positions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State the CF positions for Q1, Q2, Q3.\n\n(a) n = 40\n(b) n = 60\n(c) n = 100\n(d) n = 80"
+    },
+    {
+      "id": "s7",
+      "title": "Calculating IQR",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the IQR from the given quartiles.\n\n(a) Q1 = 15, Q3 = 35\n(b) Q1 = 42, Q3 = 68\n(c) Q1 = 3.5, Q3 = 7.2\n(d) Q1 = 120, Q3 = 185"
+    },
+    {
+      "id": "s8",
+      "title": "Box plot interpretation",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "From the box plot, find the stated value.\n\n(a) Min=10, Q1=20, Q2=35, Q3=50, Max=70. Range?\n(b) Same data. IQR?\n(c) Min=5, Q1=12, Q2=18, Q3=25, Max=40. Median?\n(d) Same data. What fraction is between Q1 and Q3?"
+    },
+    {
+      "id": "s9",
+      "title": "Comparing distributions",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Compare using the given statistics.\n\n(a) Set A: median 45, IQR 20. Set B: median 52, IQR 35. Which has higher average?\n(b) Same data. Which is more consistent?\n(c) Boys: Q1=55, Q3=75. Girls: Q1=60, Q3=70. Compare.\n(d) Dataset: min=3, Q1=5, Q2=7, Q3=9, max=15. Is it symmetric?\n(e) If IQR = 0, what does this tell you?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ IQR = Q3 − Q1\n✗ CF should be plotted against class midpoints\n✓ The median is read at the &frac{n}{2} position on the CF graph\n✗ The box in a box plot always shows 25% of the data\n✓ A box plot shows the five-number summary: min, Q1, Q2, Q3, max"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nBuilding CF tables:\n  (a) 3, 10, 20, 25, 30\n  (b) 4, 10, 25, 33, 40\n  (c) 2, 10, 22, 36, 40\n  (d) 10, 25, 45, 55, 60\n\nFinding quartile positions:\n  (a) Q1 at 10, Q2 at 20, Q3 at 30\n  (b) Q1 at 15, Q2 at 30, Q3 at 45\n  (c) Q1 at 25, Q2 at 50, Q3 at 75\n  (d) Q1 at 20, Q2 at 40, Q3 at 60\n\nCalculating IQR:\n  (a) IQR = 20\n  (b) IQR = 26\n  (c) IQR = 3.7\n  (d) IQR = 65\n\nBox plot interpretation:\n  (a) 60\n  (b) 30\n  (c) 18\n  (d) 50%\n\nComparing distributions:\n  (a) B (higher median)\n  (b) A (smaller IQR)\n  (c) Girls more consistent (IQR=10 vs 20)\n  (d) Roughly symmetric (Q2−Q1=2, Q3−Q2=2)\n  (e) 75% of data has the same value (no spread in middle)"
+    }
+  ]
+}

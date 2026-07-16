@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Pythagoras' Theorem",
+  "subtopic": "Finding a shorter side",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Finding a shorter side",
+  "subtitle": "Pythagoras' Theorem · GCSE Maths",
+  "learning_objective": "I can use Pythagoras' theorem to find a shorter side of a right-angled triangle.",
+  "key_vocab": [
+    {
+      "term": "hypotenuse",
+      "definition": "When the hypotenuse and one shorter side are known, rearrange Pythagoras to find the other: a² = c² − b²."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use Pythagoras' theorem to find a shorter side of a right-angled triangle."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "hypotenuse -- When the hypotenuse and one shorter side are known, rearrange Pythagoras to find the other: a² = c² − b²."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Rearrange a² + b² = c² to a² = c² − b², then take the square root.\na = √(c² − b²)\nSubtract known shorter side squared from hypotenuse squared\n\nKey examples:\n  ✓ c = 13, b = 5: a = √(169 − 25) = √144 = 12  (subtract then root)\n  ✓ c = 10, b = 6: a = √(100 − 36) = √64 = 8  (rearranged formula)\n  ✓ c = 15, b = 9: a = √(225 − 81) = √144 = 12  (Pythagorean triple)\n  ✗ c = 13, b = 5: a = √(169 + 25)  (must subtract, not add)\n  ✗ a = c − b = 13 − 5 = 8  (must square first, then subtract)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – integer answer\n  Find side a if c = 10 and b = 8.\n  a² = c² − b² = 100 − 64 = 36\n  a = √36\n  a = 6\n  a = 6\n  (Always square both known sides first, then subtract.)\n\nExample 2 – non-integer answer\n  Find side a if c = 9 and b = 5.\n  a² = 81 − 25 = 56\n  a = √56\n  a = 7.48 (2 d.p.)\n  a = 7.48\n  (If the answer is not a perfect square, round appropriately.)"
+    },
+    {
+      "id": "s5",
+      "title": "Finding a (integer answers)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing shorter side.\n\n(a) c = 5, b = 3\n(b) c = 13, b = 12\n(c) c = 15, b = 12\n(d) c = 25, b = 7"
+    },
+    {
+      "id": "s6",
+      "title": "Finding a (decimal answers)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing side to 1 d.p.\n\n(a) c = 8, b = 5\n(b) c = 12, b = 7\n(c) c = 10, b = 4\n(d) c = 20, b = 11"
+    },
+    {
+      "id": "s7",
+      "title": "In context",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each problem.\n\n(a) Ladder 10 m, reaches 8 m up wall. Distance from wall?\n(b) Kite string 26 m, horizontal distance 10 m. Height?\n(c) Ship sails: total journey 17 km, east 15 km. North?\n(d) Slide 13 m, platform height 5 m. Ground distance?"
+    },
+    {
+      "id": "s8",
+      "title": "Mixed triangles",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find x in each right-angled triangle.\n\n(a) Hypotenuse 17, one side x, other side 15\n(b) Hypotenuse 26, one side x, other side 24\n(c) Hypotenuse 20, one side x, other side 12\n(d) Hypotenuse 29, one side x, other side 21"
+    },
+    {
+      "id": "s9",
+      "title": "Problem solving",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem. Round to 1 d.p. where needed.\n\n(a) Right triangle: hypotenuse 14, one leg 6. Other leg?\n(b) Rectangle diagonal 15, width 9. Length?\n(c) Isosceles: equal sides 10, base 16. Height?\n(d) Right triangle: hypotenuse 11, one leg 7. Other leg?\n(e) Square diagonal 8. Side length?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To find a shorter side, rearrange to a² = c² − b²\n✗ a = c − b gives the missing side\n✓ The hypotenuse is always the longest side in a right-angled triangle\n✗ a² = c² + b² when finding a shorter side\n✓ If the answer is not exact, round to an appropriate degree of accuracy"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nFinding a (integer answers):\n  (a) a = 4\n  (b) a = 5\n  (c) a = 9\n  (d) a = 24\n\nFinding a (decimal answers):\n  (a) a = 6.2\n  (b) a = 9.7\n  (c) a = 9.2\n  (d) a = 16.7\n\nIn context:\n  (a) 6 m\n  (b) 24 m\n  (c) 8 km\n  (d) 12 m\n\nMixed triangles:\n  (a) x = 8\n  (b) x = 10\n  (c) x = 16\n  (d) x = 20\n\nProblem solving:\n  (a) 12.6\n  (b) 12\n  (c) 6\n  (d) 8.5\n  (e) 5.7"
+    }
+  ]
+}

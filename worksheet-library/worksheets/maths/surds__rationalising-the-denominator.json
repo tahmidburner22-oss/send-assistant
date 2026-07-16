@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Surds",
+  "subtopic": "Rationalising the denominator",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Rationalising the denominator",
+  "subtitle": "Surds · GCSE Maths",
+  "learning_objective": "I can rationalise the denominator of a fraction containing surds.",
+  "key_vocab": [
+    {
+      "term": "Rationalising",
+      "definition": "Rationalising means removing the surd from the denominator. Multiply top and bottom by the surd in the denominator (or its conjugate)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can rationalise the denominator of a fraction containing surds."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Rationalising -- Rationalising means removing the surd from the denominator. Multiply top and bottom by the surd in the denominator (or its conjugate)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply numerator and denominator by the surd (or conjugate) to make the denominator rational.\n&frac{a}{√b} = &frac{a × √b}{b}\nSince √b × √b = b\n\nKey examples:\n  ✓ &frac{1}{√3} = &frac{√3}{3}  (multiply top and bottom by √3)\n  ✓ &frac{4}{√2} = &frac{4√2}{2} = 2√2  (then simplify)\n  ✓ &frac{1}{1+√2} × &frac{1-√2}{1-√2}  (use the conjugate)\n  ✗ &frac{1}{√3} = &frac{1}{3}  (must multiply both top and bottom)\n  ✗ &frac{3}{√5} = &frac{3}{5}  (denominator becomes 5, but numerator becomes 3√5)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – simple rationalisation\n  Rationalise &frac{1}{√5}.\n  Multiply top and bottom by √5\n  &frac{1 × √5}{√5 × √5} = &frac{√5}{5}\n  Denominator is now rational\n  &frac{√5}{5}\n  (Multiply by √5 over √5 (which equals 1).)\n\nExample 2 – with a coefficient\n  Rationalise &frac{6}{√3}.\n  Multiply top and bottom by √3\n  &frac{6√3}{3}\n  Simplify: = 2√3\n  2√3\n  (After rationalising, simplify the fraction.)"
+    },
+    {
+      "id": "s5",
+      "title": "Simple rationalisation",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rationalise each denominator.\n\n(a) &frac{1}{√2}\n(b) &frac{1}{√7}\n(c) &frac{3}{√3}\n(d) &frac{5}{√5}"
+    },
+    {
+      "id": "s6",
+      "title": "With simplification",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rationalise and simplify.\n\n(a) &frac{4}{√2}\n(b) &frac{6}{√3}\n(c) &frac{10}{√5}\n(d) &frac{12}{√6}"
+    },
+    {
+      "id": "s7",
+      "title": "Using conjugates (a + √b)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rationalise using the conjugate.\n\n(a) &frac{1}{1 + √2}\n(b) &frac{2}{3 - √5}\n(c) &frac{5}{2 + √3}\n(d) &frac{3}{4 - √7}"
+    },
+    {
+      "id": "s8",
+      "title": "Surd denominators",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rationalise each expression.\n\n(a) &frac{√2}{√3}\n(b) &frac{√5}{√10}\n(c) &frac{2√3}{√6}\n(d) &frac{3}{2√5}"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed rationalisation",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Rationalise and simplify fully.\n\n(a) &frac{8}{√2}\n(b) &frac{1}{√5 - 2}\n(c) &frac{√3 + 1}{√3}\n(d) &frac{6}{√3 + √2}\n(e) &frac{2}{√6 - √2}"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To rationalise &frac{1}{√3}, multiply top and bottom by √3\n✗ &frac{1}{√5} = &frac{1}{5}\n✓ The conjugate of 3 + √2 is 3 - √2\n✗ &frac{4}{√2} = 4√2\n✓ (a + √b)(a - √b) = a² - b"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSimple rationalisation:\n  (a) &frac{√2}{2}\n  (b) &frac{√7}{7}\n  (c) √3\n  (d) √5\n\nWith simplification:\n  (a) 2√2\n  (b) 2√3\n  (c) 2√5\n  (d) 2√6\n\nUsing conjugates (a + √b):\n  (a) √2 - 1\n  (b) &frac{2(3 + √5)}{4} = &frac{3 + √5}{2}\n  (c) 5(2 - √3) = 10 - 5√3\n  (d) &frac{3(4 + √7)}{9} = &frac{4 + √7}{3}\n\nSurd denominators:\n  (a) &frac{√6}{3}\n  (b) &frac{√2}{2}\n  (c) √2\n  (d) &frac{3√5}{10}\n\nMixed rationalisation:\n  (a) 4√2\n  (b) √5 + 2\n  (c) 1 + &frac{√3}{3}\n  (d) 6(√3 - √2)\n  (e) &frac{√6 + √2}{2}"
+    }
+  ]
+}

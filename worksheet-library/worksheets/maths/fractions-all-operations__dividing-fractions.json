@@ -1,0 +1,102 @@
+{
+  "subject": "Maths",
+  "topic": "Fractions — All Operations",
+  "subtopic": "Dividing fractions",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Dividing fractions",
+  "subtitle": "Fractions — All Operations · KS3 Maths",
+  "learning_objective": "I can divide fractions by flipping the second fraction and multiplying.",
+  "key_vocab": [
+    {
+      "term": "To divide by a fraction, we keep, change, flip",
+      "definition": "keep the first fraction, change division to multiplication, and flip (find the reciprocal of) the second fraction."
+    },
+    {
+      "term": "Remember",
+      "definition": "The reciprocal of &frac{a}{b} is &frac{b}{a}. Dividing by a fraction makes the answer bigger."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can divide fractions by flipping the second fraction and multiplying."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "To divide by a fraction, we keep, change, flip -- keep the first fraction, change division to multiplication, and flip (find the reciprocal of) the second fraction.\nRemember -- The reciprocal of &frac{a}{b} is &frac{b}{a}. Dividing by a fraction makes the answer bigger."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Keep the first fraction, change the operation to multiplication, flip the second fraction.\n&frac{a}{b} ÷ &frac{c}{d} = &frac{a}{b} × &frac{d}{c}\nKeep, Change, Flip\n\nKey examples:\n  ✓ &frac{2}{3} ÷ &frac{1}{4} = &frac{8}{3}  (flip and multiply)\n  ✓ &frac{3}{5} ÷ &frac{2}{7} = &frac{21}{10}  (keep, change, flip)\n  ✓ &frac{1}{2} ÷ 3 = &frac{1}{6}  (3 = &frac{3}{1}, flip to &frac{1}{3})\n  ✗ &frac{2}{3} ÷ &frac{1}{4} = &frac{2}{12}  (multiplied without flipping)\n  ✗ &frac{3}{5} ÷ &frac{2}{7} = &frac{6}{35}  (did not flip second fraction)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – simple division\n  Calculate &frac{2}{3} ÷ &frac{1}{4}\n  Keep &frac{2}{3}, change to ×, flip &frac{1}{4} to &frac{4}{1}\n  &frac{2}{3} × &frac{4}{1} = &frac{8}{3}\n  = 2&frac{2}{3}\n  = 2&frac{2}{3}\n  (Flip the second fraction then multiply across.)\n\nExample 2 – both non-unit\n  Calculate &frac{3}{5} ÷ &frac{2}{7}\n  Keep &frac{3}{5}, change to ×, flip &frac{2}{7} to &frac{7}{2}\n  &frac{3}{5} × &frac{7}{2} = &frac{21}{10}\n  = 2&frac{1}{10}\n  = 2&frac{1}{10}\n  (Multiply numerators and denominators separately.)"
+    },
+    {
+      "id": "s5",
+      "title": "Dividing unit fractions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use keep, change, flip.\n\n(a) &frac{1}{2} ÷ &frac{1}{3}\n(b) &frac{1}{4} ÷ &frac{1}{5}\n(c) &frac{1}{3} ÷ &frac{1}{6}\n(d) &frac{1}{5} ÷ &frac{1}{2}"
+    },
+    {
+      "id": "s6",
+      "title": "Non-unit fractions",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Divide. Simplify your answer.\n\n(a) &frac{3}{4} ÷ &frac{1}{2}\n(b) &frac{2}{3} ÷ &frac{4}{5}\n(c) &frac{5}{8} ÷ &frac{3}{4}\n(d) &frac{4}{7} ÷ &frac{2}{3}"
+    },
+    {
+      "id": "s7",
+      "title": "Dividing by whole numbers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Divide each fraction by the whole number.\n\n(a) &frac{3}{4} ÷ 3\n(b) &frac{5}{6} ÷ 5\n(c) &frac{2}{3} ÷ 4\n(d) &frac{7}{8} ÷ 7"
+    },
+    {
+      "id": "s8",
+      "title": "Mixed numbers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert to improper fractions first.\n\n(a) 1&frac{1}{2} ÷ &frac{1}{4}\n(b) 2&frac{1}{3} ÷ &frac{2}{3}\n(c) 1&frac{3}{4} ÷ &frac{7}{8}\n(d) 3&frac{1}{5} ÷ 4"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed division",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Divide and simplify.\n\n(a) &frac{5}{6} ÷ &frac{2}{3}\n(b) &frac{9}{10} ÷ &frac{3}{5}\n(c) 2&frac{1}{2} ÷ 1&frac{1}{4}\n(d) &frac{7}{12} ÷ &frac{7}{6}\n(e) 4 ÷ &frac{2}{5}"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To divide by a fraction, flip the second fraction and multiply\n✗ &frac{2}{3} ÷ &frac{1}{4} = &frac{2}{12}\n✓ The reciprocal of &frac{3}{5} is &frac{5}{3}\n✗ Dividing by a fraction always gives a smaller answer\n✓ &frac{1}{2} ÷ 3 = &frac{1}{6}"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nDividing unit fractions:\n  (a) 1&frac{1}{2}\n  (b) 1&frac{1}{4}\n  (c) 2\n  (d) &frac{2}{5}\n\nNon-unit fractions:\n  (a) 1&frac{1}{2}\n  (b) &frac{5}{6}\n  (c) &frac{5}{6}\n  (d) &frac{6}{7}\n\nDividing by whole numbers:\n  (a) &frac{1}{4}\n  (b) &frac{1}{6}\n  (c) &frac{1}{6}\n  (d) &frac{1}{8}\n\nMixed numbers:\n  (a) 6\n  (b) 3&frac{1}{2}\n  (c) 2\n  (d) &frac{4}{5}\n\nMixed division:\n  (a) 1&frac{1}{4}\n  (b) 1&frac{1}{2}\n  (c) 2\n  (d) &frac{1}{2}\n  (e) 10"
+    }
+  ]
+}

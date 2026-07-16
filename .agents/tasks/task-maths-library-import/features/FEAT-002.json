@@ -1,0 +1,33 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Wire up topic switcher compatibility and verify the end-to-end flow: library lookup finds worksheets, overlay engine applies SEND overlays correctly, reading age adjustment works. Fix any issues in topic matching, overlay application, or rendering pipeline.",
+  "status": "pending",
+  "steps": [
+    "Step 1: Verify topic name alignment by writing a validation script that: (a) reads all converted worksheet-library JSON files, (b) extracts their 'topic' and 'subtopic' fields, (c) compares against SUBTOPICS_MAP from client/src/lib/subtopics-data.ts, (d) reports any mismatches. Fix any mismatches found.",
+    "Step 2: Verify the topicNormalizer.ts canonicalTopicKey function handles all 128 worksheet topics correctly. Add any missing topic entries to the CANONICAL_TOPIC_MAP in server/lib/topicNormalizer.ts. Key additions needed: mappings for 'Fractions -- All Operations', 'Fractions -- Secondary', 'Decimals -- All Operations', 'Four Operations and Order of Operations', 'Place Value and Ordering Integers', 'Linear Inequalities', 'Straight-Line Graphs', 'Volume and Surface Area', 'Area and Perimeter', 'Ratio and Proportion', 'Percentages of Amounts', 'Indices and Standard Form'.",
+    "Step 3: Ensure the findLibraryEntry function in server/routes/worksheetLibrary.ts can find the imported worksheets. The lookup uses: LOWER(subject) matching 'maths', topic matching (exact, ILIKE, or canonical_topic_key), year_group matching. Verify the year_group values used in imported worksheets match what the UI sends (the Worksheets.tsx page sends yearGroup from its dropdown).",
+    "Step 4: Verify SEND overlay compatibility by testing a converted worksheet through the applyOverlays function: (a) The base sections all have 'id' fields so computeStructuralHash works, (b) question sections have types in QUESTION_TYPES set (q-short-answer, q-extended), (c) the overlay inserts send-support sections after questions without modifying base content, (d) assertBaseSectionsPreserved passes.",
+    "Step 5: Verify reading age adjustment works: the applyReadingAgeSupport function in overlayEngine.ts adds reading support cues to question sections when readingAge < 12. The converted worksheets must have question sections with content strings that can be appended to.",
+    "Step 6: Test the full resolve flow: POST /api/library/resolve with subject=Maths, topic=<any converted topic>, yearGroup=Year 10, sendNeed=dyslexia should return found:true with sections that include both base worksheet sections AND inserted send-support overlay sections.",
+    "Step 7: If the layout and structure of rendered worksheets does not match the PDF reference (maths-worksheets/pdf/), audit the WorksheetRenderer.tsx component and ensure it renders sections in the correct visual order matching the PDF layout: Page 1 = Key terms box + What we learn box + Key idea box + 4 modelled examples in 2x2 grid. Page 2 = Practice sections (5 blocks with colour-coded headers) + Misconceptions (true/false statements) + Challenge problems. Ensure the renderer handles the section types produced by the conversion (objective, vocabulary, example, q-short-answer, q-extended, common-mistakes, self-reflection) and renders them in a layout visually matching the PDF."
+  ],
+  "acceptance_criteria": [
+    "All 128 converted worksheets have topic names that match SUBTOPICS_MAP keys exactly",
+    "canonicalTopicKey() returns correct keys for all maths topics in the library",
+    "GET /api/library/lookup with any converted topic returns found:true with >= 5 sections",
+    "POST /api/library/resolve with sendNeed=dyslexia returns sections with send-support overlay sections inserted",
+    "The overlay engine's assertBaseSectionsPreserved passes for all converted worksheets",
+    "Reading age support correctly modifies question section content when readingAge < 12",
+    "The topic switcher in the UI can select any KS3/KS4 maths topic and the corresponding worksheet loads from the library"
+  ],
+  "verification": [
+    "Run the topic validation script and confirm 0 mismatches",
+    "Run pnpm run check to ensure TypeScript compilation passes after topicNormalizer changes",
+    "Use Playwright to login to adaptly.co.uk, navigate to worksheet generator, select Maths > Simultaneous Equations > Year 10, confirm a library worksheet is returned (not AI-generated)",
+    "Use Playwright to test with SEND overlay (dyslexia) applied and verify support sections appear in the rendered output",
+    "Use Playwright to test topic switcher across 3+ different topics and verify each returns a library worksheet"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

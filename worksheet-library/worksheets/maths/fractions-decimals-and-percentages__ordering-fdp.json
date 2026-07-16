@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Fractions, Decimals and Percentages",
+  "subtopic": "Ordering FDP",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Ordering FDP",
+  "subtitle": "Fractions, Decimals and Percentages · GCSE Maths",
+  "learning_objective": "I can order fractions, decimals and percentages by converting to a common form.",
+  "key_vocab": [
+    {
+      "term": "Ordering FDP",
+      "definition": "Ordering FDP means arranging fractions, decimals and percentages from SMALLEST to largest (ascending) or largest to smallest (descending)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can order fractions, decimals and percentages by converting to a common form."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Ordering FDP -- Ordering FDP means arranging fractions, decimals and percentages from SMALLEST to largest (ascending) or largest to smallest (descending)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Convert everything to decimals. Compare digit by digit from left to right. Write your final answer in the ORIGINAL forms given in the question.\n30%, ⅜, 0.34 → 0.30, 0.375, 0.34\nAscending: 30%, 0.34, ⅜\n\nKey examples:\n  ✓ ½, 0.6, 55% → 0.5, 0.6, 0.55  (convert to decimals)\n  ✓ Order: 0.5, 0.55, 0.6  (ascending)\n  ✓ Answer: ½, 55%, 0.6  (rewrite in original form)\n  ✗ ⅓ > ¼ because 3 < 4  (wrong reasoning)\n  ✗ 0.9  9  (ignoring place value)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – two values\n  Which is larger: ⅗ or 55%?\n  ⅗ = 3 ÷ 5 = 0.6\n  55% = 0.55\n  0.6 > 0.55\n  ⅗ is larger\n  (Convert both to decimals: 0.6 > 0.55, so ⅗ is larger.)\n\nExample 2 – three values ascending\n  Order: 0.7, ¾, 72%\n  0.7, 0.75, 0.72\n  Smallest first: 0.7\n  0.7, 72%, ¾\n  0.7, 72%, ¾\n  (All as decimals: 0.7, 0.75, 0.72. Ascending: 0.7, 0.72, 0.75.)"
+    },
+    {
+      "id": "s5",
+      "title": "Convert to decimals",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert each value to a decimal so you can compare them.\n\n(a) ⅖ = ___\n(b) 65% = ___\n(c) ⅞ = ___\n(d) 4% = ___"
+    },
+    {
+      "id": "s6",
+      "title": "Compare two values",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write  between each pair. Convert to decimals first.\n\n(a) ½ ___ 45%\n(b) 0.3 ___ ¼\n(c) 68% ___ &frac{7}{10}\n(d) ⅝ ___ 60%"
+    },
+    {
+      "id": "s7",
+      "title": "Order ascending (smallest first)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write these in ascending order. Show your decimal conversions.\n\n(a) 0.4, ½, 35%\n(b) 62%, ⅗, 0.58\n(c) &frac{3}{8}, 40%, 0.39\n(d) 0.15, 12%, ⅛"
+    },
+    {
+      "id": "s8",
+      "title": "Order descending (largest first)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write these in descending order. Show your decimal conversions.\n\n(a) 0.8, 75%, ⅘\n(b) &frac{9}{10}, 88%, 0.92\n(c) 55%, 0.6, &frac{11}{20}\n(d) &frac{7}{8}, 90%, 0.86"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed ordering challenges",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Order these sets. State whether ascending or descending as indicated.\n\n(a) Ascending: ⅓, 30%, 0.29, &frac{3}{10}\n(b) Descending: 0.45, &frac{9}{20}, 44%, ½\n(c) Ascending: 1%, 0.1, &frac{1}{10}, 0.01\n(d) Ascending: ⅚, 80%, 0.84, &frac{17}{20}\n(e) Descending: 99%, &frac{19}{20}, 0.96, 1"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 0.45 > 0.5 because 45 > 5\n✓ ⅓ > 30% because ⅓ = 0.333...\n✗ ¼ = 14%\n✓ 0.08 < 0.1\n✗ 75% > ⅘ because 75 > 4"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nConvert to decimals:\n  (a) 0.4\n  (b) 0.65\n  (c) 0.875\n  (d) 0.04\n\nCompare two values:\n  (a) >\n  (b) >\n  (c) <\n  (d) >\n\nOrder ascending (smallest first):\n  (a) 35%, 0.4, 1/2\n  (b) 0.58, 3/5, 62%\n  (c) 3/8, 0.39, 40%\n  (d) 12%, 1/8, 0.15\n\nOrder descending (largest first):\n  (a) 4/5, 0.8, 75%\n  (b) 0.92, 9/10, 88%\n  (c) 0.6, 55%=11/20\n  (d) 90%, 7/8, 0.86\n\nMixed ordering challenges:\n  (a) 0.29, 30%=3/10, 1/3\n  (b) 1/2, 0.45=9/20, 44%\n  (c) 1%=0.01, 0.1=1/10\n  (d) 80%, 0.84=5/6?, check\n  (e) 1, 99%, 0.96, 19/20"
+    }
+  ]
+}

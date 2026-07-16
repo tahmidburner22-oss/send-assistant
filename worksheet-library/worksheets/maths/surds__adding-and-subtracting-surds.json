@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Surds",
+  "subtopic": "Adding and subtracting surds",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Adding and subtracting surds",
+  "subtitle": "Surds · GCSE Maths",
+  "learning_objective": "I can add and subtract surds by collecting like surd terms.",
+  "key_vocab": [
+    {
+      "term": "surd",
+      "definition": "A surd is an irrational root such as √2 or √5. We can only add or subtract surds that have the same number under the root sign (like terms)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can add and subtract surds by collecting like surd terms."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "surd -- A surd is an irrational root such as √2 or √5. We can only add or subtract surds that have the same number under the root sign (like terms)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Only like surds (same radicand) can be added or subtracted. Simplify surds first to reveal like terms.\na√n + b√n = (a + b)√n\nCollect like surd terms\n\nKey examples:\n  ✓ 3√5 + 2√5 = 5√5  (like surds, add coefficients)\n  ✓ √12 + √3 = 2√3 + √3 = 3√3  (simplify first)\n  ✓ 7√2 - 4√2 = 3√2  (subtract coefficients)\n  ✗ √3 + √5 = √8  (cannot add unlike surds under one root)\n  ✗ 2√3 + 3√2 = 5√5  (different surds cannot be combined)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – like surds\n  Simplify 4√3 + 7√3.\n  Both terms have √3\n  Add coefficients: 4 + 7 = 11\n  = 11√3\n  11√3\n  (Treat surds like algebra: add the coefficients of like terms.)\n\nExample 2 – subtraction\n  Simplify 9√2 - 5√2.\n  Both terms have √2\n  Subtract coefficients: 9 - 5 = 4\n  = 4√2\n  4√2\n  (Same process for subtraction.)"
+    },
+    {
+      "id": "s5",
+      "title": "Adding like surds",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify each expression.\n\n(a) 2√5 + 3√5\n(b) 6√7 + √7\n(c) 4√3 + 5√3\n(d) √11 + 8√11"
+    },
+    {
+      "id": "s6",
+      "title": "Subtracting like surds",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify each expression.\n\n(a) 8√2 - 3√2\n(b) 10√3 - 7√3\n(c) 5√6 - 5√6\n(d) 12√5 - 4√5"
+    },
+    {
+      "id": "s7",
+      "title": "Simplify first, then combine",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify each surd, then add or subtract.\n\n(a) √12 + √3\n(b) √20 + √5\n(c) √27 - √3\n(d) √45 + √20"
+    },
+    {
+      "id": "s8",
+      "title": "Harder combinations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify fully.\n\n(a) √50 + √18\n(b) √48 - √12\n(c) 2√8 + 3√2\n(d) √75 - √27 + √12"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed surd addition and subtraction",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Simplify each expression fully.\n\n(a) 3√2 + √8 - √18\n(b) √63 + √28 - √7\n(c) 2√12 + √48 - √27\n(d) 5√3 - √12 + √75\n(e) √98 - √50 + √32"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 3√5 + 2√5 = 5√5\n✗ √3 + √5 = √8\n✓ √12 = 2√3, so √12 + √3 = 3√3\n✗ 2√3 + 3√2 = 5√6\n✓ √50 = 5√2"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nAdding like surds:\n  (a) 5√5\n  (b) 7√7\n  (c) 9√3\n  (d) 9√11\n\nSubtracting like surds:\n  (a) 5√2\n  (b) 3√3\n  (c) 0\n  (d) 8√5\n\nSimplify first, then combine:\n  (a) 3√3\n  (b) 3√5\n  (c) 2√3\n  (d) 5√5\n\nHarder combinations:\n  (a) 8√2\n  (b) 2√3\n  (c) 7√2\n  (d) 4√3\n\nMixed surd addition and subtraction:\n  (a) 2√2\n  (b) 4√7\n  (c) 5√3\n  (d) 8√3\n  (e) 6√2"
+    }
+  ]
+}

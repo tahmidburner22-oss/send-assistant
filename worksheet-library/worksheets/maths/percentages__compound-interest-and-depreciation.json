@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Percentages",
+  "subtopic": "Compound interest and depreciation",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Compound interest and depreciation",
+  "subtitle": "Percentages · GCSE Maths",
+  "learning_objective": "I can calculate compound interest and depreciation using repeated percentage change.",
+  "key_vocab": [
+    {
+      "term": "Compound interest and depreciation",
+      "definition": "Compound interest is earned on the original amount AND on previous interest. Depreciation is when a value decreases by a fixed percentage each year."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate compound interest and depreciation using repeated percentage change."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Compound interest and depreciation -- Compound interest is earned on the original amount AND on previous interest. Depreciation is when a value decreases by a fixed percentage each year."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Use the multiplier raised to the power of years. Growth: 1 + r. Depreciation: 1 - r.\nA = P × (1 + r)n\nP = principal, r = rate as decimal, n = years\n\nKey examples:\n  ✓ 5% increase: multiply by 1.05  (compound growth multiplier)\n  ✓ 10% depreciation: multiply by 0.90  (depreciation multiplier)\n  ✓ £1000 at 3% for 2 years = 1000 × 1.03²  (compound formula)\n  ✗ 5% for 3 years = 15% total  (that is simple interest)\n  ✗ 10% depreciation for 10 years = worthless  (it never reaches zero)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – compound interest\n  £2000 is invested at 4% compound interest for 3 years. Find the final amount.\n  Multiplier = 1 + 0.04 = 1.04\n  A = 2000 × 1.04³\n  A = 2000 × 1.124864 = £2249.73\n  = £2249.73\n  (Multiply by the growth multiplier for each year.)\n\nExample 2 – finding interest earned\n  £5000 at 3% compound interest for 2 years. How much interest is earned?\n  A = 5000 × 1.03² = 5000 × 1.0609\n  A = £5304.50\n  Interest = 5304.50 - 5000 = £304.50\n  = £304.50 interest\n  (Subtract the original to find just the interest.)"
+    },
+    {
+      "id": "s5",
+      "title": "Compound interest",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the final amount.\n\n(a) £1000 at 5% for 2 years\n(b) £3000 at 4% for 3 years\n(c) £500 at 6% for 2 years\n(d) £8000 at 2% for 4 years"
+    },
+    {
+      "id": "s6",
+      "title": "Interest earned",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the interest earned (final amount minus principal).\n\n(a) £2000 at 3% for 3 years\n(b) £4500 at 5% for 2 years\n(c) £10000 at 2.5% for 4 years\n(d) £750 at 8% for 3 years"
+    },
+    {
+      "id": "s7",
+      "title": "Depreciation",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the value after depreciation.\n\n(a) £15000 car, 20% depreciation, 3 years\n(b) £800 laptop, 25% depreciation, 2 years\n(c) £6000 motorbike, 10% depreciation, 4 years\n(d) £20000 van, 12% depreciation, 5 years"
+    },
+    {
+      "id": "s8",
+      "title": "Comparing simple and compound",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate both simple and compound interest, then find the difference.\n\n(a) £1000 at 5% for 3 years: difference?\n(b) £2000 at 4% for 4 years: difference?\n(c) £5000 at 3% for 5 years: difference?\n(d) £10000 at 6% for 3 years: difference?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each compound percentage problem.\n\n(a) £3000 invested at 4% for 5 years. Final amount?\n(b) A phone worth £600 depreciates 30% yearly. Value after 3 years?\n(c) Population 50000 grows 2% per year. Population after 10 years?\n(d) £4000 grows to £4410 in 2 years. Annual rate?\n(e) House worth £200000 increases 6% per year for 3 years. New value?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Compound interest grows faster than simple interest\n✗ 5% compound interest for 3 years is 15% total increase\n✓ Depreciation of 20% per year uses multiplier 0.8\n✗ After 100% depreciation the item is worthless\n✓ The compound interest formula is A = P(1 + r)^n"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCompound interest:\n  (a) £1102.50\n  (b) £3374.59\n  (c) £561.80\n  (d) £8659.46\n\nInterest earned:\n  (a) £185.45\n  (b) £461.25\n  (c) £1038.13\n  (d) £194.86\n\nDepreciation:\n  (a) £7680\n  (b) £450\n  (c) £3936.60\n  (d) £10554.05\n\nComparing simple and compound:\n  (a) £7.63\n  (b) £26.26\n  (c) £27.27\n  (d) £91.02\n\nMixed problems:\n  (a) £3649.96\n  (b) £205.80\n  (c) 60950\n  (d) 5%\n  (e) £238203.20"
+    }
+  ]
+}

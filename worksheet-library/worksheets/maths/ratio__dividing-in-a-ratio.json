@@ -1,0 +1,102 @@
+{
+  "subject": "Maths",
+  "topic": "Ratio",
+  "subtopic": "Dividing in a ratio",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Dividing in a ratio",
+  "subtitle": "Ratio · GCSE Maths",
+  "learning_objective": "I can divide a quantity in a given ratio.",
+  "key_vocab": [
+    {
+      "term": "Dividing in a ratio",
+      "definition": "splitting a total into parts according to a given ratio. Find the total number of parts first."
+    },
+    {
+      "term": "Method",
+      "definition": "Add the ratio parts. Divide the total by this sum to find one part. Multiply to find each share."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can divide a quantity in a given ratio."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Dividing in a ratio -- splitting a total into parts according to a given ratio. Find the total number of parts first.\nMethod -- Add the ratio parts. Divide the total by this sum to find one part. Multiply to find each share."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Add ratio parts. Divide total by number of parts. Multiply each ratio number by value of one part.\nTotal ÷ (a + b) = 1 part\nThen multiply: a parts and b parts\n\nKey examples:\n  ✓ £20 in ratio 3:2 = £12 and £8  (5 parts, £4 each)\n  ✓ Ratio 1:3 means one quarter and three quarters  (fractions of total)\n  ✓ Total parts = sum of ratio numbers  (first step)\n  ✗ £20 in ratio 3:2 = £10 and £10  (divided equally, not in ratio)\n  ✗ Ratio 3:2 means 3 and 2  (must multiply by value per part)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – simple ratio\n  Divide £35 in the ratio 3:4.\n  Total parts: 3 + 4 = 7\n  One part: 35 ÷ 7 = £5\n  3 parts = £15, 4 parts = £20\n  £15 and £20\n  (Check: £15 + £20 = £35.)\n\nExample 2 – three-part ratio\n  Divide 60 kg in the ratio 1:2:3.\n  Total parts: 1 + 2 + 3 = 6\n  One part: 60 ÷ 6 = 10 kg\n  Shares: 10 kg, 20 kg, 30 kg\n  10 kg, 20 kg, 30 kg\n  (Same method works for three or more parts.)"
+    },
+    {
+      "id": "s5",
+      "title": "Simple two-part ratios",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Divide each amount in the given ratio.\n\n(a) £24 in ratio 1:3\n(b) £40 in ratio 3:5\n(c) 60 cm in ratio 2:3\n(d) £100 in ratio 7:3"
+    },
+    {
+      "id": "s6",
+      "title": "Three-part ratios",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Divide in the ratio given.\n\n(a) £60 in ratio 1:2:3\n(b) 120 kg in ratio 2:3:5\n(c) £180 in ratio 4:5:1\n(d) 90 litres in ratio 1:2:6"
+    },
+    {
+      "id": "s7",
+      "title": "Finding the total or one share",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work backwards from the given information.\n\n(a) Ratio 2:5. Smaller share = £14. Total?\n(b) Ratio 4:3. Larger share = £48. Total?\n(c) Ratio 5:2. Difference = 21. Total?\n(d) Ratio 3:7. Smaller share = 12 kg. Larger share?"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each ratio problem.\n\n(a) 3 friends share £45 in ratio 2:3:4. How much does each get?\n(b) Concrete: cement:sand:gravel = 1:2:4. Need 35 kg total. How much sand?\n(c) Ages in ratio 3:5. Older is 20 years. How old is younger?\n(d) Profit shared 2:3. Total profit £7500. How much more does larger share get?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed ratio division",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) £56 in ratio 3:4\n(b) £200 in ratio 2:3:5\n(c) Ratio 5:8. Difference = £21. Find both shares.\n(d) Ratio 1:2:3. Middle share = £30. Total?\n(e) Orange juice: water = 2:5. Need 700ml total. How much OJ?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To divide in ratio 3:2, find total parts (5) first\n✗ Ratio 3:2 means divide by 3 and by 2\n✓ The shares should always add up to the original total\n✗ £20 in ratio 3:2 gives £10 each\n✓ Ratio 1:4 means one fifth and four fifths"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSimple two-part ratios:\n  (a) £6 and £18\n  (b) £15 and £25\n  (c) 24 cm and 36 cm\n  (d) £70 and £30\n\nThree-part ratios:\n  (a) £10, £20, £30\n  (b) 24, 36, 60 kg\n  (c) £72, £90, £18\n  (d) 10, 20, 60 L\n\nFinding the total or one share:\n  (a) £49\n  (b) £84\n  (c) 49\n  (d) 28 kg\n\nWord problems:\n  (a) £10, £15, £20\n  (b) 10 kg\n  (c) 12 years\n  (d) £1500\n\nMixed ratio division:\n  (a) £24 and £32\n  (b) £40, £60, £100\n  (c) £35 and £56\n  (d) £90\n  (e) 200ml"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Fractions, Decimals and Percentages",
+  "subtopic": "Converting between fractions, decimals and percentages",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Converting between fractions, decimals and percentages",
+  "subtitle": "Fractions, Decimals and Percentages · GCSE Maths",
+  "learning_objective": "I can convert fluently between fractions, decimals and percentages.",
+  "key_vocab": [
+    {
+      "term": "Converting",
+      "definition": "Converting means writing a number in a DIFFERENT form without changing its value. Fractions, decimals and percentages are three ways to write the same amount."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can convert fluently between fractions, decimals and percentages."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Converting -- Converting means writing a number in a DIFFERENT form without changing its value. Fractions, decimals and percentages are three ways to write the same amount."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Fraction → Decimal: divide top by bottom. Decimal → Percentage: × 100. Percentage → Fraction: write over 100 and simplify.\n⅜ → 3 ÷ 8 = 0.375 → 37.5%\nDivide, then multiply by 100\n\nKey examples:\n  ✓ ½ = 0.5 = 50%  (all equivalent)\n  ✓ ¼ = 0.25 = 25%  (all equivalent)\n  ✓ ⅗ = 0.6 = 60%  (all equivalent)\n  ✗ ⅓ = 0.3 = 30%  (0.3 ≠ ⅓)\n  ✗ 0.7 = 70% = &frac{7}{70}  (should be 7/10)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – fraction to decimal\n  Convert ¾ to a decimal\n  3 ÷ 4\n  = 0.75\n  ✓\n  = 0.75\n  (Divide numerator by denominator: 3 ÷ 4 = 0.75)\n\nExample 2 – decimal to percentage\n  Convert 0.35 to a percentage\n  0.35 × 100\n  = 35\n  Add % sign\n  = 35%\n  (Multiply the decimal by 100 and add the % symbol.)"
+    },
+    {
+      "id": "s5",
+      "title": "Fraction to decimal",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert each fraction to a decimal by dividing the numerator by the denominator.\n\n(a) ½\n(b) ⅕\n(c) ⅜\n(d) &frac{7}{20}"
+    },
+    {
+      "id": "s6",
+      "title": "Decimal to percentage",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert each decimal to a percentage by multiplying by 100.\n\n(a) 0.4\n(b) 0.75\n(c) 0.08\n(d) 0.125"
+    },
+    {
+      "id": "s7",
+      "title": "Percentage to fraction",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert each percentage to a fraction in its simplest form. Write over 100 then simplify.\n\n(a) 20%\n(b) 60%\n(c) 35%\n(d) 84%"
+    },
+    {
+      "id": "s8",
+      "title": "Fraction to percentage",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert each fraction to a percentage. Divide first, then multiply by 100.\n\n(a) ¼\n(b) ⅖\n(c) &frac{3}{8}\n(d) &frac{11}{20}"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed conversions",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Convert each value to the other two forms (fraction, decimal, percentage).\n\n(a) 0.6 = ___ = ___%\n(b) 72% = ___ = ___\n(c) &frac{9}{25} = ___ = ___%\n(d) 0.875 = ___ = ___%\n(e) 5% = ___ = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ ⅓ = 0.3\n✓ 0.25 = 25%\n✓ 70% = &frac{7}{10}\n✗ 0.5% = ½\n✗ ⅘ = 0.45"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nFraction to decimal:\n  (a) 0.5\n  (b) 0.2\n  (c) 0.375\n  (d) 0.35\n\nDecimal to percentage:\n  (a) 40%\n  (b) 75%\n  (c) 8%\n  (d) 12.5%\n\nPercentage to fraction:\n  (a) 1/5\n  (b) 3/5\n  (c) 7/20\n  (d) 21/25\n\nFraction to percentage:\n  (a) 25%\n  (b) 40%\n  (c) 37.5%\n  (d) 55%\n\nMixed conversions:\n  (a) 3/5, 60%\n  (b) 18/25, 0.72\n  (c) 0.36, 36%\n  (d) 7/8, 87.5%\n  (e) 1/20, 0.05"
+    }
+  ]
+}

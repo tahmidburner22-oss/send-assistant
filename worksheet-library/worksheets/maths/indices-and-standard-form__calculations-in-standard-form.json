@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Indices and Standard Form",
+  "subtopic": "Calculations in standard form",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Calculations in standard form",
+  "subtitle": "Indices and Standard Form · GCSE Maths",
+  "learning_objective": "I can add, subtract, multiply and divide numbers in standard form.",
+  "key_vocab": [
+    {
+      "term": "Standard form",
+      "definition": "Standard form is written as A × 10n where 1 ≤ A multiply or divide, use index laws on the powers of 10."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can add, subtract, multiply and divide numbers in standard form."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Standard form -- Standard form is written as A × 10n where 1 ≤ A multiply or divide, use index laws on the powers of 10."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply/divide: deal with A and 10^n separately. Add/subtract: match the powers of 10 first.\n(a × 10m) × (b × 10n) = ab × 10m+n\nMultiply A values, add indices\n\nKey examples:\n  ✓ (3 × 10²) × (2 × 10³) = 6 × 105  (multiply A values, add powers)\n  ✓ (8 × 106) ÷ (4 × 10²) = 2 × 104  (divide A values, subtract powers)\n  ✓ (4 × 10³) + (3 × 10³) = 7 × 10³  (same power, add A values)\n  ✗ (3 × 10²) × (2 × 10³) = 6 × 106  (powers add, not multiply)\n  ✗ (4 × 10³) + (3 × 10²) = 7 × 10³  (must match powers first)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – multiplication\n  Calculate (4 × 10³) × (2 × 105)\n  Multiply A values: 4 × 2 = 8\n  Add powers: 3 + 5 = 8\n  Answer: 8 × 108\n  8 × 108\n  (Multiply the numbers, add the indices.)\n\nExample 2 – division\n  Calculate (9 × 107) ÷ (3 × 10³)\n  Divide A values: 9 ÷ 3 = 3\n  Subtract powers: 7 − 3 = 4\n  Answer: 3 × 104\n  3 × 104\n  (Divide the numbers, subtract the indices.)"
+    },
+    {
+      "id": "s5",
+      "title": "Multiplication",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate, giving your answer in standard form.\n\n(a) (3 × 10²) × (4 × 10³)\n(b) (2 × 105) × (3 × 104)\n(c) (5 × 10³) × (4 × 10²)\n(d) (7 × 104) × (2 × 106)"
+    },
+    {
+      "id": "s6",
+      "title": "Division",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate, giving your answer in standard form.\n\n(a) (8 × 106) ÷ (2 × 10³)\n(b) (9 × 108) ÷ (3 × 105)\n(c) (6 × 107) ÷ (4 × 10²)\n(d) (4.8 × 109) ÷ (1.2 × 104)"
+    },
+    {
+      "id": "s7",
+      "title": "Addition and subtraction",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate, giving your answer in standard form.\n\n(a) (4 × 10³) + (5 × 10³)\n(b) (7 × 105) − (2 × 105)\n(c) (6 × 104) + (8 × 10³)\n(d) (3.5 × 106) − (4 × 105)"
+    },
+    {
+      "id": "s8",
+      "title": "Mixed with adjustment",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate. Ensure answer is in standard form.\n\n(a) (8 × 10³) × (5 × 104)\n(b) (6 × 105) × (7 × 10²)\n(c) (3 × 10−2) × (4 × 105)\n(d) (2.5 × 104) × (4 × 10−2)"
+    },
+    {
+      "id": "s9",
+      "title": "Worded problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Answer in standard form.\n\n(a) Light travels 3 × 108 m/s. How far in 500 s?\n(b) A virus is 2.5 × 10−7 m. 4000 in a line?\n(c) Earth mass: 6 × 1024 kg. Moon: 7.3 × 1022 kg. Difference?\n(d) Population 6.7 × 107 shares 2.01 × 1012 equally. Each?\n(e) Area = (4 × 10³) × (2.5 × 10²). Find area."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ When multiplying in standard form, add the powers of 10\n✗ (3 × 10²) × (2 × 10³) = 6 × 106\n✓ If A ≥ 10 after calculation, adjust by increasing the power\n✗ You can add numbers in standard form by adding the A values regardless of power\n✓ To divide in standard form, subtract the powers"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nMultiplication:\n  (a) 1.2 × 106\n  (b) 6 × 109\n  (c) 2 × 106\n  (d) 1.4 × 1011\n\nDivision:\n  (a) 4 × 10³\n  (b) 3 × 10³\n  (c) 1.5 × 105\n  (d) 4 × 105\n\nAddition and subtraction:\n  (a) 9 × 10³\n  (b) 5 × 105\n  (c) 6.8 × 104\n  (d) 3.1 × 106\n\nMixed with adjustment:\n  (a) 4 × 108\n  (b) 4.2 × 108\n  (c) 1.2 × 104\n  (d) 1 × 10³\n\nWorded problems:\n  (a) 1.5 × 1011 m\n  (b) 1 × 10−3 m\n  (c) 5.927 × 1024 kg\n  (d) 3 × 104\n  (e) 1 × 106"
+    }
+  ]
+}
