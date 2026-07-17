@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Straight-Line Graphs",
+  "subtopic": "Gradient and y-intercept",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Gradient and y-intercept",
+  "subtitle": "Straight-Line Graphs · GCSE Maths",
+  "learning_objective": "I can calculate the gradient of a line and identify the y-intercept from a graph or coordinates.",
+  "key_vocab": [
+    {
+      "term": "gradient",
+      "definition": "The gradient measures how steep a line is: rise ÷ run. A positive gradient slopes upward; a negative gradient slopes downward."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the gradient of a line and identify the y-intercept from a graph or coordinates."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "gradient -- The gradient measures how steep a line is: rise ÷ run. A positive gradient slopes upward; a negative gradient slopes downward."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Gradient = change in y divided by change in x. Pick any two points on the line.\nm = y₂ - y₁ ÷ x₂ - x₁\nRise over run\n\nKey examples:\n  ✓ Gradient = (y₂ - y₁) ÷ (x₂ - x₁)  (rise over run)\n  ✓ Points (1, 3) and (4, 9): m = 6 ÷ 3 = 2  (change in y over change in x)\n  ✓ Horizontal line has gradient 0  (no rise)\n  ✗ Gradient = run ÷ rise  (it is rise ÷ run)\n  ✗ Vertical line has gradient 0  (it is undefined)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – from two points\n  Find the gradient of the line through (2, 3) and (5, 9).\n  Rise = 9 - 3 = 6\n  Run = 5 - 2 = 3\n  Gradient = 6 ÷ 3 = 2\n  m = 2\n  (Subtract y-values for rise, x-values for run.)\n\nExample 2 – negative gradient\n  Find the gradient of the line through (1, 7) and (4, 1).\n  Rise = 1 - 7 = -6\n  Run = 4 - 1 = 3\n  Gradient = -6 ÷ 3 = -2\n  m = -2\n  (A negative answer means the line slopes downward.)"
+    },
+    {
+      "id": "s5",
+      "title": "Gradient from two points",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate the gradient.\n\n(a) (1, 2) and (3, 8)\n(b) (0, 5) and (4, 13)\n(c) (2, 6) and (5, 6)\n(d) (1, 10) and (3, 4)"
+    },
+    {
+      "id": "s6",
+      "title": "Positive and negative gradients",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the gradient and state whether it slopes up or down.\n\n(a) (0, 0) and (4, 12)\n(b) (2, 9) and (5, 3)\n(c) (-1, 4) and (3, 12)\n(d) (0, 7) and (7, 0)"
+    },
+    {
+      "id": "s7",
+      "title": "Fractional gradients",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate the gradient. Leave as a fraction if needed.\n\n(a) (0, 1) and (4, 3)\n(b) (2, 5) and (8, 7)\n(c) (0, 6) and (3, 4)\n(d) (1, 2) and (5, 5)"
+    },
+    {
+      "id": "s8",
+      "title": "Finding the y-intercept",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the y-intercept using y = mx + c.\n\n(a) m = 2, passes through (3, 10)\n(b) m = -1, passes through (4, 1)\n(c) m = 3, passes through (2, 11)\n(d) m = &frac{1}{2}, passes through (6, 7)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed gradient problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Find m and c for the line through (0, -3) and (2, 1)\n(b) Line with m = -2 through (1, 5). Find c.\n(c) Points (3, 4) and (6, 4). Describe the line.\n(d) Is gradient (4-1)/(2-5) positive or negative?\n(e) Line through (-2, -3) and (4, 9). Find equation."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Gradient = (y2 - y1) / (x2 - x1)\n✗ Gradient = change in x over change in y\n✓ A negative gradient means the line slopes downward left to right\n✗ A vertical line has gradient zero\n✓ The y-intercept is found by substituting x = 0"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nGradient from two points:\n  (a) m = 3\n  (b) m = 2\n  (c) m = 0\n  (d) m = -3\n\nPositive and negative gradients:\n  (a) m = 3, slopes up\n  (b) m = -2, slopes down\n  (c) m = 2, slopes up\n  (d) m = -1, slopes down\n\nFractional gradients:\n  (a) m = &frac{1}{2}\n  (b) m = &frac{1}{3}\n  (c) m = -&frac{2}{3}\n  (d) m = &frac{3}{4}\n\nFinding the y-intercept:\n  (a) c = 4\n  (b) c = 5\n  (c) c = 5\n  (d) c = 4\n\nMixed gradient problems:\n  (a) m = 2, c = -3\n  (b) c = 7\n  (c) Horizontal, m = 0, c = 4\n  (d) Negative (= -1)\n  (e) y = 2x + 1"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Functions and Graphs",
+  "subtopic": "Sketching quadratic, cubic and reciprocal graphs",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Sketching quadratic, cubic and reciprocal graphs",
+  "subtitle": "Functions and Graphs · GCSE Maths",
+  "learning_objective": "I can recognise and sketch quadratic, cubic and reciprocal graphs from their equations.",
+  "key_vocab": [
+    {
+      "term": "Types of graphs",
+      "definition": "A quadratic graph (y = ax² + bx + c) forms a U-shape (parabola). A cubic graph (y = ax³) has an S-shape. A reciprocal graph (y = &frac{a}{x}) has two separate curves."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recognise and sketch quadratic, cubic and reciprocal graphs from their equations."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Types of graphs -- A quadratic graph (y = ax² + bx + c) forms a U-shape (parabola). A cubic graph (y = ax³) has an S-shape. A reciprocal graph (y = &frac{a}{x}) has two separate curves."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "The highest power of x tells you the shape: x² = parabola, x³ = cubic curve, &frac{1}{x} = reciprocal (hyperbola).\ny = ax² + bx + c\na determines direction, c is the y-intercept\n\nKey examples:\n  ✓ y = x² is a U-shaped parabola  (minimum at origin)\n  ✓ y = x³ passes through the origin with S-shape  (point of inflection)\n  ✓ y = &frac{1}{x} has two branches in Q1 and Q3  (asymptotes at axes)\n  ✗ y = x² is a straight line  (it is a curve)\n  ✗ y = &frac{1}{x} crosses the y-axis  (undefined at x = 0)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – quadratic graph\n  Sketch y = x² - 4\n  Shape: U-shaped parabola (positive x²)\n  y-intercept: when x = 0, y = -4\n  x-intercepts: x² = 4, so x = 2 and x = -2\n  U-shape crossing x-axis at (-2, 0) and (2, 0), vertex at (0, -4)\n  (The -4 shifts the parabola down by 4 units.)\n\nExample 2 – negative quadratic\n  Sketch y = -x² + 9\n  Shape: inverted U (negative x²)\n  y-intercept: (0, 9)\n  x-intercepts: x² = 9, so x = ±3\n  Inverted U with maximum at (0, 9), crossing at (-3, 0) and (3, 0)\n  (Negative coefficient of x² flips the parabola.)"
+    },
+    {
+      "id": "s5",
+      "title": "Identifying graph types",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State whether each equation gives a quadratic, cubic, or reciprocal graph.\n\n(a) y = 2x² + 1\n(b) y = x³ - 3\n(c) y = &frac{5}{x}\n(d) y = -x² + 4x"
+    },
+    {
+      "id": "s6",
+      "title": "Key features of quadratics",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the y-intercept and direction (U or inverted U).\n\n(a) y = x² + 3\n(b) y = -x² + 5\n(c) y = 2x² - 8\n(d) y = -3x²"
+    },
+    {
+      "id": "s7",
+      "title": "Finding x-intercepts",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find where each graph crosses the x-axis (set y = 0).\n\n(a) y = x² - 9\n(b) y = x² - 5x + 6\n(c) y = x³ - 4x\n(d) y = x² + 2x - 8"
+    },
+    {
+      "id": "s8",
+      "title": "Sketching from features",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "List the key features needed to sketch each graph.\n\n(a) y = x² - 2x - 3\n(b) y = x³\n(c) y = &frac{2}{x}\n(d) y = -x³"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed graph problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Answer each question about graphs.\n\n(a) How many turning points does y = x³ - 3x have?\n(b) What is the vertex of y = (x - 2)² + 1?\n(c) Does y = &frac{1}{x} have any lines of symmetry?\n(d) What happens to y = &frac{1}{x} as x gets very large?\n(e) Vertex of y = x² - 6x + 8?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ y = x² + 1 never crosses the x-axis\n✗ y = &frac{1}{x} passes through the origin\n✓ A negative coefficient of x² flips the parabola upside down\n✗ Cubic graphs always have three x-intercepts\n✓ The y-intercept is found by setting x = 0"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nIdentifying graph types:\n  (a) Quadratic\n  (b) Cubic\n  (c) Reciprocal\n  (d) Quadratic\n\nKey features of quadratics:\n  (a) y-int = 3, U-shape\n  (b) y-int = 5, inverted U\n  (c) y-int = -8, U-shape\n  (d) y-int = 0, inverted U\n\nFinding x-intercepts:\n  (a) x = 3, x = -3\n  (b) x = 2, x = 3\n  (c) x = 0, x = 2, x = -2\n  (d) x = 2, x = -4\n\nSketching from features:\n  (a) U-shape, y-int = -3, roots at x = 3 and x = -1\n  (b) S-curve through origin\n  (c) Reciprocal, branches in Q1 and Q3, asymptotes at axes\n  (d) Inverted S-curve through origin\n\nMixed graph problems:\n  (a) 2\n  (b) (2, 1)\n  (c) Yes: y = x and y = -x\n  (d) y approaches 0\n  (e) (3, -1)"
+    }
+  ]
+}

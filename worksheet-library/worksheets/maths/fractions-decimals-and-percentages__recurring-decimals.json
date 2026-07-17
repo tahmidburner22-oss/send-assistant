@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Fractions, Decimals and Percentages",
+  "subtopic": "Recurring decimals",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Recurring decimals",
+  "subtitle": "Fractions, Decimals and Percentages · GCSE Maths",
+  "learning_objective": "I can convert recurring decimals to fractions using algebraic methods.",
+  "key_vocab": [
+    {
+      "term": "Recurring decimals",
+      "definition": "Recurring decimals have one or more digits that REPEAT forever. We write a dot above the repeating digit(s): 0.3̇ means 0.333... and 0.1̇2̇ means 0.121212..."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can convert recurring decimals to fractions using algebraic methods."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Recurring decimals -- Recurring decimals have one or more digits that REPEAT forever. We write a dot above the repeating digit(s): 0.3̇ means 0.333... and 0.1̇2̇ means 0.121212..."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Let x = the recurring decimal. Multiply by 10 (or 100, 1000...) to shift the repeating block. Subtract to eliminate the recurring part. Solve for x.\nx = 0.2̇7̇ → 100x = 27.2̇7̇ → 99x = 27 → x = &frac{27}{99} = &frac{3}{11}\nMultiply, subtract, simplify\n\nKey examples:\n  ✓ 0.333... = ⅓  (recurring (one digit))\n  ✓ 0.272727... = &frac{3}{11}  (recurring (two digits))\n  ✓ 0.1666... = ⅙  (recurring (after 0.1))\n  ✗ 0.25 is recurring  (it terminates (= ¼))\n  ✗ 0.333... = &frac{33}{100}  (that equals 0.33 only)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – one repeating digit\n  Convert 0.4̇ to a fraction\n  Let x = 0.444...\n  10x = 4.444...\n  9x = 4, so x = 4/9\n  = 4/9\n  (One repeating digit: multiply by 10. Subtract x from 10x to get 9x = 4.)\n\nExample 2 – two repeating digits\n  Convert 0.6̇3̇ to a fraction\n  Let x = 0.636363...\n  100x = 63.636363...\n  99x = 63, so x = 63/99\n  = 7/11\n  (Two repeating digits: multiply by 100. Subtract: 99x = 63. Simplify: 63/99 = 7/11.)"
+    },
+    {
+      "id": "s5",
+      "title": "Identify the recurring part",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write the first 6 decimal places and underline the repeating block.\n\n(a) 0.7̇ = 0.______\n(b) 0.1̇8̇ = 0.______\n(c) 0.41̇ = 0.______\n(d) 0.5̇23̇ = 0.______"
+    },
+    {
+      "id": "s6",
+      "title": "One repeating digit → fraction",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert each recurring decimal to a fraction. Simplify where possible.\n\n(a) 0.2̇\n(b) 0.5̇\n(c) 0.8̇\n(d) 0.6̇"
+    },
+    {
+      "id": "s7",
+      "title": "Two repeating digits → fraction",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert each recurring decimal to a fraction. Use ×100 and subtract.\n\n(a) 0.2̇7̇\n(b) 0.4̇5̇\n(c) 0.0̇9̇\n(d) 0.7̇2̇"
+    },
+    {
+      "id": "s8",
+      "title": "Non-repeating start → fraction",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert each recurring decimal to a fraction. Careful: part of the decimal doesn’t repeat.\n\n(a) 0.13̇\n(b) 0.83̇\n(c) 0.23̇6̇\n(d) 0.41̇6̇"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed recurring decimal challenges",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Convert to fractions. Simplify fully.\n\n(a) 0.9̇\n(b) 0.1̇42857̇\n(c) 0.0̇3̇\n(d) 0.5̇4̇\n(e) 0.83̇"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 0.9̇ = 0.999... < 1\n✓ 0.1̇2̇ means multiply by 100 to shift the block\n✗ 0.3̇ = 3/10\n✓ 0.16̇ needs 100x − 10x to eliminate the recurring part\n✗ All fractions give terminating decimals"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nIdentify the recurring part:\n  (a) 0.777777\n  (b) 0.181818\n  (c) 0.411111\n  (d) 0.523523\n\nOne repeating digit → fraction:\n  (a) 2/9\n  (b) 5/9\n  (c) 8/9\n  (d) 6/9 = 2/3\n\nTwo repeating digits → fraction:\n  (a) 27/99 = 3/11\n  (b) 45/99 = 5/11\n  (c) 9/99 = 1/11\n  (d) 72/99 = 8/11\n\nNon-repeating start → fraction:\n  (a) 12/90 = 2/15\n  (b) 75/90 = 5/6\n  (c) check: 234/990\n  (d) check: 412/990\n\nMixed recurring decimal challenges:\n  (a) 9/9 = 1\n  (b) 1/7\n  (c) 3/99 = 1/33\n  (d) 54/99 = 6/11\n  (e) 5/6"
+    }
+  ]
+}

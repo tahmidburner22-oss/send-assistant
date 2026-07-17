@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Pythagoras' Theorem",
+  "subtopic": "Applying Pythagoras in 2D problems",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Applying Pythagoras in 2D problems",
+  "subtitle": "Pythagoras' Theorem · GCSE Maths",
+  "learning_objective": "I can apply Pythagoras' theorem to solve problems in 2D contexts.",
+  "key_vocab": [
+    {
+      "term": "Pythagoras' theorem",
+      "definition": "Pythagoras' theorem states a² + b² = c² where c is the hypotenuse (longest side, opposite the right angle)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can apply Pythagoras' theorem to solve problems in 2D contexts."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Pythagoras' theorem -- Pythagoras' theorem states a² + b² = c² where c is the hypotenuse (longest side, opposite the right angle)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Identify the right angle, label the hypotenuse (opposite it), then use a² + b² = c².\nc = √(a² + b²)\nHypotenuse = square root of (sum of squares)\n\nKey examples:\n  ✓ Distance between (0,0) and (3,4) = √(9+16) = 5  (coordinate distance)\n  ✓ Diagonal of rectangle 6 by 8 = √(36+64) = 10  (add squares)\n  ✓ Ladder 5m, base 3m from wall: height = √(25−9) = 4m  (subtract)\n  ✗ Diagonal of 6 by 8 rectangle = 6 + 8 = 14  (cannot just add sides)\n  ✗ a² + b² = c² means a + b = c  (must square then root)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – coordinate distance\n  Find the distance between A(1, 2) and B(4, 6).\n  Horizontal distance: 4 − 1 = 3\n  Vertical distance: 6 − 2 = 4\n  Distance = √(3² + 4²) = √(9 + 16) = √25 = 5\n  5 units\n  (The distance formula is just Pythagoras applied to coordinates.)\n\nExample 2 – diagonal of a rectangle\n  Find the diagonal of a rectangle 5 cm by 12 cm.\n  The diagonal is the hypotenuse of a right-angled triangle\n  d² = 5² + 12² = 25 + 144 = 169\n  d = √169 = 13 cm\n  13 cm\n  (The diagonal splits a rectangle into two right-angled triangles.)"
+    },
+    {
+      "id": "s5",
+      "title": "Coordinate distances",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the distance between each pair of points.\n\n(a) (0, 0) and (3, 4)\n(b) (1, 2) and (5, 5)\n(c) (0, 0) and (5, 12)\n(d) (2, 1) and (6, 4)"
+    },
+    {
+      "id": "s6",
+      "title": "Diagonals",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the diagonal of each rectangle.\n\n(a) 3 cm by 4 cm\n(b) 8 cm by 15 cm\n(c) 7 cm by 24 cm\n(d) 9 cm by 12 cm"
+    },
+    {
+      "id": "s7",
+      "title": "Ladder and ramp problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each real-life problem.\n\n(a) Ladder 13 m, base 5 m from wall. Height?\n(b) Ramp 5 m long, rises 3 m. Horizontal distance?\n(c) Flagpole 12 m, wire anchor 5 m away. Wire length?\n(d) Slide 15 m, height 9 m. Horizontal distance?"
+    },
+    {
+      "id": "s8",
+      "title": "Triangles and shapes",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the unknown measurement.\n\n(a) Isosceles triangle: base 8, equal sides 5. Height?\n(b) Equilateral triangle side 6. Height?\n(c) Square diagonal 10 cm. Side length?\n(d) Rhombus diagonals 6 and 8. Side length?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed 2D problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Answer each problem, giving answers to 1 d.p. where needed.\n\n(a) Ship sails 8 km East then 6 km North. Direct distance?\n(b) TV screen 40 cm by 30 cm. Diagonal?\n(c) Kite string 25 m, horizontal distance 7 m. Height?\n(d) Points (−2, 1) and (4, 9). Distance?\n(e) Right triangle: legs 7 cm and 9 cm. Hypotenuse?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ The hypotenuse is always the longest side\n✗ a² + b² = c means add and square root\n✓ To find a shorter side, subtract the squares then square root\n✗ Pythagoras works for all triangles\n✓ The distance formula uses Pythagoras' theorem"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCoordinate distances:\n  (a) 5\n  (b) 5\n  (c) 13\n  (d) 5\n\nDiagonals:\n  (a) 5 cm\n  (b) 17 cm\n  (c) 25 cm\n  (d) 15 cm\n\nLadder and ramp problems:\n  (a) 12 m\n  (b) 4 m\n  (c) 13 m\n  (d) 12 m\n\nTriangles and shapes:\n  (a) 3\n  (b) 5.20 (3 s.f.)\n  (c) 7.07 cm (3 s.f.)\n  (d) 5\n\nMixed 2D problems:\n  (a) 10 km\n  (b) 50 cm\n  (c) 24 m\n  (d) 10\n  (e) 11.4 cm"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Vectors",
+  "subtopic": "Writing and representing vectors",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Writing and representing vectors",
+  "subtitle": "Vectors · GCSE Maths",
+  "learning_objective": "I can write vectors using column notation and represent them on a grid.",
+  "key_vocab": [
+    {
+      "term": "vector",
+      "definition": "A vector describes a movement with both magnitude (size) and direction. We write column vectors as (x, y) where x is the horizontal movement and y is the vertical movement."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can write vectors using column notation and represent them on a grid."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "vector -- A vector describes a movement with both magnitude (size) and direction. We write column vectors as (x, y) where x is the horizontal movement and y is the vertical movement."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "A column vector gives horizontal then vertical displacement. Equal vectors have the same column vector regardless of starting point.\nvector = (horizontal, vertical)\nRight and up are positive; left and down are negative\n\nKey examples:\n  ✓ (3, 2) means 3 right and 2 up  (positive components)\n  ✓ (-1, 4) means 1 left and 4 up  (negative x means left)\n  ✓ (3, 2) and (3, 2) drawn at different points are equal  (same magnitude and direction)\n  ✗ (3, 2) means 3 up and 2 right  (x is horizontal (first), y is vertical (second))\n  ✗ (2, 5) and (-2, -5) are the same vector  (they have opposite directions)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – writing a column vector\n  Write the vector that moves from A(1, 3) to B(4, 7) as a column vector.\n  Horizontal: 4 - 1 = 3 (right)\n  Vertical: 7 - 3 = 4 (up)\n  Column vector: (3, 4)\n  (3, 4)\n  (Subtract the start coordinates from the end coordinates.)\n\nExample 2 – negative components\n  Write the vector from P(5, 6) to Q(2, 1).\n  Horizontal: 2 - 5 = -3 (left)\n  Vertical: 1 - 6 = -5 (down)\n  Column vector: (-3, -5)\n  (-3, -5)\n  (Negative values show movement left or down.)"
+    },
+    {
+      "id": "s5",
+      "title": "Writing column vectors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write each movement as a column vector.\n\n(a) 3 right, 5 up\n(b) 2 left, 4 up\n(c) 6 right, 1 down\n(d) 4 left, 3 down"
+    },
+    {
+      "id": "s6",
+      "title": "From coordinates",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the column vector from the first point to the second.\n\n(a) (1, 2) to (4, 6)\n(b) (5, 7) to (2, 3)\n(c) (0, 0) to (6, -2)\n(d) (3, 8) to (3, 1)"
+    },
+    {
+      "id": "s7",
+      "title": "Negative and zero components",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write the column vector.\n\n(a) (7, 4) to (7, 9)\n(b) (3, 5) to (-2, 5)\n(c) (-1, -3) to (2, -6)\n(d) (-4, 2) to (-1, -4)"
+    },
+    {
+      "id": "s8",
+      "title": "Drawing vectors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Starting from the given point, state the end point after applying the vector.\n\n(a) Start (2, 3), vector (4, 1)\n(b) Start (5, 6), vector (-3, 2)\n(c) Start (0, 4), vector (2, -4)\n(d) Start (7, 1), vector (-5, -1)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed vector problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Write the return vector (opposite) of (3, -2)\n(b) A to B is (4, 5). B to C is (1, -3). Find A to C.\n(c) P to Q is (-2, 6). What is Q to P?\n(d) Vector (a, 3) moves (2, 1) to (5, 4). Find a.\n(e) Are (4, -1) and (-4, 1) equal, opposite, or neither?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ (3, -2) means 3 right and 2 down\n✗ (3, -2) means 3 up and 2 left\n✓ Two vectors with the same column vector are equal regardless of position\n✗ (0, 5) means no movement at all\n✓ The negative of (a, b) is (-a, -b)"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nWriting column vectors:\n  (a) (3, 5)\n  (b) (-2, 4)\n  (c) (6, -1)\n  (d) (-4, -3)\n\nFrom coordinates:\n  (a) (3, 4)\n  (b) (-3, -4)\n  (c) (6, -2)\n  (d) (0, -7)\n\nNegative and zero components:\n  (a) (0, 5)\n  (b) (-5, 0)\n  (c) (3, -3)\n  (d) (3, -6)\n\nDrawing vectors:\n  (a) (6, 4)\n  (b) (2, 8)\n  (c) (2, 0)\n  (d) (2, 0)\n\nMixed vector problems:\n  (a) (-3, 2)\n  (b) (5, 2)\n  (c) (2, -6)\n  (d) 3\n  (e) Opposite"
+    }
+  ]
+}

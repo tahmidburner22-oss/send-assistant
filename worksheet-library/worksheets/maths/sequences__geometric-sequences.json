@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Sequences",
+  "subtopic": "Geometric sequences",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Geometric sequences",
+  "subtitle": "Sequences · GCSE Maths",
+  "learning_objective": "I can identify, generate, and find the nth term of geometric sequences.",
+  "key_vocab": [
+    {
+      "term": "geometric sequence",
+      "definition": "A geometric sequence has a constant common ratio (r) between consecutive terms. Each term is found by multiplying the previous term by r."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can identify, generate, and find the nth term of geometric sequences."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "geometric sequence -- A geometric sequence has a constant common ratio (r) between consecutive terms. Each term is found by multiplying the previous term by r."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Divide consecutive terms to find r. The nth term formula is un = arn−1.\nun = a × rn−1\na = first term, r = common ratio, n = term number\n\nKey examples:\n  ✓ 2, 6, 18, 54, ... (r = 3)  (multiply by 3)\n  ✓ 100, 50, 25, 12.5, ... (r = 0.5)  (multiply by &frac{1}{2})\n  ✓ un = 3 × 2n−1 gives 3, 6, 12, 24, ...  (a=3, r=2)\n  ✗ 2, 4, 6, 8, ... is geometric  (that is arithmetic (+2))\n  ✗ un = arn (should be n−1)  (exponent is n−1)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – finding the common ratio\n  Find the common ratio of 5, 15, 45, 135, ...\n  r = second ÷ first = 15 ÷ 5 = 3\n  Check: 45 ÷ 15 = 3, 135 ÷ 45 = 3\n  Common ratio r = 3\n  r = 3\n  (Divide any term by the previous term to find r.)\n\nExample 2 – finding the nth term\n  Find the 8th term of 2, 6, 18, 54, ...\n  a = 2, r = 3\n  u8 = 2 × 37\n  u8 = 2 × 2187 = 4374\n  u8 = 4374\n  (Use un = arn−1 with careful power calculation.)"
+    },
+    {
+      "id": "s5",
+      "title": "Finding the common ratio",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the common ratio.\n\n(a) 2, 10, 50, 250, ...\n(b) 81, 27, 9, 3, ...\n(c) 4, −8, 16, −32, ...\n(d) 1000, 100, 10, 1, ..."
+    },
+    {
+      "id": "s6",
+      "title": "Continuing sequences",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the next two terms.\n\n(a) 3, 6, 12, 24, ...\n(b) 5, 20, 80, 320, ...\n(c) 256, 128, 64, 32, ...\n(d) 1, −3, 9, −27, ..."
+    },
+    {
+      "id": "s7",
+      "title": "Finding specific terms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use un = arn−1 to find the stated term.\n\n(a) a = 2, r = 3. Find u6.\n(b) a = 5, r = 2. Find u8.\n(c) a = 100, r = 0.5. Find u5.\n(d) a = 1, r = 10. Find u4."
+    },
+    {
+      "id": "s8",
+      "title": "Writing nth term formulas",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write the nth term formula for each sequence.\n\n(a) 4, 12, 36, 108, ...\n(b) 7, 14, 28, 56, ...\n(c) 500, 100, 20, 4, ...\n(d) 1, −2, 4, −8, ..."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed geometric problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Answer each question.\n\n(a) 3rd term = 12, r = 2. Find the 1st term.\n(b) 1st term = 5, 4th term = 40. Find r.\n(c) Sequence: 2, 6, 18, ... Which term is 1458?\n(d) a = 1000, r = 0.8. Find u3.\n(e) Sum of first 4 terms of 1, 2, 4, 8, ..."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ In a geometric sequence, you multiply by the same ratio each time\n✗ 2, 4, 6, 8 is a geometric sequence\n✓ The nth term is un = arn−1\n✗ The nth term is un = arn\n✓ A negative ratio causes terms to alternate in sign"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nFinding the common ratio:\n  (a) r = 5\n  (b) r = &frac{1}{3}\n  (c) r = −2\n  (d) r = 0.1\n\nContinuing sequences:\n  (a) 48, 96\n  (b) 1280, 5120\n  (c) 16, 8\n  (d) 81, −243\n\nFinding specific terms:\n  (a) 486\n  (b) 640\n  (c) 6.25\n  (d) 1000\n\nWriting nth term formulas:\n  (a) un = 4 × 3n−1\n  (b) un = 7 × 2n−1\n  (c) un = 500 × (&frac{1}{5})n−1\n  (d) un = (−2)n−1\n\nMixed geometric problems:\n  (a) a = 3\n  (b) r = 2\n  (c) u7\n  (d) 640\n  (e) 15"
+    }
+  ]
+}

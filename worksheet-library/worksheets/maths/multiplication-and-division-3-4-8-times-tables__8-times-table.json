@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (3, 4, 8 Times Tables)",
+  "subtopic": "8 times table",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "8 times table",
+  "subtitle": "Multiplication and Division (3, 4, 8 Times Tables) · KS3 Maths",
+  "learning_objective": "I can recall and use the 8 times table to multiply and divide.",
+  "key_vocab": [
+    {
+      "term": "8 times table",
+      "definition": "The 8 times table is a list of multiples of 8: numbers we get when we count in 8s. Multiples of 8 are always even, and you can find them by doubling the 4 times table."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recall and use the 8 times table to multiply and divide."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "8 times table -- The 8 times table is a list of multiples of 8: numbers we get when we count in 8s. Multiples of 8 are always even, and you can find them by doubling the 4 times table."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiplication is repeated addition. 8 × 4 means ‘4 groups of 8’. You can also think of it as ‘8 groups of 4’ — the answer is the same.\n8 + 8 + 8 + 8 = 8×4 = 32\nFour groups of 8\n\nKey examples:\n  ✓ 1 × 8 = 8  (starting point)\n  ✓ 2 × 8 = 16  (double)\n  ✓ 5 × 8 = 40  (halfway to 10)\n  ✗ 3 × 8 = 25  (wrong)\n  ✗ 8 × 0 = 8  (any × 0 = 0)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – single multiplication\n  Calculate 4 × 8\n  4 groups of 8\n  8 + 8 + 8 + 8\n  = 32\n  = 32\n  (Skip-count in 8s 4 times to reach 32.)\n\nExample 2 – missing factor\n  Solve: ___ × 8 = 48\n  How many 8s in 48?\n  Count up: 8, 16, 24, ...\n  = 6\n  = 6\n  (Divide: 48 ÷ 8 = 6.)"
+    },
+    {
+      "id": "s5",
+      "title": "Recall the 8 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete the calculation. Skip-count in 8s if you need to.\n\n(a) 3 × 8 = ___\n(b) 6 × 8 = ___\n(c) 8 × 8 = ___\n(d) 10 × 8 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "Missing factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing number.\n\n(a) ___ × 8 = 32\n(b) ___ × 8 = 56\n(c) ___ × 8 = 72\n(d) ___ × 8 = 88"
+    },
+    {
+      "id": "s7",
+      "title": "Dividing by 8",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the 8 times table to divide. 8 × ___ = ?\n\n(a) 16 ÷ 8 = ___\n(b) 40 ÷ 8 = ___\n(c) 64 ÷ 8 = ___\n(d) 96 ÷ 8 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "Two-step problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work out the answer step by step.\n\n(a) (2×8) + (3×8) = ___\n(b) (5×8) − (2×8) = ___\n(c) 32 ÷ 8 + 6 = ___\n(d) (8×8) × 2 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed practice",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use what you know about the 8 times table.\n\n(a) 8 × 7 = ___\n(b) 96 ÷ 8 = ___\n(c) ___ × 8 = 48\n(d) 64 ÷ 8 = ___\n(e) 72 ÷ 8 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 8 × 0 = 8\n✓ 8 × 1 = 8\n✓ 32 ÷ 8 = 4\n✓ 8 × 10 = 80 (i.e. 80)\n✗ 8 × 7 = 57"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRecall the 8 times table:\n  (a) 24\n  (b) 48\n  (c) 64\n  (d) 80\n\nMissing factors:\n  (a) 4\n  (b) 7\n  (c) 9\n  (d) 11\n\nDividing by 8:\n  (a) 2\n  (b) 5\n  (c) 8\n  (d) 12\n\nTwo-step problems:\n  (a) 40\n  (b) 24\n  (c) 10\n  (d) 128\n\nMixed practice:\n  (a) 56\n  (b) 12\n  (c) 6\n  (d) 8\n  (e) 9"
+    }
+  ]
+}

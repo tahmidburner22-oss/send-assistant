@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Linear Inequalities",
+  "subtopic": "Double inequalities",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Double inequalities",
+  "subtitle": "Linear Inequalities · GCSE Maths",
+  "learning_objective": "I can solve and represent double (compound) inequalities.",
+  "key_vocab": [
+    {
+      "term": "double inequality",
+      "definition": "A double inequality has the variable between two bounds, e.g. 3 greater than 3 AND less than or equal to 7 simultaneously."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve and represent double (compound) inequalities."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "double inequality -- A double inequality has the variable between two bounds, e.g. 3 greater than 3 AND less than or equal to 7 simultaneously."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Whatever you do to the middle, do the same to the left and right. If you multiply/divide by a negative, reverse both inequality signs.\na bx + c ≤ d ⇒ &frac{a − c}{b} x ≤ &frac{d − c}{b}\nSubtract c, then divide by b (all three parts)\n\nKey examples:\n  ✓ 2 < x ≤ 5 means x can be 3, 4, or 5 (integers)  (inclusive of 5)\n  ✓ −1 ≤ x < 4 includes −1 but not 4  (closed/open)\n  ✓ 1 < 2x + 1 ≤ 9 gives 0 < x ≤ 4  (solve all three parts)\n  ✗ 2 < x ≤ 5 means x can be 2  (strict inequality excludes 2)\n  ✗ To solve, only work on the middle part  (must do same to all three parts)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – listing integers\n  List the integers satisfying −2 < x ≤ 3\n  x must be greater than −2 (not including −2)\n  x must be less than or equal to 3\n  Integers: −1, 0, 1, 2, 3\n  −1, 0, 1, 2, 3\n  (Open circle at −2 (not included), closed at 3 (included).)\n\nExample 2 – solving a double inequality\n  Solve 4 < 2x + 2 ≤ 10\n  Subtract 2 from all parts: 2 < 2x ≤ 8\n  Divide all parts by 2: 1 < x ≤ 4\n  Solution: 1 < x ≤ 4\n  1 < x ≤ 4\n  (Perform identical operations on all three parts.)"
+    },
+    {
+      "id": "s5",
+      "title": "Listing integers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "List all integers satisfying each inequality.\n\n(a) 1 < x ≤ 5\n(b) −3 ≤ x < 2\n(c) 0 < x < 4\n(d) −1 ≤ x ≤ 3"
+    },
+    {
+      "id": "s6",
+      "title": "Solving (add/subtract)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each double inequality.\n\n(a) 3 < x + 1 ≤ 7\n(b) 1 ≤ x − 2 < 5\n(c) −4 < x + 3 ≤ 6\n(d) 0 ≤ x − 5 < 3"
+    },
+    {
+      "id": "s7",
+      "title": "Solving (multiply/divide)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each double inequality.\n\n(a) 4 < 2x ≤ 10\n(b) 6 ≤ 3x < 15\n(c) 2 < &frac{x}{2} ≤ 5\n(d) 1 < 4x ≤ 20"
+    },
+    {
+      "id": "s8",
+      "title": "Two-step solving",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve and list integer solutions.\n\n(a) 5 < 2x + 1 ≤ 11\n(b) 1 ≤ 3x − 2 < 10\n(c) −3 < 2x + 1 ≤ 7\n(d) 4 ≤ 5x − 1 < 19"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed and harder",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each inequality fully.\n\n(a) −6 ≤ −3x < 9\n(b) 7 < 4x − 1 ≤ 19\n(c) −5 ≤ 2x + 3 < 11\n(d) 0 < &frac{x + 1}{2} ≤ 3\n(e) −8 < −2(x − 1) ≤ 6"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 2 < x ≤ 5 means x can be 3, 4, or 5 (integers)\n✗ 2 < x ≤ 5 includes 2\n✓ Dividing by a negative reverses both inequality signs\n✗ You only need to solve the right-hand inequality\n✓ A double inequality can be split into two separate inequalities"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nListing integers:\n  (a) 2, 3, 4, 5\n  (b) −3, −2, −1, 0, 1\n  (c) 1, 2, 3\n  (d) −1, 0, 1, 2, 3\n\nSolving (add/subtract):\n  (a) 2 < x ≤ 6\n  (b) 3 ≤ x < 7\n  (c) −7 < x ≤ 3\n  (d) 5 ≤ x < 8\n\nSolving (multiply/divide):\n  (a) 2 < x ≤ 5\n  (b) 2 ≤ x < 5\n  (c) 4 < x ≤ 10\n  (d) &frac{1}{4} < x ≤ 5\n\nTwo-step solving:\n  (a) 2 < x ≤ 5; integers 3, 4, 5\n  (b) 1 ≤ x < 4; integers 1, 2, 3\n  (c) −2 < x ≤ 3; integers −1, 0, 1, 2, 3\n  (d) 1 ≤ x < 4; integers 1, 2, 3\n\nMixed and harder:\n  (a) −3 < x ≤ 2\n  (b) 2 < x ≤ 5\n  (c) −4 ≤ x < 4\n  (d) −1 < x ≤ 5\n  (e) −2 ≤ x < 5"
+    }
+  ]
+}

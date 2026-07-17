@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Volume and Surface Area",
+  "subtopic": "Surface area of prisms",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Surface area of prisms",
+  "subtitle": "Volume and Surface Area · GCSE Maths",
+  "learning_objective": "I can calculate the surface area of prisms by finding the area of each face.",
+  "key_vocab": [
+    {
+      "term": "prism",
+      "definition": "A prism is a 3D shape with a uniform cross-section. Its surface area is the sum of the areas of all its faces: two identical end faces plus the rectangular side faces."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the surface area of prisms by finding the area of each face."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "prism -- A prism is a 3D shape with a uniform cross-section. Its surface area is the sum of the areas of all its faces: two identical end faces plus the rectangular side faces."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Surface area of a prism = 2 times the end face area plus the lateral (side) area. The lateral area equals perimeter of cross-section times length.\nSA = 2A + P × l\nA = area of end face, P = perimeter of end, l = length of prism\n\nKey examples:\n  ✓ Cuboid: SA = 2(lw + lh + wh)  (three pairs of rectangular faces)\n  ✓ Triangular prism: 2 triangles + 3 rectangles  (count all faces)\n  ✓ SA = 2A + Ph (A = end area, P = perimeter, h = length)  (general prism formula)\n  ✗ SA = area of cross-section × length  (that gives volume, not surface area)\n  ✗ A triangular prism has 4 faces  (it has 5 faces: 2 triangles + 3 rectangles)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – cuboid\n  Find the surface area of a cuboid 6 cm by 4 cm by 3 cm.\n  Three pairs of faces: 6×4 = 24, 6×3 = 18, 4×3 = 12\n  Double each: 48 + 36 + 24\n  SA = 108 cm²\n  108 cm²\n  (A cuboid has three different pairs of rectangular faces.)\n\nExample 2 – triangular prism\n  A triangular prism has a right-angled triangle cross-section (base 6, height 8, hypotenuse 10 cm) and length 12 cm. Find the SA.\n  Two triangles: 2 × ½ × 6 × 8 = 48 cm²\n  Three rectangles: 6×12 + 8×12 + 10×12 = 72 + 96 + 120 = 288 cm²\n  SA = 48 + 288 = 336 cm²\n  336 cm²\n  (Find all five faces: two triangles and three rectangles.)"
+    },
+    {
+      "id": "s5",
+      "title": "Cuboids",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the surface area of each cuboid.\n\n(a) 5 cm × 3 cm × 2 cm\n(b) 8 cm × 4 cm × 3 cm\n(c) 10 cm × 6 cm × 4 cm\n(d) 7 cm × 7 cm × 7 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Triangular prisms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the surface area of each triangular prism.\n\n(a) Triangle: base 6, height 4, hyp 5 cm. Length 10 cm.\n(b) Triangle: base 8, height 3, hyp 5 cm. Length 12 cm.\n(c) Triangle: base 5, height 12, hyp 13 cm. Length 8 cm.\n(d) Equilateral triangle side 6 cm. Length 10 cm."
+    },
+    {
+      "id": "s7",
+      "title": "Using SA = 2A + Pl",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Given the cross-section area A, perimeter P, and length l, find the SA.\n\n(a) A = 15 cm², P = 20 cm, l = 8 cm\n(b) A = 24 cm², P = 22 cm, l = 10 cm\n(c) A = 30 cm², P = 28 cm, l = 6 cm\n(d) A = 18 cm², P = 18 cm, l = 12 cm"
+    },
+    {
+      "id": "s8",
+      "title": "Trapezoidal prisms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the surface area of each trapezoidal prism.\n\n(a) Parallel sides 4, 8 cm; height 3 cm; slant sides 5 cm each; length 10 cm\n(b) Parallel sides 6, 10 cm; height 4 cm; slant sides 5 cm each; length 12 cm\n(c) Parallel sides 3, 7 cm; height 3 cm; slant sides 4 cm each; length 9 cm\n(d) Parallel sides 5, 11 cm; height 4 cm; slant sides 5 cm each; length 14 cm"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed prism problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Cube with side 5 cm. SA?\n(b) Triangular prism: isosceles triangle base 10, equal sides 13, height 12 cm. Length 20 cm.\n(c) Cuboid SA = 340 cm². If l = 10, w = 5, find h.\n(d) A pentagonal prism: end area 45 cm², perimeter 30 cm, length 8 cm.\n(e) Hexagonal prism: end area 54 cm², perimeter 36 cm, length 10 cm."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ SA of a prism = 2 × end area + perimeter × length\n✗ SA of a prism = cross-section area × length\n✓ A triangular prism has 5 faces\n✗ All faces of a prism are rectangles\n✓ To find SA you must add the area of every single face"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCuboids:\n  (a) 62 cm²\n  (b) 136 cm²\n  (c) 248 cm²\n  (d) 294 cm²\n\nTriangular prisms:\n  (a) 184 cm²\n  (b) 216 cm²\n  (c) 308 cm²\n  (d) 211.2 cm²\n\nUsing SA = 2A + Pl:\n  (a) 190 cm²\n  (b) 268 cm²\n  (c) 228 cm²\n  (d) 252 cm²\n\nTrapezoidal prisms:\n  (a) 256 cm²\n  (b) 440 cm²\n  (c) 192 cm²\n  (d) 532 cm²\n\nMixed prism problems:\n  (a) 150 cm²\n  (b) 840 cm²\n  (c) 6 cm\n  (d) 330 cm²\n  (e) 468 cm²"
+    }
+  ]
+}

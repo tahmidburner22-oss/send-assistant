@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Fractions — Secondary",
+  "subtopic": "Simplifying algebraic fractions",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Simplifying algebraic fractions",
+  "subtitle": "Fractions — Secondary · GCSE Maths",
+  "learning_objective": "I can simplify algebraic fractions by factorising and cancelling common factors.",
+  "key_vocab": [
+    {
+      "term": "simplify",
+      "definition": "To simplify an algebraic fraction, factorise the numerator and denominator, then cancel common factors."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can simplify algebraic fractions by factorising and cancelling common factors."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "simplify -- To simplify an algebraic fraction, factorise the numerator and denominator, then cancel common factors."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Factorise numerator and denominator completely, then cancel any factors that appear in both.\n&frac{x² − 4}{x + 2} = &frac{(x+2)(x−2)}{x+2} = x − 2\nCancel the common factor (x + 2)\n\nKey examples:\n  ✓ &frac{4x}{8} = &frac{x}{2}  (divide by 4)\n  ✓ &frac{x²+x}{x} = x + 1  (factorise and cancel x)\n  ✓ &frac{x²−4}{x+2} = x − 2  (difference of two squares)\n  ✗ &frac{x+3}{x+5} = &frac{3}{5}  (cannot cancel x from a sum)\n  ✗ &frac{x²+1}{x} = x + 1  (x²+1 does not factorise over x)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – common numerical factor\n  Simplify &frac{6x}{9}\n  HCF of 6 and 9 is 3\n  Divide both by 3\n  &frac{6x}{9} = &frac{2x}{3}\n  &frac{2x}{3}\n  (Divide numerator and denominator by their HCF.)\n\nExample 2 – common variable factor\n  Simplify &frac{x² + 3x}{x}\n  Factorise numerator: x(x + 3)\n  Rewrite: &frac{x(x + 3)}{x}\n  Cancel x: = x + 3\n  = x + 3\n  (Factorise the numerator to reveal the common factor.)"
+    },
+    {
+      "id": "s5",
+      "title": "Common numerical factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify each fraction.\n\n(a) &frac{8x}{12}\n(b) &frac{15x}{5}\n(c) &frac{10x²}{2x}\n(d) &frac{12x²}{4x}"
+    },
+    {
+      "id": "s6",
+      "title": "Factorising the numerator",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Factorise and simplify.\n\n(a) &frac{x² + 2x}{x}\n(b) &frac{3x + 6}{3}\n(c) &frac{x² − 5x}{x}\n(d) &frac{2x² + 4x}{2x}"
+    },
+    {
+      "id": "s7",
+      "title": "Difference of two squares",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Simplify using DOTS.\n\n(a) &frac{x² − 4}{x + 2}\n(b) &frac{x² − 16}{x − 4}\n(c) &frac{x² − 25}{x + 5}\n(d) &frac{x² − 1}{x + 1}"
+    },
+    {
+      "id": "s8",
+      "title": "Quadratic numerator",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Factorise and simplify.\n\n(a) &frac{x² + 4x + 3}{x + 1}\n(b) &frac{x² + 7x + 12}{x + 3}\n(c) &frac{x² − x − 6}{x + 2}\n(d) &frac{x² + 2x − 8}{x − 2}"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed simplification",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Simplify each algebraic fraction fully.\n\n(a) &frac{5x + 10}{x + 2}\n(b) &frac{x² − 9}{x² + 6x + 9}\n(c) &frac{2x² − 8}{2x + 4}\n(d) &frac{x² + x − 12}{x² − 16}\n(e) &frac{x² − 6x + 9}{x² − 9}"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ &frac{x² − 4}{x + 2} = x − 2\n✗ &frac{x + 3}{x + 5} = &frac{3}{5}\n✓ &frac{x² + 3x}{x} = x + 3\n✗ &frac{x² + 4}{x + 2} = x + 2\n✓ You must factorise before cancelling"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCommon numerical factors:\n  (a) &frac{2x}{3}\n  (b) 3x\n  (c) 5x\n  (d) 3x\n\nFactorising the numerator:\n  (a) x + 2\n  (b) x + 2\n  (c) x − 5\n  (d) x + 2\n\nDifference of two squares:\n  (a) x − 2\n  (b) x + 4\n  (c) x − 5\n  (d) x − 1\n\nQuadratic numerator:\n  (a) x + 3\n  (b) x + 4\n  (c) x − 3\n  (d) x + 4\n\nMixed simplification:\n  (a) 5\n  (b) &frac{x − 3}{x + 3}\n  (c) x − 2\n  (d) &frac{x − 3}{x − 4}\n  (e) &frac{x − 3}{x + 3}"
+    }
+  ]
+}

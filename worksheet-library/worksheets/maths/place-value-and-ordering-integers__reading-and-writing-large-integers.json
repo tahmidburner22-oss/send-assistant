@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Place Value and Ordering Integers",
+  "subtopic": "Reading and writing large integers",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Reading and writing large integers",
+  "subtitle": "Place Value and Ordering Integers · KS3 Maths",
+  "learning_objective": "I can read, write and compare large integers up to millions using place value.",
+  "key_vocab": [
+    {
+      "term": "Large integers",
+      "definition": "Place value tells us the value of each digit based on its position. Large numbers use thousands, millions, and billions columns."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can read, write and compare large integers up to millions using place value."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Large integers -- Place value tells us the value of each digit based on its position. Large numbers use thousands, millions, and billions columns."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Use place value columns: ones, tens, hundreds, thousands, ten-thousands, hundred-thousands, millions.\n2,456,789\n2 millions, 456 thousands, 789 ones\n\nKey examples:\n  ✓ 3,500,000 = three million five hundred thousand  (reading correctly)\n  ✓ 45,000 has 4 in the ten-thousands column  (place value)\n  ✓ 1,000,000 = one million  (six zeros)\n  ✗ 3,500,000 = thirty-five thousand  (wrong place value)\n  ✗ 1,000,000 has 5 zeros  (it has 6 zeros)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – reading a large number\n  Write 4,250,000 in words.\n  4 is in the millions column\n  250 is in the thousands\n  Four million two hundred and fifty thousand\n  = Four million two hundred and fifty thousand\n  (Read from left to right using place value.)\n\nExample 2 – writing in figures\n  Write seven hundred and thirty-two thousand in figures.\n  Seven hundred and thirty-two thousand = 732 thousand\n  = 732,000\n  Add three zeros for thousands\n  = 732,000\n  (Match each word to its place value position.)"
+    },
+    {
+      "id": "s5",
+      "title": "Writing numbers in words",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write each number in words.\n\n(a) 35,000\n(b) 420,000\n(c) 1,500,000\n(d) 7,080,000"
+    },
+    {
+      "id": "s6",
+      "title": "Writing numbers in figures",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write each number in figures.\n\n(a) Sixty thousand\n(b) Three hundred and forty-five thousand\n(c) Two million\n(d) Nine million, two hundred thousand"
+    },
+    {
+      "id": "s7",
+      "title": "Place value of digits",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State the value of the underlined digit (shown in brackets).\n\n(a) The 5 in 2,500,000\n(b) The 3 in 4,350,000\n(c) The 8 in 8,040,000\n(d) The 7 in 1,070,500"
+    },
+    {
+      "id": "s8",
+      "title": "Ordering large numbers",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Put in order from smallest to largest.\n\n(a) 45000, 54000, 40500, 50400\n(b) 1200000, 210000, 2100000, 120000\n(c) 3050000, 3500000, 305000, 350000\n(d) 999999, 1000000, 99999, 1000001"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed large number problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) Write 2.5 million in figures\n(b) How many thousands in 3,400,000?\n(c) Round 4,678,000 to the nearest million\n(d) What is 100,000 more than 2,950,000?\n(e) Write 850,000 in words"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 3,500,000 is three million five hundred thousand\n✗ 1,000,000 has 5 zeros\n✓ The 4 in 4,200,000 is worth 4 million\n✗ 450,000 is bigger than 1,000,000\n✓ We read large numbers from left to right"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nWriting numbers in words:\n  (a) Thirty-five thousand\n  (b) Four hundred and twenty thousand\n  (c) One million five hundred thousand\n  (d) Seven million and eighty thousand\n\nWriting numbers in figures:\n  (a) 60,000\n  (b) 345,000\n  (c) 2,000,000\n  (d) 9,200,000\n\nPlace value of digits:\n  (a) 500,000\n  (b) 300,000\n  (c) 8,000,000\n  (d) 70,000\n\nOrdering large numbers:\n  (a) 40500, 45000, 50400, 54000\n  (b) 120000, 210000, 1200000, 2100000\n  (c) 305000, 350000, 3050000, 3500000\n  (d) 99999, 999999, 1000000, 1000001\n\nMixed large number problems:\n  (a) 2,500,000\n  (b) 3400\n  (c) 5,000,000\n  (d) 3,050,000\n  (e) Eight hundred and fifty thousand"
+    }
+  ]
+}

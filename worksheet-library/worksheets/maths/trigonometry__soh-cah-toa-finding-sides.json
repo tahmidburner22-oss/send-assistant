@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Trigonometry",
+  "subtopic": "SOH CAH TOA — finding sides",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "SOH CAH TOA — finding sides",
+  "subtitle": "Trigonometry · GCSE Maths",
+  "learning_objective": "I can use trigonometric ratios to find unknown side lengths in right-angled triangles.",
+  "key_vocab": [
+    {
+      "term": "unknown side",
+      "definition": "To find an unknown side, label the sides (O, A, H) relative to the given angle, then use the appropriate ratio: SOH, CAH, or TOA."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use trigonometric ratios to find unknown side lengths in right-angled triangles."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "unknown side -- To find an unknown side, label the sides (O, A, H) relative to the given angle, then use the appropriate ratio: SOH, CAH, or TOA."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Label sides O, A, H. Choose the ratio involving the known side and the unknown side. Rearrange to find the unknown.\nopp = hyp × sin θ\nSimilarly: adj = hyp × cosθ, opp = adj × tanθ\n\nKey examples:\n  ✓ hyp = 10, angle = 30°: opp = 10 sin 30° = 5  (multiply hyp by sin)\n  ✓ adj = 6, angle = 45°: opp = 6 tan 45° = 6  (multiply adj by tan)\n  ✓ opp = 8, angle = 30°: hyp = 8 ÷ sin 30° = 16  (divide by sin)\n  ✗ opp = hyp ÷ sinθ  (opp = hyp × sinθ)\n  ✗ sin 30° = adj/hyp  (sin = opp/hyp, cos = adj/hyp)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – finding the opposite\n  Angle = 30°, hypotenuse = 12. Find the opposite.\n  Need opp, have hyp and angle: use sin\n  sin 30° = opp/12\n  opp = 12 × sin 30° = 12 × 0.5 = 6\n  opp = 6\n  (Multiply the hypotenuse by sin of the angle.)\n\nExample 2 – finding the adjacent\n  Angle = 60°, hypotenuse = 10. Find the adjacent.\n  Need adj, have hyp: use cos\n  cos 60° = adj/10\n  adj = 10 × cos 60° = 10 × 0.5 = 5\n  adj = 5\n  (Multiply hypotenuse by cos.)"
+    },
+    {
+      "id": "s5",
+      "title": "Finding opposite (using sin)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the opposite side.\n\n(a) hyp = 10, angle = 30°\n(b) hyp = 8, angle = 45°\n(c) hyp = 14, angle = 60°\n(d) hyp = 20, angle = 30°"
+    },
+    {
+      "id": "s6",
+      "title": "Finding adjacent (using cos)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the adjacent side.\n\n(a) hyp = 12, angle = 60°\n(b) hyp = 16, angle = 45°\n(c) hyp = 6, angle = 30°\n(d) hyp = 24, angle = 60°"
+    },
+    {
+      "id": "s7",
+      "title": "Finding hypotenuse",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the hypotenuse.\n\n(a) opp = 4, angle = 30°\n(b) adj = 5, angle = 60°\n(c) opp = 6, angle = 45°\n(d) adj = 9, angle = 30°"
+    },
+    {
+      "id": "s8",
+      "title": "Using tan",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the unknown side using tan.\n\n(a) adj = 5, angle = 45°. Find opp.\n(b) opp = 8, angle = 45°. Find adj.\n(c) adj = 4, angle = 60°. Find opp.\n(d) opp = 10, angle = 30°. Find adj."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems (1 dp)",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Find the unknown side. Round to 1 dp where needed.\n\n(a) hyp = 15, angle = 35°. Find opp.\n(b) adj = 7, angle = 50°. Find opp.\n(c) opp = 9, angle = 40°. Find hyp.\n(d) hyp = 20, angle = 55°. Find adj.\n(e) adj = 12, angle = 65°. Find hyp."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ opp = hyp × sinθ\n✗ opp = hyp ÷ sinθ\n✓ adj = hyp × cosθ\n✗ sinθ gives the adjacent side\n✓ hyp = opp ÷ sinθ"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nFinding opposite (using sin):\n  (a) 5\n  (b) 4√2\n  (c) 7√3\n  (d) 10\n\nFinding adjacent (using cos):\n  (a) 6\n  (b) 8√2\n  (c) 3√3\n  (d) 12\n\nFinding hypotenuse:\n  (a) 8\n  (b) 10\n  (c) 6√2\n  (d) 6√3\n\nUsing tan:\n  (a) 5\n  (b) 8\n  (c) 4√3\n  (d) 10√3\n\nMixed problems (1 dp):\n  (a) 8.6\n  (b) 8.3\n  (c) 14.0\n  (d) 11.5\n  (e) 28.4"
+    }
+  ]
+}

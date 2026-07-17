@@ -3,26 +3,14 @@
   "topic": "Simultaneous Equations",
   "subtopic": "Non-linear simultaneous equations",
   "yearGroup": "Year 11",
-  "tier": "higher",
-  "title": "Non-Linear Simultaneous Equations",
-  "subtitle": "Simultaneous Equations · GCSE Higher (Grade 8–9)",
-  "learning_objective": "Solve a pair of equations where one is linear (a straight line) and one is non-linear (a quadratic or a circle), using substitution. Recognise that there are usually two solution points and find both x values with their matching y values.",
+  "tier": "mixed",
+  "title": "Non-linear simultaneous equations",
+  "subtitle": "Simultaneous Equations · GCSE Maths",
+  "learning_objective": "I can solve simultaneous equations where one equation is linear and one is quadratic.",
   "key_vocab": [
     {
-      "term": "Simultaneous equations",
-      "definition": "Two or more equations that are true at the same time; the solution is the point(s) where they meet."
-    },
-    {
-      "term": "Substitution",
-      "definition": "Replacing one variable using one equation so the other equation has a single unknown."
-    },
-    {
-      "term": "Non-linear",
-      "definition": "An equation whose graph is a curve (e.g. a quadratic or a circle) rather than a straight line."
-    },
-    {
-      "term": "Surd form",
-      "definition": "An exact answer left with a root sign, e.g. (−1 + √17)/2, rather than a rounded decimal."
+      "term": "Non-linear simultaneous equations",
+      "definition": "Non-linear simultaneous equations involve one linear equation and one equation with a squared term (e.g. circle or quadratic). Use substitution to solve."
     }
   ],
   "sections": [
@@ -30,108 +18,69 @@
       "id": "s1",
       "title": "Learning Objective",
       "type": "objective",
-      "content": "Solve a pair of equations where one is a straight line (linear) and one is a curve (quadratic or circle) using substitution. Most pairs have two answer points — find both x values and the y that goes with each. Write each answer as a coordinate (x, y)."
+      "content": "I can solve simultaneous equations where one equation is linear and one is quadratic."
     },
     {
       "id": "s2",
       "title": "Key Words",
       "type": "vocabulary",
-      "content": "Simultaneous equations — equations that are true at the same time; the solution is where the graphs meet.\nSubstitution — replacing y (or x) using one equation so the other has a single unknown.\nNon-linear — an equation whose graph is a curve (quadratic or circle).\nSurd form — an exact answer left with a root sign, e.g. (−1 + √17)/2."
+      "content": "Non-linear simultaneous equations -- Non-linear simultaneous equations involve one linear equation and one equation with a squared term (e.g. circle or quadratic). Use substitution to solve."
     },
     {
       "id": "s3",
-      "title": "Method — Five Steps",
+      "title": "Method",
       "type": "example",
-      "content": "Step 1: Make y (or x) the subject of the straight-line equation.\nStep 2: Substitute that into the non-linear equation.\nStep 3: Move everything to one side so it equals 0.\nStep 4: Solve the quadratic — factorise or use the formula.\nStep 5: Put each value back to find its pair. Write answers as (x, y) and check."
+      "content": "Substitute the linear equation into the quadratic to get a single equation in one variable. Then solve the resulting quadratic.\ny = x + 1; x² + y² = 5 ⇒ x² + (x+1)² = 5\nReplace y with the linear expression, then solve\n\nKey examples:\n  ✓ y = x + 1 and x² + y² = 5: substitute y  (circle and line)\n  ✓ y = 2x and y = x² − 3: set equal  (parabola and line)\n  ✓ Usually gives two pairs of solutions  (line crosses curve twice)\n  ✗ Use elimination for non-linear equations  (must use substitution)\n  ✗ Non-linear systems always have exactly 2 solutions  (can have 0, 1, or 2)"
     },
     {
       "id": "s4",
       "title": "Worked Example",
       "type": "example",
-      "content": "Solve:  y = x² − 2x + 3   and   y = x + 3\n\nSubstitute:  x² − 2x + 3 = x + 3\nRearrange:   x² − 3x = 0\nFactorise:   x(x − 3) = 0  →  x = 0  or  x = 3\nFind y:      x = 0 → y = 3;   x = 3 → y = 6\nAnswers:     (0, 3)  and  (3, 6)"
+      "content": "Example 1 – line and circle\n  Solve y = x + 1 and x² + y² = 5\n  Substitute: x² + (x+1)² = 5 ⇒ x² + x² + 2x + 1 = 5\n  2x² + 2x − 4 = 0 ⇒ x² + x − 2 = 0 ⇒ (x+2)(x−1) = 0\n  x = −2, y = −1 or x = 1, y = 2\n  (−2, −1) and (1, 2)\n  (Find x values from the quadratic, then substitute back for y.)\n\nExample 2 – line and parabola\n  Solve y = 2x + 1 and y = x² − 2\n  Set equal: x² − 2 = 2x + 1\n  x² − 2x − 3 = 0 ⇒ (x−3)(x+1) = 0\n  x = 3, y = 7 or x = −1, y = −1\n  (3, 7) and (−1, −1)\n  (When both equations equal y, set the right-hand sides equal.)"
     },
     {
       "id": "s5",
-      "title": "Question 1",
-      "type": "q-extended",
-      "marks": 3,
-      "difficulty": 1,
-      "frame": [
-        "Both equations already give y, so set them equal:  x² = 2x + 3",
-        "Move everything to one side so it equals 0:  x² − 2x − 3 = 0",
-        "Factorise and solve to find the two x values.",
-        "Put each x back into y = 2x + 3 to find its y."
-      ],
-      "content": "Solve the simultaneous equations.\n\n   y = x²            and            y = 2x + 3"
+      "title": "Line and parabola",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each pair simultaneously.\n\n(a) y = x + 2 and y = x²\n(b) y = 3x and y = x² + 2\n(c) y = x + 6 and y = x²\n(d) y = 2x + 3 and y = x² + x + 1"
     },
     {
       "id": "s6",
-      "title": "Question 2",
-      "type": "q-extended",
-      "marks": 3,
-      "difficulty": 1,
-      "frame": [
-        "Set the two right-hand sides equal, then rearrange to = 0.",
-        "Factorise to find the two x values, then find each matching y."
-      ],
-      "content": "Solve the simultaneous equations.\n\n   y = x² + 1        and        y = x + 3"
+      "title": "Line and circle",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each pair simultaneously.\n\n(a) y = x and x² + y² = 8\n(b) y = x + 2 and x² + y² = 10\n(c) x + y = 5 and x² + y² = 13\n(d) y = 2x and x² + y² = 20"
     },
     {
       "id": "s7",
-      "title": "Question 3",
-      "type": "q-extended",
-      "marks": 3,
-      "difficulty": 2,
-      "content": "Solve the simultaneous equations.\n\n   y = x² − 2x       and        y = x + 4"
+      "title": "Product relationships",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve these pairs.\n\n(a) x + y = 7 and xy = 12\n(b) x + y = 10 and xy = 21\n(c) x − y = 2 and xy = 15\n(d) x + y = 9 and xy = 20"
     },
     {
       "id": "s8",
-      "title": "Question 4",
-      "type": "q-extended",
-      "marks": 3,
-      "difficulty": 2,
-      "content": "Solve the simultaneous equations.\n\n   y = x² − 5x + 6     and     y = x − 2"
+      "title": "Harder problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each pair simultaneously.\n\n(a) y = 2x − 1 and y = x² − 3x + 3\n(b) x + 2y = 7 and x² + y² = 10\n(c) y = x + 1 and x² + 2y² = 6\n(d) 2x + y = 5 and x² + y² = 5"
     },
     {
       "id": "s9",
-      "title": "Question 5",
-      "type": "q-extended",
-      "marks": 4,
-      "difficulty": 3,
-      "content": "Solve the simultaneous equations.\n\n   x² + y² = 25       and       y = x − 1"
+      "title": "Mixed non-linear",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each system.\n\n(a) y = x − 1 and x² + y² = 25\n(b) y = 3 − x and y = x² − x − 1\n(c) x + y = 4 and x² + 3y = 10\n(d) y = x + 3 and 2x² + y² = 27\n(e) y = 2x and x² − y = 3"
     },
     {
       "id": "s10",
-      "title": "Question 6",
-      "type": "q-extended",
-      "marks": 4,
-      "difficulty": 3,
-      "content": "Solve the simultaneous equations.\n\n   x² + y² = 10       and       x + y = 4"
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To solve non-linear simultaneous equations, use substitution\n✗ You can use elimination for quadratic simultaneous equations\n✓ A line and a circle can intersect at 0, 1, or 2 points\n✗ Non-linear systems always have exactly 2 solutions\n✓ After substitution, you solve the resulting quadratic equation"
     },
     {
       "id": "s11",
-      "title": "Question 7",
-      "type": "q-extended",
-      "marks": 5,
-      "difficulty": 4,
-      "content": "Solve the simultaneous equations. Give your answers in surd form.\n\n   x² + y² = 9        and        y = x + 1"
-    },
-    {
-      "id": "s12",
-      "title": "Question 8",
-      "type": "q-extended",
-      "marks": 5,
-      "difficulty": 5,
-      "content": "A rectangle has an area of 12 cm² and a perimeter of 14 cm.\n\nBy forming and solving a pair of simultaneous equations, find the length and width of the rectangle.\n\n(Let the length be x and the width be y.)"
-    },
-    {
-      "id": "s13",
-      "title": "Common Mistakes",
-      "type": "common-mistakes",
-      "content": "✗ There are usually TWO answers, not one — find both x values (e.g. x = 3 and x = −1).\n✗ Get everything on one side so it equals 0 first: x² = 2x + 3 becomes x² − 2x − 3 = 0.\n✗ Watch the minus signs: (x − 1)² = x² − 2x + 1, not x² − 1.\n✗ Each x has its own y — after finding x, substitute back to find the matching y."
-    },
-    {
-      "id": "s14",
       "title": "How Did I Do?",
       "type": "self-reflection",
       "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
@@ -143,7 +92,7 @@
       "title": "Teacher Key & Mark Scheme",
       "type": "mark-scheme",
       "teacherOnly": true,
-      "content": "Award method marks for a correct substitution and rearrangement to = 0, and accuracy marks for both coordinate pairs.\n\nQ1 (3):  (3, 9) and (−1, 1)\nQ2 (3):  (2, 5) and (−1, 2)\nQ3 (3):  (4, 8) and (−1, 3)\nQ4 (3):  (4, 2) and (2, 0)\nQ5 (4):  (4, 3) and (−3, −4)\nQ6 (4):  (1, 3) and (3, 1)\nQ7 (5):  x = (−1 + √17)/2, y = (1 + √17)/2  and  x = (−1 − √17)/2, y = (1 − √17)/2\nQ8 (5):  length 4 cm, width 3 cm  (from xy = 12 and x + y = 7)\n\nTotal: 30 marks."
+      "content": "Award marks for correct working and final answers.\n\nLine and parabola:\n  (a) (2, 4) and (−1, 1)\n  (b) (1, 3) and (2, 6)\n  (c) (3, 9) and (−2, 4)\n  (d) (2, 7) and (−1, 1)\n\nLine and circle:\n  (a) (2, 2) and (−2, −2)\n  (b) (1, 3) and (−3, −1)\n  (c) (2, 3) and (3, 2)\n  (d) (2, 4) and (−2, −4)\n\nProduct relationships:\n  (a) (3, 4) and (4, 3)\n  (b) (3, 7) and (7, 3)\n  (c) (5, 3) and (−3, −5)\n  (d) (4, 5) and (5, 4)\n\nHarder problems:\n  (a) (1, 1) and (4, 7)\n  (b) (1, 3) and (3, 2)... check\n  (c) Substitute and solve\n  (d) (1, 3) and... check... (2, 1)\n\nMixed non-linear:\n  (a) (4, 3) and (−3, −4)\n  (b) (2, 1) and (−2, 5)\n  (c) (1, 3) and... check\n  (d) (1, 4)... check (... solve fully)\n  (e) x²−2x−3=0; (3,6) and (−1,−2)"
     }
   ]
 }

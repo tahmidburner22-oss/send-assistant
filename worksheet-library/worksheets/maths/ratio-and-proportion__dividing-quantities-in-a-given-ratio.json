@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Ratio and Proportion",
+  "subtopic": "Dividing quantities in a given ratio",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Dividing quantities in a given ratio",
+  "subtitle": "Ratio and Proportion · KS3 Maths",
+  "learning_objective": "I can divide a quantity into two or more parts using a given ratio.",
+  "key_vocab": [
+    {
+      "term": "Dividing in a ratio",
+      "definition": "Dividing in a ratio means splitting a total into parts whose sizes follow the given ratio."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can divide a quantity into two or more parts using a given ratio."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Dividing in a ratio -- Dividing in a ratio means splitting a total into parts whose sizes follow the given ratio."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Total shares = sum of ratio parts. Value of one share = quantity divided by total shares.\none share = quantity ÷ (a + b)\nThen multiply: a shares and b shares\n\nKey examples:\n  ✓ £50 in ratio 2 : 3 = £20 and £30  (5 parts, £10 each)\n  ✓ 120 in ratio 1 : 2 : 3 = 20, 40, 60  (6 parts, 20 each)\n  ✓ Check: shares must add to original total  (20 + 30 = 50 ✓)\n  ✗ £50 in ratio 2 : 3 = £25 and £25  (that is halving, not using the ratio)\n  ✗ £50 in ratio 2 : 3 = £2 and £3  (must multiply by value of one share)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – two-part ratio\n  Divide £80 in the ratio 3 : 5\n  Total parts = 3 + 5 = 8\n  One part = £80 ÷ 8 = £10\n  3 parts = £30, 5 parts = £50\n  £30 and £50\n  (Check: £30 + £50 = £80.)\n\nExample 2 – three-part ratio\n  Divide 180 cm in the ratio 2 : 3 : 4\n  Total parts = 2 + 3 + 4 = 9\n  One part = 180 ÷ 9 = 20 cm\n  Shares: 40 cm, 60 cm, 80 cm\n  40 cm, 60 cm, 80 cm\n  (Check: 40 + 60 + 80 = 180.)"
+    },
+    {
+      "id": "s5",
+      "title": "Two-part ratios",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Divide each quantity in the given ratio.\n\n(a) £40 in ratio 1 : 3\n(b) 72 in ratio 5 : 4\n(c) £120 in ratio 7 : 5\n(d) 200 g in ratio 3 : 2"
+    },
+    {
+      "id": "s6",
+      "title": "Three-part ratios",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Divide in the ratio given.\n\n(a) 90 in ratio 1 : 2 : 3\n(b) £200 in ratio 2 : 3 : 5\n(c) 360 in ratio 4 : 5 : 3\n(d) £480 in ratio 1 : 3 : 4"
+    },
+    {
+      "id": "s7",
+      "title": "Using the difference",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the difference between shares to solve.\n\n(a) Ratio 2 : 5. Difference is 21. Find each part.\n(b) Ratio 3 : 8. Difference is 30. Find each part.\n(c) Ratio 1 : 4. Larger part is 60 more. Find each.\n(d) Ratio 5 : 9. Difference is 28. Find the total."
+    },
+    {
+      "id": "s8",
+      "title": "In context",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each word problem.\n\n(a) Cordial : water = 1 : 4. Make 2 litres of drink. How much cordial?\n(b) Boys : girls = 3 : 5. There are 32 students. How many boys?\n(c) Cement : sand : gravel = 1 : 2 : 4. Need 35 kg total. Find each.\n(d) Savings : spending = 2 : 7. Earn £270 per week. How much saved?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each ratio problem.\n\n(a) £450 in ratio 4 : 5\n(b) Ratio 3 : 7. Larger part is £84. Find the smaller.\n(c) 720 ml in ratio 1 : 2 : 5\n(d) Two numbers in ratio 5 : 8. Sum is 78. Find both.\n(e) £600 split in ratio 1 : 2 : 3. Largest share?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To divide £60 in ratio 1 : 2, find total parts (3), then one part (£20)\n✗ Dividing £60 in ratio 1 : 2 gives £30 and £30\n✓ The shares must always add up to the original quantity\n✗ Ratio 3 : 5 means the first share is always £3\n✓ If ratio is 2 : 3 and difference is 10, one part = 10"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nTwo-part ratios:\n  (a) £10 and £30\n  (b) 40 and 32\n  (c) £70 and £50\n  (d) 120 g and 80 g\n\nThree-part ratios:\n  (a) 15, 30, 45\n  (b) £40, £60, £100\n  (c) 120, 150, 90\n  (d) £60, £180, £240\n\nUsing the difference:\n  (a) 14 and 35\n  (b) 18 and 48\n  (c) 20 and 80\n  (d) 98\n\nIn context:\n  (a) 400 ml\n  (b) 12\n  (c) 5 kg, 10 kg, 20 kg\n  (d) £60\n\nMixed problems:\n  (a) £200 and £250\n  (b) £36\n  (c) 90, 180, 450 ml\n  (d) 30 and 48\n  (e) £300"
+    }
+  ]
+}

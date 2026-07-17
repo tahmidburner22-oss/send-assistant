@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Transformations",
+  "subtopic": "Translation",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Translation",
+  "subtitle": "Transformations · GCSE Maths",
+  "learning_objective": "I can translate shapes using a column vector.",
+  "key_vocab": [
+    {
+      "term": "translation",
+      "definition": "A translation slides a shape without rotating or flipping it. It is described by a column vector that shows the horizontal and vertical movement."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can translate shapes using a column vector."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "translation -- A translation slides a shape without rotating or flipping it. It is described by a column vector that shows the horizontal and vertical movement."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Add the column vector to each vertex: new x = x + horizontal, new y = y + vertical.\n(x, y) + (a, b) = (x+a, y+b)\nEvery point moves by the same vector\n\nKey examples:\n  ✓ Vector (3, 2) means 3 right and 2 up  (positive values)\n  ✓ Vector (-2, -4) means 2 left and 4 down  (negative values)\n  ✓ (5, 1) translated by (3, -2) gives (8, -1)  (add the vector)\n  ✗ Vector (3, 2) means 3 up and 2 right  (top is horizontal, bottom is vertical)\n  ✗ Translation changes the size of the shape  (shape and size are preserved)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – positive translation\n  Translate (2, 3) by vector (4, 1).\n  Add horizontal: 2 + 4 = 6\n  Add vertical: 3 + 1 = 4\n  Image: (6, 4)\n  (6, 4)\n  (Simply add the vector components to the coordinates.)\n\nExample 2 – negative components\n  Translate (5, 7) by vector (-3, -2).\n  Horizontal: 5 + (-3) = 2\n  Vertical: 7 + (-2) = 5\n  Image: (2, 5)\n  (2, 5)\n  (Negative values mean left and down.)"
+    },
+    {
+      "id": "s5",
+      "title": "Positive translations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Translate each point by the given vector.\n\n(a) (1, 2) by (3, 4)\n(b) (0, 5) by (2, 1)\n(c) (3, 0) by (5, 3)\n(d) (4, 4) by (1, 2)"
+    },
+    {
+      "id": "s6",
+      "title": "Negative translations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Translate each point.\n\n(a) (5, 3) by (-2, -1)\n(b) (4, 6) by (-4, -3)\n(c) (7, 2) by (-3, 4)\n(d) (1, 8) by (2, -5)"
+    },
+    {
+      "id": "s7",
+      "title": "Finding the vector",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the translation vector from A to B.\n\n(a) A(2, 3) to B(5, 7)\n(b) A(6, 4) to B(2, 1)\n(c) A(-1, 3) to B(4, -2)\n(d) A(0, 0) to B(-3, 5)"
+    },
+    {
+      "id": "s8",
+      "title": "Translating shapes",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Translate the triangle by the vector.\n\n(a) (0,0), (2,0), (1,3) by (4, 1)\n(b) (1,1), (4,1), (4,3) by (-2, 3)\n(c) (3,2), (5,2), (5,5) by (-1, -2)\n(d) (2,4), (6,4), (4,7) by (1, -4)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed translation problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) (3, 5) by (-1, -3)\n(b) Image is (7, 2), vector was (4, -3). Original?\n(c) Translate (0, 0) by (a, b) then by (-a, -b). Final position?\n(d) (2, 1) translated to (5, 4). Then (5, 4) to (8, 7). Combined vector?\n(e) (4, -2) by (3, 5) then by (-1, -2). Final?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Translation by (3, -2) means 3 right and 2 down\n✗ The top of the vector is the vertical shift\n✓ Translation preserves shape, size, and orientation\n✗ Translating by (0, 0) moves the shape to the origin\n✓ Vector from A to B = B coordinates minus A coordinates"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nPositive translations:\n  (a) (4, 6)\n  (b) (2, 6)\n  (c) (8, 3)\n  (d) (5, 6)\n\nNegative translations:\n  (a) (3, 2)\n  (b) (0, 3)\n  (c) (4, 6)\n  (d) (3, 3)\n\nFinding the vector:\n  (a) (3, 4)\n  (b) (-4, -3)\n  (c) (5, -5)\n  (d) (-3, 5)\n\nTranslating shapes:\n  (a) (4,1), (6,1), (5,4)\n  (b) (-1,4), (2,4), (2,6)\n  (c) (2,0), (4,0), (4,3)\n  (d) (3,0), (7,0), (5,3)\n\nMixed translation problems:\n  (a) (2, 2)\n  (b) (3, 5)\n  (c) (0, 0)\n  (d) (6, 6)\n  (e) (6, 1)"
+    }
+  ]
+}

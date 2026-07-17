@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Area and Perimeter",
+  "subtopic": "Area of rectangles, triangles and parallelograms",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Area of rectangles, triangles and parallelograms",
+  "subtitle": "Area and Perimeter · KS3 Maths",
+  "learning_objective": "I can calculate the area of rectangles, triangles and parallelograms.",
+  "key_vocab": [
+    {
+      "term": "Area",
+      "definition": "Area is the amount of space inside a 2D shape, measured in square units (cm², m²)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the area of rectangles, triangles and parallelograms."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Area -- Area is the amount of space inside a 2D shape, measured in square units (cm², m²)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Always use the PERPENDICULAR height (not the slant). Triangle is half of the enclosing rectangle.\nA = &frac{1}{2} × b × h\nTriangle: half base times height\n\nKey examples:\n  ✓ Rectangle: A = length × width  (l × w)\n  ✓ Triangle: A = &frac{1}{2} × base × height  (half of rectangle)\n  ✓ Parallelogram: A = base × height  (perpendicular h)\n  ✗ Triangle: A = base × height  (forgot &frac{1}{2})\n  ✗ Parallelogram: use slant height  (must be perpendicular)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – rectangle\n  Find the area of a rectangle 8 cm by 5 cm.\n  A = l × w\n  A = 8 × 5\n  A = 40 cm²\n  = 40 cm²\n  (Multiply length by width.)\n\nExample 2 – triangle\n  Find the area of a triangle with base 10 cm and height 6 cm.\n  A = &frac{1}{2} × b × h\n  A = &frac{1}{2} × 10 × 6\n  A = 30 cm²\n  = 30 cm²\n  (Half of base times height.)"
+    },
+    {
+      "id": "s5",
+      "title": "Area of rectangles",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the area.\n\n(a) l = 7 cm, w = 4 cm\n(b) l = 12 cm, w = 5 cm\n(c) l = 9 cm, w = 9 cm\n(d) l = 15 cm, w = 3 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Area of triangles",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the area. Use A = &frac{1}{2} × b × h.\n\n(a) b = 6 cm, h = 4 cm\n(b) b = 10 cm, h = 8 cm\n(c) b = 14 cm, h = 5 cm\n(d) b = 9 cm, h = 12 cm"
+    },
+    {
+      "id": "s7",
+      "title": "Area of parallelograms",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the area. Use perpendicular height.\n\n(a) b = 8 cm, h = 6 cm\n(b) b = 11 cm, h = 4 cm\n(c) b = 15 cm, h = 9 cm\n(d) b = 7.5 cm, h = 8 cm"
+    },
+    {
+      "id": "s8",
+      "title": "Finding missing measurements",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing length.\n\n(a) Rectangle: A = 36 cm², l = 9 cm. Find w.\n(b) Triangle: A = 20 cm², b = 8 cm. Find h.\n(c) Parallelogram: A = 72 cm², h = 8 cm. Find b.\n(d) Triangle: A = 30 cm², h = 10 cm. Find b."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed area problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Calculate each area.\n\n(a) Rectangle: 6.5 cm by 4 cm\n(b) Triangle: b = 16 cm, h = 7 cm\n(c) Parallelogram: b = 20 cm, h = 3.5 cm\n(d) Square: side 11 cm\n(e) Triangle: b = 5 cm, h = 5 cm"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Area of a triangle = &frac{1}{2} × base × height\n✗ Area of a triangle = base × height\n✓ Parallelogram area uses perpendicular height\n✗ Area is measured in cm\n✓ A square is a special rectangle"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nArea of rectangles:\n  (a) 28 cm²\n  (b) 60 cm²\n  (c) 81 cm²\n  (d) 45 cm²\n\nArea of triangles:\n  (a) 12 cm²\n  (b) 40 cm²\n  (c) 35 cm²\n  (d) 54 cm²\n\nArea of parallelograms:\n  (a) 48 cm²\n  (b) 44 cm²\n  (c) 135 cm²\n  (d) 60 cm²\n\nFinding missing measurements:\n  (a) 4 cm\n  (b) 5 cm\n  (c) 9 cm\n  (d) 6 cm\n\nMixed area problems:\n  (a) 26 cm²\n  (b) 56 cm²\n  (c) 70 cm²\n  (d) 121 cm²\n  (e) 12.5 cm²"
+    }
+  ]
+}

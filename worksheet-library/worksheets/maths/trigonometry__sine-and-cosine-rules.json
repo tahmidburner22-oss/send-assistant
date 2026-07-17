@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Trigonometry",
+  "subtopic": "Sine and cosine rules",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Sine and cosine rules",
+  "subtitle": "Trigonometry · GCSE Maths",
+  "learning_objective": "I can apply the sine rule and cosine rule to find unknown sides and angles in non-right-angled triangles.",
+  "key_vocab": [
+    {
+      "term": "sine rule",
+      "definition": "The sine rule is used when you have a side and its opposite angle: a/sin A = b/sin B = c/sin C. The cosine rule is used when you know two sides and the included angle (or all three sides)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can apply the sine rule and cosine rule to find unknown sides and angles in non-right-angled triangles."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "sine rule -- The sine rule is used when you have a side and its opposite angle: a/sin A = b/sin B = c/sin C. The cosine rule is used when you know two sides and the included angle (or all three sides)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Sine rule for matched pairs (side + opposite angle). Cosine rule for SAS or SSS.\n&frac{a}{sin A} = &frac{b}{sin B}\nEach side is proportional to the sine of its opposite angle\n\nKey examples:\n  ✓ Sine rule: a/sin A = b/sin B  (for matching pairs of side and angle)\n  ✓ Cosine rule: a² = b² + c² - 2bc cos A  (SAS or SSS)\n  ✓ Use sine rule for AAS or ASA  (when you can match a pair)\n  ✗ Sine rule works with two sides and included angle  (use cosine rule for SAS)\n  ✗ a² = b² + c² + 2bc cos A  (sign should be minus)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – sine rule finding a side\n  In triangle ABC, A = 40°, B = 70°, a = 8. Find b.\n  a/sin A = b/sin B\n  8/sin 40° = b/sin 70°\n  b = 8 sin 70° / sin 40° = 11.7 (1 dp)\n  b = 11.7\n  (Cross-multiply to find the unknown side.)\n\nExample 2 – sine rule finding an angle\n  In triangle, a = 10, b = 7, A = 50°. Find B.\n  sin B / b = sin A / a\n  sin B = 7 sin 50° / 10 = 0.536\n  B = sin⁻¹(0.536) = 32.4°\n  B = 32.4°\n  (Use the sine rule flipped to find the angle.)"
+    },
+    {
+      "id": "s5",
+      "title": "Sine rule - finding sides",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the sine rule to find the unknown side (1 dp).\n\n(a) A = 50°, B = 60°, a = 10. Find b.\n(b) A = 30°, C = 80°, a = 6. Find c.\n(c) B = 45°, C = 75°, b = 9. Find c.\n(d) A = 40°, B = 55°, b = 12. Find a."
+    },
+    {
+      "id": "s6",
+      "title": "Sine rule - finding angles",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the sine rule to find the unknown angle (1 dp).\n\n(a) a = 8, b = 6, A = 50°. Find B.\n(b) a = 12, b = 9, A = 70°. Find B.\n(c) b = 10, c = 7, B = 65°. Find C.\n(d) a = 15, c = 11, A = 80°. Find C."
+    },
+    {
+      "id": "s7",
+      "title": "Cosine rule - finding sides",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the cosine rule to find the unknown side (1 dp).\n\n(a) b = 7, c = 9, A = 50°. Find a.\n(b) a = 6, c = 10, B = 80°. Find b.\n(c) a = 5, b = 8, C = 120°. Find c.\n(d) b = 4, c = 6, A = 45°. Find a."
+    },
+    {
+      "id": "s8",
+      "title": "Cosine rule - finding angles",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the cosine rule to find the unknown angle (1 dp).\n\n(a) a = 7, b = 5, c = 8. Find A.\n(b) a = 10, b = 8, c = 6. Find A.\n(c) a = 4, b = 5, c = 6. Find C.\n(d) a = 9, b = 7, c = 5. Find A."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Choose and apply the correct rule (1 dp).\n\n(a) A = 35°, B = 85°, a = 7. Find b.\n(b) a = 10, b = 12, C = 70°. Find c.\n(c) a = 8, b = 9, c = 11. Find largest angle.\n(d) B = 40°, b = 8, c = 10. Find C.\n(e) a = 5, c = 7, B = 100°. Find b."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ The sine rule uses matching pairs of side and opposite angle\n✗ Use the sine rule when you know two sides and the included angle\n✓ a² = b² + c² - 2bc cos A is the cosine rule\n✗ The cosine rule has a plus sign: a² = b² + c² + 2bc cos A\n✓ If cos A is negative, then angle A is obtuse"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSine rule - finding sides:\n  (a) 11.3\n  (b) 11.8\n  (c) 12.3\n  (d) 9.4\n\nSine rule - finding angles:\n  (a) 35.0°\n  (b) 44.8°\n  (c) 39.4°\n  (d) 46.3°\n\nCosine rule - finding sides:\n  (a) 7.0\n  (b) 10.9\n  (c) 11.4\n  (d) 4.3\n\nCosine rule - finding angles:\n  (a) 60.0°\n  (b) 97.9°\n  (c) 82.8°\n  (d) 95.7°\n\nMixed problems:\n  (a) 12.2\n  (b) 12.7\n  (c) C = 84.3°\n  (d) 53.5°\n  (e) 9.5"
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "subject": "Maths",
+  "topic": "Ratio",
+  "subtopic": "Best value problems",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Best value problems",
+  "subtitle": "Ratio · GCSE Maths",
+  "learning_objective": "I can compare unit prices to determine which product offers the best value.",
+  "key_vocab": [
+    {
+      "term": "Best value",
+      "definition": "finding which option gives you the most for your money. Compare by finding the price per unit (or amount per penny)."
+    },
+    {
+      "term": "Method",
+      "definition": "Divide price by quantity to find cost per unit. The lowest unit price is the best value."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can compare unit prices to determine which product offers the best value."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Best value -- finding which option gives you the most for your money. Compare by finding the price per unit (or amount per penny).\nMethod -- Divide price by quantity to find cost per unit. The lowest unit price is the best value."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Calculate the cost per unit for each option. The one with the lowest unit cost is the best value.\nUnit price = &frac{cost}{quantity}\nCompare unit prices: lowest = best value\n\nKey examples:\n  ✓ 500ml for £2 = 0.4p/ml  (price per ml)\n  ✓ 750ml for £2.70 = 0.36p/ml  (cheaper per ml)\n  ✓ Lower unit price = better value  (comparison rule)\n  ✗ The cheapest item is always best value  (must compare unit price)\n  ✗ Bigger is always better value  (not necessarily)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – two sizes\n  Juice: 500ml for £1.20 or 1.5L for £3.00. Which is better value?\n  Small: 120p ÷ 500 = 0.24p per ml\n  Large: 300p ÷ 1500 = 0.20p per ml\n  Large is cheaper per ml\n  1.5L is better value\n  (Compare price per ml to find the best deal.)\n\nExample 2 – three options\n  Cereal: 400g for £2.80, 750g for £4.50, 1kg for £6.50. Best value?\n  400g: 280 ÷ 400 = 0.70p/g\n  750g: 450 ÷ 750 = 0.60p/g\n  1kg: 650 ÷ 1000 = 0.65p/g\n  750g is best value (0.60p/g)\n  (The biggest size is not always the best value.)"
+    },
+    {
+      "id": "s5",
+      "title": "Comparing two sizes",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the unit price and state which is better value.\n\n(a) Water: 500ml for 80p or 1.5L for £2.10\n(b) Rice: 1kg for £1.80 or 2kg for £3.20\n(c) Pasta: 500g for £1.35 or 1kg for £2.50\n(d) Soap: 3 bars for £1.50 or 8 bars for £3.60"
+    },
+    {
+      "id": "s6",
+      "title": "Three options",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the best value from three options.\n\n(a) Juice: 250ml £0.60, 500ml £1.10, 1L £1.90\n(b) Crisps: 25g 50p, 50g 85p, 150g £2.10\n(c) Eggs: 6 for £1.50, 10 for £2.30, 15 for £3.60\n(d) Pens: 3 for £2.40, 5 for £3.75, 10 for £7.00"
+    },
+    {
+      "id": "s7",
+      "title": "With offers and discounts",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Include the offer in your calculation.\n\n(a) A: £3.60 for 6, B: £4.80 for 8 with 25% off. Better value?\n(b) A: 2L for £2.20, B: 3L for £3.60 buy-one-get-one-free. Better value?\n(c) A: 500g at £4.00, B: 750g at £5.40 with 10% off. Better value?\n(d) A: 12 pack £6, B: 20 pack £9 with buy 2 get 1 free. Better value?"
+    },
+    {
+      "id": "s8",
+      "title": "Real-world best value",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each best value problem.\n\n(a) Taxi A: £3 + £1.50/km. Taxi B: £5 + £1.00/km. Which is cheaper for 8 km?\n(b) Phone plan A: £15/month + 5p/text. B: £20/month unlimited. Crossover texts?\n(c) Petrol A: 145.9p/L. Petrol B: 142.5p/L but 3 miles further. Saving on 40L?\n(d) Gym A: £30/month. Gym B: £5 per visit. Break-even visits per month?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed best value",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Determine the best value option.\n\n(a) Shampoo: 200ml £2.50, 400ml £4.20, 500ml £5.50\n(b) Dog food: 400g £1.60, 1.2kg £4.20, 2kg £7.50\n(c) Cinema: adult £12, family (2+2) £38, 5-ticket bundle £50\n(d) Internet: 30GB for £15 or unlimited for £22. Use 50GB. Which?\n(e) Paint: 1L for £8, 2.5L for £18, 5L for £32. Need 4L. Cheapest option?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Best value means lowest unit price\n✗ The biggest pack is always best value\n✓ To compare, divide price by quantity\n✗ The cheapest total price is always the best value\n✓ Buy-one-get-one-free halves the unit price"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nComparing two sizes:\n  (a) 1.5L (0.14p/ml vs 0.16p/ml)\n  (b) 2kg (0.16p/g vs 0.18p/g)\n  (c) 1kg (0.25p/g vs 0.27p/g)\n  (d) 8 bars (45p vs 50p each)\n\nThree options:\n  (a) 500ml (0.22p/ml)\n  (b) 50g (1.7p/g)\n  (c) 10 (23p each)\n  (d) 5 (75p each)\n\nWith offers and discounts:\n  (a) B (45p vs 60p each)\n  (b) B (60p/L vs £1.10/L)\n  (c) B (0.648p/g vs 0.8p/g)\n  (d) B (15p each vs 50p)\n\nReal-world best value:\n  (a) Taxi B (£13 vs £15)\n  (b) 100 texts\n  (c) £1.36 saved at B\n  (d) 6 visits\n\nMixed best value:\n  (a) 400ml (1.05p/ml)\n  (b) 1.2kg (0.35p/g)\n  (c) 5-ticket (£10 each)\n  (d) Unlimited\n  (e) 2.5L + 1L + 1L = £34 vs 5L = £32"
+    }
+  ]
+}

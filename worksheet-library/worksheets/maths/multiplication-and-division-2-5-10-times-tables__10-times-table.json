@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (2, 5, 10 Times Tables)",
+  "subtopic": "10 times table",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "10 times table",
+  "subtitle": "Multiplication and Division (2, 5, 10 Times Tables) · KS3 Maths",
+  "learning_objective": "I can recall and use the 10 times table to multiply and divide.",
+  "key_vocab": [
+    {
+      "term": "10 times table",
+      "definition": "The 10 times table is a list of multiples of 10: numbers we get when we count in 10s. Numbers in the 10 times table always end in 0."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recall and use the 10 times table to multiply and divide."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "10 times table -- The 10 times table is a list of multiples of 10: numbers we get when we count in 10s. Numbers in the 10 times table always end in 0."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiplication is repeated addition. 10 × 4 means ‘4 groups of 10’. You can also think of it as ‘10 groups of 4’ — the answer is the same.\n10 + 10 + 10 + 10 = 10×4 = 40\nFour groups of 10\n\nKey examples:\n  ✓ 1 × 10 = 10  (starting point)\n  ✓ 2 × 10 = 20  (double)\n  ✓ 5 × 10 = 50  (halfway to 10)\n  ✗ 3 × 10 = 31  (wrong)\n  ✗ 10 × 0 = 10  (any × 0 = 0)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – single multiplication\n  Calculate 7 × 10\n  7 groups of 10\n  10 + 10 + 10 + 10  ...\n  = 70\n  = 70\n  (Skip-count in 10s 7 times to reach 70.)\n\nExample 2 – missing factor\n  Solve: ___ × 10 = 40\n  How many 10s in 40?\n  Count up: 10, 20, 30, ...\n  = 4\n  = 4\n  (Divide: 40 ÷ 10 = 4.)"
+    },
+    {
+      "id": "s5",
+      "title": "Recall the 10 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete the calculation. Skip-count in 10s if you need to.\n\n(a) 3 × 10 = ___\n(b) 6 × 10 = ___\n(c) 8 × 10 = ___\n(d) 10 × 10 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "Missing factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing number.\n\n(a) ___ × 10 = 40\n(b) ___ × 10 = 70\n(c) ___ × 10 = 90\n(d) ___ × 10 = 110"
+    },
+    {
+      "id": "s7",
+      "title": "Dividing by 10",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the 10 times table to divide. 10 × ___ = ?\n\n(a) 20 ÷ 10 = ___\n(b) 50 ÷ 10 = ___\n(c) 80 ÷ 10 = ___\n(d) 120 ÷ 10 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "Two-step problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work out the answer step by step.\n\n(a) (2×10) + (3×10) = ___\n(b) (5×10) − (2×10) = ___\n(c) 40 ÷ 10 + 6 = ___\n(d) (10×10) × 2 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed practice",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use what you know about the 10 times table.\n\n(a) 10 × 7 = ___\n(b) 120 ÷ 10 = ___\n(c) ___ × 10 = 60\n(d) 100 ÷ 10 = ___\n(e) 90 ÷ 10 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 10 × 0 = 10\n✓ 10 × 1 = 10\n✓ 40 ÷ 10 = 4\n✓ 10 × 10 = 100 (i.e. 100)\n✗ 10 × 7 = 71"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRecall the 10 times table:\n  (a) 30\n  (b) 60\n  (c) 80\n  (d) 100\n\nMissing factors:\n  (a) 4\n  (b) 7\n  (c) 9\n  (d) 11\n\nDividing by 10:\n  (a) 2\n  (b) 5\n  (c) 8\n  (d) 12\n\nTwo-step problems:\n  (a) 50\n  (b) 30\n  (c) 10\n  (d) 200\n\nMixed practice:\n  (a) 70\n  (b) 12\n  (c) 6\n  (d) 10\n  (e) 9"
+    }
+  ]
+}

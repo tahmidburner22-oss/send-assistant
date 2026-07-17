@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Vectors",
+  "subtopic": "Adding and subtracting vectors",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Adding and subtracting vectors",
+  "subtitle": "Vectors · GCSE Maths",
+  "learning_objective": "I can add and subtract column vectors and represent the results on a grid.",
+  "key_vocab": [
+    {
+      "term": "vector",
+      "definition": "A vector has magnitude and direction, written as a column vector. To add vectors, add the corresponding components. To subtract, subtract components."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can add and subtract column vectors and represent the results on a grid."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "vector -- A vector has magnitude and direction, written as a column vector. To add vectors, add the corresponding components. To subtract, subtract components."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Add or subtract the x-components and y-components separately.\n(a, b) + (c, d) = (a+c, b+d)\nComponent-wise addition\n\nKey examples:\n  ✓ (3, 2) + (1, 4) = (4, 6)  (add components)\n  ✓ (5, 3) - (2, 1) = (3, 2)  (subtract components)\n  ✓ a + b means travel along a then along b  (triangle rule)\n  ✗ (3, 2) + (1, 4) = (4, 8)  (add each component separately)\n  ✗ (5, 3) - (2, 1) = (3, 4)  (subtract y from y, not add)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – adding two vectors\n  Find (3, 2) + (4, -1).\n  Add x-components: 3 + 4 = 7\n  Add y-components: 2 + (-1) = 1\n  Result: (7, 1)\n  (7, 1)\n  (Add each component separately.)\n\nExample 2 – subtracting vectors\n  Find (5, 6) - (2, 4).\n  Subtract x-components: 5 - 2 = 3\n  Subtract y-components: 6 - 4 = 2\n  Result: (3, 2)\n  (3, 2)\n  (Subtract each component separately.)"
+    },
+    {
+      "id": "s5",
+      "title": "Adding vectors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each sum.\n\n(a) (2, 3) + (4, 1)\n(b) (5, -2) + (1, 6)\n(c) (-3, 4) + (7, -2)\n(d) (0, 5) + (-2, -3)"
+    },
+    {
+      "id": "s6",
+      "title": "Subtracting vectors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each difference.\n\n(a) (6, 5) - (2, 3)\n(b) (3, 1) - (5, 4)\n(c) (-1, 7) - (-3, 2)\n(d) (4, -2) - (4, -2)"
+    },
+    {
+      "id": "s7",
+      "title": "Adding multiple vectors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the resultant vector.\n\n(a) (1, 2) + (3, 4) + (2, -1)\n(b) (4, -3) + (-2, 5) + (1, 1)\n(c) (-1, 6) + (3, -4) + (-2, -2)\n(d) (5, 0) + (0, 3) + (-5, -3)"
+    },
+    {
+      "id": "s8",
+      "title": "Finding unknown vectors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the unknown vector.\n\n(a) a + (3, 2) = (7, 5). Find a.\n(b) (5, 1) + b = (2, 6). Find b.\n(c) a - (2, 3) = (1, -1). Find a.\n(d) (4, 7) - b = (1, 3). Find b."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed vector operations",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) 2(3, 1) + (1, 4)\n(b) (5, 2) - 2(1, 3)\n(c) a = (2, -1), b = (4, 3). Find a + 2b.\n(d) p = (3, 5), q = (-1, 2). Find p - q.\n(e) If a + b + c = (0, 0), a = (3, 2), b = (-1, 4). Find c."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ (3, 2) + (1, 4) = (4, 6)\n✗ (3, 2) + (1, 4) = (4, 8)\n✓ Subtracting a vector reverses its direction\n✗ (5, 3) - (2, 1) = (3, 4)\n✓ The zero vector (0, 0) is the result when a vector is subtracted from itself"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nAdding vectors:\n  (a) (6, 4)\n  (b) (6, 4)\n  (c) (4, 2)\n  (d) (-2, 2)\n\nSubtracting vectors:\n  (a) (4, 2)\n  (b) (-2, -3)\n  (c) (2, 5)\n  (d) (0, 0)\n\nAdding multiple vectors:\n  (a) (6, 5)\n  (b) (3, 3)\n  (c) (0, 0)\n  (d) (0, 0)\n\nFinding unknown vectors:\n  (a) (4, 3)\n  (b) (-3, 5)\n  (c) (3, 2)\n  (d) (3, 4)\n\nMixed vector operations:\n  (a) (7, 6)\n  (b) (3, -4)\n  (c) (10, 5)\n  (d) (4, 3)\n  (e) (-2, -6)"
+    }
+  ]
+}

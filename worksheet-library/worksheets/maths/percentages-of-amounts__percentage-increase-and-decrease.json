@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Percentages of Amounts",
+  "subtopic": "Percentage increase and decrease",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Percentage increase and decrease",
+  "subtitle": "Percentages of Amounts · KS3 Maths",
+  "learning_objective": "I can find a percentage increase or decrease and express a change as a percentage.",
+  "key_vocab": [
+    {
+      "term": "Percentage change",
+      "definition": "A percentage change tells you how much something has gone up or down compared to the original amount, expressed as a percentage."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can find a percentage increase or decrease and express a change as a percentage."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Percentage change -- A percentage change tells you how much something has gone up or down compared to the original amount, expressed as a percentage."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Percentage change = (difference ÷ original) × 100. Always divide by the ORIGINAL value.\n% change = &frac{change}{original} × 100\nDivide by the starting value, not the new value\n\nKey examples:\n  ✓ 20 to 25: change = 5, % = 5/20 × 100 = 25%  (increase)\n  ✓ 80 to 60: change = 20, % = 20/80 × 100 = 25%  (decrease)\n  ✓ Always divide by the ORIGINAL amount  (key rule)\n  ✗ 20 to 25: % change = 5/25 × 100 = 20%  (divided by new, not original)\n  ✗ Change from 80 to 60 = 20%  (must divide by original (80))"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – percentage increase\n  A price goes from £40 to £52. Find the percentage increase.\n  Change = 52 - 40 = 12\n  % change = 12 ÷ 40 × 100\n  = 30% increase\n  = 30% increase\n  (Divide the change by the original amount.)\n\nExample 2 – percentage decrease\n  A weight drops from 80 kg to 68 kg. Find the percentage decrease.\n  Change = 80 - 68 = 12\n  % change = 12 ÷ 80 × 100\n  = 15% decrease\n  = 15% decrease\n  (Same formula, but the answer is a decrease.)"
+    },
+    {
+      "id": "s5",
+      "title": "Finding percentage increase",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the percentage increase.\n\n(a) 20 to 25\n(b) 50 to 65\n(c) 80 to 100\n(d) 200 to 230"
+    },
+    {
+      "id": "s6",
+      "title": "Finding percentage decrease",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the percentage decrease.\n\n(a) 40 to 30\n(b) 60 to 45\n(c) 120 to 96\n(d) 500 to 350"
+    },
+    {
+      "id": "s7",
+      "title": "Percentage change with decimals",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the percentage change (to 1 d.p. if needed).\n\n(a) 30 to 38\n(b) 75 to 60\n(c) 110 to 143\n(d) 64 to 48"
+    },
+    {
+      "id": "s8",
+      "title": "Real-world percentage change",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate the percentage change.\n\n(a) Rent goes from £600 to £660\n(b) Temperature drops from 20°C to 15°C\n(c) Population grows from 4000 to 4500\n(d) Price falls from £90 to £72"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed percentage change",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Identify increase or decrease and find the percentage.\n\n(a) 45 to 54\n(b) 160 to 120\n(c) £35 to £42\n(d) 250 g to 200 g\n(e) £1200 to £1350"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Percentage change = change ÷ original × 100\n✗ From 20 to 25 is a 20% increase\n✓ Always divide by the original (starting) value\n✗ A change from 80 to 60 and 60 to 80 are the same percentage\n✓ From 50 to 65 is 30% increase (15/50 × 100)"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nFinding percentage increase:\n  (a) 25%\n  (b) 30%\n  (c) 25%\n  (d) 15%\n\nFinding percentage decrease:\n  (a) 25%\n  (b) 25%\n  (c) 20%\n  (d) 30%\n\nPercentage change with decimals:\n  (a) 26.7%\n  (b) 20%\n  (c) 30%\n  (d) 25%\n\nReal-world percentage change:\n  (a) 10% increase\n  (b) 25% decrease\n  (c) 12.5% increase\n  (d) 20% decrease\n\nMixed percentage change:\n  (a) 20% increase\n  (b) 25% decrease\n  (c) 20% increase\n  (d) 20% decrease\n  (e) 12.5% increase"
+    }
+  ]
+}

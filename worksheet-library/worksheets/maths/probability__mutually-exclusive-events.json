@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Probability",
+  "subtopic": "Mutually exclusive events",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Mutually exclusive events",
+  "subtitle": "Probability · GCSE Maths",
+  "learning_objective": "I can identify mutually exclusive events and use the addition rule for probability.",
+  "key_vocab": [
+    {
+      "term": "Mutually exclusive events",
+      "definition": "Mutually exclusive events cannot happen at the same time. If one occurs, the other cannot occur."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can identify mutually exclusive events and use the addition rule for probability."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Mutually exclusive events -- Mutually exclusive events cannot happen at the same time. If one occurs, the other cannot occur."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Mutually exclusive events have no overlap: P(A and B) = 0. So P(A or B) = P(A) + P(B).\nP(A or B) = P(A) + P(B)\nOnly when A and B cannot happen together\n\nKey examples:\n  ✓ Rolling a 3 and rolling a 5 on one die: mutually exclusive  (cannot get both)\n  ✓ P(A or B) = P(A) + P(B) when mutually exclusive  (addition rule)\n  ✓ All probabilities in a sample space sum to 1  (exhaustive)\n  ✗ Drawing a red card and a king are mutually exclusive  (king of hearts is both)\n  ✗ P(A or B) = P(A) + P(B) always  (only when mutually exclusive)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – identifying mutually exclusive\n  A die is rolled. Are 'rolling a 2' and 'rolling an even number' mutually exclusive?\n  Rolling a 2 IS an even number\n  Both can happen on the same roll\n  NOT mutually exclusive\n  Not mutually exclusive\n  (2 is contained within the set of even numbers.)\n\nExample 2 – addition rule\n  P(red) = 0.3, P(blue) = 0.45. If colours are mutually exclusive, find P(red or blue).\n  Mutually exclusive: use addition rule\n  P(red or blue) = 0.3 + 0.45\n  = 0.75\n  = 0.75\n  (Simply add the probabilities when events cannot overlap.)"
+    },
+    {
+      "id": "s5",
+      "title": "Identifying mutually exclusive",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "State whether each pair is mutually exclusive (Yes/No).\n\n(a) Rolling a 6 and rolling a 3 (one die)\n(b) Picking a heart and picking a queen (cards)\n(c) Getting heads and getting tails (one coin)\n(d) Being left-handed and being female"
+    },
+    {
+      "id": "s6",
+      "title": "Using the addition rule",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Events are mutually exclusive. Find P(A or B).\n\n(a) P(A) = 0.3, P(B) = 0.4\n(b) P(A) = &frac{1}{5}, P(B) = &frac{2}{5}\n(c) P(A) = 0.15, P(B) = 0.25\n(d) P(A) = &frac{1}{4}, P(B) = &frac{1}{3}"
+    },
+    {
+      "id": "s7",
+      "title": "Finding missing probabilities",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "All outcomes are mutually exclusive and exhaustive.\n\n(a) P(A) = 0.4, P(B) = 0.35, P(C) = ?\n(b) P(X) = &frac{1}{3}, P(Y) = &frac{1}{4}, P(Z) = ?\n(c) P(R) = 0.1, P(S) = 0.3, P(T) = 0.25, P(U) = ?\n(d) P(1) = P(2) = P(3) = P(4). Find P(1)"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each probability problem.\n\n(a) Bag: 6 red, 4 blue, 5 green. P(red or blue)?\n(b) Die: P(less than 3 or greater than 4)?\n(c) Cards: P(ace or king)?\n(d) Spinner 1-8: P(2 or prime)?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed mutually exclusive",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Answer each question.\n\n(a) P(A) = 0.4, P(B) = 0.3, P(A and B) = 0. Find P(A or B)\n(b) P(A) = 0.5, P(A or B) = 0.8. A and B mutually exclusive. P(B)?\n(c) Three mutually exclusive events with P = x, 2x, 3x. Find x\n(d) Bag: 4 red, n blue. P(red) = &frac{1}{3}. Find n\n(e) P(A or B or C) = 1, P(A) = 0.5, P(B) = 0.3. P(C)?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Mutually exclusive events cannot happen at the same time\n✗ P(A or B) = P(A) + P(B) works for all events\n✓ If events are exhaustive, their probabilities sum to 1\n✗ Rolling even and rolling a 6 are mutually exclusive\n✓ Mutually exclusive events have P(A and B) = 0"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nIdentifying mutually exclusive:\n  (a) Yes\n  (b) No\n  (c) Yes\n  (d) No\n\nUsing the addition rule:\n  (a) 0.7\n  (b) &frac{3}{5}\n  (c) 0.4\n  (d) &frac{7}{12}\n\nFinding missing probabilities:\n  (a) 0.25\n  (b) &frac{5}{12}\n  (c) 0.35\n  (d) 0.25\n\nWord problems:\n  (a) &frac{2}{3}\n  (b) &frac{2}{3}\n  (c) &frac{2}{13}\n  (d) &frac{1}{2}\n\nMixed mutually exclusive:\n  (a) 0.7\n  (b) 0.3\n  (c) &frac{1}{6}\n  (d) 8\n  (e) 0.2"
+    }
+  ]
+}

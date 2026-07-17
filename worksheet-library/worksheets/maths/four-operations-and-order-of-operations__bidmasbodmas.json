@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Four Operations and Order of Operations",
+  "subtopic": "BIDMAS/BODMAS",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "BIDMAS/BODMAS",
+  "subtitle": "Four Operations and Order of Operations · KS3 Maths",
+  "learning_objective": "I can apply the correct order of operations (BIDMAS) to evaluate expressions.",
+  "key_vocab": [
+    {
+      "term": "BIDMAS",
+      "definition": "BIDMAS tells us the order: Brackets, Indices, Division/Multiplication, Addition/Subtraction."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can apply the correct order of operations (BIDMAS) to evaluate expressions."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "BIDMAS -- BIDMAS tells us the order: Brackets, Indices, Division/Multiplication, Addition/Subtraction."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Always follow BIDMAS: Brackets first, then Indices (powers), then Division/Multiplication (L to R), then Addition/Subtraction (L to R).\nB → I → DM → AS\nBrackets, Indices, Divide/Multiply, Add/Subtract\n\nKey examples:\n  ✓ 3 + 4 × 2 = 11  (multiply first)\n  ✓ (3 + 4) × 2 = 14  (brackets first)\n  ✓ 2² + 3 = 7  (indices before addition)\n  ✗ 3 + 4 × 2 = 14  (left-to-right is wrong here)\n  ✗ 8 ÷ 2(2+2) = 1  (common viral debate)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – multiplication before addition\n  Calculate 5 + 3 × 4\n  Multiplication first: 3 × 4 = 12\n  Then add: 5 + 12\n  = 17\n  = 17\n  (Without brackets, × and ÷ always come before + and −.)\n\nExample 2 – brackets first\n  Calculate (8 + 2) × 3\n  Brackets first: 8 + 2 = 10\n  Then multiply: 10 × 3\n  = 30\n  = 30\n  (Brackets override the normal priority.)"
+    },
+    {
+      "id": "s5",
+      "title": "Multiplication and addition",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate using BIDMAS.\n\n(a) 2 + 5 × 3\n(b) 10 − 4 × 2\n(c) 6 × 2 + 4\n(d) 20 − 3 × 5"
+    },
+    {
+      "id": "s6",
+      "title": "Brackets",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Do brackets first.\n\n(a) (4 + 3) × 2\n(b) 5 × (8 − 3)\n(c) (10 + 5) ÷ 3\n(d) (6 − 2) × (3 + 1)"
+    },
+    {
+      "id": "s7",
+      "title": "With indices",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Remember: indices come after brackets but before × and ÷.\n\n(a) 2² + 3²\n(b) 5 × 2²\n(c) (2 + 3)²\n(d) 10 − 3²"
+    },
+    {
+      "id": "s8",
+      "title": "Multi-step",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Evaluate step by step.\n\n(a) 3 + 4 × 2 − 1\n(b) 12 ÷ 4 + 2 × 5\n(c) (5 + 3)² ÷ 4\n(d) 2 × (10 − 4)² ÷ 3"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed BIDMAS",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Show your working clearly.\n\n(a) 8 + 12 ÷ (2 + 4)\n(b) 3² × 2 + 4\n(c) 100 − (4 + 6)²\n(d) 5 × 3 + 2³\n(e) (7 − 3)² + (2 + 1)²"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 3 + 4 × 2 = 11\n✗ 3 + 4 × 2 = 14\n✓ Brackets are always done first\n✗ Addition comes before subtraction\n✓ Indices are done before multiplication"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nMultiplication and addition:\n  (a) 17\n  (b) 2\n  (c) 16\n  (d) 5\n\nBrackets:\n  (a) 14\n  (b) 25\n  (c) 5\n  (d) 16\n\nWith indices:\n  (a) 13\n  (b) 20\n  (c) 25\n  (d) 1\n\nMulti-step:\n  (a) 10\n  (b) 13\n  (c) 16\n  (d) 24\n\nMixed BIDMAS:\n  (a) 10\n  (b) 22\n  (c) 0\n  (d) 23\n  (e) 25"
+    }
+  ]
+}

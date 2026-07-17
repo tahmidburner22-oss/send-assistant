@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Quadratic Equations",
+  "subtopic": "Discriminant",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Discriminant",
+  "subtitle": "Quadratic Equations · GCSE Maths",
+  "learning_objective": "I can use the discriminant to determine the number and nature of roots of a quadratic equation.",
+  "key_vocab": [
+    {
+      "term": "discriminant",
+      "definition": "The discriminant of ax² + bx + c = 0 is b² − 4ac. It tells us how many real roots (solutions) the quadratic has."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use the discriminant to determine the number and nature of roots of a quadratic equation."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "discriminant -- The discriminant of ax² + bx + c = 0 is b² − 4ac. It tells us how many real roots (solutions) the quadratic has."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "The discriminant b² − 4ac determines the nature of roots: positive = 2 roots, zero = 1, negative = none.\nΔ = b² − 4ac\nΔ > 0: two roots; Δ = 0: one root; Δ < 0: no real roots\n\nKey examples:\n  ✓ x² + 5x + 6: b²−4ac = 25−24 = 1 > 0, two roots  (positive discriminant)\n  ✓ x² − 6x + 9: b²−4ac = 36−36 = 0, one root  (zero discriminant)\n  ✓ x² + x + 1: b²−4ac = 1−4 = −3 < 0, no real roots  (negative discriminant)\n  ✗ Discriminant = b² + 4ac  (must be b² MINUS 4ac)\n  ✗ b² − 4ac < 0 means two real roots  (negative means no real roots)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – two real roots\n  Find the discriminant of x² + 3x − 10 = 0 and state the number of roots.\n  a = 1, b = 3, c = −10\n  Δ = 3² − 4(1)(−10) = 9 + 40 = 49\n  Δ = 49 > 0, so two distinct real roots\n  Two distinct real roots\n  (Since 49 is a perfect square, the roots will be rational.)\n\nExample 2 – repeated root\n  Find the discriminant of x² − 8x + 16 = 0.\n  a = 1, b = −8, c = 16\n  Δ = (−8)² − 4(1)(16) = 64 − 64 = 0\n  Δ = 0, so one repeated root\n  One repeated root\n  (The quadratic is a perfect square: (x − 4)² = 0.)"
+    },
+    {
+      "id": "s5",
+      "title": "Calculating the discriminant",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find b² − 4ac for each equation.\n\n(a) x² + 5x + 6 = 0\n(b) x² − 4x + 4 = 0\n(c) 2x² + 3x − 5 = 0\n(d) x² + 2x + 5 = 0"
+    },
+    {
+      "id": "s6",
+      "title": "Stating number of roots",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the discriminant and state the number of real roots.\n\n(a) x² + 7x + 10 = 0\n(b) x² − 6x + 9 = 0\n(c) x² + x + 1 = 0\n(d) 3x² − 2x − 1 = 0"
+    },
+    {
+      "id": "s7",
+      "title": "Proving no real roots",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Show each equation has no real roots.\n\n(a) x² + 4x + 5 = 0\n(b) 2x² + x + 1 = 0\n(c) 3x² − x + 2 = 0\n(d) x² + 6x + 10 = 0"
+    },
+    {
+      "id": "s8",
+      "title": "Finding parameters",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the value(s) of k for the stated condition.\n\n(a) x² + kx + 4 = 0, equal roots\n(b) x² − 6x + k = 0, equal roots\n(c) kx² + 2x + 1 = 0, equal roots (k ≠ 0)\n(d) x² + 4x + k = 0, no real roots"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed discriminant problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use the discriminant to answer each question.\n\n(a) Does x² + 3x + 1 = 0 have real roots?\n(b) For what values of p does x² + px + 25 = 0 have one root?\n(c) Show 5x² − 3x + 1 = 0 has no real solutions.\n(d) Find k if 2x² + kx + 8 = 0 has equal roots.\n(e) Does 4x² − 12x + 9 = 0 have one or two roots?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ b² − 4ac = 0 means one repeated root\n✗ The discriminant is b² + 4ac\n✓ A negative discriminant means no real roots\n✗ b² − 4ac > 0 means no roots\n✓ If Δ is a perfect square, the roots are rational"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCalculating the discriminant:\n  (a) 1\n  (b) 0\n  (c) 49\n  (d) −16\n\nStating number of roots:\n  (a) Δ = 9 > 0; two roots\n  (b) Δ = 0; one root\n  (c) Δ = −3 < 0; no real roots\n  (d) Δ = 16 > 0; two roots\n\nProving no real roots:\n  (a) Δ = 16 − 20 = −4 < 0\n  (b) Δ = 1 − 8 = −7 < 0\n  (c) Δ = 1 − 24 = −23 < 0\n  (d) Δ = 36 − 40 = −4 < 0\n\nFinding parameters:\n  (a) k = ±4\n  (b) k = 9\n  (c) k = 1\n  (d) k > 4\n\nMixed discriminant problems:\n  (a) Δ = 5 > 0; yes, two\n  (b) p = ±10\n  (c) Δ = 9 − 20 = −11 < 0\n  (d) k = ±8\n  (e) Δ = 144 − 144 = 0; one root"
+    }
+  ]
+}

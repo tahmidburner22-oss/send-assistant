@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Decimals — All Operations",
+  "subtopic": "Multiplying decimals",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Multiplying decimals",
+  "subtitle": "Decimals — All Operations · KS3 Maths",
+  "learning_objective": "I can multiply decimal numbers using place value and the column method.",
+  "key_vocab": [
+    {
+      "term": "multiply decimals",
+      "definition": "To multiply decimals, ignore the decimal points, multiply as whole numbers, then put the point back using the total number of decimal places."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can multiply decimal numbers using place value and the column method."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "multiply decimals -- To multiply decimals, ignore the decimal points, multiply as whole numbers, then put the point back using the total number of decimal places."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply as whole numbers, then place the decimal point so the answer has the correct total number of decimal places.\n1.2 × 0.3: 12 × 3 = 36 → 0.36\n2 decimal places in total\n\nKey examples:\n  ✓ 0.3 × 0.4 = 0.12  (1 d.p. + 1 d.p. = 2 d.p.)\n  ✓ 2.5 × 4 = 10.0  (1 d.p. + 0 d.p. = 1 d.p.)\n  ✓ 1.2 × 0.3 = 0.36  (12 × 3 = 36, 2 d.p.)\n  ✗ 0.3 × 0.4 = 1.2  (wrong number of d.p.)\n  ✗ 2.5 × 4 = 100  (forgot the decimal point)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – decimal by whole number\n  Calculate 3.4 × 5\n  Ignore decimal: 34 × 5 = 170\n  Total d.p. in question: 1\n  Place point: 17.0\n  = 17.0\n  (One decimal place in the question means one in the answer.)\n\nExample 2 – decimal by decimal\n  Calculate 0.6 × 0.7\n  Ignore decimals: 6 × 7 = 42\n  Total d.p.: 1 + 1 = 2\n  Place point: 0.42\n  = 0.42\n  (Two decimal places total: answer is 0.42 not 4.2.)"
+    },
+    {
+      "id": "s5",
+      "title": "Decimal × whole number",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate.\n\n(a) 2.3 × 4\n(b) 5.6 × 3\n(c) 0.7 × 8\n(d) 3.25 × 2"
+    },
+    {
+      "id": "s6",
+      "title": "Decimal × decimal (1 d.p. each)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Count decimal places carefully.\n\n(a) 0.3 × 0.4\n(b) 0.6 × 0.5\n(c) 1.2 × 0.3\n(d) 2.5 × 0.4"
+    },
+    {
+      "id": "s7",
+      "title": "Harder multiplications",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work as whole numbers first, then place the point.\n\n(a) 2.4 × 1.3\n(b) 3.5 × 2.6\n(c) 4.2 × 0.15\n(d) 0.08 × 0.6"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Multiply to find the answer.\n\n(a) Petrol costs £1.45/litre. Cost of 8 litres?\n(b) A tile is 0.3 m × 0.3 m. What is its area?\n(c) Speed 4.5 km/h for 2.5 hours. Distance?\n(d) 3 items at £2.99 each. Total?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed multiplication",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Calculate each product.\n\n(a) 6.5 × 4\n(b) 0.4 × 0.4\n(c) 1.5 × 1.5\n(d) 0.12 × 0.3\n(e) 7.2 × 0.5"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 0.3 × 0.4 = 0.12 (2 d.p.)\n✗ 0.3 × 0.4 = 1.2\n✓ Total d.p. in answer = sum of d.p. in question\n✗ Multiplying decimals always gives a bigger number\n✓ 2.5 × 4 = 10"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nDecimal × whole number:\n  (a) 9.2\n  (b) 16.8\n  (c) 5.6\n  (d) 6.50\n\nDecimal × decimal (1 d.p. each):\n  (a) 0.12\n  (b) 0.30\n  (c) 0.36\n  (d) 1.00\n\nHarder multiplications:\n  (a) 3.12\n  (b) 9.10\n  (c) 0.63\n  (d) 0.048\n\nWord problems:\n  (a) £11.60\n  (b) 0.09 m²\n  (c) 11.25 km\n  (d) £8.97\n\nMixed multiplication:\n  (a) 26\n  (b) 0.16\n  (c) 2.25\n  (d) 0.036\n  (e) 3.6"
+    }
+  ]
+}

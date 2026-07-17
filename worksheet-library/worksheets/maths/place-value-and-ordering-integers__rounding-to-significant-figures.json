@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Place Value and Ordering Integers",
+  "subtopic": "Rounding to significant figures",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Rounding to significant figures",
+  "subtitle": "Place Value and Ordering Integers · KS3 Maths",
+  "learning_objective": "I can round numbers to a given number of significant figures.",
+  "key_vocab": [
+    {
+      "term": "Significant figures",
+      "definition": "Significant figures (s.f.) are counted from the first non-zero digit. Leading zeros are not significant but trailing zeros after a decimal point are."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can round numbers to a given number of significant figures."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Significant figures -- Significant figures (s.f.) are counted from the first non-zero digit. Leading zeros are not significant but trailing zeros after a decimal point are."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Count significant figures from the first non-zero digit. Round using normal rounding rules.\n0.00473 to 2 s.f. = 0.0047\nLeading zeros are placeholders, not significant\n\nKey examples:\n  ✓ 3462 to 2 s.f. = 3500  (round up (6 ≥ 5))\n  ✓ 0.00587 to 2 s.f. = 0.0059  (leading zeros not significant)\n  ✓ 45.83 to 1 s.f. = 50  (round up (5 ≥ 5))\n  ✗ 0.00587 to 2 s.f. = 0.01  (counted the zeros as significant)\n  ✗ 3462 to 2 s.f. = 3400  (should round up, not down)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – rounding whole numbers\n  Round 5738 to 2 significant figures.\n  First 2 s.f.: 5, 7\n  Next digit is 3 (< 5), so round down\n  = 5700\n  = 5700\n  (Fill remaining places with zeros to keep the number the right size.)\n\nExample 2 – rounding decimals\n  Round 0.04562 to 2 significant figures.\n  Skip leading zeros: first s.f. is 4, second is 5\n  Next digit is 6 (≥ 5), so round up\n  = 0.046\n  = 0.046\n  (Leading zeros are not counted as significant.)"
+    },
+    {
+      "id": "s5",
+      "title": "Rounding to 1 s.f.",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Round to 1 significant figure.\n\n(a) 74\n(b) 386\n(c) 4520\n(d) 0.067"
+    },
+    {
+      "id": "s6",
+      "title": "Rounding to 2 s.f.",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Round to 2 significant figures.\n\n(a) 473\n(b) 6.85\n(c) 0.0342\n(d) 15800"
+    },
+    {
+      "id": "s7",
+      "title": "Rounding to 3 s.f.",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Round to 3 significant figures.\n\n(a) 4567\n(b) 0.05678\n(c) 123456\n(d) 3.0045"
+    },
+    {
+      "id": "s8",
+      "title": "Mixed rounding",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Round to the number of significant figures stated.\n\n(a) 8765 to 1 s.f.\n(b) 0.00456 to 2 s.f.\n(c) 345.67 to 3 s.f.\n(d) 0.9996 to 3 s.f."
+    },
+    {
+      "id": "s9",
+      "title": "Significant figures in context",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Round each value appropriately.\n\n(a) A distance of 12,345 m to 2 s.f.\n(b) A mass of 0.00872 kg to 2 s.f.\n(c) A population of 67,530 to 3 s.f.\n(d) A speed of 345.8 m/s to 2 s.f.\n(e) A probability of 0.4567 to 3 s.f."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 0.0047 has 2 significant figures\n✗ The zero in 3.02 is not significant\n✓ 5738 to 2 s.f. = 5700\n✗ Leading zeros count as significant figures\n✓ When rounding up 9, it becomes 10 and carries"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRounding to 1 s.f.:\n  (a) 70\n  (b) 400\n  (c) 5000\n  (d) 0.07\n\nRounding to 2 s.f.:\n  (a) 470\n  (b) 6.9\n  (c) 0.034\n  (d) 16000\n\nRounding to 3 s.f.:\n  (a) 4570\n  (b) 0.0568\n  (c) 123000\n  (d) 3.00\n\nMixed rounding:\n  (a) 9000\n  (b) 0.0046\n  (c) 346\n  (d) 1.00\n\nSignificant figures in context:\n  (a) 12,000 m\n  (b) 0.0087 kg\n  (c) 67,500\n  (d) 350 m/s\n  (e) 0.457"
+    }
+  ]
+}

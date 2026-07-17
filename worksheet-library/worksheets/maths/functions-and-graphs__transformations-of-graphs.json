@@ -1,0 +1,102 @@
+{
+  "subject": "Maths",
+  "topic": "Functions and Graphs",
+  "subtopic": "Transformations of graphs",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Transformations of graphs",
+  "subtitle": "Functions and Graphs · GCSE Maths",
+  "learning_objective": "I can describe and apply translations, reflections and stretches to graphs of functions.",
+  "key_vocab": [
+    {
+      "term": "A transformation changes the position or shape of a graph. Key types",
+      "definition": "translations (shifts), reflections (flips), and stretches (scaling)."
+    },
+    {
+      "term": "Notation",
+      "definition": "f(x) + a shifts up, f(x + a) shifts left, -f(x) reflects in x-axis, f(-x) reflects in y-axis."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can describe and apply translations, reflections and stretches to graphs of functions."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "A transformation changes the position or shape of a graph. Key types -- translations (shifts), reflections (flips), and stretches (scaling).\nNotation -- f(x) + a shifts up, f(x + a) shifts left, -f(x) reflects in x-axis, f(-x) reflects in y-axis."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Changes inside the bracket affect x (horizontal, opposite direction). Changes outside affect y (vertical, same direction).\ny = af(x + b) + c\na = vertical stretch, b = horizontal shift (opposite), c = vertical shift\n\nKey examples:\n  ✓ f(x) + 3 shifts the graph up 3  (vertical translation)\n  ✓ f(x - 2) shifts the graph right 2  (horizontal translation)\n  ✓ -f(x) reflects in the x-axis  (y-values change sign)\n  ✗ f(x + 2) shifts the graph right 2  (it shifts LEFT 2)\n  ✗ f(x) + 3 shifts the graph right 3  (it shifts UP 3)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – vertical translation\n  Describe the transformation from y = x² to y = x² + 5\n  Compare: f(x) = x² and f(x) + 5\n  The +5 is outside: vertical shift\n  Translation 5 units up\n  Translation by vector (0, 5)\n  (Adding outside the function shifts the graph up.)\n\nExample 2 – horizontal translation\n  Describe the transformation from y = x² to y = (x - 3)²\n  Compare: f(x) = x² and f(x - 3)\n  The -3 is inside: horizontal shift\n  Opposite direction: shift right 3\n  Translation by vector (3, 0)\n  (Inside the bracket, the shift is in the opposite direction.)"
+    },
+    {
+      "id": "s5",
+      "title": "Vertical translations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Describe each transformation from y = f(x).\n\n(a) y = f(x) + 4\n(b) y = f(x) - 2\n(c) y = x² + 7 from y = x²\n(d) y = x³ - 1 from y = x³"
+    },
+    {
+      "id": "s6",
+      "title": "Horizontal translations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Describe each transformation from y = f(x).\n\n(a) y = f(x - 5)\n(b) y = f(x + 3)\n(c) y = (x - 1)² from y = x²\n(d) y = (x + 4)³ from y = x³"
+    },
+    {
+      "id": "s7",
+      "title": "Reflections",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Describe each transformation.\n\n(a) y = -f(x)\n(b) y = f(-x)\n(c) y = -x² from y = x²\n(d) y = (-x)³ from y = x³"
+    },
+    {
+      "id": "s8",
+      "title": "Stretches",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Describe the stretch.\n\n(a) y = 2f(x)\n(b) y = f(3x)\n(c) y = 5 sin x from y = sin x\n(d) y = cos(2x) from y = cos x"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed transformations",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Describe the transformation from y = f(x).\n\n(a) y = f(x + 2) + 3\n(b) y = -f(x) + 1\n(c) y = 2f(x - 4)\n(d) y = f(2x) - 5\n(e) y = -f(x - 1) + 2"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ f(x + 2) shifts the graph left 2\n✗ f(x + 2) shifts the graph right 2\n✓ -f(x) reflects the graph in the x-axis\n✗ f(x) + 3 shifts the graph right 3\n✓ 2f(x) stretches the graph vertically by factor 2"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nVertical translations:\n  (a) Translation (0, 4) up\n  (b) Translation (0, -2) down\n  (c) Translation 7 up\n  (d) Translation 1 down\n\nHorizontal translations:\n  (a) Translation (5, 0) right\n  (b) Translation (-3, 0) left\n  (c) Translation 1 right\n  (d) Translation 4 left\n\nReflections:\n  (a) Reflection in x-axis\n  (b) Reflection in y-axis\n  (c) Reflection in x-axis\n  (d) Reflection in y-axis\n\nStretches:\n  (a) Vertical stretch SF 2\n  (b) Horizontal stretch SF &frac{1}{3}\n  (c) Vertical stretch SF 5\n  (d) Horizontal stretch SF &frac{1}{2}\n\nMixed transformations:\n  (a) Left 2, up 3\n  (b) Reflect in x-axis, then up 1\n  (c) Right 4, vertical stretch SF 2\n  (d) Horizontal stretch SF &frac{1}{2}, down 5\n  (e) Right 1, reflect in x-axis, up 2"
+    }
+  ]
+}

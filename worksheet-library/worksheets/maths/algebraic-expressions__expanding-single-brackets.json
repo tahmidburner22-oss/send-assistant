@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Algebraic Expressions",
+  "subtopic": "Expanding single brackets",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Expanding single brackets",
+  "subtitle": "Algebraic Expressions · GCSE Maths",
+  "learning_objective": "I can expand single brackets by multiplying every term inside by the term outside.",
+  "key_vocab": [
+    {
+      "term": "Expanding",
+      "definition": "Expanding means removing the brackets by multiplying every term inside by the term outside."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can expand single brackets by multiplying every term inside by the term outside."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Expanding -- Expanding means removing the brackets by multiplying every term inside by the term outside."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply the term outside by EVERY term inside. Watch the signs carefully when there's a negative outside.\n3(x + 2) = 3x + 6\nMultiply both terms\n\nKey examples:\n  ✓ 3(x + 2) = 3x + 6  (both terms)\n  ✓ −2(x − 5) = −2x + 10  (watch signs)\n  ✓ x(x + 3) = x² + 3x  (x × x = x²)\n  ✗ 3(x + 2) = 3x + 2  (missed second term)\n  ✗ −2(x + 3) = −2x + 6  (should be −6)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – all positive\n  Expand 3(x + 4)\n  3 × x = 3x\n  3 × 4 = 12\n  Combine: 3x + 12\n  = 3x + 12\n  (Multiply each term inside by 3.)\n\nExample 2 – with subtraction\n  Expand 5(x − 2)\n  5 × x = 5x\n  5 × (−2) = −10\n  Combine: 5x − 10\n  = 5x − 10\n  (The minus sign belongs to the 2.)"
+    },
+    {
+      "id": "s5",
+      "title": "Number outside, all positive",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Multiply each term inside.\n\n(a) 2(x + 5)\n(b) 4(x + 3)\n(c) 7(x + 2)\n(d) 5(x + 6)"
+    },
+    {
+      "id": "s6",
+      "title": "With subtraction inside",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "The minus sign stays with its term.\n\n(a) 3(x − 4)\n(b) 6(x − 1)\n(c) 8(x − 5)\n(d) 9(x − 2)"
+    },
+    {
+      "id": "s7",
+      "title": "Negative outside",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Watch signs carefully.\n\n(a) −2(x + 3)\n(b) −5(x + 4)\n(c) −3(x − 2)\n(d) −4(x − 7)"
+    },
+    {
+      "id": "s8",
+      "title": "Variable outside",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "x × x = x².\n\n(a) x(x + 4)\n(b) x(x − 3)\n(c) 2x(x + 5)\n(d) 3x(x − 2)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed expand and simplify",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Expand, then collect any like terms.\n\n(a) 3(x + 2) + 4\n(b) 5(x − 1) + 2x\n(c) 2(x + 3) + 3(x − 1)\n(d) x(x + 2) − x\n(e) −2(x − 4) + 5"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 3(x + 2) = 3x + 2\n✓ 5(x − 3) = 5x − 15\n✗ −4(x + 2) = −4x + 8\n✓ x(x + 3) = x² + 3x\n✓ −2(x − 5) = −2x + 10"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nNumber outside, all positive:\n  (a) 2x+10\n  (b) 4x+12\n  (c) 7x+14\n  (d) 5x+30\n\nWith subtraction inside:\n  (a) 3x−12\n  (b) 6x−6\n  (c) 8x−40\n  (d) 9x−18\n\nNegative outside:\n  (a) −2x−6\n  (b) −5x−20\n  (c) −3x+6\n  (d) −4x+28\n\nVariable outside:\n  (a) x²+4x\n  (b) x²−3x\n  (c) 2x²+10x\n  (d) 3x²−6x\n\nMixed expand and simplify:\n  (a) 3x+10\n  (b) 7x−5\n  (c) 5x+3\n  (d) x²+x\n  (e) −2x+13"
+    }
+  ]
+}

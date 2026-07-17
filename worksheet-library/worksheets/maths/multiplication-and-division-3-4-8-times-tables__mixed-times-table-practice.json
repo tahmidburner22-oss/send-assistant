@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (3, 4, 8 Times Tables)",
+  "subtopic": "Mixed times table practice",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Mixed times table practice",
+  "subtitle": "Multiplication and Division (3, 4, 8 Times Tables) · KS3 Maths",
+  "learning_objective": "I can fluently recall and use multiplication and division facts up to 12 × 12.",
+  "key_vocab": [
+    {
+      "term": "Fluency",
+      "definition": "Fluency means recalling a multiplication fact in under 2 seconds, without counting on fingers."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can fluently recall and use multiplication and division facts up to 12 × 12."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Fluency -- Fluency means recalling a multiplication fact in under 2 seconds, without counting on fingers."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiplication is commutative: a × b = b × a. So you only need to learn HALF the table.\n7 × 8 = 8 × 7 = 56\nSame answer either way\n\nKey examples:\n  ✓ 8 × 6 = 48  (fact)\n  ✓ 48 ÷ 6 = 8  (linked)\n  ✓ 7 × 9 = 63  (fact)\n  ✗ 7 × 8 = 54  (should be 56)\n  ✗ 9 × 6 = 56  (should be 54)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – fact recall\n  Calculate 7 × 8\n  Think: 7 × 8 = 8 × 7\n  = (7 × 7) + 7\n  = 49 + 7\n  = 56\n  (If you know 7×7=49, just add one more 7.)\n\nExample 2 – missing factor\n  Solve: 6 × ___ = 54\n  54 ÷ 6\n  Count up in 6s: 6,12,...,54\n  = 9\n  = 9\n  (9 sixes make 54.)"
+    },
+    {
+      "id": "s5",
+      "title": "Quick recall",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Answer as quickly as you can.\n\n(a) 6 × 7 = ___\n(b) 8 × 9 = ___\n(c) 11 × 5 = ___\n(d) 12 × 4 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "Missing factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Fill in the blank.\n\n(a) ___ × 7 = 49\n(b) 8 × ___ = 64\n(c) ___ × 9 = 81\n(d) 11 × ___ = 121"
+    },
+    {
+      "id": "s7",
+      "title": "Division facts",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use times-tables knowledge to divide.\n\n(a) 63 ÷ 9 = ___\n(b) 84 ÷ 7 = ___\n(c) 96 ÷ 8 = ___\n(d) 144 ÷ 12 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "Two-step",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Show full working.\n\n(a) (5×6) + (4×7) = ___\n(b) (8×7) − (3×9) = ___\n(c) 63 ÷ 7 + 9 = ___\n(d) 11 × 12 ÷ 6 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed challenge",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "These mix all tables to 12 × 12.\n\n(a) 9 × 7 = ___\n(b) 132 ÷ 12 = ___\n(c) 8 × 11 = ___\n(d) 144 ÷ 9 = ___\n(e) 12 × 12 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 7 × 8 = 54\n✓ 9 × 6 = 54\n✓ 11 × 11 = 121\n✓ 8 × 7 = 7 × 8\n✗ 6 × 9 ≠ 9 × 6"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nQuick recall:\n  (a) 42\n  (b) 72\n  (c) 55\n  (d) 48\n\nMissing factors:\n  (a) 7\n  (b) 8\n  (c) 9\n  (d) 11\n\nDivision facts:\n  (a) 7\n  (b) 12\n  (c) 12\n  (d) 12\n\nTwo-step:\n  (a) 58\n  (b) 29\n  (c) 18\n  (d) 22\n\nMixed challenge:\n  (a) 63\n  (b) 11\n  (c) 88\n  (d) 16\n  (e) 144"
+    }
+  ]
+}

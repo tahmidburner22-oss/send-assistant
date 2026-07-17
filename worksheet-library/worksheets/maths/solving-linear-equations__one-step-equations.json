@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Solving Linear Equations",
+  "subtopic": "One-step equations",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "One-step equations",
+  "subtitle": "Solving Linear Equations · GCSE Maths",
+  "learning_objective": "I can solve one-step linear equations using inverse operations.",
+  "key_vocab": [
+    {
+      "term": "one-step equation",
+      "definition": "A one-step equation needs only ONE inverse operation to solve, e.g. x + 5 = 12 needs only −5."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve one-step linear equations using inverse operations."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "one-step equation -- A one-step equation needs only ONE inverse operation to solve, e.g. x + 5 = 12 needs only −5."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Use the INVERSE operation to undo what's done to x. Apply it to BOTH sides.\nx + 5 = 12 ⇒ x = 7\nSubtract 5 from both sides\n\nKey examples:\n  ✓ + ↔ −  (inverses)\n  ✓ × ↔ ÷  (inverses)\n  ✓ x + 5 = 12 → x = 7  (subtract 5)\n  ✗ 3x = 12 → x = 9 (wrong: should ÷)  (÷ not −)\n  ✗ Only do operation on one side  (must do BOTH sides)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – addition\n  Solve x + 7 = 15\n  Inverse of +7 is −7\n  x + 7 − 7 = 15 − 7\n  x = 8\n  x = 8\n  (Check: 8 + 7 = 15 ✓)\n\nExample 2 – subtraction\n  Solve x − 9 = 4\n  Inverse of −9 is +9\n  x − 9 + 9 = 4 + 9\n  x = 13\n  x = 13\n  (Check: 13 − 9 = 4 ✓)"
+    },
+    {
+      "id": "s5",
+      "title": "Add/subtract",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the inverse operation.\n\n(a) x + 5 = 12\n(b) x + 11 = 20\n(c) x − 6 = 10\n(d) x − 4 = 9"
+    },
+    {
+      "id": "s6",
+      "title": "Multiply/divide",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the inverse operation.\n\n(a) 3x = 18\n(b) 7x = 56\n(c) x ÷ 5 = 6\n(d) x ÷ 8 = 4"
+    },
+    {
+      "id": "s7",
+      "title": "With negatives",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Be careful with sign changes.\n\n(a) x + 12 = 5\n(b) x − 3 = −10\n(c) −4x = 24\n(d) x ÷ −3 = 5"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Form an equation, then solve.\n\n(a) I think of x. Add 9 to get 22. Find x.\n(b) Multiply x by 4 to get 28. Find x.\n(c) Divide x by 3 to get 12. Find x.\n(d) Subtract 8 from x to get 0. Find x."
+    },
+    {
+      "id": "s9",
+      "title": "Mixed one-step",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Identify the operation, then apply its inverse.\n\n(a) x + 17 = 25\n(b) 11x = 121\n(c) x − 4.5 = 2.5\n(d) x ÷ 6 = 9\n(e) x + 2.4 = 5.1"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ x + 5 = 12 means x = 17\n✓ 5x = 25 means x = 5\n✓ Whatever you do to one side, do to the other\n✗ Inverse of ×3 is ×3\n✓ x ÷ 4 = 8 means x = 32"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nAdd/subtract:\n  (a) x=7\n  (b) x=9\n  (c) x=16\n  (d) x=13\n\nMultiply/divide:\n  (a) x=6\n  (b) x=8\n  (c) x=30\n  (d) x=32\n\nWith negatives:\n  (a) x=−7\n  (b) x=−7\n  (c) x=−6\n  (d) x=−15\n\nWord problems:\n  (a) x=13\n  (b) x=7\n  (c) x=36\n  (d) x=8\n\nMixed one-step:\n  (a) x=8\n  (b) x=11\n  (c) x=7\n  (d) x=54\n  (e) x=2.7"
+    }
+  ]
+}

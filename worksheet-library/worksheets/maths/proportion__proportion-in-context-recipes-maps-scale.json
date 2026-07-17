@@ -1,0 +1,102 @@
+{
+  "subject": "Maths",
+  "topic": "Proportion",
+  "subtopic": "Proportion in context (recipes, maps, scale)",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Proportion in context (recipes, maps, scale)",
+  "subtitle": "Proportion · GCSE Maths",
+  "learning_objective": "I can solve real-world proportion problems involving recipes, maps, scales, and exchange rates.",
+  "key_vocab": [
+    {
+      "term": "Proportion in context",
+      "definition": "scaling quantities up or down while keeping the same ratio between ingredients, distances, or values."
+    },
+    {
+      "term": "Applications",
+      "definition": "Recipes (scaling ingredients), maps (scale factors), currency exchange, and mixing ratios."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can solve real-world proportion problems involving recipes, maps, scales, and exchange rates."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Proportion in context -- scaling quantities up or down while keeping the same ratio between ingredients, distances, or values.\nApplications -- Recipes (scaling ingredients), maps (scale factors), currency exchange, and mixing ratios."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Find the scale factor (new ÷ original) and multiply all quantities by it.\nScale factor = &frac{new amount}{original}\nThen multiply each ingredient/measurement by SF\n\nKey examples:\n  ✓ Scale 1:50000 means 1 cm = 50000 cm = 500 m  (map scale)\n  ✓ Recipe for 4 → for 6: multiply by 1.5  (scale factor)\n  ✓ £1 = .25 means £40 = 0  (exchange rate)\n  ✗ Scale 1:50000 means 1 cm = 50 m  (forgot a zero: 500 m)\n  ✗ Recipe for 4 to 6: add 2 to each amount  (must multiply by scale factor)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – scaling a recipe\n  A recipe for 4 uses 200g flour, 100g sugar, 2 eggs. Make it for 6.\n  Scale factor: 6 ÷ 4 = 1.5\n  Flour: 200 × 1.5 = 300g, Sugar: 100 × 1.5 = 150g\n  Eggs: 2 × 1.5 = 3\n  300g flour, 150g sugar, 3 eggs\n  (Multiply every ingredient by the same scale factor.)\n\nExample 2 – map scale\n  A map has scale 1:25000. Two towns are 8 cm apart on the map. Find the real distance in km.\n  8 cm × 25000 = 200000 cm\n  200000 cm = 2000 m\n  2000 m = 2 km\n  = 2 km\n  (Convert from cm to km: divide by 100000.)"
+    },
+    {
+      "id": "s5",
+      "title": "Scaling recipes",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Scale the recipe from 4 servings to the target.\n\n(a) 200g flour for 4. Amount for 10?\n(b) 150ml milk for 4. Amount for 6?\n(c) 3 eggs for 4. Eggs for 12?\n(d) 80g butter for 4. Amount for 3?"
+    },
+    {
+      "id": "s6",
+      "title": "Map scales",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate real distances from map measurements.\n\n(a) Scale 1:50000. Map distance 6 cm. Real distance?\n(b) Scale 1:25000. Map distance 12 cm. Real distance?\n(c) Scale 1:100000. Real distance 8 km. Map distance?\n(d) Scale 1:20000. Map distance 4.5 cm. Real distance?"
+    },
+    {
+      "id": "s7",
+      "title": "Currency exchange",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert using the given exchange rate.\n\n(a) £1 = .25. Convert £60 to dollars\n(b) £1 = 1.15 euros. Convert £200 to euros\n(c) £1 = .25. Convert 00 to pounds\n(d) £1 = 1.15 euros. Convert 460 euros to pounds"
+    },
+    {
+      "id": "s8",
+      "title": "Mixing and ratios",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use proportion to solve.\n\n(a) Concrete mix: 1 cement : 3 sand. Need 20 kg total. How much cement?\n(b) Paint: 3 red : 2 white = pink. Need 2.5 L total. How much red?\n(c) Squash: 1 part cordial to 4 parts water. Make 2 litres. Cordial needed?\n(d) Model scale 1:72. Real plane 36 m. Model length?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed proportion in context",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each real-world problem.\n\n(a) Recipe for 8: 600g pasta. Amount for 5?\n(b) Map scale 1:40000. Towns 7.5 cm apart. Real distance?\n(c) £1 = 145 yen. Convert £35 to yen\n(d) A car uses 5 litres per 60 km. Fuel for 210 km?\n(e) Scale model 1:200. Building height 4.5 cm. Real height?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Scale 1:25000 means 1 cm represents 250 m\n✗ To scale a recipe from 4 to 6, add 2 to each ingredient\n✓ To convert £ to euros, multiply by the exchange rate\n✗ Scale 1:50000 means 1 cm = 50 m\n✓ The scale factor for 4 servings to 6 is 1.5"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nScaling recipes:\n  (a) 500g\n  (b) 225ml\n  (c) 9\n  (d) 60g\n\nMap scales:\n  (a) 3 km\n  (b) 3 km\n  (c) 8 cm\n  (d) 0.9 km\n\nCurrency exchange:\n  (a) 5\n  (b) 230 euros\n  (c) £80\n  (d) £400\n\nMixing and ratios:\n  (a) 5 kg\n  (b) 1.5 L\n  (c) 400 ml\n  (d) 50 cm\n\nMixed proportion in context:\n  (a) 375g\n  (b) 3 km\n  (c) 5075 yen\n  (d) 17.5 litres\n  (e) 9 m"
+    }
+  ]
+}

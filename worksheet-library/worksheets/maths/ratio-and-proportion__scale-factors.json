@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Ratio and Proportion",
+  "subtopic": "Scale factors",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Scale factors",
+  "subtitle": "Ratio and Proportion · KS3 Maths",
+  "learning_objective": "I can use scale factors to enlarge or reduce shapes and interpret map scales.",
+  "key_vocab": [
+    {
+      "term": "scale factor",
+      "definition": "A scale factor is the multiplier that converts an original length to a new length. A scale factor greater than 1 enlarges; between 0 and 1 it reduces."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use scale factors to enlarge or reduce shapes and interpret map scales."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "scale factor -- A scale factor is the multiplier that converts an original length to a new length. A scale factor greater than 1 enlarges; between 0 and 1 it reduces."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Scale factor = new length divided by original length. Multiply every length by the scale factor.\nSF = new length ÷ original length\nAll lengths scale by the same factor\n\nKey examples:\n  ✓ SF = 3 means new = original × 3  (enlargement)\n  ✓ SF = &frac{1}{2} means new = original × &frac{1}{2}  (reduction)\n  ✓ SF = new length ÷ original length  (finding the scale factor)\n  ✗ SF = 2 doubles the area  (area scales by SF² = 4)\n  ✗ SF < 1 makes the shape bigger  (it makes it smaller)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – finding a scale factor\n  A shape has side 4 cm. The enlargement has side 12 cm. Find the scale factor.\n  SF = new ÷ original\n  SF = 12 ÷ 4\n  SF = 3\n  SF = 3\n  (Divide the new length by the original length.)\n\nExample 2 – using a scale factor\n  Enlarge a triangle with sides 3, 4, 5 cm by scale factor 2.\n  Multiply each side by 2\n  3 × 2 = 6, 4 × 2 = 8, 5 × 2 = 10\n  New sides: 6, 8, 10 cm\n  6, 8, 10 cm\n  (Every side is multiplied by the same scale factor.)"
+    },
+    {
+      "id": "s5",
+      "title": "Finding scale factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the scale factor from original to image.\n\n(a) Original 5 cm, image 15 cm\n(b) Original 8 cm, image 2 cm\n(c) Original 6 cm, image 18 cm\n(d) Original 10 cm, image 4 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Applying scale factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the new length after enlargement.\n\n(a) Length 7 cm, SF = 3\n(b) Length 12 cm, SF = &frac{1}{3}\n(c) Length 9 cm, SF = 4\n(d) Length 20 cm, SF = &frac{1}{5}"
+    },
+    {
+      "id": "s7",
+      "title": "Reverse problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the original length.\n\n(a) New length 24 cm, SF = 4. Original?\n(b) New length 5 cm, SF = &frac{1}{3}. Original?\n(c) New length 30 cm, SF = 6. Original?\n(d) New length 3 cm, SF = &frac{1}{5}. Original?"
+    },
+    {
+      "id": "s8",
+      "title": "Map scales",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the map scale to find real distances.\n\n(a) Scale 1 : 50 000. Map distance 4 cm. Real distance?\n(b) Scale 1 : 25 000. Map distance 8 cm. Real distance?\n(c) Scale 1 : 100 000. Real distance 5 km. Map distance?\n(d) Scale 1 : 20 000. Map distance 12 cm. Real distance?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed scale problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) A model car is SF &frac{1}{20}. Real car is 4 m long. Model length?\n(b) Sides 5, 7, 9 cm enlarged by SF 3. Find new perimeter.\n(c) Photo 6 cm wide enlarged to 15 cm. Find SF.\n(d) Rectangle 4 cm by 6 cm. SF = 2. Find new area.\n(e) Map scale 1 : 40 000. Area on map = 2 cm². Real area?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Scale factor = new length ÷ original length\n✗ A scale factor of 2 doubles the area\n✓ A scale factor between 0 and 1 reduces the shape\n✓ 1 : 50 000 means 1 cm on map = 50 000 cm in real life\n✗ A scale factor less than 1 makes the shape bigger"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nFinding scale factors:\n  (a) SF = 3\n  (b) SF = &frac{1}{4}\n  (c) SF = 3\n  (d) SF = &frac{2}{5}\n\nApplying scale factors:\n  (a) 21 cm\n  (b) 4 cm\n  (c) 36 cm\n  (d) 4 cm\n\nReverse problems:\n  (a) 6 cm\n  (b) 15 cm\n  (c) 5 cm\n  (d) 15 cm\n\nMap scales:\n  (a) 2 km\n  (b) 2 km\n  (c) 5 cm\n  (d) 2.4 km\n\nMixed scale problems:\n  (a) 20 cm\n  (b) 63 cm\n  (c) 2.5\n  (d) 192 cm²\n  (e) 320 000 m²"
+    }
+  ]
+}

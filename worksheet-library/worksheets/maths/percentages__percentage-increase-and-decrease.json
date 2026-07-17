@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Percentages",
+  "subtopic": "Percentage increase and decrease",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Percentage increase and decrease",
+  "subtitle": "Percentages · GCSE Maths",
+  "learning_objective": "I can increase or decrease an amount by a given percentage using a multiplier.",
+  "key_vocab": [
+    {
+      "term": "Percentage increase and decrease",
+      "definition": "A percentage increase makes an amount larger. A percentage decrease makes it smaller. Use a single multiplier for efficiency."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can increase or decrease an amount by a given percentage using a multiplier."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Percentage increase and decrease -- A percentage increase makes an amount larger. A percentage decrease makes it smaller. Use a single multiplier for efficiency."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "To increase, add the percentage to 100% to get the multiplier. To decrease, subtract from 100%.\nNew = Original × multiplier\nIncrease: 1 + &frac{%}{100}. Decrease: 1 - &frac{%}{100}\n\nKey examples:\n  ✓ Increase £80 by 25%: 80 × 1.25 = £100  (multiplier 1.25)\n  ✓ Decrease £60 by 10%: 60 × 0.90 = £54  (multiplier 0.90)\n  ✓ VAT at 20%: multiply by 1.20  (adding 20%)\n  ✗ Increase by 25% then decrease by 25% = original  (does not return to original)\n  ✗ Decrease by 10%: multiply by 0.10  (that finds 10%, not 90%)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – percentage increase\n  Increase £240 by 15%\n  Multiplier = 1 + 0.15 = 1.15\n  240 × 1.15\n  = £276\n  = £276\n  (The multiplier 1.15 means 100% + 15% = 115% of original.)\n\nExample 2 – percentage decrease\n  Decrease £350 by 20%\n  Multiplier = 1 - 0.20 = 0.80\n  350 × 0.80\n  = £280\n  = £280\n  (0.80 means keeping 80% (removing 20%).)"
+    },
+    {
+      "id": "s5",
+      "title": "Percentage increases",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Increase each amount by the given percentage.\n\n(a) £200 by 10%\n(b) £450 by 20%\n(c) £80 by 25%\n(d) £1200 by 5%"
+    },
+    {
+      "id": "s6",
+      "title": "Percentage decreases",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Decrease each amount by the given percentage.\n\n(a) £300 by 10%\n(b) £560 by 25%\n(c) £90 by 30%\n(d) £1500 by 15%"
+    },
+    {
+      "id": "s7",
+      "title": "Finding the multiplier",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write the single multiplier for each change.\n\n(a) Increase by 35%\n(b) Decrease by 12%\n(c) Increase by 7.5%\n(d) Decrease by 42%"
+    },
+    {
+      "id": "s8",
+      "title": "Reverse percentage problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the original amount.\n\n(a) After 20% increase, price = £480. Original?\n(b) After 10% decrease, value = £540. Original?\n(c) After 25% increase, bill = £75. Original?\n(d) After 15% decrease, weight = £170. Original?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed percentage changes",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each problem.\n\n(a) £640 increased by 12.5%\n(b) £880 decreased by 35%\n(c) After 30% off, a coat costs £56. Original price?\n(d) A house worth £250000 increases by 8%. New value?\n(e) A salary of £32000 gets a 4.5% rise. New salary?"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To increase by 15%, multiply by 1.15\n✗ To decrease by 20%, multiply by 0.20\n✗ A 20% increase followed by a 20% decrease gives the original\n✓ To find original after increase, divide by the multiplier\n✓ Decrease by 30% means multiplier is 0.70"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nPercentage increases:\n  (a) £220\n  (b) £540\n  (c) £100\n  (d) £1260\n\nPercentage decreases:\n  (a) £270\n  (b) £420\n  (c) £63\n  (d) £1275\n\nFinding the multiplier:\n  (a) 1.35\n  (b) 0.88\n  (c) 1.075\n  (d) 0.58\n\nReverse percentage problems:\n  (a) £400\n  (b) £600\n  (c) £60\n  (d) £200\n\nMixed percentage changes:\n  (a) £720\n  (b) £572\n  (c) £80\n  (d) £270000\n  (e) £33440"
+    }
+  ]
+}

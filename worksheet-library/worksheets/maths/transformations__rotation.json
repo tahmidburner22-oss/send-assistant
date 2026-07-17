@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Transformations",
+  "subtopic": "Rotation",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Rotation",
+  "subtitle": "Transformations · GCSE Maths",
+  "learning_objective": "I can rotate shapes about a given centre by 90, 180, or 270 degrees.",
+  "key_vocab": [
+    {
+      "term": "rotation",
+      "definition": "A rotation turns a shape around a fixed point called the centre of rotation. You need to know the centre, angle, and direction (clockwise or anticlockwise)."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can rotate shapes about a given centre by 90, 180, or 270 degrees."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "rotation -- A rotation turns a shape around a fixed point called the centre of rotation. You need to know the centre, angle, and direction (clockwise or anticlockwise)."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "To describe a rotation, state: centre, angle, and direction. The shape does not change size.\n90° CW about O: (x, y) → (y, -x)\n180°: (x, y) → (-x, -y)\n\nKey examples:\n  ✓ (3, 1) rotated 90° clockwise about origin = (1, -3)  ((x,y)→(y,-x))\n  ✓ (3, 1) rotated 180° about origin = (-3, -1)  (negate both)\n  ✓ Rotation preserves shape and size  (congruent image)\n  ✗ 90° clockwise is the same as 90° anticlockwise  (they are opposite directions)\n  ✗ Rotation changes the size of the shape  (size is preserved)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – 90 clockwise about origin\n  Rotate (2, 5) by 90° clockwise about (0, 0).\n  Rule: (x, y) → (y, -x)\n  (2, 5) → (5, -2)\n  Image is at (5, -2)\n  (5, -2)\n  (Swap coordinates and negate the new y.)\n\nExample 2 – 180 about origin\n  Rotate (3, -1) by 180° about (0, 0).\n  Rule: (x, y) → (-x, -y)\n  (3, -1) → (-3, 1)\n  Image is at (-3, 1)\n  (-3, 1)\n  (Negate both coordinates.)"
+    },
+    {
+      "id": "s5",
+      "title": "90° clockwise about origin",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rotate each point 90° clockwise about (0,0).\n\n(a) (1, 3)\n(b) (4, 2)\n(c) (-1, 5)\n(d) (0, 4)"
+    },
+    {
+      "id": "s6",
+      "title": "180° about origin",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rotate each point 180° about (0,0).\n\n(a) (3, 2)\n(b) (-1, 4)\n(c) (5, -3)\n(d) (-2, -6)"
+    },
+    {
+      "id": "s7",
+      "title": "90° anticlockwise about origin",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rotate each point 90° anticlockwise about (0,0).\n\n(a) (2, 3)\n(b) (5, 1)\n(c) (-3, 4)\n(d) (6, 0)"
+    },
+    {
+      "id": "s8",
+      "title": "About a non-origin centre",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Rotate 180° about the given centre.\n\n(a) (4, 3) about (2, 2)\n(b) (5, 1) about (3, 3)\n(c) (1, 4) about (3, 2)\n(d) (6, 5) about (4, 3)"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed rotations",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Perform each rotation.\n\n(a) (3, 1) 90° CW about origin\n(b) (2, 4) 180° about origin\n(c) (1, 5) 90° ACW about origin\n(d) (4, 2) 90° CW about (2, 1)\n(e) (1, 3) 180° about (2, 2)"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 180° rotation about origin: (x,y) becomes (-x,-y)\n✗ 90° clockwise and 90° anticlockwise give the same image\n✓ Rotation preserves the shape and size\n✗ A 360° rotation returns the shape to a different position\n✓ The centre of rotation does not move"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\n90° clockwise about origin:\n  (a) (3, -1)\n  (b) (2, -4)\n  (c) (5, 1)\n  (d) (4, 0)\n\n180° about origin:\n  (a) (-3, -2)\n  (b) (1, -4)\n  (c) (-5, 3)\n  (d) (2, 6)\n\n90° anticlockwise about origin:\n  (a) (-3, 2)\n  (b) (-1, 5)\n  (c) (-4, -3)\n  (d) (0, 6)\n\nAbout a non-origin centre:\n  (a) (0, 1)\n  (b) (1, 5)\n  (c) (5, 0)\n  (d) (2, 1)\n\nMixed rotations:\n  (a) (1, -3)\n  (b) (-2, -4)\n  (c) (-5, 1)\n  (d) (3, -1)\n  (e) (3, 1)"
+    }
+  ]
+}

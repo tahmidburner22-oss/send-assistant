@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Percentages of Amounts",
+  "subtopic": "Finding any percentage of an amount",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Finding any percentage of an amount",
+  "subtitle": "Percentages of Amounts · KS3 Maths",
+  "learning_objective": "I can find any percentage of an amount using a calculator or written method.",
+  "key_vocab": [
+    {
+      "term": "Finding any percentage",
+      "definition": "To find any percentage of an amount, write the percentage as a decimal or fraction and multiply. This method works for whole and decimal percentages."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can find any percentage of an amount using a calculator or written method."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Finding any percentage -- To find any percentage of an amount, write the percentage as a decimal or fraction and multiply. This method works for whole and decimal percentages."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Any percentage can be found by converting to a decimal and multiplying.\nP% of n = &frac{P}{100} × n\nWorks for any P, including decimals and values over 100\n\nKey examples:\n  ✓ 23% of 400 = 0.23 × 400 = 92  (decimal multiplier)\n  ✓ 7.5% of 80 = 0.075 × 80 = 6  (decimal percentage)\n  ✓ 110% of 50 = 1.10 × 50 = 55  (more than 100%)\n  ✗ 23% of 400 = 23 × 400  (must divide 23 by 100 first)\n  ✗ 7.5% of 80 = 7.5 × 80 = 600  (forgot to convert to decimal)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – whole number percentage\n  Find 37% of 250\n  Convert: 37% = 0.37\n  0.37 × 250\n  = 92.5\n  = 92.5\n  (Divide the percentage by 100 to get the decimal multiplier.)\n\nExample 2 – decimal percentage\n  Find 3.5% of 600\n  Convert: 3.5% = 0.035\n  0.035 × 600\n  = 21\n  = 21\n  (Decimal percentages work the same way.)"
+    },
+    {
+      "id": "s5",
+      "title": "Whole number percentages",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Convert to a decimal and multiply.\n\n(a) 23% of 300\n(b) 47% of 200\n(c) 68% of 50\n(d) 89% of 400"
+    },
+    {
+      "id": "s6",
+      "title": "Decimal percentages",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find each percentage.\n\n(a) 2.5% of 800\n(b) 4.5% of 200\n(c) 0.5% of 1000\n(d) 12.5% of 64"
+    },
+    {
+      "id": "s7",
+      "title": "Percentages over 100",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Calculate percentages greater than 100%.\n\n(a) 150% of 60\n(b) 200% of 45\n(c) 175% of 80\n(d) 110% of 250"
+    },
+    {
+      "id": "s8",
+      "title": "Real-world percentages",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve each problem.\n\n(a) A meal costs £65. Service charge is 12.5%. How much is the charge?\n(b) A savings account has £3400. Interest rate is 1.5%. How much interest?\n(c) 33% of 270 students walk to school. How many?\n(d) A laptop was £800. It has lost 17.5% of value. Loss in pounds?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed percentage questions",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Calculate each one.\n\n(a) 78% of 150\n(b) 0.1% of 5000\n(c) 6.25% of 480\n(d) 130% of 90\n(e) 99% of 300"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ 37% of 250 = 0.37 × 250\n✗ 7.5% = 0.75 as a decimal\n✓ 125% of 80 is greater than 80\n✗ 0.5% of 1000 = 50\n✓ 3.5% = 0.035 as a decimal"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nWhole number percentages:\n  (a) 69\n  (b) 94\n  (c) 34\n  (d) 356\n\nDecimal percentages:\n  (a) 20\n  (b) 9\n  (c) 5\n  (d) 8\n\nPercentages over 100:\n  (a) 90\n  (b) 90\n  (c) 140\n  (d) 275\n\nReal-world percentages:\n  (a) £8.13\n  (b) £51\n  (c) 89\n  (d) £140\n\nMixed percentage questions:\n  (a) 117\n  (b) 5\n  (c) 30\n  (d) 117\n  (e) 297"
+    }
+  ]
+}

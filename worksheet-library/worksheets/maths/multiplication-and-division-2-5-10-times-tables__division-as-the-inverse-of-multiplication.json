@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (2, 5, 10 Times Tables)",
+  "subtopic": "Division as the inverse of multiplication",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Division as the inverse of multiplication",
+  "subtitle": "Multiplication and Division (2, 5, 10 Times Tables) · KS3 Maths",
+  "learning_objective": "I can use multiplication facts to solve division problems by recognising they are inverse operations.",
+  "key_vocab": [
+    {
+      "term": "Inverse",
+      "definition": "Inverse means opposite. Multiplication and division are inverses: one undoes the other."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use multiplication facts to solve division problems by recognising they are inverse operations."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Inverse -- Inverse means opposite. Multiplication and division are inverses: one undoes the other."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "If a × b = c, then c ÷ a = b AND c ÷ b = a. Use what you know about times tables to divide.\n7 × 8 = 56 → 56 ÷ 7 = 8\nSame numbers, inverse operation\n\nKey examples:\n  ✓ 5 × 6 = 30  (multiplication)\n  ✓ 6 × 5 = 30  (commutative)\n  ✓ 30 ÷ 5 = 6  (inverse)\n  ✓ 30 ÷ 6 = 5  (inverse)\n  ✗ 30 ÷ 30 = 1 × 5 + 6  (doesn't follow)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – fact family from a multiplication\n  If 4 × 7 = 28, write the four related facts.\n  4 × 7 = 28\n  7 × 4 = 28\n  28 ÷ 4 = 7,  28 ÷ 7 = 4\n  Four facts\n  (Same three numbers (4, 7, 28) just rearranged.)\n\nExample 2 – use multiplication to divide\n  Calculate 42 ÷ 6\n  Think: 6 × ___ = 42\n  From times table: 6 × 7 = 42\n  So 42 ÷ 6 = 7\n  = 7\n  (Recall the multiplication fact, then read off the inverse.)"
+    },
+    {
+      "id": "s5",
+      "title": "Complete the fact family",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Each multiplication has 3 partners. Write them.\n\n(a) 5 × 9 = 45 → ___, ___, ___\n(b) 6 × 8 = 48 → ___, ___, ___\n(c) 7 × 7 = 49 → ___, ___\n(d) 12 × 4 = 48 → ___, ___, ___"
+    },
+    {
+      "id": "s6",
+      "title": "Use multiplication to divide",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Think which multiplication helps.\n\n(a) 36 ÷ 4 = ___\n(b) 63 ÷ 7 = ___\n(c) 72 ÷ 8 = ___\n(d) 55 ÷ 5 = ___"
+    },
+    {
+      "id": "s7",
+      "title": "Check with the inverse",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Is each statement correct? Use multiplication to check.\n\n(a) 84 ÷ 7 = 12 — check by 7×12\n(b) 54 ÷ 6 = 8 — check by 6×8\n(c) 121 ÷ 11 = 11 — check\n(d) 96 ÷ 8 = 11 — check"
+    },
+    {
+      "id": "s8",
+      "title": "Missing-number problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the inverse to find the unknown.\n\n(a) ___ ÷ 9 = 8\n(b) 144 ÷ ___ = 12\n(c) ___ ÷ 7 = 11\n(d) 108 ÷ ___ = 9"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed fact-family practice",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Spot the multiplication fact you need.\n\n(a) If 12 × 6 = 72, then 72 ÷ 6 = ___\n(b) If 8 × 9 = 72, then 72 ÷ 9 = ___\n(c) 11 × 11 = ___, so 121 ÷ 11 = ___\n(d) If 7 × 5 = 35, then 35 ÷ 5 = ___\n(e) Write 4 facts from 4 × 6 = 24"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Division is the inverse of multiplication\n✓ If 7×9=63, then 63÷7=9\n✗ Division is commutative: 12÷3 = 3÷12\n✓ If a×b = c, then c÷a = b\n✓ Multiplication undoes division"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nComplete the fact family:\n  (a) \n  (b) \n  (c) \n  (d) \n\nUse multiplication to divide:\n  (a) 9\n  (b) 9\n  (c) 9\n  (d) 11\n\nCheck with the inverse:\n  (a) yes 7×12=84\n  (b) no, 6×8=48\n  (c) yes\n  (d) no, 8×11=88\n\nMissing-number problems:\n  (a) 72\n  (b) 12\n  (c) 77\n  (d) 12\n\nMixed fact-family practice:\n  (a) 12\n  (b) 8\n  (c) 121, 11\n  (d) 7\n  (e) 24÷4=6, 24÷6=4, 6×4=24"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Volume and Surface Area",
+  "subtopic": "Surface area of cylinders and spheres",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Surface area of cylinders and spheres",
+  "subtitle": "Volume and Surface Area · GCSE Maths",
+  "learning_objective": "I can calculate the surface area of cylinders and spheres using formulae.",
+  "key_vocab": [
+    {
+      "term": "surface area",
+      "definition": "The surface area of a 3D shape is the total area of all its faces. A cylinder has two circular ends and a curved surface that unfolds into a rectangle. A sphere has a single curved surface."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can calculate the surface area of cylinders and spheres using formulae."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "surface area -- The surface area of a 3D shape is the total area of all its faces. A cylinder has two circular ends and a curved surface that unfolds into a rectangle. A sphere has a single curved surface."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Surface area is the total area covering the outside of a 3D shape. Use the correct formula for each shape.\nCylinder SA = 2πr² + 2πrh\nTwo circular ends plus the curved surface area\n\nKey examples:\n  ✓ Cylinder: 2πr² + 2πrh  (two circles plus curved surface)\n  ✓ Sphere: 4πr²  (four times the area of a great circle)\n  ✓ Curved surface of cylinder = 2πrh  (rectangle when unrolled)\n  ✗ Cylinder SA = πr²h  (that is the volume formula)\n  ✗ Sphere SA = 2πr²  (must be 4πr²)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – cylinder surface area\n  Find the surface area of a cylinder with radius 5 cm and height 8 cm. Give your answer to 1 d.p.\n  Two circles: 2πr² = 2 × π × 5² = 50π\n  Curved surface: 2πrh = 2 × π × 5 × 8 = 80π\n  Total = 50π + 80π = 130π = 408.4 cm²\n  408.4 cm²\n  (Add the area of both circles and the curved surface.)\n\nExample 2 – sphere surface area\n  Find the surface area of a sphere with radius 6 cm. Give your answer to 1 d.p.\n  SA = 4πr²\n  = 4 × π × 6²\n  = 144π = 452.4 cm²\n  452.4 cm²\n  (Substitute the radius into 4πr².)"
+    },
+    {
+      "id": "s5",
+      "title": "Cylinder surface area",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the total surface area of each cylinder. Round to 1 d.p.\n\n(a) r = 3 cm, h = 7 cm\n(b) r = 4 cm, h = 10 cm\n(c) r = 2 cm, h = 9 cm\n(d) r = 6 cm, h = 5 cm"
+    },
+    {
+      "id": "s6",
+      "title": "Sphere surface area",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the surface area of each sphere. Round to 1 d.p.\n\n(a) r = 5 cm\n(b) r = 3 cm\n(c) r = 10 cm\n(d) r = 7 cm"
+    },
+    {
+      "id": "s7",
+      "title": "Hemispheres",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the total surface area of each solid hemisphere. Round to 1 d.p.\n\n(a) r = 5 cm\n(b) r = 8 cm\n(c) r = 2 cm\n(d) r = 6 cm"
+    },
+    {
+      "id": "s8",
+      "title": "Open cylinders",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the surface area of each open-top cylinder. Round to 1 d.p.\n\n(a) r = 4 cm, h = 6 cm\n(b) r = 5 cm, h = 12 cm\n(c) r = 3 cm, h = 8 cm\n(d) r = 7 cm, h = 4 cm"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Solve each surface area problem. Round to 1 d.p.\n\n(a) Cylinder: r = 2.5 cm, h = 6 cm. Total SA?\n(b) Sphere with diameter 14 cm. SA?\n(c) Hemisphere: r = 9 cm. Total SA?\n(d) Cylinder with no ends: r = 4 cm, h = 10 cm. Curved SA?\n(e) Sphere with circumference 31.4 cm. Find r, then SA."
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Cylinder SA = 2πr² + 2πrh includes both circles and the curved surface\n✗ Sphere SA = 2πr²\n✓ The curved surface area of a cylinder equals 2πrh\n✗ A hemisphere has surface area exactly half of a full sphere\n✓ Surface area is always measured in square units"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nCylinder surface area:\n  (a) 188.5 cm²\n  (b) 351.9 cm²\n  (c) 138.2 cm²\n  (d) 414.7 cm²\n\nSphere surface area:\n  (a) 314.2 cm²\n  (b) 113.1 cm²\n  (c) 1256.6 cm²\n  (d) 615.8 cm²\n\nHemispheres:\n  (a) 235.6 cm²\n  (b) 603.2 cm²\n  (c) 37.7 cm²\n  (d) 339.3 cm²\n\nOpen cylinders:\n  (a) 201.1 cm²\n  (b) 455.5 cm²\n  (c) 179.1 cm²\n  (d) 330.0 cm²\n\nMixed problems:\n  (a) 133.5 cm²\n  (b) 615.8 cm²\n  (c) 763.4 cm²\n  (d) 251.3 cm²\n  (e) r = 5 cm, SA = 314.2 cm²"
+    }
+  ]
+}

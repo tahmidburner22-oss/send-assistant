@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (3, 4, 8 Times Tables)",
+  "subtopic": "4 times table",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "4 times table",
+  "subtitle": "Multiplication and Division (3, 4, 8 Times Tables) · KS3 Maths",
+  "learning_objective": "I can recall and use the 4 times table to multiply and divide.",
+  "key_vocab": [
+    {
+      "term": "4 times table",
+      "definition": "The 4 times table is a list of multiples of 4: numbers we get when we count in 4s. Multiples of 4 are always even, and you can find them by doubling the 2 times table."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can recall and use the 4 times table to multiply and divide."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "4 times table -- The 4 times table is a list of multiples of 4: numbers we get when we count in 4s. Multiples of 4 are always even, and you can find them by doubling the 2 times table."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiplication is repeated addition. 4 × 4 means ‘4 groups of 4’. You can also think of it as ‘4 groups of 4’ — the answer is the same.\n4 + 4 + 4 + 4 = 4×4 = 16\nFour groups of 4\n\nKey examples:\n  ✓ 1 × 4 = 4  (starting point)\n  ✓ 2 × 4 = 8  (double)\n  ✓ 5 × 4 = 20  (halfway to 10)\n  ✗ 3 × 4 = 13  (wrong)\n  ✗ 4 × 0 = 4  (any × 0 = 0)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – single multiplication\n  Calculate 6 × 4\n  6 groups of 4\n  4 + 4 + 4 + 4  ...\n  = 24\n  = 24\n  (Skip-count in 4s 6 times to reach 24.)\n\nExample 2 – missing factor\n  Solve: ___ × 4 = 20\n  How many 4s in 20?\n  Count up: 4, 8, 12, ...\n  = 5\n  = 5\n  (Divide: 20 ÷ 4 = 5.)"
+    },
+    {
+      "id": "s5",
+      "title": "Recall the 4 times table",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete the calculation. Skip-count in 4s if you need to.\n\n(a) 3 × 4 = ___\n(b) 6 × 4 = ___\n(c) 8 × 4 = ___\n(d) 10 × 4 = ___"
+    },
+    {
+      "id": "s6",
+      "title": "Missing factors",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing number.\n\n(a) ___ × 4 = 16\n(b) ___ × 4 = 28\n(c) ___ × 4 = 36\n(d) ___ × 4 = 44"
+    },
+    {
+      "id": "s7",
+      "title": "Dividing by 4",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Use the 4 times table to divide. 4 × ___ = ?\n\n(a) 8 ÷ 4 = ___\n(b) 20 ÷ 4 = ___\n(c) 32 ÷ 4 = ___\n(d) 48 ÷ 4 = ___"
+    },
+    {
+      "id": "s8",
+      "title": "Two-step problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Work out the answer step by step.\n\n(a) (2×4) + (3×4) = ___\n(b) (5×4) − (2×4) = ___\n(c) 16 ÷ 4 + 6 = ___\n(d) (4×4) × 2 = ___"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed practice",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use what you know about the 4 times table.\n\n(a) 4 × 7 = ___\n(b) 48 ÷ 4 = ___\n(c) ___ × 4 = 24\n(d) 16 ÷ 4 = ___\n(e) 36 ÷ 4 = ___"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✗ 4 × 0 = 4\n✓ 4 × 1 = 4\n✓ 16 ÷ 4 = 4\n✓ 4 × 10 = 40 (i.e. 40)\n✗ 4 × 7 = 29"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nRecall the 4 times table:\n  (a) 12\n  (b) 24\n  (c) 32\n  (d) 40\n\nMissing factors:\n  (a) 4\n  (b) 7\n  (c) 9\n  (d) 11\n\nDividing by 4:\n  (a) 2\n  (b) 5\n  (c) 8\n  (d) 12\n\nTwo-step problems:\n  (a) 20\n  (b) 12\n  (c) 10\n  (d) 32\n\nMixed practice:\n  (a) 28\n  (b) 12\n  (c) 6\n  (d) 4\n  (e) 9"
+    }
+  ]
+}

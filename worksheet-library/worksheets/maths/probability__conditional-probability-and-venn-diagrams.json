@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Probability",
+  "subtopic": "Conditional probability and Venn diagrams",
+  "yearGroup": "Year 10",
+  "tier": "mixed",
+  "title": "Conditional probability and Venn diagrams",
+  "subtitle": "Probability · GCSE Maths",
+  "learning_objective": "I can use Venn diagrams to find probabilities including conditional probability.",
+  "key_vocab": [
+    {
+      "term": "Conditional probability",
+      "definition": "Conditional probability is the probability of an event given that another event has already occurred. Venn diagrams help us visualise overlapping groups."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can use Venn diagrams to find probabilities including conditional probability."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Conditional probability -- Conditional probability is the probability of an event given that another event has already occurred. Venn diagrams help us visualise overlapping groups."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "In a Venn diagram, the overlap shows items in BOTH sets. Conditional probability restricts to a subset.\nP(A|B) = &frac{n(A∩B)}{n(B)}\nGiven B, only look at members of B\n\nKey examples:\n  ✓ P(A|B) = P(A∩B) ÷ P(B)  (conditional formula)\n  ✓ A Venn diagram shows overlapping sets  (intersection)\n  ✓ P(A∪B) = P(A) + P(B) - P(A∩B)  (addition rule)\n  ✗ P(A|B) = P(A) always  (only if independent)\n  ✗ P(A∪B) = P(A) + P(B)  (must subtract overlap)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – reading a Venn diagram\n  In a class of 30: 18 like football, 12 like tennis, 5 like both. Find P(football only).\n  Football only = 18 - 5 = 13\n  Total = 30\n  P(football only) = &frac{13}{30}\n  = &frac{13}{30}\n  (Subtract the overlap to find the football-only region.)\n\nExample 2 – conditional probability\n  Using the same data: find P(tennis | likes football).\n  Given they like football: 18 students\n  Of these, 5 also like tennis\n  P(tennis|football) = &frac{5}{18}\n  = &frac{5}{18}\n  (Restrict to the football group, then find those who also like tennis.)"
+    },
+    {
+      "id": "s5",
+      "title": "Reading Venn diagrams",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "A class of 40: A = 22, B = 18, A∩B = 8, neither = 8. Find:\n\n(a) P(A only)\n(b) P(B only)\n(c) P(A∪B)\n(d) P(neither)"
+    },
+    {
+      "id": "s6",
+      "title": "Conditional probability",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Using: A = 22, B = 18, A∩B = 8, total = 40.\n\n(a) P(B|A)\n(b) P(A|B)\n(c) P(not B|A)\n(d) P(A|not B)"
+    },
+    {
+      "id": "s7",
+      "title": "Completing Venn diagrams",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the missing values.\n\n(a) Total 50, A = 30, B = 20, A∩B = 7. Neither?\n(b) Total 80, A = 45, B = 35, neither = 15. A∩B?\n(c) Total 100, A only = 25, B only = 30, neither = 20. A∩B?\n(d) Total 60, A = 40, A∩B = 12, neither = 5. B?"
+    },
+    {
+      "id": "s8",
+      "title": "Word problems",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Draw a Venn diagram and find the probability.\n\n(a) 50 people: 30 drink tea, 25 drink coffee, 15 drink both. P(tea only)?\n(b) Same data: P(coffee | drinks tea)?\n(c) Same data: P(neither)?\n(d) Same data: P(tea | drinks coffee)?"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed conditional probability",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Use the given information.\n\n(a) P(A) = 0.6, P(B) = 0.5, P(A∩B) = 0.3. Find P(A∪B)\n(b) Same: find P(A|B)\n(c) Same: find P(B|A)\n(d) Are A and B independent? Explain\n(e) P(neither A nor B)"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ P(A|B) means restrict to set B then find P(A)\n✗ P(A∪B) = P(A) + P(B) always\n✓ If P(A|B) = P(A) then A and B are independent\n✗ P(A|B) is the same as P(B|A)\n✓ P(A∪B) = P(A) + P(B) - P(A∩B)"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nReading Venn diagrams:\n  (a) &frac{14}{40} = &frac{7}{20}\n  (b) &frac{10}{40} = &frac{1}{4}\n  (c) &frac{32}{40} = &frac{4}{5}\n  (d) &frac{8}{40} = &frac{1}{5}\n\nConditional probability:\n  (a) &frac{8}{22} = &frac{4}{11}\n  (b) &frac{8}{18} = &frac{4}{9}\n  (c) &frac{14}{22} = &frac{7}{11}\n  (d) &frac{14}{22} = &frac{7}{11}\n\nCompleting Venn diagrams:\n  (a) 7\n  (b) 15\n  (c) 25\n  (d) 27\n\nWord problems:\n  (a) &frac{15}{50} = &frac{3}{10}\n  (b) &frac{15}{30} = &frac{1}{2}\n  (c) &frac{10}{50} = &frac{1}{5}\n  (d) &frac{15}{25} = &frac{3}{5}\n\nMixed conditional probability:\n  (a) 0.8\n  (b) 0.6\n  (c) 0.5\n  (d) Yes, P(A|B) = P(A) = 0.6\n  (e) 0.2"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "project_type": "Full-stack TypeScript app (Express + Vite React) with PostgreSQL-compatible DB via better-sqlite3",
+  "language": "TypeScript (server/client), Python (worksheet generation scripts)",
+  "build_system": "pnpm for dependencies, vite for client build, esbuild for server bundle",
+  "test_framework": "vitest for unit tests",
+  "build_command": "pnpm run build (vite build + esbuild server)",
+  "test_command": "pnpm run test (vitest run)",
+  "verification_instructions": "1. Run pnpm run check (TypeScript type checking). 2. Run pnpm run test. 3. Use Playwright to login to adaptly.co.uk and verify worksheet generation works with library worksheets.",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "pnpm install in root directory",
+  "environment_constraints": "OPEN_INTERNET - full network access. Node v22.22.3 available via nvm. Python 3.11.14 via pyenv. Playwright + Chromium available for E2E testing.",
+  "contribution_requirements": "Worksheets in worksheet-library/worksheets/maths/ follow SCHEMA.md format. Topic names must match SUBTOPICS_MAP keys in client/src/lib/subtopics-data.ts. Sections must have stable ids (s1..sN, ts1..tsN). Section types must use canonical types from SCHEMA.md.",
+  "key_patterns": "1. Source JSON format has: title (TOPIC,\\n(SUBTOPIC)), objective, info_boxes, modelled_examples[4], practice[5], misconceptions, challenge. 2. Target library format has: subject, topic, subtopic, yearGroup, tier, title, subtitle, learning_objective, key_vocab[], sections[], teacher_sections[]. 3. The overlay engine (server/lib/overlayEngine.ts) applies SEND overlays by inserting support sections after question sections - never modifies base content. 4. Library lookup uses subject+topic+yearGroup+tier with fuzzy matching via canonicalTopicKey(). 5. The resolve endpoint applies overlays including sendNeed and readingAge. 6. Existing example: worksheet-library/worksheets/maths/simultaneous-equations__non-linear-simultaneous-equations.json shows exact target format.",
+  "relevant_files": [
+    "maths-worksheets/json/*.json (128 source files)",
+    "worksheet-library/SCHEMA.md (target format spec)",
+    "worksheet-library/worksheets/maths/simultaneous-equations__non-linear-simultaneous-equations.json (gold standard example)",
+    "server/routes/worksheetLibrary.ts (library API routes - lookup, resolve, auto-save)",
+    "server/lib/overlayEngine.ts (SEND overlay engine - 1495 lines)",
+    "server/lib/topicNormalizer.ts (canonicalTopicKey function)",
+    "client/src/lib/subtopics-data.ts (SUBTOPICS_MAP for topic switcher)",
+    "client/src/pages/Worksheets.tsx (worksheet generator page)",
+    "client/src/components/WorksheetRenderer.tsx (renders worksheets on screen)",
+    "server/db/index.ts (database schema including worksheet_library table)",
+    "maths-worksheets/HANDOFF.md (project context)",
+    "maths-worksheets/PLAN.md (topic/subtopic plan)"
+  ],
+  "directory_structure": "Root: package.json, server/, client/, maths-worksheets/, worksheet-library/, worksheet-factory/. Server: routes/worksheetLibrary.ts, lib/overlayEngine.ts, lib/topicNormalizer.ts, db/index.ts. Client: src/pages/Worksheets.tsx, src/lib/subtopics-data.ts, src/components/WorksheetRenderer.tsx. Maths-worksheets: json/ (128 files), pdf/ (128 files), scripts/. Worksheet-library: SCHEMA.md, worksheets/maths/ (1 file currently)."
+}

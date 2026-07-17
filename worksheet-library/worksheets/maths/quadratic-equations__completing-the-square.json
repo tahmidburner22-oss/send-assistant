@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Quadratic Equations",
+  "subtopic": "Completing the square",
+  "yearGroup": "Year 11",
+  "tier": "mixed",
+  "title": "Completing the square",
+  "subtitle": "Quadratic Equations · GCSE Maths",
+  "learning_objective": "I can write a quadratic expression in completed square form.",
+  "key_vocab": [
+    {
+      "term": "Completing the square",
+      "definition": "Completing the square rewrites ax² + bx + c in the form (x + p)² + q. This reveals the vertex (turning point) of the parabola."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can write a quadratic expression in completed square form."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Completing the square -- Completing the square rewrites ax² + bx + c in the form (x + p)² + q. This reveals the vertex (turning point) of the parabola."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "x² + bx + c = (x + &frac{b}{2})² + c − (&frac{b}{2})²\nx² + bx + c = (x + &frac{b}{2})² + c − &frac{b²}{4}\nHalve b for the bracket; subtract the square for q\n\nKey examples:\n  ✓ x² + 6x + 5 = (x + 3)² − 4  (half of 6 is 3, 5 − 9 = −4)\n  ✓ x² − 4x + 1 = (x − 2)² − 3  (half of −4 is −2, 1 − 4 = −3)\n  ✓ x² + 8x = (x + 4)² − 16  (no constant: q = −16)\n  ✗ x² + 6x + 5 = (x + 6)² + 5  (must halve the coefficient)\n  ✗ x² + 6x + 5 = (x + 3)² + 5  (forgot to subtract 9)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – positive coefficient of x\n  Write x² + 8x + 10 in completed square form.\n  Half of 8 is 4, so bracket is (x + 4)²\n  (x + 4)² = x² + 8x + 16, so subtract 16\n  x² + 8x + 10 = (x + 4)² + 10 − 16 = (x + 4)² − 6\n  (x + 4)² − 6\n  (The vertex is at (−4, −6).)\n\nExample 2 – negative coefficient of x\n  Write x² − 6x + 2 in completed square form.\n  Half of −6 is −3, so bracket is (x − 3)²\n  (x − 3)² = x² − 6x + 9, so subtract 9\n  x² − 6x + 2 = (x − 3)² + 2 − 9 = (x − 3)² − 7\n  (x − 3)² − 7\n  (The minimum value of this expression is −7.)"
+    },
+    {
+      "id": "s5",
+      "title": "Positive x coefficient",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write in completed square form (x + p)² + q.\n\n(a) x² + 4x + 1\n(b) x² + 6x + 7\n(c) x² + 10x + 20\n(d) x² + 2x − 3"
+    },
+    {
+      "id": "s6",
+      "title": "Negative x coefficient",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Write in completed square form.\n\n(a) x² − 4x + 3\n(b) x² − 8x + 10\n(c) x² − 2x − 5\n(d) x² − 12x + 30"
+    },
+    {
+      "id": "s7",
+      "title": "No constant term",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Complete the square.\n\n(a) x² + 6x\n(b) x² − 10x\n(c) x² + 14x\n(d) x² − 20x"
+    },
+    {
+      "id": "s8",
+      "title": "Solving equations",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Solve by completing the square.\n\n(a) x² + 6x + 5 = 0\n(b) x² − 4x − 12 = 0\n(c) x² + 2x − 8 = 0\n(d) x² − 10x + 9 = 0"
+    },
+    {
+      "id": "s9",
+      "title": "Finding the vertex",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Complete the square and state the minimum point (vertex).\n\n(a) x² + 4x + 7\n(b) x² − 6x + 11\n(c) x² + 8x + 20\n(d) x² − 2x − 3\n(e) x² + 12x + 32"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ To complete the square, halve the coefficient of x\n✗ x² + 6x + 5 = (x + 6)² + 5\n✓ (x + 3)² = x² + 6x + 9\n✗ x² + 6x + 5 = (x + 3)² + 5\n✓ The vertex of (x + p)² + q is at (−p, q)"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nPositive x coefficient:\n  (a) (x + 2)² − 3\n  (b) (x + 3)² − 2\n  (c) (x + 5)² − 5\n  (d) (x + 1)² − 4\n\nNegative x coefficient:\n  (a) (x − 2)² − 1\n  (b) (x − 4)² − 6\n  (c) (x − 1)² − 6\n  (d) (x − 6)² − 6\n\nNo constant term:\n  (a) (x + 3)² − 9\n  (b) (x − 5)² − 25\n  (c) (x + 7)² − 49\n  (d) (x − 10)² − 100\n\nSolving equations:\n  (a) x = −1 or x = −5\n  (b) x = 6 or x = −2\n  (c) x = 2 or x = −4\n  (d) x = 9 or x = 1\n\nFinding the vertex:\n  (a) (x+2)² + 3; vertex (−2, 3)\n  (b) (x−3)² + 2; vertex (3, 2)\n  (c) (x+4)² + 4; vertex (−4, 4)\n  (d) (x−1)² − 4; vertex (1, −4)\n  (e) (x+6)² − 4; vertex (−6, −4)"
+    }
+  ]
+}

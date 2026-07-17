@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Angles",
+  "subtopic": "Angles in parallel lines",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Angles in parallel lines",
+  "subtitle": "Angles · KS3 Maths",
+  "learning_objective": "I can identify and calculate alternate, corresponding and co-interior angles in parallel lines.",
+  "key_vocab": [
+    {
+      "term": "transversal",
+      "definition": "When a transversal crosses two parallel lines, special angle pairs are formed: alternate, corresponding, and co-interior angles."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can identify and calculate alternate, corresponding and co-interior angles in parallel lines."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "transversal -- When a transversal crosses two parallel lines, special angle pairs are formed: alternate, corresponding, and co-interior angles."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Look for the Z, F, or C/U shape to identify the angle relationship. Then use equal or sum to 180°.\nAlternate = equal; Co-interior = 180°\nZ = equal, F = equal, C = 180°\n\nKey examples:\n  ✓ Alternate angles are equal  (Z-angles)\n  ✓ Corresponding angles are equal  (F-angles)\n  ✓ Co-interior angles sum to 180°  (C/U-angles)\n  ✗ Co-interior angles are equal  (they sum to 180°)\n  ✗ Alternate angles add to 180°  (they are equal)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – alternate angles\n  Two parallel lines are cut by a transversal. One angle is 65°. Find the alternate angle.\n  Identify the Z-shape\n  Alternate angles are equal\n  The angle = 65°\n  = 65°\n  (Alternate angles are always equal when lines are parallel.)\n\nExample 2 – corresponding angles\n  A transversal crosses parallel lines. One angle is 110°. Find the corresponding angle.\n  Identify the F-shape\n  Corresponding angles are equal\n  The angle = 110°\n  = 110°\n  (Corresponding angles are in the same position at each intersection.)"
+    },
+    {
+      "id": "s5",
+      "title": "Alternate angles (Z)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the marked angle. Lines are parallel.\n\n(a) Alternate to 55°\n(b) Alternate to 120°\n(c) Alternate to 83°\n(d) Alternate to 145°"
+    },
+    {
+      "id": "s6",
+      "title": "Corresponding angles (F)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the corresponding angle.\n\n(a) Corresponding to 70°\n(b) Corresponding to 95°\n(c) Corresponding to 132°\n(d) Corresponding to 48°"
+    },
+    {
+      "id": "s7",
+      "title": "Co-interior angles (C/U)",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the co-interior angle. They sum to 180°.\n\n(a) Co-interior with 60°\n(b) Co-interior with 115°\n(c) Co-interior with 78°\n(d) Co-interior with 143°"
+    },
+    {
+      "id": "s8",
+      "title": "Finding unknowns",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Find the value of x.\n\n(a) x and 2x are alternate angles\n(b) x and (180 − x) are co-interior\n(c) 2x + 10 and 70 are corresponding\n(d) 3x and 2x + 40 are alternate"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed angle problems",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "State the relationship and find the missing angle.\n\n(a) Angle a is alternate to 74°\n(b) Angle b is co-interior with 105°\n(c) Angle c is corresponding to 138°\n(d) x and 4x − 20 are co-interior; find x\n(e) 2x + 15 and 3x − 10 are alternate; find x"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Alternate angles are equal\n✗ Co-interior angles are equal\n✓ Corresponding angles are equal\n✗ Alternate angles add to 180°\n✓ These rules only work with parallel lines"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nAlternate angles (Z):\n  (a) 55°\n  (b) 120°\n  (c) 83°\n  (d) 145°\n\nCorresponding angles (F):\n  (a) 70°\n  (b) 95°\n  (c) 132°\n  (d) 48°\n\nCo-interior angles (C/U):\n  (a) 120°\n  (b) 65°\n  (c) 102°\n  (d) 37°\n\nFinding unknowns:\n  (a) impossible (they must be equal)\n  (b) x = 90°\n  (c) x = 30°\n  (d) x = 40°\n\nMixed angle problems:\n  (a) 74°\n  (b) 75°\n  (c) 138°\n  (d) x = 40°\n  (e) x = 25°"
+    }
+  ]
+}

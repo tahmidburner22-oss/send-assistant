@@ -1,0 +1,98 @@
+{
+  "subject": "Maths",
+  "topic": "Multiplication and Division (Times Tables to 12×12)",
+  "subtopic": "Short multiplication",
+  "yearGroup": "Year 9",
+  "tier": "mixed",
+  "title": "Short multiplication",
+  "subtitle": "Multiplication and Division (Times Tables to 12×12) · KS3 Maths",
+  "learning_objective": "I can multiply a multi-digit number by a single digit using short multiplication.",
+  "key_vocab": [
+    {
+      "term": "Short multiplication",
+      "definition": "Short multiplication is the column method for multi-digit × SINGLE-digit. Multiply each digit, carry tens to the next column."
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "title": "Learning Objective",
+      "type": "objective",
+      "content": "I can multiply a multi-digit number by a single digit using short multiplication."
+    },
+    {
+      "id": "s2",
+      "title": "Key Words",
+      "type": "vocabulary",
+      "content": "Short multiplication -- Short multiplication is the column method for multi-digit × SINGLE-digit. Multiply each digit, carry tens to the next column."
+    },
+    {
+      "id": "s3",
+      "title": "Method",
+      "type": "example",
+      "content": "Multiply each digit (right to left). If the result is 10+, write the units and CARRY the tens to the next column.\n47 × 8 = 376\n8×7=56, write 6 carry 5; then 8×4+5=37\n\nKey examples:\n  ✓ 234 × 6 = 1404  (with carrying)\n  ✓ Carry tens to next column  (left-shift)\n  ✓ 47 × 8 = 376  (2-digit)\n  ✗ Forget to add the carry  (answer wrong)\n  ✗ Multiply right to left  (actually right-to-left IS correct!)"
+    },
+    {
+      "id": "s4",
+      "title": "Worked Example",
+      "type": "example",
+      "content": "Example 1 – no carry\n  Calculate 32 × 3\n  3 × 2 = 6 (units)\n  3 × 3 = 9 (tens)\n  Read off: 96\n  = 96\n  (No carrying needed because each multiplication is < 10.)\n\nExample 2 – single carry\n  Calculate 47 × 8\n  8 × 7 = 56 (write 6, carry 5)\n  8 × 4 = 32, +5 = 37\n  Read off: 376\n  = 376\n  (Always work right to left, carrying any tens.)"
+    },
+    {
+      "id": "s5",
+      "title": "Single-digit results",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "No carrying needed.\n\n(a) 13 × 2\n(b) 23 × 3\n(c) 31 × 3\n(d) 412 × 2"
+    },
+    {
+      "id": "s6",
+      "title": "With carrying",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Carry the tens to the next column.\n\n(a) 47 × 8\n(b) 56 × 7\n(c) 83 × 6\n(d) 94 × 5"
+    },
+    {
+      "id": "s7",
+      "title": "3-digit by 1-digit",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Same method, one extra column.\n\n(a) 234 × 6\n(b) 457 × 4\n(c) 623 × 7\n(d) 856 × 9"
+    },
+    {
+      "id": "s8",
+      "title": "With zero in number",
+      "type": "q-short-answer",
+      "marks": 4,
+      "content": "Don't forget: 0 × n = 0, plus any carry.\n\n(a) 305 × 7\n(b) 402 × 8\n(c) 709 × 6\n(d) 5006 × 4"
+    },
+    {
+      "id": "s9",
+      "title": "Mixed",
+      "type": "q-short-answer",
+      "marks": 5,
+      "content": "Apply short multiplication.\n\n(a) 78 × 6\n(b) 239 × 5\n(c) 517 × 8\n(d) 1234 × 7\n(e) 999 × 9"
+    },
+    {
+      "id": "s10",
+      "title": "Common Mistakes",
+      "type": "common-mistakes",
+      "content": "✓ Multiply right to left\n✓ Carries are added to the NEXT column's product\n✗ 47 × 8 = 326 (forget carry)\n✗ 0 × n = 0, ignore the carry\n✓ Short multiplication only works for single-digit multipliers"
+    },
+    {
+      "id": "s11",
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "How confident do you feel with this topic now? (tick one)\n☐ Not yet   ☐ Getting there   ☐ Confident   ☐ Really confident\n\n• Which question did you find the hardest, and why?\n• One method step I want to remember next time:\n• One thing I will practise before the next lesson:"
+    }
+  ],
+  "teacher_sections": [
+    {
+      "id": "ts1",
+      "title": "Teacher Key & Mark Scheme",
+      "type": "mark-scheme",
+      "teacherOnly": true,
+      "content": "Award marks for correct working and final answers.\n\nSingle-digit results:\n  (a) 26\n  (b) 69\n  (c) 93\n  (d) 824\n\nWith carrying:\n  (a) 376\n  (b) 392\n  (c) 498\n  (d) 470\n\n3-digit by 1-digit:\n  (a) 1404\n  (b) 1828\n  (c) 4361\n  (d) 7704\n\nWith zero in number:\n  (a) 2135\n  (b) 3216\n  (c) 4254\n  (d) 20024\n\nMixed:\n  (a) 468\n  (b) 1195\n  (c) 4136\n  (d) 8638\n  (e) 8991"
+    }
+  ]
+}
