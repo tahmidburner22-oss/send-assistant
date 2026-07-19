@@ -459,6 +459,7 @@ CREATE TABLE IF NOT EXISTS worksheet_library (
   id TEXT PRIMARY KEY,
   subject TEXT NOT NULL,
   topic TEXT NOT NULL,
+  subtopic TEXT NOT NULL DEFAULT '', -- empty = legacy whole-topic fallback
   year_group TEXT NOT NULL,
   title TEXT NOT NULL,
   subtitle TEXT,

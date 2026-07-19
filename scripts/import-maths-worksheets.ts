@@ -135,72 +135,16 @@ async function main() {
 
   console.log(`Found ${files.length} worksheet files in directory`);
 
-  // ─── Deduplication ─────────────────────────────────────────────────────────
-  //
-  // The worksheet_library table has a UNIQUE constraint on (subject, topic,
-  // year_group, tier). Multiple subtopics share the same topic/yearGroup/tier
-  // (e.g., 4 "Angles" subtopics all map to Angles/Year 9/mixed).
-  //
-  // The gold worksheet system (client/src/data/maths-gold/) already handles
-  // per-subtopic rendering with PDF-accurate layout + SEND CSS themes for all
-  // 128 entries. The library import is a FALLBACK used when:
-  //   1. No subtopic is selected (just a topic)
-  //   2. Gold entry lookup fails
-  //
-  // To avoid unique constraint violations, we import only ONE representative
-  // worksheet per unique (subject, topic, yearGroup, tier) combination. We
-  // pick the first alphabetically from each group. All 128 JSON files are
-  // retained in the directory as documentation/reference.
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const deduplicatedFiles: string[] = [];
-  const seenKeys = new Set<string>();
-  const skippedFiles: Array<{ file: string; key: string; reason: string }> = [];
-
-  for (const file of files) {
-    const filePath = path.join(WORKSHEETS_DIR, file);
-    try {
-      const raw = fs.readFileSync(filePath, "utf-8");
-      const data: WorksheetFile = JSON.parse(raw);
-      const key = [
-        (data.subject || "").toLowerCase(),
-        (data.topic || "").toLowerCase(),
-        (data.yearGroup || "").toLowerCase(),
-        (data.tier || "mixed").toLowerCase(),
-      ].join("|");
-
-      if (seenKeys.has(key)) {
-        skippedFiles.push({
-          file,
-          key,
-          reason: `Duplicate key - gold system handles subtopic "${data.subtopic}" directly`,
-        });
-      } else {
-        seenKeys.add(key);
-        deduplicatedFiles.push(file);
-      }
-    } catch (err: any) {
-      // Still include files with parse errors so they get reported below
-      deduplicatedFiles.push(file);
-    }
-  }
-
+  // Every source file is a separately addressable curated library record.
+  // Identity includes subtopic, so all 128 files can coexist even when they
+  // share the same topic/year/tier.
+  const importFiles = files;
   console.log(
-    `Deduplicated: ${deduplicatedFiles.length} unique (subject, topic, yearGroup, tier) entries`
-  );
-  console.log(
-    `Skipped: ${skippedFiles.length} duplicate subtopics (handled by gold worksheet system)`
+    `Importing ${importFiles.length} per-subtopic (subject, topic, subtopic, yearGroup, tier) entries`
   );
 
   if (DRY_RUN) {
     console.log("\n=== DRY RUN MODE - validating only ===\n");
-    if (skippedFiles.length > 0) {
-      console.log("Skipped files (duplicate topic keys):");
-      for (const { file, reason } of skippedFiles) {
-        console.log(`  SKIP: ${file} - ${reason}`);
-      }
-      console.log("");
-    }
   }
 
   let pool: pg.Pool | null = null;
@@ -217,15 +161,15 @@ async function main() {
   let errorCount = 0;
   const errors: Array<{ file: string; error: string }> = [];
 
-  for (const file of deduplicatedFiles) {
+  for (const file of importFiles) {
     const filePath = path.join(WORKSHEETS_DIR, file);
     try {
       const raw = fs.readFileSync(filePath, "utf-8");
       const data: WorksheetFile = JSON.parse(raw);
 
       // Validate required fields
-      if (!data.subject || !data.topic || !data.yearGroup) {
-        throw new Error("Missing required fields: subject, topic, or yearGroup");
+      if (!data.subject || !data.topic || !data.subtopic || !data.yearGroup) {
+        throw new Error("Missing required fields: subject, topic, subtopic, or yearGroup");
       }
       if (!data.sections || data.sections.length < 5) {
         throw new Error(
@@ -243,26 +187,25 @@ async function main() {
       const topicKey = canonicalTopicKey(data.topic);
 
       if (!DRY_RUN && pool) {
-        // Upsert: use ON CONFLICT to make idempotent.
-        // Only one representative subtopic per topic is stored here; the gold
-        // worksheet system renders the specific subtopic when selected.
+        // Upsert every curated subtopic independently. The subtopic-aware
+        // unique index makes this idempotent without collapsing a topic to one row.
         await pool.query(
           `INSERT INTO worksheet_library (
-            id, subject, topic, year_group, title, subtitle,
+            id, subject, topic, subtopic, year_group, title, subtitle,
             sections, teacher_sections, key_vocab,
             learning_objective, source, curated, version,
             tier, canonical_topic_key,
             base_structure_json, diagram_slots_json, applied_overlays,
             created_at, updated_at
           ) VALUES (
-            $1, $2, $3, $4, $5, $6,
-            $7, $8, $9,
-            $10, $11, $12, $13,
-            $14, $15,
-            $16, $17, $18,
+            $1, $2, $3, $4, $5, $6, $7,
+            $8, $9, $10,
+            $11, $12, $13, $14,
+            $15, $16,
+            $17, $18, $19,
             NOW(), NOW()
           )
-          ON CONFLICT (subject, topic, year_group, tier)
+          ON CONFLICT (subject, topic, subtopic, year_group, tier)
           DO UPDATE SET
             title = EXCLUDED.title,
             subtitle = EXCLUDED.subtitle,
@@ -282,6 +225,7 @@ async function main() {
             id,
             data.subject,
             data.topic,
+            data.subtopic,
             data.yearGroup,
             data.title,
             data.subtitle || null,
@@ -307,7 +251,7 @@ async function main() {
       successCount++;
       if (DRY_RUN) {
         console.log(
-          `  VALID: ${file} -> topic="${data.topic}", subtopic="${data.subtopic}" [REPRESENTATIVE]`
+          `  VALID: ${file} -> topic="${data.topic}", subtopic="${data.subtopic}"`
         );
       } else {
         console.log(`  IMPORTED: ${file}`);
@@ -325,10 +269,7 @@ async function main() {
 
   console.log(`\n${"=".repeat(60)}`);
   console.log(
-    `${DRY_RUN ? "Validated" : "Imported"}: ${successCount}/${deduplicatedFiles.length} unique entries (from ${files.length} total files)`
-  );
-  console.log(
-    `Skipped duplicates: ${skippedFiles.length} (served by gold worksheet system)`
+    `${DRY_RUN ? "Validated" : "Imported"}: ${successCount}/${importFiles.length} per-subtopic entries`
   );
   if (errors.length > 0) {
     console.log(`Errors: ${errorCount}`);

@@ -51,12 +51,17 @@ function tierCandidates(value?: string | null): string[] {
   return [normal];
 }
 
+function normalizeSubtopic(value?: string | null): string {
+  return (value || "").trim();
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface LibraryEntry {
   id: string;
   subject: string;
   topic: string;
+  subtopic: string;
   year_group: string;
   title: string;
   subtitle?: string;
@@ -110,7 +115,7 @@ interface ParsedWorksheet {
 router.get("/entries", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
     const { subject, curated, search } = req.query as Record<string, string>;
-    let sql = `SELECT id, subject, topic, year_group, tier, title, source, curated, version, created_at, updated_at,
+    let sql = `SELECT id, subject, topic, subtopic, year_group, tier, title, source, curated, version, created_at, updated_at,
                COALESCE(json_array_length(NULLIF(sections, '')::json), 0) as sections_count,
                COALESCE(json_array_length(NULLIF(teacher_sections, '')::json), 0) as teacher_sections_count
                FROM worksheet_library WHERE 1=1`;
@@ -276,13 +281,13 @@ function isSafeTierTopicMatch(uiTopic: string, libraryTopic: string): boolean {
 // Returns the matching entry enriched for immediate worksheet rendering.
 router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { subject, topic, yearGroup, tier } = req.query as Record<string, string>;
+    const { subject, topic, subtopic, yearGroup, tier } = req.query as Record<string, string>;
     if (!subject || !topic || !yearGroup) {
       return res.status(400).json({ error: "subject, topic and yearGroup are required" });
     }
 
     const requestedTier = (tier || "mixed").toLowerCase().trim();
-    const entry = await findLibraryEntry(subject, topic, yearGroup, requestedTier);
+    const entry = await findLibraryEntry(subject, topic, yearGroup, requestedTier, { subtopic });
     if (!entry) {
       return res.json({ found: false });
     }
@@ -292,7 +297,10 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
     const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
      const assets = await resolveEntryAssets(entry.id);
     const sectionsWithAssets = injectAssetRefs(sections, assets);
-    const availableTiers = await findAvailableTiers(subject, topic, yearGroup);
+    const availableTiers = await findAvailableTiers(subject, topic, yearGroup, {
+      subtopic: entry.subtopic,
+      sourceLibraryId: entry.id,
+    });
     // If the entry has fewer than 5 sections it is incomplete — signal the client
     // to fall through to AI generation rather than serving a broken worksheet.
     const isComplete = sectionsWithAssets.length >= 5;
@@ -309,6 +317,7 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
       curated: !!entry.curated,
       worksheetManifest: {
         sourceLibraryId: entry.id,
+        sourceSubtopic: entry.subtopic || null,
         canonicalTopicKey: entry.canonical_topic_key || canonicalTopicKey(topic),
         tier: entry.tier,
         yearGroup,
@@ -336,71 +345,12 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
 
 router.get("/lookup-tier", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { subject, topic, yearGroup, tier } = req.query as Record<string, string>;
+    const { subject, topic, subtopic, yearGroup, tier } = req.query as Record<string, string>;
     if (!subject || !topic || !yearGroup || !tier) {
       return res.status(400).json({ error: "subject, topic, yearGroup and tier are required" });
     }
 
-    const topicNorm = topic.toLowerCase().trim();
-    const subjectsToSearch = expandSubjects(subject);
-    // Normalise subjects to lowercase for case-insensitive matching
-    const subjectsNorm = subjectsToSearch.map(s => s.toLowerCase());
-    const placeholders = subjectsNorm.map(() => "?").join(",");
-    const ygNum = yearGroup.replace(/[^0-9]/g, "");
-
-    // Normalise tier name: handle both old naming (standard/scaffolded) and new naming (base/send)
-    // The main library uses 'base' for standard/mixed, 'send' for SEND scaffolded
-    // Older entries use 'standard' and 'scaffolded'
-    const normalizedTier = tier.toLowerCase().trim();
-    const tierAliases: Record<string, string[]> = {
-      base:       ["base", "standard", "mixed"],
-      standard:   ["standard", "base", "mixed"],
-      mixed:      ["mixed", "base", "standard"],
-      send:       ["send", "scaffolded"],
-      scaffolded: ["scaffolded", "send"],
-      foundation: ["foundation"],
-      higher:     ["higher"],
-    };
-    const tiersToTry = tierAliases[normalizedTier] || [normalizedTier];
-
-    let entry: LibraryEntry | undefined;
-
-    // Try each tier alias in order
-    for (const t of tiersToTry) {
-      // Try exact match with requested tier + year group (case-insensitive subject)
-      entry = await db.prepare(
-        `SELECT * FROM worksheet_library
-         WHERE LOWER(subject) IN (${placeholders})
-           AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
-           AND (year_group = ? OR year_group LIKE ? OR year_group LIKE ?)
-           AND tier = ?
-         ORDER BY curated DESC LIMIT 1`
-      ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, yearGroup, `%${ygNum}%`, `%/${ygNum}%`, t) as LibraryEntry | undefined;
-      if (entry) break;
-
-      // Fuzzy: any year group with this tier
-      entry = await db.prepare(
-        `SELECT * FROM worksheet_library
-         WHERE LOWER(subject) IN (${placeholders}) AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?) AND tier = ?
-         ORDER BY curated DESC, updated_at DESC LIMIT 1`
-      ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, t) as LibraryEntry | undefined;
-      if (entry) break;
-
-      // Fuzzy topic keyword match with this tier
-      const allEntriesForTier = await db.prepare(
-        `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
-      ).all(...subjectsNorm, t) as LibraryEntry[];
-      entry = allEntriesForTier.find(e => topicKeywordsMatch(topic, e.topic));
-      if (entry) break;
-    }
-
-    // Fallback: any tier for this topic (keyword match), prefer base/standard
-    if (!entry) {
-      const allEntries = await db.prepare(
-        `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) ORDER BY CASE tier WHEN 'base' THEN 0 WHEN 'standard' THEN 0 ELSE 1 END, curated DESC`
-      ).all(...subjectsNorm) as LibraryEntry[];
-      entry = allEntries.find(e => topicKeywordsMatch(topic, e.topic));
-    }
+    const entry = await findLibraryEntry(subject, topic, yearGroup, tier, { subtopic });
 
     if (!entry) {
       return res.json({ found: false });
@@ -476,12 +426,13 @@ router.put("/entries/:id", requireAuth, requireSuperAdmin, async (req: Request, 
 router.post("/entries", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
-      subject, topic, yearGroup, title, subtitle,
+      subject, topic, subtopic, yearGroup, title, subtitle,
       sections, teacher_sections, key_vocab,
       learning_objective, source, curated,
     } = req.body;
 
     const year_group = yearGroup || req.body.year_group;
+    const subtopicValue = normalizeSubtopic(subtopic || req.body.subtopic);
     // tier: 'standard' | 'foundation' | 'higher' | 'scaffolded' — each stored as a separate row
     const tier = (req.body.tier || "standard").toLowerCase().trim();
 
@@ -489,10 +440,10 @@ router.post("/entries", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "subject, topic, yearGroup and title are required" });
     }
 
-    // Check if already exists — keyed by subject + topic + year_group + tier
+    // Check if already exists — keyed by subject + topic + subtopic + year_group + tier.
     const existing = await db.prepare(
-      "SELECT id, version, curated FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ? AND tier = ?"
-    ).get(subject, topic, year_group, tier) as { id: string; version: number; curated: number } | undefined;
+      "SELECT id, version, curated FROM worksheet_library WHERE subject = ? AND topic = ? AND COALESCE(subtopic, '') = ? AND year_group = ? AND tier = ?"
+    ).get(subject, topic, subtopicValue, year_group, tier) as { id: string; version: number; curated: number } | undefined;
 
     // Don't overwrite curated entries with non-curated ones
     if (existing?.curated && !curated) {
@@ -505,12 +456,12 @@ router.post("/entries", requireAuth, async (req: Request, res: Response) => {
     if (existing) {
       await db.prepare(`
         UPDATE worksheet_library SET
-          title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
+          subtopic = ?, title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
           key_vocab = ?, learning_objective = ?, source = ?, curated = ?,
           tier = ?, version = ?, uploaded_by = ?, updated_at = NOW()
         WHERE id = ?
       `).run(
-        title, subtitle || null,
+        subtopicValue, title, subtitle || null,
         JSON.stringify(sections || []),
         JSON.stringify(teacher_sections || []),
         JSON.stringify(key_vocab || []),
@@ -525,11 +476,11 @@ router.post("/entries", requireAuth, async (req: Request, res: Response) => {
     } else {
       await db.prepare(`
         INSERT INTO worksheet_library
-          (id, subject, topic, year_group, title, subtitle, sections, teacher_sections,
+          (id, subject, topic, subtopic, year_group, title, subtitle, sections, teacher_sections,
            key_vocab, learning_objective, source, curated, tier, version, uploaded_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        id, subject, topic, year_group, title, subtitle || null,
+        id, subject, topic, subtopicValue, year_group, title, subtitle || null,
         JSON.stringify(sections || []),
         JSON.stringify(teacher_sections || []),
         JSON.stringify(key_vocab || []),
@@ -554,20 +505,22 @@ router.post("/entries", requireAuth, async (req: Request, res: Response) => {
 router.post("/auto-save", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
-      subject, topic, yearGroup, title, subtitle,
+      subject, topic, subtopic, yearGroup, title, subtitle,
       sections, teacher_sections, key_vocab, learning_objective,
     } = req.body;
 
     const year_group = yearGroup || req.body.year_group;
+    const subtopicValue = normalizeSubtopic(subtopic || req.body.subtopic);
 
     if (!subject || !topic || !year_group || !title) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Only auto-save if no curated entry exists
+    // Auto-save only updates the same subtopic identity. Curated gold rows
+    // are never overwritten by AI-generated content.
     const existing = await db.prepare(
-      "SELECT id, curated FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ?"
-    ).get(subject, topic, year_group) as { id: string; curated: number } | undefined;
+      "SELECT id, curated FROM worksheet_library WHERE subject = ? AND topic = ? AND COALESCE(subtopic, '') = ? AND year_group = ? AND tier = 'standard'"
+    ).get(subject, topic, subtopicValue, year_group) as { id: string; curated: number } | undefined;
 
     if (existing?.curated) {
       return res.json({ success: true, skipped: true, reason: "curated entry preserved" });
@@ -578,12 +531,12 @@ router.post("/auto-save", requireAuth, async (req: Request, res: Response) => {
     if (existing) {
       await db.prepare(`
         UPDATE worksheet_library SET
-          title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
+          subtopic = ?, title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
           key_vocab = ?, learning_objective = ?, source = 'ai',
           updated_at = NOW()
         WHERE id = ?
       `).run(
-        title, subtitle || null,
+        subtopicValue, title, subtitle || null,
         JSON.stringify(sections || []),
         JSON.stringify(teacher_sections || []),
         JSON.stringify(key_vocab || []),
@@ -593,11 +546,11 @@ router.post("/auto-save", requireAuth, async (req: Request, res: Response) => {
     } else {
       await db.prepare(`
         INSERT INTO worksheet_library
-          (id, subject, topic, year_group, title, subtitle, sections, teacher_sections,
+          (id, subject, topic, subtopic, year_group, title, subtitle, sections, teacher_sections,
            key_vocab, learning_objective, source, curated, version, uploaded_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ai', 0, 1, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ai', 0, 1, ?)
       `).run(
-        id, subject, topic, year_group, title, subtitle || null,
+        id, subject, topic, subtopicValue, year_group, title, subtitle || null,
         JSON.stringify(sections || []),
         JSON.stringify(teacher_sections || []),
         JSON.stringify(key_vocab || []),
@@ -617,8 +570,9 @@ router.post("/auto-save", requireAuth, async (req: Request, res: Response) => {
 
 router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf"), async (req: Request, res: Response) => {
   try {
-    const { subject, topic, yearGroup, title, subtitle, learning_objective } = req.body;
+    const { subject, topic, subtopic, yearGroup, title, subtitle, learning_objective } = req.body;
     const year_group = yearGroup || req.body.year_group;
+    const subtopicValue = normalizeSubtopic(subtopic || req.body.subtopic);
     // tier: 'standard' | 'foundation' | 'higher' | 'scaffolded' — each stored as a separate row
     const tier = (req.body.tier || "standard").toLowerCase().trim();
 
@@ -685,11 +639,11 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
       parsed = parsePdfToSections(pdfText, subject, topic);
     }
 
-    // Check if already exists — keyed by subject + topic + year_group + tier
-    // Each tier (standard/foundation/higher/scaffolded) is stored as a separate row.
+    // Check if already exists — keyed by subject + topic + subtopic + year_group + tier.
+    // Each tier is stored as a separate row.
     const existing = await db.prepare(
-      "SELECT id, version FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ? AND tier = ?"
-    ).get(subject, topic, year_group, tier) as { id: string; version: number } | undefined;
+      "SELECT id, version FROM worksheet_library WHERE subject = ? AND topic = ? AND COALESCE(subtopic, '') = ? AND year_group = ? AND tier = ?"
+    ).get(subject, topic, subtopicValue, year_group, tier) as { id: string; version: number } | undefined;
 
     const id = existing?.id || uuidv4();
     const version = existing ? (existing.version + 1) : 1;
@@ -701,12 +655,12 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
     if (existing) {
       await db.prepare(`
         UPDATE worksheet_library SET
-          title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
+          subtopic = ?, title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
           key_vocab = ?, learning_objective = ?, source = 'pdf', curated = 1,
           tier = ?, version = ?, uploaded_by = ?, updated_at = NOW()
         WHERE id = ?
       `).run(
-        entryTitle, subtitle || null,
+        subtopicValue, entryTitle, subtitle || null,
         JSON.stringify(parsed.sections),
         JSON.stringify(parsed.teacherSections),
         JSON.stringify(parsed.keyVocab),
@@ -716,11 +670,11 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
     } else {
       await db.prepare(`
         INSERT INTO worksheet_library
-          (id, subject, topic, year_group, title, subtitle, sections, teacher_sections,
+          (id, subject, topic, subtopic, year_group, title, subtitle, sections, teacher_sections,
            key_vocab, learning_objective, source, curated, tier, version, uploaded_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pdf', 1, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pdf', 1, ?, ?, ?)
       `).run(
-        id, subject, topic, year_group, entryTitle, subtitle || null,
+        id, subject, topic, subtopicValue, year_group, entryTitle, subtitle || null,
         JSON.stringify(parsed.sections),
         JSON.stringify(parsed.teacherSections),
         JSON.stringify(parsed.keyVocab),
@@ -1065,7 +1019,7 @@ function buildQuestionSection(qNum: number, content: string, sectionLabel: strin
 router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
-      subject, topic, yearGroup, tier, retrievalTopic, additionalInstructions,
+      subject, topic, subtopic, yearGroup, tier, retrievalTopic, additionalInstructions,
       sendNeed, readingAge, canonicalTopicKey: requestedTopicKey, sourceLibraryId, featureFlags,
     } = req.body;
 
@@ -1076,6 +1030,7 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
     const entry = await findLibraryEntry(subject, topic, yearGroup, tier || "mixed", {
       canonicalTopicKey: requestedTopicKey,
       sourceLibraryId,
+      subtopic,
     });
     if (!entry) return res.json({ found: false });
 
@@ -1134,6 +1089,7 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
     const assets = await resolveEntryAssets(entry.id);
     const sectionsWithAssets = injectAssetRefs(filteredSections, assets);
     const availableTiers = await findAvailableTiers(subject, topic, yearGroup, {
+      subtopic: entry.subtopic,
       canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
       sourceLibraryId: entry.id,
     });
@@ -1163,6 +1119,7 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
         subtitle: entry.subtitle,
         subject: entry.subject,
         topic: entry.topic,
+        subtopic: entry.subtopic,
         year_group: entry.year_group,
         tier: normalizeTier(entry.tier),
         curated: !!entry.curated,
@@ -1186,6 +1143,7 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
       worksheetManifest: {
         sourceLibraryId: entry.id,
         sourceTopic: entry.topic,
+        sourceSubtopic: entry.subtopic || null,
         canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
         tier: normalizeTier(entry.tier),
         yearGroup,
@@ -1265,7 +1223,7 @@ router.post("/assets/verify", requireAuth, requireSuperAdmin, async (req: Reques
 router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
-      subject, topic, yearGroup, targetTier, retrievalTopic, additionalInstructions,
+      subject, topic, subtopic, yearGroup, targetTier, retrievalTopic, additionalInstructions,
       sendNeed, readingAge, canonicalTopicKey: requestedTopicKey, sourceLibraryId, featureFlags,
     } = req.body;
 
@@ -1276,6 +1234,7 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
     const entry = await findLibraryEntry(subject, topic, yearGroup, targetTier, {
       canonicalTopicKey: requestedTopicKey,
       sourceLibraryId,
+      subtopic,
     });
     if (!entry) {
       return res.json({ found: false, message: `No ${targetTier} tier found for this topic` });
@@ -1285,6 +1244,7 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
     const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
     const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
     const availableTiers = await findAvailableTiers(subject, topic, yearGroup, {
+      subtopic: entry.subtopic,
       canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
       sourceLibraryId: sourceLibraryId || entry.id,
     });
@@ -1319,6 +1279,7 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
       worksheetManifest: {
         sourceLibraryId: entry.id,
         sourceTopic: entry.topic,
+        sourceSubtopic: entry.subtopic || null,
         canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
         tier: normalizeTier(entry.tier),
         yearGroup,
@@ -1338,43 +1299,63 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
 // ───────────────────────────────────────────────────────────────────────────────
 // ── Shared helper functions ─────────────────────────────────────────────────────────────────────────────
 
+interface LibraryLookupOptions {
+  canonicalTopicKey?: string | null;
+  sourceLibraryId?: string | null;
+  subtopic?: string | null;
+}
+
 /**
- * Find a library entry for the given subject/topic/yearGroup/tier.
- * Tries exact match first, then tier aliases, then fuzzy topic matching.
+ * Find a library entry for the given subject/topic/subtopic/yearGroup/tier.
+ * Exact subtopic matches always win. Legacy topic-only rows (subtopic = '') are
+ * retained as fallbacks, but a request for one subtopic can never return a
+ * different subtopic's worksheet.
  */
 async function findLibraryEntry(
   subject: string,
   topic: string,
   yearGroup: string,
   tier: string,
-  opts?: { canonicalTopicKey?: string | null; sourceLibraryId?: string | null }
+  opts?: LibraryLookupOptions
 ): Promise<LibraryEntry | undefined> {
   const topicNorm = topic.toLowerCase().trim();
-  const subjectsToSearch = expandSubjects(subject);
-  const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
+  const requestedSubtopic = normalizeSubtopic(opts?.subtopic).toLowerCase();
+  const subjectsNorm = expandSubjects(subject).map((s: string) => s.toLowerCase());
   const placeholders = subjectsNorm.map(() => "?").join(",");
   const ygNum = yearGroup.replace(/[^0-9]/g, "");
   const topicKey = opts?.canonicalTopicKey || canonicalTopicKey(topic);
   const tiersToTry = tierCandidates(tier);
 
   if (opts?.sourceLibraryId) {
-    const source = await db.prepare("SELECT id, base_entry_id, canonical_topic_key, year_group, topic FROM worksheet_library WHERE id = ? LIMIT 1").get(opts.sourceLibraryId) as any;
+    const source = await db.prepare(
+      "SELECT id, base_entry_id, canonical_topic_key, year_group, topic, subtopic FROM worksheet_library WHERE id = ? LIMIT 1"
+    ).get(opts.sourceLibraryId) as LibraryEntry | undefined;
     if (source) {
-      for (const candidateTier of tiersToTry) {
-        const sibling = await db.prepare(
-          `SELECT * FROM worksheet_library
-           WHERE (id = ? OR base_entry_id = ? OR base_entry_id = ?)
-             AND tier = ?
-           ORDER BY curated DESC, updated_at DESC
-           LIMIT 1`
-        ).get(source.id, source.base_entry_id || source.id, source.id, candidateTier) as LibraryEntry | undefined;
-        if (sibling) return sibling;
+      const sourceSubtopic = normalizeSubtopic(source.subtopic).toLowerCase();
+      // A stale source id must never override a newly selected named subtopic.
+      // Only use sibling traversal when it represents the requested identity.
+      if (!requestedSubtopic || sourceSubtopic === requestedSubtopic) {
+        for (const candidateTier of tiersToTry) {
+          const sibling = await db.prepare(
+            `SELECT * FROM worksheet_library
+             WHERE (id = ? OR base_entry_id = ? OR base_entry_id = ?)
+               AND tier = ?
+               AND COALESCE(LOWER(subtopic), '') = ?
+             ORDER BY curated DESC, updated_at DESC
+             LIMIT 1`
+          ).get(source.id, source.base_entry_id || source.id, source.id, candidateTier, sourceSubtopic) as LibraryEntry | undefined;
+          if (sibling) return sibling;
+        }
       }
     }
   }
 
-  for (const candidateTier of tiersToTry) {
-    const entry = await db.prepare(
+  const findDirectMatch = async (
+    candidateTier: string,
+    subtopicFilter?: string,
+  ): Promise<LibraryEntry | undefined> => {
+    const hasSubtopicFilter = subtopicFilter !== undefined;
+    return await db.prepare(
       `SELECT * FROM worksheet_library
        WHERE LOWER(subject) IN (${placeholders})
          AND tier = ?
@@ -1383,58 +1364,107 @@ async function findLibraryEntry(
            LOWER(topic) ILIKE ? OR
            canonical_topic_key = ?
          )
+         ${hasSubtopicFilter ? "AND COALESCE(LOWER(subtopic), '') = ?" : ""}
          AND (year_group = ? OR year_group ILIKE ? OR year_group ILIKE ?)
        ORDER BY curated DESC, updated_at DESC
        LIMIT 1`
-    ).get(...subjectsNorm, candidateTier, topicNorm, `%${topicNorm}%`, topicKey, yearGroup, `%${ygNum}%`, `%/${ygNum}%`) as LibraryEntry | undefined;
-    if (entry) return entry;
+    ).get(
+      ...subjectsNorm,
+      candidateTier,
+      topicNorm,
+      `%${topicNorm}%`,
+      topicKey,
+      ...(hasSubtopicFilter ? [subtopicFilter] : []),
+      yearGroup,
+      `%${ygNum}%`,
+      `%/${ygNum}%`
+    ) as LibraryEntry | undefined;
+  };
+
+  if (requestedSubtopic) {
+    // Search every tier alias for the requested subtopic before considering a
+    // legacy whole-topic row. Otherwise a legacy `mixed` record could mask an
+    // exact named `standard` record.
+    for (const candidateTier of tiersToTry) {
+      const exactEntry = await findDirectMatch(candidateTier, requestedSubtopic);
+      if (exactEntry) return exactEntry;
+    }
+    for (const candidateTier of tiersToTry) {
+      const legacyEntry = await findDirectMatch(candidateTier, "");
+      if (legacyEntry) return legacyEntry;
+    }
+  } else {
+    for (const candidateTier of tiersToTry) {
+      const entry = await findDirectMatch(candidateTier);
+      if (entry) return entry;
+    }
   }
 
+  const fuzzyMatchesByTier: LibraryEntry[][] = [];
   for (const candidateTier of tiersToTry) {
     const allForTier = await db.prepare(
-      `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC, updated_at DESC`
+      `SELECT * FROM worksheet_library
+       WHERE LOWER(subject) IN (${placeholders}) AND tier = ?
+       ORDER BY curated DESC, LOWER(subtopic) ASC, updated_at DESC`
     ).all(...subjectsNorm, candidateTier) as LibraryEntry[];
-    const byCanonical = allForTier.filter(entry => entry.canonical_topic_key && entry.canonical_topic_key === topicKey);
-    const canonicalMatch = byCanonical.find(entry => !ygNum || entry.year_group.replace(/[^0-9]/g, "").includes(ygNum));
-    if (canonicalMatch) return canonicalMatch;
-    const fuzzyYearMatch = allForTier.find(entry => topicKeywordsMatch(topic, entry.topic) && (!ygNum || entry.year_group.replace(/[^0-9]/g, "").includes(ygNum)));
-    if (fuzzyYearMatch) return fuzzyYearMatch;
-    const fuzzyMatch = allForTier.find(entry => topicKeywordsMatch(topic, entry.topic));
-    if (fuzzyMatch) return fuzzyMatch;
+
+    fuzzyMatchesByTier.push(allForTier.filter(entry =>
+      (entry.canonical_topic_key && entry.canonical_topic_key === topicKey) ||
+      topicKeywordsMatch(topic, entry.topic)
+    ));
   }
 
-  return undefined;
+  const topicMatches = fuzzyMatchesByTier.flat();
+  const sameYear = (entry: LibraryEntry) =>
+    !ygNum || entry.year_group.replace(/[^0-9]/g, "").includes(ygNum);
+
+  if (requestedSubtopic) {
+    const exactSubtopic = (entry: LibraryEntry) =>
+      normalizeSubtopic(entry.subtopic).toLowerCase() === requestedSubtopic;
+    const legacy = (entry: LibraryEntry) => normalizeSubtopic(entry.subtopic) === "";
+    return topicMatches.find(entry => sameYear(entry) && exactSubtopic(entry))
+      || topicMatches.find(exactSubtopic)
+      || topicMatches.find(entry => sameYear(entry) && legacy(entry))
+      || topicMatches.find(legacy);
+  }
+
+  return topicMatches.find(sameYear) || topicMatches[0];
 }
 
 async function findAvailableTiers(
   subject: string,
   topic: string,
   yearGroup: string,
-  opts?: { canonicalTopicKey?: string | null; sourceLibraryId?: string | null }
+  opts?: LibraryLookupOptions
 ): Promise<string[]> {
   const topicNorm = topic.toLowerCase().trim();
-  const subjectsToSearch = expandSubjects(subject);
-  const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
+  const requestedSubtopic = normalizeSubtopic(opts?.subtopic).toLowerCase();
+  const hasSubtopicFilter = Boolean(opts && Object.prototype.hasOwnProperty.call(opts, "subtopic"));
+  const subjectsNorm = expandSubjects(subject).map((s: string) => s.toLowerCase());
   const placeholders = subjectsNorm.map(() => "?").join(",");
   const topicKey = opts?.canonicalTopicKey || canonicalTopicKey(topic);
+  const ygNum = yearGroup.replace(/[^0-9]/g, "");
+  const subtopicClause = hasSubtopicFilter
+    ? "AND COALESCE(LOWER(subtopic), '') = ?"
+    : "";
 
-  let rows: { tier: string }[] = [];
-  if (opts?.sourceLibraryId) {
-    rows = await db.prepare(
-      `SELECT DISTINCT tier FROM worksheet_library
-       WHERE id = ? OR base_entry_id = (SELECT COALESCE(base_entry_id, id) FROM worksheet_library WHERE id = ?) OR base_entry_id = ?
-       ORDER BY tier ASC`
-    ).all(opts.sourceLibraryId, opts.sourceLibraryId, opts.sourceLibraryId) as { tier: string }[];
-  }
-
-  if (rows.length === 0) {
-    rows = await db.prepare(
-      `SELECT DISTINCT tier FROM worksheet_library
-       WHERE LOWER(subject) IN (${placeholders})
-         AND ((LOWER(topic) = ? OR LOWER(topic) ILIKE ?) OR canonical_topic_key = ?)
-       ORDER BY tier ASC`
-    ).all(...subjectsNorm, topicNorm, `%${topicNorm}%`, topicKey) as { tier: string }[];
-  }
+  const rows = await db.prepare(
+    `SELECT DISTINCT tier FROM worksheet_library
+     WHERE LOWER(subject) IN (${placeholders})
+       AND ((LOWER(topic) = ? OR LOWER(topic) ILIKE ?) OR canonical_topic_key = ?)
+       ${subtopicClause}
+       AND (year_group = ? OR year_group ILIKE ? OR year_group ILIKE ?)
+     ORDER BY tier ASC`
+  ).all(
+    ...subjectsNorm,
+    topicNorm,
+    `%${topicNorm}%`,
+    topicKey,
+    ...(hasSubtopicFilter ? [requestedSubtopic] : []),
+    yearGroup,
+    `%${ygNum}%`,
+    `%/${ygNum}%`
+  ) as { tier: string }[];
 
   return [...new Set(rows.map(row => normalizeTier(row.tier)))];
 }

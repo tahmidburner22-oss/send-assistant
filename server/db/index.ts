@@ -651,6 +651,7 @@ CREATE TABLE IF NOT EXISTS worksheet_library (
   id TEXT PRIMARY KEY,
   subject TEXT NOT NULL,
   topic TEXT NOT NULL,
+  subtopic TEXT NOT NULL DEFAULT '',
   year_group TEXT NOT NULL,
   title TEXT NOT NULL,
   subtitle TEXT,
@@ -677,7 +678,8 @@ CREATE TABLE IF NOT EXISTS worksheet_library (
 CREATE INDEX IF NOT EXISTS idx_library_subject ON worksheet_library(subject);
 CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated);
 CREATE INDEX IF NOT EXISTS idx_library_tier ON worksheet_library(tier);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group, tier);
+-- The subtopic-aware unique index is created by initDb() after its backwards-
+-- compatible ADD COLUMN migration has run. This ordering supports old databases.
 CREATE INDEX IF NOT EXISTS idx_library_base_entry ON worksheet_library(base_entry_id);
 CREATE INDEX IF NOT EXISTS idx_library_canonical_topic ON worksheet_library(canonical_topic_key);
 
@@ -874,6 +876,12 @@ export async function initDb() {
     `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN diagram_slots_json TEXT NOT NULL DEFAULT '[]'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN applied_overlays TEXT NOT NULL DEFAULT '[]'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN canonical_topic_key TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    // Per-subtopic library identity. Existing topic-level rows remain valid with
+    // the empty-string sentinel and are used as backwards-compatible fallbacks.
+    `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN subtopic TEXT NOT NULL DEFAULT ''; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DROP INDEX IF EXISTS idx_library_topic`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic_subtopic ON worksheet_library(subject, topic, subtopic, year_group, tier)`,
+    `CREATE INDEX IF NOT EXISTS idx_library_subtopic ON worksheet_library(subject, topic, subtopic)`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN image_url TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN asset_ref TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN symbols TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,

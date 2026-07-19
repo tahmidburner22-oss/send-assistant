@@ -1737,57 +1737,52 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     // Clear any previous gold spread; only the gold branch below re-populates it.
     setGoldWorksheet(null);
 
-    // ── GOLD MATHS LAYOUT ─────────────────────────────────────────────────────
-    // For a Maths subject whose topic+subtopic has a bundled JSON worksheet,
-    // render the gold-standard 2-page A4 landscape spread directly from JSON.
-    // This bypasses the library/AI/pipeline path entirely. Maths subtopics
-    // without a JSON (and all non-maths subjects) fall through to the existing
-    // generator below. SEND is applied as a non-destructive typography/colour
-    // overlay — it can never alter the fixed 2-page structure.
-    if (!examStyle && isMathsSubject(subject) && subtopic) {
+    // ── GOLD MATHS FALLBACK ──────────────────────────────────────────────────
+    // Bundled JSON remains a resilient fallback when the database has not yet
+    // been migrated/imported. The library lookup runs first so every one of the
+    // 128 curated subtopic rows is independently addressable in production.
+    const tryGoldMathsFallback = async (): Promise<boolean> => {
+      if (examStyle || !isMathsSubject(subject) || !subtopic) return false;
       const goldEntry = findGoldEntry(topic, subtopic);
-      if (goldEntry) {
-        try {
-          setGenerationStatus("Building gold-standard worksheet...");
-          const data = await loadGoldWorksheet(goldEntry.slug);
-          if (data) {
-            const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
-            const theme = getGoldSendTheme(activeSend);
-            const html = renderGoldWorksheetHtml(data, theme);
-            const flatTitle = (data.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
-            setGoldWorksheet({ html, title: flatTitle, entry: goldEntry, sendNeed: activeSend });
-            // Seed a minimal worksheet record so the surrounding toolbar (title,
-            // download, print, save) has something to act on. The visual render
-            // and PDF/print are driven by goldWorksheet, not these sections.
-            setGenerated({
-              title: flatTitle,
-              sections: [],
-              metadata: {
-                subject,
-                topic,
-                subtopic,
-                yearGroup,
-                sendNeed: activeSend,
-                difficulty,
-                examBoard: examBoard !== "none" ? examBoard : "General",
-              },
-              isAI: false,
-            } as unknown as AnyWorksheet);
-            setHiddenSections(new Set());
-            setHideHeader(false);
-            setDiffVersions({});
-            toast.success("Gold-standard maths worksheet ready!");
-            setLoading(false);
-            setGenerationStatus("");
-            return;
-          }
-        } catch (goldErr) {
-          // Non-fatal: fall through to the standard generator below.
-          console.warn("[Gold] failed to build gold worksheet, falling back:", goldErr);
-          setGoldWorksheet(null);
-        }
+      if (!goldEntry) return false;
+
+      try {
+        setGenerationStatus("Building gold-standard worksheet...");
+        const data = await loadGoldWorksheet(goldEntry.slug);
+        if (!data) return false;
+
+        const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
+        const theme = getGoldSendTheme(activeSend);
+        const html = renderGoldWorksheetHtml(data, theme);
+        const flatTitle = (data.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
+        setGoldWorksheet({ html, title: flatTitle, entry: goldEntry, sendNeed: activeSend });
+        setGenerated({
+          title: flatTitle,
+          sections: [],
+          metadata: {
+            subject,
+            topic,
+            subtopic,
+            yearGroup,
+            sendNeed: activeSend,
+            difficulty,
+            examBoard: examBoard !== "none" ? examBoard : "General",
+          },
+          isAI: false,
+        } as unknown as AnyWorksheet);
+        setHiddenSections(new Set());
+        setHideHeader(false);
+        setDiffVersions({});
+        toast.success("Gold-standard maths worksheet ready!");
+        setLoading(false);
+        setGenerationStatus("");
+        return true;
+      } catch (goldErr) {
+        console.warn("[Gold] failed to build gold worksheet, falling back:", goldErr);
+        setGoldWorksheet(null);
+        return false;
       }
-    }
+    };
 
     // ── LIBRARY LOOKUP: Check if a master worksheet exists for this topic ──────
     // Always try the library first (even when SEND need is selected, or year group differs).
@@ -1815,6 +1810,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           body: JSON.stringify({
             subject: getLibrarySubjectName(subject),
             topic,
+            subtopic: subtopic || null,
             yearGroup,
             tier: lookupTier,
             // If retrieval checkbox is selected but no topic entered, use the current topic as fallback
@@ -1839,8 +1835,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             const needsReadingAdjustment = Boolean((readingAge > 0) || yearGroupMismatch);
 
             let finalSections = normaliseLibrarySections(libData.sections || []);
-            let readingAdjusted = false;
-            if (needsReadingAdjustment) {
+            // Curated rows already received deterministic server overlays. Never
+            // send their authored maths content through a generative rewrite.
+            let readingAdjusted = Boolean(
+              Array.isArray(libData.appliedOverlays) &&
+              libData.appliedOverlays.some((overlay: any) => overlay?.type === "reading_age")
+            );
+            if (needsReadingAdjustment && !libData.curated) {
               const adjustLabel = readingAge > 0 ? `reading age ${readingAge}` : yearGroup;
               setGenerationStatus(`Adjusting reading level for ${adjustLabel}...`);
               try {
@@ -1884,6 +1885,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
             const manifest = libData.worksheetManifest || {
               sourceLibraryId: libData.libraryId || entry.id,
+              sourceSubtopic: entry.subtopic || subtopic || null,
               canonicalTopicKey: libData.canonicalTopicKey || entry.canonical_topic_key,
               tier: libData.tier || lookupTier,
               yearGroup,
@@ -1900,6 +1902,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               metadata: {
                 subject,
                 topic,
+                subtopic: entry.subtopic || subtopic || undefined,
                 yearGroup,
                 difficulty: difficulty || "standard",
                 examBoard: examBoard !== "none" ? examBoard : undefined,
@@ -1969,9 +1972,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           }
         }
       } catch (libErr) {
-        console.warn("Library lookup failed, falling back to AI:", libErr);
+        console.warn("Library lookup failed, falling back to bundled gold/AI:", libErr);
       }
     }
+
+    // Database-first is required for per-subtopic addressability. The bundled
+    // copy is used only while a deployment is missing the migration/import.
+    if (await tryGoldMathsFallback()) return;
 
     setGenerationStatus("Connecting to AI...");
 
@@ -2407,6 +2414,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             body: JSON.stringify({
               subject: ws.metadata?.subject,
               topic: ws.metadata?.topic,
+              subtopic: ws.metadata?.subtopic || subtopic || undefined,
               yearGroup: ws.metadata?.yearGroup,
               title: ws.title,
               subtitle: (ws as any).subtitle,
@@ -4112,6 +4120,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           body: JSON.stringify({
             subject: getLibrarySubjectName(meta.subject || subject),
             topic: meta.topic || topic,
+            subtopic: meta.subtopic || meta.buildManifest?.sourceSubtopic || subtopic || null,
             yearGroup: meta.yearGroup || yearGroup,
             targetTier: libraryTier,
             retrievalTopic: retrievalTopicToApply,
@@ -4143,8 +4152,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const libTeacherSections = normaliseLibrarySections(
           autoSwitchTeacherSections.map((s: any) => ({ ...s, teacherOnly: true }))
         );
-        let readingAdjusted = false;
-        if (readingAgeToApply) {
+        let readingAdjusted = Boolean(
+          Array.isArray(switchTierResult.appliedOverlays) &&
+          switchTierResult.appliedOverlays.some((overlay: any) => overlay?.type === "reading_age")
+        );
+        if (readingAgeToApply && !switchTierResult.curated) {
           try {
             const adjustRes = await fetch("/api/ai/adjust-reading-level", {
               method: "POST",
@@ -4175,6 +4187,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const nextManifest = switchTierResult.worksheetManifest || {
           ...(meta.buildManifest || {}),
           sourceLibraryId: switchTierResult.libraryId || (ws as any).sourceLibraryId || (ws as any).libraryId,
+          sourceSubtopic: switchTierResult.worksheetManifest?.sourceSubtopic || meta.subtopic || subtopic || null,
           canonicalTopicKey: switchTierResult.canonicalTopicKey || (ws as any).canonicalTopicKey,
           tier: libraryTier,
           yearGroup: meta.yearGroup || yearGroup,

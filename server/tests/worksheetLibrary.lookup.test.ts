@@ -32,6 +32,15 @@ function createApp() {
   return app;
 }
 
+function fillerSections(prefix: string) {
+  return [1, 2, 3].map((number) => ({
+    id: `${prefix}-${number}`,
+    title: `Practice ${number}`,
+    type: "q-short-answer",
+    content: `Complete practice question ${number}.`,
+  }));
+}
+
 describe("GET /api/library/lookup", () => {
   beforeEach(() => {
     mockGet.mockReset();
@@ -148,6 +157,7 @@ describe("POST /api/library/resolve", () => {
           imageUrl: "/images/atom_nb_labelled_final.png",
           content: "Use this labelled reference diagram to check particle placement and shell structure.",
         },
+        ...fillerSections("atomic-mixed"),
       ]),
       teacher_sections: JSON.stringify([
         { id: "teacher-answer-key", title: "Teacher Answer Key", type: "mark-scheme", teacherOnly: true, content: "Answers here" },
@@ -231,6 +241,7 @@ describe("POST /api/library/resolve", () => {
           imageUrl: "/images/atom_nb_unlabelled_final.png",
           content: "Use the word bank to label the five parts of the atom.",
         },
+        ...fillerSections("atomic-scaffolded"),
       ]),
       teacher_sections: JSON.stringify([
         { id: "teacher-answer-key", title: "Teacher Answer Key", type: "mark-scheme", teacherOnly: true, content: "Answers here" },
@@ -277,5 +288,215 @@ describe("POST /api/library/resolve", () => {
       assetRef: "asset-unlabelled",
       imageUrl: "/images/atom_nb_unlabelled_final.png",
     });
+  });
+});
+
+
+
+describe("per-subtopic library identities", () => {
+  beforeEach(() => {
+    mockGet.mockReset();
+    mockAll.mockReset();
+    mockRun.mockReset();
+  });
+
+  const entry = (subtopic: string, id = "linear-one-step") => ({
+    id,
+    subject: "Maths",
+    topic: "Solving Linear Equations",
+    subtopic,
+    year_group: "Year 9",
+    title: subtopic || "Legacy Linear Equations",
+    subtitle: "Year 9 | Maths",
+    tier: "mixed",
+    sections: JSON.stringify([
+      { id: `${id}-objective`, title: "Objective", type: "objective", content: "Solve equations." },
+      { id: `${id}-example`, title: "Worked Example", type: "example", content: "x + 2 = 5" },
+      ...fillerSections(id),
+    ]),
+    teacher_sections: "[]",
+    key_vocab: "[]",
+    curated: 1,
+    source: "curated",
+    version: 1,
+    canonical_topic_key: "solving_linear_equations",
+    base_structure_json: "{}",
+  });
+
+  it("resolves the exact requested subtopic and reports only its tiers", async () => {
+    mockGet.mockResolvedValueOnce(entry("One-step equations"));
+    mockAll
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ tier: "mixed" }]);
+
+    const res = await request(createApp())
+      .post("/api/library/resolve")
+      .send({
+        subject: "Maths",
+        topic: "Solving Linear Equations",
+        subtopic: "One-step equations",
+        yearGroup: "Year 9",
+        tier: "mixed",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.found).toBe(true);
+    expect(res.body.entry).toMatchObject({
+      id: "linear-one-step",
+      subtopic: "One-step equations",
+    });
+    expect(res.body.worksheetManifest.sourceSubtopic).toBe("One-step equations");
+    expect(res.body.availableTiers).toEqual(["mixed"]);
+
+    const exactLookup = mockGet.mock.calls[0];
+    expect(exactLookup[0]).toContain("COALESCE(LOWER(subtopic), '') = ?");
+    expect(exactLookup).toContain("one-step equations");
+    const tierLookup = mockAll.mock.calls[1];
+    expect(tierLookup).toContain("one-step equations");
+  });
+
+  it("prefers an exact named standard row over a legacy mixed row", async () => {
+    const standard = { ...entry("One-step equations", "linear-one-step-standard"), tier: "standard" };
+    mockGet
+      .mockResolvedValueOnce(undefined) // exact mixed
+      .mockResolvedValueOnce(undefined) // exact base
+      .mockResolvedValueOnce(standard); // exact standard
+    mockAll
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ tier: "standard" }]);
+
+    const res = await request(createApp())
+      .post("/api/library/resolve")
+      .send({
+        subject: "Maths",
+        topic: "Solving Linear Equations",
+        subtopic: "One-step equations",
+        yearGroup: "Year 9",
+        tier: "mixed",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.found).toBe(true);
+    expect(res.body.libraryId).toBe("linear-one-step-standard");
+    expect(res.body.entry.subtopic).toBe("One-step equations");
+    expect(mockGet).toHaveBeenCalledTimes(3);
+    expect(mockGet.mock.calls.some((call) => call.includes(""))).toBe(false);
+  });
+
+  it("never returns a different named subtopic", async () => {
+    mockGet.mockResolvedValue(undefined);
+    mockAll.mockImplementation(async (sql: string) => {
+      if (sql.includes("SELECT * FROM worksheet_library")) {
+        return [entry("Two-step equations", "linear-two-step")];
+      }
+      return [];
+    });
+
+    const res = await request(createApp())
+      .post("/api/library/resolve")
+      .send({
+        subject: "Maths",
+        topic: "Solving Linear Equations",
+        subtopic: "One-step equations",
+        yearGroup: "Year 9",
+        tier: "mixed",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ found: false });
+  });
+
+  it("retains a legacy empty-subtopic row as a backwards-compatible fallback", async () => {
+    mockGet
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(entry("", "linear-legacy"));
+    mockAll
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ tier: "standard" }]);
+
+    const res = await request(createApp())
+      .post("/api/library/resolve")
+      .send({
+        subject: "Maths",
+        topic: "Solving Linear Equations",
+        subtopic: "One-step equations",
+        yearGroup: "Year 9",
+        tier: "mixed",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.found).toBe(true);
+    expect(res.body.entry.id).toBe("linear-legacy");
+    expect(res.body.entry.subtopic).toBe("");
+    expect(res.body.worksheetManifest.sourceSubtopic).toBeNull();
+    expect(res.body.availableTiers).toEqual(["mixed"]);
+    expect(mockAll.mock.calls[1]).toContain("");
+  });
+
+  it("preserves the subtopic and deterministic overlays while switching tier", async () => {
+    const higher = { ...entry("One-step equations", "linear-one-step-higher"), tier: "higher" };
+    mockGet
+      .mockResolvedValueOnce({
+        id: "linear-one-step",
+        base_entry_id: null,
+        canonical_topic_key: "solving_linear_equations",
+        year_group: "Year 9",
+        topic: "Solving Linear Equations",
+        subtopic: "One-step equations",
+      })
+      .mockResolvedValueOnce(higher);
+    mockAll
+      .mockResolvedValueOnce([{ tier: "higher" }, { tier: "mixed" }])
+      .mockResolvedValueOnce([]);
+
+    const res = await request(createApp())
+      .post("/api/library/switch-tier")
+      .send({
+        subject: "Maths",
+        topic: "Solving Linear Equations",
+        subtopic: "One-step equations",
+        yearGroup: "Year 9",
+        targetTier: "higher",
+        sourceLibraryId: "linear-one-step",
+        sendNeed: "dyslexia",
+        readingAge: "11",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.found).toBe(true);
+    expect(res.body.libraryId).toBe("linear-one-step-higher");
+    expect(res.body.worksheetManifest.sourceSubtopic).toBe("One-step equations");
+    expect(res.body.appliedOverlays.map((overlay: any) => overlay.type)).toEqual(
+      expect.arrayContaining(["send_need", "reading_age"]),
+    );
+    expect(res.body.sections.some((section: any) => section.type === "send-support")).toBe(true);
+    expect(res.body.sections.find((section: any) => section.id === "linear-one-step-higher-1")?.content)
+      .toContain("Complete practice question 1.");
+  });
+
+  it("does not let AI auto-save overwrite a curated row with the same subtopic identity", async () => {
+    mockGet.mockResolvedValueOnce({ id: "linear-one-step", curated: 1 });
+
+    const res = await request(createApp())
+      .post("/api/library/auto-save")
+      .send({
+        subject: "Maths",
+        topic: "Solving Linear Equations",
+        subtopic: "One-step equations",
+        yearGroup: "Year 9",
+        title: "AI replacement",
+        sections: fillerSections("ai"),
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      success: true,
+      skipped: true,
+      reason: "curated entry preserved",
+    });
+    expect(mockRun).not.toHaveBeenCalled();
+    expect(mockGet.mock.calls[0]).toContain("One-step equations");
   });
 });
