@@ -6,9 +6,29 @@ JSON. Each file maps 1:1 to a `subtopic` and loads straight into the
 
 > **SEND adaptation and reading-age filtering are NOT baked into these files.**
 > Each file is the neutral **base** worksheet. The existing overlay engine
-> (`sendEnforcer.ts`, `sendFidelityAudit.ts`, `primaryReadingProfile.ts`) applies
-> SEND needs and reading age *on top* at serve time — that's why we author one
-> base per subtopic, not one per SEND×subtopic combination.
+> (`server/lib/overlayEngine.ts`) applies SEND needs and reading age *on top* at
+> serve time — that's why we author one base per subtopic, not one per
+> SEND×subtopic combination.
+
+## Database identity and deployment
+
+Every file is stored under the unique identity
+`(subject, topic, subtopic, year_group, tier)`. The `subtopic` column is
+`NOT NULL DEFAULT ''`: an empty value is reserved for backwards-compatible
+whole-topic rows, while a named subtopic only resolves to that exact named row
+(or the legacy empty-subtopic fallback), never to a different subtopic.
+
+For an existing deployment, deploy/start the updated server first so `initDb()`
+adds `subtopic`, replaces the old topic-level unique index, and creates the
+subtopic-aware index. Then run:
+
+```bash
+DATABASE_URL=<production-url> pnpm exec tsx scripts/import-maths-worksheets.ts
+```
+
+The importer must finish with `Imported: 128/128 per-subtopic entries`. It is
+idempotent and always marks these records as curated, so AI auto-save cannot
+overwrite them.
 
 ---
 
