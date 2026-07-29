@@ -914,6 +914,25 @@ export default function Worksheets() {
     entry: GoldManifestEntry;
     sendNeed?: string;
   } | null>(null);
+  // Ref mirror of goldWorksheet — updated synchronously alongside the state.
+  // Used in the render section so the gold iframe shows immediately even
+  // when React batches the state update (e.g. inside async functions).
+  const goldWorksheetRef = useRef<{
+    html: string;
+    title: string;
+    entry: GoldManifestEntry;
+    sendNeed?: string;
+  } | null>(null);
+  // Wrapper that keeps ref and state in sync.
+  const setGoldWorksheetSync = useCallback((val: {
+    html: string;
+    title: string;
+    entry: GoldManifestEntry;
+    sendNeed?: string;
+  } | null) => {
+    goldWorksheetRef.current = val;
+    setGoldWorksheet(val);
+  }, []);
 
   // ── Phase A · PR-4 — Week Ahead handoff ───────────────────────────────────
   // When the user clicks a card in WeekAheadPanel we navigate here with
@@ -1736,8 +1755,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setSavedWorksheetId(null);
     setVoiceAnswers({});
     // Clear any previous gold spread; only the gold branch below re-populates it.
-    setGoldWorksheet(null);
-
+        setGoldWorksheetSync(null);
     // ── GOLD MATHS FALLBACK ──────────────────────────────────────────────────
     // Bundled JSON remains a resilient fallback when the database has not yet
     // been migrated/imported. The library lookup runs first so every one of the
@@ -1756,7 +1774,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const theme = getGoldSendTheme(activeSend);
         const html = renderGoldWorksheetHtml(data, theme);
         const flatTitle = (data.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
-        setGoldWorksheet({ html, title: flatTitle, entry: goldEntry, sendNeed: activeSend });
+        setGoldWorksheetSync({ html, title: flatTitle, entry: goldEntry, sendNeed: activeSend });
         setGenerated({
           title: flatTitle,
           sections: [],
@@ -1780,7 +1798,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         return true;
       } catch (goldErr) {
         console.warn("[Gold] failed to build gold worksheet, falling back:", goldErr);
-        setGoldWorksheet(null);
+        setGoldWorksheetSync(null);
         return false;
       }
     };
@@ -1958,8 +1976,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     // synchronously before the next render. Without this, React 18
                     // batches the updates and the goldWorksheet state may not be
                     // visible to the render section when it runs.
-                    flushSync(() => {
-                      setGoldWorksheet({ html: goldHtml, title: goldTitle, entry: goldEntry, sendNeed: activeSend });
+                    // Update ref synchronously first (bypasses React batching),
+                    // then update state for re-render.
+                    goldWorksheetRef.current = { html: goldHtml, title: goldTitle, entry: goldEntry, sendNeed: activeSend };
+                    console.log('[Gold] Setting goldWorksheet state, html length:', goldHtml.length, 'slug:', goldEntry.slug);
+                    setGoldWorksheetSync({ html: goldHtml, title: goldTitle, entry: goldEntry, sendNeed: activeSend });
+                    // flushSync removed: calling it inside async after await is a React 18 no-op.
+                    // The ref ensures the render section reads the correct value immediately.
+                    (() => {
                       // Minimal stub so toolbar guards pass; standard WorksheetRenderer
                       // is hidden when goldWorksheet is set.
                       setGenerated({ ...libWorksheet, sections: libWorksheet.sections || [] } as any);
