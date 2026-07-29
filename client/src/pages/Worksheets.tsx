@@ -924,6 +924,18 @@ export default function Worksheets() {
     sendNeed?: string;
   } | null>(null);
   // Wrapper that keeps ref and state in sync.
+  // Debug interceptor — remove after diagnosis
+  if (typeof window !== 'undefined' && !(window as any)._goldDebugIntercepted) {
+    (window as any)._goldDebugIntercepted = true;
+    (window as any)._goldDebugLogs = [];
+    const origConsoleLog = console.log;
+    console.log = function(...args: any[]) {
+      if (args[0] && String(args[0]).includes('[Gold')) {
+        ((window as any)._goldDebugLogs as string[]).push(args.map(String).join(' '));
+      }
+      origConsoleLog.apply(console, args);
+    };
+  }
   const setGoldWorksheetSync = useCallback((val: {
     html: string;
     title: string;
@@ -1956,9 +1968,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             let _capturedGoldHtml: string | undefined;
             let _capturedGoldSlug: string | undefined;
             let _goldRendered = false;
+            console.log('[Gold-Debug] libData.curated:', libData.curated, 'isMathsSubject:', isMathsSubject(subject), 'examStyle:', examStyle, 'subject:', subject, 'topic:', topic, 'subtopic:', subtopic, 'entry.subtopic:', entry.subtopic);
             if (libData.curated && isMathsSubject(subject) && !examStyle) {
               const resolvedSubtopic = entry.subtopic || subtopic || "";
               const goldEntry = findGoldEntry(entry.topic || topic, resolvedSubtopic);
+              console.log('[Gold-Debug] resolvedSubtopic:', resolvedSubtopic, 'goldEntry:', goldEntry ? goldEntry.slug : 'NULL');
               if (goldEntry) {
                 try {
                   const goldData = await loadGoldWorksheet(goldEntry.slug);
