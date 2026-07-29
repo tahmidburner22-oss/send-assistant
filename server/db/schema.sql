@@ -169,6 +169,8 @@ CREATE TABLE IF NOT EXISTS worksheets (
   metadata_json TEXT,
   source_library_id TEXT,
   source_canonical_topic_key TEXT,
+  gold_html TEXT,
+  gold_slug TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

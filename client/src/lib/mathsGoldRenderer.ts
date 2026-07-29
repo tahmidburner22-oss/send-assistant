@@ -203,8 +203,8 @@ export const GOLD_CSS = `
 .ws-root .lo { position: absolute; top: 16mm; left: 0; right: 0; height: 9mm; background: #eef3ff; border: 1.5px solid #1f5fa6; border-radius: 4px; text-align: center; line-height: 9mm; font-weight: bold; font-size: ${fs(10.5)}; }
 
 /* three info-boxes */
-.ws-root .three-cols { position: absolute; top: 26mm; left: 0; right: 0; height: 52mm; display: table; width: 100%; border-spacing: 4px 0; table-layout: fixed; }
-.ws-root .ic { display: table-cell; width: 33.33%; vertical-align: top; border-radius: 5px; padding: 6px 8px; font-size: ${fs(9)}; line-height: ${lh(1.4)}; }
+.ws-root .three-cols { position: absolute; top: 26mm; left: 0; right: 0; height: 52mm; display: table; width: 100%; border-spacing: 4px 0; table-layout: fixed; overflow: hidden; }
+.ws-root .ic { display: table-cell; width: 33.33%; vertical-align: top; border-radius: 5px; padding: 6px 8px; font-size: ${fs(9)}; line-height: ${lh(1.4)}; overflow: hidden; }
 .ws-root .ic-blue   { border: 1.5px solid #1f5fa6; background: #f4f8ff; }
 .ws-root .ic-green  { border: 1.5px solid #1e7d2e; background: #f5fdf5; }
 .ws-root .ic-yellow { border: 1.5px solid #b8860b; background: #fffdf5; }
@@ -226,7 +226,7 @@ export const GOLD_CSS = `
 .ws-root .eqc { text-align: center; font-size: ${fs(9)}; font-weight: bold; }
 
 /* MODELLED EXAMPLES — table layout (reliable, matches reference) */
-.ws-root .mod-wrap { position: absolute; top: 79mm; left: 0; right: 0; height: 117mm; background: white; border: 1.5px solid #7b3fa0; border-radius: 5px; overflow: hidden; }
+.ws-root .mod-wrap { position: absolute; top: 80mm; left: 0; right: 0; height: 116mm; background: white; border: 1.5px solid #7b3fa0; border-radius: 5px; overflow: hidden; }
 .ws-root .mod-head { background: #f5eeff; text-align: center; padding: 4px 0 3px; height: 14mm; line-height: 1.2; }
 .ws-root .mht { font-size: ${fs(13)}; font-weight: bold; color: #4a148c; }
 .ws-root .mhs { font-size: ${fs(9)}; color: #111; }
@@ -282,7 +282,7 @@ export const GOLD_CSS = `
 .ws-root .mia { font-size: ${fs(8.5)}; color: #111; margin-bottom: 6px; }
 .ws-root .mir { font-size: ${fs(8.5)}; color: #111; }
 
-.ws-root .chal-wrap { position: absolute; top: 121mm; left: 0; right: 0; bottom: 35mm; border: 1.5px solid #b8860b; border-radius: 5px; background: #fffdf5; overflow: hidden; }
+.ws-root .chal-wrap { position: absolute; top: 121mm; left: 0; right: 0; bottom: 37mm; border: 1.5px solid #b8860b; border-radius: 5px; background: #fffdf5; overflow: hidden; }
 .ws-root .chal-head { color: #b8860b; font-weight: bold; font-size: ${fs(11)}; text-align: center; height: 8mm; line-height: 8mm; border-bottom: 1px solid #b8860b; }
 .ws-root .chal-body { position: absolute; top: 8mm; left: 0; right: 0; bottom: 0; display: table; width: 100%; table-layout: fixed; }
 .ws-root .cc { display: table-cell; width: 50%; padding: 8px 12px; font-size: ${fs(9)}; line-height: ${lh(1.6)}; vertical-align: top; }

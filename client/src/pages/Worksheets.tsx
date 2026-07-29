@@ -1966,6 +1966,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               const lwSections = (lw.sections || []).map((s: any) => ({ ...s }));
               const lwContent = lwSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
               const lwTeacherContent = lwSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+              // Capture gold HTML at save time so history can re-render the 2-page layout
+              const _savedGoldHtml = goldWorksheet?.html || undefined;
+              const _savedGoldSlug = goldWorksheet?.entry?.slug || undefined;
               saveWorksheet({
                 title: lw.title,
                 subtitle: lw.subtitle,
@@ -1984,6 +1987,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 sourceLibraryId: lw.sourceLibraryId,
                 sourceCanonicalTopicKey: lw.sourceCanonicalTopicKey,
                 isAI: lw.isAI,
+                goldHtml: _savedGoldHtml,
+                goldSlug: _savedGoldSlug,
               }).then(saved => {
                 setSavedWorksheetId(saved.id);
                 refreshData();
@@ -7156,12 +7161,16 @@ ${s.content}`).join("\n\n"),
                     <Edit3 className="h-3.5 w-3.5 mr-1" />{historyEditMode ? "Done Editing" : "Edit Manually"}
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => {
-                    const printTarget = historyPrintRef.current || historyContentRef.current;
-                    const isHistoryRM = sections.some((s: any) => s.type === "revision-mat-box" || s.type === "revision-mat-title" || s.type === "revision-mat-lo");
-                    if (printTarget) {
-                      printWorksheetElement(printTarget, { viewMode: historyViewMode === "teacher" ? "teacher" : "student", landscape: isHistoryRM });
+                    if (ws.goldHtml) {
+                      printGoldWorksheet(ws.goldHtml);
                     } else {
-                      window.print();
+                      const printTarget = historyPrintRef.current || historyContentRef.current;
+                      const isHistoryRM = sections.some((s: any) => s.type === "revision-mat-box" || s.type === "revision-mat-title" || s.type === "revision-mat-lo");
+                      if (printTarget) {
+                        printWorksheetElement(printTarget, { viewMode: historyViewMode === "teacher" ? "teacher" : "student", landscape: isHistoryRM });
+                      } else {
+                        window.print();
+                      }
                     }
                   }}><Printer className="h-3.5 w-3.5 mr-1" />Print</Button>
                   <Button size="sm" className="bg-brand hover:bg-brand/90 text-white" onClick={() => {
@@ -7181,6 +7190,14 @@ ${s.content}`).join("\n\n"),
 
                 {/* Subtitle */}
                 {ws.subtitle && <p className="text-xs text-muted-foreground">{ws.subtitle}</p>}
+
+                {/* Gold 2-page landscape layout — shown when worksheet was generated from curated gold JSON */}
+                {ws.goldHtml && (
+                  <div className="mt-2">
+                    <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><span className="text-green-600 font-semibold">✓ Gold worksheet</span> — 2-page landscape layout</div>
+                    <GoldWorksheetFrame html={ws.goldHtml} title={ws.title} />
+                  </div>
+                )}
 
                 {/* Hidden WorksheetRenderer used for print/PDF — captures proper styled output */}
                 {(() => {

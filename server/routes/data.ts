@@ -45,6 +45,8 @@ router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
       metadata: r.metadata_json ? JSON.parse(r.metadata_json) : undefined,
       sourceLibraryId: r.source_library_id || undefined,
       sourceCanonicalTopicKey: r.source_canonical_topic_key || undefined,
+      goldHtml: r.gold_html || undefined,
+      goldSlug: r.gold_slug || undefined,
       sections: sections.map((s: any) => ({
         title: s.title,
         type: s.type,
@@ -63,7 +65,7 @@ router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
 
 router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { title: rawTitle, subtitle: rawSubtitle, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey } = req.body;
+    const { title: rawTitle, subtitle: rawSubtitle, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey, goldHtml, goldSlug } = req.body;
     if (!rawTitle) return res.status(400).json({ error: "Title required" });
     // Strip rogue markdown bold markers from title and subtitle
     const title = typeof rawTitle === 'string' ? rawTitle.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : rawTitle;
@@ -71,9 +73,9 @@ router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
     console.log(`[POST /worksheets] title=${title} subject=${subject} yearGroup=${yearGroup} sections=${Array.isArray(sections) ? sections.length : 'none'}`);
     const id = uuidv4();
     const n = (v: any) => (v === undefined || v === null ? null : v);
-    await db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subtitle, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay, metadata_json, source_library_id, source_canonical_topic_key)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      id, n(req.user!.schoolId), n(req.user!.id), n(title), n(subtitle), n(subject), n(topic), n(yearGroup), n(sendNeed), n(difficulty), n(examBoard), n(content), n(teacherContent), n(overlay), metadata ? JSON.stringify(metadata) : null, n(sourceLibraryId), n(sourceCanonicalTopicKey)
+    await db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subtitle, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay, metadata_json, source_library_id, source_canonical_topic_key, gold_html, gold_slug)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, n(req.user!.schoolId), n(req.user!.id), n(title), n(subtitle), n(subject), n(topic), n(yearGroup), n(sendNeed), n(difficulty), n(examBoard), n(content), n(teacherContent), n(overlay), metadata ? JSON.stringify(metadata) : null, n(sourceLibraryId), n(sourceCanonicalTopicKey), n(goldHtml || null), n(goldSlug || null)
     );
     console.log(`[POST /worksheets] worksheet inserted id=${id}`);
     // Save sections if provided

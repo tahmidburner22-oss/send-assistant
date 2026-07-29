@@ -87,6 +87,8 @@ export interface Worksheet {
   sourceLibraryId?: string;
   sourceCanonicalTopicKey?: string;
   isAI?: boolean;
+  goldHtml?: string;
+  goldSlug?: string;
 }
 
 export interface Story {
