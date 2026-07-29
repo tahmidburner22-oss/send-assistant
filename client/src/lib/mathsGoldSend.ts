@@ -175,6 +175,45 @@ const GOLD_SEND_THEMES: Record<string, GoldTheme> = {
     lineScale: 1.06,
     label: "Age-appropriate",
   },
+  // Working memory: generous spacing so students can hold their place
+  // without losing context; slightly larger text reduces re-reading load.
+  "working-memory": {
+    fontFamily: VERDANA,
+    fontScale: 1.04,
+    lineScale: 1.14,
+    letterSpacing: "0.02em",
+    pageBg: "#FAFAF5",
+    label: "Working memory support",
+  },
+  // ASC sub-profiles — all inherit the base ASC calm layout
+  "asc-social": {
+    fontFamily: VERDANA,
+    fontScale: 1.02,
+    lineScale: 1.08,
+    pageBg: "#FBFBF6",
+    label: "Autism-friendly (Social)",
+  },
+  "asc-demand-avoidant": {
+    fontFamily: VERDANA,
+    fontScale: 1.02,
+    lineScale: 1.08,
+    pageBg: "#FBFCFE",
+    label: "Autism-friendly (PDA)",
+  },
+  "asc-sensory": {
+    fontFamily: VERDANA,
+    fontScale: 1.02,
+    lineScale: 1.06,
+    pageBg: "#F8F8F4", // muted, minimal contrast
+    label: "Autism-friendly (Sensory)",
+  },
+  "asc-rigid": {
+    fontFamily: VERDANA,
+    fontScale: 1.02,
+    lineScale: 1.08,
+    pageBg: "#FBFBF6",
+    label: "Autism-friendly (Routine)",
+  },
 };
 
 /**

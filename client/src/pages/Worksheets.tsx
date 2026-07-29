@@ -1930,9 +1930,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               },
             } as any;
             setGenerated(libWorksheet);
-            // ── GOLD RENDERER: for curated maths worksheets, also render the
-            // 2-page landscape gold layout from the bundled JSON so the output
-            // matches the reference PDFs exactly.
+            // ── GOLD RENDERER: always fire for curated maths entries, including when a SEND need
+            // is selected. The gold layout applies SEND adaptations cosmetically (font, spacing,
+            // background colour) via CSS variables — the 2-page landscape structure is preserved.
+            let _capturedGoldHtml: string | undefined;
+            let _capturedGoldSlug: string | undefined;
             if (libData.curated && isMathsSubject(subject) && !examStyle) {
               const resolvedSubtopic = entry.subtopic || subtopic || "";
               const goldEntry = findGoldEntry(entry.topic || topic, resolvedSubtopic);
@@ -1944,6 +1946,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     const theme = getGoldSendTheme(activeSend);
                     const goldHtml = renderGoldWorksheetHtml(goldData, theme);
                     const goldTitle = (goldData.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
+                    // Store in local vars BEFORE setGoldWorksheet so the save block below
+                    // can read them synchronously (React state updates are async).
+                    _capturedGoldHtml = goldHtml;
+                    _capturedGoldSlug = goldEntry.slug;
                     setGoldWorksheet({ html: goldHtml, title: goldTitle, entry: goldEntry, sendNeed: activeSend });
                   }
                 } catch (goldErr) {
@@ -1966,9 +1972,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               const lwSections = (lw.sections || []).map((s: any) => ({ ...s }));
               const lwContent = lwSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
               const lwTeacherContent = lwSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
-              // Capture gold HTML at save time so history can re-render the 2-page layout
-              const _savedGoldHtml = goldWorksheet?.html || undefined;
-              const _savedGoldSlug = goldWorksheet?.entry?.slug || undefined;
+              // Use locally captured gold HTML (React state is async — goldWorksheet state
+              // may not have updated yet at this point in the same synchronous execution).
+              const _savedGoldHtml = _capturedGoldHtml;
+              const _savedGoldSlug = _capturedGoldSlug;
               saveWorksheet({
                 title: lw.title,
                 subtitle: lw.subtitle,
