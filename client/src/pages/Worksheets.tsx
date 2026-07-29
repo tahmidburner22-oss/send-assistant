@@ -1930,6 +1930,27 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               },
             } as any;
             setGenerated(libWorksheet);
+            // ── GOLD RENDERER: for curated maths worksheets, also render the
+            // 2-page landscape gold layout from the bundled JSON so the output
+            // matches the reference PDFs exactly.
+            if (libData.curated && isMathsSubject(subject) && !examStyle) {
+              const resolvedSubtopic = entry.subtopic || subtopic || "";
+              const goldEntry = findGoldEntry(entry.topic || topic, resolvedSubtopic);
+              if (goldEntry) {
+                try {
+                  const goldData = await loadGoldWorksheet(goldEntry.slug);
+                  if (goldData) {
+                    const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
+                    const theme = getGoldSendTheme(activeSend);
+                    const goldHtml = renderGoldWorksheetHtml(goldData, theme);
+                    const goldTitle = (goldData.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
+                    setGoldWorksheet({ html: goldHtml, title: goldTitle, entry: goldEntry, sendNeed: activeSend });
+                  }
+                } catch (goldErr) {
+                  console.warn("[Gold] library-path gold render failed, using WorksheetRenderer:", goldErr);
+                }
+              }
+            }
             setHiddenSections(new Set());
             setHideHeader(false);
             setDiffVersions({});
