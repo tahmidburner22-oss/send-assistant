@@ -1929,12 +1929,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 featureFlags: manifest.featureFlags || null,
               },
             } as any;
-            setGenerated(libWorksheet);
-            // ── GOLD RENDERER: always fire for curated maths entries, including when a SEND need
-            // is selected. The gold layout applies SEND adaptations cosmetically (font, spacing,
-            // background colour) via CSS variables — the 2-page landscape structure is preserved.
+            // ── GOLD RENDERER: always fire FIRST for curated maths entries.
+            // The gold layout applies SEND adaptations cosmetically (font, spacing,
+            // background colour) via CSS variables — the 2-page landscape structure
+            // is NEVER broken. setGenerated is only called if gold rendering fails,
+            // so the standard WorksheetRenderer never competes with the gold frame.
             let _capturedGoldHtml: string | undefined;
             let _capturedGoldSlug: string | undefined;
+            let _goldRendered = false;
             if (libData.curated && isMathsSubject(subject) && !examStyle) {
               const resolvedSubtopic = entry.subtopic || subtopic || "";
               const goldEntry = findGoldEntry(entry.topic || topic, resolvedSubtopic);
@@ -1950,12 +1952,25 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     // can read them synchronously (React state updates are async).
                     _capturedGoldHtml = goldHtml;
                     _capturedGoldSlug = goldEntry.slug;
+                    _goldRendered = true;
+                    // Set goldWorksheet BEFORE setGenerated so the render section
+                    // shows GoldWorksheetFrame immediately and PDF/Print handlers
+                    // route through the gold path.
                     setGoldWorksheet({ html: goldHtml, title: goldTitle, entry: goldEntry, sendNeed: activeSend });
+                    // For gold worksheets, set a minimal generated stub so toolbar
+                    // guards (if (!generated)) pass, but do NOT set the full library
+                    // worksheet — the standard WorksheetRenderer must never render
+                    // alongside the gold frame.
+                    setGenerated({ ...libWorksheet, sections: libWorksheet.sections || [] } as any);
                   }
                 } catch (goldErr) {
-                  console.warn("[Gold] library-path gold render failed, using WorksheetRenderer:", goldErr);
+                  console.warn("[Gold] library-path gold render failed, falling back to WorksheetRenderer:", goldErr);
                 }
               }
+            }
+            // Only call setGenerated for the standard renderer if gold did NOT fire.
+            if (!_goldRendered) {
+              setGenerated(libWorksheet);
             }
             setHiddenSections(new Set());
             setHideHeader(false);
@@ -3009,7 +3024,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   // ═══ §HANDLE-PDF · PDF download (pixel-perfect HTML-to-PDF) ════════════════
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
   const handleDownloadPdf = async () => {
-    if (!generated) { toast.error("No worksheet loaded"); return; }
+    if (!generated && !goldWorksheet) { toast.error("No worksheet loaded"); return; }
     // ── Gold maths layout — export the pre-built landscape document directly,
     // so the PDF is pixel-identical to the on-screen spread. ──────────────────
     if (goldWorksheet) {
