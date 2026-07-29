@@ -1326,6 +1326,38 @@ async function findLibraryEntry(
   const topicKey = opts?.canonicalTopicKey || canonicalTopicKey(topic);
   const tiersToTry = tierCandidates(tier);
 
+  // ── Curated-first shortcut ─────────────────────────────────────────────────
+  // For curated entries with an exact subtopic match, skip the year-group
+  // filter entirely. A curated worksheet is authoritative for any year group
+  // that teaches the same topic — the import stores KS4 entries as Year 11
+  // but they are equally valid for Year 10.
+  if (requestedSubtopic) {
+    for (const candidateTier of tiersToTry) {
+      const curatedEntry = await db.prepare(
+        `SELECT * FROM worksheet_library
+         WHERE LOWER(subject) IN (${placeholders})
+           AND tier = ?
+           AND curated = 1
+           AND (
+             LOWER(topic) = ? OR
+             LOWER(topic) ILIKE ? OR
+             canonical_topic_key = ?
+           )
+           AND LOWER(COALESCE(subtopic, '')) = ?
+         ORDER BY updated_at DESC
+         LIMIT 1`
+      ).get(
+        ...subjectsNorm,
+        candidateTier,
+        topicNorm,
+        `%${topicNorm}%`,
+        topicKey,
+        requestedSubtopic
+      ) as LibraryEntry | undefined;
+      if (curatedEntry) return curatedEntry;
+    }
+  }
+
   if (opts?.sourceLibraryId) {
     const source = await db.prepare(
       "SELECT id, base_entry_id, canonical_topic_key, year_group, topic, subtopic FROM worksheet_library WHERE id = ? LIMIT 1"
