@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { flushSync } from "react-dom";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1953,15 +1954,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     _capturedGoldHtml = goldHtml;
                     _capturedGoldSlug = goldEntry.slug;
                     _goldRendered = true;
-                    // Set goldWorksheet BEFORE setGenerated so the render section
-                    // shows GoldWorksheetFrame immediately and PDF/Print handlers
-                    // route through the gold path.
-                    setGoldWorksheet({ html: goldHtml, title: goldTitle, entry: goldEntry, sendNeed: activeSend });
-                    // For gold worksheets, set a minimal generated stub so toolbar
-                    // guards (if (!generated)) pass, but do NOT set the full library
-                    // worksheet — the standard WorksheetRenderer must never render
-                    // alongside the gold frame.
-                    setGenerated({ ...libWorksheet, sections: libWorksheet.sections || [] } as any);
+                    // Use flushSync to force React to commit both state updates
+                    // synchronously before the next render. Without this, React 18
+                    // batches the updates and the goldWorksheet state may not be
+                    // visible to the render section when it runs.
+                    flushSync(() => {
+                      setGoldWorksheet({ html: goldHtml, title: goldTitle, entry: goldEntry, sendNeed: activeSend });
+                      // Minimal stub so toolbar guards pass; standard WorksheetRenderer
+                      // is hidden when goldWorksheet is set.
+                      setGenerated({ ...libWorksheet, sections: libWorksheet.sections || [] } as any);
+                    });
                   }
                 } catch (goldErr) {
                   console.warn("[Gold] library-path gold render failed, falling back to WorksheetRenderer:", goldErr);
