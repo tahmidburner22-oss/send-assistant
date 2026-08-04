@@ -56,6 +56,14 @@ function injectA11yProfile(html: string, profileId: string | undefined): string 
   let result = html;
   // Insert into <head>
   result = result.replace("</head>", `${headInjection}\n</head>`);
+  // Add data-send to ws-root so the SEND CSS overrides (strip box fills) fire
+  result = result.replace(
+    /<div class="ws-root"([^>]*)>/,
+    (match, attrs) => {
+      if (attrs.includes('data-send')) return match; // already set
+      return `<div class="ws-root"${attrs} data-send="1">`;
+    }
+  );
   // Add class to <body> — handle both <body> and <body ...attrs>
   result = result.replace(/<body([^>]*)>/, (match, attrs) => {
     const existingClass = attrs.match(/class="([^"]*)"/);
