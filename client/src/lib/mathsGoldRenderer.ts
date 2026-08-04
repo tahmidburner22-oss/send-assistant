@@ -304,6 +304,26 @@ export const GOLD_CSS = `
 .ws-root .ftg  { font-weight: bold; font-size: ${fs(10)}; color: #1e7d2e; margin-bottom: 4px; }
 .ws-root .ci   { line-height: ${lh(1.8)}; font-weight: bold; }
 .ws-root .badge { display: inline-block; background: #4caf50; color: white; font-weight: bold; font-size: ${fs(12)}; border-radius: 50%; width: 65px; height: 65px; text-align: center; padding-top: 14px; line-height: 1.25; border: 3px dashed white; outline: 3px solid #4caf50; }
+/* ── SEND overlay: strip box fills, keep coloured borders ── */
+.ws-root[data-send] .lo { background: transparent; }
+.ws-root[data-send] .ic-blue   { background: transparent; }
+.ws-root[data-send] .ic-green  { background: transparent; }
+.ws-root[data-send] .ic-yellow { background: transparent; }
+.ws-root[data-send] .eg-t { background: transparent; }
+.ws-root[data-send] .mod-wrap { background: transparent; }
+.ws-root[data-send] .mod-head { background: transparent; }
+.ws-root[data-send] .ex-c-1, .ws-root[data-send] .ex-c-2 { background: transparent; }
+.ws-root[data-send] .ex-c-3 { background: transparent; }
+.ws-root[data-send] .ex-c-4 { background: transparent; }
+.ws-root[data-send] .t-1, .ws-root[data-send] .t-2 { background: transparent; }
+.ws-root[data-send] .t-3 { background: transparent; }
+.ws-root[data-send] .t-4 { background: transparent; }
+.ws-root[data-send] .ex-a { background: transparent; }
+.ws-root[data-send] .misc-head { background: transparent; }
+.ws-root[data-send] .chal-wrap { background: transparent; }
+.ws-root[data-send] .fb-tips  { background: transparent; }
+.ws-root[data-send] .fb-check { background: transparent; }
+.ws-root[data-send] .fb-badge { background: transparent; }
 `;
 
 // ─── Theme → CSS variables ───────────────────────────────────────────────────
@@ -547,6 +567,7 @@ export function renderGoldWorksheetHtml(
 ): string {
   const styleVars = themeToStyleVars(theme);
   const rootStyle = styleVars ? ` style="${styleVars}"` : "";
+  const sendAttr = theme ? ` data-send="1"` : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -559,7 +580,7 @@ ${GOLD_CSS}
 </style>
 </head>
 <body>
-<div class="ws-root"${rootStyle}>
+<div class="ws-root"${rootStyle}${sendAttr}>
 ${renderGoldWorksheetBody(data)}
 </div>
 </body>
