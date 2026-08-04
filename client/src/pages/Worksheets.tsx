@@ -5492,10 +5492,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                                 yearGroup: uploadYearGroup || "",
                                 sendNeed: uploadSendNeed,
                                 difficulty: "mixed",
-                                content: sections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}
-${s.content}`).join("\n\n"),
-                                teacherContent: sections.map((s: any) => `## ${s.title}
-${s.content}`).join("\n\n"),
+                                content: sections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n"),
+                                teacherContent: sections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n"),
                                 sections: sections as any,
                                 isAI: true,
                               });
