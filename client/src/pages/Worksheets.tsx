@@ -6894,7 +6894,7 @@ ${s.content}`).join("\n\n"),
                     Rendered in a scaled iframe (self-contained HTML document),
                     so it replaces the section-flow renderer entirely. */}
                 {goldWorksheet && (
-                  <GoldWorksheetFrame html={goldWorksheet.html} title={goldWorksheet.title} />
+                  <GoldWorksheetFrame html={goldWorksheet.html} title={goldWorksheet.title} a11yProfileId={activeA11yProfileId} />
                 )}
                 {/* Show WorksheetRenderer only when NOT in edit mode */}
                 {!goldWorksheet && !editMode && (
@@ -7251,7 +7251,7 @@ ${s.content}`).join("\n\n"),
                 {ws.goldHtml && (
                   <div className="mt-2">
                     <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><span className="text-green-600 font-semibold">✓ Gold worksheet</span> — 2-page landscape layout</div>
-                    <GoldWorksheetFrame html={ws.goldHtml} title={ws.title} />
+                    <GoldWorksheetFrame html={ws.goldHtml} title={ws.title} a11yProfileId={activeA11yProfileId} />
                   </div>
                 )}
 
