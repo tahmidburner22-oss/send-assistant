@@ -216,7 +216,7 @@ export const GOLD_CSS = `
 .ws-root .rb    { color: #cc0000; font-weight: bold; }
 .ws-root .pgap  { margin-bottom: 6px; }
 .ws-root .eg-t { width: 100%; border-collapse: collapse; background: white; font-size: ${fs(9)}; }
-.ws-root .eg-t td { border: 1px solid #a5d6a7; padding: 4px 5px; text-align: center; }
+.ws-root .eg-t td { border: 1px solid #a5d6a7; padding: 4px 5px; text-align: center; line-height: 1; }
 .ws-root .ok { color: white; background: #4caf50; border-radius: 50%; display: inline-block; width: 16px; height: 16px; line-height: 16px; font-weight: bold; font-size: ${fs(9)}; }
 .ws-root .no { color: white; background: #f44336; border-radius: 50%; display: inline-block; width: 16px; height: 16px; line-height: 16px; font-weight: bold; font-size: ${fs(9)}; }
 .ws-root .kt  { text-align: center; margin-bottom: 7px; }
