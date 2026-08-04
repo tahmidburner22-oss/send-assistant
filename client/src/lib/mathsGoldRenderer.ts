@@ -200,14 +200,14 @@ export const GOLD_CSS = `
 .ws-root .t2 { font-family: var(--ws-title-font); font-size: ${fs(18)}; font-weight: bold; color: #0f204b; line-height: 1.1; }
 .ws-root .ws-badge-label { font-size: ${fs(7.5)}; color: #1f5fa6; font-weight: bold; }
 
-.ws-root .lo { position: absolute; top: 16mm; left: 0; right: 0; height: 9mm; background: #eef3ff; border: 1.5px solid #1f5fa6; border-radius: 4px; text-align: center; line-height: 9mm; font-weight: bold; font-size: ${fs(10.5)}; }
+.ws-root .lo { position: absolute; top: 16mm; left: 0; right: 0; height: 9mm; background: white; border: 1.5px solid #1f5fa6; border-radius: 4px; text-align: center; line-height: 9mm; font-weight: bold; font-size: ${fs(10.5)}; }
 
 /* three info-boxes */
 .ws-root .three-cols { position: absolute; top: 26mm; left: 0; right: 0; height: 60mm; display: table; width: 100%; border-spacing: 4px 0; table-layout: fixed; overflow: hidden; }
 .ws-root .ic { display: table-cell; width: 33.33%; vertical-align: top; border-radius: 5px; padding: 6px 8px; font-size: ${fs(9)}; line-height: ${lh(1.4)}; overflow: hidden; }
-.ws-root .ic-blue   { border: 1.5px solid #1f5fa6; background: #f4f8ff; }
-.ws-root .ic-green  { border: 1.5px solid #1e7d2e; background: #f5fdf5; }
-.ws-root .ic-yellow { border: 1.5px solid #b8860b; background: #fffdf5; }
+.ws-root .ic-blue   { border: 1.5px solid #1f5fa6; background: white; }
+.ws-root .ic-green  { border: 1.5px solid #1e7d2e; background: white; }
+.ws-root .ic-yellow { border: 1.5px solid #b8860b; background: white; }
 .ws-root .ct-blue   { color: #1f5fa6; font-weight: bold; font-size: ${fs(11)}; text-align: center; margin-bottom: 6px; }
 .ws-root .ct-green  { color: #1e7d2e; font-weight: bold; font-size: ${fs(11)}; text-align: center; margin-bottom: 6px; }
 .ws-root .ct-yellow { color: #b8860b; font-weight: bold; font-size: ${fs(11)}; text-align: center; margin-bottom: 6px; }
@@ -227,7 +227,7 @@ export const GOLD_CSS = `
 
 /* MODELLED EXAMPLES — table layout (reliable, matches reference) */
 .ws-root .mod-wrap { position: absolute; top: 88mm; left: 0; right: 0; height: 108mm; background: white; border: 1.5px solid #7b3fa0; border-radius: 5px; overflow: hidden; }
-.ws-root .mod-head { background: #f5eeff; text-align: center; padding: 4px 0 3px; height: 14mm; line-height: 1.2; }
+.ws-root .mod-head { background: white; text-align: center; padding: 4px 0 3px; height: 14mm; line-height: 1.2; }
 .ws-root .mht { font-size: ${fs(13)}; font-weight: bold; color: #4a148c; }
 .ws-root .mhs { font-size: ${fs(9)}; color: #111; }
 .ws-root .mod-body { position: absolute; top: 14mm; left: 5px; right: 5px; bottom: 5px; }
@@ -235,14 +235,14 @@ export const GOLD_CSS = `
 .ws-root .mod-tbl > tbody { height: 100%; }
 .ws-root .mod-tbl > tbody > tr { height: 100%; }
 .ws-root .ex-c { width: 25%; vertical-align: top; padding: 0; border-radius: 4px; overflow: hidden; }
-.ws-root .ex-c-1, .ws-root .ex-c-2 { border: 1.5px solid #1f5fa6; background: #eef3ff; }
-.ws-root .ex-c-3 { border: 1.5px solid #cc0000; background: #fff0f0; }
-.ws-root .ex-c-4 { border: 1.5px solid #1e7d2e; background: #edfaee; }
+.ws-root .ex-c-1, .ws-root .ex-c-2 { border: 1.5px solid #1f5fa6; background: white; }
+.ws-root .ex-c-3 { border: 1.5px solid #cc0000; background: white; }
+.ws-root .ex-c-4 { border: 1.5px solid #1e7d2e; background: white; }
 
 .ws-root .ex-t { font-weight: bold; font-size: ${fs(10)}; padding: 6px 4px; display: block; text-align: center; }
-.ws-root .t-1, .ws-root .t-2 { background: #d0e4ff; color: #1f5fa6; }
-.ws-root .t-3 { background: #ffd0d0; color: #cc0000; }
-.ws-root .t-4 { background: #c8f0cc; color: #1e7d2e; }
+.ws-root .t-1, .ws-root .t-2 { background: white; color: #1f5fa6; }
+.ws-root .t-3 { background: white; color: #cc0000; }
+.ws-root .t-4 { background: white; color: #1e7d2e; }
 
 .ws-root .ex-body { padding: 8px 8px 6px; text-align: center; }
 .ws-root .ex-q { font-size: ${fs(10.5)}; margin-bottom: 10px; line-height: ${lh(1.3)}; min-height: 14mm; }
@@ -271,7 +271,7 @@ export const GOLD_CSS = `
 .ws-root .pmd { display: table-cell; width: 20%; font-size: ${fs(9)}; font-weight: bold; padding: 4px 0; vertical-align: middle; }
 
 .ws-root .misc-wrap { position: absolute; top: 75mm; left: 0; right: 0; height: 44mm; border: 1.5px solid #cc0000; border-radius: 5px; overflow: hidden; }
-.ws-root .misc-head { background: #fff0f0; color: #cc0000; font-weight: bold; font-size: ${fs(11)}; text-align: center; height: 9mm; line-height: 9mm; }
+.ws-root .misc-head { background: white; color: #cc0000; font-weight: bold; font-size: ${fs(11)}; text-align: center; height: 9mm; line-height: 9mm; }
 .ws-root .misc-body { padding: 6px 10px 8px; }
 .ws-root .misc-inst { font-size: ${fs(9)}; margin-bottom: 8px; }
 .ws-root .misc-row  { display: table; width: 100%; border: 1px solid #cc0000; border-radius: 3px; table-layout: fixed; }
@@ -282,7 +282,7 @@ export const GOLD_CSS = `
 .ws-root .mia { font-size: ${fs(8.5)}; color: #111; margin-bottom: 6px; }
 .ws-root .mir { font-size: ${fs(8.5)}; color: #111; }
 
-.ws-root .chal-wrap { position: absolute; top: 121mm; left: 0; right: 0; bottom: 37mm; border: 1.5px solid #b8860b; border-radius: 5px; background: #fffdf5; overflow: hidden; }
+.ws-root .chal-wrap { position: absolute; top: 121mm; left: 0; right: 0; bottom: 37mm; border: 1.5px solid #b8860b; border-radius: 5px; background: white; overflow: hidden; }
 .ws-root .chal-head { color: #b8860b; font-weight: bold; font-size: ${fs(11)}; text-align: center; height: 8mm; line-height: 8mm; border-bottom: 1px solid #b8860b; }
 .ws-root .chal-body { position: absolute; top: 8mm; left: 0; right: 0; bottom: 0; display: table; width: 100%; table-layout: fixed; }
 .ws-root .cc { display: table-cell; width: 50%; padding: 8px 12px; font-size: ${fs(9)}; line-height: ${lh(1.6)}; vertical-align: top; }
@@ -293,9 +293,9 @@ export const GOLD_CSS = `
 
 .ws-root .foot-row { position: absolute; bottom: 0; left: 0; right: 0; height: 36mm; display: table; width: 100%; border-spacing: 5px 0; table-layout: fixed; }
 .ws-root .fb { display: table-cell; vertical-align: middle; border-radius: 5px; padding: 7px 10px; }
-.ws-root .fb-tips  { width: 40%; border: 1.5px solid #1f5fa6; background: #f4f8ff; }
-.ws-root .fb-check { width: 40%; border: 1.5px solid #1e7d2e; background: #f5fdf5; }
-.ws-root .fb-badge { width: 20%; border: 1.5px solid #1e7d2e; background: #f5fdf5; text-align: center; vertical-align: middle; }
+.ws-root .fb-tips  { width: 40%; border: 1.5px solid #1f5fa6; background: white; }
+.ws-root .fb-check { width: 40%; border: 1.5px solid #1e7d2e; background: white; }
+.ws-root .fb-badge { width: 20%; border: 1.5px solid #1e7d2e; background: white; text-align: center; vertical-align: middle; }
 .ws-root .fbi { display: table; }
 .ws-root .fbic { display: table-cell; vertical-align: middle; padding-right: 10px; font-size: ${fs(20)}; white-space: nowrap; color: #1f5fa6; }
 .ws-root .fbic2 { display: table-cell; vertical-align: middle; padding-right: 10px; font-size: ${fs(20)}; white-space: nowrap; color: #1e7d2e; }
