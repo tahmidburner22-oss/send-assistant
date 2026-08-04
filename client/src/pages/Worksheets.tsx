@@ -6758,13 +6758,7 @@ ${s.content}`).join("\n\n"),
                       className="text-[10px] text-brand hover:underline"
                     >Show all</button>
                     <button
-                      onClick={() => {
-                        const nonTeacher = generated.sections
-                          .map((_, i) => i)
-                          .filter(i => !(generated.sections[i] as any).teacherOnly);
-                        setHiddenSections(new Set(nonTeacher.slice(0, -1)));
-                        setHideHeader(false);
-                      }}
+                      onClick={() => { setHiddenSections(new Set()); setHideHeader(false); }}
                       className="text-[10px] text-muted-foreground hover:underline"
                     >Reset</button>
                   </div>
