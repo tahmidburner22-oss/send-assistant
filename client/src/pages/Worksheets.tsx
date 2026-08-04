@@ -5580,7 +5580,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">SEND Adaptations (optional)</Label>
-                      <Select value={slidesSendNeeds} onValueChange={setSlidesSendNeeds}>
+                      <Select value={slidesSendNeeds || "__none__"} onValueChange={v => setSlidesSendNeeds(v === "__none__" ? "" : v)}>
                         <SelectTrigger className="h-10"><SelectValue placeholder="No adaptations needed" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__">No adaptations</SelectItem>
