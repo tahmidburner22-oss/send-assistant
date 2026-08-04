@@ -203,7 +203,7 @@ export const GOLD_CSS = `
 .ws-root .lo { position: absolute; top: 16mm; left: 0; right: 0; height: 9mm; background: #eef3ff; border: 1.5px solid #1f5fa6; border-radius: 4px; text-align: center; line-height: 9mm; font-weight: bold; font-size: ${fs(10.5)}; }
 
 /* three info-boxes */
-.ws-root .three-cols { position: absolute; top: 26mm; left: 0; right: 0; height: 52mm; display: table; width: 100%; border-spacing: 4px 0; table-layout: fixed; overflow: hidden; }
+.ws-root .three-cols { position: absolute; top: 26mm; left: 0; right: 0; height: 60mm; display: table; width: 100%; border-spacing: 4px 0; table-layout: fixed; overflow: hidden; }
 .ws-root .ic { display: table-cell; width: 33.33%; vertical-align: top; border-radius: 5px; padding: 6px 8px; font-size: ${fs(9)}; line-height: ${lh(1.4)}; overflow: hidden; }
 .ws-root .ic-blue   { border: 1.5px solid #1f5fa6; background: #f4f8ff; }
 .ws-root .ic-green  { border: 1.5px solid #1e7d2e; background: #f5fdf5; }
@@ -226,7 +226,7 @@ export const GOLD_CSS = `
 .ws-root .eqc { text-align: center; font-size: ${fs(9)}; font-weight: bold; }
 
 /* MODELLED EXAMPLES — table layout (reliable, matches reference) */
-.ws-root .mod-wrap { position: absolute; top: 80mm; left: 0; right: 0; height: 116mm; background: white; border: 1.5px solid #7b3fa0; border-radius: 5px; overflow: hidden; }
+.ws-root .mod-wrap { position: absolute; top: 88mm; left: 0; right: 0; height: 108mm; background: white; border: 1.5px solid #7b3fa0; border-radius: 5px; overflow: hidden; }
 .ws-root .mod-head { background: #f5eeff; text-align: center; padding: 4px 0 3px; height: 14mm; line-height: 1.2; }
 .ws-root .mht { font-size: ${fs(13)}; font-weight: bold; color: #4a148c; }
 .ws-root .mhs { font-size: ${fs(9)}; color: #111; }
