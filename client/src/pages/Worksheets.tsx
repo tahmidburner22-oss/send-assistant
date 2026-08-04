@@ -5583,7 +5583,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       <Select value={slidesSendNeeds} onValueChange={setSlidesSendNeeds}>
                         <SelectTrigger className="h-10"><SelectValue placeholder="No adaptations needed" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">No adaptations</SelectItem>
+                          <SelectItem value="__none__">No adaptations</SelectItem>
                           {sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
