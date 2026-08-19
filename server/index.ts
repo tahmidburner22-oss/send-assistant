@@ -195,14 +195,41 @@ app.use(compression({
   },
 }));
 
-// ── CORS ──────────────────────────────────────────────────────────────────────────────────────
+// ── Serve immutable frontend bundles before API CORS ─────────────────────────────────────────────
+// Module preloads can include an Origin header even when fetched from this same service.
+// Serving built files first avoids applying API CORS policy to the site's own JavaScript and stylesheets.
+const distPath = path.join(__dirname, "..");
+const indexHtml = path.join(distPath, "index.html");
+const hasBuiltFrontend = !isDev && fs.existsSync(indexHtml);
+const staticFrontendOptions = {
+  setHeaders: (res: express.Response, filePath: string) => {
+    if (filePath.endsWith(".html")) {
+      res.setHeader("Cache-Control", "no-store");
+    } else {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    }
+  },
+};
+
+if (hasBuiltFrontend) {
+  console.log(`📁 Serving static frontend from: ${distPath}`);
+  app.use(express.static(distPath, staticFrontendOptions));
+} else if (!isDev) {
+  console.warn(`⚠️  Frontend not found at ${distPath}`);
+}
+
+// ── CORS for API requests ──────────────────────────────────────────────────────────────────────
 // Exact-match origins only — startsWith() would allow subdomain spoofing (e.g. adaptly.co.uk.evil.com)
-const allowedOrigins: Set<string> = new Set(
-  (process.env.ALLOWED_ORIGINS || "https://adaptly.co.uk")
-    .split(",")
-    .map(o => o.trim())
-    .filter(Boolean)
-);
+const defaultAllowedOrigins = [
+  "https://adaptly.co.uk",
+  "https://send-assistant-production.up.railway.app",
+  "https://send-assistant-production-c2eb.up.railway.app",
+];
+const configuredOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map(o => o.trim())
+  .filter(Boolean);
+const allowedOrigins: Set<string> = new Set([...defaultAllowedOrigins, ...configuredOrigins]);
 app.use(cors({
   origin: (origin, cb) => {
     // Server-to-server or same-origin request (no Origin header) — allow
@@ -363,28 +390,14 @@ app.get("/api/health", (_, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.5.0-DiagramLibrary" });
 });
 
-// ── Serve static frontend in production ───────────────────────────────────────
-const distPath = path.join(__dirname, "..");
-const indexHtml = path.join(distPath, "index.html");
-if (!isDev && fs.existsSync(indexHtml)) {
-  console.log(`📁 Serving static frontend from: ${distPath}`);
-  app.use(express.static(distPath, {
-    // Security: set cache headers for static assets
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith(".html")) {
-        res.setHeader("Cache-Control", "no-store");
-      } else {
-        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-      }
-    },
-  }));
+// ── Single-page application fallback ──────────────────────────────────────────
+// Keep this after API routes; static files are served before CORS above.
+if (hasBuiltFrontend) {
   app.get("*", (req, res) => {
     if (!req.path.startsWith("/api")) {
       res.sendFile(indexHtml);
     }
   });
-} else {
-  console.warn(`⚠️  Frontend not found at ${distPath} (isDev=${isDev})`);
 }
 
 // ── Global error handler — never leak stack traces or internal details in production ────────
