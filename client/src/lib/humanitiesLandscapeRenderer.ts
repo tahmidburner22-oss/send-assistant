@@ -1,4 +1,4 @@
-export type HumanitiesLayoutKind = "english-reading-writing" | "history-source-judgement" | "geography-data-evaluation";
+export type HumanitiesLayoutKind = "english-reading-writing" | "history-source-judgement" | "geography-data-evaluation" | "business-data-decision";
 
 export interface HumanitiesLandscapeOptions {
   subject: string;
@@ -184,16 +184,36 @@ function geography(options: HumanitiesLandscapeOptions): string {
     </section></div>`;
 }
 
+function business(options: HumanitiesLandscapeOptions): string {
+  const topic = options.topic || "the business decision";
+  const task = learnerText(options, "Use business terminology, quantitative data and context to recommend a justified decision.", "Use business words and the numbers. Choose the best decision and explain why.");
+  const evaluation = learnerText(options, "Make a reasoned recommendation. Include a benefit, a limitation and the data that matters most.", "Choose the best option. Give one good reason, one drawback and one useful number.");
+  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}">
+    <section class="humanities-page">${header(options, "BUSINESS — CONTEXT, DATA AND DECISION", "Original practice case · apply, calculate and recommend")}
+      <div class="purpose surface"><b>Focus:</b> ${esc(task)}</div>
+      <div class="grid two"><section class="card surface"><h3>ORIGINAL PRACTICE CASE</h3><p><b>Northside Drinks</b> is a small local business considering a new reusable bottle linked to ${esc(topic)}. The owner must decide whether to launch online, through local shops, or not yet. The business has limited finance, a small team and competition from larger brands.</p><div class="word-row"><span class="word">market</span><span class="word">cost</span><span class="word">revenue</span><span class="word">profit</span><span class="word">operations</span><span class="word">customer</span></div><p><span class="cue">Context:</span> Which internal and external factors could affect this decision?</p><div class="linebox"></div></section><section class="card surface"><h3>ORIGINAL PRACTICE DATA</h3><table class="data-table"><tr><th>Option</th><th>Price</th><th>Unit cost</th><th>Expected sales</th></tr><tr><td>Online launch</td><td>£12</td><td>£7</td><td>240</td></tr><tr><td>Local shops</td><td>£10</td><td>£6</td><td>310</td></tr><tr><td>Delay launch</td><td>£0</td><td>£0</td><td>0</td></tr></table><p><span class="cue">Calculate:</span> Revenue = price × sales. Gross profit = revenue − total unit costs.</p><p>Online revenue: £__________ &nbsp; Gross profit: £__________</p><p>Local-shop revenue: £__________ &nbsp; Gross profit: £__________</p><div class="linebox"></div></section></div>
+      <div class="grid three"><section class="card mini surface"><h3>MARKETING</h3><p>Who is the target market? Which feature or promotion could meet customer needs?</p><div class="linebox"></div></section><section class="card mini surface"><h3>OPERATIONS</h3><p>What capacity, supplier or quality issue must the business manage?</p><div class="linebox"></div></section><section class="card mini surface"><h3>PEOPLE AND FINANCE</h3><p>What staffing, training or cash-flow risk could affect the choice?</p><div class="linebox"></div></section></div>
+      <div class="footer"><div class="surface"><b>QUANTITATIVE ROUTINE:</b> Select the correct numbers, show a calculation, then interpret what it means.</div><div class="surface"><b>BUSINESS CONTEXT:</b> A sound decision depends on the market, the resources and the risks.</div></div>
+    </section>
+    <section class="humanities-page">${header(options, "BUSINESS — ANALYSE, EVALUATE AND RECOMMEND", "Evidence-led decision making")}
+      <div class="purpose surface"><b>Decision task:</b> ${esc(evaluation)}</div>
+      <div class="plan-grid"><section class="plan surface"><h3>OPTION A — ONLINE</h3><p>Benefit: wider reach and direct customer data. Limitation: delivery and promotion costs.</p><div class="linebox"></div></section><section class="plan surface"><h3>OPTION B — LOCAL SHOPS</h3><p>Benefit: established footfall. Limitation: less control over display and price.</p><div class="linebox"></div></section><section class="plan surface"><h3>OPTION C — DELAY</h3><p>Benefit: more research and cash retained. Limitation: competitors may act first.</p><div class="linebox"></div></section></div>
+      <div class="grid two"><section class="card surface"><h3>ANALYSIS CHAIN</h3><p><span class="label">1</span> Point: Which option is strongest?</p><p><span class="label">2</span> Evidence: Use a figure, calculation or case detail.</p><p><span class="label">3</span> Explain: How does this affect revenue, cost, customer demand or risk?</p><p><span class="label">4</span> Counterpoint: What could weaken the decision?</p></section><section class="card surface"><h3>JUSTIFIED DECISION PLAN</h3><p>My recommendation: _________________________________________</p><p>Most useful data: ____________________________________________</p><p>Key business benefit: ________________________________________</p><p>Risk or limitation: __________________________________________</p><p>How the business could reduce this risk: ______________________</p></section></div>
+      <section class="card surface" style="margin-top:3mm"><h3>YOUR EVALUATED RECOMMENDATION</h3><div class="linebox large"></div></section>
+      <div class="footer"><div class="surface"><b>ASSESSMENT ROUTINE:</b> Apply a concept to the case, analyse the effect, then evaluate before you decide.</div><div class="surface"><b>FINAL CHECK:</b> Use precise business terminology and make your recommendation clear.</div></div>
+    </section></div>`;
+}
+
 export function canRenderHumanitiesLandscape(options: HumanitiesLandscapeOptions): boolean {
   const subject = norm(options.subject);
-  return isSecondary(options.yearGroup) && /^(english|english language|history|geography)$/.test(subject);
+  return isSecondary(options.yearGroup) && /^(english|english language|history|geography|business|business studies)$/.test(subject);
 }
 
 export function renderHumanitiesLandscape(options: HumanitiesLandscapeOptions): HumanitiesLandscapeDocument {
   const subject = norm(options.subject);
-  const layout: HumanitiesLayoutKind = /history/.test(subject) ? "history-source-judgement" : /geography/.test(subject) ? "geography-data-evaluation" : "english-reading-writing";
-  const title = layout === "history-source-judgement" ? `${options.topic || "History"} — Source, Context and Judgement` : layout === "geography-data-evaluation" ? `${options.topic || "Geography"} — Data and Evaluation` : `${options.topic || "English Language"} — Reading and Writing`;
-  const body = layout === "history-source-judgement" ? history(options) : layout === "geography-data-evaluation" ? geography(options) : english(options);
+  const layout: HumanitiesLayoutKind = /history/.test(subject) ? "history-source-judgement" : /geography/.test(subject) ? "geography-data-evaluation" : /business/.test(subject) ? "business-data-decision" : "english-reading-writing";
+  const title = layout === "history-source-judgement" ? `${options.topic || "History"} — Source, Context and Judgement` : layout === "geography-data-evaluation" ? `${options.topic || "Geography"} — Data and Evaluation` : layout === "business-data-decision" ? `${options.topic || "Business"} — Data and Decision` : `${options.topic || "English Language"} — Reading and Writing`;
+  const body = layout === "history-source-judgement" ? history(options) : layout === "geography-data-evaluation" ? geography(options) : layout === "business-data-decision" ? business(options) : english(options);
   const html = `<!doctype html><html><head><meta charset="UTF-8"><title>${esc(title)}</title><style>${styles()}</style></head><body>${body}</body></html>`;
   return { title, layout, html, adaptations: supportNotes(options) };
 }

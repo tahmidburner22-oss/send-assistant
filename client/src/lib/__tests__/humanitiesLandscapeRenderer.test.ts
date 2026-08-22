@@ -4,11 +4,12 @@ import { canRenderHumanitiesLandscape, renderHumanitiesLandscape } from "../huma
 describe("humanitiesLandscapeRenderer", () => {
   const base = { yearGroup: "Year 10", sendNeedId: "Dyslexia", readingAge: 10, examBoard: "AQA" };
 
-  it("routes English, History and Geography to original fixed two-page landscape documents", () => {
+  it("routes English, History, Geography and Business Studies to original fixed two-page landscape documents", () => {
     const samples = [
       { subject: "English", topic: "Language Paper 1", needle: "ORIGINAL FICTION EXTRACT" },
       { subject: "History", topic: "Conflict and Tension", needle: "ORIGINAL PRACTICE SOURCE" },
       { subject: "Geography", topic: "Urban Issues and Challenges", needle: "ORIGINAL PRACTICE DATA" },
+      { subject: "Business Studies", topic: "Marketing and Finance", needle: "ORIGINAL PRACTICE CASE" },
     ];
     for (const sample of samples) {
       expect(canRenderHumanitiesLandscape({ ...base, ...sample })).toBe(true);
@@ -26,16 +27,21 @@ describe("humanitiesLandscapeRenderer", () => {
     const english = renderHumanitiesLandscape({ ...base, subject: "English", topic: "Language Paper 2" });
     const history = renderHumanitiesLandscape({ ...base, subject: "History", topic: "Health and the People" });
     const geography = renderHumanitiesLandscape({ ...base, subject: "Geography", topic: "The Changing Economic World" });
+    const business = renderHumanitiesLandscape({ ...base, subject: "Business Studies", topic: "Marketing and Finance" });
     expect(english.layout).toBe("english-reading-writing");
     expect(english.html).toContain("YOUR WRITING");
     expect(history.layout).toBe("history-source-judgement");
     expect(history.html).toContain("YOUR STRUCTURED RESPONSE");
     expect(geography.layout).toBe("geography-data-evaluation");
     expect(geography.html).toContain("YOUR JUSTIFIED EVALUATION");
+    expect(business.layout).toBe("business-data-decision");
+    expect(business.html).toContain("YOUR EVALUATED RECOMMENDATION");
+    expect(business.html).toContain("Gross profit");
   });
 
   it("does not route primary or unrelated subjects into the secondary humanities fixed layouts", () => {
     expect(canRenderHumanitiesLandscape({ subject: "English", yearGroup: "Year 5", topic: "Stories" })).toBe(false);
     expect(canRenderHumanitiesLandscape({ subject: "Art & Design", yearGroup: "Year 10", topic: "Portraiture" })).toBe(false);
+    expect(canRenderHumanitiesLandscape({ subject: "Business Studies", yearGroup: "Year 6", topic: "Enterprise" })).toBe(false);
   });
 });
