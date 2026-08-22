@@ -14,6 +14,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    setupFiles: ["server/tests/setupEnv.ts"],
     // Include test files from server, client, and shared. PB1 ships
     // client/src/lib/__tests__/questionProvenance.test.ts; without this
     // include extension only server tests would run.

@@ -1,12 +1,25 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { auth as authApi, data as dataApi, pupils as pupilsApi, getToken, setToken, clearToken } from "@/lib/api";
+import {
+  buildPupilAssignmentPayload,
+  hydratePupilAssignmentPayload,
+  type PupilAssignmentMetadata,
+  type PupilAssignmentSection,
+} from "@/lib/assignmentViewContract";
+import {
+  normaliseLearnerSupportProfile,
+  type LearnerSupportProfile,
+} from "@/lib/learnerSupportProfile";
+import { isDyslexiaAdaptation } from "@/lib/worksheetOverlay";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface User {
   id: string;
   email: string;
   displayName: string;
-  role: "mat_admin" | "school_admin" | "senco" | "teacher" | "ta";
+  role: "mat_admin" | "super_admin" | "admin" | "school_admin" | "senco" | "teacher" | "ta" | "staff";
+  /** Subscription tier returned by account/billing views when available. */
+  plan?: "free" | "trial" | "starter" | "professional" | "premium" | "mat";
   schoolId: string | null;
   mfaEnabled: boolean;
   emailVerified: boolean;
@@ -36,6 +49,7 @@ export interface Child {
   /** Multiple SEND needs — stored as comma-separated in DB, parsed to array in frontend */
   sendNeeds: string[];
   code: string; upn?: string; dob?: string; createdAt: string;
+  notes?: string;
   parentEmail?: string; parentName?: string;
   assignments: Assignment[]; submissions: Submission[];
   timetable?: TimetableLesson[];
@@ -49,9 +63,11 @@ export interface Child {
   preferredLanguage?: string;
   /** FEAT-PC6 — per-pupil reading-age override (UK reading age in years, 5–18). When set, generation/adaptation honours this instead of yearGroup-derived default. */
   readingAgeOverride?: number | null;
+  /** Durable, teacher-authored access preferences and temporary provision adjustments. */
+  learnerSupportProfile?: LearnerSupportProfile;
 }
 
-export type AttendanceStatus = "attended" | "absent" | "late" | "other" | "not-recorded";
+export type AttendanceStatus = "attended" | "absent" | "unauthorised" | "late" | "other" | "not-recorded";
 
 export interface AttendanceRecord {
   id: string; childId: string; date: string;
@@ -63,17 +79,24 @@ export interface AttendanceRecord {
 
 export interface Assignment {
   id: string; title: string; type: "worksheet" | "story" | "differentiation" | string; content: string;
-  assignedAt: string; status: "not-started" | "started" | "completed";
-  feedback?: string; mark?: string; progress?: number; teacherComment?: string;
-  // Full sections array for proper WorksheetRenderer display in Parent Portal
-  sections?: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
-  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; };
+  assignedAt: string; status: "not-started" | "started" | "submitted" | "marked-pending-review" | "completed";
+  createdAt?: string; completedAt?: string;
+  feedback?: string; mark?: string | number; progress?: number; teacherComment?: string;
+  /** Scheduler provenance enables a teacher to review, accept or override a pending AI mark. */
+  source?: "manual" | "scheduler" | string;
+  schedulerSubject?: string;
+  markedAt?: string;
+  autoMarkAccepted?: boolean;
+  /** Pupil-safe structured content used by the canonical worksheet renderer. */
+  sections?: PupilAssignmentSection[];
+  /** Curriculum, SEND and quality provenance safe for the assigned pupil view. */
+  metadata?: PupilAssignmentMetadata;
   subtitle?: string;
 }
 
 export interface Submission {
   id: string; title: string; content: string; fileDataUrl?: string;
-  fileName?: string; fileType?: string; submittedAt: string;
+  fileName?: string; fileType?: string; submittedAt: string; createdAt?: string;
   feedback?: string; mark?: string; teacherComment?: string; question?: string;
 }
 
@@ -81,8 +104,24 @@ export interface Worksheet {
   id: string; title: string; subtitle?: string; subject: string; topic: string; yearGroup: string;
   sendNeed?: string; difficulty: string; examBoard?: string; content: string;
   teacherContent: string; createdAt: string; rating?: number; ratingLabel?: string; overlay?: string;
-  // Full sections array preserved for re-editing saved worksheets
-  sections?: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string; imageUrl?: string; assetRef?: string }>;
+  // Full sections array preserved for re-editing and History rendering. The
+  // index signature retains renderer-specific layout, diagram and response
+  // fields returned by the authorised worksheet API rather than flattening a
+  // saved worksheet to legacy text-only columns.
+  sections?: Array<{
+    id?: string;
+    title: string;
+    type: string;
+    content: string;
+    teacherOnly?: boolean;
+    svg?: string;
+    caption?: string;
+    imageUrl?: string;
+    assetRef?: string;
+    attribution?: string;
+    symbols?: unknown;
+    [key: string]: unknown;
+  }>;
   metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; totalMarks?: number; estimatedTime?: string; adaptations?: string[]; phase?: string; buildManifest?: any; [key: string]: any };
   sourceLibraryId?: string;
   sourceCanonicalTopicKey?: string;
@@ -136,7 +175,8 @@ interface AppState {
 
 interface AppContextType extends AppState {
   login: (email: string, password: string) => Promise<{ mfaRequired?: boolean; emailNotVerified?: boolean; error?: string }>;
-  loginWithGoogle: (googleData: { googleId: string; email: string; displayName: string }) => Promise<void>;
+  /** Exchanges a Google ID token server-side; user details are then read from the cookie-backed session. */
+  loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   registerTeacher: (email: string, password: string, displayName: string, schoolId?: string) => Promise<{ error?: string }>;
   verifyMfa: (code: string) => Promise<void>;
@@ -319,7 +359,15 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
     const sendNeedValue = updates.sendNeeds && updates.sendNeeds.length > 0
       ? updates.sendNeeds.join(",")
       : updates.sendNeed;
-    await pupilsApi.update(id, { name: updates.name, yearGroup: updates.yearGroup, sendNeed: sendNeedValue, timetable: updates.timetable, parentEmail: updates.parentEmail, parentName: updates.parentName });
+    await pupilsApi.update(id, {
+      name: updates.name,
+      yearGroup: updates.yearGroup,
+      sendNeed: sendNeedValue,
+      timetable: updates.timetable,
+      parentEmail: updates.parentEmail,
+      parentName: updates.parentName,
+      learnerSupportProfile: updates.learnerSupportProfile,
+    });
     // FEAT-6: persist EHCP/IEP/misconception fields locally (no DB column yet).
     // FEAT-PC6: also persist preferredLanguage and readingAgeOverride locally; DB column added in PC2's MIS migration.
     if (
@@ -346,8 +394,11 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   const assignWork = useCallback(async (childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => {
-    const result = await pupilsApi.createAssignment(childId, { title: assignment.title, type: assignment.type, content: assignment.content });
-    const a: Assignment = { ...assignment, id: result.id, assignedAt: new Date().toISOString(), status: "not-started" };
+    // Persist exactly the pupil-safe structural view that the renderer needs.
+    // This avoids the prior refresh bug where only flat text survived assignment.
+    const payload = buildPupilAssignmentPayload(assignment);
+    const result = await pupilsApi.createAssignment(childId, payload);
+    const a: Assignment = { ...assignment, ...payload, id: result.id, assignedAt: new Date().toISOString(), status: "not-started" };
     setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, assignments: [...c.assignments, a] } : c) }));
   }, []);
 
@@ -371,8 +422,17 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   const saveWorksheet = useCallback(async (worksheet: Omit<Worksheet, "id" | "createdAt">) => {
-    const result = await dataApi.worksheets.create(worksheet);
-    const w: Worksheet = { ...worksheet, id: result.id, createdAt: new Date().toISOString() };
+    const existingMetadata = (worksheet.metadata || {}) as Record<string, unknown>;
+    const explicitMode = existingMetadata.accessibilityOverlayMode;
+    const accessibilityOverlayMode = explicitMode === "auto" || explicitMode === "manual"
+      ? explicitMode
+      : isDyslexiaAdaptation(worksheet.sendNeed) && worksheet.overlay === "cream" ? "auto" : "manual";
+    const worksheetToSave: Omit<Worksheet, "id" | "createdAt"> = {
+      ...worksheet,
+      metadata: { ...existingMetadata, accessibilityOverlayMode } as Worksheet["metadata"],
+    };
+    const result = await dataApi.worksheets.create(worksheetToSave);
+    const w: Worksheet = { ...worksheetToSave, id: result.id, createdAt: new Date().toISOString() };
     setState(s => ({ ...s, worksheetHistory: [w, ...s.worksheetHistory] }));
     return w;
   }, []);
@@ -469,7 +529,23 @@ function mapIdea(i: any): Idea {
   return { id: i.id, title: i.title, description: i.description, votes: i.votes, createdAt: i.created_at, author: i.author_name || "Unknown" };
 }
 function mapAssignment(a: any): Assignment {
-  return { id: a.id, title: a.title, type: a.type, content: a.content || "", assignedAt: a.assigned_at, status: a.status || "not-started", feedback: a.feedback, mark: a.mark, progress: a.progress, teacherComment: a.teacher_comment };
+  const payload = hydratePupilAssignmentPayload(a);
+  return {
+    ...payload,
+    id: a.id,
+    assignedAt: a.assigned_at || a.assignedAt || new Date(0).toISOString(),
+    status: a.status || "not-started",
+    createdAt: a.created_at || a.createdAt,
+    completedAt: a.completed_at || a.completedAt,
+    feedback: a.feedback,
+    mark: a.mark ?? a.marked_score,
+    progress: a.progress,
+    teacherComment: a.teacher_comment ?? a.teacherComment,
+    source: a.source,
+    schedulerSubject: a.scheduler_subject ?? a.schedulerSubject,
+    markedAt: a.marked_at ?? a.markedAt,
+    autoMarkAccepted: a.auto_mark_accepted === 1 || a.auto_mark_accepted === true,
+  };
 }
 function mapAttendanceRecord(r: any): AttendanceRecord {
   return { id: r.id, childId: r.pupil_id, date: r.date, amStatus: r.am_status, amReason: r.am_reason, pmStatus: r.pm_status, pmReason: r.pm_reason, notes: r.notes, recordedAt: r.recorded_at, recordedBy: r.recorded_by || "", misSource: r.mis_source || undefined };
@@ -489,6 +565,7 @@ function mapPupil(p: any): Child {
   let recentMisconceptions: string[] | undefined;
   let preferredLanguage: string | undefined;
   let readingAgeOverride: number | null | undefined;
+  let learnerSupportProfile: LearnerSupportProfile | undefined;
   try {
     const raw = localStorage.getItem(`adaptly_pupil_evidence_${p.id}`);
     if (raw) {
@@ -504,5 +581,13 @@ function mapPupil(p: any): Child {
       }
     }
   } catch { /* ignore parse errors */ }
-  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: primarySendNeed, sendNeeds: sendNeedsArr, code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions, ehcpOutcomes, iepTargets, recentMisconceptions, preferredLanguage, readingAgeOverride };
+  try {
+    const storedProfile = typeof p.learner_support_profile_json === "string"
+      ? JSON.parse(p.learner_support_profile_json || "{}")
+      : p.learner_support_profile_json;
+    learnerSupportProfile = normaliseLearnerSupportProfile(storedProfile);
+  } catch {
+    learnerSupportProfile = normaliseLearnerSupportProfile({});
+  }
+  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: primarySendNeed, sendNeeds: sendNeedsArr, code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions, ehcpOutcomes, iepTargets, recentMisconceptions, preferredLanguage, readingAgeOverride, learnerSupportProfile };
 }

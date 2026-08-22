@@ -178,6 +178,68 @@ export const pupils = {
     apiFetch<any>(`/pupils/${pupilId}/support-plans/${planId}`, { method: "DELETE" }),
 };
 
+// ── Scheduler (authoritative server-backed pupil work plans) ─────────────────
+export type SchedulerFrequency = "daily" | "weekly" | "biweekly";
+export type SchedulerDifficulty = "foundation" | "mixed" | "higher";
+
+export interface ServerSchedulerConfig {
+  pupilId: string;
+  subject: string;
+  schoolId?: string | null;
+  enabled: boolean;
+  frequency: SchedulerFrequency;
+  difficulty: SchedulerDifficulty;
+  includeAnswers: boolean;
+  includeRecall: boolean;
+  nextFireAt: string | null;
+  lastFiredAt: string | null;
+  lastWorksheetTitle: string | null;
+  lastKeyVocab: string[];
+  topicIndex: number;
+  progressionTopicIndex: number;
+  progressionStepIndex: number;
+  lastError: string | null;
+  retryAfter: string | null;
+  passThreshold: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type SchedulerConfigInput = Pick<ServerSchedulerConfig,
+  "enabled" | "frequency" | "difficulty" | "includeAnswers" | "includeRecall" |
+  "passThreshold" | "topicIndex" | "progressionTopicIndex" | "progressionStepIndex"
+>;
+
+export type SchedulerLadders = Record<string, Array<{ topic: string; steps: string[] }>>;
+
+export const scheduler = {
+  list: () => apiFetch<ServerSchedulerConfig[]>("/scheduler"),
+  ladders: () => apiFetch<SchedulerLadders>("/scheduler/ladders"),
+  forPupil: (pupilId: string) => apiFetch<ServerSchedulerConfig[]>(`/scheduler/${pupilId}`),
+  save: (pupilId: string, subject: string, settings: Partial<SchedulerConfigInput>) =>
+    apiFetch<ServerSchedulerConfig>(`/scheduler/${pupilId}/${encodeURIComponent(subject)}`, {
+      method: "PUT", body: JSON.stringify(settings),
+    }),
+  remove: (pupilId: string, subject: string) =>
+    apiFetch<{ success: boolean }>(`/scheduler/${pupilId}/${encodeURIComponent(subject)}`, { method: "DELETE" }),
+  runNow: (pupilId: string, subject: string) =>
+    apiFetch<{ ok: boolean; assignmentId: string; topic: string; worksheetTitle: string }>(`/scheduler/${pupilId}/${encodeURIComponent(subject)}/run-now`, { method: "POST", timeoutMs: 90_000 }),
+  advance: (pupilId: string, subject: string) =>
+    apiFetch<ServerSchedulerConfig>(`/scheduler/${pupilId}/${encodeURIComponent(subject)}/advance`, { method: "POST" }),
+  setTopic: (pupilId: string, subject: string, progressionTopicIndex: number, progressionStepIndex = 0) =>
+    apiFetch<ServerSchedulerConfig>(`/scheduler/${pupilId}/${encodeURIComponent(subject)}/set-topic`, {
+      method: "POST", body: JSON.stringify({ progressionTopicIndex, progressionStepIndex }),
+    }),
+  markNow: (assignmentId: string) =>
+    apiFetch<{ score: number; feedback: string }>(`/scheduler/assignments/${assignmentId}/mark-now`, { method: "POST", timeoutMs: 90_000 }),
+  acceptMark: (assignmentId: string) =>
+    apiFetch<{ ok: boolean }>(`/scheduler/assignments/${assignmentId}/accept-mark`, { method: "POST" }),
+  overrideMark: (assignmentId: string, score: number, feedback?: string) =>
+    apiFetch<{ ok: boolean }>(`/scheduler/assignments/${assignmentId}/override-mark`, {
+      method: "POST", body: JSON.stringify({ score, feedback }),
+    }),
+};
+
 // ── Data (worksheets, stories, etc.) ─────────────────────────────────────────
 export const data = {
   worksheets: {

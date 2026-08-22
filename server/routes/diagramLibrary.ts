@@ -4,6 +4,21 @@ import { query } from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
 import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
 
+interface DiagramLibraryEntry {
+  id: string;
+  title?: string | null;
+  subject?: string | null;
+  topic?: string | null;
+  year_group?: string | null;
+  description?: string | null;
+  image_url?: string | null;
+  asset_ref?: string | null;
+  tags?: string | null;
+  source?: string | null;
+  curated?: boolean | number | null;
+  diagram_type?: string | null;
+}
+
 const router = Router();
 
 // ─── GET /api/diagram-library/entries ───────────────────────────────────────
@@ -68,18 +83,18 @@ router.get("/search", requireAuth, async (req: any, res) => {
          ORDER BY curated DESC, subject ASC, title ASC`,
         types
       );
-      return r.rows;
+      return r.rows as DiagramLibraryEntry[];
     };
 
     // Fetch primary entries first
-    let entries: any[] = typeFilter
+    let entries: DiagramLibraryEntry[] = typeFilter
       ? await fetchByTypes([typeFilter])
-      : (await query(
+      : ((await query(
           `SELECT id, title, subject, topic, year_group, description, image_url, asset_ref,
                   tags, source, curated, diagram_type
            FROM diagram_library
            ORDER BY curated DESC, subject ASC, title ASC`
-        )).rows;
+        )).rows as DiagramLibraryEntry[]);
     if (!entries.length) {
       return res.json({ entry: null });
     }

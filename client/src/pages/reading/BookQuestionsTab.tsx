@@ -34,6 +34,9 @@ import {
 } from "lucide-react";
 import { readingLevels, sendNeeds } from "@/lib/send-data";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
+import { useApp } from "@/contexts/AppContext";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
+import { learnerSupportPrompt } from "@/lib/learnerSupportProfile";
 
 interface Question {
   number: number;
@@ -162,6 +165,9 @@ function bookCacheKey(title: string): string {
 }
 
 export default function BookQuestionsTab() {
+  const { children } = useApp();
+  const { pupilId: scopedPupilId } = usePupilScope();
+  const scopedPupil = children.find(child => child.id === scopedPupilId) || null;
   const [bookTitle, setBookTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [readingAge, setReadingAge] = useState("");
@@ -289,6 +295,10 @@ export default function BookQuestionsTab() {
       if (bookContent?.bookId) formData.append("bookContentId", bookContent.bookId);
       if (vipersFocus.length > 0) formData.append("vipersFocus", vipersFocus.join(","));
       formData.append("includeBookTalk", String(includeBookTalk));
+      if (scopedPupil?.learnerSupportProfile) {
+        const guidance = learnerSupportPrompt(scopedPupil.learnerSupportProfile).join("\n").slice(0, 3000);
+        if (guidance) formData.append("learnerSupportGuidance", guidance);
+      }
 
       const response = await fetch("/api/ai/book-questions", {
         method: "POST",
@@ -547,7 +557,7 @@ export default function BookQuestionsTab() {
                     </SelectContent>
                   </Select>
                   {sendNeed && sendNeed !== "none-selected" && (
-                    <SENDInfoPanel sendNeedId={sendNeed} context="reading" className="mt-2" />
+                    <SENDInfoPanel sendNeedId={sendNeed} context="reading" className="mt-2" learnerSupportProfile={scopedPupil?.learnerSupportProfile} />
                   )}
                 </div>
 

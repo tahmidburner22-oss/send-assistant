@@ -1,0 +1,29 @@
+# Teacher Workspace, Worksheet History and Pupil Scheduler Audit
+
+**Date:** 22 August 2026
+**Status:** Implementation-required; no production workflow claim
+
+## Confirmed architecture findings
+
+| Area | Current behaviour | Risk to teachers and pupils | Required repair |
+|---|---|---|---|
+| Desktop navigation | The desktop rail exposes a short task list, while the mobile drawer exposes a much longer, different hub hierarchy. Several high-value routes are not consistently discoverable across viewport sizes. | Teachers must learn two information architectures; time-critical work such as history, scheduler and communications is harder to find. | Define one role-aware navigation model with a concise desktop rail, mobile bottom actions, an all-workspace drawer and a global search escape route. |
+| Workspace hierarchy | The current primary rail omits direct history and scheduler links and mixes daily actions with collections of tools. | The user’s core workflow—prepare, assign, review, adapt—is obscured by tool taxonomy. | Reframe navigation around the teacher journey: Today, Create, Pupils, Review, Plan & support, More. Surface history and scheduler as first-class workflow destinations. |
+| Worksheet history | The History page initially opens the teacher view and rehydrates saved worksheets reasonably. However, assignment data is lossy after refresh: `assignWork` posts only title/type/content, and `mapAssignment` drops `subtitle`, `sections`, `metadata`, mark scheme and source provenance even when the API stores them. | A worksheet can look correct immediately after assignment but lose its structured pupil view, correct accessibility/SEND presentation and contextual information after reload. | Persist and rehydrate the full pupil-safe render payload, retain separate teacher-only material, and label the current view and assignment state unambiguously. |
+| Assignment viewer | Pupil assignments are opened from a dense list with a generic eye action. The view does not yet guarantee a canonical pupil render contract or show provenance, SEND adaptation rationale, curriculum reference and scheduled-work status together. | Teachers cannot quickly validate what a pupil actually sees or why it was assigned. | Add canonical teacher/pupil preview states, printable view data, a provenance strip, safe teacher-only separation and explicit assignment lifecycle status. |
+| Scheduler architecture | The visible pupil scheduler uses `useScheduler`, which persists in browser localStorage, polls every 60 seconds and directly calls generation in the foreground. The server already has an independent, database-backed scheduler worker with real retry/error, assignment, auto-mark and mastery endpoints. | The current visible scheduler stops when the browser closes, can diverge by device, creates synthetic local assignments and bypasses the authoritative worker. This is a material reliability defect. | Replace the local scheduler UI/hook path with the server-backed configuration and worker API. Keep one source of truth; expose next run, last success, retry/error, generated assignment, mastery decision, pause/resume and explicit “generate now” controls. |
+| Scheduler progression | The client-side flow advances progression after generation; the server flow advances on reviewed mastery. The two models are inconsistent. | A pupil can move on without verified mastery or see contradictory current-step status. | Use the server mastery model only: generate a fresh variant at the current step; teacher accepts/overrides a mark; advance only when the accepted outcome meets the configured threshold; otherwise schedule a tailored reinforcement attempt. |
+| Scheduler UI | The current tab is powerful but visually dense, uses compact text and horizontally scrolling mini-cards, and puts high-consequence automation next to ordinary controls without a clear status model. | Hard to scan on mobile; teachers may not understand whether automation is active, what is next, or what will happen if they choose an action. | Redesign it as a mobile-first “learning plan” with status, next action, mastery evidence, concise controls and contextual support. Manual generation remains teacher-triggered; no bulk or automatic distribution beyond the existing explicit scheduler configuration. |
+
+## Implementation acceptance criteria
+
+1. One saved or assigned worksheet must render the same pupil-safe structured content after refresh as it did on creation, while teacher-only content remains unavailable in pupil view.
+2. The desktop rail, mobile primary navigation and all-workspace drawer must point to the same core destinations, with clear active state, keyboard navigation and no horizontal overflow at common phone widths.
+3. Scheduler state must survive browser close and be shared across authorised staff through the server-backed record; browser localStorage must not be the authoritative schedule.
+4. Scheduler progression must be explainable: current curriculum step, next planned work, last attempt, mark status, mastery threshold and next decision must be visible.
+5. Failed scheduled work must preserve an error/retry state, never silently drop a task, and never create duplicate assignments for one due run.
+6. All changes must retain the protected worksheet renderer routes, two-page Maths Gold contract and pupil/teacher data separation.
+
+## Local preview boundary
+
+The Vite client started, but the accompanying development server correctly terminated because this environment has no `DATABASE_URL`; production code is intentionally fail-fast. The unauthenticated local client therefore rendered no teacher workspace. The navigation refactor has passed TypeScript checking, but authenticated desktop/mobile visual verification will be performed through the testable local server path or an authorised production session; no unobserved visual-production claim is made.

@@ -27,7 +27,7 @@
 import { Router, Request, Response } from "express";
 import db from "../db/index.js";
 import { requireAuth, auditLog } from "../middleware/auth.js";
-import { runSchedulerForConfig, markAssignmentNow, advanceScheduler, setSchedulerTopic } from "../lib/schedulerWorker.js";
+import { runSchedulerForConfig, markAssignmentNow, advanceScheduler, setSchedulerTopic, publicSubjectLadders, SchedulerRunBusyError } from "../lib/schedulerWorker.js";
 
 const router = Router();
 
@@ -77,6 +77,13 @@ router.get("/", requireAuth, async (req: Request, res: Response) => {
      ORDER BY sc.updated_at DESC`
   ).all(schoolId) as any[];
   res.json(rows.map(rowToConfig));
+});
+
+// ── GET /api/scheduler/ladders — canonical worker curriculum progression ───
+// This must precede /:pupilId so the client displays the same sequence that
+// the autonomous worker actually uses to generate future work.
+router.get("/ladders", requireAuth, (_req: Request, res: Response) => {
+  res.json(publicSubjectLadders());
 });
 
 // ── GET /api/scheduler/:pupilId — configs for one pupil across subjects ─────
@@ -203,6 +210,9 @@ router.post("/:pupilId/:subject/run-now", requireAuth, async (req: Request, res:
     const result = await runSchedulerForConfig(cfg, { triggeredBy: req.user!.id });
     res.json({ ok: true, assignmentId: result.assignmentId, topic: result.topic, worksheetTitle: result.title });
   } catch (err: any) {
+    if (err instanceof SchedulerRunBusyError) {
+      return res.status(409).json({ error: err.message, code: "generation-in-progress" });
+    }
     console.error("scheduler run-now failed:", err);
     res.status(500).json({ error: err?.message || "Generation failed" });
   }

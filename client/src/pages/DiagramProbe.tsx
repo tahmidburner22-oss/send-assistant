@@ -82,7 +82,7 @@ function summariseAuditForPrompt(report: SvgLayoutReport): string {
   const lines: string[] = [];
   const top = report.issues.slice(0, 8);
   for (let i = 0; i < top.length; i++) {
-    lines.push(`${i + 1}. [${top[i].severity}] ${top[i].message}`);
+    lines.push(`${i + 1}. [${top[i].kind}] ${top[i].message}`);
   }
   if (report.issues.length > top.length) {
     lines.push(`... and ${report.issues.length - top.length} more.`);
@@ -165,7 +165,7 @@ function AttemptCard({ attempt }: { attempt: ProbeAttempt }) {
             <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
               {audit.issues.slice(0, 12).map((issue, i) => (
                 <li key={i}>
-                  <span className="font-mono uppercase">[{issue.severity}]</span>{" "}
+                  <span className="font-mono uppercase">[{issue.kind}]</span>{" "}
                   {issue.message}
                 </li>
               ))}

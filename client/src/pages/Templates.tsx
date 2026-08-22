@@ -35,7 +35,8 @@ const subjects: SubjectData[] = [
     icon: Calculator,
     color: "text-brand",
     bgColor: "bg-brand-light",
-          worksheets: [
+    description: "Practice and revision resources for number, algebra, geometry and statistics.",
+    worksheets: [
       { title: "Addition and Subtraction", url: "https://www.bbc.co.uk/bitesize/topics/z9tgn39", source: "BBC Bitesize", level: "KS3" },
       { title: "Multiplication and Division", url: "https://www.bbc.co.uk/bitesize/topics/zqbpk2p", source: "BBC Bitesize", level: "KS3" },
       { title: "Place Value and Rounding", url: "https://www.bbc.co.uk/bitesize/guides/z9tgn39/revision/1", source: "BBC Bitesize", level: "KS3" },

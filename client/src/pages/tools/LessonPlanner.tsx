@@ -3,6 +3,9 @@ import { callAI, parseWithFixes } from "@/lib/ai";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 import { exportToDocx } from "@/lib/docx-export";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { useApp } from "@/contexts/AppContext";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
+import { learnerSupportPrompt } from "@/lib/learnerSupportProfile";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -76,6 +79,9 @@ const SECTION_TITLES: Record<string, string> = {
 
 export default function LessonPlanner() {
   const { preferences } = useUserPreferences();
+  const { children } = useApp();
+  const { pupilId: scopedPupilId } = usePupilScope();
+  const scopedPupil = children.find(child => child.id === scopedPupilId) || null;
 
   // Form state
   const [values, setValues] = useState<Record<string, string>>({});
@@ -99,6 +105,10 @@ export default function LessonPlanner() {
 
     const systemPrompt = `You are an outstanding UK teacher with 15+ years of experience. You create detailed, SEND-inclusive, curriculum-aligned lesson plans grounded in Rosenshine's Principles, EEF guidance, and the UK National Curriculum. Return valid JSON only - no markdown fences, no commentary outside the JSON.`;
 
+    const supportLines = scopedPupil?.learnerSupportProfile ? learnerSupportPrompt(scopedPupil.learnerSupportProfile) : [];
+    const learnerSupportBlock = supportLines.length
+      ? `\nTeacher-reviewed selected-pupil access guidance (do not name the pupil or infer a diagnosis):\n${supportLines.join("\n")}\nUse this to plan access routes, resources, modelling and teacher check-ins. Preserve the same lesson objectives, success criteria, curriculum ambition and assessment expectations; record any suggested support as teacher-reviewable provision, not a permanent decision.\n`
+      : "";
     const userPrompt = `Create a comprehensive lesson plan for:
 Subject: ${values.subject}
 Year Group: ${values.yearGroup}
@@ -111,7 +121,7 @@ Teaching Approach: ${values.teachingStyle || "Mixed / Blended"}
 ${values.objectives ? `Learning Objectives: ${values.objectives}` : ""}
 ${values.resources ? `Available Resources: ${values.resources}` : ""}
 ${values.examBoard ? `Exam Board: ${values.examBoard}` : ""}
-
+${learnerSupportBlock}
 Return a lesson plan as JSON with this exact structure:
 {
   "overview": "Brief 2-sentence overview of the lesson",
@@ -168,8 +178,9 @@ Provide 4-6 vocabulary terms. Each phase should have 3-5 teacher steps and 2-4 p
 
     const systemPrompt = `You are an expert UK teacher. Regenerate ONLY the specified section of a lesson plan. Return valid JSON for just that section - no markdown, no extra text.`;
 
+    const supportLines = scopedPupil?.learnerSupportProfile ? learnerSupportPrompt(scopedPupil.learnerSupportProfile) : [];
     const userPrompt = `Lesson context: Subject=${values.subject}, Topic=${values.topic}, Year=${values.yearGroup}, Duration=${values.duration || "60 minutes"}.
-Current plan: ${JSON.stringify(plan)}
+${supportLines.length ? `Teacher-reviewed access guidance: ${supportLines.join(" ")} Preserve objectives, success criteria, curriculum ambition and assessment expectations.\n` : ""}Current plan: ${JSON.stringify(plan)}
 Regenerate the section: ${sectionName}. Return ONLY the JSON value for that section.`;
 
     try {

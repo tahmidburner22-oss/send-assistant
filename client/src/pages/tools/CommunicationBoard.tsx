@@ -28,6 +28,9 @@ import {
 } from "lucide-react";
 import { callAI, parseWithFixes } from "@/lib/ai";
 import { resolveSymbolsForWords, type SymbolResult } from "@/lib/symbol-resolver";
+import { useApp } from "@/contexts/AppContext";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
+import { learnerSupportPrompt } from "@/lib/learnerSupportProfile";
 
 interface BoardCard {
   word: string;
@@ -69,6 +72,9 @@ function parseWordList(raw: string): string[] {
 }
 
 export default function CommunicationBoard() {
+  const { children } = useApp();
+  const { pupilId: scopedPupilId } = usePupilScope();
+  const scopedPupil = children.find(child => child.id === scopedPupilId) || null;
   const [topic, setTopic] = useState("");
   const [yearGroup, setYearGroup] = useState("");
   const [wordsInput, setWordsInput] = useState("");
@@ -129,7 +135,8 @@ export default function CommunicationBoard() {
         "words a pupil would need to communicate about the topic: a mix of core words " +
         "(I, want, more, stop, help, like) and topic-specific nouns/verbs. Use simple, " +
         "everyday single words (no phrases), British English, suitable for the year group.";
-      const user = `Topic: ${t}${yearGroup ? `\nYear group: ${yearGroup}` : ""}`;
+      const supportLines = scopedPupil?.learnerSupportProfile ? learnerSupportPrompt(scopedPupil.learnerSupportProfile) : [];
+      const user = `Topic: ${t}${yearGroup ? `\nYear group: ${yearGroup}` : ""}${supportLines.length ? `\n\nTeacher-reviewed communication and access preferences (do not name the pupil or infer a diagnosis). Use only to favour appropriate core vocabulary, accessible word choices and response routes; return single everyday words only.\n${supportLines.join("\n")}` : ""}`;
       const { text } = await callAI(system, user, 500, { responseFormat: "json_object" });
       const parsed = parseWithFixes(text) as { words?: unknown };
       const words = Array.isArray(parsed?.words)
@@ -198,6 +205,11 @@ export default function CommunicationBoard() {
       {/* Builder controls — hidden on print */}
       <Card className="print:hidden">
         <CardContent className="p-4 space-y-4">
+          {scopedPupil?.learnerSupportProfile && (
+            <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900 leading-relaxed">
+              <span className="font-semibold">Selected-pupil communication guide:</span> reviewed communication and access preferences can guide optional word suggestions. Review and edit the word list before building or printing the board.
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="cb-topic">Topic (optional, for AI suggestions)</Label>

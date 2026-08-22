@@ -474,7 +474,7 @@ export function formatRequiredPracticalForPrompt(opts: {
 
   // Pick the most specific spec code we have for the supplied board.
   const board = normaliseBoard(opts.examBoard);
-  const specCode = board ? p.specCodes[board] : Object.values(p.specCodes)[0] || p.title;
+  const specCode = board && board !== "any" ? p.specCodes[board] : Object.values(p.specCodes)[0] || p.title;
 
   const wsList = p.wsSkills.map((s) => `  • ${s}`).join("\n");
   const errors = p.commonErrors.map((e) => `  - ${e}`).join("\n");
@@ -591,7 +591,7 @@ export function applyRequiredPracticalTagging<W extends TaggableWorksheet>(
 
   const p = practicals[0];
   const board = normaliseBoard(opts.examBoard || worksheet.metadata?.examBoard);
-  const specCode = board ? p.specCodes[board] : Object.values(p.specCodes)[0] || p.title;
+  const specCode = board && board !== "any" ? p.specCodes[board] : Object.values(p.specCodes)[0] || p.title;
   const detection = detectPracticalInWorksheet(worksheet, p);
 
   const warnings: string[] = [];

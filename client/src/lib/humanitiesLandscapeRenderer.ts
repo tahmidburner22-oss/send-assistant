@@ -21,25 +21,57 @@ const esc = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp
 const norm = (value = "") => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const isSecondary = (yearGroup: string) => /^Year\s+(?:7|8|9|10|11)$/i.test(yearGroup || "");
 
+type HumanitiesSupportMode = "none" | "dyslexia" | "adhd" | "asc" | "slcn" | "working-memory" | "visual" | "hearing" | "mld" | "dyscalculia" | "dyspraxia" | "semh" | "eal";
+
+function supportMode(options: HumanitiesLandscapeOptions): HumanitiesSupportMode {
+  const need = norm(options.sendNeedId);
+  if (!need || need === "none selected" || need === "none") return "none";
+  if (/(visual impairment|low vision|\bvi\b)/.test(need)) return "visual";
+  if (/(asc|autism|sensory|demand avoid|rigid)/.test(need)) return "asc";
+  if (/adhd|attention/.test(need)) return "adhd";
+  if (/dyslexia/.test(need)) return "dyslexia";
+  if (/slcn|speech language|communication/.test(need)) return "slcn";
+  if (/working memory/.test(need)) return "working-memory";
+  if (/hearing/.test(need)) return "hearing";
+  if (/dyscalculia/.test(need)) return "dyscalculia";
+  if (/dyspraxia|motor/.test(need)) return "dyspraxia";
+  if (/mld|moderate learning/.test(need)) return "mld";
+  if (/seme?h|emotional mental|anxiety/.test(need)) return "semh";
+  if (/eal|english as an additional/.test(need)) return "eal";
+  return "none";
+}
+
 function supportNotes(options: HumanitiesLandscapeOptions): string[] {
   const notes: string[] = [];
-  const need = norm(options.sendNeedId);
-  if (need && need !== "none selected" && need !== "none") {
-    const known: Record<string, string> = {
-      dyslexia: "Dyslexia",
-      adhd: "ADHD",
-      autism: "ASC",
-      "autism spectrum condition asc": "ASC",
-      slcn: "SLCN",
-      "speech language communication needs slcn": "SLCN",
-      "working memory difficulties": "Working memory",
-      "visual impairment": "Visual support",
-      "hearing impairment": "Hearing support",
-    };
-    notes.push(known[need] || options.sendNeedId!.replace(/\s*\([^)]*\)/g, ""));
-  }
+  const mode = supportMode(options);
+  const labels: Record<Exclude<HumanitiesSupportMode, "none">, string> = {
+    dyslexia: "Dyslexia", adhd: "ADHD", asc: "ASC", slcn: "SLCN", "working-memory": "Working memory",
+    visual: "Visual support", hearing: "Hearing support", mld: "MLD", dyscalculia: "Dyscalculia",
+    dyspraxia: "Dyspraxia", semh: "SEMH", eal: "EAL",
+  };
+  if (mode !== "none") notes.push(labels[mode]);
+  else if (options.sendNeedId && norm(options.sendNeedId) !== "none selected") notes.push(options.sendNeedId.replace(/\s*\([^)]*\)/g, ""));
   if ((options.readingAge || 0) > 0) notes.push(`Age ${options.readingAge}`);
   return notes;
+}
+
+function supportFooter(options: HumanitiesLandscapeOptions, standard: string): string {
+  const strategies: Record<Exclude<HumanitiesSupportMode, "none">, string> = {
+    dyslexia: "Use the headings; read one short line, then complete one response line.",
+    adhd: "Work in one box at a time. Cover later tasks and return after a brief check.",
+    asc: "Work route: read one task, complete its response box, then move to the next step.",
+    slcn: "Say the key idea first. Use the subject word bank before writing your sentence.",
+    "working-memory": "Keep one idea visible. Complete the current box before retrieving the next step.",
+    visual: "High-contrast borders and clear white response areas separate each task and answer space.",
+    hearing: "Read the written instruction first; ask for any spoken instruction to be repeated or written down.",
+    mld: "Complete the modelled step first, then use the same structure in the next response box.",
+    dyscalculia: "Underline the data you need, show one calculation step at a time, then check the units.",
+    dyspraxia: "Use the larger response areas; write key words first and add detail when ready.",
+    semh: "Choose one manageable starting box. A clear first attempt is enough before you improve it.",
+    eal: "Use the labelled subject vocabulary and a short sentence frame before adding precise detail.",
+  };
+  const mode = supportMode(options);
+  return mode === "none" ? standard : `<b>SUPPORT:</b> ${strategies[mode]}`;
 }
 
 function learnerText(options: HumanitiesLandscapeOptions, standard: string, simpler: string): string {
@@ -83,11 +115,13 @@ function styles(): string {
     .word-row { display:flex; flex-wrap:wrap; gap:1.5mm; margin:2.5mm; }
     .word { border:.35mm solid #6f96ba; border-radius:1.4mm; padding:1.1mm 1.9mm; color:#274f77; font-size:7.5pt; font-weight:700; background:#ffffff; }
     .plan-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:3mm; margin-top:3mm; }
-    .plan { min-height:39mm; border:.45mm solid #2a6fa9; border-radius:2mm; background:#ffffff; }
+    .plan { min-height:35mm; border:.45mm solid #2a6fa9; border-radius:2mm; overflow:hidden; background:#ffffff; }
+    .plan .linebox { min-height:11mm; margin-top:1mm; margin-bottom:1mm; }
+    .mini .linebox { min-height:10mm; margin-top:1mm; margin-bottom:1mm; }
     .plan h3 { font-size:8.4pt; }
     .check { display:block; margin:2mm 2.8mm; font-size:7.9pt; line-height:1.25; }
     .check::before { content:"□"; margin-right:1.5mm; color:#123562; font-size:10pt; vertical-align:-.7pt; }
-    .footer { position:absolute; left:8mm; right:8mm; bottom:5mm; display:grid; grid-template-columns:1fr 1fr; gap:3mm; }
+    .footer { position:absolute; left:8mm; right:8mm; bottom:7mm; display:grid; grid-template-columns:1fr 1fr; gap:3mm; }
     .footer > div { min-height:11mm; border:.4mm solid #2a6fa9; border-radius:2mm; padding:2mm 3mm; background:#ffffff; font-size:7.8pt; line-height:1.22; }
     .footer b { color:#123562; }
     .timeline { display:grid; grid-template-columns:repeat(4, 1fr); gap:2mm; margin:3mm 0; }
@@ -115,6 +149,25 @@ function styles(): string {
     .bar { display:flex; align-items:center; gap:2mm; margin:2.3mm 2.8mm; font-size:7.8pt; }
     .bar i { display:block; height:5mm; border:.35mm solid #2a6fa9; background:#ffffff; }
     .stakeholder { margin:2mm 2.8mm; padding:1.8mm; border:.35mm solid #7ba1c5; border-radius:1.5mm; font-size:7.7pt; line-height:1.2; background:#ffffff; }
+    .humanities-page[data-layout-page="geography-evaluation"] .linebox.large, .humanities-page[data-layout-page="business-evaluation"] .linebox.large { min-height:36mm; }
+    /* Low-vision / VI mode: use an explicitly enlarged, familiar sans-serif
+       print scale throughout—not only a support label and thicker border. */
+    .humanities-root[data-support-mode="visual"] { font-family:Arial, Helvetica, sans-serif; }
+    .humanities-root[data-support-mode="visual"] .card, .humanities-root[data-support-mode="visual"] .source, .humanities-root[data-support-mode="visual"] .purpose, .humanities-root[data-support-mode="visual"] .footer > div { border-width:.65mm; }
+    .humanities-root[data-support-mode="visual"] .purpose { font-size:10.2pt; line-height:1.32; }
+    .humanities-root[data-support-mode="visual"] .card h2, .humanities-root[data-support-mode="visual"] .card h3 { font-size:10.6pt; }
+    .humanities-root[data-support-mode="visual"] .card p, .humanities-root[data-support-mode="visual"] .point { font-size:9.8pt; line-height:1.34; }
+    .humanities-root[data-support-mode="visual"] .source { font-size:10.5pt; line-height:1.42; }
+    .humanities-root[data-support-mode="visual"] .source-title { font-size:9.8pt; }
+    .humanities-root[data-support-mode="visual"] .mini p, .humanities-root[data-support-mode="visual"] .check { font-size:9.2pt; line-height:1.3; }
+    .humanities-root[data-support-mode="visual"] .word, .humanities-root[data-support-mode="visual"] .label { font-size:8.8pt; }
+    .humanities-root[data-support-mode="visual"] .footer > div { font-size:9.2pt; line-height:1.3; }
+    .humanities-root[data-support-mode="visual"] .data-table { font-size:9.4pt; }
+    .humanities-root[data-support-mode="visual"] .bar, .humanities-root[data-support-mode="visual"] .stakeholder { font-size:9.2pt; line-height:1.3; }
+    .humanities-root[data-support-mode="visual"] .time b { font-size:9.1pt; }
+    .humanities-root[data-support-mode="visual"] .time span, .humanities-root[data-support-mode="visual"] .meta span { font-size:8.7pt; line-height:1.28; }
+    .humanities-root[data-support-mode="visual"] .meta b { font-size:8.9pt; }
+    .humanities-root[data-support-mode="asc"] .footer > div { border-style:solid; }
     @media print { .humanities-page { break-after:page; } .humanities-page:last-child { break-after:auto; } }
   `;
 }
@@ -129,58 +182,58 @@ function english(options: HumanitiesLandscapeOptions): string {
   const task = learnerText(options, "Read the original extract. Select precise evidence, then explain the writer’s method and effect.", "Read the short extract. Find a useful quote. Say what it shows and why it matters.");
   const analysisPrompt = learnerText(options, "How does the writer use language to make the place feel uncertain?", "How does the writer make the place feel worrying?");
   const writingPrompt = learnerText(options, "Write the opening of a narrative in which a familiar place suddenly feels different. Shape the reader’s response through deliberate language and structure.", "Write the start of a story where a familiar place suddenly feels different. Use details to make the reader feel something.");
-  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}">
+  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}">
     <section class="humanities-page">${header(options, "ENGLISH LANGUAGE — READING AND ANALYSIS", "Original practice extract · evidence, method and effect")}
       <div class="purpose surface"><b>Task:</b> ${esc(task)}</div>
       <div class="grid two english-analysis"><article class="source surface"><div class="source-title">ORIGINAL FICTION EXTRACT: THE LAST LIGHT</div><p>By the time Nadiya reached the end of the lane, the streetlamps had begun to flicker. Their light did not disappear all at once. Instead, each pool of yellow shrank, leaving long strips of pavement in shadow.</p><p>She slowed near the empty bus stop. A timetable rattled behind its glass panel, though there was no wind. Across the road, the familiar corner shop stood with its shutters down. It looked less like a shop and more like a closed eye.</p><p>Then one lamp steadied. Its pale circle reached the pavement at her feet, but nowhere else. Nadiya listened. The lane seemed to be holding its breath.</p></article><div class="grid"><section class="card mini surface"><h3>VOCABULARY AND METHOD</h3><div class="word-row"><span class="word">flicker</span><span class="word">shadow</span><span class="word">rattled</span><span class="word">simile</span><span class="word">personification</span></div><p><span class="cue">Choose:</span> Which word creates the strongest sense of unease? Explain your choice.</p><div class="linebox"></div></section><section class="card mini surface"><h3>PLAN A CLOSE ANALYSIS</h3><p class="point"><span class="label">1</span> Evidence: “____________________________”</p><p class="point"><span class="label">2</span> Method: _____________________________</p><p class="point"><span class="label">3</span> Effect on the reader: __________________</p><div class="linebox"></div></section></div></div>
       <div class="grid two english-question-row"><section class="card surface"><h3>QUESTION 1 — SELECT AND INFER</h3><p>${esc(simple ? "Find one detail that shows the lane is not normal. Explain your idea." : "Select one detail that suggests the lane is becoming unfamiliar. What does it imply?")}</p><div class="linebox"></div></section><section class="card surface"><h3>QUESTION 2 — LANGUAGE ANALYSIS</h3><p>${esc(analysisPrompt)}</p><div class="linebox"></div></section></div>
-      <div class="footer"><div class="surface"><b>READING ROUTINE:</b> Choose evidence, name a method, then explain the meaning and effect.</div><div class="surface"><b>CHECK:</b> A short quotation is enough when your explanation is precise.</div></div>
+      <div class="footer"><div class="surface"><b>READING ROUTINE:</b> Choose evidence, name a method, then explain the meaning and effect.</div><div class="surface">${supportFooter(options, "<b>CHECK:</b> A short quotation is enough when your explanation is precise.")}</div></div>
     </section>
     <section class="humanities-page">${header(options, "ENGLISH LANGUAGE — PURPOSEFUL WRITING", "Plan, craft and check an original response")}
       <div class="purpose surface"><b>Writing task:</b> ${esc(writingPrompt)}</div>
       <div class="plan-grid"><section class="plan surface"><h3>OPENING IMAGE</h3><p>What can the reader see, hear or feel first?</p><div class="linebox"></div></section><section class="plan surface"><h3>SHIFT OR TURN</h3><p>What changes? How will you slow the moment?</p><div class="linebox"></div></section><section class="plan surface"><h3>WORD CHOICE</h3><p>Collect three precise verbs or adjectives.</p><div class="linebox"></div></section></div>
       <div class="grid two"><section class="card surface"><h3>SUCCESS CHECK</h3><span class="check">I have a clear viewpoint or atmosphere.</span><span class="check">I use varied sentence lengths for control.</span><span class="check">I use precise vocabulary rather than repeated words.</span><span class="check">I check capitals, punctuation and paragraphing.</span></section><section class="card surface"><h3>FIRST SENTENCE TRY</h3><p>Draft one controlled opening sentence before you begin the full response.</p><div class="linebox tall"></div></section></div>
       <section class="card surface" style="margin-top:3mm"><h3>YOUR WRITING</h3><div class="linebox large"></div></section>
-      <div class="footer"><div class="surface"><b>STRUCTURE:</b> Begin with a clear focus, develop detail, then create a deliberate turn.</div><div class="surface"><b>TECHNICAL ACCURACY:</b> Leave one minute to reread and improve your punctuation.</div></div>
+      <div class="footer"><div class="surface"><b>STRUCTURE:</b> Begin with a clear focus, develop detail, then create a deliberate turn.</div><div class="surface">${supportFooter(options, "<b>TECHNICAL ACCURACY:</b> Leave one minute to reread and improve your punctuation.")}</div></div>
     </section></div>`;
 }
 
 function history(options: HumanitiesLandscapeOptions): string {
   const topic = options.topic || "the historical event";
   const task = learnerText(options, "Use the original practice source with your contextual knowledge. Make a supported historical claim.", "Read the source. Use what you know. Make a clear history point.");
-  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}">
+  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}">
     <section class="humanities-page">${header(options, "HISTORY — SOURCE, CONTEXT AND ENQUIRY", "Original practice source · knowledge and interpretation")}
       <div class="purpose surface"><b>Focus:</b> ${esc(task)}</div>
       <div class="timeline"><div class="time surface"><b>BEFORE</b><span>What conditions or causes led towards ${esc(topic)}?</span></div><div class="time surface"><b>DURING</b><span>Which people, decisions or events mattered most?</span></div><div class="time surface"><b>AFTER</b><span>What changed, and what stayed the same?</span></div><div class="time surface"><b>CONCEPT</b><span>Choose: cause, consequence, change, continuity or significance.</span></div></div>
       <div class="grid two"><article class="source surface"><div class="source-title">ORIGINAL PRACTICE SOURCE: A LOCAL VIEWPOINT</div><p>“People speak as if the changes were sudden. They were not. For years, families had noticed the pressure building: longer hours, rising costs and fewer choices. When the decision finally came, some welcomed it as necessary. Others feared that the price would be paid by ordinary people.”</p><p><b>Adaptly practice source.</b> Written as a fictional local report for an enquiry about ${esc(topic)}.</p></article><section class="card surface history-source-check"><h3>SOURCE CHECK</h3><div class="source-meta"><div class="meta"><b>CONTENT</b><span>What claim does the source make?</span></div><div class="meta"><b>PROVENANCE</b><span>Who might the report be trying to influence?</span></div><div class="meta"><b>CONTEXT</b><span>Which own knowledge could test the claim?</span></div></div><p><span class="cue">Inference:</span> The writer suggests that ______________________________.</p><div class="linebox"></div><p><span class="cue">Contextual knowledge:</span> ____________________________________.</p><div class="linebox"></div></section></div>
       <div class="grid two history-review"><section class="card surface"><h3>USEFUL OR LIMITED?</h3><p>How useful is this source for an enquiry into ${esc(topic)}? Refer to content, provenance and own knowledge.</p><div class="linebox tall"></div></section><section class="card surface"><h3>INTERPRETATION CHECK</h3><p>Which interpretation is stronger: “change was unavoidable” or “change was mainly caused by decisions”? Give one reason and one piece of evidence.</p><div class="linebox tall"></div></section></div>
-      <div class="footer"><div class="surface"><b>AO3 ROUTINE:</b> Use the source, then test it with provenance and contextual knowledge.</div><div class="surface"><b>REMEMBER:</b> A source can be useful even when it is limited or biased.</div></div>
+      <div class="footer"><div class="surface"><b>AO3 ROUTINE:</b> Use the source, then test it with provenance and contextual knowledge.</div><div class="surface">${supportFooter(options, "<b>REMEMBER:</b> A source can be useful even when it is limited or biased.")}</div></div>
     </section>
     <section class="humanities-page">${header(options, "HISTORY — EXPLAIN AND MAKE A JUDGEMENT", "Cause, consequence and sustained reasoning")}
       <div class="purpose surface"><b>Extended response:</b> “${esc(topic)} brought significant change.” How far do you agree? Use precise knowledge to support a balanced judgement.</div>
       <div class="plan-grid"><section class="plan surface"><h3>YOUR JUDGEMENT</h3><p>State a direct answer. Which factor or change matters most?</p><div class="linebox"></div></section><section class="plan surface"><h3>PARAGRAPH 1</h3><p>Point, precise evidence, explain why it matters.</p><div class="linebox"></div></section><section class="plan surface"><h3>PARAGRAPH 2</h3><p>Alternative factor or limit. Compare its importance.</p><div class="linebox"></div></section></div>
       <div class="grid two"><section class="card surface"><h3>HISTORIAN’S LANGUAGE</h3><div class="word-row"><span class="word">because</span><span class="word">therefore</span><span class="word">however</span><span class="word">consequently</span><span class="word">more significant</span></div><p>Use one connective to show cause, one to show a limit, and one to reach a conclusion.</p></section><section class="card surface"><h3>QUALITY CHECK</h3><span class="check">I use precise historical knowledge.</span><span class="check">I explain cause, consequence, change or continuity.</span><span class="check">I compare factors before reaching a final judgement.</span></section></div>
       <section class="card surface" style="margin-top:3mm"><h3>YOUR STRUCTURED RESPONSE</h3><div class="linebox large"></div></section>
-      <div class="footer"><div class="surface"><b>AO1 AND AO2:</b> Knowledge earns value when it is used to explain and analyse.</div><div class="surface"><b>FINAL SENTENCE:</b> Return to the question and make your judgement unmistakable.</div></div>
+      <div class="footer"><div class="surface"><b>AO1 AND AO2:</b> Knowledge earns value when it is used to explain and analyse.</div><div class="surface">${supportFooter(options, "<b>FINAL SENTENCE:</b> Return to the question and make your judgement unmistakable.")}</div></div>
     </section></div>`;
 }
 
 function geography(options: HumanitiesLandscapeOptions): string {
   const topic = options.topic || "the geographical issue";
   const task = learnerText(options, "Interpret the original practice data, identify a pattern, then make a justified geographical decision.", "Read the data. Spot a pattern. Use it to make a clear decision.");
-  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}">
-    <section class="humanities-page">${header(options, "GEOGRAPHY — DATA, PLACE AND PATTERN", "Original practice data · analysis across scales")}
+  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}">
+    <section class="humanities-page" data-layout-page="geography-data">${header(options, "GEOGRAPHY — DATA, PLACE AND PATTERN", "Original practice data · analysis across scales")}
       <div class="purpose surface"><b>Focus:</b> ${esc(task)}</div>
       <div class="data-layout"><section class="card surface"><h3>ORIGINAL PRACTICE DATA</h3><p>Index values from a classroom enquiry connected to ${esc(topic)}. Higher scores show a greater measured impact.</p><table class="data-table"><tr><th>Site</th><th>Impact index</th><th>Change since 2021</th></tr><tr><td>A</td><td>72</td><td>+18</td></tr><tr><td>B</td><td>49</td><td>+6</td></tr><tr><td>C</td><td>28</td><td>−4</td></tr></table><div class="bar"><span>Site A</span><i style="width:55mm"></i></div><div class="bar"><span>Site B</span><i style="width:37mm"></i></div><div class="bar"><span>Site C</span><i style="width:21mm"></i></div><p><span class="cue">Pattern:</span> Describe the highest, lowest and any change over time.</p><div class="linebox"></div></section><section class="card surface"><h3>PLACE AND PROCESS</h3><p><span class="label">1</span> Location and scale: Where is the issue happening, and at what scale?</p><div class="linebox"></div><p><span class="label">2</span> Process: Which physical or human process could explain the pattern?</p><div class="linebox"></div><p><span class="label">3</span> Link: How might people and environment affect each other?</p><div class="linebox"></div></section></div>
       <div class="grid three"><section class="card mini surface"><h3>DESCRIBE</h3><p>Use data accurately. Quote a figure or compare two sites.</p><div class="linebox"></div></section><section class="card mini surface"><h3>ANALYSE</h3><p>Explain a possible reason for the pattern using geography.</p><div class="linebox"></div></section><section class="card mini surface"><h3>QUESTION THE DATA</h3><p>What further information would make the conclusion more reliable?</p><div class="linebox"></div></section></div>
-      <div class="footer"><div class="surface"><b>DATA ROUTINE:</b> Describe a pattern, explain it, then question its reliability.</div><div class="surface"><b>SKILLS:</b> Use units, comparisons and location language accurately.</div></div>
+      <div class="footer"><div class="surface"><b>DATA ROUTINE:</b> Describe a pattern, explain it, then question its reliability.</div><div class="surface">${supportFooter(options, "<b>SKILLS:</b> Use units, comparisons and location language accurately.")}</div></div>
     </section>
-    <section class="humanities-page">${header(options, "GEOGRAPHY — STAKEHOLDERS AND EVALUATION", "Evidence-led decision making")}
+    <section class="humanities-page" data-layout-page="geography-evaluation">${header(options, "GEOGRAPHY — STAKEHOLDERS AND EVALUATION", "Evidence-led decision making")}
       <div class="purpose surface"><b>Evaluation task:</b> Which response to the issue linked to ${esc(topic)} is most sustainable? Make a justified decision that considers people and the environment.</div>
       <div class="grid three"><section class="card surface"><h3>OPTION A — PROTECT</h3><div class="stakeholder">Limit activity in the most affected area. Benefit: lower environmental pressure. Cost: less short-term access or income.</div><p>Evidence that supports or challenges this option:</p><div class="linebox"></div></section><section class="card surface"><h3>OPTION B — ADAPT</h3><div class="stakeholder">Change how people use the place. Benefit: activity can continue. Cost: requires investment and monitoring.</div><p>Evidence that supports or challenges this option:</p><div class="linebox"></div></section><section class="card surface"><h3>OPTION C — RESTORE</h3><div class="stakeholder">Repair damage and manage future use. Benefit: longer-term resilience. Cost: results may take time.</div><p>Evidence that supports or challenges this option:</p><div class="linebox"></div></section></div>
       <div class="grid two"><section class="card surface"><h3>STAKEHOLDER VIEWPOINTS</h3><p><span class="cue">Residents:</span> ______________________________________________</p><p><span class="cue">Businesses:</span> ______________________________________________</p><p><span class="cue">Environmental groups:</span> _________________________________</p><p><span class="cue">Decision makers:</span> _______________________________________</p></section><section class="card surface"><h3>DECISION PLAN</h3><p>My chosen option: __________________________________________</p><p>Best evidence: ______________________________________________</p><p>Trade-off or limitation: _______________________________________</p><p>Why this is most sustainable: __________________________________</p></section></div>
       <section class="card surface" style="margin-top:3mm"><h3>YOUR JUSTIFIED EVALUATION</h3><div class="linebox large"></div></section>
-      <div class="footer"><div class="surface"><b>AO3:</b> Use evidence to analyse alternatives and make a reasoned judgement.</div><div class="surface"><b>FINAL CHECK:</b> Explain impact on both people and the physical environment.</div></div>
+      <div class="footer"><div class="surface"><b>AO3:</b> Use evidence to analyse alternatives and make a reasoned judgement.</div><div class="surface">${supportFooter(options, "<b>FINAL CHECK:</b> Explain impact on both people and the physical environment.")}</div></div>
     </section></div>`;
 }
 
@@ -188,19 +241,19 @@ function business(options: HumanitiesLandscapeOptions): string {
   const topic = options.topic || "the business decision";
   const task = learnerText(options, "Use business terminology, quantitative data and context to recommend a justified decision.", "Use business words and the numbers. Choose the best decision and explain why.");
   const evaluation = learnerText(options, "Make a reasoned recommendation. Include a benefit, a limitation and the data that matters most.", "Choose the best option. Give one good reason, one drawback and one useful number.");
-  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}">
-    <section class="humanities-page">${header(options, "BUSINESS — CONTEXT, DATA AND DECISION", "Original practice case · apply, calculate and recommend")}
+  return `<div class="humanities-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}">
+    <section class="humanities-page" data-layout-page="business-context">${header(options, "BUSINESS — CONTEXT, DATA AND DECISION", "Original practice case · apply, calculate and recommend")}
       <div class="purpose surface"><b>Focus:</b> ${esc(task)}</div>
       <div class="grid two"><section class="card surface"><h3>ORIGINAL PRACTICE CASE</h3><p><b>Northside Drinks</b> is a small local business considering a new reusable bottle linked to ${esc(topic)}. The owner must decide whether to launch online, through local shops, or not yet. The business has limited finance, a small team and competition from larger brands.</p><div class="word-row"><span class="word">market</span><span class="word">cost</span><span class="word">revenue</span><span class="word">profit</span><span class="word">operations</span><span class="word">customer</span></div><p><span class="cue">Context:</span> Which internal and external factors could affect this decision?</p><div class="linebox"></div></section><section class="card surface"><h3>ORIGINAL PRACTICE DATA</h3><table class="data-table"><tr><th>Option</th><th>Price</th><th>Unit cost</th><th>Expected sales</th></tr><tr><td>Online launch</td><td>£12</td><td>£7</td><td>240</td></tr><tr><td>Local shops</td><td>£10</td><td>£6</td><td>310</td></tr><tr><td>Delay launch</td><td>£0</td><td>£0</td><td>0</td></tr></table><p><span class="cue">Calculate:</span> Revenue = price × sales. Gross profit = revenue − total unit costs.</p><p>Online revenue: £__________ &nbsp; Gross profit: £__________</p><p>Local-shop revenue: £__________ &nbsp; Gross profit: £__________</p><div class="linebox"></div></section></div>
       <div class="grid three"><section class="card mini surface"><h3>MARKETING</h3><p>Who is the target market? Which feature or promotion could meet customer needs?</p><div class="linebox"></div></section><section class="card mini surface"><h3>OPERATIONS</h3><p>What capacity, supplier or quality issue must the business manage?</p><div class="linebox"></div></section><section class="card mini surface"><h3>PEOPLE AND FINANCE</h3><p>What staffing, training or cash-flow risk could affect the choice?</p><div class="linebox"></div></section></div>
-      <div class="footer"><div class="surface"><b>QUANTITATIVE ROUTINE:</b> Select the correct numbers, show a calculation, then interpret what it means.</div><div class="surface"><b>BUSINESS CONTEXT:</b> A sound decision depends on the market, the resources and the risks.</div></div>
+      <div class="footer"><div class="surface"><b>QUANTITATIVE ROUTINE:</b> Select the correct numbers, show a calculation, then interpret what it means.</div><div class="surface">${supportFooter(options, "<b>BUSINESS CONTEXT:</b> A sound decision depends on the market, the resources and the risks.")}</div></div>
     </section>
-    <section class="humanities-page">${header(options, "BUSINESS — ANALYSE, EVALUATE AND RECOMMEND", "Evidence-led decision making")}
+    <section class="humanities-page" data-layout-page="business-evaluation">${header(options, "BUSINESS — ANALYSE, EVALUATE AND RECOMMEND", "Evidence-led decision making")}
       <div class="purpose surface"><b>Decision task:</b> ${esc(evaluation)}</div>
       <div class="plan-grid"><section class="plan surface"><h3>OPTION A — ONLINE</h3><p>Benefit: wider reach and direct customer data. Limitation: delivery and promotion costs.</p><div class="linebox"></div></section><section class="plan surface"><h3>OPTION B — LOCAL SHOPS</h3><p>Benefit: established footfall. Limitation: less control over display and price.</p><div class="linebox"></div></section><section class="plan surface"><h3>OPTION C — DELAY</h3><p>Benefit: more research and cash retained. Limitation: competitors may act first.</p><div class="linebox"></div></section></div>
       <div class="grid two"><section class="card surface"><h3>ANALYSIS CHAIN</h3><p><span class="label">1</span> Point: Which option is strongest?</p><p><span class="label">2</span> Evidence: Use a figure, calculation or case detail.</p><p><span class="label">3</span> Explain: How does this affect revenue, cost, customer demand or risk?</p><p><span class="label">4</span> Counterpoint: What could weaken the decision?</p></section><section class="card surface"><h3>JUSTIFIED DECISION PLAN</h3><p>My recommendation: _________________________________________</p><p>Most useful data: ____________________________________________</p><p>Key business benefit: ________________________________________</p><p>Risk or limitation: __________________________________________</p><p>How the business could reduce this risk: ______________________</p></section></div>
       <section class="card surface" style="margin-top:3mm"><h3>YOUR EVALUATED RECOMMENDATION</h3><div class="linebox large"></div></section>
-      <div class="footer"><div class="surface"><b>ASSESSMENT ROUTINE:</b> Apply a concept to the case, analyse the effect, then evaluate before you decide.</div><div class="surface"><b>FINAL CHECK:</b> Use precise business terminology and make your recommendation clear.</div></div>
+      <div class="footer"><div class="surface"><b>ASSESSMENT ROUTINE:</b> Apply a concept to the case, analyse the effect, then evaluate before you decide.</div><div class="surface">${supportFooter(options, "<b>FINAL CHECK:</b> Use precise business terminology and make your recommendation clear.")}</div></div>
     </section></div>`;
 }
 

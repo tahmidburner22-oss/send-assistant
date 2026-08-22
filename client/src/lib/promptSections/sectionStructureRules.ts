@@ -22,7 +22,7 @@ export function buildSectionStructureRules(inputs: SectionStructureInputs = {}):
   ];
   if (isY9Plus) {
     lines.push(
-      "- Y9+ ONLY: at least one question MUST be the longest-mark stretch question (5+ marks). Mark scheme MUST itemise method (M) and accuracy (A) marks.",
+      "- Y9+ ONLY: at least one question MUST be the longest-mark stretch question (5+ marks). Mark scheme MUST itemise M/A marks (method/accuracy).",
     );
   }
   return lines.join("\n");

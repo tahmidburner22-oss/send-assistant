@@ -465,15 +465,20 @@ export function applyUKEnglishSubstitutions(
     // Collect matches first so we can record per-substitution from→to
     // before the actual rewrite. We use replace's callback both to
     // perform the rewrite and to record the pair.
-    out = out.replace(sub.re, (match: string, ...groups: unknown[]) => {
+    out = out.replace(sub.re, (match: string, ...replaceArgs: unknown[]) => {
+      // String.replace callbacks pass capture groups followed by an offset
+      // number, the full input string, and optionally a groups object. Only
+      // captures belong to the compound rewriters; forwarding all string-like
+      // values appended the full worksheet text to replacements such as metre.
+      const offsetIndex = replaceArgs.findIndex((arg) => typeof arg === "number");
+      // Preserve capture positions: an optional prefix may be undefined while
+      // a later plural capture is present, so filtering would shift arguments
+      // and turn `meters` into `smetre`.
+      const captureArgs = (offsetIndex >= 0 ? replaceArgs.slice(0, offsetIndex) : replaceArgs)
+        .map((arg) => typeof arg === "string" ? arg : "");
       const replaced =
         typeof sub.replace === "function"
-          // groups can include the offset and full string at the tail;
-          // the rewriters above only consume the first two capture groups
-          ? (sub.replace as (m: string, ...g: string[]) => string)(
-              match,
-              ...(groups.filter((g) => typeof g === "string") as string[]),
-            )
+          ? (sub.replace as (m: string, ...g: string[]) => string)(match, ...captureArgs)
           : (sub.replace as string);
       if (replaced !== match) {
         substitutions.push({ label: sub.label, from: match, to: replaced });
@@ -592,7 +597,7 @@ export function isUnitConversionTopic(
 ): boolean {
   const t = `${topic || ""} ${subject || ""}`.toLowerCase();
   return (
-    /\b(convert|conversion|imperial|metric)\b/.test(t) &&
+    /\b(convert(?:ing|ed)?|conversion|imperial|metric)\b/.test(t) &&
     /\b(unit|units|measurement|measurements)\b/.test(t)
   );
 }
@@ -615,7 +620,7 @@ export function findImperialUnits(
       const key = matched.toLowerCase();
       if (seen.has(key)) continue;
       seen.add(key);
-      out.push({ match: matched, label, si: si, siEquivalent: si });
+      out.push({ match: matched, label, siEquivalent: si });
       if (m.index === re.lastIndex) re.lastIndex++; // safety against zero-width
     }
     re.lastIndex = 0;
@@ -768,7 +773,7 @@ export function extractLeadingCommandWord(stem: string | undefined | null): stri
         candidate === "show that" || candidate === "prove that" ||
         candidate === "work out" || candidate === "write down" ||
         candidate === "fill in" || candidate === "comment on" ||
-        candidate === "account for" || candidate === "what is" ||
+        candidate === "reflect on" || candidate === "account for" || candidate === "what is" ||
         candidate === "give one" || candidate === "give two"
       )
     ) {

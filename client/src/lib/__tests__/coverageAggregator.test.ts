@@ -213,10 +213,12 @@ describe("aggregateCoverage classMasteryBySpec", () => {
 
 describe("aggregateCoverage multi-board paths", () => {
   it("returns an empty matrix + warning for an unknown taxonomy", () => {
-    const matrix = aggregateCoverage(PUPILS, [], { board: "edexcel", subject: "Mathematics", yearGroup: "Year 10" });
+    // Edexcel Maths Y10 is now bundled. Use CIE, which remains unbundled for
+    // this year/subject, to keep the fail-safe branch under test.
+    const matrix = aggregateCoverage(PUPILS, [], { board: "cie", subject: "Mathematics", yearGroup: "Year 10" });
     expect(matrix.cols).toEqual([]);
     expect(matrix.warnings.length).toBeGreaterThan(0);
-    expect(matrix.warnings[0]).toMatch(/edexcel/i);
+    expect(matrix.warnings[0]).toMatch(/cie/i);
   });
 
   it("returns empty + warning for board:'all' (UI uses union helper)", () => {

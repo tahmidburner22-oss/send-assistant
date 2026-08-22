@@ -777,7 +777,7 @@ export default function QuizGame() {
                     </motion.div>
                   </div>
                   <span className="text-white font-bold text-sm w-16 text-right">{p.score.toLocaleString()}</span>
-                  {p.streak >= 3 && <Flame className="w-4 h-4 text-orange-400" title={`${p.streak} streak`} />}
+                  {p.streak >= 3 && <Flame className="w-4 h-4 text-orange-400" aria-label={`${p.streak} streak`} />}
                 </div>
               ))}
             </div>

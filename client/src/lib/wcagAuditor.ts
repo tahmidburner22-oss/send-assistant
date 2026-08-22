@@ -99,7 +99,6 @@ async function loadAxe(): Promise<AxeModule | null> {
   if (axePromise) return axePromise;
   axePromise = (async () => {
     try {
-      // @ts-expect-error — axe-core ships its own types but they may not be installed yet.
       const mod = await import(/* @vite-ignore */ "axe-core");
       const m = (mod && (mod.default || mod)) as AxeModule;
       return m && typeof m.run === "function" ? m : null;

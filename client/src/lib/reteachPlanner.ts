@@ -306,8 +306,8 @@ export async function aiGenerateReteachWorksheet(
 
   const result = await aiGenerateWorksheet(params);
 
-  const stampedMetadata = {
-    ...((result.metadata as Record<string, unknown>) || {}),
+  const stampedMetadata: AIWorksheetResult["metadata"] & { reteach: Record<string, unknown> } = {
+    ...(result.metadata as AIWorksheetResult["metadata"]),
     reteach: {
       sourceWorksheetId: source.id,
       sourceWorksheetTitle: brief.sourceWorksheetTitle,
@@ -320,7 +320,7 @@ export async function aiGenerateReteachWorksheet(
     },
   };
 
-  return { ...result, metadata: stampedMetadata } as AIWorksheetResult;
+  return { ...result, metadata: stampedMetadata };
 }
 
 // ─── Soft telemetry hook ─────────────────────────────────────────────────────

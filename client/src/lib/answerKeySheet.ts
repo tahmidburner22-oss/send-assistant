@@ -137,11 +137,16 @@ export function buildAnswerKeyPage(worksheet: InWorksheet): AnswerKeyPage {
     const linkLine = linksFor.length
       ? ` · Distractor links: ${linksFor.map((l) => `${l.distractor}=${l.misconceptionId}`).join(", ")}`
       : "";
+    // Keep a teacher-only reference to the original question when a separate
+    // mark scheme is absent. The label is deliberately explicit: this is
+    // useful export context, not an invented answer.
+    const reference = String(s.content || "").trim();
+    const rowContent = ms || (reference ? `Reference: ${reference}` : "(no mark scheme)");
     rows.push({
       type: "answer-key-row",
       questionNumber: s.questionNumber || qNum,
       title: s.title || `Question ${qNum}`,
-      content: (ms || "(no mark scheme)") + linkLine,
+      content: rowContent + linkLine,
     });
   });
   return {

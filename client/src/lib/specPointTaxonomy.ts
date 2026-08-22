@@ -51,14 +51,14 @@ export type ExamBoard =
   | "ccea"
   | "white-rose";
 
-export type AssessmentObjective = "AO1" | "AO2" | "AO3" | "AO4";
+export type AssessmentObjective = "AO1" | "AO2" | "AO3" | "AO4" | "AO5";
 
 export interface SpecPoint {
   /** Awarding-body shortcode (e.g. "N1", "A19", "RP-3"). Stable id. */
   specRef: string;
   /** Human-readable description of the spec point. */
   specTitle: string;
-  /** Assessment Objective tag, AO1–AO4. */
+  /** Assessment Objective tag, AO1–AO5. */
   ao?: AssessmentObjective;
   /** Optional Bloom anchor when the awarding body publishes one. */
   bloomLevel?: string;

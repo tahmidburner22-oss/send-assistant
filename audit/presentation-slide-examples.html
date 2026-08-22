@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Adaptly lesson slide visual examples</title>
+<style>
+  :root { --ink:#0f172a; --muted:#64748b; --page:#eef4fb; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:radial-gradient(circle at 15% 0%,#dff3ff 0,transparent 25%),radial-gradient(circle at 100% 100%,#eee6ff 0,transparent 30%),var(--page); color:var(--ink); font-family:Inter,Arial,sans-serif; }
+  .page { width:1600px; min-height:900px; padding:44px 56px; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:7px 12px; background:#fff; border:1px solid #dce5ef; font-size:12px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; color:#475569; }
+  h1 { margin:16px 0 6px; font-size:38px; letter-spacing:-.045em; }
+  .intro { margin:0; max-width:700px; color:var(--muted); font-size:16px; line-height:1.5; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:30px; }
+  .slide { position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:26px; box-shadow:0 22px 40px rgba(15,23,42,.14); padding:22px; }
+  .slide::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(120deg,rgba(255,255,255,.18),transparent 45%); }
+  .maths { background:linear-gradient(145deg,#eef7ff,#d8ecff); }
+  .maths:before { content:""; position:absolute; inset:0; opacity:.5; background-image:linear-gradient(#3b82f620 1px,transparent 1px),linear-gradient(90deg,#3b82f620 1px,transparent 1px); background-size:28px 28px; }
+  .science { background:linear-gradient(145deg,#e9fbfa,#d9effe); }
+  .science:before { content:""; position:absolute; width:290px; height:290px; right:-24px; top:-64px; opacity:.54; background:radial-gradient(circle at 50% 50%,#0f766e 0 9px,transparent 10px),radial-gradient(circle at 20% 32%,#14b8a6 0 22px,transparent 23px),radial-gradient(circle at 79% 30%,#38bdf8 0 17px,transparent 18px),radial-gradient(circle at 70% 76%,#0ea5e9 0 22px,transparent 23px); filter:drop-shadow(0 0 18px #14b8a655); }
+  .history { background:linear-gradient(145deg,#fff8e5,#faeed1); }
+  .history:before { content:""; position:absolute; inset:0; opacity:.28; background-image:repeating-linear-gradient(0deg,transparent 0 29px,#a1620725 30px 31px),repeating-linear-gradient(90deg,transparent 0 46px,#a1620720 47px 48px); transform:rotate(-2deg) scale(1.08); }
+  .geography { background:linear-gradient(145deg,#edfdf3,#d9f4e4); }
+  .geography:before { content:""; position:absolute; width:430px; height:300px; right:-80px; top:-30px; border-radius:48% 52% 44% 56%; border:2px solid #16a34a55; box-shadow:0 0 0 20px #16a34a10,0 0 0 42px #16a34a10,0 0 0 66px #16a34a10; transform:rotate(-15deg); }
+  .top { position:relative; z-index:1; display:flex; align-items:center; gap:10px; border:1px solid rgba(15,23,42,.1); border-radius:18px; padding:10px 12px; background:rgba(255,255,255,.86); backdrop-filter:blur(8px); }
+  .icon { width:34px; height:34px; display:grid; place-items:center; flex:0 0 auto; color:white; border-radius:12px; font-weight:900; }
+  .maths .icon { background:#2563eb; } .science .icon { background:#0f766e; } .history .icon { background:#b45309; } .geography .icon { background:#15803d; }
+  .label { color:#64748b; font-size:9px; font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+  .title { margin-top:3px; font-size:18px; font-weight:800; letter-spacing:-.025em; }
+  .content { position:relative; z-index:1; height:calc(100% - 68px); display:flex; align-items:center; padding:18px 22px; }
+  .copy { max-width:64%; }
+  .copy h2 { margin:0 0 8px; font-size:28px; line-height:1.08; letter-spacing:-.045em; }
+  .copy p { margin:0; font-size:14px; line-height:1.5; color:#475569; }
+  .chip { display:inline-block; margin-top:15px; padding:7px 10px; border-radius:999px; background:rgba(255,255,255,.8); border:1px solid rgba(15,23,42,.1); font-size:11px; font-weight:750; }
+  .maths .chip { color:#1d4ed8; } .science .chip { color:#0f766e; } .history .chip { color:#92400e; } .geography .chip { color:#166534; }
+  .footer { display:flex; justify-content:space-between; position:absolute; z-index:1; left:22px; right:22px; bottom:15px; color:#64748b; font-size:10px; font-weight:700; }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">Adaptly · Dynamic Subject</div>
+    <h1>Lesson slides with subject identity, not distracting decoration.</h1>
+    <p class="intro">Each subject gets a quiet, meaningful visual background. Instruction stays on a clear teaching surface, so slides remain easy to read from the back of a classroom and accessible when high-contrast mode is selected.</p>
+    <section class="grid" aria-label="Lesson-slide visual examples">
+      <article class="slide maths">
+        <div class="top"><div class="icon">∑</div><div><div class="label">Mathematics · Worked example</div><div class="title">Solving two-step equations</div></div></div>
+        <div class="content"><div class="copy"><h2>Keep the equation balanced.</h2><p>Undo addition or subtraction first. Then undo multiplication or division. Show every step so your reasoning is visible.</p><span class="chip">I do · We do · You do</span></div></div>
+        <div class="footer"><span>Year 8 · Algebra</span><span>02 / 12</span></div>
+      </article>
+      <article class="slide science">
+        <div class="top"><div class="icon">⚗</div><div><div class="label">Science · Check understanding</div><div class="title">Particle model of matter</div></div></div>
+        <div class="content"><div class="copy"><h2>Turn and talk.</h2><p>What changes when a solid is heated? Use the words particle, energy and arrangement in your explanation.</p><span class="chip">Think · Pair · Share · 60 seconds</span></div></div>
+        <div class="footer"><span>Year 7 · Chemistry</span><span>06 / 12</span></div>
+      </article>
+      <article class="slide history">
+        <div class="top"><div class="icon">⌛</div><div><div class="label">History · Source enquiry</div><div class="title">Whose perspective is missing?</div></div></div>
+        <div class="content"><div class="copy"><h2>Read the source like a historian.</h2><p>Identify the author, audience and purpose. Then explain one reason the account might be useful and one limitation.</p><span class="chip">Evidence first · interpretation second</span></div></div>
+        <div class="footer"><span>Year 9 · Industrial Britain</span><span>08 / 12</span></div>
+      </article>
+      <article class="slide geography">
+        <div class="top"><div class="icon">⌖</div><div><div class="label">Geography · Application</div><div class="title">Reading contour lines</div></div></div>
+        <div class="content"><div class="copy"><h2>Plan the safest route.</h2><p>Use the contour pattern to find the steepest slope. Justify your answer using map evidence, not just the colour of the land.</p><span class="chip">Map evidence · precise vocabulary</span></div></div>
+        <div class="footer"><span>Year 8 · Physical landscapes</span><span>10 / 12</span></div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

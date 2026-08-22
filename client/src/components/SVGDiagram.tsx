@@ -12,7 +12,7 @@
  * @copyright 2026 Adaptly Ltd. All rights reserved.
  */
 import React from "react";
-import type { DiagramSpec } from "@/lib/ai";
+import { buildDiagramAccessibilityDescription, type DiagramSpec } from "@/lib/ai";
 
 interface SVGDiagramProps {
   spec: DiagramSpec;
@@ -222,6 +222,7 @@ export default function SVGDiagram({
   accentColor = NAVY,
   showCallouts = false,
 }: SVGDiagramProps) {
+  const accessibleDescription = buildDiagramAccessibilityDescription(spec);
   const pad = 16;
   const inner_w = width - pad * 2;
   const inner_h = height - pad * 2;
@@ -239,7 +240,7 @@ export default function SVGDiagram({
     const layout = (spec as any).layout || "series";
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
           <text x={width / 2} y={14} textAnchor="middle" fontSize={fontSize + 1}
@@ -331,7 +332,7 @@ export default function SVGDiagram({
     const allDots = [...leftDots, ...rightDots];
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {/* Title */}
         {spec.title && (
@@ -419,7 +420,7 @@ export default function SVGDiagram({
     const maxCharsPerLine = Math.floor(boxW / (flowFontSize * 0.52));
 
     return (
-      <svg viewBox={`0 0 ${flowW} ${flowH}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${flowW} ${flowH}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: flowW, display: "block", background: "white" }}>
         {spec.title && (
           <text x={flowW / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
@@ -480,7 +481,7 @@ export default function SVGDiagram({
     const maxCharsPerLine = Math.floor(boxW / (cycleFontSize * 0.52));
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
           <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
@@ -538,7 +539,7 @@ export default function SVGDiagram({
     const toX = (n: number) => lineX1 + ((n - start) / range) * (lineX2 - lineX1);
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
           <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
@@ -577,7 +578,7 @@ export default function SVGDiagram({
     const gap = (chartW - bars.length * barW) / (bars.length + 1);
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
           <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
@@ -643,7 +644,7 @@ export default function SVGDiagram({
     const gridCount = 5;
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
           <text x={width / 2} y={14} textAnchor="middle" fontSize={fontSize + 1}
@@ -691,7 +692,7 @@ export default function SVGDiagram({
     const itemFontSize = Math.max(7, fontSize - 2);
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
           <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
@@ -761,7 +762,7 @@ export default function SVGDiagram({
     const eventFontSize = Math.max(7, fontSize - 2);
 
     return (
-      <svg viewBox={`0 0 ${timelineW} ${timelineH}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${timelineW} ${timelineH}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: timelineW, display: "block", background: "white" }}>
         {spec.title && (
           <text x={timelineW / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
@@ -820,7 +821,7 @@ export default function SVGDiagram({
     const pyrFontSize = Math.max(8, fontSize - 1);
 
     return (
-      <svg viewBox={`0 0 ${pyrW} ${pyrH}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${pyrW} ${pyrH}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: pyrW, display: "block", background: "white" }}>
         {spec.title && (
           <text x={pyrW / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
@@ -875,7 +876,7 @@ export default function SVGDiagram({
     const segW = barW / denom;
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
           <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
@@ -939,7 +940,7 @@ export default function SVGDiagram({
     const cellFontSize = Math.max(8, Math.min(11, fontSize - 2));
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={accessibleDescription}
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
           <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}

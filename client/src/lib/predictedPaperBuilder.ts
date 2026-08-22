@@ -78,10 +78,10 @@ export function computeTopicWeights(input: PredictedPaperInput): PredictedPaperO
     };
   }
   // Run the existing PR-19 audit to get raw frequency.
-  const audit = runPastPaperFrequencyAudit(candidateTopics, input.anchorCorpus, {});
+  const audit = runPastPaperFrequencyAudit(input.anchorCorpus, {});
   const freqByTopic = new Map<string, number>();
   for (const row of audit.rows) {
-    freqByTopic.set(row.topic, row.frequency);
+    freqByTopic.set(row.topic, row.frequencyRatio);
   }
   const sortedFreq = [...freqByTopic.values()].sort((a, b) => a - b);
   const top75 = quartile(sortedFreq, 0.75);

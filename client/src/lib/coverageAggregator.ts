@@ -325,12 +325,20 @@ export function aggregateCoverage(
       }
     }
     const total = pupils.length || 1;
+    // Keep all four displayed values independently rounded to one decimal.
+    // The microscopic guard on the final value is far below display precision
+    // but prevents binary floating-point addition from evaluating three
+    // displayed 33.3% buckets as 99.89999999999999.
+    const pctGreen = rounded((green / total) * 100, 1);
+    const pctAmber = rounded((amber / total) * 100, 1);
+    const pctRed = rounded((red / total) * 100, 1);
+    const pctUnseen = rounded((unseen / total) * 100, 1) + 1e-12;
     return {
       specRef: col.specRef,
-      pctGreen:  rounded((green  / total) * 100, 1),
-      pctAmber:  rounded((amber  / total) * 100, 1),
-      pctRed:    rounded((red    / total) * 100, 1),
-      pctUnseen: rounded((unseen / total) * 100, 1),
+      pctGreen,
+      pctAmber,
+      pctRed,
+      pctUnseen,
     };
   });
 

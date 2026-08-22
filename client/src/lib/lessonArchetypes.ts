@@ -24,8 +24,8 @@ export interface ArchetypeDefinition {
   description: string;
   /** Pedagogical structure summary surfaced in the picker. */
   structure: string;
-  /** Per-section target overrides (sectionId → questionCount). */
-  sectionTargets: Record<string, number>;
+  /** Per-section target overrides (sectionId → questionCount). Unused slots remain absent. */
+  sectionTargets: Partial<Record<string, number>>;
   /** Default duration in minutes. */
   defaultDuration: number;
   /** Subjects this archetype is recommended for. */
@@ -139,7 +139,7 @@ export interface ArchetypeBrief {
   archetypeId: ArchetypeId;
   archetypeName: string;
   duration: number;
-  sectionTargets: Record<string, number>;
+  sectionTargets: Partial<Record<string, number>>;
   promptPreamble: string;
   briefSummary: string;
 }

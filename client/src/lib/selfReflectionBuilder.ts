@@ -413,15 +413,13 @@ export function buildSelfReflection(inputs: SelfReflectionInputs): SelfReflectio
 
   // ── Subtitle ────────────────────────────────────────────────────────────
   const subtitle: string =
-    register === "tickBoxOnly"
-      ? "Quick exit question:"
-      : register === "sentenceStarter"
-        ? "Quick exit question:"
-        : register === "emotional"
-          ? "Quick exit question:"
-          : register === "older"
-            ? "Quick exit question:"
-            : "Quick exit question:";
+    register === "sentenceStarter"
+      ? "Finish the sentence:"
+      : register === "emotional"
+        ? "A calm final thought:"
+        : register === "older"
+          ? "Review your learning:"
+          : "Quick exit question:";
 
   return { iCanStatements, writtenPrompts, exitTicket, subtitle };
 }
@@ -464,11 +462,13 @@ export function renderSelfReflectionAsMarkerBlock(out: SelfReflectionOutput): st
  *   - Contains the literal placeholder `I can ___` (any number of underscores).
  *   - Contains `apply what I have learned` (the long-standing generic fallback).
  *   - The exit ticket exists but does not mention the topic noun.
- *   - The content contains a CONFIDENCE_TABLE or WRITTEN_PROMPTS block
- *     (these should no longer appear — if they do, the AI ignored the prompt).
+ *   - A legacy confidence-table block contains fewer than five meaningful
+ *     I-can statements. Existing complete, topic-anchored legacy blocks are
+ *     accepted to avoid overwriting a teacher's usable content.
  *
  * Returns `false` (i.e. content is OK, no rewrite) when the content contains
- * an EXIT_TICKET that mentions the topic noun and no confidence grid.
+ * a topic-anchored exit ticket. Newly generated content remains the compact,
+ * single-question exit-ticket format.
  */
 export function isGenericSelfReflection(content: string, topic: string): boolean {
   const text = (content || "").toString();
@@ -516,11 +516,16 @@ export function isGenericSelfReflection(content: string, topic: string): boolean
     return nounWords.some(w => containsNeedle(lower, w));
   };
 
-  // Per scrutiny document: the reflection section now contains ONLY an exit
-  // ticket. If the AI emitted a CONFIDENCE_TABLE or WRITTEN_PROMPTS block,
-  // the content is considered non-compliant and should be replaced.
-  if (/CONFIDENCE_TABLE:/i.test(text)) return true;
-  if (/WRITTEN_PROMPTS:/i.test(text)) return true;
+  // New output intentionally contains only the exit ticket. However, a
+  // complete legacy block can still be educationally valid and must not be
+  // replaced merely because it is longer: changing it would be destructive
+  // and causes repeated post-validator warnings. An incomplete legacy grid is
+  // still generic because it offers an unreliable reflection scaffold.
+  if (/CONFIDENCE_TABLE:/i.test(text)) {
+    const legacyStatements = text.match(/^\s*I\s+can\s+.+$/gim) || [];
+    if (legacyStatements.length < 5) return true;
+    if (!legacyStatements.every(mentionsTopic)) return true;
+  }
 
   // Exit ticket: must be present and must mention the topic noun.
   const etMatch = text.match(/EXIT_TICKET:\s*([^\n]+)/i);

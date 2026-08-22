@@ -424,6 +424,37 @@
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 16%, transparent);
 }
 
+.teacher-mobile-nav-link {
+  display: inline-flex;
+  min-height: 3.15rem;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  border-radius: 0.85rem;
+  color: var(--muted-foreground);
+  font-size: 0.63rem;
+  font-weight: 750;
+  line-height: 1;
+  transition: color 160ms var(--ease-out, ease-out), background-color 160ms var(--ease-out, ease-out), transform 160ms var(--ease-out, ease-out);
+}
+
+.teacher-mobile-nav-link:hover {
+  background: color-mix(in oklab, var(--primary) 7%, transparent);
+  color: var(--foreground);
+}
+
+.teacher-mobile-nav-link:active {
+  transform: scale(0.96);
+}
+
+.teacher-mobile-nav-link-active {
+  background: color-mix(in oklab, var(--primary) 14%, white);
+  color: color-mix(in oklab, var(--primary) 88%, black);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent);
+}
+
 .teacher-studio-bg {
   background:
     radial-gradient(900px 380px at 16% -5%, color-mix(in oklab, var(--primary) 13%, transparent), transparent 58%),
@@ -444,6 +475,137 @@
   font-weight: 800;
 }
 
+/* Shared content language for the authenticated teacher workspace. These are
+   application shells only: worksheet paper and print selectors stay isolated. */
+.teacher-workspace {
+  width: 100%;
+  max-width: 92rem;
+  margin-inline: auto;
+  padding: 1.25rem 1rem 5.75rem;
+}
+
+.teacher-page-header {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--primary) 16%, var(--border));
+  border-radius: 1.35rem;
+  padding: 1.1rem;
+  background:
+    linear-gradient(120deg, color-mix(in oklab, var(--card) 93%, white) 0%, color-mix(in oklab, var(--primary) 7%, white) 57%, color-mix(in oklab, var(--chart-2) 5%, white) 100%);
+  box-shadow: 0 24px 60px -46px color-mix(in oklab, var(--foreground) 58%, transparent);
+}
+
+.teacher-page-header-orbit {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid color-mix(in oklab, var(--primary) 14%, transparent);
+  border-radius: 999px;
+}
+
+.teacher-page-header-orbit-one {
+  width: 15rem;
+  height: 15rem;
+  top: -10rem;
+  right: -4.5rem;
+  background: color-mix(in oklab, var(--primary) 7%, transparent);
+}
+
+.teacher-page-header-orbit-two {
+  width: 10rem;
+  height: 10rem;
+  right: 7.5rem;
+  bottom: -8rem;
+  background: color-mix(in oklab, var(--chart-2) 7%, transparent);
+}
+
+.teacher-page-header-icon {
+  display: inline-flex;
+  width: 2.65rem;
+  height: 2.65rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
+  border-radius: 0.9rem;
+  color: white;
+  background: linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 74%, #3730a3));
+  box-shadow: 0 10px 20px -14px color-mix(in oklab, var(--primary) 80%, transparent);
+}
+
+.teacher-workspace-panel {
+  border: 1px solid color-mix(in oklab, var(--border) 78%, white);
+  border-radius: 1.15rem;
+  background: color-mix(in oklab, var(--card) 94%, white);
+  box-shadow: 0 20px 52px -44px color-mix(in oklab, var(--foreground) 54%, transparent);
+}
+
+.teacher-section-heading {
+  display: flex;
+  min-width: 0;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.teacher-workspace-grid {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+}
+
+.teacher-workspace-grid-primary {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.teacher-workspace-link {
+  position: relative;
+  display: block;
+  min-width: 0;
+  border-radius: 1.05rem;
+  outline-offset: 3px;
+  transition: transform 160ms var(--ease-out, ease-out), box-shadow 160ms var(--ease-out, ease-out), border-color 160ms var(--ease-out, ease-out);
+}
+
+.teacher-workspace-link:hover {
+  transform: translateY(-2px);
+}
+
+.teacher-workspace-link:active {
+  transform: translateY(0) scale(0.985);
+}
+
+@media (min-width: 640px) {
+  .teacher-workspace {
+    padding: 1.5rem 1.5rem 2rem;
+  }
+
+  .teacher-page-header {
+    flex-direction: row;
+    align-items: center;
+    padding: 1.35rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .teacher-workspace {
+    padding: 1.85rem 2rem 2.5rem;
+  }
+
+  .teacher-page-header {
+    border-radius: 1.55rem;
+  }
+
+  .teacher-workspace-grid-primary {
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.4fr);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .teacher-studio-surface,
   .teacher-nav-rail {
@@ -459,5 +621,8 @@
 @media print {
   .teacher-nav-rail,
   .teacher-studio-bg,
-  .teacher-studio-surface { background: white !important; box-shadow: none !important; }
+  .teacher-studio-surface,
+  .teacher-page-header,
+  .teacher-workspace-panel { background: white !important; box-shadow: none !important; }
+  .teacher-mobile-nav-link { display: none !important; }
 }

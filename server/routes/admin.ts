@@ -774,7 +774,7 @@ router.get("/cost-rollup", requireAuth, async (req: Request, res: Response) => {
     : 30;
   try {
     const { rollupSchoolCosts } = await import("../lib/generationCostLog.js");
-    const rollup = rollupSchoolCosts(schoolId, windowDays);
+    const rollup = await rollupSchoolCosts(schoolId, windowDays);
     res.json(rollup);
   } catch (err: any) {
     res.status(500).json({ error: err?.message ?? "Cost rollup failed." });

@@ -414,7 +414,7 @@ export function applySEND(
 
     // Extract and preserve [[DIAGRAM:...]] markers from content before rewrites
     const diagramMarkers: string[] = [];
-    content = content.replace(/\[\[DIAGRAM:[\s\S]*?\]\]/g, (match) => {
+    content = content.replace(/\[\[DIAGRAM:[\s\S]*?\]\]/g, (match: string) => {
       diagramMarkers.push(match);
       return `__DIAGRAM_MARKER_${diagramMarkers.length - 1}__`;
     });

@@ -94,11 +94,11 @@ export function lookupMisconceptionEntry(id: string): MisconceptionEntry | undef
  * map for downstream telemetry / docs. Frozen so callers can't
  * accidentally mutate the shared lookup.
  */
-export function getMisconceptionRegistryView(): Readonly<Record<string, Readonly<Record<KeyStage, readonly string[]>>>> {
-  const out: Record<string, Record<string, string[]>> = Object.create(null);
+export function getMisconceptionRegistryView(): Readonly<Record<string, Readonly<Partial<Record<KeyStage, readonly string[]>>>>> {
+  const out: Record<string, Partial<Record<KeyStage, string[]>>> = Object.create(null);
   for (const entry of MISCONCEPTION_BANK) {
     const subj = entry.subject.toLowerCase();
-    if (!out[subj]) out[subj] = {} as Record<string, string[]>;
+    if (!out[subj]) out[subj] = {};
     for (const ks of entry.keyStages) {
       if (!out[subj][ks]) out[subj][ks] = [];
       if (!out[subj][ks].includes(entry.id)) out[subj][ks].push(entry.id);
@@ -107,11 +107,11 @@ export function getMisconceptionRegistryView(): Readonly<Record<string, Readonly
   // Freeze the inner objects so callers cannot mutate. The cast is
   // safe because we never mutate after freezing.
   for (const subj of Object.keys(out)) {
-    for (const ks of Object.keys(out[subj])) Object.freeze(out[subj][ks]);
+    for (const ks of Object.keys(out[subj]) as KeyStage[]) Object.freeze(out[subj][ks]);
     Object.freeze(out[subj]);
   }
   Object.freeze(out);
-  return out as Readonly<Record<string, Readonly<Record<KeyStage, readonly string[]>>>>;
+  return out;
 }
 
 /**

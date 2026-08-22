@@ -1714,8 +1714,9 @@ RULES (non-negotiable):
 8. Arrows: define in <defs>: <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#1e293b"/></marker>. Use marker-end="url(#arr)".
 9. ${sendAdapt}
 10. SPECIAL CHARACTERS — use HTML entities ONLY: &#178; (superscript 2), &#179; (superscript 3), &#176; (degree), &#955; (lambda), &#960; (pi), &#8594; (right arrow), &#8592; (left arrow). For subscripts use <tspan baseline-shift="sub" font-size="10">2</tspan>.
-11. SCIENTIFIC ACCURACY: correct labels, proportions, and relationships for UK school level.
-12. After </svg> write: CAPTION: [one sentence describing the diagram]
+11. SCIENTIFIC / MATHEMATICAL ACCURACY: use only standard UK curriculum conventions. Do not invent values, labels, units, scales, equations, topology, causal arrows or proportions. Draw every stated relationship accurately; if the topic is ambiguous, omit the diagram rather than guessing.
+12. For graphs: axes must be distinct, correctly oriented and labelled; plotted features must agree with their stated coordinates or equation. For geometry: mark only relationships that are true. For circuits: use standard symbols, correct series/parallel topology and never join wires unless a junction dot is shown.
+13. After </svg> write: CAPTION: [one sentence describing the diagram]
 
 PR-M4 — OVERLAP & READABILITY HARD RULES (zero tolerance):
 13. Every <text> element MUST set text-anchor explicitly ("start" / "middle" / "end") and MUST sit fully inside Zone B, C, D or E. Never inside Zone A except axis tick labels and inline formula tokens.
@@ -1731,7 +1732,7 @@ Subject: ${subject} | Topic: ${topic} | Year: ${yearGroup}
 Diagram specification (follow coordinates exactly where given):
 ${hint}
 
-REMINDER: All labels in Zone B (x=55-150), C (x=550-645), D (y=45-52), or E (y=435-465). No label inside Zone A (x=160-540, y=55-420). Short leader lines only. No crossing lines.`;
+REMINDER: All labels in Zone B (x=55-150), C (x=550-645), D (y=45-52), or E (y=435-465). No label inside Zone A (x=160-540, y=55-420). Short leader lines only. No crossing or overlaid lines. Use only correct subject conventions and do not fabricate a diagram when the stated relationship is uncertain.`;
 
   return { system, user };
 }
@@ -2009,7 +2010,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
 
       const first = await callOnce(baseUser);
       if (first.svg) {
-        const firstReport = checkSvgLayout(first.svg);
+        const firstReport = checkSvgLayout(first.svg, { subject: String(subject), topic: String(topic) });
         if (firstReport.pass) {
           console.log(`[Diagram] AI SVG generated for "${topic}" (${subject}) provider=${first.provider} attempt=1`);
           return res.json(buildImageResponse({
@@ -2027,7 +2028,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
         const retryUser = `${baseUser}\n\nPREVIOUS ATTEMPT FAILED THE LAYOUT AUDIT WITH THE FOLLOWING ISSUES — fix every one of them in the next attempt:\n${summariseIssuesForRetry(firstReport.issues)}`;
         const second = await callOnce(retryUser);
         if (second.svg) {
-          const secondReport = checkSvgLayout(second.svg);
+          const secondReport = checkSvgLayout(second.svg, { subject: String(subject), topic: String(topic) });
           if (secondReport.pass) {
             console.log(`[Diagram] AI SVG generated for "${topic}" (${subject}) provider=${second.provider} attempt=2 (retry)`);
             return res.json(buildImageResponse({
@@ -3329,7 +3330,7 @@ function paginateFlatText(text: string, wordsPerPage = 250): string[] {
 //      sent to the AI. The response carries `criteriaSource` so the UI
 //      can show "Using row for Year 4 (8–9)".
 router.post("/book-questions", requireAuth, worksheetUpload.single("file"), async (req: Request, res: Response) => {
-  const { bookTitle, author, readingAge, yearGroup, pagesFrom, pagesTo, chapterInfo, questionCount, bookContentId, vipersFocus, includeBookTalk } = req.body as Record<string, string | undefined>;
+  const { bookTitle, author, readingAge, yearGroup, pagesFrom, pagesTo, chapterInfo, questionCount, bookContentId, vipersFocus, includeBookTalk, learnerSupportGuidance } = req.body as Record<string, string | undefined>;
   if (!bookTitle) return res.status(400).json({ error: "bookTitle is required" });
   const schoolId = req.user?.schoolId ?? undefined;
 
@@ -3435,6 +3436,12 @@ router.post("/book-questions", requireAuth, worksheetUpload.single("file"), asyn
     ? vipersIds.map(id => VIPERS_LABEL[id]).join(", ")
     : "balanced VIPERS coverage (Vocabulary, Inference, Predict, Explain, Retrieve, Sequence)";
 
+  // Profile guidance is transient, teacher-authored and identity-safe on the
+  // client. Bound it again at the server trust boundary; it is never cached
+  // with book text or treated as a diagnostic record.
+  const accessGuidance = typeof learnerSupportGuidance === "string"
+    ? learnerSupportGuidance.replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 3000)
+    : "";
   const wantsBookTalk = (includeBookTalk || "").toLowerCase() === "true";
   const bookTalkBlock = wantsBookTalk
     ? `\n\nALSO return a "bookTalk" array with 4 oracy / discussion sentence starters
@@ -3457,7 +3464,7 @@ Pupil reading age / level: ${ageLabel}
 ${yearGroup ? `Year group: ${yearGroup}` : ""}
 ${chapterInfo ? `\nContext / chapter summary provided by teacher:\n${chapterInfo}` : ""}
 ${criteriaText ? `\nAssessment criteria / mark scheme (base questions on this):\n${criteriaText}` : ""}
-VIPERS focus: ${vipersLabels}${groundingBlock}${bookTalkBlock}
+VIPERS focus: ${vipersLabels}${accessGuidance ? `\n\nTeacher-reviewed access guidance (use only for presentation, communication and removable response scaffolds; do not name or diagnose the pupil, lower reading demand, change VIPERS focus, weaken grounded evidence, alter command words, or change mark allocation):\n${accessGuidance}` : ""}${groundingBlock}${bookTalkBlock}
 
 Use these "type" values to align with VIPERS:
 - "vocabulary" (V — word meaning in context)

@@ -22,6 +22,7 @@ import {
 } from "@/lib/flashcards-v2-enhancements";
 import { useApp } from "@/contexts/AppContext";
 import { usePupilScope } from "@/contexts/PupilScopeContext";
+import { learnerSupportHeadline, learnerSupportPrompt, normaliseLearnerSupportProfile } from "@/lib/learnerSupportProfile";
 
 const subjects = ["English","Maths","Science","History","Geography","RE","PSHE","Art","Music","Computing","MFL","Design Technology","Drama"].map(s => ({ value: s, label: s }));
 const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
@@ -394,6 +395,10 @@ export default function FlashCards() {
   const { children } = useApp();
   const { pupilId } = usePupilScope();
   const scopedPupil = children.find((c) => c.id === pupilId);
+  const scopedSupportProfile = normaliseLearnerSupportProfile(scopedPupil?.learnerSupportProfile);
+  const scopedSupportPrompt = scopedPupil
+    ? learnerSupportPrompt(scopedSupportProfile).join("\n")
+    : "";
   const [subject,      setSubject]      = useState("Science");
   const [yearGroup,    setYearGroup]    = useState("Year 10");
   const [topic,        setTopic]        = useState("");
@@ -433,6 +438,10 @@ Requirements:
 - Cover the most important/examinable content for ${topic}
 - Keep FRONT brief, BACK complete but concise
 - ${sendAdapted === "yes" ? "Use simple vocabulary and short sentences throughout" : `Use appropriate ${yearGroup} academic language`}
+${scopedSupportPrompt ? `
+Teacher-reviewed learner access guidance (apply only to presentation, wording, processing and optional memory supports; never include a pupil name, diagnosis or private detail):
+${scopedSupportPrompt}
+- Preserve the same topic coverage, key vocabulary, answer accuracy and expected recall. Do not lower the learning objective or replace examinable content.` : ""}
 - Include ALL ${numCards} cards`,
         2500,
       );
@@ -454,7 +463,7 @@ Requirements:
       toast.error("Failed to generate cards. Please try again.");
     }
     setLoading(false);
-  }, [subject, yearGroup, topic, cardType, numCards, sendAdapted, includeHints]);
+  }, [subject, yearGroup, topic, cardType, numCards, sendAdapted, includeHints, scopedSupportPrompt]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -468,6 +477,13 @@ Requirements:
           <p className="text-sm text-gray-500">Generate cards then study interactively with flip, self-mark, and spaced review</p>
         </div>
       </div>
+
+      {scopedPupil && (
+        <div className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+          <p className="font-semibold">Using selected learner support preferences</p>
+          <p className="mt-0.5 text-xs text-teal-800">{learnerSupportHeadline(scopedSupportProfile)}. These guide access and presentation only; the selected topic and required recall remain unchanged.</p>
+        </div>
+      )}
 
       {cards ? (
         <>

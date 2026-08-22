@@ -21,6 +21,7 @@ import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-gene
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline, buildAnswerKeyHtml } from "@/lib/pdf-generator-v2";
 import { DEFAULT_A11Y_PROFILES, getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
+import { getWorksheetOverlayColor, resolveWorksheetOverlayId, type WorksheetOverlayMode } from "@/lib/worksheetOverlay";
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
 import GoldWorksheetFrame from "@/components/GoldWorksheetFrame";
 // ── Gold maths layout (2-page A4 landscape, JSON-driven) ──────────────────
@@ -90,6 +91,8 @@ import { stampGroupMetadata } from "@/lib/threeTierDifferentiation";
 // new component file).
 import { listContexts } from "@/lib/realWorldContextLibrary";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
+import WorksheetAccessibilityPreview from "@/components/WorksheetAccessibilityPreview";
+import { learnerSupportPrompt } from "@/lib/learnerSupportProfile";
 import DiagnosticStarterSheet from "@/components/DiagnosticStarterSheet";
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import {
@@ -637,6 +640,7 @@ export default function Worksheets() {
   const [autoGenerationFailed, setAutoGenerationFailed] = useState(false);
   // FEAT-6 — Evidence Pack dialog (EHCP/IEP tagger + Annual-Review export).
   const { pupilId: scopedPupilId } = usePupilScope();
+  const scopedPupil = useMemo(() => children.find(child => child.id === scopedPupilId) || null, [children, scopedPupilId]);
   const [evidencePackOpen, setEvidencePackOpen] = useState(false);
   // FEAT-005 — Pupil Companion (QR + hint ladder) dialog.
   const [companionDialogOpen, setCompanionDialogOpen] = useState(false);
@@ -679,6 +683,9 @@ export default function Worksheets() {
   const [topic, setTopic] = useState(() => preSelectedTopic);
   const [subtopic, setSubtopic] = useState("");
   const [sendNeed, setSendNeed] = useState(() => preSelectedSendNeed);
+  // Dyslexia uses cream automatically; any picker selection becomes an explicit
+  // teacher override until the selected SEND profile changes.
+  const [overlayMode, setOverlayMode] = useState<WorksheetOverlayMode>("auto");
   const [difficulty, setDifficulty] = useState("mixed");
   const [worksheetLength, setWorksheetLength] = useState("30");
   // Sections selector — retrieval unticked by default, all others ticked
@@ -836,6 +843,7 @@ export default function Worksheets() {
 
   // Reset subtopic when topic changes
   useEffect(() => { setSubtopic(""); }, [topic]);
+  useEffect(() => { setOverlayMode("auto"); }, [sendNeed]);
 
   // PR-M1 / PR-M2 — When the user switches INTO a maths subject, strip
   // 'true-false', 'mcq' (PR-M1) and 'word-bank-gap-fill' (PR-M2) from the
@@ -1587,9 +1595,13 @@ export default function Worksheets() {
   // and card interiors must remain white: SEND support is expressed through
   // approved typography and coloured outlines, never a tinted PDF/print page.
   const hasDedicatedLayout = Boolean(goldWorksheet || scienceWorksheet || humanitiesWorksheet);
-  const overlayBg = hasDedicatedLayout
-    ? "#ffffff"
-    : (colorOverlays.find(o => o.id === colorOverlay)?.color || "#ffffff");
+  const resolvedOverlayId = resolveWorksheetOverlayId({
+    sendNeed,
+    selectedOverlayId: colorOverlay,
+    mode: overlayMode,
+    protectedLayout: hasDedicatedLayout,
+  });
+  const overlayBg = getWorksheetOverlayColor(resolvedOverlayId);
 
   // ─── Page-count enforcement for student view ────────────────────────────────
   // When the user selects a page limit (targetPages > 0) and viewMode is "student",
@@ -1796,6 +1808,21 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     // the next worksheet auto-targets those errors. Library lookup is left
     // alone (uses raw additionalInstructions) so its cache key stays stable.
     let effectiveAdditionalInstructions = additionalInstructions || "";
+    // The pupil support profile is deliberately teacher-authored and bounded.
+    // It may guide access and removable scaffolds, but must not become a proxy
+    // for lowering curriculum demand, marks or fixed-layout worksheet geometry.
+    const worksheetScaffoldingLevel = scopedPupil?.learnerSupportProfile?.scaffoldingLevel === "part-modelled"
+      ? "prompted"
+      : scopedPupil?.learnerSupportProfile?.scaffoldingLevel;
+    const learnerSupportLines = scopedPupil?.learnerSupportProfile
+      ? learnerSupportPrompt(scopedPupil.learnerSupportProfile)
+      : [];
+    if (learnerSupportLines.length > 0) {
+      const supportBlock = `Teacher-reviewed learner support preferences — use only as an access guide. Do not diagnose, mention identity, reduce curriculum demand, alter mark allocation, or alter protected print geometry.\n${learnerSupportLines.join("\n")}`;
+      effectiveAdditionalInstructions = effectiveAdditionalInstructions
+        ? `${effectiveAdditionalInstructions}\n\n${supportBlock}`
+        : supportBlock;
+    }
     try {
       if (scopedPupilId) {
         const scopedChild = children.find(c => c.id === scopedPupilId);
@@ -2189,7 +2216,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 content: lwContent,
                 teacherContent: lwTeacherContent,
                 rating: 0,
-                overlay: colorOverlay,
+                overlay: resolvedOverlayId,
                 sections: lwSections,
                 metadata: lw.metadata as any,
                 sourceLibraryId: lw.sourceLibraryId,
@@ -2244,6 +2271,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           includeAnswers,
           examStyle: false, // Generate normal structure — we'll inject real exam questions
           additionalInstructions: effectiveAdditionalInstructions,
+          scaffoldingLevel: worksheetScaffoldingLevel,
           isRevisionMat,
           generateDiagram: false, // No diagram in exam mode
           worksheetLength,
@@ -2295,6 +2323,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             includeAnswers,
             examStyle: true,
             additionalInstructions: effectiveAdditionalInstructions,
+          scaffoldingLevel: worksheetScaffoldingLevel,
             isRevisionMat,
             generateDiagram: false,
             worksheetLength,
@@ -2327,6 +2356,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           includeAnswers,
           examStyle,
           additionalInstructions: effectiveAdditionalInstructions,
+          scaffoldingLevel: worksheetScaffoldingLevel,
           isRevisionMat,
           generateDiagram,
           worksheetLength,
@@ -2407,6 +2437,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               includeAnswers,
               examStyle,
               additionalInstructions: effectiveAdditionalInstructions,
+          scaffoldingLevel: worksheetScaffoldingLevel,
               isRevisionMat,
               generateDiagram: false,
               worksheetLength,
@@ -2618,7 +2649,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         sendNeed: ws.metadata?.sendNeed,
         difficulty: ws.metadata?.difficulty,
         examBoard: ws.metadata?.examBoard,
-        content, teacherContent, rating: 0, overlay: colorOverlay,
+        content, teacherContent, rating: 0, overlay: resolvedOverlayId,
         sections: sectionsToSave,
         metadata: (ws.metadata || {}) as any,
         sourceLibraryId: (ws as any).sourceLibraryId,
@@ -2895,7 +2926,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         sendNeed: generatedWs.metadata?.sendNeed,
         difficulty: generatedWs.metadata?.difficulty,
         examBoard: generatedWs.metadata?.examBoard,
-        content, teacherContent, rating: 0, overlay: colorOverlay,
+        content, teacherContent, rating: 0, overlay: resolvedOverlayId,
         sections: sectionsToSave,
         metadata: generatedWs.metadata as any,
         sourceLibraryId: (generatedWs as any).sourceLibraryId,
@@ -2968,7 +2999,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           subject: "uploaded", topic: "Uploaded & adapted worksheet",
           yearGroup: uploadYearGroup || "", sendNeed: uploadSendNeed,
           difficulty: "mixed", content: uContent, teacherContent: uTeacherContent,
-          rating: 0, overlay: colorOverlay, sections, isAI: true,
+          rating: 0, overlay: resolvedOverlayId, sections, isAI: true,
         });
         setSavedWorksheetId(saved.id);
         refreshData();
@@ -3014,7 +3045,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           subject: slidesSubject || "uploaded", topic: ws?.title || "From slides",
           yearGroup: slidesYearGroup || "", sendNeed: slidesSendNeeds || "",
           difficulty: "mixed", content: sContent, teacherContent: sTeacherContent,
-          rating: 0, overlay: colorOverlay, sections, isAI: true,
+          rating: 0, overlay: resolvedOverlayId, sections, isAI: true,
         });
         setSavedWorksheetId(saved.id);
         refreshData();
@@ -3043,7 +3074,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         content,
         teacherContent,
         rating,
-        overlay: hasDedicatedLayout ? "none" : colorOverlay,
+        overlay: resolvedOverlayId,
         sections: sectionsWithEdits,
         metadata: generated.metadata as any,
         sourceLibraryId: (generated as any).sourceLibraryId,
@@ -3059,7 +3090,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         sendNeed: generated.metadata?.sendNeed,
         difficulty: generated.metadata?.difficulty,
         examBoard: generated.metadata?.examBoard,
-        content, teacherContent, rating, overlay: hasDedicatedLayout ? "none" : colorOverlay,
+        content, teacherContent, rating, overlay: resolvedOverlayId,
         // Preserve full sections for re-editing
         sections: sectionsWithEdits,
         metadata: generated.metadata as any,
@@ -3286,6 +3317,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     }
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) { toast.error("Worksheet not found"); return; }
+    if (!generated) { toast.error("Generate a worksheet before exporting."); return; }
     const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
     try {
       // ── Step 1: Build self-contained paginated HTML (no oklch, no live document styles) ──
@@ -3985,22 +4017,34 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   };
 
   // ─── Assign ──────────────────────────────────────────────────────────────────────
-  const handleAssign = (childId: string) => {
-    if (!generated) return;
-    // Filter out teacher-only sections for student view
+  const handleAssign = async (childId: string) => {
+    if (!generated || !childId) return;
+    // The assignment contract stores exactly the pupil-safe structured view.
+    // Teacher-only sections remain in worksheet history, never in the pupil payload.
     const studentSections = (generated.sections || []).filter(s => !s.teacherOnly);
     const content = studentSections.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
-    assignWork(childId, {
-      title: generated.title,
-      subtitle: (generated as any).subtitle,
-      type: "worksheet",
-      content,
-      // Pass full sections so Parent Portal can render with WorksheetRenderer
-      sections: studentSections,
-      metadata: (generated as any).metadata,
-    });
-    setShowAssignDialog(false);
-    toast.success("Worksheet assigned!");
+    const metadata = {
+      ...((generated as any).metadata || {}),
+      source: "teacher-assignment",
+      qualityStatus: (generated as any).qualityGate?.status === "pass" ? "checked" : "unknown",
+      overlay: resolvedOverlayId,
+      accessibilityOverlayMode: overlayMode,
+      protectedLayout: hasDedicatedLayout,
+    };
+    try {
+      await assignWork(childId, {
+        title: generated.title,
+        subtitle: (generated as any).subtitle,
+        type: "worksheet",
+        content,
+        sections: studentSections,
+        metadata,
+      });
+      setShowAssignDialog(false);
+      toast.success("Worksheet assigned. The saved pupil view is ready to review.");
+    } catch {
+      toast.error("The worksheet could not be assigned. Nothing has been marked as sent.");
+    }
   };
 
   const getSectionContent = (i: number, original: string) => editedSections[i] !== undefined ? editedSections[i] : original;
@@ -4042,7 +4086,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             subject: sw.metadata?.subject, topic: sw.metadata?.topic,
             yearGroup: sw.metadata?.yearGroup, sendNeed: sw.metadata?.sendNeed,
             difficulty: sw.metadata?.difficulty, examBoard: sw.metadata?.examBoard,
-            content: swContent, teacherContent: swTeacherContent, rating: 0, overlay: colorOverlay,
+            content: swContent, teacherContent: swTeacherContent, rating: 0, overlay: resolvedOverlayId,
             sections: swSections, metadata: sw.metadata as any,
             sourceLibraryId: (sw as any).sourceLibraryId,
             sourceCanonicalTopicKey: (sw as any).sourceCanonicalTopicKey,
@@ -4092,7 +4136,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             subject: aw.metadata?.subject, topic: aw.metadata?.topic,
             yearGroup: aw.metadata?.yearGroup, sendNeed: aw.metadata?.sendNeed,
             difficulty: aw.metadata?.difficulty, examBoard: aw.metadata?.examBoard,
-            content: awContent, teacherContent: awTeacherContent, rating: 0, overlay: colorOverlay,
+            content: awContent, teacherContent: awTeacherContent, rating: 0, overlay: resolvedOverlayId,
             sections: awSections, metadata: aw.metadata as any,
             sourceLibraryId: (aw as any).sourceLibraryId,
             sourceCanonicalTopicKey: (aw as any).sourceCanonicalTopicKey,
@@ -4457,7 +4501,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         sendNeed: ws.metadata?.sendNeed,
         difficulty: ws.metadata?.difficulty,
         examBoard: ws.metadata?.examBoard,
-        content, teacherContent, rating: 0, overlay: colorOverlay,
+        content, teacherContent, rating: 0, overlay: resolvedOverlayId,
         sections: sectionsToSave,
         metadata: ws.metadata as any,
         sourceLibraryId: (ws as any).sourceLibraryId,
@@ -4705,7 +4749,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           content: dwContent,
           teacherContent: dwTeacherContent,
           rating: 0,
-          overlay: colorOverlay,
+          overlay: resolvedOverlayId,
           sections: dwSections,
           metadata: dw.metadata as any,
           sourceLibraryId: (dw as any).sourceLibraryId,
@@ -5386,8 +5430,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     sendNeedId={sendNeed}
                     context="worksheet"
                     mode={findGoldEntry(topic, subtopic) && isMathsSubject(subject) ? "maths-gold" : "default"}
+                    learnerSupportProfile={scopedPupil?.learnerSupportProfile}
+                    fidelityReport={((generated as unknown as { metadata?: { sendFidelityReport?: import("@/lib/sendFidelityAudit").SendFidelityReport } } | null)?.metadata?.sendFidelityReport) || null}
                   />
                 )}
+                <WorksheetAccessibilityPreview
+                  profile={scopedPupil?.learnerSupportProfile}
+                  protectedLayout={Boolean(findGoldEntry(topic, subtopic) && isMathsSubject(subject))}
+                />
 
                 {/* Advanced Options - collapsible */}
                 <details ref={advancedOptionsRef} className={`group ${usesApprovedMathsTemplates ? "hidden" : ""}`}>
@@ -6826,7 +6876,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       content,
                       teacherContent,
                       rating: 0,
-                      overlay: colorOverlay,
+                      overlay: resolvedOverlayId,
                       sections: tierSections,
                       metadata: tierWorksheet.metadata as any,
                       isAI: true,
@@ -7168,11 +7218,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   </div>
                 ) : (
                   <>
-                    <p className="text-xs text-muted-foreground mb-2">Colour overlay applies to screen, print, and PDF.</p>
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <p className="text-xs text-muted-foreground">Colour overlay applies to screen, print, and PDF.</p>
+                      {overlayMode === "auto" && resolvedOverlayId === "cream" && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900">Cream applied automatically for dyslexia</span>
+                      )}
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {colorOverlays.map(o => (
-                        <button key={o.id} onClick={() => { setColorOverlay(o.id); setShowOverlayPicker(false); }}
-                          className={`p-2 rounded-lg border-2 transition-all text-center ${colorOverlay === o.id ? "border-brand" : "border-transparent hover:border-border"}`}
+                        <button key={o.id} onClick={() => { setColorOverlay(o.id); setOverlayMode("manual"); setShowOverlayPicker(false); }}
+                          className={`p-2 rounded-lg border-2 transition-all text-center ${resolvedOverlayId === o.id ? "border-brand" : "border-transparent hover:border-border"}`}
                           style={{ backgroundColor: o.color }}>
                           <div className="text-xs font-medium text-gray-800">{o.name}</div>
                           <div className="text-[9px] text-gray-600 mt-0.5 leading-tight">{o.description}</div>

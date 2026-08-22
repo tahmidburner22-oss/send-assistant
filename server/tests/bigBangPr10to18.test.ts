@@ -131,7 +131,8 @@ describe("PR-11 — worksheetVersionDiff", () => {
     expect(d.addedSections).toContain("Q3");
     expect(d.changedSections).toContain("Q2");
     expect(d.removedSections).toEqual([]);
-    expect(d.marksDelta).toBe(5 - 3);
+    // Next total is 1 + 3 + 2 = 6: Q2 gains one mark and new Q3 adds two.
+    expect(d.marksDelta).toBe(6 - 3);
   });
 
   it("appendVersion preserves order and caps history", () => {

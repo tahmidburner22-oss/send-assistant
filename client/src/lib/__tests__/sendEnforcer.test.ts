@@ -43,12 +43,14 @@ const sampleWorksheet = {
 };
 
 describe("sendEnforcer — ADHD", () => {
-  it("caps Section A to 3 questions", () => {
+  it("preserves the current five-question Section A sequence", () => {
     const result = enforceSendAdaptations(sampleWorksheet, "adhd");
     const sectionA = result.worksheet.sections!.find(s => s.id === "a")!;
-    const questionLines = String(sectionA.content).split("\n").filter(l => /^\s*(?:\[\s\]\s+)?\d/.test(l));
-    expect(questionLines.length).toBe(3);
-    expect(result.warnings.some(w => /capped/.test(w))).toBe(true);
+    const questionLines = String(sectionA.content).split("\n").filter(l => /^\s*\d/.test(l));
+    // ADHD support must reduce organisational load without silently removing
+    // taught content from the current five-question primary/KS3 sequence.
+    expect(questionLines.length).toBe(5);
+    expect(result.warnings.some(w => /capped/.test(w))).toBe(false);
   });
 
   it("prepends '[ ] ' to every question line in Section A", () => {

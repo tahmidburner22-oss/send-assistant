@@ -12,6 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
+import LearnerSupportProfilePanel from "@/components/LearnerSupportProfilePanel";
 import { usePupilScope } from "@/contexts/PupilScopeContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ function relativeDay(ts: number): string {
 export default function PupilProfile() {
   const { id } = useParams();
   const [, navigate] = useLocation();
-  const { children } = useApp();
+  const { children, updateChild } = useApp();
   const { setPupilId } = usePupilScope();
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [toolFilter, setToolFilter] = useState<string>("");
@@ -105,6 +106,7 @@ export default function PupilProfile() {
   }
 
   function removeEvent(e: TimelineEvent) {
+    if (!pupil) return;
     deleteEvent(pupil.id, e.id);
     setEvents(getEvents(pupil.id));
   }
@@ -173,6 +175,13 @@ export default function PupilProfile() {
           </div>
         </CardContent>
       </Card>
+
+      <LearnerSupportProfilePanel
+        pupil={pupil}
+        onSave={async (learnerSupportProfile) => {
+          await updateChild(pupil.id, { learnerSupportProfile });
+        }}
+      />
 
       <Tabs defaultValue="timeline">
         <TabsList>

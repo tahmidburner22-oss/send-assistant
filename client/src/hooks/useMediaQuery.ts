@@ -24,10 +24,8 @@ export function useMediaQuery(query: string): boolean {
       mql.addEventListener("change", handler);
       return () => mql.removeEventListener("change", handler);
     }
-    // @ts-expect-error legacy Safari API
     mql.addListener(handler);
     return () => {
-      // @ts-expect-error legacy Safari API
       mql.removeListener(handler);
     };
   }, [query]);

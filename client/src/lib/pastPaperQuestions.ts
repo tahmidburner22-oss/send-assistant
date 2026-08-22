@@ -39,14 +39,14 @@ export interface PastPaperSubPart {
   marks: number;
   answerLines?: number;
   commandWord?: string;
-  /** Pillar A — Assessment Objective tag for the sub-part (AO1/AO2/AO3/AO4). */
+  /** Pillar A — Assessment Objective tag for the sub-part (AO1–AO5). */
   ao?: AssessmentObjective;
 }
 
 export type ExamStage = "ks1" | "ks2" | "11plus" | "ks3" | "gcse" | "alevel";
 
-/** Pillar A — Assessment Objective. AQA/Edexcel/OCR all use AO1/AO2/AO3 (English Lang adds AO4). */
-export type AssessmentObjective = "AO1" | "AO2" | "AO3" | "AO4";
+/** Pillar A — Assessment Objective. English Language/Literature may also use AO5. */
+export type AssessmentObjective = "AO1" | "AO2" | "AO3" | "AO4" | "AO5";
 
 /** Pillar A — UK GCSE paper code. */
 export type ExamPaperCode = "P1" | "P2" | "P3";

@@ -15,7 +15,7 @@
  * the whole pack as JSON. Everything renders in one print-ready workspace with
  * deep links to the matching full-featured tools.
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,9 @@ import {
   HelpCircle, LayoutGrid, GraduationCap, ArrowRight,
 } from "lucide-react";
 import { callAI, parseWithFixes } from "@/lib/ai";
+import { useApp } from "@/contexts/AppContext";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
+import { learnerSupportHeadline, learnerSupportPrompt, normaliseLearnerSupportProfile } from "@/lib/learnerSupportProfile";
 
 interface ConnectedPack {
   worksheet?: { title?: string; sections?: Array<{ heading?: string; items?: string[] }> };
@@ -51,6 +54,13 @@ const SEND_PROFILES = [
 ];
 
 export default function ConnectedResourceGenerator() {
+  const { children } = useApp();
+  const { pupilId } = usePupilScope();
+  const scopedPupil = children.find(child => child.id === pupilId);
+  const scopedSupportProfile = useMemo(() => normaliseLearnerSupportProfile(scopedPupil?.learnerSupportProfile), [scopedPupil?.learnerSupportProfile]);
+  const scopedSupportPrompt = useMemo(() => scopedPupil
+    ? learnerSupportPrompt(scopedSupportProfile).join("\n")
+    : "", [scopedPupil, scopedSupportProfile]);
   const [topic, setTopic] = useState("");
   const [yearGroup, setYearGroup] = useState("");
   const [profile, setProfile] = useState(SEND_PROFILES[0]);
@@ -75,10 +85,10 @@ export default function ConnectedResourceGenerator() {
         '"quiz":[{"question":"...","options":["...","..."],"answer":"..."}],' +
         '"commsVocab":["..."],"teacherGuide":["..."]}. ' +
         "Keep it concise: worksheet 3-4 sections (3-4 items each), 4-5 slides (3 bullets), " +
-        "reading 3 levels (2-3 sentences each), 4 quiz questions (2-4 options), 10 comms words " +
-        "(core + topic), 4-5 teacher/TA tips. Adapt language, scaffolding and sensory advice to " +
-        "the SEND profile and year group. British English.";
-      const user = `Topic: ${t}\nYear group: ${yearGroup || "not specified"}\nSEND profile: ${profile}`;
+        "reading 3 access presentations (2-3 sentences each), 4 quiz questions (2-4 options), 10 comms words " +
+        "(core + topic), 4-5 teacher/TA tips. Adapt language, scaffolding, response routes and sensory advice to " +
+        "the teacher-selected access profile and year group. Preserve the same learning objective, core vocabulary, factual accuracy, curriculum demand and success criteria across every access presentation; do not diagnose, remove examinable knowledge or lower the expected evidence. British English.";
+      const user = `Topic: ${t}\nYear group: ${yearGroup || "not specified"}\nTeacher-selected access starting point: ${profile}${scopedSupportPrompt ? `\n\nTeacher-reviewed learner access guidance (apply only to access, presentation and scaffolding; never include a pupil name, diagnosis or private detail):\n${scopedSupportPrompt}\n\nInvariant: retain the same learning objective, key vocabulary, factual accuracy and assessment demand across this connected pack.` : ""}`;
       const { text } = await callAI(system, user, 2200, { responseFormat: "json_object" });
       const parsed = parseWithFixes(text) as ConnectedPack;
       if (!parsed || typeof parsed !== "object") {
@@ -104,11 +114,18 @@ export default function ConnectedResourceGenerator() {
           <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100">Flagship</Badge>
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          One topic → a whole connected pack: differentiated worksheet, slides, a reading
-          passage at three levels, an accessible quiz, communication-board vocabulary and a
-          TA guide — all aligned to the same content and your pupil's profile.
+          One topic → a whole connected pack: accessible worksheet outline, slides, a reading
+          passage with three access presentations, an accessible quiz, communication-board vocabulary and a
+          TA guide — all aligned to the same curriculum content and teacher-reviewed access needs.
         </p>
       </motion.div>
+
+      {scopedPupil && (
+        <div className="print:hidden rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+          <p className="font-semibold">Selected learner support preferences are active</p>
+          <p className="mt-0.5 text-xs text-teal-800">{learnerSupportHeadline(scopedSupportProfile)}. They shape access and presentation only; the topic, learning objective and evidence standard remain unchanged.</p>
+        </div>
+      )}
 
       <Card className="print:hidden">
         <CardContent className="p-4 space-y-4">
@@ -144,6 +161,7 @@ export default function ConnectedResourceGenerator() {
       {pack && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-center">{topic.trim()} — Connected Pack <span className="text-sm font-normal text-muted-foreground">({profile})</span></h2>
+          <p className="text-center text-xs text-muted-foreground">Access and presentation have been adapted; the topic coverage, core vocabulary and expected evidence remain teacher-reviewed.</p>
 
           {/* Worksheet */}
           {pack.worksheet && (

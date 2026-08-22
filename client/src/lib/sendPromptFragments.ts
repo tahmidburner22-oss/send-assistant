@@ -937,11 +937,11 @@ export function resolveSendSpec(sendNeed: string | undefined | null): SendAdapta
     [/\b(asc|autism|autistic|asd)\b/, "asc"],
     [/\b(mld|moderate learning)\b/, "mld"],
     [/\b(slcn|speech|language|communication)\b/, "slcn"],
-    // Phase 4 follow-up bugfix — `semh` removed from the anxiety regex so
-    // the dedicated SEMH matcher (further down) can win for the bare token
-    // "semh". Before this change, anxiety|semh|mental ran first and ate
-    // every bare "semh" input, masking the SEMH-specific spec. The
-    // resolver ORDER is otherwise preserved.
+    // Explicit SEMH labels must beat the broad anxiety / mental-health
+    // matcher below. In particular, compounds such as "social-emotional" and
+    // "emotional-mental" describe the SEMH support route rather than an
+    // anxiety-only profile.
+    [/\b(semh|social[-\s]?emotional|emotional[-\s]?mental)\b/, "semh"],
     [/\b(anxiety|mental)\b/, "anxiety"],
     [/\b(dyspraxia|dcd|coordination)\b/, "dyspraxia"],
     [/\b(vi|visual impair|visually)\b/, "vi"],
@@ -951,7 +951,6 @@ export function resolveSendSpec(sendNeed: string | undefined | null): SendAdapta
     [/\b(tourette)/, "tourettes"],
     [/\b(older|adult|ks4|ks5)\b/, "older-learners"],
     [/\b(working.memory|working_memory|memory.difficulties)\b/, "working-memory"],
-    [/\b(semh|social.emotional|emotional.mental)\b/, "semh"],
   ];
 
   for (const [re, id] of matchers) {

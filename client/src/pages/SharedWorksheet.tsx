@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import WorksheetRenderer from "@/components/WorksheetRenderer";
 import { GraduationCap, Loader2, AlertCircle, ExternalLink } from "lucide-react";
+import { getWorksheetOverlayColor, resolveWorksheetOverlayId } from "@/lib/worksheetOverlay";
 
 export default function SharedWorksheet() {
   const [location] = useLocation();
@@ -24,6 +25,13 @@ export default function SharedWorksheet() {
       .then(data => { setWorksheet(data); setLoading(false); })
       .catch(err => { setError(err.message || "Worksheet not found."); setLoading(false); });
   }, [token]);
+
+  const resolvedOverlayId = worksheet ? resolveWorksheetOverlayId({
+    sendNeed: worksheet.sendNeed,
+    selectedOverlayId: worksheet.overlay,
+    mode: worksheet.overlay ? "manual" : "auto",
+  }) : "none";
+  const resolvedOverlayColor = getWorksheetOverlayColor(resolvedOverlayId);
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,7 +99,7 @@ export default function SharedWorksheet() {
               }}
               viewMode="student"
               textSize={14}
-              overlayColor="#ffffff"
+              overlayColor={resolvedOverlayId === "none" ? "#ffffff" : resolvedOverlayColor}
               editMode={false}
               editedSections={{}}
             />

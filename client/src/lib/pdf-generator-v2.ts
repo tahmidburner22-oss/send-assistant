@@ -545,6 +545,8 @@ export async function downloadHtmlAsPdf(
   const RENDER_PX = landscape ? 1123 : 794;
   const JPEG_QUALITY = 0.92;
 
+  let liveStyleEls: HTMLStyleElement[] = [];
+  let originalContents: string[] = [];
   const contentHtml = serialiseElement(element, viewMode);
   const katexCss = getKatexCssInline();
   const iframeHtml = buildPopupHtml(contentHtml, katexCss, { ...options, isPdf: true });
@@ -638,8 +640,8 @@ export async function downloadHtmlAsPdf(
     // html2canvas reads window.getComputedStyle() which uses the live document's
     // stylesheets. Tailwind/shadcn use oklch() colors which html2canvas cannot parse.
     // Temporarily replace oklch() values in all live <style> tags, then restore after.
-    const liveStyleEls = Array.from(document.querySelectorAll<HTMLStyleElement>("style"));
-    const originalContents = liveStyleEls.map((s) => s.textContent || "");
+    liveStyleEls = Array.from(document.querySelectorAll<HTMLStyleElement>("style"));
+    originalContents = liveStyleEls.map((s) => s.textContent || "");
     const oklchRegex = /:[^;{}]*oklch\([^)]*\)[^;{}]*;/g;
     liveStyleEls.forEach((s) => {
       s.textContent = (s.textContent || "").replace(oklchRegex, ": transparent;");
@@ -758,8 +760,8 @@ export async function downloadHtmlAsPdf(
   } finally {
     document.body.removeChild(container);
     // Always restore live stylesheets even if an error occurred
-    if (typeof liveStyleEls !== 'undefined') {
-      liveStyleEls.forEach((s: HTMLStyleElement, i: number) => { s.textContent = (originalContents as string[])[i]; });
+    if (liveStyleEls.length > 0) {
+      liveStyleEls.forEach((s, i) => { s.textContent = originalContents[i]; });
     }
   }
 }

@@ -7,7 +7,7 @@
  *   4. Mail-merge by surname (CSV in → per-family copies + CSV out)
  *   5. GDPR scrub validator (severity-banded findings)
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import {
   deriveChannels, type ChannelOutputs,
   scoreTone, TONE_AXIS_LABEL, type ToneAxis,
   parseRecipientsCsv, mergeAll, mergeCsvExport, type MergeRecipient, type MergedLetter,
-  summariseGdpr, gdprSummaryHtml,
+  summariseGdpr, gdprSummaryHtml, buildFamilyDraftReviewGate,
 } from "@/lib/parent-newsletter-enhancements";
 
 interface Props {
@@ -75,6 +75,11 @@ export default function ParentNewsletterEnhancementsPanel({ result, values }: Pr
   }), [result, values.schoolName, values.yearGroup, values.date, values.actionRequired]);
   const tone = useMemo(() => scoreTone(result || ""), [result]);
   const gdpr = useMemo(() => summariseGdpr(result || ""), [result]);
+  const reviewGate = useMemo(() => buildFamilyDraftReviewGate({
+    privacy: gdpr,
+    readability,
+    communicationType: values.type,
+  }), [gdpr, readability, values.type]);
 
   // Mail-merge state
   const classCsv = useMemo(() => {
@@ -91,6 +96,10 @@ export default function ParentNewsletterEnhancementsPanel({ result, values }: Pr
   const recipients: MergeRecipient[] = useMemo(() => parseRecipientsCsv(mergeCsv), [mergeCsv]);
   const merged: MergedLetter[] = useMemo(() => mergeAll(result || "", recipients), [result, recipients]);
   const [previewIdx, setPreviewIdx] = useState(0);
+  const [mergeReviewAcknowledged, setMergeReviewAcknowledged] = useState(false);
+  useEffect(() => {
+    setMergeReviewAcknowledged(false);
+  }, [result, values.type, reviewGate.status, gdpr.high, gdpr.medium]);
 
   const toneAxes: { axis: ToneAxis; v: number }[] = [
     { axis: "warm", v: tone.warm },
@@ -110,7 +119,15 @@ export default function ParentNewsletterEnhancementsPanel({ result, values }: Pr
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <Gauge className="w-4 h-4 text-pink-600" />
-          <p className="text-sm font-bold">Newsletter extras — pre-send checks</p>
+          <p className="text-sm font-bold">Newsletter extras — draft review</p>
+        </div>
+        <div className={`rounded-lg border p-2.5 text-[11px] ${reviewGate.status === "blocked" ? "border-rose-300 bg-rose-50 text-rose-900" : reviewGate.status === "attention" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-sky-300 bg-sky-50 text-sky-900"}`}>
+          <p className="font-semibold">{reviewGate.label}</p>
+          {reviewGate.blockers.map(blocker => <p key={blocker} className="mt-1">{blocker}</p>)}
+          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+            {reviewGate.checks.map(check => <li key={check}>{check}</li>)}
+          </ul>
+          <p className="mt-1.5 font-medium">This tool creates drafts and local exports only. It does not send messages or approve distribution.</p>
         </div>
 
         <Tabs defaultValue="readability">
@@ -247,8 +264,8 @@ export default function ParentNewsletterEnhancementsPanel({ result, values }: Pr
 
           <TabsContent value="merge" className="space-y-2 pt-3">
             <p className="text-[11px] text-muted-foreground">
-              CSV in (one recipient per line: <code>lastName,firstName,parentName,parentEmail</code>) → per-family copies
-              with <code>Dear Mr/Mrs &lt;Surname&gt;</code> salutations. Class is auto-loaded from your saved pupils.
+              CSV in (one recipient per line: <code>lastName,firstName,parentName,parentEmail</code>) → local per-family draft copies
+              with <code>Dear Mr/Mrs &lt;Surname&gt;</code> salutations. Class details are auto-loaded only for teacher review; no message is sent from this panel.
             </p>
             <Textarea
               value={mergeCsv}
@@ -256,10 +273,20 @@ export default function ParentNewsletterEnhancementsPanel({ result, values }: Pr
               placeholder="Khan,Aisha,Mr Khan,a.khan@example.com"
               className="text-[11px] font-mono h-24"
             />
+            <label className="flex items-start gap-2 rounded-md border border-pink-100 bg-pink-50/40 p-2 text-[11px] text-slate-700">
+              <input
+                type="checkbox"
+                checked={mergeReviewAcknowledged}
+                disabled={!reviewGate.mayExportPersonalisedCopies}
+                onChange={event => setMergeReviewAcknowledged(event.target.checked)}
+                className="mt-0.5 h-3.5 w-3.5"
+              />
+              <span>I have reviewed the recipients, factual content and privacy findings. I understand this creates local draft copies only; I remain responsible for any later distribution.</span>
+            </label>
             <div className="flex flex-wrap gap-2 items-center">
               <Badge variant="outline">{recipients.length} recipient(s)</Badge>
               <Button size="sm" variant="outline"
-                disabled={merged.length === 0}
+                disabled={merged.length === 0 || !reviewGate.mayExportPersonalisedCopies || !mergeReviewAcknowledged}
                 onClick={() => downloadFile("mail_merge.csv", mergeCsvExport(merged))}
                 className="gap-1.5">
                 <Download className="w-3.5 h-3.5" /> Download merged CSV
@@ -299,7 +326,7 @@ export default function ParentNewsletterEnhancementsPanel({ result, values }: Pr
               {gdpr.pass && <Badge className="bg-emerald-600 text-white">PASS</Badge>}
             </div>
             {gdpr.findings.length === 0 ? (
-              <p className="text-[11px] italic text-emerald-700">Nothing flagged — you're clear to send.</p>
+              <p className="text-[11px] italic text-emerald-700">No automated privacy concerns were flagged. A teacher must still review the recipient list, content and distribution route.</p>
             ) : (
               <div className="rounded-md border bg-white max-h-64 overflow-y-auto">
                 <table className="w-full text-[10px]">

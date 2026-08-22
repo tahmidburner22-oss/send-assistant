@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`exportToCsv > produces snapshot-stable output 1`] = `
+"# Adaptly marksheet · Fractions: adding · 8B · exported 2026-05-17
+"PupilName","UPN","Mark","OutOf","Pct","Comment","Misconceptions","Date"
+"Aisha Khan","U001","2","4","50","Solid on Q1; slipped on Q2 — ""negatives"" still tricky.","Adds, numerators","2026-05-17"
+"Ben O'Hara","","1","4","25","","Misreads; Adds, numerators","2026-05-17"
+"'=SUM_pupil","","2","2","100","","","2026-05-17"
+"
+`;

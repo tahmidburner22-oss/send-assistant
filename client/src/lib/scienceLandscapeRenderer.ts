@@ -43,6 +43,10 @@ function supportNotes(options: ScienceLandscapeOptions): string[] {
   return notes;
 }
 
+function supportMode(options: ScienceLandscapeOptions): "visual" | "standard" {
+  return /(visual impairment|low vision|\bvi\b)/.test(norm(options.sendNeedId)) ? "visual" : "standard";
+}
+
 function scienceCss(): string {
   return `
   @page { size: A4 landscape; margin: 0; }
@@ -125,6 +129,18 @@ function scienceCss(): string {
   .punnett { width:100%; border-collapse:collapse; font-size:8pt; text-align:center; }
   .punnett td, .punnett th { border:.35mm solid #65748a; padding:1.1mm; }
   .punnett th { color:#123a78; background:#edf4fb; }
+  /* Low-vision / VI mode: a visible support label is not sufficient. Keep
+     all core information in a familiar sans-serif, high-contrast enlarged
+     scale while preserving the one-page protected Science geometry. */
+  .science-root[data-support-mode="visual"] { font-family:Arial, Helvetica, sans-serif; }
+  .science-root[data-support-mode="visual"] .purpose { font-size:11pt; line-height:1.32; border-width:.7mm; }
+  .science-root[data-support-mode="visual"] .card, .science-root[data-support-mode="visual"] .panel, .science-root[data-support-mode="visual"] .q, .science-root[data-support-mode="visual"] .strip { border-width:.7mm; }
+  .science-root[data-support-mode="visual"] .card h3, .science-root[data-support-mode="visual"] .concept-card h3 { font-size:10.4pt; }
+  .science-root[data-support-mode="visual"] .card p, .science-root[data-support-mode="visual"] .q { font-size:9.7pt; line-height:1.34; }
+  .science-root[data-support-mode="visual"] .concept-card p, .science-root[data-support-mode="visual"] .compact-questions .q { font-size:9.1pt; line-height:1.28; }
+  .science-root[data-support-mode="visual"] .strip { font-size:9.2pt; line-height:1.3; }
+  .science-root[data-support-mode="visual"] .small { font-size:8.8pt !important; }
+  .science-root[data-support-mode="visual"] .label-bank span { font-size:9pt; }
   @media print { .science-page { break-after: page; } }
   `;
 }
@@ -154,11 +170,11 @@ function timeline(options: ScienceLandscapeOptions): string {
     ["1913", "Niels Bohr", "Electrons move around the nucleus in fixed energy levels."],
     ["1932", "James Chadwick", "The nucleus contains neutral particles called neutrons as well as protons."],
   ];
-  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, "ATOMIC STRUCTURE — HOW MODELS CHANGED")}<div class="purpose surface"><b>Task:</b> Complete the timeline. Use the word bank to add the missing scientist names and key ideas.</div><div class="timeline">${models.map((model, index) => `<div class="step surface"><div class="step-number">${index + 1}</div><div class="year">${model[0]}</div><div class="model">${atomSvg(index + 1)}</div><div class="name-slot">${index === 1 || index === 3 ? "________________" : model[1]}</div><div class="idea"><b>KEY IDEA</b>${index === 1 ? "Atoms are positive throughout with __________ and __________." : index === 3 ? "Electrons move around the nucleus in fixed __________." : model[2]}</div></div>`).join("")}</div><div class="wordbank surface"><strong>WORD BANK</strong><span>J. J. Thomson</span><span>electrons</span><span>positive charge</span><span>energy levels</span><span>neutrons</span></div></section></div>`;
+  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, "ATOMIC STRUCTURE — HOW MODELS CHANGED")}<div class="purpose surface"><b>Task:</b> Complete the timeline. Use the word bank to add the missing scientist names and key ideas.</div><div class="timeline">${models.map((model, index) => `<div class="step surface"><div class="step-number">${index + 1}</div><div class="year">${model[0]}</div><div class="model">${atomSvg(index + 1)}</div><div class="name-slot">${index === 1 || index === 3 ? "________________" : model[1]}</div><div class="idea"><b>KEY IDEA</b>${index === 1 ? "Atoms are positive throughout with __________ and __________." : index === 3 ? "Electrons move around the nucleus in fixed __________." : model[2]}</div></div>`).join("")}</div><div class="wordbank surface"><strong>WORD BANK</strong><span>J. J. Thomson</span><span>electrons</span><span>positive charge</span><span>energy levels</span><span>neutrons</span></div></section></div>`;
 }
 
 function formula(options: ScienceLandscapeOptions): string {
-  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, "QUANTITATIVE CHEMISTRY — CONCENTRATION OF SOLUTIONS")}<div class="formula-grid"><div class="card formula-card surface"><h3>SOLUTION, SOLVENT AND SOLUTE</h3><div style="display:flex;align-items:center;gap:2mm;padding:2mm">${concentrationSvg()}<p class="small">A <b>solute</b> dissolves in a <b>solvent</b>. Together they make a <b>solution</b>.</p></div></div><div class="card formula-card surface"><h3>CONCENTRATION FORMULA</h3><div class="formula-box">concentration =<br><span style="font-size:11pt">mass of solute (g)</span><br><span style="font-size:9pt">───────────────</span><br><span style="font-size:11pt">volume of solution (dm³)</span></div><div class="formula-note">1000 cm³ = 1 dm³</div></div><div class="card formula-card surface"><h3>WORKED EXAMPLE</h3><p>A solution contains <b>12 g</b> of sodium chloride in <b>0.75 dm³</b> of water.</p><p class="hint">Calculate the concentration.</p><p style="text-align:center;font-size:11pt"><b>12 ÷ 0.75 = 16 g/dm³</b></p></div></div><div class="questions">${[
+  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, "QUANTITATIVE CHEMISTRY — CONCENTRATION OF SOLUTIONS")}<div class="formula-grid"><div class="card formula-card surface"><h3>SOLUTION, SOLVENT AND SOLUTE</h3><div style="display:flex;align-items:center;gap:2mm;padding:2mm">${concentrationSvg()}<p class="small">A <b>solute</b> dissolves in a <b>solvent</b>. Together they make a <b>solution</b>.</p></div></div><div class="card formula-card surface"><h3>CONCENTRATION FORMULA</h3><div class="formula-box">concentration =<br><span style="font-size:11pt">mass of solute (g)</span><br><span style="font-size:9pt">───────────────</span><br><span style="font-size:11pt">volume of solution (dm³)</span></div><div class="formula-note">1000 cm³ = 1 dm³</div></div><div class="card formula-card surface"><h3>WORKED EXAMPLE</h3><p>A solution contains <b>12 g</b> of sodium chloride in <b>0.75 dm³</b> of water.</p><p class="hint">Calculate the concentration.</p><p style="text-align:center;font-size:11pt"><b>12 ÷ 0.75 = 16 g/dm³</b></p></div></div><div class="questions">${[
     ["Convert 250 cm³ to dm³.", "Answer: _________ dm³"],
     ["5.0 g of copper sulfate is dissolved in 0.50 dm³ of water. Calculate the concentration.", "Answer: _________ g/dm³"],
     ["A solution has a concentration of 24 g/dm³ and a volume of 0.40 dm³. Calculate the mass of solute.", "Answer: _________ g"],
@@ -167,7 +183,7 @@ function formula(options: ScienceLandscapeOptions): string {
 }
 
 function interpretation(options: ScienceLandscapeOptions): string {
-  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, "METALLIC BONDING — STRUCTURE AND PROPERTIES", "Interpretation and practice")}<div class="purpose surface"><b>Key idea:</b> Metallic bonding is the strong electrostatic attraction between positive metal ions and delocalised electrons.</div><div class="two-col"><div class="panel surface"><h2>1. LABEL THE STRUCTURE</h2><p>Use the terms in the box to label the particle model.</p><div class="label-bank surface"><span>delocalised electrons</span><span>positive metal ions</span><span>layers can slide</span></div>${latticeSvg()}<div class="response">Label 1: __________________<br><br>Label 2: __________________<br><br>Label 3: __________________</div></div><div class="panel surface"><h2>2. MALLEABILITY</h2><p>The diagram shows layers of positive metal ions. A force can make the layers move.</p>${latticeSvg()}<p class="hint">Explain why the layers of ions can slide over each other without the bonding breaking.</p><div class="response"></div></div></div><div class="bottom-strip"><div class="strip surface"><b>TIP:</b> Positive metal ions are held together by a “sea” of delocalised electrons.</div><div class="strip surface"><b>THINK:</b> Which property of a metal does this structure explain: conductivity, malleability, or both?</div></div></section></div>`;
+  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, "METALLIC BONDING — STRUCTURE AND PROPERTIES", "Interpretation and practice")}<div class="purpose surface"><b>Key idea:</b> Metallic bonding is the strong electrostatic attraction between positive metal ions and delocalised electrons.</div><div class="two-col"><div class="panel surface"><h2>1. LABEL THE STRUCTURE</h2><p>Use the terms in the box to label the particle model.</p><div class="label-bank surface"><span>delocalised electrons</span><span>positive metal ions</span><span>layers can slide</span></div>${latticeSvg()}<div class="response">Label 1: __________________<br><br>Label 2: __________________<br><br>Label 3: __________________</div></div><div class="panel surface"><h2>2. MALLEABILITY</h2><p>The diagram shows layers of positive metal ions. A force can make the layers move.</p>${latticeSvg()}<p class="hint">Explain why the layers of ions can slide over each other without the bonding breaking.</p><div class="response"></div></div></div><div class="bottom-strip"><div class="strip surface"><b>TIP:</b> Positive metal ions are held together by a “sea” of delocalised electrons.</div><div class="strip surface"><b>THINK:</b> Which property of a metal does this structure explain: conductivity, malleability, or both?</div></div></section></div>`;
 }
 
 type PrimaryScienceLesson = {
@@ -225,7 +241,7 @@ function primaryLesson(options: ScienceLandscapeOptions): PrimaryScienceLesson {
 
 function primaryObservation(options: ScienceLandscapeOptions): string {
   const lesson = primaryLesson(options);
-  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, lesson.title)}<div class="purpose surface"><b>Today:</b> ${lesson.objective}</div><div class="primary"><div class="primary-card look surface"><div class="primary-icon">1</div><h3>LOOK</h3>${lesson.look}</div><div class="primary-card sort surface"><div class="primary-icon">2</div><h3>SORT</h3>${lesson.sort}</div><div class="primary-card explain surface"><div class="primary-icon">3</div><h3>SAY AND WRITE</h3>${lesson.explain}</div></div></section></div>`;
+  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, lesson.title)}<div class="purpose surface"><b>Today:</b> ${lesson.objective}</div><div class="primary"><div class="primary-card look surface"><div class="primary-icon">1</div><h3>LOOK</h3>${lesson.look}</div><div class="primary-card sort surface"><div class="primary-icon">2</div><h3>SORT</h3>${lesson.sort}</div><div class="primary-card explain surface"><div class="primary-icon">3</div><h3>SAY AND WRITE</h3>${lesson.explain}</div></div></section></div>`;
 }
 
 type ConceptCard = { heading: string; diagram: string; body: string };
@@ -267,7 +283,7 @@ function ratesSvg(): string { return `<svg viewBox="0 0 150 92" aria-label="prod
 function conceptPage(options: ScienceLandscapeOptions, definition: ConceptDefinition): string {
   const lead = learnerText(options, definition.lead, definition.simpleLead);
   const questions = (options.readingAge || 0) > 0 && (options.readingAge || 0) <= 10 ? definition.simpleQuestions : definition.questions;
-  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, definition.title)}<div class="purpose surface"><b>Task:</b> ${esc(lead)}</div><div class="concept-grid">${definition.cards.map((card) => `<div class="concept-card surface"><h3>${esc(card.heading)}</h3><div class="diagram">${card.diagram}</div><p>${card.body}</p></div>`).join("")}</div><div class="questions compact-questions">${questions.map((question, index) => `<div class="q surface"><span class="qnum">${index + 1}</span>${esc(question)}<div class="work"></div></div>`).join("")}</div><div class="bottom-strip"><div class="strip surface"><b>REMEMBER:</b> ${definition.leftFooter}</div><div class="strip surface"><b>CHECK:</b> ${definition.rightFooter}</div></div></section></div>`;
+  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, definition.title)}<div class="purpose surface"><b>Task:</b> ${esc(lead)}</div><div class="concept-grid">${definition.cards.map((card) => `<div class="concept-card surface"><h3>${esc(card.heading)}</h3><div class="diagram">${card.diagram}</div><p>${card.body}</p></div>`).join("")}</div><div class="questions compact-questions">${questions.map((question, index) => `<div class="q surface"><span class="qnum">${index + 1}</span>${esc(question)}<div class="work"></div></div>`).join("")}</div><div class="bottom-strip"><div class="strip surface"><b>REMEMBER:</b> ${definition.leftFooter}</div><div class="strip surface"><b>CHECK:</b> ${definition.rightFooter}</div></div></section></div>`;
 }
 
 function secondaryConcept(text: string): ConceptDefinition | null {

@@ -12,6 +12,7 @@ import {
   TrendingDown, Minus, Sparkles, Award, Shield, Gamepad2, Target, GraduationCap,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { TeacherPageHeader } from "@/components/TeacherWorkspace";
 
 const COLORS = ["#10B981","#7C3AED","#3B82F6","#F59E0B","#EF4444","#06B6D4","#EC4899","#8B5CF6"];
 
@@ -122,7 +123,7 @@ export default function Analytics() {
     return Object.values(m).map(p => ({
       ...p,
       avg: p.scores.length ? Math.round(p.scores.reduce((a, b) => a + b, 0) / p.scores.length) : 0,
-    })).sort((a, b) => b.avg - a.avg).slice(0, 10);
+    })).sort((a, b) => a.name.localeCompare(b.name)).slice(0, 10);
   }, [quizResults]);
 
   const quizTrend = useMemo(() => {
@@ -150,7 +151,7 @@ export default function Analytics() {
       const done = p.assignments?.filter((a: any) => a.status === "completed").length || 0;
       const pct = total > 0 ? Math.round((done / total) * 100) : 0;
       return { name: p.name.split(" ")[0], total, done, pct };
-    }).filter(p => p.total > 0).sort((a, b) => b.pct - a.pct).slice(0, 8);
+    }).filter(p => p.total > 0).sort((a, b) => a.name.localeCompare(b.name)).slice(0, 8);
   }, [children]);
 
   // Worksheet ratings distribution
@@ -170,11 +171,26 @@ export default function Analytics() {
   ];
 
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h2 className="text-xl font-bold text-foreground">Analytics</h2>
-        <p className="text-sm text-muted-foreground mt-0.5">Your usage, productivity, and impact.</p>
+    <div className="teacher-workspace space-y-4">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24 }}>
+        <TeacherPageHeader
+          eyebrow="Teaching intelligence"
+          title="Analytics for teacher follow-up"
+          description="See activity, completion and quiz signals in context. Use these cues to decide what to review next; they do not diagnose need or make pupil decisions."
+          icon={BarChart3}
+          meta={
+            <>
+              <span className="rounded-full border border-brand/20 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-brand">{totalWorksheets + totalStories + totalDiffs} materials created</span>
+              <span className="rounded-full border border-border/60 bg-white/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">{totalChildren} pupil profile{totalChildren === 1 ? "" : "s"}</span>
+            </>
+          }
+        />
       </motion.div>
+
+      <Card className="teacher-workspace-panel border-sky-200 bg-sky-50/60"><CardContent className="p-3 flex items-start gap-2">
+        <Shield className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" />
+        <p className="text-xs text-sky-950"><strong>Teacher review required.</strong> These are school-scoped activity and outcome signals for conversation and follow-up. They do not diagnose need, measure provision impact on their own, determine groups or make decisions about a pupil.</p>
+      </CardContent></Card>
 
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
         {stats.map((s, i) => { const Icon = s.icon; return (
@@ -306,8 +322,9 @@ export default function Analytics() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
               <Card className="border-border/50"><CardContent className="p-4">
                 <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
-                  <Target className="w-4 h-4 text-teal-600" /> Pupil Assignment Completion
+                  <Target className="w-4 h-4 text-teal-600" /> Assignment completion — follow-up cues
                 </h3>
+                <p className="mb-3 text-[11px] text-muted-foreground">Completion indicates workflow status, not attainment, engagement, ability or support need. Discuss the context with the pupil before any action.</p>
                 <div className="space-y-2">
                   {pupilProgress.map(p => (
                     <div key={p.name} className="flex items-center gap-2">
@@ -350,8 +367,9 @@ export default function Analytics() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
                   <Card className="border-border/50"><CardContent className="p-4">
                     <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
-                      <GraduationCap className="w-4 h-4 text-indigo-600" /> QuizBlast — Pupil Performance
+                      <GraduationCap className="w-4 h-4 text-indigo-600" /> QuizBlast — score snapshots
                     </h3>
+                    <p className="mb-3 text-[11px] text-muted-foreground">Scores are a teacher-review signal from completed games, not a ranking, diagnosis or automatic grouping recommendation.</p>
                     <div className="space-y-2">
                       {quizByPupil.map(p => (
                         <div key={p.name} className="flex items-center gap-2">

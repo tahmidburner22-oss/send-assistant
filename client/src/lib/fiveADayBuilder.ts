@@ -14,6 +14,7 @@
  */
 
 import { lookupBySpecRef } from "./curriculumBank";
+import type { ExamBoard } from "./specPointTaxonomy";
 import { makeRandom } from "./proceduralActivities/seededRandom";
 
 export type Calculator = "allowed" | "non-calc" | "either";
@@ -21,6 +22,8 @@ export type Calculator = "allowed" | "non-calc" | "either";
 export interface FiveADayInput {
   subject: string;
   yearGroup: string;
+  /** Awarding board used to locate the correct curriculum-bank dataset. */
+  board?: ExamBoard;
   /** Number of weeks of packs (5 weekdays × N weeks). */
   weeks: number;
   /** Curriculum specRefs to rotate over. */
@@ -58,20 +61,26 @@ export interface FiveADayOutput {
 
 const WEEKDAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
+function exemplarId(exemplar: { source: string; specRef: string; tier: string; stem: string }): string {
+  return `${exemplar.source}|${exemplar.specRef}|${exemplar.tier}|${exemplar.stem}`;
+}
+
 function pickQuestionForBudget(
+  board: ExamBoard,
   subject: string,
+  yearGroup: string,
   specRef: string,
   targetMarks: number,
   used: Set<string>,
   rand: () => number,
 ): { stem: string; marks: number; id?: string } | null {
-  const candidates = lookupBySpecRef(subject, specRef, {});
-  const available = candidates.filter((c) => !used.has(c.id));
+  const candidates = lookupBySpecRef(board, subject, yearGroup, specRef)?.exemplars ?? [];
+  const available = candidates.filter((c) => !used.has(exemplarId(c)));
   if (available.length === 0) {
     if (candidates.length > 0) {
       // Re-use bank question if we've exhausted it (with warning surfaced upstream).
       const c = candidates[Math.floor(rand() * candidates.length)];
-      return { stem: c.stem, marks: c.marks || targetMarks, id: c.id };
+      return { stem: c.stem, marks: c.marks || targetMarks, id: exemplarId(c) };
     }
     return null;
   }
@@ -79,7 +88,7 @@ function pickQuestionForBudget(
   const closeFit = available.filter((c) => Math.abs((c.marks || 0) - targetMarks) <= 2);
   const pool = closeFit.length > 0 ? closeFit : available;
   const c = pool[Math.floor(rand() * pool.length)];
-  return { stem: c.stem, marks: c.marks || targetMarks, id: c.id };
+  return { stem: c.stem, marks: c.marks || targetMarks, id: exemplarId(c) };
 }
 
 export function buildFiveADay(input: FiveADayInput): FiveADayOutput {
@@ -103,7 +112,7 @@ export function buildFiveADay(input: FiveADayInput): FiveADayOutput {
         const targetMarks = budget[q] ?? 2;
         const skill = skills[skillCursor % skills.length];
         skillCursor += 1;
-        const picked = pickQuestionForBudget(input.subject, skill, targetMarks, used, rand);
+        const picked = pickQuestionForBudget(input.board ?? "aqa", input.subject, input.yearGroup, skill, targetMarks, used, rand);
         if (!picked) {
           warnings.push(`No bank question for skill ${skill} in week ${w + 1}, day ${wd + 1}, slot ${q + 1}`);
           questions.push({

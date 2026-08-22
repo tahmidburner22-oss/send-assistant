@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp, type Child, type Assignment, type Submission, type TimetableLesson } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
-import { getAuthHeader } from "@/lib/api";
+import { getAuthHeader, scheduler as schedulerApi } from "@/lib/api";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
 import PupilDocumentsPanel from "@/components/PupilDocumentsPanel";
@@ -22,6 +22,8 @@ import { useScheduler } from "@/hooks/useScheduler";
 import { TOPIC_BANK } from "@/lib/topic-bank";
 import { CURRICULUM_PROGRESSIONS, getProgressionsForSubject, getRecommendedStep, type TopicProgression } from "@/lib/curriculum-progression";
 import { frequencyLabel } from "@/lib/scheduler";
+import { resolvePupilAssignmentOverlay } from "@/lib/assignmentViewContract";
+import { TeacherPageHeader, TeacherWorkspace } from "@/components/TeacherWorkspace";
 import {
   Plus, UserPlus, Copy, Trash2, Edit3, FileText, BookOpen,
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
@@ -285,7 +287,7 @@ function ProgressionTab({ child }: { child: import("@/contexts/AppContext").Chil
 
 
 export default function Children() {
-  const { children, addChild, removeChild, updateChild, updateAssignment, deleteAssignment, updateSubmission, assignWork } = useApp();
+  const { children, addChild, removeChild, updateChild, updateAssignment, deleteAssignment, updateSubmission, refreshData } = useApp();
   const csvInputRef = useRef<HTMLInputElement>(null);
   const [csvImporting, setCsvImporting] = useState(false);
   const [showCsvDialog, setShowCsvDialog] = useState(false);
@@ -343,6 +345,7 @@ export default function Children() {
   const [teacherComment, setTeacherComment] = useState("");
   // Assignment view-only modal (eye icon)
   const [viewAssignment, setViewAssignment] = useState<Assignment | null>(null);
+  const viewedAssignmentOverlay = resolvePupilAssignmentOverlay(viewAssignment?.metadata);
 
   // Submission feedback state
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
@@ -350,24 +353,27 @@ export default function Children() {
   const [markText, setMarkText] = useState("");
   const [autoMarkLoading, setAutoMarkLoading] = useState(false);
   const [autoMarkResult, setAutoMarkResult] = useState<{ mark: string; feedback: string; misconceptions: string[] } | null>(null);
+  const [schedulerReviewLoading, setSchedulerReviewLoading] = useState(false);
+  const [schedulerOverrideScore, setSchedulerOverrideScore] = useState("");
   const [progressExpanded, setProgressExpanded] = useState(false);
   // Topic card modal — stores the topic index clicked so we can show the full ladder
   const [selectedTopicCard, setSelectedTopicCard] = useState<{ topicIdx: number; subject: string } | null>(null);
   // SEND need collapsible — one entry per SEND need id, starts closed
   const [sendNeedExpanded, setSendNeedExpanded] = useState<Record<string, boolean>>({});
 
-  // AI Auto-Assignment Scheduler
+  // Pupil work plans are server-backed: state survives browser closure and is
+  // shared with authorised colleagues. Refresh rather than constructing a
+  // synthetic local assignment after a schedule run.
   const scheduler = useScheduler({
     children,
-    assignWork,
-    onWorksheetGenerated: (childId, assignment) => {
-      // Refresh selectedChild so the new assignment appears in the Assignments tab
-      setSelectedChild(prev => {
-        if (!prev || prev.id !== childId) return prev;
-        return { ...prev, assignments: [...prev.assignments, assignment] };
-      });
-    },
+    onSchedulerChanged: async () => { await refreshData(); },
   });
+
+  useEffect(() => {
+    setSelectedChild(previous => previous
+      ? children.find(child => child.id === previous.id) || previous
+      : previous);
+  }, [children]);
 
   const handleCsvImport = async (file: File) => {
     setCsvImporting(true);
@@ -442,12 +448,16 @@ export default function Children() {
 
   const statusIcon = (status: string) => {
     if (status === "completed") return <CheckCircle className="w-4 h-4 text-brand" />;
+    if (status === "marked-pending-review") return <AlertCircle className="w-4 h-4 text-indigo-600" />;
+    if (status === "submitted") return <Clock className="w-4 h-4 text-amber-500" />;
     if (status === "started") return <Clock className="w-4 h-4 text-amber-500" />;
     return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
   };
 
   const statusLabel = (status: string) => {
     if (status === "completed") return "Completed";
+    if (status === "marked-pending-review") return "Mark ready for teacher review";
+    if (status === "submitted") return "Submitted for marking";
     if (status === "started") return "In Progress";
     return "Not Started";
   };
@@ -456,6 +466,50 @@ export default function Children() {
     setSelectedAssignment(assignment);
     setProgressValue(assignment.progress ?? 0);
     setTeacherComment(assignment.teacherComment ?? "");
+    setSchedulerOverrideScore(assignment.mark !== undefined && assignment.mark !== null ? String(assignment.mark) : "");
+  };
+
+  const refreshAfterSchedulerReview = async () => {
+    await refreshData();
+    setSelectedAssignment(null);
+  };
+
+  const acceptSchedulerMark = async () => {
+    if (!selectedAssignment || !selectedChild || selectedAssignment.status !== "marked-pending-review") return;
+    const score = selectedAssignment.mark ?? "the proposed";
+    if (!window.confirm(`Accept ${score}% as the final scheduler mark? This will apply the work-plan mastery rule and may advance the next curriculum step.`)) return;
+    setSchedulerReviewLoading(true);
+    try {
+      await schedulerApi.acceptMark(selectedAssignment.id);
+      await refreshAfterSchedulerReview();
+      toast.success("Scheduler mark accepted. The pupil work plan has been updated from your review decision.");
+    } catch (error) {
+      console.error("[scheduler] accept mark failed", error);
+      toast.error("The scheduler mark could not be accepted. No progression decision was changed.");
+    } finally {
+      setSchedulerReviewLoading(false);
+    }
+  };
+
+  const overrideSchedulerMark = async () => {
+    if (!selectedAssignment || !selectedChild || selectedAssignment.status !== "marked-pending-review") return;
+    const score = Number(schedulerOverrideScore);
+    if (!Number.isInteger(score) || score < 0 || score > 100) {
+      toast.error("Enter a whole-number final mark from 0 to 100.");
+      return;
+    }
+    if (!window.confirm(`Set ${score}% as the final scheduler mark? This will apply the work-plan mastery rule and may advance or reinforce the next step.`)) return;
+    setSchedulerReviewLoading(true);
+    try {
+      await schedulerApi.overrideMark(selectedAssignment.id, score, teacherComment.trim() || undefined);
+      await refreshAfterSchedulerReview();
+      toast.success("Teacher mark recorded. The pupil work plan has been updated from your review decision.");
+    } catch (error) {
+      console.error("[scheduler] override mark failed", error);
+      toast.error("The teacher mark could not be saved. No progression decision was changed.");
+    } finally {
+      setSchedulerReviewLoading(false);
+    }
   };
 
   const saveAssignmentProgress = () => {
@@ -675,21 +729,31 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
   })();
 
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
+    <TeacherWorkspace className="space-y-4">
       {topicCardModal}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Manage your SEND students and their assignments.</p>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => setShowSencoReport(s => !s)} className={showSencoReport ? "border-brand text-brand" : ""}>
-            <Users className="w-4 h-4 mr-1" /> SENCO Report
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setShowCsvDialog(true)}>
-            <Upload className="w-4 h-4 mr-1" /> Import CSV
-          </Button>
-          <Button size="sm" onClick={() => setShowAdd(true)} className="bg-brand hover:bg-brand/90 text-white">
-            <Plus className="w-4 h-4 mr-1" /> Add
-          </Button>
-        </div>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24 }}>
+        <TeacherPageHeader
+          eyebrow="Pupil workspace"
+          title={selectedChild ? `${selectedChild.name} · pupil review` : "Pupils, support and progress"}
+          description={selectedChild
+            ? "Review assigned work, current support and teacher-approved next steps without changing the learner-facing task."
+            : "Manage SEND-aware pupil profiles, review scheduled work and move from a learner signal to a teacher decision."}
+          icon={Users}
+          meta={<span className="rounded-full border border-brand/20 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-brand">{children.length} pupil profile{children.length === 1 ? "" : "s"}</span>}
+          actions={
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => setShowSencoReport(s => !s)} className={showSencoReport ? "border-brand bg-brand-light text-brand" : "bg-white/75"}>
+                <Users className="mr-1 h-4 w-4" /> SENCO report
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setShowCsvDialog(true)} className="bg-white/75">
+                <Upload className="mr-1 h-4 w-4" /> Import
+              </Button>
+              <Button size="sm" onClick={() => setShowAdd(true)} className="bg-brand text-white hover:bg-brand/90">
+                <Plus className="mr-1 h-4 w-4" /> Add pupil
+              </Button>
+            </div>
+          }
+        />
       </motion.div>
 
       {/* SENCO Cross-Class Report */}
@@ -1019,6 +1083,39 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                   content={selectedAssignment.content}
                   title={selectedAssignment.title}
                 />
+              ) : selectedAssignment.status === "marked-pending-review" && selectedAssignment.source === "scheduler" ? (
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-indigo-700" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-indigo-950">Teacher review required before progression</p>
+                        <p className="mt-1 text-xs leading-relaxed text-indigo-800">The suggested mark is <span className="font-bold">{selectedAssignment.mark ?? "not available"}%</span>. Accept it or set a final mark below; the work plan will then advance or reinforce the current step according to its saved mastery threshold.</p>
+                      </div>
+                    </div>
+                  </div>
+                  {selectedAssignment.feedback && (
+                    <div className="rounded-xl border border-border/60 bg-muted/25 p-3">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Suggested feedback</p>
+                      <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-foreground">{selectedAssignment.feedback}</p>
+                    </div>
+                  )}
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Final mark (0–100)</Label>
+                      <Input type="number" min="0" max="100" step="1" value={schedulerOverrideScore} onChange={event => setSchedulerOverrideScore(event.target.value)} className="h-10 text-sm" />
+                    </div>
+                    <Button variant="outline" disabled={schedulerReviewLoading} onClick={() => void overrideSchedulerMark()} className="h-10 border-indigo-300 text-xs text-indigo-800 hover:bg-indigo-50">Record teacher mark</Button>
+                  </div>
+                  <Button disabled={schedulerReviewLoading || selectedAssignment.mark === undefined || selectedAssignment.mark === null} onClick={() => void acceptSchedulerMark()} className="h-10 w-full bg-indigo-600 text-xs text-white hover:bg-indigo-700">
+                    {schedulerReviewLoading ? <><RotateCcw className="mr-1.5 h-3.5 w-3.5 animate-spin" />Saving review…</> : <><CheckCircle className="mr-1.5 h-3.5 w-3.5" />Accept suggested mark</>}
+                  </Button>
+                  {(selectedAssignment.sections?.length || selectedAssignment.content) && (
+                    <Button variant="outline" size="sm" className="w-full gap-2 border-brand/30 text-brand hover:bg-brand-light" onClick={() => { setViewAssignment(selectedAssignment); setSelectedAssignment(null); }}>
+                      <Eye className="w-4 h-4" /> View pupil-safe worksheet
+                    </Button>
+                  )}
+                </div>
               ) : (
                 <>
                   {/* Progress Slider */}
@@ -1068,19 +1165,19 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                       className="w-full gap-2 border-brand/30 text-brand hover:bg-brand-light"
                       onClick={() => { setViewAssignment(selectedAssignment); setSelectedAssignment(null); }}
                     >
-                      <Eye className="w-4 h-4" /> View Worksheet
+                      <Eye className="w-4 h-4" /> View pupil-safe worksheet
                     </Button>
                   )}
                 </>
               )}
 
               <div className="flex gap-2">
-                {selectedAssignment.type !== 'send-screener' && (
+                {selectedAssignment.type !== 'send-screener' && selectedAssignment.status !== 'marked-pending-review' && (
                   <Button onClick={saveAssignmentProgress} className="flex-1 bg-brand hover:bg-brand/90 text-white">
                     <Send className="w-4 h-4 mr-1.5" /> Save Progress
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => setSelectedAssignment(null)} className={selectedAssignment.type === 'send-screener' ? 'w-full' : ''}>Close</Button>
+                <Button variant="outline" onClick={() => setSelectedAssignment(null)} className={selectedAssignment.type === 'send-screener' || selectedAssignment.status === 'marked-pending-review' ? 'w-full' : ''}>Close</Button>
               </div>
             </div>
           )}
@@ -1119,7 +1216,7 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                 viewMode="student"
                 textSize={14}
                 editMode={false}
-                overlayColor="#ffffff"
+                overlayColor={viewedAssignmentOverlay.color}
                 editedSections={{}}
               />
             </div>
@@ -1465,374 +1562,101 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                   ))}
                 </TabsContent>
 
-                {/* ── AI Auto-Assignment Scheduler Tab (with integrated Skill Ladder) ── */}
+                {/* ── Server-backed pupil work plan ─────────────────────────────── */}
                 <TabsContent value="scheduler" className="mt-3 space-y-3">
                   {(() => {
                     const cfg = scheduler.getConfig(selectedChild.id);
+                    const status = scheduler.statusFor(selectedChild.id);
+                    const ladder = scheduler.ladders[cfg.subject] || [];
+                    const topicIndex = Math.max(0, Math.min(cfg.progressionTopicIndex || 0, Math.max(0, ladder.length - 1)));
+                    const currentTopic = ladder[topicIndex];
+                    const stepIndex = Math.max(0, Math.min(cfg.progressionStepIndex || 0, Math.max(0, (currentTopic?.steps.length || 1) - 1)));
+                    const currentStep = currentTopic?.steps[stepIndex];
                     const isRunning = scheduler.generating[selectedChild.id] || false;
-                    const bank = TOPIC_BANK[cfg.subject] || TOPIC_BANK.mathematics;
-                    const currentTopicEntry = bank[cfg.topicIndex % bank.length];
-                    const prevTopicIdx = cfg.topicIndex === 0 ? null : ((cfg.topicIndex - 1) + bank.length) % bank.length;
-                    const prevTopicEntry = prevTopicIdx !== null ? bank[prevTopicIdx] : null;
-
-                    // Progress Chain logic
-                    const lastAssignment = selectedChild.assignments.length > 0
-                      ? selectedChild.assignments[selectedChild.assignments.length - 1]
-                      : null;
-                    const lastProgress = lastAssignment?.progress ?? 0;
-                    const MASTERY_THRESHOLD = 70;
-                    const shouldReinforce = !!(lastAssignment && lastProgress < MASTERY_THRESHOLD && lastAssignment.status !== 'not-started');
-                    const recommendedTopicIdx = shouldReinforce
-                      ? Math.max(0, cfg.topicIndex - 1)
-                      : cfg.topicIndex;
-                    const recommendedTopic = bank[recommendedTopicIdx % bank.length];
-                    const chainStart = Math.max(0, cfg.topicIndex - 2);
-                    const chainTopics = bank.slice(chainStart, Math.min(bank.length, chainStart + 6));
-
-                    // Progression-based chain (Skill Ladder connected to Learning Progress Chain)
-                    const progressions = getProgressionsForSubject(cfg.subject);
-                    const hasProgressions = progressions.length > 0;
-                    const currentProgTopicIdx = (cfg.progressionTopicIndex ?? 0) % (progressions.length || 1);
-                    const currentProgStepIdx = cfg.progressionStepIndex ?? 0;
-                    const currentProgression = hasProgressions ? progressions[currentProgTopicIdx] : null;
-                    const currentStep = currentProgression ? currentProgression.steps[currentProgStepIdx % currentProgression.steps.length] : null;
-                    // Show a window of topics around the current one
-                    const progChainStart = Math.max(0, currentProgTopicIdx - 1);
-                    const progChainTopics = hasProgressions ? progressions.slice(progChainStart, Math.min(progressions.length, progChainStart + 4)) : [];
+                    const statusCopy = status === "active"
+                      ? "Automatic work plan active"
+                      : status === "needs-attention" ? "Needs attention" : "Plan paused";
+                    const statusClass = status === "active"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : status === "needs-attention" ? "bg-amber-50 border-amber-200 text-amber-900" : "bg-muted/55 border-border/60 text-muted-foreground";
 
                     return (
                       <div className="space-y-3">
-                        {/* Header */}
-                        <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-50 border border-indigo-200">
-                          <BrainCircuit className="h-4 w-4 text-indigo-600 mt-0.5 shrink-0" />
-                          <div>
-                            <p className="text-xs font-semibold text-indigo-800">AI Auto-Assignment Scheduler</p>
-                            <p className="text-xs text-indigo-600 mt-0.5">Automatically generates and assigns SEND-adapted worksheets for {selectedChild.name} on a rotating curriculum. Topics vary each time and include recall questions from the previous sheet.</p>
+                        <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3.5 sm:p-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex min-w-0 items-start gap-2.5">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+                                <BrainCircuit className="h-4.5 w-4.5" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-indigo-950">Pupil work plan</p>
+                                <p className="mt-0.5 text-xs leading-relaxed text-indigo-700">A server-saved plan for {selectedChild.name}. It keeps its schedule, review state and next step even when this browser closes.</p>
+                              </div>
+                            </div>
+                            <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${statusClass}`}>{statusCopy}</span>
                           </div>
                         </div>
 
-                        {/* ── Unified Learning Progress Chain + Skill Ladder ── */}
-                        <div className="p-3 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50/60 to-purple-50/40 space-y-3">
-                          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setProgressExpanded(!progressExpanded)}>
-                            <TrendingUp className="h-4 w-4 text-indigo-600" />
-                            <p className="text-xs font-semibold text-indigo-900 flex-1">Learning Progress Chain &amp; Skill Ladder</p>
-                            <ChevronDown className={`h-4 w-4 text-indigo-600 transition-transform duration-200 ${progressExpanded ? 'rotate-180' : ''}`} />
+                        {cfg.lastError && (
+                          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+                            <div className="flex items-start gap-2">
+                              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-amber-900">The last scheduled run did not finish</p>
+                                <p className="mt-0.5 text-xs leading-relaxed text-amber-800">{cfg.lastError}</p>
+                                {cfg.retryAfter && <p className="mt-1 text-[11px] font-medium text-amber-900">Automatic retry: {new Date(cfg.retryAfter).toLocaleString("en-GB")}</p>}
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-[10px] text-indigo-600">Each topic on the chain has a skill ladder. Auto-generation works through every step before moving to the next topic.</p>
+                        )}
 
-                          {progressExpanded && hasProgressions ? (
-                            <div className="space-y-2">
-                              {/* Topic chain scroll */}
-                              <div className="flex items-start gap-1.5 overflow-x-auto pb-1">
-                                {progChainTopics.map((prog, i) => {
-                                  const absTopicIdx = progChainStart + i;
-                                  const isTopicCompleted = absTopicIdx < currentProgTopicIdx;
-                                  const isTopicCurrent = absTopicIdx === currentProgTopicIdx;
-                                  const isTopicNext = absTopicIdx === currentProgTopicIdx + 1;
-                                  return (
-                                    <div key={prog.topicId} className="flex items-start gap-1 flex-shrink-0">
-                                      <div
-                                        className={`rounded-xl border-2 p-2 min-w-[90px] max-w-[110px] cursor-pointer hover:shadow-md transition-shadow ${
-                                        isTopicCompleted ? 'bg-green-50 border-green-300' :
-                                        isTopicCurrent ? 'bg-white border-indigo-400 shadow-sm' :
-                                        isTopicNext ? 'bg-amber-50 border-amber-200' :
-                                        'bg-muted/30 border-border/40'
-                                      }`}
-                                        onClick={() => setSelectedTopicCard({ topicIdx: absTopicIdx, subject: cfg.subject })}
-                                      >
-                                        {/* Topic header */}
-                                        <div className="flex items-center gap-1 mb-1.5">
-                                          <div className={`h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                            isTopicCompleted ? 'bg-green-500' :
-                                            isTopicCurrent ? 'bg-indigo-600' :
-                                            isTopicNext ? 'bg-amber-400' :
-                                            'bg-muted-foreground/30'
-                                          }`}>
-                                            {isTopicCompleted ? (
-                                              <CheckCircle className="h-2.5 w-2.5 text-white" />
-                                            ) : (
-                                              <span className="text-[7px] text-white font-bold">{absTopicIdx + 1}</span>
-                                            )}
-                                          </div>
-                                          <p className={`text-[9px] font-semibold leading-tight ${
-                                            isTopicCompleted ? 'text-green-700' :
-                                            isTopicCurrent ? 'text-indigo-800' :
-                                            isTopicNext ? 'text-amber-700' :
-                                            'text-muted-foreground'
-                                          }`}>{prog.topicName.substring(0, 18)}</p>
-                                        </div>
-                                        {/* Skill ladder steps for this topic */}
-                                        <div className="space-y-0.5">
-                                          {prog.steps.map((step, si) => {
-                                            const isStepDone = isTopicCompleted || (isTopicCurrent && si < currentProgStepIdx);
-                                            const isStepCurrent = isTopicCurrent && si === currentProgStepIdx;
-                                            const isStepLocked = !isTopicCurrent && !isTopicCompleted;
-                                            return (
-                                              <div key={step.id} className={`flex items-center gap-1 px-1 py-0.5 rounded ${
-                                                isStepDone ? 'bg-green-100' :
-                                                isStepCurrent ? 'bg-indigo-100 border border-indigo-300' :
-                                                isStepLocked ? 'opacity-40' :
-                                                'bg-white/60'
-                                              }`}>
-                                                <div className={`h-3 w-3 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                                  isStepDone ? 'bg-green-500' :
-                                                  isStepCurrent ? 'bg-indigo-600' :
-                                                  'bg-muted-foreground/20'
-                                                }`}>
-                                                  {isStepDone ? (
-                                                    <CheckCircle className="h-2 w-2 text-white" />
-                                                  ) : isStepCurrent ? (
-                                                    <span className="text-[6px] text-white font-bold">▶</span>
-                                                  ) : (
-                                                    <span className="text-[6px] text-muted-foreground">{si + 1}</span>
-                                                  )}
-                                                </div>
-                                                <p className={`text-[8px] leading-tight truncate ${
-                                                  isStepDone ? 'text-green-700' :
-                                                  isStepCurrent ? 'text-indigo-800 font-semibold' :
-                                                  'text-muted-foreground'
-                                                }`}>{step.title}</p>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                        <p className="text-[7px] text-center text-muted-foreground mt-1 opacity-60">tap to expand</p>
-                                      </div>
-                                      {i < progChainTopics.length - 1 && (
-                                        <div className="flex flex-col items-center justify-center h-full pt-4">
-                                          <div className={`h-0.5 w-3 ${
-                                            isTopicCompleted ? 'bg-green-400' : 'bg-border'
-                                          }`} />
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                                {progChainStart + progChainTopics.length < progressions.length && (
-                                  <div className="flex items-center justify-center pt-4 ml-1">
-                                    <p className="text-[9px] text-muted-foreground">+{progressions.length - (progChainStart + progChainTopics.length)} more topics</p>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Current position indicator */}
-                              {currentProgression && currentStep && (
-                                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-indigo-50 border border-indigo-200">
-                                  <Layers className="h-3.5 w-3.5 text-indigo-600 mt-0.5 shrink-0" />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] font-semibold text-indigo-800">Current Position</p>
-                                    <p className="text-[10px] text-indigo-700 mt-0.5">
-                                      Topic {currentProgTopicIdx + 1}/{progressions.length}: <strong>{currentProgression.topicName}</strong>
-                                    </p>
-                                    <p className="text-[10px] text-indigo-600">
-                                      Step {currentProgStepIdx + 1}/{currentProgression.steps.length}: <strong>{currentStep.title}</strong>
-                                    </p>
-                                    <p className="text-[10px] text-indigo-500 mt-0.5 italic">{currentStep.description}</p>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Mastery / progress feedback */}
-                              {lastAssignment && lastAssignment.status !== 'not-started' ? (
-                                <div className={`flex items-start gap-2 p-2.5 rounded-lg ${
-                                  shouldReinforce ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'
-                                }`}>
-                                  {shouldReinforce
-                                    ? <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
-                                    : <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 shrink-0" />
-                                  }
-                                  <div className="flex-1 min-w-0">
-                                    <p className={`text-[10px] font-semibold ${
-                                      shouldReinforce ? 'text-amber-800' : 'text-green-800'
-                                    }`}>
-                                      {shouldReinforce
-                                        ? `Reinforce recommended — last score ${lastProgress}% (below ${MASTERY_THRESHOLD}% mastery)`
-                                        : `Ready to advance — last score ${lastProgress}% ✓`
-                                      }
-                                    </p>
-                                    <p className={`text-[10px] mt-0.5 ${
-                                      shouldReinforce ? 'text-amber-700' : 'text-green-700'
-                                    }`}>
-                                      {shouldReinforce
-                                        ? `Recommended: Repeat current step with extra scaffolding`
-                                        : currentStep ? `Next: Advance to step ${currentProgStepIdx + 2 <= (currentProgression?.steps.length ?? 0) ? currentProgStepIdx + 2 : 1} of ${currentProgression?.topicName}` : 'All steps complete — move to next topic'
-                                      }
-                                    </p>
-                                  </div>
-                                </div>
-                              ) : (
-                                <p className="text-[10px] text-muted-foreground text-center py-1">
-                                  {selectedChild.assignments.length === 0
-                                    ? 'No assignments yet — generate the first worksheet to start the progress chain.'
-                                    : 'Assignment not yet started — progress will update once the student begins.'}
-                                </p>
-                              )}
-                            </div>
-                          ) : progressExpanded ? (
-                            /* Fallback: old topic bank chain if no progressions for this subject */
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-1 overflow-x-auto pb-1">
-                                {chainTopics.map((t, i) => {
-                                  const absIdx = chainStart + i;
-                                  const isCompleted = absIdx < cfg.topicIndex;
-                                  const isCurrent = absIdx === cfg.topicIndex;
-                                  const isNext = absIdx === cfg.topicIndex + 1;
-                                  return (
-                                    <div key={absIdx} className="flex items-center gap-1 flex-shrink-0">
-                                      <div className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-center min-w-[72px] max-w-[80px] ${
-                                        isCompleted ? 'bg-green-100 border border-green-300' :
-                                        isCurrent ? 'bg-brand/10 border-2 border-brand' :
-                                        isNext ? 'bg-amber-50 border border-amber-200' :
-                                        'bg-muted/40 border border-border/40'
-                                      }`}>
-                                        <div className={`h-4 w-4 rounded-full flex items-center justify-center ${
-                                          isCompleted ? 'bg-green-500' :
-                                          isCurrent ? 'bg-brand' :
-                                          isNext ? 'bg-amber-400' :
-                                          'bg-muted-foreground/30'
-                                        }`}>
-                                          {isCompleted ? (
-                                            <CheckCircle className="h-3 w-3 text-white" />
-                                          ) : isCurrent ? (
-                                            <span className="text-[8px] text-white font-bold">NOW</span>
-                                          ) : isNext ? (
-                                            <span className="text-[8px] text-white font-bold">NEXT</span>
-                                          ) : (
-                                            <span className="text-[8px] text-white">{absIdx + 1}</span>
-                                          )}
-                                        </div>
-                                        <p className={`text-[9px] leading-tight mt-0.5 ${
-                                          isCompleted ? 'text-green-700' :
-                                          isCurrent ? 'text-brand font-semibold' :
-                                          isNext ? 'text-amber-700' :
-                                          'text-muted-foreground'
-                                        }`}>{t.topic.split(' — ')[0].substring(0, 20)}</p>
-                                      </div>
-                                      {i < chainTopics.length - 1 && (
-                                        <div className={`h-0.5 w-3 flex-shrink-0 ${
-                                          absIdx < cfg.topicIndex ? 'bg-green-400' : 'bg-border'
-                                        }`} />
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                                {chainStart + chainTopics.length < bank.length && (
-                                  <p className="text-[9px] text-muted-foreground ml-1">+{bank.length - (chainStart + chainTopics.length)} more</p>
-                                )}
-                              </div>
-                              {lastAssignment && lastAssignment.status !== 'not-started' ? (
-                                <div className={`flex items-start gap-2 p-2.5 rounded-lg ${
-                                  shouldReinforce ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'
-                                }`}>
-                                  {shouldReinforce
-                                    ? <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
-                                    : <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 shrink-0" />
-                                  }
-                                  <div className="flex-1 min-w-0">
-                                    <p className={`text-[10px] font-semibold ${
-                                      shouldReinforce ? 'text-amber-800' : 'text-green-800'
-                                    }`}>
-                                      {shouldReinforce
-                                        ? `Reinforce recommended — last score ${lastProgress}% (below ${MASTERY_THRESHOLD}% mastery)`
-                                        : `Ready to advance — last score ${lastProgress}% ✓`
-                                      }
-                                    </p>
-                                    <p className={`text-[10px] mt-0.5 ${
-                                      shouldReinforce ? 'text-amber-700' : 'text-green-700'
-                                    }`}>
-                                      {shouldReinforce
-                                        ? `Recommended next: Repeat "${recommendedTopic.topic}" with extra scaffolding`
-                                        : `Recommended next: "${recommendedTopic.topic}"`
-                                      }
-                                    </p>
-                                  </div>
-                                </div>
-                              ) : (
-                                <p className="text-[10px] text-muted-foreground text-center py-1">
-                                  {selectedChild.assignments.length === 0
-                                    ? 'No assignments yet — generate the first worksheet to start the progress chain.'
-                                    : 'Assignment not yet started — progress will update once the student begins.'}
-                                </p>
-                              )}
-                            </div>
-                          ) : null}
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div className="rounded-xl border border-border/60 bg-card p-3">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Current curriculum step</p>
+                            {scheduler.loading ? (
+                              <p className="mt-2 text-xs text-muted-foreground">Loading the worker’s curriculum plan…</p>
+                            ) : currentTopic && currentStep ? (
+                              <>
+                                <p className="mt-2 text-sm font-semibold text-foreground">{currentTopic.topic}</p>
+                                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Step {stepIndex + 1} of {currentTopic.steps.length}: <span className="font-medium text-foreground">{currentStep}</span></p>
+                              </>
+                            ) : (
+                              <p className="mt-2 text-xs text-muted-foreground">Choose a supported subject to load its curriculum progression.</p>
+                            )}
+                          </div>
+                          <div className="rounded-xl border border-border/60 bg-card p-3">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Plan timing</p>
+                            <p className="mt-2 text-sm font-semibold text-foreground">{cfg.nextFireAt ? new Date(cfg.nextFireAt).toLocaleString("en-GB") : "No automatic run scheduled"}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                              {cfg.lastFiredAt ? `Last generated: ${new Date(cfg.lastFiredAt).toLocaleString("en-GB")}` : "No worksheet has been generated from this plan yet."}
+                            </p>
+                            {cfg.lastWorksheetTitle && <p className="mt-1 truncate text-[11px] font-medium text-indigo-700">Latest: {cfg.lastWorksheetTitle}</p>}
+                          </div>
                         </div>
 
-                        {/* Subject */}
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Subject</Label>
-                          <Select
-                            value={cfg.subject}
-                            onValueChange={v => scheduler.updateSettings(selectedChild.id, { subject: v })}
-                          >
-                            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              {subjects.map(s => <SelectItem key={s.id} value={s.id} className="text-xs">{s.name}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Current + next step preview */}
-                        <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50 space-y-1.5">
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Next Generation</p>
-                          {hasProgressions && currentProgression && currentStep ? (
-                            <>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium">Topic</span>
-                                <span className="text-xs font-medium text-foreground">{currentProgression.topicName}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">Step {currentProgStepIdx + 1}</span>
-                                <span className="text-xs text-foreground">{currentStep.title}</span>
-                              </div>
-                              {cfg.lastWorksheetTitle && (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Recall from</span>
-                                  <span className="text-xs text-muted-foreground truncate">{cfg.lastWorksheetTitle}</span>
-                                </div>
-                              )}
-                              <p className="text-[10px] text-muted-foreground">{progressions.length} topics × skill ladder steps = full {cfg.subject} progression.</p>
-                            </>
-                          ) : (
-                            <>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium">Next</span>
-                                <span className="text-xs font-medium text-foreground">{currentTopicEntry?.topic}</span>
-                              </div>
-                              {prevTopicEntry && (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Recall from</span>
-                                  <span className="text-xs text-muted-foreground">{prevTopicEntry.topic}</span>
-                                </div>
-                              )}
-                              <p className="text-[10px] text-muted-foreground">Topics rotate automatically through the full {cfg.subject} curriculum ({bank.length} topics).</p>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Frequency + Difficulty row */}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Subject</Label>
+                            <Select value={cfg.subject} onValueChange={subject => void scheduler.updateSettings(selectedChild.id, { subject, progressionTopicIndex: 0, progressionStepIndex: 0 })}>
+                              <SelectTrigger className="h-10 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>{subjects.map(subject => <SelectItem key={subject.id} value={subject.id} className="text-xs">{subject.name}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </div>
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium">Frequency</Label>
-                            <Select
-                              value={cfg.frequency}
-                              onValueChange={v => scheduler.updateSettings(selectedChild.id, { frequency: v as "daily" | "weekly" | "biweekly" })}
-                            >
-                              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                            <Select value={cfg.frequency} onValueChange={frequency => void scheduler.updateSettings(selectedChild.id, { frequency: frequency as "daily" | "weekly" | "biweekly" })}>
+                              <SelectTrigger className="h-10 text-xs"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="daily" className="text-xs">Daily</SelectItem>
                                 <SelectItem value="weekly" className="text-xs">Weekly</SelectItem>
-                                <SelectItem value="biweekly" className="text-xs">Every 2 Weeks</SelectItem>
+                                <SelectItem value="biweekly" className="text-xs">Every two weeks</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs font-medium">Difficulty</Label>
-                            <Select
-                              value={cfg.difficulty}
-                              onValueChange={v => scheduler.updateSettings(selectedChild.id, { difficulty: v as "foundation" | "mixed" | "higher" })}
-                            >
-                              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                            <Label className="text-xs font-medium">Starting challenge</Label>
+                            <Select value={cfg.difficulty} onValueChange={difficulty => void scheduler.updateSettings(selectedChild.id, { difficulty: difficulty as "foundation" | "mixed" | "higher" })}>
+                              <SelectTrigger className="h-10 text-xs"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="foundation" className="text-xs">Foundation</SelectItem>
                                 <SelectItem value="mixed" className="text-xs">Mixed</SelectItem>
@@ -1842,148 +1666,33 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                           </div>
                         </div>
 
-                        {/* Toggles row */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 border border-border/50">
-                            <Label className="text-xs font-medium">Include Answer Key</Label>
-                            <button
-                              onClick={() => scheduler.updateSettings(selectedChild.id, { includeAnswers: !cfg.includeAnswers })}
-                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                                cfg.includeAnswers ? "bg-brand" : "bg-muted-foreground/30"
-                              }`}
-                            >
-                              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
-                                cfg.includeAnswers ? "translate-x-4.5" : "translate-x-0.5"
-                              }`} />
-                            </button>
-                          </div>
-                          <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 border border-border/50">
-                            <div>
-                              <Label className="text-xs font-medium">Include Recall Section</Label>
-                              <p className="text-[10px] text-muted-foreground">5 questions from the previous worksheet topic</p>
-                            </div>
-                            <button
-                              onClick={() => scheduler.updateSettings(selectedChild.id, { includeRecall: !cfg.includeRecall })}
-                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                                cfg.includeRecall ? "bg-brand" : "bg-muted-foreground/30"
-                              }`}
-                            >
-                              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
-                                cfg.includeRecall ? "translate-x-4.5" : "translate-x-0.5"
-                              }`} />
-                            </button>
-                          </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <button type="button" onClick={() => void scheduler.updateSettings(selectedChild.id, { includeRecall: !cfg.includeRecall })} className="flex min-h-12 items-center justify-between rounded-xl border border-border/60 bg-card px-3 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/35">
+                            <span><span className="block text-xs font-semibold">Retrieval starter</span><span className="mt-0.5 block text-[11px] text-muted-foreground">Recall the last plan’s vocabulary.</span></span>
+                            <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${cfg.includeRecall ? "bg-emerald-100 text-emerald-800" : "bg-muted text-muted-foreground"}`}>{cfg.includeRecall ? "On" : "Off"}</span>
+                          </button>
+                          <button type="button" onClick={() => void scheduler.updateSettings(selectedChild.id, { includeAnswers: !cfg.includeAnswers })} className="flex min-h-12 items-center justify-between rounded-xl border border-border/60 bg-card px-3 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/35">
+                            <span><span className="block text-xs font-semibold">Teacher answer key</span><span className="mt-0.5 block text-[11px] text-muted-foreground">Kept separate from the pupil view.</span></span>
+                            <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${cfg.includeAnswers ? "bg-emerald-100 text-emerald-800" : "bg-muted text-muted-foreground"}`}>{cfg.includeAnswers ? "On" : "Off"}</span>
+                          </button>
                         </div>
 
-                        {/* Last / Next run info */}
-                        {cfg.lastFiredAt && (
-                          <div className="flex items-center gap-4 p-2.5 rounded-lg bg-green-50 border border-green-200 text-xs">
-                            <div>
-                              <span className="text-green-700 font-medium">Last generated:</span>
-                              <span className="text-green-600 ml-1">{new Date(cfg.lastFiredAt).toLocaleDateString()}</span>
-                            </div>
-                            {cfg.nextFireAt && (
-                              <div>
-                                <span className="text-green-700 font-medium">Next due:</span>
-                                <span className="text-green-600 ml-1">{new Date(cfg.nextFireAt).toLocaleDateString()}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {cfg.lastWorksheetTitle && (
-                          <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200">
-                            <p className="text-[10px] text-amber-700 font-medium">Last worksheet assigned:</p>
-                            <p className="text-xs text-amber-800 mt-0.5">{cfg.lastWorksheetTitle}</p>
-                            {cfg.lastKeyVocabulary.length > 0 && (
-                              <p className="text-[10px] text-amber-600 mt-1">Recall vocab: {cfg.lastKeyVocabulary.join(", ")}</p>
-                            )}
-                          </div>
-                        )}
+                        <div className="rounded-xl border border-purple-200 bg-purple-50/70 p-3">
+                          <p className="text-xs font-semibold text-purple-900">SEND support is sourced from the pupil profile</p>
+                          <p className="mt-1 text-[11px] leading-relaxed text-purple-800">{selectedChild.sendNeeds?.length ? selectedChild.sendNeeds.join(", ") : selectedChild.sendNeed || "No recorded SEND profile"}. {selectedChild.learnerSupportProfile ? `Teacher-reviewed strategies and the ${selectedChild.learnerSupportProfile.scaffoldingLevel.replace(/-/g, " ")} scaffold entry point are passed as access guidance.` : "No additional learner-support preferences are passed."} The worker preserves the current ladder step, intended challenge, marks and accuracy; it never makes progression or provision changes without teacher review.</p>
+                        </div>
 
-                        {/* Action buttons */}
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => scheduler.runNow(selectedChild)}
-                            disabled={isRunning}
-                            className="flex-1 h-9 bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
-                          >
-                            {isRunning ? (
-                              <><RotateCcw className="h-3.5 w-3.5 mr-1.5 animate-spin" />Generating...</>
-                            ) : (
-                              <><PlayCircle className="h-3.5 w-3.5 mr-1.5" />Generate &amp; Assign Now</>
-                            )}
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <Button onClick={() => void scheduler.runNow(selectedChild)} disabled={isRunning} className="h-10 flex-1 bg-indigo-600 text-xs text-white hover:bg-indigo-700">
+                            {isRunning ? <><RotateCcw className="mr-1.5 h-3.5 w-3.5 animate-spin" />Generating safely…</> : <><PlayCircle className="mr-1.5 h-3.5 w-3.5" />Generate and assign now</>}
                           </Button>
                           {cfg.enabled ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-9 px-3 text-xs border-red-200 text-red-600 hover:bg-red-50"
-                              onClick={() => scheduler.disableScheduler(selectedChild.id)}
-                            >
-                              <PauseCircle className="h-3.5 w-3.5 mr-1" />Pause
-                            </Button>
+                            <Button variant="outline" onClick={() => void scheduler.disableScheduler(selectedChild.id)} className="h-10 border-amber-300 text-xs text-amber-800 hover:bg-amber-50"><PauseCircle className="mr-1.5 h-3.5 w-3.5" />Pause plan</Button>
                           ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-9 px-3 text-xs border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-                              onClick={() => scheduler.enableScheduler(selectedChild.id)}
-                            >
-                              <Settings2 className="h-3.5 w-3.5 mr-1" />Enable Auto
-                            </Button>
+                            <Button variant="outline" onClick={() => void scheduler.enableScheduler(selectedChild.id)} className="h-10 border-indigo-300 text-xs text-indigo-700 hover:bg-indigo-50"><Settings2 className="mr-1.5 h-3.5 w-3.5" />Enable automatic plan</Button>
                           )}
                         </div>
-
-                        {/* SEND Info Panels — collapsible, one per SEND need, starts closed */}
-                        {(() => {
-                          const childNeeds = selectedChild.sendNeeds && selectedChild.sendNeeds.length > 0
-                            ? selectedChild.sendNeeds
-                            : selectedChild.sendNeed && selectedChild.sendNeed !== 'none' ? [selectedChild.sendNeed] : [];
-                          if (childNeeds.length === 0) return null;
-                          return (
-                            <div className="space-y-2">
-                              {childNeeds.map(needId => {
-                                const needInfo = sendNeeds.find(n => n.id === needId);
-                                if (!needInfo) return null;
-                                const isOpen = sendNeedExpanded[needId] ?? false;
-                                return (
-                                  <div key={needId} className="rounded-xl border border-purple-200 bg-purple-50 overflow-hidden">
-                                    {/* Collapsible header */}
-                                    <button
-                                      type="button"
-                                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left cursor-pointer select-none"
-                                      onClick={() => setSendNeedExpanded(prev => ({ ...prev, [needId]: !isOpen }))}
-                                    >
-                                      <div className="h-5 w-5 rounded-full bg-purple-100 border border-purple-300 flex items-center justify-center flex-shrink-0">
-                                        <span className="text-[9px] font-bold text-purple-700">{needInfo.name.substring(0, 2).toUpperCase()}</span>
-                                      </div>
-                                      <span className="text-xs font-semibold text-purple-800 flex-1">{needInfo.name}</span>
-                                      <span className="text-[10px] text-purple-500 bg-purple-100 px-1.5 py-0.5 rounded mr-1">{needInfo.category}</span>
-                                      <ChevronDown className={`h-3.5 w-3.5 text-purple-500 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
-                                    </button>
-                                    {/* Collapsible body */}
-                                    {isOpen && (
-                                      <div className="px-3 pb-3">
-                                        <SENDInfoPanel
-                                          sendNeedId={needId}
-                                          context="scheduler"
-                                          className="!rounded-none !border-0 !bg-transparent !p-0"
-                                        />
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })()}
-
-                        {cfg.enabled && (
-                          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-indigo-50 border border-indigo-200">
-                            <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-                            <p className="text-xs text-indigo-700">Auto-scheduler active — new worksheet generated {frequencyLabel(cfg.frequency)} and assigned to {selectedChild.name} automatically.</p>
-                          </div>
-                        )}
+                        <p className="px-1 text-[10px] leading-relaxed text-muted-foreground">Manual generation is always teacher-triggered. Automatic plans create work only after you enable this pupil’s plan; progression is determined after review, not simply because a worksheet was created.</p>
                       </div>
                     );
                   })()}
@@ -2006,6 +1715,6 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
           </Card>
         </div>
       )}
-    </div>
+    </TeacherWorkspace>
   );
 }

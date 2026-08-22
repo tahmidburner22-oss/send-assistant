@@ -40,7 +40,7 @@ async function fetchComprehensionQuestions(
     ];
   }
 }
-import { BookOpen, Sparkles, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, Check, Loader2 } from "lucide-react";
+import { BookOpen, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, Check, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function Stories() {

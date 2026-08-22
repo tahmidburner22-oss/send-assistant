@@ -493,6 +493,42 @@ export function summariseGdpr(text: string): GdprSummary {
   return { total: findings.length, high, medium, low, pass: high === 0, findings };
 }
 
+/**
+ * Teacher-facing decision support for a family communication draft. It never
+ * approves sending: the product does not send a message, and the teacher
+ * remains responsible for accuracy, lawful sharing and final distribution.
+ */
+export type FamilyDraftReviewStatus = "blocked" | "attention" | "review";
+
+export interface FamilyDraftReviewGate {
+  status: FamilyDraftReviewStatus;
+  label: string;
+  blockers: string[];
+  checks: string[];
+  mayExportPersonalisedCopies: boolean;
+}
+
+export function buildFamilyDraftReviewGate(args: {
+  privacy: GdprSummary;
+  readability: ReadabilityReport;
+  communicationType?: string;
+}): FamilyDraftReviewGate {
+  const blockers: string[] = [];
+  const checks: string[] = ["Confirm the intended recipients, factual accuracy and final school approval before distribution."];
+  if (args.privacy.high > 0) blockers.push(`${args.privacy.high} high-severity privacy or safeguarding concern${args.privacy.high === 1 ? "" : "s"} must be removed or moved to a restricted channel.`);
+  if (args.privacy.medium > 0) checks.push(`${args.privacy.medium} medium-severity personal-data concern${args.privacy.medium === 1 ? "" : "s"} need a teacher decision.`);
+  if (args.readability.band === "hard" || args.readability.band === "very-hard") checks.push("Rewrite long sentences or jargon so families can scan the message easily.");
+  if (args.communicationType === "send-update") checks.push("For SEND updates, keep the draft strengths-based and share only information appropriate for that family.");
+
+  if (blockers.length > 0) {
+    return { status: "blocked", label: "Personalised export blocked", blockers, checks, mayExportPersonalisedCopies: false };
+  }
+  if (checks.length > 1) {
+    return { status: "attention", label: "Teacher review needed", blockers, checks, mayExportPersonalisedCopies: true };
+  }
+  return { status: "review", label: "Human review still required", blockers, checks, mayExportPersonalisedCopies: true };
+}
+
 export function gdprSummaryHtml(summary: GdprSummary): string {
   const colour = summary.pass ? "#15803d" : "#be123c";
   const banner = summary.pass

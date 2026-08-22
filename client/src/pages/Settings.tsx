@@ -20,6 +20,7 @@ import {
   Palette, Layout, Sidebar, RotateCcw, Monitor,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TeacherPageHeader } from "@/components/TeacherWorkspace";
 
 // ── Billing Section ───────────────────────────────────────────────────────────
 function BillingSection() {
@@ -1207,11 +1208,14 @@ export default function Settings() {
   };
 
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-foreground">Settings</h2>
-        <p className="text-sm text-muted-foreground mt-1">Your account and AI configuration</p>
-      </div>
+    <div className="teacher-workspace space-y-6">
+      <TeacherPageHeader
+        eyebrow="Account and workspace"
+        title="Settings that stay in your control"
+        description="Manage account preferences, accessibility and dashboard choices. School-level AI configuration remains limited to authorised administrators."
+        icon={Monitor}
+        meta={<span className="rounded-full border border-border/60 bg-white/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">{isAdmin ? "School administrator controls available" : "Personal workspace preferences"}</span>}
+      />
 
       {/* No AI keys warning for non-admins */}
       {!isAdmin && savedKeys.length === 0 && (

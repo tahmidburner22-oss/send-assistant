@@ -134,7 +134,7 @@ export function runWorksheetPipeline(
       try {
         const spec = typeof section.diagramSpec === "string"
           ? JSON.parse(section.diagramSpec) as DiagramSpec
-          : section.diagramSpec as DiagramSpec;
+          : section.diagramSpec as unknown as DiagramSpec;
         const validation = validateDiagram(spec, 500, 300);
         if (validation.pass) {
           diagramSVGs[section.id ?? section.title] = ""; // will be rendered by the renderer

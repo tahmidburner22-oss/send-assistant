@@ -44,3 +44,8 @@ output/
 audit/visual-pdfs/
 audit/visual-pngs/
 audit/visual-samples/
+audit/current-example-pdfs/
+audit/current-example-pngs/
+
+# Transient local diagnostic output; the Markdown repair register remains tracked.
+audit/typecheck_*.txt

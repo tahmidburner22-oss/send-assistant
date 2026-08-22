@@ -70,6 +70,16 @@ describe("science landscape renderer", () => {
     }
   });
 
+  it("provides explicit enlarged-print typography and high contrast for low-vision pupils", () => {
+    const visual = renderScienceLandscape({ subject: "Physics", yearGroup: "Year 10", topic: "Waves", sendNeedId: "vi", readingAge: 17 });
+    expect(visual.layout).toBe("waves");
+    expect((visual.html.match(/class="science-page"/g) || [])).toHaveLength(1);
+    expect(visual.html).toContain('data-support-mode="visual"');
+    expect(visual.html).toContain('.science-root[data-support-mode="visual"] { font-family:Arial, Helvetica, sans-serif; }');
+    expect(visual.html).toContain('.science-root[data-support-mode="visual"] .card p, .science-root[data-support-mode="visual"] .q { font-size:9.7pt; line-height:1.34; }');
+    expect(visual.html).toContain('border-width:.7mm');
+  });
+
   it("keeps reading-age adaptation limited to learner-facing wording in the expansion layouts", () => {
     const standard = renderScienceLandscape({ subject: "Physics", yearGroup: "Year 10", topic: "Waves", sendNeedId: "Dyslexia", readingAge: 14 });
     const adapted = renderScienceLandscape({ subject: "Physics", yearGroup: "Year 10", topic: "Waves", sendNeedId: "Dyslexia", readingAge: 10 });

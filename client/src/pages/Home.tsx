@@ -17,6 +17,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { callAI } from "@/lib/ai";
 import WeekAheadPanel from "@/components/WeekAheadPanel";
 import UnitPackDialog from "@/components/UnitPackDialog";
+import { TeacherPageHeader, TeacherWorkspace } from "@/components/TeacherWorkspace";
 
 const subjectIcons: Record<string, any> = {
   english: BookOpen, mathematics: Calculator, science: FlaskConical,
@@ -425,47 +426,98 @@ Rules:
   // Used to soften the welcome subtitle for first-time / empty-state users
   // so the dashboard never reads "you have saved 0 minutes" on day one.
   const hasActivity = totalWorksheets + totalStories + totalDifferentiations > 0;
+  const pendingSchedulerReviews = useMemo(
+    () => children.flatMap(child => child.assignments.map(assignment => ({ child, assignment })))
+      .filter(({ assignment }) => assignment.status === "marked-pending-review" && assignment.source === "scheduler"),
+    [children]
+  );
+  const activePupilWork = useMemo(
+    () => children.flatMap(child => child.assignments.map(assignment => ({ child, assignment })))
+      .filter(({ assignment }) => assignment.source === "scheduler" && ["not-started", "started", "submitted"].includes(assignment.status)),
+    [children]
+  );
 
   return (
-    <div className={`px-4 sm:px-6 lg:px-8 py-6 lg:py-8 max-w-6xl mx-auto ${sectionGap}`}>
+    <TeacherWorkspace className={sectionGap}>
       {/* ────────────────────────────────────────────────────────────────────
           Welcome hero — time-aware greeting, gradient name, decorative blobs.
           A premium replacement for the previous two-line text header.
           ──────────────────────────────────────────────────────────────────── */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-        <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-background via-brand-light/30 to-background p-5 sm:p-7 lg:p-8">
-          {/* Soft decorative blobs — pure CSS, no extra paint cost */}
-          <div aria-hidden className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-brand/15 via-emerald-200/30 to-cyan-200/15 blur-3xl pointer-events-none" />
-          <div aria-hidden className="absolute -bottom-32 -left-20 w-72 h-72 rounded-full bg-gradient-to-br from-purple-200/20 via-pink-200/15 to-rose-200/10 blur-3xl pointer-events-none" />
-
-          <div className="relative flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
-            <div className={`shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${greeting.gradient} text-white shadow-lg shadow-brand/20`}>
-              <GreetingIcon className="w-6 h-6 sm:w-7 sm:h-7" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] font-semibold text-muted-foreground/80">
-                {todayLong()}
-              </p>
-              <h1 className="mt-1.5 text-2xl sm:text-3xl lg:text-[2.25rem] font-bold tracking-tight leading-tight">
-                {greeting.label},{" "}
-                <span className={`bg-gradient-to-r ${greeting.gradient} bg-clip-text text-transparent`}>
-                  {user?.displayName || "Teacher"}
-                </span>
-              </h1>
-              <p className="mt-2 text-sm sm:text-[15px] text-muted-foreground max-w-xl leading-relaxed">
-                {hasActivity ? (
-                  <>
-                    Here's everything you've worked on, ready to keep moving. Adaptly has saved you{" "}
-                    <span className="font-semibold text-foreground tabular-nums">{timeSaved} minutes</span> of planning so far.
-                  </>
-                ) : (
-                  <>Pick up a tool below, or just type what you need into the command bar — Adaptly will route you to the right place.</>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32 }}>
+        <TeacherPageHeader
+          eyebrow={todayLong()}
+          title={`${greeting.label}, ${user?.displayName || "Teacher"}`}
+          icon={GreetingIcon}
+          description={hasActivity ? (
+            <>Your active teaching workspace is ready. Adaptly has saved you <span className="font-semibold text-foreground tabular-nums">{timeSaved} minutes</span> of planning so far.</>
+          ) : (
+            <>Start with a resource, pick up a pupil plan, or describe what you need in the command bar below.</>
+          )}
+          meta={
+            <>
+              <span className="rounded-full border border-brand/20 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-brand">{pendingSchedulerReviews.length ? `${pendingSchedulerReviews.length} review${pendingSchedulerReviews.length === 1 ? "" : "s"} waiting` : "Reviews up to date"}</span>
+              <span className="rounded-full border border-border/60 bg-white/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">{activePupilWork.length} active pupil plan{activePupilWork.length === 1 ? "" : "s"}</span>
+            </>
+          }
+          actions={
+            <Link href="/worksheets" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-brand px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:bg-brand/90 active:scale-[0.98]">
+              <Pencil className="h-4 w-4" /> Create a resource
+            </Link>
+          }
+        />
       </motion.div>
+
+      {/* ────────────────────────────────────────────────────────────────────
+          Today queue — the teacher’s next decisions precede tool discovery.
+          These cards are intentionally routes, not automatic actions.
+          ──────────────────────────────────────────────────────────────────── */}
+      <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} aria-labelledby="today-queue-heading">
+        <div className="mb-2.5 flex items-end justify-between gap-3">
+          <div>
+            <p className="teacher-studio-eyebrow text-brand">Today</p>
+            <h2 id="today-queue-heading" className="mt-1 text-lg font-bold tracking-tight">Your next teaching decisions</h2>
+          </div>
+          <Link href="/pupils" className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline">Open pupils <ArrowRight className="h-3.5 w-3.5" /></Link>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <Link href="/pupils" className="teacher-workspace-link">
+            <Card className={`h-full border-indigo-200 bg-gradient-to-br from-indigo-50 to-white transition-all hover:-translate-y-0.5 hover:shadow-md ${cardClass}`}>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white"><ClipboardList className="h-4.5 w-4.5" /></div>
+                  <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${pendingSchedulerReviews.length ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>{pendingSchedulerReviews.length ? `${pendingSchedulerReviews.length} to review` : "Up to date"}</span>
+                </div>
+                <p className="mt-3 text-sm font-semibold">Mark review queue</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{pendingSchedulerReviews.length ? "Review proposed scheduler marks before any mastery progression is applied." : "No proposed scheduler marks are waiting for a teacher decision."}</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/pupils" className="teacher-workspace-link">
+            <Card className={`h-full border-brand/25 bg-gradient-to-br from-brand-light/65 to-white transition-all hover:-translate-y-0.5 hover:shadow-md ${cardClass}`}>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white"><Brain className="h-4.5 w-4.5" /></div>
+                  <span className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-brand ring-1 ring-brand/20">{activePupilWork.length} active</span>
+                </div>
+                <p className="mt-3 text-sm font-semibold">Pupil work plans</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Open a pupil profile to see the server-backed schedule, current curriculum step and SEND-aware support route.</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/history" className="teacher-workspace-link">
+            <Card className={`h-full border-purple-200 bg-gradient-to-br from-purple-50 to-white transition-all hover:-translate-y-0.5 hover:shadow-md ${cardClass}`}>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600 text-white"><FileText className="h-4.5 w-4.5" /></div>
+                  <span className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-purple-700 ring-1 ring-purple-200">{totalWorksheets} saved</span>
+                </div>
+                <p className="mt-3 text-sm font-semibold">Review materials</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Check the pupil-safe version first, then switch deliberately to teacher review material and provenance.</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </motion.section>
 
       {/* ────────────────────────────────────────────────────────────────────
           Top row — Week-ahead panel + Plan-a-unit launcher.
@@ -898,6 +950,6 @@ Rules:
           </Card>
         </motion.div>
       )}
-    </div>
+    </TeacherWorkspace>
   );
 }

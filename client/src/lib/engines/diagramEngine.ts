@@ -410,19 +410,46 @@ function checkGeometry(spec: DiagramSpec): DiagramCheckResult {
     }
   }
 
-  // Check label overlap
-  const labelPositions: { id: string; x: number; y: number }[] = [];
-  for (const comp of spec.components) {
-    if (!comp.label) continue;
+  // External labels are pupil-facing content. Estimate their real rendered
+  // boxes and fail, rather than warn, on label-label, label-symbol or canvas
+  // collisions. A diagram with ambiguous text must never be rendered.
+  const labelBoxes: { id: string; x: number; y: number; width: number; height: number }[] = [];
+  const componentBoxes = spec.components.map(comp => {
     const sym = SYMBOLS[comp.symbol];
-    const labelX = comp.x + (comp.labelPosition === "right" ? 20 : comp.labelPosition === "left" ? -20 : 0);
-    const labelY = comp.y + (comp.labelPosition === "below" ? 20 : comp.labelPosition === "above" ? -20 : 0);
-    for (const prev of labelPositions) {
-      if (Math.abs(labelX - prev.x) < 40 && Math.abs(labelY - prev.y) < 16) {
-        warnings.push(`Label overlap: "${comp.id}" and "${prev.id}" labels may overlap.`);
-      }
+    const width = comp.width ?? sym?.defaultWidth ?? 0;
+    const height = comp.height ?? sym?.defaultHeight ?? 0;
+    return { id: comp.id, x: comp.x - width / 2, y: comp.y - height / 2, width, height };
+  });
+  const boxesOverlap = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }, margin = 4) =>
+    a.x < b.x + b.width + margin && a.x + a.width > b.x - margin && a.y < b.y + b.height + margin && a.y + a.height > b.y - margin;
+
+  for (const comp of spec.components) {
+    if (!comp.label || !comp.labelPosition) continue;
+    const sym = SYMBOLS[comp.symbol];
+    if (!sym) continue;
+    const componentWidth = comp.width ?? sym.defaultWidth;
+    const componentHeight = comp.height ?? sym.defaultHeight;
+    const labelWidth = Math.max(12, Math.min(220, comp.label.trim().length * 6.2));
+    const labelHeight = 14;
+    const anchorX = comp.x + (comp.labelPosition === "right" ? componentWidth / 2 + 6 : comp.labelPosition === "left" ? -(componentWidth / 2 + 6) : 0);
+    const baselineY = comp.y + (comp.labelPosition === "below" ? componentHeight / 2 + 14 : comp.labelPosition === "above" ? -(componentHeight / 2 + 4) : 4);
+    const labelBox = {
+      id: comp.id,
+      x: comp.labelPosition === "right" ? anchorX : comp.labelPosition === "left" ? anchorX - labelWidth : anchorX - labelWidth / 2,
+      y: baselineY - 11,
+      width: labelWidth,
+      height: labelHeight,
+    };
+    if (labelBox.x < 0 || labelBox.y < 0 || labelBox.x + labelBox.width > spec.boxWidth || labelBox.y + labelBox.height > spec.boxHeight) {
+      errors.push(`Label "${comp.label}" for "${comp.id}" is clipped by the diagram boundary.`);
     }
-    labelPositions.push({ id: comp.id, x: labelX, y: labelY });
+    for (const previous of labelBoxes) {
+      if (boxesOverlap(labelBox, previous)) errors.push(`Label overlap: "${comp.id}" and "${previous.id}" overlap.`);
+    }
+    for (const componentBox of componentBoxes) {
+      if (componentBox.id !== comp.id && boxesOverlap(labelBox, componentBox)) errors.push(`Label "${comp.label}" overlaps component "${componentBox.id}".`);
+    }
+    labelBoxes.push(labelBox);
   }
 
   return { check: "geometry", pass: errors.length === 0, errors, warnings };

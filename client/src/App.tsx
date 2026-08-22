@@ -281,8 +281,8 @@ function ProtectedRoutes() {
             <Route path="/attendance" component={Attendance} />
             <Route path="/pupil-comments" component={PupilComments} />
             <Route path="/admin" component={AdminPanel} />
-            <Route path="/admin/telemetry" component={AdminTelemetry} />
-            <Route path="/admin/feature-flags" component={AdminFeatureFlags} />
+            <Route path="/admin/telemetry">{() => <AdminTelemetry />}</Route>
+            <Route path="/admin/feature-flags">{() => <AdminFeatureFlags />}</Route>
             <Route path="/super-admin/users" component={SuperAdminUsers} />
 
             {/* Connectivity: pipelines, scheduler, skill ladder, daily work */}

@@ -337,14 +337,10 @@ export async function bundleUnit(
   results: UnitLessonResult[],
   format: UnitBundleFormat = "zip",
 ): Promise<Blob> {
-  if (format === "cc") {
-    const { exportUnitToCommonCartridge } = await import("./exporters/commonCartridge");
-    return exportUnitToCommonCartridge(plan, results);
-  }
   if (format !== "zip") {
     throw new Error(
       `bundleUnit: '${format}' format is not supported in this build. ` +
-        `'lms-push' arrives in a sibling PR (PC1).`,
+        `Common Cartridge and 'lms-push' are not yet implemented; select ZIP instead.`,
     );
   }
   // Lazy-load PdfBuilder so test environments that mock pdf-generator don't
@@ -362,8 +358,10 @@ export async function bundleUnit(
     if (r.worksheet) {
       const pupilPdf = await buildLessonPdfBlob(plan, r.lesson, r.worksheet, "student");
       const teacherPdf = await buildLessonPdfBlob(plan, r.lesson, r.worksheet, "teacher");
-      zip.file(`${week}/${stem} — pupil.pdf`, pupilPdf);
-      zip.file(`${week}/${stem} — teacher-key.pdf`, teacherPdf);
+      // JSZip accepts Blob in browsers but its Node runtime rejects Blob objects.
+      // ArrayBuffer input is portable and preserves the exact PDF bytes.
+      zip.file(`${week}/${stem} — pupil.pdf`, new Uint8Array(await pupilPdf.arrayBuffer()));
+      zip.file(`${week}/${stem} — teacher-key.pdf`, new Uint8Array(await teacherPdf.arrayBuffer()));
     } else {
       const stub = buildFailureStub(plan, r.lesson, r.error || "unknown error");
       zip.file(`${week}/${stem} — FAILED.txt`, stub);

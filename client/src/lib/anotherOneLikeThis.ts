@@ -15,6 +15,7 @@
  */
 
 import { lookupBySpecRef, type ExemplarRow, type Tier } from "./curriculumBank";
+import type { ExamBoard } from "./specPointTaxonomy";
 
 export interface SectionLite {
   title?: string;
@@ -30,6 +31,9 @@ export interface AnotherOneInput {
   section: SectionLite;
   /** Subject for bank lookup (e.g. "Physics"). */
   subject: string;
+  /** Board/year are required for deterministic curriculum-bank lookup. */
+  board?: ExamBoard;
+  yearGroup?: string;
   /** Tier filter; passes through to curriculumBank.filterByTier. */
   tier?: Tier;
   /** Exemplar ids already used; the dispatcher avoids these. */
@@ -47,6 +51,10 @@ export interface AnotherOneOutput {
   via: "bank" | "llm-fallback";
   sourceExemplarId?: string;
   warnings: string[];
+}
+
+function exemplarId(ex: ExemplarRow): string {
+  return `${ex.source}|${ex.specRef}|${ex.tier}|${ex.stem}`;
 }
 
 function exemplarToSection(ex: ExemplarRow, original: SectionLite): SectionLite {
@@ -73,7 +81,7 @@ function levenshteinSimilar(a: string, b: string): number {
 }
 
 export async function anotherOneLikeThis(input: AnotherOneInput): Promise<AnotherOneOutput> {
-  const { section, subject, tier, excludeExemplarIds = [], aiRegenerate } = input;
+  const { section, subject, board, yearGroup, tier, excludeExemplarIds = [], aiRegenerate } = input;
   const warnings: string[] = [];
   const specRef = section.specRef || "";
   if (!specRef) {
@@ -83,9 +91,11 @@ export async function anotherOneLikeThis(input: AnotherOneInput): Promise<Anothe
     const fresh = await aiRegenerate({ section, excludeExemplarIds });
     return { section: fresh, via: "llm-fallback", warnings };
   }
-  const candidates = lookupBySpecRef(subject, specRef, { tier });
+  const entry = board && yearGroup ? lookupBySpecRef(board, subject, yearGroup, specRef) : null;
+  const tierMatches = !tier || tier === "both" || !entry?.specPoint.tier || entry.specPoint.tier === "both" || entry.specPoint.tier === tier;
+  const candidates = tierMatches ? (entry?.exemplars ?? []) : [];
   const fresh = candidates.find((c) => {
-    const id = c.id;
+    const id = exemplarId(c);
     if (excludeExemplarIds.includes(id)) return false;
     if (section.content && levenshteinSimilar(c.stem, section.content) > 0.85) return false;
     return true;
@@ -94,7 +104,7 @@ export async function anotherOneLikeThis(input: AnotherOneInput): Promise<Anothe
     return {
       section: exemplarToSection(fresh, section),
       via: "bank",
-      sourceExemplarId: fresh.id,
+      sourceExemplarId: exemplarId(fresh),
       warnings,
     };
   }

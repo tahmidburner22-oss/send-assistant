@@ -39,8 +39,8 @@ async function registerAndVerify(app: express.Express, email: string, password: 
     role: "teacher",
   });
   // Manually verify and set school_id
-  db.prepare("UPDATE users SET email_verified = 1, school_id = ? WHERE email = ?").run(schoolId, email);
-  return db.prepare("SELECT * FROM users WHERE email = ?").get(email) as any;
+  await db.prepare("UPDATE users SET email_verified = 1, school_id = ? WHERE email = ?").run(schoolId, email);
+  return await db.prepare("SELECT * FROM users WHERE email = ?").get(email) as any;
 }
 
 async function loginAndGetCookie(app: express.Express, email: string, password: string) {
@@ -65,15 +65,17 @@ describe("Cookie-based Auth", () => {
   beforeAll(async () => {
     await initDb();
     // Insert test schools
-    db.prepare("INSERT OR IGNORE INTO schools (id, name) VALUES (?, ?)").run(schoolAId, "School A");
-    db.prepare("INSERT OR IGNORE INTO schools (id, name) VALUES (?, ?)").run(schoolBId, "School B");
+    await db.prepare("INSERT INTO schools (id, name) VALUES (?, ?)").run(schoolAId, "School A");
+    await db.prepare("INSERT INTO schools (id, name) VALUES (?, ?)").run(schoolBId, "School B");
     userA = await registerAndVerify(app, emailA, password, schoolAId);
     userB = await registerAndVerify(app, emailB, password, schoolBId);
   });
 
-  afterAll(() => {
-    db.prepare("DELETE FROM users WHERE email IN (?, ?)").run(emailA, emailB);
-    db.prepare("DELETE FROM schools WHERE id IN (?, ?)").run(schoolAId, schoolBId);
+  afterAll(async () => {
+    await db.prepare("DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE email IN (?, ?))").run(emailA, emailB);
+    await db.prepare("DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE email IN (?, ?))").run(emailA, emailB);
+    await db.prepare("DELETE FROM users WHERE email IN (?, ?)").run(emailA, emailB);
+    await db.prepare("DELETE FROM schools WHERE id IN (?, ?)").run(schoolAId, schoolBId);
   });
 
   // ── 1. Login sets httpOnly cookie ─────────────────────────────────────────
@@ -96,9 +98,12 @@ describe("Cookie-based Auth", () => {
   // ── 2. Logout clears cookie ───────────────────────────────────────────────
   it("logout clears the auth cookie", async () => {
     const { cookie } = await loginAndGetCookie(app, emailA, password);
+    // Browser requests send only `name=value`; Path, HttpOnly and SameSite are
+    // response attributes and must not be replayed as request-cookie tokens.
+    const requestCookie = cookie!.split(";")[0];
     const logoutRes = await request(app)
       .post("/api/auth/logout")
-      .set("Cookie", cookie!);
+      .set("Cookie", requestCookie);
     expect(logoutRes.status).toBe(200);
     const setCookie = logoutRes.headers["set-cookie"] as string[] | string | undefined;
     const cookieStr = Array.isArray(setCookie) ? setCookie[0] : (setCookie || "");
@@ -145,7 +150,8 @@ describe("Cookie-based Auth", () => {
       .send({ email: unverifiedEmail, password });
     // Should be 403 (email not verified) or 401
     expect([401, 403]).toContain(res.status);
-    db.prepare("DELETE FROM users WHERE email = ?").run(unverifiedEmail);
+    await db.prepare("DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE email = ?)").run(unverifiedEmail);
+    await db.prepare("DELETE FROM users WHERE email = ?").run(unverifiedEmail);
   });
 });
 
@@ -161,21 +167,23 @@ describe("Cross-tenant isolation", () => {
 
   beforeAll(async () => {
     await initDb();
-    db.prepare("INSERT OR IGNORE INTO schools (id, name) VALUES (?, ?)").run(schoolAId, "CT School A");
-    db.prepare("INSERT OR IGNORE INTO schools (id, name) VALUES (?, ?)").run(schoolBId, "CT School B");
+    await db.prepare("INSERT INTO schools (id, name) VALUES (?, ?)").run(schoolAId, "CT School A");
+    await db.prepare("INSERT INTO schools (id, name) VALUES (?, ?)").run(schoolBId, "CT School B");
     await registerAndVerify(app, emailA, password, schoolAId);
     await registerAndVerify(app, emailB, password, schoolBId);
     // Create a pupil in school B
     pupilBId = uuidv4();
-    db.prepare(
-      "INSERT INTO pupils (id, school_id, first_name, last_name, year_group, is_active) VALUES (?, ?, ?, ?, ?, 1)"
-    ).run(pupilBId, schoolBId, "Bob", "Smith", "Year 7");
+    await db.prepare(
+      "INSERT INTO pupils (id, school_id, name, year_group, is_active) VALUES (?, ?, ?, ?, 1)"
+    ).run(pupilBId, schoolBId, "B.S.", "Year 7");
   });
 
-  afterAll(() => {
-    db.prepare("DELETE FROM pupils WHERE id = ?").run(pupilBId);
-    db.prepare("DELETE FROM users WHERE email IN (?, ?)").run(emailA, emailB);
-    db.prepare("DELETE FROM schools WHERE id IN (?, ?)").run(schoolAId, schoolBId);
+  afterAll(async () => {
+    await db.prepare("DELETE FROM pupils WHERE id = ?").run(pupilBId);
+    await db.prepare("DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE email IN (?, ?))").run(emailA, emailB);
+    await db.prepare("DELETE FROM audit_logs WHERE user_id IN (SELECT id FROM users WHERE email IN (?, ?))").run(emailA, emailB);
+    await db.prepare("DELETE FROM users WHERE email IN (?, ?)").run(emailA, emailB);
+    await db.prepare("DELETE FROM schools WHERE id IN (?, ?)").run(schoolAId, schoolBId);
   });
 
   it("teacher from school A cannot access pupil from school B", async () => {

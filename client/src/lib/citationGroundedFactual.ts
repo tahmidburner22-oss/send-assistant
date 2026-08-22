@@ -124,7 +124,10 @@ export function validateFactualClaim(
  * worksheet).
  */
 export interface CitationAuditWorksheet {
-  metadata?: { subject?: string };
+  metadata?: {
+    subject?: string;
+    citationAudit?: { totalClaims: number; matchedCount: number; unmatchedCount: number };
+  };
   sections?: Array<{
     title?: string;
     factualClaims?: string[];

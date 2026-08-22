@@ -945,8 +945,11 @@ function inferSectionGroup(
   section: PostValidatorSection,
 ): "recall" | "understanding" | "application" | "challenge" | null {
   const type = String(section.type || "").toLowerCase();
-  // Strong signals first — explicit challenge type wins.
+  // Strong signals first — explicit section types override number-based
+  // inference. This allows an imported worksheet with seven application
+  // questions to be capped correctly even if its numbering has overflowed.
   if (type === "challenge" || type === "q-challenge") return "challenge";
+  if (type === "application" || type === "q-application") return "application";
   // Only consider question sections for recall/understanding/application.
   const isQuestion =
     type.startsWith("q-") ||
@@ -4131,15 +4134,20 @@ export function runWorksheetPostValidators(
     }
   }
 
-  if (allWarnings.length > 0) {
+  // Preserve a complete audit trail on the worksheet, but do not surface the
+  // same advisory warning as a fresh issue every time a teacher previews,
+  // exports or re-validates an unchanged worksheet. This makes the pipeline
+  // genuinely idempotent without concealing prior findings.
+  const previousWarnings = Array.isArray(current.metadata?.postValidatorWarnings)
+    ? current.metadata!.postValidatorWarnings as string[]
+    : [];
+  const freshWarnings = allWarnings.filter((warning) => !previousWarnings.includes(warning));
+  if (freshWarnings.length > 0) {
     current = {
       ...current,
       metadata: {
         ...(current.metadata || {}),
-        postValidatorWarnings: [
-          ...((current.metadata?.postValidatorWarnings as string[] | undefined) || []),
-          ...allWarnings,
-        ],
+        postValidatorWarnings: [...previousWarnings, ...freshWarnings],
       },
     };
   }
@@ -4154,5 +4162,5 @@ export function runWorksheetPostValidators(
   // worksheet, not just legacy template-built ones.
   current = applyQaScore(current);
 
-  return { worksheet: current, warnings: allWarnings };
+  return { worksheet: current, warnings: freshWarnings };
 }

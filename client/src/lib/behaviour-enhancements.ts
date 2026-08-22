@@ -53,7 +53,7 @@ export function detectTriggers(pupilId: string): { trigger: string; count: numbe
   if (entries.length < 5) return [];
   const counts: Record<string, number> = {};
   for (const e of entries) {
-    const key = (e.trigger || extractTriggerKeyword(e.antecedent)).toLowerCase();
+    const key = String(e.trigger || extractTriggerKeyword(e.antecedent) || "").toLowerCase();
     if (key) counts[key] = (counts[key] || 0) + 1;
   }
   return Object.entries(counts)

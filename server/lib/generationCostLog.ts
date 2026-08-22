@@ -75,12 +75,12 @@ export interface GenerationCostRow {
  * `aggregateTokenCostRollup` from
  * `client/src/lib/telemetryAggregators` for the admin panel.
  */
-export function listGenerationCostsForSchool(
+export async function listGenerationCostsForSchool(
   schoolId: string,
   sinceIso: string,
-): GenerationCostRow[] {
+): Promise<GenerationCostRow[]> {
   try {
-    const rows = db.prepare(`
+    const rows = await db.prepare(`
       SELECT occurred_at as occurredAt, provider, model,
              prompt_tokens as promptTokens,
              completion_tokens as completionTokens,
@@ -134,13 +134,13 @@ export interface SchoolCostRollup {
   byProvider: Array<{ provider: string; calls: number; spendUsd: number }>;
 }
 
-export function rollupSchoolCosts(
+export async function rollupSchoolCosts(
   schoolId: string,
   windowDays: number = 30,
-): SchoolCostRollup {
+): Promise<SchoolCostRollup> {
   const sinceMs = Date.now() - windowDays * 24 * 60 * 60 * 1000;
   const sinceIso = new Date(sinceMs).toISOString();
-  const rows = listGenerationCostsForSchool(schoolId, sinceIso);
+  const rows = await listGenerationCostsForSchool(schoolId, sinceIso);
   let totalSpend = 0;
   let cachedCalls = 0;
   // Average per-call cost per provider, used to impute would-have-cost

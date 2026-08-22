@@ -1135,7 +1135,7 @@ export default function AdminPanel() {
                         <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                           <span><Users className="w-3 h-3 inline mr-1" />{school.user_count || 0} users</span>
                           <span><Users className="w-3 h-3 inline mr-1" />{school.pupil_count || 0} pupils</span>
-                          <span>{school.subscription_plan ? `£${{ starter: 49, professional: 99, premium: 149, mat: 299 }[school.subscription_plan] || 0}/mo` : "No plan"}</span>
+                          <span>{school.subscription_plan ? `£${({ starter: 49, professional: 99, premium: 149, mat: 299 } as Record<string, number>)[String(school.subscription_plan)] || 0}/mo` : "No plan"}</span>
                         </div>
                         {school.subscription_period_end && (
                           <p className="text-xs text-muted-foreground">

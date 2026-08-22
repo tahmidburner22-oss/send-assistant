@@ -30,6 +30,8 @@ interface WorksheetParams {
 // ── Adaptly 14-section canonical structure ────────────────────────────────────
 // Based on the Adaptly Worksheet Generator Specification (§3.1)
 export interface WorksheetSection {
+  /** Stable identifier supplied by persisted/library worksheet records. */
+  id?: string;
   sectionId?: string;          // spec §10.2 — unique identifier for this section
   title: string;
   type:
@@ -51,6 +53,7 @@ export interface WorksheetSection {
     | "objective" | "example" | "guided" | "independent" | "answers"
     | "adaptations" | "review" | "teacher-notes" | "mark-scheme"
     | "extension" | "prior-knowledge" | "misconceptions" | "self-reflection" | "diagnostic"
+    | "diagram" | "q-circuit" | "q-label-diagram"
     // ── Phase 3 — Revision Tips ───────────────────────────────────────
     // Deterministic, examiner-voice 5-tip panel. Renders immediately
     // before self-reflection. Single source of truth for the content
@@ -61,6 +64,8 @@ export interface WorksheetSection {
   studentVisible?: boolean;    // spec §10.2 — explicit student visibility flag
   teacherVisible?: boolean;    // spec §10.2 — explicit teacher visibility flag
   diagramRef?: string | null;  // links to diagramId in diagram bank
+  /** Parsed or authored diagram descriptor used by the renderer/pipeline. */
+  diagramSpec?: { type?: string; [key: string]: unknown } | null;
   altText?: string;            // spec §8.3 — accessibility alt text for diagram sections
   layoutFamily?: string;       // layout hint for renderer
   marks?: number;
@@ -80,8 +85,8 @@ export interface WorksheetSection {
   workingOutBox?: boolean;
   /** Awarding-body spec point reference (e.g. "AQA 8300 N3"). */
   specRef?: string;
-  /** Assessment Objective tag (AO1–AO4). */
-  ao?: "AO1" | "AO2" | "AO3" | "AO4";
+  /** Assessment Objective tag (AO1–AO5). */
+  ao?: "AO1" | "AO2" | "AO3" | "AO4" | "AO5";
 }
 
 // ── QA scorecard weights (spec §29) ──────────────────────────────────────────
@@ -128,12 +133,22 @@ export interface GeneratedWorksheet {
     diagramBId?: string;         // sectionId of the diagram-b section
     // Marks & timing
     adaptations: string[];
+    sendAdaptation?: string;
+    phase?: string;
+    globalFontSize?: number;
+    globalLineHeight?: number;
+    globalBackground?: string;
+    globalFontFamily?: string;
     totalMarks?: number;
     estimatedTime?: string;
     // QA
     validationStatus: "pass" | "warn" | "fail" | "pending";
+    validationTimestamp?: string;
     qaScore?: WorksheetQAScore;
     validationWarnings?: string[];
+    validationErrors?: string[];
+    /** True only after the validation pipeline has cleared the worksheet for rendering/export. */
+    lockedForRender?: boolean;
     fromLibrary?: boolean;
   };
 }

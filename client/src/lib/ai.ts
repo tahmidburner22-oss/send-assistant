@@ -64,13 +64,15 @@ import {
 // (client/src/pages/tools/PresentationMaker.tsx). One source of truth
 // prevents the two generators drifting apart and guarantees content matches.
 import { getSendNoteForWorksheet, getSendSectionTitles } from './sendPromptFragments';
+import { learnerSupportPrompt, type LearnerSupportProfile } from './learnerSupportProfile';
 import { buildSubjectPromptFragments } from './subject-profiles';
 import { enforceSendAdaptations } from './sendEnforcer';
 // PR-B (W5/W6/W12) — Phase G/H prompt directives. These three builders
 // turn an opt-in form selection into a small block of system-prompt text
 // that biases the worksheet output. They are no-ops when the param is
 // absent, so existing callers continue to behave identically.
-import { buildArchetypeDirective, type ArchetypeId } from './promptSections/archetypeDirectives';
+import { buildArchetypeDirective } from './promptSections/archetypeDirectives';
+import type { ArchetypeId } from './lessonArchetypes';
 import {
   buildProceduralActivityDirective,
   type ProceduralKind,
@@ -1069,6 +1071,8 @@ export async function aiGenerateWorksheet(params: {
   proceduralActivityKinds?: ProceduralKind[];
   /** H3 — real-world context id; biases stems towards the chosen domain. */
   realWorldContextId?: string | null;
+  /** Teacher-selected access route. This controls removable support around tasks, never curriculum demand, mark allocation or protected print geometry. */
+  scaffoldingLevel?: "modelled" | "prompted" | "independent";
 }): Promise<AIWorksheetResult> {
 
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
@@ -2826,6 +2830,13 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
         isSTEM,
       }),
       sendNote,
+      params.scaffoldingLevel ? `SCAFFOLD-FADE CONTRACT — teacher-selected entry point: ${params.scaffoldingLevel.toUpperCase()}.
+- This is an ACCESS route, not a difficulty or tier setting. Preserve the same learning objective, command word, question stem, answer accuracy, mark allocation and curriculum demand.
+- Put all help in clearly labelled, removable support boxes outside the assessed question text. Never turn support instructions into a numbered question.
+- MODELLED: provide one concise worked model or completed first step immediately before the first matched practice item, then reduce that support in later matched items.
+- PROMPTED: provide a short checklist, key vocabulary, sentence/answer frame or hint ladder before matched practice, then reduce prompts in later matched items.
+- INDEPENDENT: retain ordinary clarity and accessible layout, but do not add an additional worked model or answer frame unless another selected SEND access requirement needs one.
+- State in teacher-only SEND notes how support fades from the entry point to independent application.` : "",
       stemPreservationNote,
       requiredPracticalNote,
       subjectSpecNote,
@@ -4396,6 +4407,8 @@ export async function aiGenerateStory(params: {
   theme?: string;
   readingLevel?: string;
   length?: string;
+  /** Opt-in teacher-reviewed access preferences; never a diagnosis or an instruction to lower narrative ambition. */
+  learnerSupportProfile?: LearnerSupportProfile;
 }): Promise<{ title: string; content: string; provider?: string }> {
   // Map length to word count targets
   const wordTargets: Record<string, string> = {
@@ -4432,6 +4445,7 @@ export async function aiGenerateStory(params: {
 - Formatted with paragraph breaks (double newline between paragraphs)
 Always respond with valid JSON only, no markdown code blocks.`;
 
+  const supportLines = params.learnerSupportProfile ? learnerSupportPrompt(params.learnerSupportProfile) : [];
   const user = `Write a ${params.genre} story for Year ${params.yearGroup} students.
 
 STORY REQUIREMENTS:
@@ -4443,6 +4457,7 @@ ${params.sendNeed ? `- SEND adaptation: ${params.sendNeed} — use appropriate s
 ${params.characters?.length ? `- Characters: ${params.characters.join(", ")}` : ""}
 ${params.setting ? `- Setting: ${params.setting}` : ""}
 ${params.theme ? `- Theme/moral: ${params.theme}` : ""}
+${supportLines.length ? `- Teacher-reviewed access preferences: use these only for clear presentation, communication and removable scaffolds; do not name or diagnose the pupil, override the selected reading level, or lower age-appropriate narrative ambition.\n${supportLines.join("\n")}` : ""}
 
 IMPORTANT: Write the FULL story to the target length. Do not truncate. Use paragraph breaks (\n\n) between paragraphs.
 
@@ -4481,18 +4496,24 @@ export async function aiDifferentiateTask(params: {
   sendNeed?: string;
   yearGroup?: string;
   subject?: string;
+  /** Opt-in teacher-reviewed access preferences; never a diagnosis or a proxy for lower demand. */
+  learnerSupportProfile?: LearnerSupportProfile;
 }): Promise<{ differentiatedContent: string; provider?: string }> {
   const sendRules = params.sendNeed ? SEND_DIFF_RULES[params.sendNeed] : null;
+  const learnerSupportBlock = params.learnerSupportProfile
+    ? `\nTEACHER-REVIEWED ACCESS PREFERENCES — use only to remove barriers; do not mention identity, infer diagnosis, reduce the learning objective, change success criteria, command words, or expected quality of evidence:\n${learnerSupportPrompt(params.learnerSupportProfile).join("\n")}\n`
+    : "";
   const system = `You are a SEND specialist teacher who differentiates tasks to make them accessible for all learners. You follow UK SEND Code of Practice and COBS Handbook guidelines precisely.`;
   const user = `Differentiate this task for a ${params.yearGroup || "secondary"} ${params.subject || ""} student${params.sendNeed ? ` with ${params.sendNeed}` : ""}.
 
 ${sendRules ? `MANDATORY ADAPTATIONS FOR THIS SEND NEED — apply ALL of these:
 ${sendRules}
 
-` : ""}TASK TO DIFFERENTIATE:
+` : ""}${learnerSupportBlock}
+TASK TO DIFFERENTIATE:
 ${params.taskContent}
 
-Provide a clearly differentiated version applying all the mandatory adaptations above. Return as plain text only.`;
+Provide a clearly differentiated version applying all applicable access adaptations above. Preserve the original learning objective, assessment criteria, command words and expected quality of evidence. Put optional help in clearly labelled, removable support boxes rather than silently simplifying assessed content. Return as plain text only.`;
 
   const { text, provider } = await callAI(system, user, 1500);
   return { differentiatedContent: text, provider };
@@ -5370,6 +5391,8 @@ export interface DiagramSpec {
   /** For circuit diagrams: "series" | "parallel" | "series-ammeter" | "parallel-voltmeter" */
   layout?: string;
   title?: string;
+  /** Concise non-visual explanation for assistive technology; generated deterministically when omitted. */
+  accessibilityDescription?: string;
   // For labeled diagrams (anatomy, geography, physics)
   shape?: "circle" | "rectangle" | "triangle" | "custom";
   labels?: Array<{ text: string; x: number; y: number; anchor?: "start" | "end" | "middle" }>;
@@ -5457,6 +5480,34 @@ export function validateDiagramSpec(spec: DiagramSpec): boolean {
 }
 
 /**
+ * Supplies a concise accessible equivalent for structured diagrams. It reports
+ * only the visual information already present in the spec; it never creates a
+ * new task, reveals an answer, or changes the diagram's educational role.
+ */
+export function buildDiagramAccessibilityDescription(spec: DiagramSpec): string {
+  const supplied = typeof spec.accessibilityDescription === "string" ? spec.accessibilityDescription.trim().replace(/\s+/g, " ") : "";
+  if (supplied.length >= 10) return supplied.slice(0, 700);
+
+  const title = (spec.title || "Reference diagram").trim();
+  const labels = (spec.labels || []).map(label => label.text?.trim()).filter(Boolean).slice(0, 8);
+  let content = "";
+  if (spec.steps?.length) content = `It shows ${spec.steps.length} ordered stage${spec.steps.length === 1 ? "" : "s"}: ${spec.steps.join("; ")}.`;
+  else if (spec.bars?.length) content = `It compares ${spec.bars.map(bar => `${bar.label}: ${bar.value}`).join("; ")}.`;
+  else if (spec.events?.length) content = `It presents a timeline: ${spec.events.map(event => `${event.date} — ${event.label}`).join("; ")}.`;
+  else if (spec.parts?.length) content = `It represents parts of a whole: ${spec.parts.map(part => `${part.label}: ${part.value}`).join("; ")}.`;
+  else if (spec.type === "number-line") content = `It is a number line from ${spec.start} to ${spec.end}${spec.marked?.length ? ` with marked values ${spec.marked.join(", ")}` : ""}.`;
+  else if (spec.type === "fraction-bar") content = `It shows ${spec.numerator ?? 0} of ${spec.denominator ?? 0} equal parts${spec.fractionLabel ? `, labelled ${spec.fractionLabel}` : ""}.`;
+  else if (spec.type === "axes") content = `It uses axes labelled ${spec.xLabel || "x"} and ${spec.yLabel || "y"}.`;
+  else if (spec.type === "venn") content = `It compares the sets ${spec.setA || "A"} and ${spec.setB || "B"}${spec.overlap?.length ? `, with shared items ${spec.overlap.join(", ")}` : ""}.`;
+  else if (spec.type === "pyramid") content = `It has levels from base to top: ${(spec.levels || []).join("; ")}.`;
+  else if (spec.type === "circuit") content = `It is a ${spec.layout || "series"} circuit reference.`;
+  else if (labels.length) content = `It identifies: ${labels.join("; ")}.`;
+  else content = "It is a visual reference that supports the surrounding explanation.";
+
+  return `${title}. ${content}`.replace(/\s+/g, " ").trim().slice(0, 700);
+}
+
+/**
  * Detects [[DIAGRAM:{...}]] markers in section content and returns the JSON spec.
  * Returns null if no diagram marker is found or if the spec fails validation.
  */
@@ -5467,7 +5518,7 @@ export function extractDiagramSpec(content: string | null | undefined): DiagramS
   try {
     const spec = JSON.parse(match[1]);
     if (!validateDiagramSpec(spec)) return null;
-    return spec;
+    return { ...spec, accessibilityDescription: buildDiagramAccessibilityDescription(spec) };
   } catch { return null; }
 }
 

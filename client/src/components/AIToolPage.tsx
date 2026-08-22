@@ -57,6 +57,7 @@ import { getToolBySlug } from "@/lib/tool-registry";
 import SendToMenu from "@/components/SendToMenu";
 import { consumeHandoff } from "@/components/SendToMenu";
 import ProvenanceCard, { type ProvenanceFacts } from "@/components/ProvenanceCard";
+import { TeacherPageHeader } from "@/components/TeacherWorkspace";
 import { estimateTokens, estimateCost, logGeneration } from "@/lib/credit-meter";
 import { cacheGeneration, isOnline, enqueueGeneration } from "@/lib/offline-queue";
 
@@ -70,6 +71,8 @@ export interface AIToolField {
   span?: "full" | "half";
   maxLength?: number;
   hint?: string; // helper text shown below the field
+  /** Optional immediate reaction to a user-originated field-value change. */
+  onChange?: (value: string) => void;
 }
 
 interface AIToolPageProps {
@@ -856,20 +859,15 @@ export default function AIToolPage({
   }) : "";
 
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        {/* Header */}
-        <div className={`rounded-xl p-5 mb-4 text-white ${accentColor}`}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              {icon}
-            </div>
-            <div>
-              <h1 className="font-bold text-lg">{title}</h1>
-              <p className="text-white/80 text-sm">{description}</p>
-            </div>
-          </div>
-        </div>
+    <div className="teacher-workspace space-y-4">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24 }}>
+        <TeacherPageHeader
+          eyebrow="Create and adapt"
+          title={title}
+          description={description}
+          icon={icon}
+          meta={<span className="rounded-full border border-brand/20 bg-white/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">Teacher-led generation with a review step</span>}
+        />
 
         {loading && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm">
@@ -897,7 +895,7 @@ export default function AIToolPage({
 
         {!result && !isStreaming ? (
           <>
-          <Card className="border-border/50">
+          <Card className="teacher-workspace-panel border-border/50">
             <CardContent className="p-4 space-y-4" onKeyDown={handleFormKeyDown}>
               {/* Batch-mode toggle when this tool opts into batch */}
               {batchable && children && children.length > 0 && (
@@ -992,7 +990,11 @@ export default function AIToolPage({
                         {...commonProps}
                         ref={el => { fieldRefs.current[field.id] = el; }}
                         value={values[field.id] || ""}
-                        onChange={e => setValue(field.id, e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          setValue(field.id, value);
+                          field.onChange?.(value);
+                        }}
                         className="w-full h-10 px-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30"
                       >
                         <option value="">Select...</option>
@@ -1097,7 +1099,7 @@ export default function AIToolPage({
                       variant="outline"
                       size="sm"
                       className="gap-1.5"
-                      onClick={() => { setManualText(result); setEditMode("manual"); }}
+                      onClick={() => { setManualText(result ?? ""); setEditMode("manual"); }}
                     >
                       <PenLine className="w-3.5 h-3.5" />Edit Manually
                     </Button>
@@ -1339,7 +1341,7 @@ export default function AIToolPage({
               </>
             )}
 
-            <Button variant="outline" onClick={handleGenerate} disabled={loading} className="w-full">
+            <Button variant="outline" onClick={() => { void handleGenerate(); }} disabled={loading} className="w-full">
               {loading ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Regenerating...</> : <><RefreshCw className="w-4 h-4 mr-2" />Regenerate</>}
             </Button>
             {worksheetLink && values.subject && (

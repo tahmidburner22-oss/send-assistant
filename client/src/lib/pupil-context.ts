@@ -15,6 +15,7 @@
  * and SEND need(s).
  */
 import type { Child, Assignment, Submission } from "@/contexts/AppContext";
+import { learnerSupportPrompt, normaliseLearnerSupportProfile } from "@/lib/learnerSupportProfile";
 
 export interface PupilContextSummary {
   /** Compact one-liner shown next to the picker. */
@@ -40,11 +41,11 @@ export function buildPupilContext(child: Child): PupilContextSummary {
     ).filter(Boolean);
 
   const recentAssignments: Assignment[] = [...(child.assignments || [])]
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .sort((a, b) => ((a.createdAt ?? a.assignedAt) < (b.createdAt ?? b.assignedAt) ? 1 : -1))
     .slice(0, MAX_RECENT_ASSIGNMENTS);
 
   const recentSubmissions: Submission[] = [...(child.submissions || [])]
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .sort((a, b) => ((a.createdAt ?? a.submittedAt) < (b.createdAt ?? b.submittedAt) ? 1 : -1))
     .slice(0, MAX_RECENT_SUBMISSIONS);
 
   const ehcp = (child.ehcpOutcomes || []).filter(s => typeof s === "string" && s.trim().length > 0);
@@ -62,6 +63,13 @@ export function buildPupilContext(child: Child): PupilContextSummary {
   lines.push("[Pupil Records — use as context, do NOT name the pupil in the output]");
   lines.push(`- Year group: ${child.yearGroup || "(not set)"}`);
   if (sendList.length > 0) lines.push(`- SEND need(s): ${sendList.join(", ")}`);
+
+  const learnerSupport = normaliseLearnerSupportProfile(child.learnerSupportProfile || {});
+  const learnerSupportLines = learnerSupportPrompt(learnerSupport);
+  if (learnerSupportLines.length > 0) {
+    lines.push(`- Teacher-reviewed learner support profile (remove access barriers; do not diagnose or lower the learning objective):`);
+    lines.push(...learnerSupportLines.map(line => `  ${line}`));
+  }
 
   if (ehcp.length > 0) {
     lines.push(`- EHCP outcomes (design tasks that move pupil toward these):`);

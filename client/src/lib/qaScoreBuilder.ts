@@ -320,8 +320,11 @@ export function computeQaScore(ws: QaScorableWorksheet): QaScore {
   // Distinct section types is a proxy for visual diversity. Print-ready
   // worksheets typically show ≥ 5 distinct types; below 4 is monotonous.
   const distinctTypes = sectionTypes.size;
+  // Fewer than six section types is a weak visual learning experience; fewer
+  // than four is additionally monotonous and therefore receives a larger,
+  // cumulative deduction.
+  if (distinctTypes < 6) layoutPrintQuality -= 2;
   if (distinctTypes < 4) layoutPrintQuality -= 3;
-  if (distinctTypes < 6) layoutPrintQuality -= 1;
   // Placeholder leakage (template-literal artifacts in pupil text) is
   // a classic print-quality failure.
   layoutPrintQuality -= Math.min(4, counts.placeholder * 2);

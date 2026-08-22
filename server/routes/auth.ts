@@ -262,7 +262,6 @@ router.post("/login", async (req: Request, res: Response) => {
 
     setAuthCookie(res, token);
     res.json({
-      token,
       user: safeUser(user),
       mfaRequired: !!user.mfa_enabled && !mfaVerified,
     });
@@ -325,7 +324,7 @@ router.post("/google", async (req: Request, res: Response) => {
     auditLog(user.id, user.school_id, "user.login_google", "user", user.id, { email }, req.ip);
 
     setAuthCookie(res, token);
-    res.json({ token, user: safeUser(user), mfaRequired: false });
+    res.json({ user: safeUser(user), mfaRequired: false });
   } catch (err) {
     console.error("Google auth error:", err);
     res.status(500).json({ error: "Google authentication failed" });
@@ -511,6 +510,9 @@ function createSessionToken(user: any, mfaVerified: boolean): string {
       schoolId: user.school_id,
       mfaEnabled: !!user.mfa_enabled,
       mfaVerified,
+      // JWT signing timestamps have one-second precision. A random identifier
+      // prevents two legitimate rapid logins from producing the same token.
+      jti: uuidv4(),
     },
     JWT_SECRET,
     { expiresIn: "30d" }

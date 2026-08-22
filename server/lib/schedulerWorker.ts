@@ -96,10 +96,43 @@ function sendCueFor(sendNeed: string | null | undefined): string | null {
   return cues.length > 0 ? cues.join(" ") : null;
 }
 
+/**
+ * Reduces the durable teacher-authored learner-support profile to a bounded
+ * generation cue. It deliberately excludes names, diagnosis and safeguarding
+ * information and preserves the learner's objective, demand and mark scheme.
+ */
+export function buildSchedulerLearnerSupportCue(raw: unknown): string | null {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  try {
+    const profile = JSON.parse(raw) as Record<string, any>;
+    const list = (value: unknown, limit = 4) => Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0).map(item => item.trim().slice(0, 120)).slice(0, limit)
+      : [] as string[];
+    const accessibility = profile.accessibility && typeof profile.accessibility === "object" ? profile.accessibility as Record<string, unknown> : {};
+    const communication = profile.communication && typeof profile.communication === "object" ? profile.communication as Record<string, unknown> : {};
+    const parts: string[] = [];
+    const strategies = list(profile.successfulStrategies);
+    if (strategies.length) parts.push(`Trusted strategies: ${strategies.join("; ")}.`);
+    if (accessibility.fontScale === "large" || accessibility.fontScale === "extra-large") parts.push("Use accessible larger print where the output surface permits.");
+    if (accessibility.lineSpacing === "spacious" || accessibility.lineSpacing === "extra-spacious") parts.push("Use generous line spacing and short information blocks.");
+    if (accessibility.highContrast === true) parts.push("Use high-contrast presentation.");
+    if (accessibility.reduceVisualClutter === true) parts.push("Reduce visual clutter without removing content.");
+    if (accessibility.useVisualSupports === true) parts.push("Use a concise visual support only where it does not become an assessed task.");
+    if (communication.vocabularySupport === true) parts.push("Provide a compact plain-English vocabulary aid.");
+    if (communication.sentenceFrames === true) parts.push("Use removable answer frames or sentence starters outside assessed wording.");
+    if (communication.processingTime === "extended") parts.push("Avoid timed-pressure wording; the teacher decides any formal access arrangement.");
+    const scaffold = typeof profile.scaffoldingLevel === "string" ? profile.scaffoldingLevel : "";
+    if (["modelled", "part-modelled", "prompted", "independent"].includes(scaffold)) parts.push(`Scaffold entry point: ${scaffold}; fade support only after teacher-reviewed evidence.`);
+    return parts.length ? parts.join(" ").slice(0, 1600) : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Generate the worksheet (text content only — rich rendering on client) ──
 async function generateSchedulerWorksheet(opts: {
-  pupilName: string;
   yearGroup: string | null;
+  learnerSupportCue?: string | null;
   sendNeed: string | null;
   subject: string;
   topic: string;
@@ -121,12 +154,14 @@ async function generateSchedulerWorksheet(opts: {
     ? "After the student questions, include a '--- TEACHER ANSWER KEY ---' block with model answers, marks, and brief marking guidance."
     : "DO NOT include an answer key.";
   const sendLine = sendCue ? `SEND adaptation (${opts.sendNeed}): ${sendCue}` : "No SEND adaptation required.";
+  const learnerSupportLine = opts.learnerSupportCue
+    ? `Teacher-reviewed learner access guidance: ${opts.learnerSupportCue} Preserve the learning objective, current ladder step, question demand, mark allocation and accuracy. Do not name or diagnose the pupil; keep help in clearly labelled removable support boxes.`
+    : "No additional learner-support profile guidance recorded.";
 
   const system = `You are an expert UK SEND educator creating high-quality differentiated worksheets for ${yg}. British English spelling. Clear, calculation-focused questions for maths. Specific, curriculum-aligned for all subjects.`;
 
   const user = `Create a one-page worksheet.
 
-Pupil: ${opts.pupilName}
 Year group: ${yg}
 Subject: ${opts.subject}
 Topic: ${opts.topic}
@@ -135,6 +170,7 @@ Difficulty: ${opts.difficulty}
 Variant: #${opts.variantSeed} (this should be a FRESH set of questions — do not reuse prior phrasing).
 
 ${sendLine}
+${learnerSupportLine}
 
 STRUCTURE (follow EXACTLY, use these H2 headings):
 ## Learning Objective
@@ -194,7 +230,30 @@ Return ONLY the markdown. No preamble. No "Look at the diagram" or "Study the di
 }
 
 // ── Run a single config: generate + insert assignment ────────────────────────
+export class SchedulerRunBusyError extends Error {
+  constructor() {
+    super("A worksheet generation is already in progress for this pupil and subject.");
+    this.name = "SchedulerRunBusyError";
+  }
+}
+
 export async function runSchedulerForConfig(cfg: any, _opts: { triggeredBy?: string } = {}): Promise<{ assignmentId: string; topic: string; title: string }> {
+  // Claim the configuration before invoking AI. The background worker can read
+  // a due row just before a teacher pauses it, and a manual run can arrive on
+  // the same row; this conditional update is the authoritative duplicate guard.
+  const automaticRun = !_opts.triggeredBy;
+  const claimSql = automaticRun
+    ? `UPDATE scheduler_configs
+         SET generation_lock_until = NOW() + INTERVAL '2 minutes', updated_at = NOW()
+       WHERE pupil_id = ? AND subject = ? AND enabled = 1
+         AND (generation_lock_until IS NULL OR generation_lock_until <= NOW())`
+    : `UPDATE scheduler_configs
+         SET generation_lock_until = NOW() + INTERVAL '2 minutes', updated_at = NOW()
+       WHERE pupil_id = ? AND subject = ?
+         AND (generation_lock_until IS NULL OR generation_lock_until <= NOW())`;
+  const claim = await db.prepare(claimSql).run(cfg.pupil_id, cfg.subject);
+  if (claim.changes !== 1) throw new SchedulerRunBusyError();
+
   const pupil = await db.prepare("SELECT * FROM pupils WHERE id = ?").get(cfg.pupil_id) as any;
   if (!pupil) throw new Error("Pupil not found");
 
@@ -210,8 +269,8 @@ export async function runSchedulerForConfig(cfg: any, _opts: { triggeredBy?: str
 
   try {
     const result = await generateSchedulerWorksheet({
-      pupilName: pupil.name,
       yearGroup: pupil.year_group,
+      learnerSupportCue: buildSchedulerLearnerSupportCue(pupil.learner_support_profile_json),
       sendNeed: pupil.send_need,
       subject: cfg.subject,
       topic: topicEntry.topic,
@@ -245,6 +304,7 @@ export async function runSchedulerForConfig(cfg: any, _opts: { triggeredBy?: str
         step,
         yearGroup: pupil.year_group,
         sendNeed: pupil.send_need,
+        learnerSupportProfileApplied: Boolean(buildSchedulerLearnerSupportCue(pupil.learner_support_profile_json)),
         difficulty: cfg.difficulty,
       }),
       result.markScheme,
@@ -265,6 +325,7 @@ export async function runSchedulerForConfig(cfg: any, _opts: { triggeredBy?: str
              last_key_vocab = ?,
              last_error = NULL,
              retry_after = NULL,
+             generation_lock_until = NULL,
              updated_at = NOW()
        WHERE pupil_id = ? AND subject = ?`
     ).run(ms, result.title, JSON.stringify(result.keyVocab), cfg.pupil_id, cfg.subject);
@@ -274,7 +335,8 @@ export async function runSchedulerForConfig(cfg: any, _opts: { triggeredBy?: str
     const msg = err?.message || String(err);
     await db.prepare(
       `UPDATE scheduler_configs
-         SET last_error = ?, retry_after = NOW() + INTERVAL '10 minutes', updated_at = NOW()
+         SET last_error = ?, retry_after = NOW() + INTERVAL '10 minutes',
+             generation_lock_until = NULL, updated_at = NOW()
        WHERE pupil_id = ? AND subject = ?`
     ).run(msg.slice(0, 400), cfg.pupil_id, cfg.subject);
     throw err;
@@ -401,7 +463,13 @@ async function tick() {
   ).all() as any[];
   for (const cfg of dueConfigs) {
     try { await runSchedulerForConfig(cfg); }
-    catch (err: any) { console.error(`[scheduler] run failed for ${cfg.pupil_id}/${cfg.subject}:`, err?.message || err); }
+    catch (err: any) {
+      // A second worker/manual request losing the short claim is expected and
+      // not an operational failure. Other errors retain their retry state.
+      if (!(err instanceof SchedulerRunBusyError)) {
+        console.error(`[scheduler] run failed for ${cfg.pupil_id}/${cfg.subject}:`, err?.message || err);
+      }
+    }
   }
 
   // Auto-mark submitted scheduler assignments not yet marked

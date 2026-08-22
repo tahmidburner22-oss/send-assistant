@@ -37,11 +37,16 @@ export const VALIDATOR_SEVERITY: Readonly<Record<string, WarningSeverity>> = Obj
   "year-group-lock": "p1",
   "cap-worked-example-steps": "p1",
   "strip-leaked-generator-instructions": "p0",
+  "marks-bracket-style": "p1",
   "strip-visible-placeholders-and-answer-leakage": "p0",
   "reinforce-dyscalculia-maths-scaffolding": "p1",
   "reconcile-mark-scheme": "p1",
   "extract-misconception-links": "p2",
+  "send-overlay-markers": "p1",
+  "application-question-cap": "p1",
   "section-question-counts": "p1",
+  "mark-allocation-variety": "p2",
+  "common-mistakes-topic-relevance": "p1",
   "spec-anchor-presence": "p1",
   "self-reflection-topic-anchor": "p1",
   "revision-tips-presence": "p1",
@@ -72,6 +77,24 @@ export const VALIDATOR_SEVERITY: Readonly<Record<string, WarningSeverity>> = Obj
   "ks5-synoptic": "p2",
   "diagram-page-fit": "p1",
   "citation-grounding": "p1",
+  "tier-ao-histogram": "p2",
+
+  // Later pipeline additions: important presentation and pedagogy rails are
+  // p1; heuristic variety checks remain advisory at p2.
+  "learning-objective-wording": "p1",
+  "common-mistakes-sentence-case": "p2",
+  "reflection-cap": "p1",
+  "maths-instruction-brevity": "p1",
+  "ks3-length-budget": "p1",
+  "vocabulary-repeat": "p2",
+  "pedagogy-structure-presence": "p1",
+  "full-quality-check": "p1",
+  "vocab-table-format": "p1",
+  "worked-example-brevity": "p1",
+  "instruction-box-dedup": "p1",
+  "diagram-presence": "p1",
+  "question-wording-brevity": "p1",
+  "enhanced-quality-checks": "p1",
 });
 
 /**

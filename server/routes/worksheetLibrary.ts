@@ -1326,6 +1326,33 @@ async function findLibraryEntry(
   const topicKey = opts?.canonicalTopicKey || canonicalTopicKey(topic);
   const tiersToTry = tierCandidates(tier);
 
+  // ── Source-identity tier traversal ─────────────────────────────────────────
+  // A teacher who has explicitly asked to switch the tier of an existing
+  // worksheet must reach that entry's sibling before any broad curated lookup.
+  // Otherwise a base/mixed row can mask the requested higher/foundation tier.
+  if (opts?.sourceLibraryId) {
+    const source = await db.prepare(
+      "SELECT id, base_entry_id, canonical_topic_key, year_group, topic, subtopic FROM worksheet_library WHERE id = ? LIMIT 1"
+    ).get(opts.sourceLibraryId) as LibraryEntry | undefined;
+    if (source) {
+      const sourceSubtopic = normalizeSubtopic(source.subtopic).toLowerCase();
+      // A stale source id must never override a newly selected named subtopic.
+      if (!requestedSubtopic || sourceSubtopic === requestedSubtopic) {
+        for (const candidateTier of tiersToTry) {
+          const sibling = await db.prepare(
+            `SELECT * FROM worksheet_library
+             WHERE (id = ? OR base_entry_id = ? OR base_entry_id = ?)
+               AND tier = ?
+               AND COALESCE(LOWER(subtopic), '') = ?
+             ORDER BY curated DESC, updated_at DESC
+             LIMIT 1`
+          ).get(source.id, source.base_entry_id || source.id, source.id, candidateTier, sourceSubtopic) as LibraryEntry | undefined;
+          if (sibling) return sibling;
+        }
+      }
+    }
+  }
+
   // ── Curated-first shortcut ─────────────────────────────────────────────────
   // For curated entries with an exact subtopic match, skip the year-group
   // filter entirely. A curated worksheet is authoritative for any year group
@@ -1343,7 +1370,7 @@ async function findLibraryEntry(
              LOWER(topic) ILIKE ? OR
              canonical_topic_key = ?
            )
-           AND LOWER(COALESCE(subtopic, '')) = ?
+           AND COALESCE(LOWER(subtopic), '') = ?
          ORDER BY updated_at DESC
          LIMIT 1`
       ).get(
@@ -1358,29 +1385,6 @@ async function findLibraryEntry(
     }
   }
 
-  if (opts?.sourceLibraryId) {
-    const source = await db.prepare(
-      "SELECT id, base_entry_id, canonical_topic_key, year_group, topic, subtopic FROM worksheet_library WHERE id = ? LIMIT 1"
-    ).get(opts.sourceLibraryId) as LibraryEntry | undefined;
-    if (source) {
-      const sourceSubtopic = normalizeSubtopic(source.subtopic).toLowerCase();
-      // A stale source id must never override a newly selected named subtopic.
-      // Only use sibling traversal when it represents the requested identity.
-      if (!requestedSubtopic || sourceSubtopic === requestedSubtopic) {
-        for (const candidateTier of tiersToTry) {
-          const sibling = await db.prepare(
-            `SELECT * FROM worksheet_library
-             WHERE (id = ? OR base_entry_id = ? OR base_entry_id = ?)
-               AND tier = ?
-               AND COALESCE(LOWER(subtopic), '') = ?
-             ORDER BY curated DESC, updated_at DESC
-             LIMIT 1`
-          ).get(source.id, source.base_entry_id || source.id, source.id, candidateTier, sourceSubtopic) as LibraryEntry | undefined;
-          if (sibling) return sibling;
-        }
-      }
-    }
-  }
 
   const findDirectMatch = async (
     candidateTier: string,

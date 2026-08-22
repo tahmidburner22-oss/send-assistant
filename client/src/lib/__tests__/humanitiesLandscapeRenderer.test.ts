@@ -39,6 +39,23 @@ describe("humanitiesLandscapeRenderer", () => {
     expect(business.html).toContain("Gross profit");
   });
 
+  it("provides compact, concrete and print-safe support for ASC and low-vision pupils", () => {
+    const asc = renderHumanitiesLandscape({ subject: "Geography", yearGroup: "Year 9", topic: "Climate Change", sendNeedId: "asc-sensory", readingAge: 14 });
+    expect(asc.html).toContain('data-support-mode="asc"');
+    expect(asc.html).toContain("Work route: read one task, complete its response box, then move to the next step.");
+    expect(asc.html).toContain('data-layout-page="geography-evaluation"');
+    expect(asc.html).toMatch(/\.humanities-page\[data-layout-page="geography-evaluation"\] \.linebox\.large,\s*\.humanities-page\[data-layout-page="business-evaluation"\] \.linebox\.large \{ min-height:36mm; \}/);
+
+    const visual = renderHumanitiesLandscape({ subject: "Business", yearGroup: "Year 10", topic: "Marketing", sendNeedId: "vi", readingAge: 17 });
+    expect(visual.html).toContain('data-support-mode="visual"');
+    expect(visual.html).toContain("High-contrast borders and clear white response areas separate each task and answer space.");
+    expect(visual.html).toContain('border-width:.65mm');
+    expect(visual.html).toContain('.humanities-root[data-support-mode="visual"] { font-family:Arial, Helvetica, sans-serif; }');
+    expect(visual.html).toContain('.humanities-root[data-support-mode="visual"] .card h2, .humanities-root[data-support-mode="visual"] .card h3 { font-size:10.6pt; }');
+    expect(visual.html).toContain('.humanities-root[data-support-mode="visual"] .card p, .humanities-root[data-support-mode="visual"] .point { font-size:9.8pt; line-height:1.34; }');
+    expect(visual.html).toContain('data-layout-page="business-evaluation"');
+  });
+
   it("does not route primary or unrelated subjects into the secondary humanities fixed layouts", () => {
     expect(canRenderHumanitiesLandscape({ subject: "English", yearGroup: "Year 5", topic: "Stories" })).toBe(false);
     expect(canRenderHumanitiesLandscape({ subject: "Art & Design", yearGroup: "Year 10", topic: "Portraiture" })).toBe(false);

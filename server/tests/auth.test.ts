@@ -18,9 +18,11 @@ describe("Auth Routes", () => {
     await initDb();
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     if (userId) {
-      db.prepare("DELETE FROM users WHERE id = ?").run(userId);
+      await db.prepare("DELETE FROM sessions WHERE user_id = ?").run(userId);
+      await db.prepare("DELETE FROM audit_logs WHERE user_id = ?").run(userId);
+      await db.prepare("DELETE FROM users WHERE id = ?").run(userId);
     }
   });
 
@@ -38,7 +40,7 @@ describe("Auth Routes", () => {
     expect(res.body).toHaveProperty("message");
     expect(res.body.message).toContain("Account created");
 
-    const user = db.prepare("SELECT * FROM users WHERE email = ?").get(testEmail) as any;
+    const user = await db.prepare("SELECT * FROM users WHERE email = ?").get(testEmail) as any;
     expect(user).toBeDefined();
     expect(user.email).toBe(testEmail);
     expect(user.display_name).toBe("Test User");
@@ -65,7 +67,7 @@ describe("Auth Routes", () => {
   it("should login successfully", async () => {
     // First verify the user so they can login
     if (userId) {
-      db.prepare("UPDATE users SET email_verified = 1 WHERE id = ?").run(userId);
+      await db.prepare("UPDATE users SET email_verified = 1 WHERE id = ?").run(userId);
     }
 
     const res = await request(app)

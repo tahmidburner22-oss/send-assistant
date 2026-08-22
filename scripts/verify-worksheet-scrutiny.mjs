@@ -16,7 +16,7 @@
  * Exits 0 on success, non-zero on failure.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, cpSync } from "fs";
 import { createRequire } from "module";
 import { execSync } from "child_process";
 import path from "path";
@@ -36,10 +36,17 @@ function loadModule(relPath) {
   const outDir = path.resolve(".verify-tmp");
   mkdirSync(outDir, { recursive: true });
   writeFileSync(path.join(outDir, "package.json"), '{"type":"commonjs"}');
-  const tscBin = "tsc";
+  // The validator imports curriculum JSON through the Vite `@/data/...` alias.
+  // TypeScript preserves that alias in the temporary CommonJS output, so provide
+  // the matching Node resolution path and copy the real source data into it.
+  const aliasedDataDir = path.join(outDir, "node_modules", "@", "data");
+  mkdirSync(aliasedDataDir, { recursive: true });
+  cpSync(path.resolve("client/src/data/spec-points"), path.join(aliasedDataDir, "spec-points"), { recursive: true });
+  // Use the project-local compiler; the sandbox does not provide a global `tsc` binary.
+  const tscBin = "pnpm exec tsc";
   try {
     execSync(
-      `${tscBin} --outDir "${outDir}" --module commonjs --target ES2020 --esModuleInterop --allowJs --skipLibCheck --strict false --moduleResolution node --ignoreConfig "${path.resolve(relPath)}"`,
+      `${tscBin} --outDir "${outDir}" --module commonjs --target ES2020 --esModuleInterop --allowJs --skipLibCheck --strict false --moduleResolution node "${path.resolve(relPath)}"`,
       { stdio: "pipe" }
     );
   } catch (_e) {
@@ -185,7 +192,7 @@ try {
     assertTrue(r.warnings.length >= 3, "end-to-end chain emitted multiple warnings");
     assertTrue(r.worksheet.title === "Forces — Year 9 Worksheet", "end-to-end rewrote title year");
     const mcq = r.worksheet.sections.find(s => s.type === "q-mcq");
-    assertTrue((mcq.content.match(/✓/g) || []).length === 1, "end-to-end single ✓");
+    assertTrue((mcq.content.match(/✓/g) || []).length === 0, "end-to-end student content has no leaked ✓ answer marker");
     const dia = r.worksheet.sections.find(s => s.type === "diagram-a");
     assertTrue(!dia, "end-to-end removed computer-architecture diagram");
   }

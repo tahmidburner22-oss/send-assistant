@@ -1132,12 +1132,14 @@ describe("Phase 1 / enforceSectionQuestionCounts", () => {
     const sections: any[] = [];
     for (let i = 1; i <= 7; i++) sections.push(qSection(i));
     for (let i = 8; i <= 14; i++) sections.push(qSection(i));
-    // Application: 7 — above max of 5 (we pad with overflow numbers)
-    for (let i = 15; i <= 21; i++) sections.push(qSection(i));
+    // Application: 7 — explicitly labelled so overflow numbering cannot be
+    // mistaken for two challenge questions.
+    for (let i = 15; i <= 21; i++) sections.push(qSection(i, "q-application", "Application"));
     sections.push(qSection(22, "challenge", "Challenge"));
     const ws: PostValidatorWorksheet = { sections };
     const r = enforceSectionQuestionCounts(ws);
-    expect(r.warnings.join(" ")).toMatch(/Section "application".*above the maximum/);
+    expect(r.warnings.join(" ")).toMatch(/Trimmed 2 excess application questions/i);
+    expect(r.worksheet.sections!.filter(s => s.type === "q-application")).toHaveLength(5);
   });
 
   it("never mutates the worksheet (warnings only)", () => {
@@ -1395,110 +1397,50 @@ describe("Phase 2 / pickCommandWords", () => {
   });
 });
 
-describe("Phase 2 / buildSelfReflection — topic-anchored output", () => {
-  it("produces 5 I-can statements + 2 written prompts + a topic-anchored exit ticket for Year 9 Mathematics 'Adding fractions'", () => {
+describe("Phase 2 / buildSelfReflection — compact topic-anchored output", () => {
+  it("keeps a Year 9 Mathematics exit ticket compact while naming the topic", () => {
     const out = buildSelfReflection({
       topic: "Adding fractions",
       subject: "Mathematics",
       year: "Year 9",
       commandWordsUsed: ["Calculate", "Solve"],
     });
-    expect(out.iCanStatements.length).toBe(5);
-    expect(out.writtenPrompts.length).toBe(2);
+    // The approved print-safe contract is one pupil-facing exit question.
+    expect(out.iCanStatements).toEqual([]);
+    expect(out.writtenPrompts).toEqual([]);
+    expect(out.subtitle).toBe("Quick exit question:");
     expect(out.exitTicket).toMatch(/adding fractions/i);
-    // Every I-can statement must mention the topic noun.
-    for (const s of out.iCanStatements) {
-      expect(s.toLowerCase()).toContain("adding fractions");
-      expect(s.startsWith("I can")).toBe(true);
-    }
-    // Maths verbs from the supplied list should win the leading slots.
-    expect(out.iCanStatements[0]).toMatch(/^I can Calculate/);
-    expect(out.iCanStatements[1]).toMatch(/^I can Solve/);
   });
-
-  it("produces topic-anchored output for Year 11 English Literature 'Macbeth Act 1 Scene 5'", () => {
-    const out = buildSelfReflection({
-      topic: "Macbeth Act 1 Scene 5",
-      subject: "English Literature",
-      year: "Year 11",
-    });
-    expect(out.iCanStatements.length).toBe(5);
-    for (const s of out.iCanStatements) {
-      expect(s).toContain("Macbeth Act 1 Scene 5");
-    }
-    expect(out.exitTicket).toContain("Macbeth Act 1 Scene 5");
-    // English Lit defaults: Identify / Describe / Explain / Analyse / Evaluate.
-    expect(out.iCanStatements[0]).toMatch(/^I can Identify/);
-    expect(out.iCanStatements[3]).toMatch(/^I can Analyse/);
+  it.each([
+    ["English Literature", "Year 11", "Macbeth Act 1 Scene 5"],
+    ["Biology", "Year 11", "Bioenergetics"],
+    ["History", "Year 8", "The Norman Conquest"],
+  ])("anchors the compact exit ticket for %s / %s / %s", (subject, year, topic) => {
+    const out = buildSelfReflection({ topic, subject, year });
+    expect(out.iCanStatements).toEqual([]);
+    expect(out.writtenPrompts).toEqual([]);
+    expect(out.exitTicket.toLowerCase()).toContain(topic.replace(/^The /, "").toLowerCase());
   });
-
-  it("produces topic-anchored output for Year 11 Biology 'Bioenergetics'", () => {
-    const out = buildSelfReflection({
-      topic: "Bioenergetics",
-      subject: "Biology",
-      year: "Year 11",
-    });
-    expect(out.iCanStatements.length).toBe(5);
-    for (const s of out.iCanStatements) {
-      expect(s.toLowerCase()).toContain("bioenergetics");
-    }
-    // Science defaults: Describe / Explain / Calculate / Compare / Evaluate.
-    expect(out.iCanStatements[0]).toMatch(/^I can Describe/);
-    expect(out.iCanStatements[1]).toMatch(/^I can Explain/);
+  it("uses a short sentence-starter register for SLCN / EAL pupils", () => {
+    const out = buildSelfReflection({ topic: "Photosynthesis", subject: "Biology", sendKey: "eal" });
+    expect(out.subtitle).toBe("Finish the sentence:");
+    expect(out.exitTicket).toBe("Today I learned about photosynthesis. The most important thing was …");
+    expect(out.iCanStatements).toEqual([]);
+    expect(out.writtenPrompts).toEqual([]);
   });
-
-  it("produces topic-anchored output for KS3 History 'The Norman Conquest'", () => {
-    const out = buildSelfReflection({
-      topic: "The Norman Conquest",
-      subject: "History",
-      year: "Year 8",
-    });
-    expect(out.iCanStatements.length).toBe(5);
-    // Topic noun phrase strips the leading "The" and lower-cases.
-    for (const s of out.iCanStatements) {
-      expect(s.toLowerCase()).toContain("norman conquest");
-    }
-    expect(out.exitTicket.toLowerCase()).toContain("norman conquest");
-  });
-
-  it("uses the sentence-starter SEND register for SLCN / EAL pupils", () => {
-    const out = buildSelfReflection({
-      topic: "Photosynthesis",
-      subject: "Biology",
-      sendKey: "eal",
-    });
-    expect(out.iCanStatements.length).toBe(5);
-    // Sentence-starter register uses simpler frames than the standard
-    // command-word frames — the lead frame is "I can talk about …".
-    expect(out.iCanStatements[0]).toMatch(/^I can talk about photosynthesis/);
-    // Every statement still names the topic noun phrase.
-    for (const s of out.iCanStatements) {
-      expect(s.toLowerCase()).toContain("photosynthesis");
-    }
-  });
-
-  it("uses the emotional check-in SEND register for SEMH / Anxiety / PDA pupils", () => {
-    const out = buildSelfReflection({
-      topic: "Quadratic Equations",
-      subject: "Mathematics",
-      sendKey: "semh",
-    });
-    expect(out.subtitle).toBe("How are you feeling?");
+  it("uses a concise, calm SEMH / Anxiety / PDA register", () => {
+    const out = buildSelfReflection({ topic: "Quadratic Equations", subject: "Mathematics", sendKey: "semh" });
+    expect(out.subtitle).toBe("A calm final thought:");
     expect(out.exitTicket).toContain("quadratic equations");
-    expect(out.writtenPrompts[0]).toMatch(/felt confident/i);
+    expect(out.writtenPrompts).toEqual([]);
   });
-
-  it("uses the older-learner register for adult / older-learners pupils", () => {
-    const out = buildSelfReflection({
-      topic: "GDPR",
-      subject: "Citizenship",
-      sendKey: "older-learners",
-    });
-    expect(out.subtitle).toBe("Review your learning.");
+  it("uses an older-learner register without adding extra worksheet content", () => {
+    const out = buildSelfReflection({ topic: "GDPR", subject: "Citizenship", sendKey: "older-learners" });
+    expect(out.subtitle).toBe("Review your learning:");
     expect(out.exitTicket).toMatch(/key point/i);
     expect(out.exitTicket).toContain("GDPR");
+    expect(out.writtenPrompts).toEqual([]);
   });
-
   it("is a pure function — identical inputs produce identical output", () => {
     const a = buildSelfReflection({ topic: "Photosynthesis", subject: "Biology" });
     const b = buildSelfReflection({ topic: "Photosynthesis", subject: "Biology" });
@@ -1735,8 +1677,9 @@ describe("Phase 2 / enforceSelfReflectionTopicAnchor", () => {
       sendNeed: "EAL",
     });
     const replaced = r.worksheet.sections![0].content || "";
-    // Sentence-starter register's lead frame.
-    expect(replaced).toMatch(/I can talk about adding fractions/);
+    // Sentence-starter register keeps the print-safe single exit ticket.
+    expect(replaced).toContain("SUBTITLE: Finish the sentence:");
+    expect(replaced).toMatch(/Today I learned about adding fractions/i);
   });
 });
 
@@ -4013,14 +3956,14 @@ describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-re
     "reinforce-dyscalculia-maths-scaffolding",
     "reconcile-mark-scheme",
     "extract-misconception-links",
+    // SEND overlays must run before count checks so inserted/renamed support
+    // sections are measured in their final learner-facing form.
+    "send-overlay-markers",
     "application-question-cap",
     "section-question-counts",
     "mark-allocation-variety",
     "common-mistakes-topic-relevance",
     "spec-anchor-presence",
-    // Lane 1.6 + 1.7 — Phase 4 SEND-overlay marker enforcer (HI Topic
-    // Summary insertion + Anxiety section title rewrites).
-    "send-overlay-markers",
     "self-reflection-topic-anchor",
     "revision-tips-presence",
     "curriculum-authority-invariants",
@@ -4044,6 +3987,22 @@ describe("PR-8 / WORKSHEET_POST_VALIDATORS — registry order matches the pre-re
     "diagram-page-fit",
     "citation-grounding",
     "tier-ao-histogram",
+    // Later quality additions remain ordered after the evidence and taxonomy
+    // validators that provide their input signals.
+    "learning-objective-wording",
+    "common-mistakes-sentence-case",
+    "reflection-cap",
+    "maths-instruction-brevity",
+    "ks3-length-budget",
+    "vocabulary-repeat",
+    "pedagogy-structure-presence",
+    "full-quality-check",
+    "vocab-table-format",
+    "worked-example-brevity",
+    "instruction-box-dedup",
+    "diagram-presence",
+    "question-wording-brevity",
+    "enhanced-quality-checks",
   ];
 
   it("listValidatorNames() returns the registered order", () => {

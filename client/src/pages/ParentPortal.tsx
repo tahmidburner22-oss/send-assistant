@@ -28,6 +28,10 @@ import {
 import { subjects as pastPaperSubjects, allYears as ppAllYears, allBoards as ppAllBoards } from "@/lib/pastPapers";
 import { Link } from "wouter";
 import RevisionSessionSection from "@/components/revision/RevisionSessionSection";
+import {
+  resolvePupilAssignmentOverlay,
+  type PupilAssignmentMetadata,
+} from "@/lib/assignmentViewContract";
 
 // Comprehension questions generator (same as Stories page)
 function generateComprehensionQuestions(_content: string, genre: string): string[] {
@@ -94,7 +98,8 @@ function ParentMessagesPanel({ childId, childName }: { childId: string; childNam
     <div className="flex flex-col h-[480px] rounded-xl border border-border/50 bg-white overflow-hidden">
       <div className="p-3 border-b border-border/50 bg-blue-50">
         <p className="text-sm font-semibold text-blue-800">Messages — {childName}</p>
-        <p className="text-xs text-blue-600 mt-0.5">Send a message to {childName}'s teacher. They'll reply here.</p>
+        <p className="text-xs text-blue-600 mt-0.5">Send a routine message to {childName}'s teacher. They’ll reply here.</p>
+        <p className="mt-1 text-[11px] text-blue-700">For urgent safeguarding, health or attendance concerns, use your school’s published urgent-contact route. Share only the details needed for the teacher to respond.</p>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {loading ? (
@@ -128,11 +133,11 @@ function ParentMessagesPanel({ childId, childName }: { childId: string; childNam
           value={newMsg}
           onChange={e => setNewMsg(e.target.value)}
           onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
-          placeholder="Type a message..."
+          placeholder="Type a routine message — avoid unnecessary sensitive details..."
           className="flex-1 h-9 text-sm"
           disabled={sending}
         />
-        <Button size="sm" onClick={sendMessage} disabled={sending || !newMsg.trim()} className="h-9 bg-blue-600 hover:bg-blue-700 text-white">
+        <Button size="sm" aria-label="Send routine message to teacher" onClick={sendMessage} disabled={sending || !newMsg.trim()} className="h-9 bg-blue-600 hover:bg-blue-700 text-white">
           {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
         </Button>
       </div>
@@ -150,8 +155,9 @@ function WorksheetRendererView({
   title: string;
   subtitle?: string;
   sections: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
-  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; sendNeed?: string; };
+  metadata?: PupilAssignmentMetadata;
 }) {
+  const assignmentOverlay = resolvePupilAssignmentOverlay(metadata);
   const worksheetData = {
     title,
     subtitle,
@@ -168,7 +174,7 @@ function WorksheetRendererView({
         worksheet={worksheetData as any}
         viewMode="student"
         textSize={14}
-        overlayColor="#ffffff"
+        overlayColor={assignmentOverlay.color}
         editMode={false}
         editedSections={{}}
       />

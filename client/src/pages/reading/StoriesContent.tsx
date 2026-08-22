@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
+import { learnerSupportPrompt, type LearnerSupportProfile } from "@/lib/learnerSupportProfile";
 import { yearGroups, sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays } from "@/lib/send-data";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { generateStoryContent } from "@/lib/worksheet-generator";
@@ -17,12 +19,13 @@ import { downloadStoryPdf } from "@/lib/pdf-generator";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 import ReadingEnhancementsPanel from "@/components/ReadingEnhancementsPanel";
 
-async function generateComprehensionQuestionsAI(content: string, yearGroup: string, sendNeed: string): Promise<string[]> {
+async function generateComprehensionQuestionsAI(content: string, yearGroup: string, sendNeed: string, learnerSupportProfile?: LearnerSupportProfile): Promise<string[]> {
   try {
     const system = `You are an experienced UK English teacher. Generate exactly 4 comprehension questions about the specific story provided.
 Questions MUST reference actual characters, events, settings, and details from THIS story — not generic questions.
 Include a mix of: literal (who/what/when), inferential (why/how), evaluative (what do you think), and creative (what would you do).
 ${sendNeed ? `Adapt language for ${sendNeed} — keep questions clear and accessible.` : ""}
+${learnerSupportProfile ? `Use teacher-reviewed access preferences only for communication and removable response scaffolds; do not name or diagnose the pupil, lower the reading demand, or turn support into answers.\n${learnerSupportPrompt(learnerSupportProfile).join("\n")}` : ""}
 Return ONLY a JSON array of 4 strings, no markdown, no preamble.`;
     const user = `Year group: ${yearGroup || "KS2"}.
 Story:
@@ -46,6 +49,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 export default function StoriesContent() {
   const { saveStory, children, assignWork, colorOverlay, setColorOverlay } = useApp();
+  const { pupilId: scopedPupilId } = usePupilScope();
+  const scopedPupil = children.find(child => child.id === scopedPupilId) || null;
   const [genre, setGenre] = useState("");
   const [yearGroup, setYearGroup] = useState("");
   const [sendNeed, setSendNeed] = useState("");
@@ -91,8 +96,9 @@ export default function StoriesContent() {
         theme: theme || undefined,
         readingLevel,
         length,
+        learnerSupportProfile: scopedPupil?.learnerSupportProfile,
       });
-      const questions = await generateComprehensionQuestionsAI(aiResult.content, yearGroup, sendNeed);
+      const questions = await generateComprehensionQuestionsAI(aiResult.content, yearGroup, sendNeed, scopedPupil?.learnerSupportProfile);
       setResult({ title: aiResult.title, content: aiResult.content, questions });
       toast.success("Story generated with AI!");
     } catch (_err) {
@@ -103,7 +109,7 @@ export default function StoriesContent() {
         characters: charNames, setting: setting || undefined,
         theme: theme || undefined, readingLevel, length,
       });
-      const questions = await generateComprehensionQuestionsAI(story.content, yearGroup, sendNeed);
+      const questions = await generateComprehensionQuestionsAI(story.content, yearGroup, sendNeed, scopedPupil?.learnerSupportProfile);
       setResult({ ...story, questions });
       toast.success("Story generated!");
     }
@@ -205,7 +211,7 @@ export default function StoriesContent() {
               </div>
 
               {sendNeed && sendNeed !== "none-selected" && (
-                <SENDInfoPanel sendNeedId={sendNeed} context="story" />
+                <SENDInfoPanel sendNeedId={sendNeed} context="story" learnerSupportProfile={scopedPupil?.learnerSupportProfile} />
               )}
 
               <div className="grid grid-cols-2 gap-3">

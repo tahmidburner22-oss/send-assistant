@@ -221,8 +221,7 @@ export default function Login() {
         client_id: clientId,
         callback: async (response: any) => {
           try {
-            const payload = JSON.parse(atob(response.credential.split(".")[1]));
-            await loginWithGoogle({ googleId: payload.sub, email: payload.email, displayName: payload.name });
+            await loginWithGoogle(response.credential);
             setLocation("/home");
           } catch (err: any) { toast.error(err.message || "Google sign-in failed"); }
         },

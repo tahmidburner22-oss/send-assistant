@@ -156,6 +156,38 @@ export const LAYOUT_TEMPLATES: Record<LayoutFamily, LayoutTemplate> = {
     cssClass: "layout-matching",
     description: "Two columns connected by student-drawn lines",
   },
+  "ranking": {
+    family: "ranking",
+    minHeightPx: 180,
+    supportsDiagram: false,
+    isSplitLayout: false,
+    cssClass: "layout-ranking",
+    description: "Ranked statements with a short evidence prompt",
+  },
+  "error-correction": {
+    family: "error-correction",
+    minHeightPx: 200,
+    supportsDiagram: false,
+    isSplitLayout: false,
+    cssClass: "layout-error-correction",
+    description: "Worked response with space to identify and correct an error",
+  },
+  "what-changed": {
+    family: "what-changed",
+    minHeightPx: 180,
+    supportsDiagram: false,
+    isSplitLayout: true,
+    cssClass: "layout-what-changed",
+    description: "Before-and-after comparison with an explanation space",
+  },
+  "constraint-problem": {
+    family: "constraint-problem",
+    minHeightPx: 220,
+    supportsDiagram: false,
+    isSplitLayout: false,
+    cssClass: "layout-constraint-problem",
+    description: "Multi-condition problem with structured working space",
+  },
 };
 
 // ─── Assigned question layout ─────────────────────────────────────────────────

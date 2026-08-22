@@ -13,6 +13,7 @@
  */
 
 import pg from "pg";
+import { newDb } from "pg-mem";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 
@@ -20,19 +21,31 @@ const { Pool } = pg;
 
 // ─── Connection pool ──────────────────────────────────────────────────────────
 const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
+// Integration tests must never depend on a shared or production database. The
+// in-memory adapter is enabled only by Vitest/test runtime signals; every
+// development and production process still fails fast without DATABASE_URL.
+const USE_IN_MEMORY_TEST_DB =
+  process.env.NODE_ENV === "test" ||
+  process.env.VITEST === "true" ||
+  process.env.USE_IN_MEMORY_DB === "true";
+const inMemoryDb = USE_IN_MEMORY_TEST_DB
+  ? newDb({ autoCreateForeignKeyIndices: true, noAstCoverageCheck: true })
+  : null;
+if (!DATABASE_URL && !inMemoryDb) {
   throw new Error("DATABASE_URL environment variable is required");
 }
+const InMemoryPool = inMemoryDb?.adapters.createPg().Pool;
+export const pool = InMemoryPool
+  ? new InMemoryPool()
+  : new Pool({
+      connectionString: DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
 
-export const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-});
-
-pool.on("error", (err) => {
+pool.on("error", (err: Error) => {
   console.error("Unexpected error on idle pg client", err);
 });
 
@@ -309,6 +322,9 @@ CREATE TABLE IF NOT EXISTS pupils (
   parent_email TEXT,
   parent_name TEXT,
   parent_access_code TEXT,
+  -- Structured, teacher-authored access preferences and temporary adjustments.
+  -- This describes provision and access, not diagnosis or safeguarding records.
+  learner_support_profile_json TEXT NOT NULL DEFAULT '{}',
   created_by TEXT REFERENCES users(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -361,6 +377,7 @@ CREATE TABLE IF NOT EXISTS worksheets (
   school_id TEXT REFERENCES schools(id),
   created_by TEXT REFERENCES users(id),
   title TEXT NOT NULL,
+  subtitle TEXT,
   subject TEXT,
   topic TEXT,
   year_group TEXT,
@@ -375,6 +392,8 @@ CREATE TABLE IF NOT EXISTS worksheets (
   metadata_json TEXT,
   source_library_id TEXT,
   source_canonical_topic_key TEXT,
+  gold_html TEXT,
+  gold_slug TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -505,6 +524,16 @@ CREATE TABLE IF NOT EXISTS assignments (
   mark TEXT,
   progress INTEGER DEFAULT 0,
   teacher_comment TEXT,
+  -- Scheduler and marking provenance are part of the base schema so the
+  -- isolated pg-mem integration environment matches the worker’s runtime
+  -- contract. Existing production databases retain their guarded migrations.
+  mark_scheme TEXT,
+  source TEXT NOT NULL DEFAULT 'manual',
+  submitted_at TIMESTAMPTZ,
+  marked_at TIMESTAMPTZ,
+  marked_score INTEGER,
+  scheduler_subject TEXT,
+  auto_mark_accepted INTEGER NOT NULL DEFAULT 0,
   assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_assignments_pupil ON assignments(pupil_id);
@@ -550,7 +579,9 @@ CREATE TABLE IF NOT EXISTS worksheet_sections (
   caption TEXT,
   image_url TEXT,
   asset_ref TEXT,
-  symbols TEXT
+  symbols TEXT,
+  /** Canonical JSON for renderer-specific structure (diagram specs, layouts, ids and safe extensions). */
+  section_json TEXT
 );
 
 -- Per-school API keys
@@ -857,6 +888,9 @@ CREATE TABLE IF NOT EXISTS scheduler_configs (
   progression_step_index INTEGER NOT NULL DEFAULT 0,
   last_error TEXT,
   retry_after TIMESTAMPTZ,
+  -- A short-lived worker claim prevents duplicate assignments when a manual
+  -- run and the background tick arrive at the same due configuration.
+  generation_lock_until TIMESTAMPTZ,
   pass_threshold INTEGER NOT NULL DEFAULT 70, -- percent pass gate (default 70)
   created_by TEXT REFERENCES users(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -880,19 +914,35 @@ CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
 CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
 `;
 
+// pg-mem uses a strict AST-coverage guard by default and emits an error for
+// valid PostgreSQL DDL features it does not model in full. The in-memory adapter
+// disables only that test-harness guard above, so it can execute the identical
+// production schema while production keeps its normal fail-fast behaviour.
+
 // ─── Initialise (async, awaited by server/index.ts) ──────────────────────────
 export async function initDb() {
-  console.log("🔌 Connecting to PostgreSQL...");
+  console.log(inMemoryDb ? "🔌 Connecting to in-memory PostgreSQL test database..." : "🔌 Connecting to PostgreSQL...");
 
-  // Test connection
+  // Test connection. pg-mem deliberately does not implement PostgreSQL's
+  // diagnostic `version()` function, so only the isolated test adapter skips
+  // that cosmetic query; it still acquires and releases a real pool client.
   const client = await pool.connect();
-  const versionResult = await client.query("SELECT version()");
-  console.log("✅ Connected:", versionResult.rows[0].version.slice(0, 50));
+  if (inMemoryDb) {
+    console.log("✅ Connected: pg-mem isolated test adapter");
+  } else {
+    const versionResult = await client.query("SELECT version()");
+    console.log("✅ Connected:", versionResult.rows[0].version.slice(0, 50));
+  }
   client.release();
 
-  // Run schema (all CREATE TABLE IF NOT EXISTS — idempotent)
+  // Run the identical idempotent schema in production and isolated tests.
   await db.exec(SCHEMA_SQL);
   console.log("✅ Schema applied");
+
+  // pg-mem validates the base schema for integration tests. Production-only
+  // migration blocks use PostgreSQL procedural syntax and are not needed for
+  // a fresh isolated test database.
+  if (inMemoryDb) return;
 
   // ── Runtime migrations for existing databases ──────────────────────────────
   // These ADD COLUMN statements are idempotent via DO $$ ... EXCEPTION block.
@@ -913,6 +963,7 @@ export async function initDb() {
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN image_url TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN asset_ref TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN symbols TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN section_json TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN subtitle TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN metadata_json TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN source_library_id TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
@@ -933,6 +984,9 @@ export async function initDb() {
     `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN marked_score INTEGER; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN scheduler_subject TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN auto_mark_accepted INTEGER NOT NULL DEFAULT 0; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE scheduler_configs ADD COLUMN generation_lock_until TIMESTAMPTZ; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    // Durable teacher-authored support profile for cross-tool SEND provision.
+    `DO $$ BEGIN ALTER TABLE pupils ADD COLUMN learner_support_profile_json TEXT NOT NULL DEFAULT '{}'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     // Pupil document builder columns for existing production databases.
     `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN school_id TEXT REFERENCES schools(id) ON DELETE CASCADE; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN fields_json TEXT NOT NULL DEFAULT '{}'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,

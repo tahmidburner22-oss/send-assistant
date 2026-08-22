@@ -8,6 +8,39 @@ import { sendBehaviourAlert, sendDirectParentMessage } from "../email/index.js";
 
 const router = Router();
 
+const MAX_SECTION_STRUCTURE_BYTES = 48 * 1024;
+
+/**
+ * Preserve complete renderer-relevant section structure alongside the legacy
+ * queryable columns. Large raw SVG and data-URI image payloads are deliberately
+ * excluded: SVG already has its own column and inline media must not make a
+ * History record unbounded.
+ */
+function serialiseSectionStructure(section: unknown): string | null {
+  if (!section || typeof section !== "object" || Array.isArray(section)) return null;
+  const value = { ...(section as Record<string, unknown>) };
+  if (typeof value.svg === "string" && value.svg.length > 100) delete value.svg;
+  if (typeof value.imageUrl === "string" && value.imageUrl.startsWith("data:")) delete value.imageUrl;
+  try {
+    const json = JSON.stringify(value);
+    return Buffer.byteLength(json, "utf8") <= MAX_SECTION_STRUCTURE_BYTES ? json : null;
+  } catch {
+    return null;
+  }
+}
+
+function parseSectionStructure(raw: unknown): Record<string, unknown> {
+  if (typeof raw !== "string" || !raw.trim()) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : {};
+  } catch {
+    return {};
+  }
+}
+
 const parentReplyLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
@@ -47,17 +80,27 @@ router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
       sourceCanonicalTopicKey: r.source_canonical_topic_key || undefined,
       goldHtml: r.gold_html || undefined,
       goldSlug: r.gold_slug || undefined,
-      sections: sections.map((s: any) => ({
-        title: s.title,
-        type: s.type,
-        content: s.content,
-        teacherOnly: !!s.teacher_only,
-        svg: s.svg,
-        caption: s.caption,
-        imageUrl: s.image_url,
-        assetRef: s.asset_ref,
-        symbols: s.symbols ? JSON.parse(s.symbols) : undefined,
-      })),
+      sections: sections.map((s: any) => {
+        const structure = parseSectionStructure(s.section_json);
+        let symbols: unknown;
+        try { symbols = s.symbols ? JSON.parse(s.symbols) : structure.symbols; } catch { symbols = structure.symbols; }
+        return {
+          ...structure,
+          // The relational columns remain authoritative for values staff can
+          // edit directly; the structure blob restores every other renderer
+          // field (e.g. diagramSpec, layout, answer spaces and section id).
+          id: typeof structure.id === "string" ? structure.id : s.id,
+          title: s.title,
+          type: s.type,
+          content: s.content,
+          teacherOnly: !!s.teacher_only,
+          svg: s.svg ?? structure.svg,
+          caption: s.caption ?? structure.caption,
+          imageUrl: s.image_url ?? structure.imageUrl,
+          assetRef: s.asset_ref ?? structure.assetRef,
+          symbols,
+        };
+      }),
     };
   }));
   res.json(mapped);
@@ -90,12 +133,13 @@ router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
         const sContent = typeof rawContent === 'string'
           ? rawContent.split('\n').map((line: string) => line.replace(/^\*{1,2}\s*|\s*\*{1,2}$/g, '').replace(/\*\*(.+?)\*\*/g, '$1')).join('\n')
           : rawContent;
-        await db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, image_url, asset_ref, symbols)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+        await db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, image_url, asset_ref, symbols, section_json)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
           uuidv4(), id, idx, sTitle, s.type || null, sContent,
           s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null,
           s.imageUrl || null, s.assetRef || null,
-          s.symbols ? JSON.stringify(s.symbols) : null
+          s.symbols ? JSON.stringify(s.symbols) : null,
+          serialiseSectionStructure(s)
         );
       }
       console.log(`[POST /worksheets] ${sections.length} sections inserted`);
@@ -119,8 +163,8 @@ router.put("/worksheets/:id", requireAuth, async (req: Request, res: Response) =
     for (let idx = 0; idx < sections.length; idx++) {
 
       const s = sections[idx];
-        await db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, image_url, asset_ref, symbols) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        .run(uuidv4(), req.params.id, idx, s.title || null, s.type || null, s.content || null, s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null, s.imageUrl || s.image_url || null, s.assetRef || s.asset_ref || null, s.symbols ? JSON.stringify(s.symbols) : null);
+        await db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, image_url, asset_ref, symbols, section_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        .run(uuidv4(), req.params.id, idx, s.title || null, s.type || null, s.content || null, s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null, s.imageUrl || s.image_url || null, s.assetRef || s.asset_ref || null, s.symbols ? JSON.stringify(s.symbols) : null, serialiseSectionStructure(s));
     }
   }
   res.json({ message: "Updated" });
@@ -615,6 +659,8 @@ router.get("/shared/:token", async (req: Request, res: Response) => {
     topic: ws.topic,
     yearGroup: ws.year_group,
     difficulty: ws.difficulty,
+    sendNeed: ws.send_need,
+    overlay: ws.overlay || undefined,
     sections: sections.map((s: any) => ({
       title: s.title,
       type: s.type,

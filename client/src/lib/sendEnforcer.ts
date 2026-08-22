@@ -96,7 +96,7 @@ const ACTION_VERBS = [
 ];
 
 const ACTION_VERB_RE = new RegExp(
-  "^(\\s*)(" +
+  "^(\\s*(?:(?:Q?\\d+[.\\):])\\s+)?(?:-\\s*)?(?:\\[\\s*[xX]?\\s*\\]|☐|□)\\s*)?(" +
     ACTION_VERBS.map(v => v.replace(/ /g, "\\s+")).join("|") +
   ")\\b",
   "i"
@@ -115,7 +115,7 @@ function enforceAdhdLine(line: string): string {
 
   // Skip lines that are obviously not questions — blank lines, markdown
   // tables, diagram markers, and "Answer:" hints.
-  if (/^(\s*\|)|(^\s*\[\[DIAGRAM:)|(^\s*Answer\s*:)/i.test(out)) return out;
+  if (/^(\s*\|)|(^\s*\[\[DIAGRAM:)|(^\s*Answer\s*:)|(^\s*(?:🧠\s*)?\*{0,2}BRAIN\s*BREAK\b)/i.test(out)) return out;
 
   // Skip MCQ option lines. The MCQSection renderer parses lines like
   // "A. positive", "B  negative", "C) lithium", "D - 4" as options.
@@ -132,7 +132,7 @@ function enforceAdhdLine(line: string): string {
 
   // 1. Prepend '[ ] ' if not already present.
   //    Match checkbox variants: '[ ]', '[x]', '☐', '□', '- [ ]'.
-  const hasCheckbox = /^\s*(?:-\s*)?(?:\[\s*[xX]?\s*\]|☐|□)\s+/.test(out);
+  const hasCheckbox = /^\s*(?:(?:Q?\d+[.\):])\s+)?(?:-\s*)?(?:\[\s*[xX]?\s*\]|☐|□)\s+/.test(out);
   if (!hasCheckbox) {
     // Preserve a leading question number ("1.", "Q1.", "2)") but put the
     // checkbox AFTER it so numbering is still first.

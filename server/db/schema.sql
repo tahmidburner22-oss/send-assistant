@@ -155,6 +155,7 @@ CREATE TABLE IF NOT EXISTS worksheets (
   school_id TEXT REFERENCES schools(id),
   created_by TEXT REFERENCES users(id),
   title TEXT NOT NULL,
+  subtitle TEXT,
   subject TEXT,
   topic TEXT,
   year_group TEXT,
@@ -341,7 +342,8 @@ CREATE TABLE IF NOT EXISTS worksheet_sections (
   caption TEXT,
   image_url TEXT,
   asset_ref TEXT,
-  symbols TEXT -- JSON: array of {word, svgPath} for Widgit-style symbols
+  symbols TEXT, -- JSON: array of {word, svgPath} for Widgit-style symbols
+  section_json TEXT -- canonical renderer-specific structure and safe extensions
 );
 
 -- Indexes

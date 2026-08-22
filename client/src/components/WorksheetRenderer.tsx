@@ -1300,6 +1300,8 @@ export interface WorksheetData {
     totalMarks?: number;
     estimatedTime?: string;
     adaptations?: string[];
+    qaScore?: { total?: number; overallScore?: number };
+    validationStatus?: "pass" | "warn" | "fail";
   };
   isAI?: boolean;
   provider?: string;
@@ -1766,7 +1768,7 @@ function formatContent(
     preprocessed = joined.join('\n');
   }
 
-  const lines = preprocessed.split('\n');
+  const lines: string[] = String(preprocessed).split('\n');
   const elements: React.ReactNode[] = [];
   let inTable = false;
   let tableRows: string[] = [];
@@ -2172,9 +2174,6 @@ function formatContent(
                     marginBottom: "6px",
                   }}
                 >
-                  <div style={{ fontSize: `${textSize - 3}px`, color: "#6b7280", fontWeight: 600, fontFamily, marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                    Working out
-                  </div>
                   <div style={{ height: `${workingRows * 22}px` }} aria-hidden="true" />
                 </div>
               )}
@@ -2347,8 +2346,8 @@ function TrueFalseSection({
         }} dangerouslySetInnerHTML={{ __html: renderMath(instr) }} />
       ))}
       {displayLines.map((item, i) => {
-        const stmtText = typeof item === "string" ? item.replace(/^\d+[.)\s]+/, "").trim() : item.text;
-        const answer = typeof item === "string" ? undefined : item.answer;
+        const stmtText = item.text;
+        const answer = item.answer;
         return (
           <div key={i} style={{
             display: "flex",
@@ -2804,14 +2803,16 @@ function DiagramSubQSection({
       <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: "14px" }}>
         {subQLines.map((q, i) => (
           <div key={i}>
-            <div style={{
-              fontSize: `${fmt.fontSize}px`,
-              fontFamily: fmt.fontFamily,
-              lineHeight: String(fmt.lineHeight),
-              color: "#1e293b",
-              marginBottom: "4px",
-              dangerouslySetInnerHTML: { __html: renderMath(q) },
-            }} />
+            <div
+              dangerouslySetInnerHTML={{ __html: renderMath(q) }}
+              style={{
+                fontSize: `${fmt.fontSize}px`,
+                fontFamily: fmt.fontFamily,
+                lineHeight: String(fmt.lineHeight),
+                color: "#1e293b",
+                marginBottom: "4px",
+              }}
+            />
             {/* Answer lines */}
             {[0, 1, 2].map(li => (
               <div key={li} style={{
@@ -4770,7 +4771,7 @@ function PrimarySection({
             answer space. */}
         {editMode && usePerQuestionAnswerLines && (
           <div className="no-print" style={{ marginTop: "10px", fontSize: "11px", color: effectivePalette.border, fontFamily: fmt.fontFamily, fontStyle: "italic" }}>
-            Each numbered question above has {perQuestionLineCount} answer line{perQuestionLineCount === 1 ? "" : "s"} of its own.
+            Each numbered question above has {perQuestionLineCount} answer lines of its own.
           </div>
         )}
 
@@ -5648,7 +5649,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     fontFamily: fmt.fontFamily,
                   }}>
                     <span>QA: {(worksheet.metadata?.qaScore as { total?: number; overallScore?: number }).total ?? (worksheet.metadata?.qaScore as { total?: number; overallScore?: number }).overallScore ?? "—"}%</span>
-                    <span style={{ fontSize: "8px", opacity: 0.9 }}>[{worksheet.metadata?.validationStatus.toUpperCase()}]</span>
+                    <span style={{ fontSize: "8px", opacity: 0.9 }}>[{worksheet.metadata?.validationStatus?.toUpperCase() ?? "PASS"}]</span>
                   </div>
                 )}
                 {schoolLogoUrl && (
@@ -5734,7 +5735,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   }}>
                     <span>QA SCORE: {(worksheet.metadata?.qaScore as { total?: number; overallScore?: number }).total ?? (worksheet.metadata?.qaScore as { total?: number; overallScore?: number }).overallScore ?? "—"}%</span>
                     <div style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.3)" }} />
-                    <span>{worksheet.metadata?.validationStatus.toUpperCase()}</span>
+                    <span>{worksheet.metadata?.validationStatus?.toUpperCase() ?? "PASS"}</span>
                   </div>
                 )}
                 <span style={{ fontSize: "10px", color: "#6b7280", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
@@ -6210,21 +6211,6 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         {label}.
                       </div>
 
-                      {/* Edit button */}
-                      {editMode && onSectionEdit && (
-                        <button
-                          onClick={() => {
-                            const newText = window.prompt("Edit box content:", displayContent);
-                            if (newText !== null) onSectionEdit!(origIdx, newText);
-                          }}
-                          style={{
-                            position: "absolute", top: "14px", right: "2px", zIndex: 10,
-                            background: "#4f46e5", color: "#fff", border: "none",
-                            borderRadius: "2px", fontSize: "6px", padding: "1px 3px",
-                            cursor: "pointer",
-                          }}
-                        >✏️</button>
-                      )}
 
                       {/* Box content */}
                       {isWorkingOut ? (

@@ -65,7 +65,10 @@ export function runPastPaperFrequencyAudit(
 
   const counts: Record<string, { count: number; years: Set<number> }> = Object.create(null);
   for (const q of corpus) {
-    const t = q.topic.trim().toLowerCase();
+    // Imported or partially curated corpora can contain records awaiting a
+    // topic tag. Skip them defensively and retain the report-level warning
+    // instead of crashing the entire predicted-paper workflow.
+    const t = String(q?.topic || "").trim().toLowerCase();
     if (!t) continue;
     if (!counts[t]) counts[t] = { count: 0, years: new Set() };
     counts[t].count += 1;

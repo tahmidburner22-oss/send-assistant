@@ -16,7 +16,7 @@ import {
   Home, Brain, GraduationCap, Pencil, MessageCircle, Monitor,
   LogOut, Menu, X, Shield, Settings, ExternalLink,
   Search, Bell, ChevronRight, Users, FileCheck, Mail, MessageSquare,
-  ClipboardList, Grid3x3,
+  ClipboardList, Grid3x3, Archive, CalendarDays, MoreHorizontal,
 } from "lucide-react";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 
@@ -93,6 +93,23 @@ const accountMenu = [
   { path: "/parent-portal", label: "Parent Portal",  icon: ExternalLink },
   { path: "/settings",      label: "Settings",       icon: Settings },
 ];
+
+/**
+ * The daily teacher journey is intentionally short and shared by desktop and
+ * mobile navigation. Deeper specialist tools remain discoverable from the
+ * workspace drawer and global search instead of competing with daily work.
+ */
+const primaryWorkspaceItems = [
+  { path: "/home", label: "Today", shortLabel: "Today", icon: Home, matches: ["/home"] },
+  { path: "/worksheets", label: "Create", shortLabel: "Create", icon: Pencil, matches: ["/worksheets", "/differentiate", "/templates"] },
+  { path: "/pupils", label: "Pupils", shortLabel: "Pupils", icon: Users, matches: ["/pupils", "/pupil-profile"] },
+  { path: "/history", label: "Review & history", shortLabel: "Review", icon: Archive, matches: ["/history"] },
+  { path: "/scheduler", label: "Meetings & reviews", shortLabel: "Meetings", icon: CalendarDays, matches: ["/scheduler", "/daily-work"] },
+] as const;
+
+function workspaceItemIsActive(location: string, item: typeof primaryWorkspaceItems[number]) {
+  return item.matches.some(path => location === path || location.startsWith(`${path}/`));
+}
 
 const allKnownPaths: { path: string; label: string }[] = [
   { path: "/home", label: "Home" },
@@ -218,7 +235,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={wallpaperStyle}>
+    <div className="teacher-studio-bg min-h-screen overflow-x-hidden" style={wallpaperStyle}>
+      <a className="skip-to-content" href="#main-content">Skip to workspace content</a>
       <CommandPalette />
       <FeedbackWidget />
       {/* Improvement #2: Persistent banner when no AI keys configured */}
@@ -227,7 +245,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <DSLBanner />
 
       <header
-        className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-xl"
+        className="sticky top-0 z-40 border-b bg-background/78 shadow-[0_10px_28px_-26px_rgba(20,35,30,0.65)] backdrop-blur-xl"
         style={{ borderColor: `${theme.primary}20` }}
       >
         <div className="flex items-center justify-between h-16 px-4 lg:px-6 max-w-[1680px] mx-auto">
@@ -245,9 +263,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </Link>
           </div>
-          <h1 className="text-base font-semibold text-foreground truncate max-w-[200px] lg:max-w-none lg:mr-auto">
-            {currentPage?.label || "Adaptly"}
-          </h1>
+          <div className="min-w-0 lg:mr-auto">
+            <p className="hidden lg:block text-[9px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Teacher workspace</p>
+            <h1 className="text-base font-semibold text-foreground truncate max-w-[200px] lg:max-w-none">
+              {currentPage?.label || "Adaptly"}
+            </h1>
+          </div>
           <div className="flex items-center gap-1">
             <GlobalPupilPicker />
             <CreditMeterChip />
@@ -373,18 +394,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
               {/* Nav */}
               <div className="flex-1 overflow-y-auto py-3">
-                {/* Home */}
-                <Link href="/home" onClick={() => setSidebarOpen(false)}>
-                  <div className={`mx-2 mb-1 px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all text-sm ${
-                    location === "/home" ? "bg-brand-light text-brand font-semibold" : "text-foreground hover:bg-muted"
-                  }`}>
-                    <Home className={`w-[18px] h-[18px] ${location === "/home" ? "text-brand" : "text-muted-foreground"}`} />
-                    Home
-                  </div>
-                </Link>
-
                 <div className="px-3 pb-2 pt-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">SENCO & SLT</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Your teaching day</span>
+                </div>
+                <div className="space-y-1 px-2 pb-3">
+                  {primaryWorkspaceItems.map(item => {
+                    const Icon = item.icon;
+                    const active = workspaceItemIsActive(location, item);
+                    return (
+                      <Link key={item.path} href={item.path} onClick={() => setSidebarOpen(false)} aria-current={active ? "page" : undefined}>
+                        <div className={`px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all text-sm ${
+                          active ? "bg-brand-light text-brand font-semibold" : "text-foreground hover:bg-muted"
+                        }`}>
+                          <Icon className={`w-[18px] h-[18px] ${active ? "text-brand" : "text-muted-foreground"}`} />
+                          {item.label}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                <div className="mx-3 mb-2 border-t border-border/40" />
+                <div className="px-3 pb-2 pt-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">SENCO &amp; leadership</span>
                 </div>
 
                 <div className="px-2 mb-1">
@@ -583,32 +615,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       <div className="max-w-[1680px] mx-auto flex items-stretch px-0 lg:px-5">
-        <aside className="hidden lg:flex w-[236px] shrink-0 sticky top-16 h-[calc(100vh-4rem)] self-start flex-col py-6 pr-5" aria-label="Teacher workspace navigation">
-          <div className="teacher-nav-rail p-2.5 flex flex-col h-[calc(100vh-6.5rem)]">
+        <aside className="hidden lg:flex w-[244px] shrink-0 sticky top-16 h-[calc(100vh-4rem)] self-start flex-col py-6 pr-5" aria-label="Teacher workspace navigation">
+          <div className="teacher-nav-rail p-2.5 flex flex-col h-[calc(100vh-6.5rem)]" data-workspace-navigation="desktop">
             <p className="px-2.5 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Your teaching day</p>
             <div className="space-y-1">
-              <Link href="/home" className={`teacher-rail-link ${location === "/home" ? "teacher-rail-link-active" : ""}`}>
-                <Home className="w-4 h-4" /> Home
-              </Link>
-              <Link href="/worksheets" className={`teacher-rail-link ${location.startsWith("/worksheets") ? "teacher-rail-link-active" : ""}`}>
-                <Pencil className="w-4 h-4" /> Worksheet studio
-              </Link>
-              <Link href="/pupils" className={`teacher-rail-link ${location.startsWith("/pupils") ? "teacher-rail-link-active" : ""}`}>
-                <Users className="w-4 h-4" /> Pupil profiles
-              </Link>
-              <Link href="/academic-screenings" className={`teacher-rail-link ${location.startsWith("/academic-screenings") ? "teacher-rail-link-active" : ""}`}>
-                <ClipboardList className="w-4 h-4" /> Screenings
-              </Link>
+              {primaryWorkspaceItems.map(item => {
+                const Icon = item.icon;
+                const active = workspaceItemIsActive(location, item);
+                return (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    className={`teacher-rail-link ${active ? "teacher-rail-link-active" : ""}`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <Icon className="w-4 h-4" /> {item.label}
+                  </Link>
+                );
+              })}
             </div>
             <div className="mt-6 pt-5 border-t border-border/60">
-              <p className="px-2.5 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Plan & support</p>
+              <p className="px-2.5 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Plan &amp; support</p>
               <div className="space-y-1">
-                {hubs.filter(hub => ["SEND Hub", "Revision Hub", "Planning Hub", "Classroom Hub"].includes(hub.label)).map(hub => {
-                  const Icon = hub.icon;
-                  const active = isHubActive(hub);
+                {[
+                  ehcpSidebarItem,
+                  ...hubs.filter(hub => ["SEND Hub", "Planning Hub", "Revision Hub", "Classroom Hub", "Communications Hub"].includes(hub.label)),
+                ].map(item => {
+                  const Icon = item.icon;
+                  const active = item.toolPrefixes.some(path => location === path || location.startsWith(`${path}/`));
                   return (
-                    <Link key={hub.path} href={hub.path} className={`teacher-rail-link ${active ? "teacher-rail-link-active" : ""}`}>
-                      <Icon className="w-4 h-4" /> {hub.label}
+                    <Link key={item.path} href={item.path} className={`teacher-rail-link ${active ? "teacher-rail-link-active" : ""}`} aria-current={active ? "page" : undefined}>
+                      <Icon className="w-4 h-4" /> {item.label}
                     </Link>
                   );
                 })}
@@ -624,8 +661,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </aside>
-        <main className="pb-10 overflow-x-hidden min-w-0 flex-1 w-full">
+        <main id="main-content" className="min-h-[calc(100vh-4rem)] min-w-0 flex-1 w-full overflow-x-hidden pb-24 lg:pb-10" tabIndex={-1}>
           <motion.div
+            className="min-h-full"
             key={location}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -635,6 +673,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </motion.div>
         </main>
       </div>
+
+      {/* Mobile keeps daily work reachable with four task destinations and an
+          explicit workspace drawer. The drawer contains the same extended
+          routes as desktop; no teacher has to learn a second IA. */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/92 px-2 pb-[calc(env(safe-area-inset-bottom)+0.35rem)] pt-2 shadow-[0_-12px_30px_-26px_rgba(20,35,30,0.65)] backdrop-blur-xl lg:hidden" aria-label="Primary teacher workspace">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+          {primaryWorkspaceItems.slice(0, 4).map(item => {
+            const Icon = item.icon;
+            const active = workspaceItemIsActive(location, item);
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`teacher-mobile-nav-link ${active ? "teacher-mobile-nav-link-active" : ""}`}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.shortLabel}</span>
+              </Link>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="teacher-mobile-nav-link"
+            aria-label="Open the rest of the teacher workspace"
+          >
+            <MoreHorizontal className="h-5 w-5" />
+            <span>More</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

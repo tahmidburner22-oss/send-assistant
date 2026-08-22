@@ -6,9 +6,11 @@
  *          BookQuestionsTab, Children (scheduler).
  */
 import { motion } from "framer-motion";
-import { Info, Sparkles, CheckCircle } from "lucide-react";
+import { Info, Sparkles, CheckCircle, ShieldCheck, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { sendNeeds } from "@/lib/send-data";
+import { activeTemporaryAdjustments, normaliseLearnerSupportProfile, type LearnerSupportProfile } from "@/lib/learnerSupportProfile";
+import type { SendFidelityReport } from "@/lib/sendFidelityAudit";
 
 interface SENDInfoPanelProps {
   /**
@@ -18,22 +20,27 @@ interface SENDInfoPanelProps {
    */
   sendNeedId: string;
   /** Optional context label to customise the "What will change" heading */
-  context?: "worksheet" | "story" | "differentiation" | "questions" | "scheduler";
+  context?: "worksheet" | "story" | "differentiation" | "questions" | "reading" | "scheduler";
   /** Optional extra className */
   className?: string;
   /** Use the concise, geometry-preserving explanation for approved Maths templates. */
   mode?: "default" | "maths-gold";
+  /** Optional teacher-reviewed provision preferences from the selected pupil. */
+  learnerSupportProfile?: LearnerSupportProfile;
+  /** Optional generation audit. Missing checks remain a teacher-review prompt, never a hidden pass. */
+  fidelityReport?: SendFidelityReport | null;
 }
 
 const CONTEXT_LABELS: Record<string, string> = {
   worksheet: "What will change in your worksheet",
   story: "What will change in your story",
+  reading: "What will change in your reading questions",
   differentiation: "What will change in the differentiated version",
   questions: "What will change in the generated questions",
   scheduler: "What will change in auto-generated worksheets",
 };
 
-export default function SENDInfoPanel({ sendNeedId, context = "worksheet", className = "", mode = "default" }: SENDInfoPanelProps) {
+export default function SENDInfoPanel({ sendNeedId, context = "worksheet", className = "", mode = "default", learnerSupportProfile, fidelityReport }: SENDInfoPanelProps) {
   if (!sendNeedId || sendNeedId === "none-selected" || sendNeedId === "none") return null;
 
   // The picker may emit "asc:asc-demand-avoidant". Look up the base need by
@@ -47,6 +54,9 @@ export default function SENDInfoPanel({ sendNeedId, context = "worksheet", class
     : null;
 
   const heading = CONTEXT_LABELS[context] ?? CONTEXT_LABELS.worksheet;
+  const supportProfile = learnerSupportProfile ? normaliseLearnerSupportProfile(learnerSupportProfile) : null;
+  const activeAdjustments = supportProfile ? activeTemporaryAdjustments(supportProfile) : [];
+  const fidelityPercent = fidelityReport ? Math.round(fidelityReport.fidelityRatio * 100) : null;
 
   // Approved KS3/KS4 Maths templates do not use the legacy section-flow
   // adaptation engine. Their PDF reference geometry is immutable, so explain
@@ -77,6 +87,8 @@ export default function SENDInfoPanel({ sendNeedId, context = "worksheet", class
           <li>Worked examples, question boxes, equations, answers, and the two-page sequence are not moved, added, or removed.</li>
           <li>The applied SEND and reading-age adjustments are listed in the worksheet header and included in its PDF export.</li>
         </ul>
+        {supportProfile && <div className="rounded-lg border border-purple-200 bg-white/70 p-2 text-[11px] text-purple-900 leading-relaxed"><span className="font-semibold">Teacher-reviewed support:</span> {supportProfile.successfulStrategies.length ? supportProfile.successfulStrategies.join("; ") : "No additional strategy recorded."}{activeAdjustments.length ? ` Active temporary adjustment: ${activeAdjustments.map(item => item.label).join("; ")}.` : ""}<br /><span className="text-[10px] text-purple-700">Scaffold entry: {supportProfile.scaffoldingLevel.replace(/-/g, " ")}. The approved academic demand and geometry remain fixed.</span></div>}
+        {fidelityReport && <div className={`rounded-lg border p-2 text-[11px] ${fidelityReport.warnings.length ? "border-amber-200 bg-amber-50 text-amber-900" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}><span className="font-semibold">SEND fidelity evidence:</span> {fidelityPercent}% of probeable rules evidenced. {fidelityReport.warnings[0] || "Teacher review remains required before use."}</div>}
       </motion.div>
     );
   }
@@ -175,6 +187,23 @@ export default function SENDInfoPanel({ sendNeedId, context = "worksheet", class
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {supportProfile && (
+        <div className="rounded-lg border border-indigo-200 bg-indigo-50/70 p-2.5 space-y-1.5">
+          <p className="text-[11px] font-semibold text-indigo-900 flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" />Teacher-reviewed learner support</p>
+          <p className="text-[11px] text-indigo-800 leading-relaxed">{supportProfile.successfulStrategies.length ? `Use: ${supportProfile.successfulStrategies.join("; ")}. ` : "No additional strategies recorded. "}{supportProfile.barriers.length ? `Remove: ${supportProfile.barriers.join("; ")}.` : ""}</p>
+          {activeAdjustments.length > 0 && <p className="text-[11px] text-indigo-800 leading-relaxed"><span className="font-semibold">Active temporary adjustment:</span> {activeAdjustments.map(item => item.label).join("; ")}.</p>}
+          <p className="text-[10px] text-indigo-700">Scaffold entry: {supportProfile.scaffoldingLevel.replace(/-/g, " ")}. Support must fade only on teacher evidence; the learning objective and assessment demand remain protected.</p>
+        </div>
+      )}
+
+      {fidelityReport && (
+        <div className={`rounded-lg border p-2.5 space-y-1.5 ${fidelityReport.warnings.length ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50"}`}>
+          <p className="text-[11px] font-semibold flex items-center gap-1 text-foreground"><ShieldCheck className="h-3.5 w-3.5" />SEND fidelity evidence{fidelityPercent !== null ? ` · ${fidelityPercent}% of probeable rules` : ""}</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">{fidelityReport.appliedCount} applied rule{fidelityReport.appliedCount === 1 ? "" : "s"} from {fidelityReport.totalCount}. “Not checked” is not a failure; it is a prompt for professional review.</p>
+          {fidelityReport.warnings.length > 0 && <div className="flex items-start gap-1.5 text-[11px] text-amber-900"><TriangleAlert className="h-3.5 w-3.5 mt-0.5 shrink-0" /><span>{fidelityReport.warnings[0]}</span></div>}
         </div>
       )}
 

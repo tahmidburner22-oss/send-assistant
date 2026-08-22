@@ -164,7 +164,7 @@ export function assertAoPresent<W extends PillarAWorksheet>(
   const result = cloneWorksheet(worksheet);
   const sections = result.sections ?? [];
 
-  const histogram: Record<AssessmentObjective, number> = { AO1: 0, AO2: 0, AO3: 0, AO4: 0 };
+  const histogram: Record<AssessmentObjective, number> = { AO1: 0, AO2: 0, AO3: 0, AO4: 0, AO5: 0 };
   let missing = 0;
   let total = 0;
 
@@ -174,7 +174,7 @@ export function assertAoPresent<W extends PillarAWorksheet>(
     total += 1;
 
     let ao = (s.ao || "").toString().trim().toUpperCase();
-    const isValid = ao === "AO1" || ao === "AO2" || ao === "AO3" || ao === "AO4";
+    const isValid = ao === "AO1" || ao === "AO2" || ao === "AO3" || ao === "AO4" || ao === "AO5";
 
     if (!isValid) {
       missing += 1;

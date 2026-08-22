@@ -26,6 +26,24 @@ function toInitials(name: string): string {
   return parts.map(p => (p[0] || "").toUpperCase() + ".").join("");
 }
 
+/**
+ * Stores a bounded teacher-authored provision profile. The field is deliberately
+ * generic JSON because it is a cross-tool access contract, not a diagnostic or
+ * safeguarding record. The client normalises its shape; this API guard ensures
+ * malformed/oversized payloads cannot enter the shared pupil record.
+ */
+function serialiseLearnerSupportProfile(value: unknown): string {
+  if (value === undefined) return "";
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Learner support profile must be an object");
+  }
+  const serialised = JSON.stringify(value);
+  if (serialised.length > 12_000) {
+    throw new Error("Learner support profile is too large");
+  }
+  return serialised;
+}
+
 // Parse JSON fields in assignment rows returned from SQLite
 function parseAssignment(a: any): any {
   if (!a) return a;
@@ -104,6 +122,15 @@ router.put("/:id", requireAuth, async (req: Request, res: Response) => {
     name: "name", yearGroup: "year_group", sendNeed: "send_need", upn: "upn", dob: "dob"
   };
 
+  let learnerSupportProfileJson = pupil.learner_support_profile_json || "{}";
+  if (req.body.learnerSupportProfile !== undefined) {
+    try {
+      learnerSupportProfileJson = serialiseLearnerSupportProfile(req.body.learnerSupportProfile);
+    } catch (error: any) {
+      return res.status(400).json({ error: error?.message || "Invalid learner support profile" });
+    }
+  }
+
   // Record audit trail for each changed field
   for (const [reqField, dbField] of Object.entries(fieldMap)) {
     if (req.body[reqField] !== undefined && req.body[reqField] !== pupil[dbField]) {
@@ -115,7 +142,15 @@ router.put("/:id", requireAuth, async (req: Request, res: Response) => {
     }
   }
 
-  await db.prepare(`UPDATE pupils SET name=?, year_group=?, send_need=?, upn=?, dob=?, parent_email=?, parent_name=?, updated_at=NOW() WHERE id=?`)
+  if (req.body.learnerSupportProfile !== undefined && learnerSupportProfileJson !== (pupil.learner_support_profile_json || "{}")) {
+    await db.prepare(`INSERT INTO pupil_audit (id, pupil_id, changed_by, field_name, old_value, new_value)
+      VALUES (?, ?, ?, ?, ?, ?)`).run(
+      uuidv4(), pupil.id, req.user!.id, "learnerSupportProfile",
+      pupil.learner_support_profile_json || "{}", learnerSupportProfileJson
+    );
+  }
+
+  await db.prepare(`UPDATE pupils SET name=?, year_group=?, send_need=?, upn=?, dob=?, parent_email=?, parent_name=?, learner_support_profile_json=?, updated_at=NOW() WHERE id=?`)
     .run(
       req.body.name ? toInitials(req.body.name) : pupil.name,
       req.body.yearGroup ?? pupil.year_group,
@@ -124,6 +159,7 @@ router.put("/:id", requireAuth, async (req: Request, res: Response) => {
       req.body.dob ?? pupil.dob,
       req.body.parentEmail !== undefined ? (req.body.parentEmail || null) : (pupil.parent_email ?? null),
       req.body.parentName !== undefined ? (req.body.parentName || null) : (pupil.parent_name ?? null),
+      learnerSupportProfileJson,
       pupil.id
     );
 

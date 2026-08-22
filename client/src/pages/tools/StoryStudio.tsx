@@ -30,6 +30,9 @@ import { motion } from "framer-motion";
 import { BookOpen, Sparkles, Printer, Loader2, Volume2, Image as ImageIcon, Star } from "lucide-react";
 import { callAI, parseWithFixes } from "@/lib/ai";
 import { SymbolSupportedWords } from "@/components/SymbolSupportedWords";
+import { useApp } from "@/contexts/AppContext";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
+import { learnerSupportPrompt } from "@/lib/learnerSupportProfile";
 
 interface StoryPage {
   text: string;
@@ -80,6 +83,9 @@ async function generatePageIllustration(prompt: string): Promise<string | null> 
 }
 
 export default function StoryStudio() {
+  const { children } = useApp();
+  const { pupilId: scopedPupilId } = usePupilScope();
+  const scopedPupil = children.find(child => child.id === scopedPupilId) || null;
   const [idea, setIdea] = useState("");
   const [author, setAuthor] = useState("");
   const [level, setLevel] = useState("simple");
@@ -107,7 +113,8 @@ export default function StoryStudio() {
         "calm, child-safe scene description (no text in image). 'keyWords' is 1-3 simple " +
         "content words from the page (for symbol support). Keep the story positive, with a " +
         "clear beginning/middle/end. British English.";
-      const user = `Story idea: ${i}\nReading level: ${level}\nNumber of pages: ${pageCount}`;
+      const supportLines = scopedPupil?.learnerSupportProfile ? learnerSupportPrompt(scopedPupil.learnerSupportProfile) : [];
+      const user = `Story idea: ${i}\nReading level: ${level}\nNumber of pages: ${pageCount}${supportLines.length ? `\n\nTeacher-reviewed access preferences (use only for presentation, communication and optional scaffolds; do not name the pupil, diagnose, override the selected reading level, or lower age-appropriate narrative quality):\n${supportLines.join("\n")}` : ""}`;
       const { text } = await callAI(system, user, 1600, { responseFormat: "json_object" });
       const parsed = parseWithFixes(text) as Partial<Story>;
       const pages = Array.isArray(parsed?.pages)
@@ -187,6 +194,11 @@ export default function StoryStudio() {
               </Select>
             </div>
           </div>
+          {scopedPupil?.learnerSupportProfile && (
+            <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900 leading-relaxed">
+              <span className="font-semibold">Selected-pupil access guide:</span> the reviewed support profile will guide presentation and optional story scaffolds. The selected reading level and age-appropriate narrative ambition remain under teacher control.
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Reading level</Label>

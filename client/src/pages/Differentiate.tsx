@@ -17,17 +17,20 @@ import { downloadDifferentiatedPdf } from "@/lib/pdf-generator";
 import { renderMath } from "@/components/WorksheetRenderer";
 import { useApp } from "@/contexts/AppContext";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
 
 export default function Differentiate() {
   const { colorOverlay, setColorOverlay, saveDifferentiation, children, assignWork } = useApp();
   const { preferences } = useUserPreferences();
+  const { pupilId: scopedPupilId } = usePupilScope();
+  const scopedPupil = children.find(child => child.id === scopedPupilId) || null;
   const filteredSubjects = subjects.filter(s => s.id !== "eleven-plus" || (preferences.show11Plus ?? false));
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [assignChildId, setAssignChildId] = useState("");
   const [assigning, setAssigning] = useState(false);
 
   const handleAssign = async () => {
-    if (!assignChildId) return;
+    if (!assignChildId || !result) return;
     setAssigning(true);
     try {
       const title = `Differentiated Task${subject ? ` — ${subjects.find(s => s.id === subject)?.name || subject}` : ""}${yearGroup ? ` (${yearGroup})` : ""}`;
@@ -46,7 +49,7 @@ export default function Differentiate() {
   const [sendNeed, setSendNeed] = useState("");
   const [difficulty, setDifficulty] = useState("mixed");
   const [originalTask, setOriginalTask] = useState("");
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [textSize, setTextSize] = useState(14);
@@ -70,6 +73,7 @@ export default function Differentiate() {
         sendNeed: sendNeed || undefined,
         yearGroup,
         subject,
+        learnerSupportProfile: scopedPupil?.learnerSupportProfile,
       });
       setResult(aiResult.differentiatedContent);
       saveDifferentiation({ taskContent: originalTask, differentiatedContent: aiResult.differentiatedContent, sendNeed: sendNeed || undefined, yearGroup, subject });
@@ -171,9 +175,9 @@ export default function Differentiate() {
               </div>
 
               {/* SEND Adaptation Info Panel */}
-              {sendNeed && sendNeed !== "none-selected" && (
-                <SENDInfoPanel sendNeedId={sendNeed} context="differentiation" />
-              )}
+              {(sendNeed && sendNeed !== "none-selected") || scopedPupil?.learnerSupportProfile ? (
+                <SENDInfoPanel sendNeedId={sendNeed} context="differentiation" learnerSupportProfile={scopedPupil?.learnerSupportProfile} />
+              ) : null}
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Original Task / Activity *</Label>

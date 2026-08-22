@@ -49,6 +49,7 @@ import { resolveDeckImages, bestImageUrl, fetchImageAsDataUrl } from "@/lib/pres
 import { TermSymbol } from "@/components/SymbolSupportedWords";
 import { resolveSymbolsForWords, fetchSymbolAsDataUrl } from "@/lib/symbol-resolver";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
+import { getPresentationSubjectVisual } from "@/lib/presentationVisualTheme";
 import { z } from "zod";
 
 // ─── Zod schema for AI-generated slide validation ────────────────────────────
@@ -77,6 +78,8 @@ const SlideTypeEnum = z.enum([
   "section-divider",
   // ── Phase 2: classroom-action slide types (items 28–33) ─────────────
   "cold-call","live-model","do-now","choose-your-task","stuck-help","homework",
+  // Visual composition variants supported by the renderer and export path.
+  "comparison-table","timeline-horizontal","card-grid","before-after",
 ]);
 
 const SlideContentSchema = z.object({
@@ -1540,9 +1543,9 @@ ${boardCommandWords.map(w => `  • ${w}`).join("\n")}` : "";
   const specPointsBlock = (() => {
     try {
       const board = (examBoard && examBoard !== "none" ? examBoard : "AQA") as any;
-      const entries: CurriculumEntry[] = lookupByTopic(board, subject, yearGroup, topic, "both");
+      const entries: CurriculumEntry[] = lookupByTopic(board, subject, yearGroup, topic, { limit: 8 });
       if (!entries || entries.length === 0) return "";
-      const lines = entries.slice(0, 6).map(e => `  • ${e.specPoint.specRef} — ${e.specPoint.statement}`);
+      const lines = entries.slice(0, 6).map(e => `  • ${e.specPoint.specRef} — ${e.specPoint.specTitle}`);
       return `
 ${board} SPEC POINTS LIKELY RELEVANT TO "${topic}" (cite by ref where appropriate):
 ${lines.join("\n")}`;
@@ -2083,28 +2086,30 @@ function ImageCredit({ slide }: { slide: SlideContent }) {
   );
 }
 
-function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: ComposedTheme; Icon: React.ElementType }) {  const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
+function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: ComposedTheme; Icon: React.ElementType }) {
+  const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
   const ped = SLIDE_TYPE_PEDAGOGY[slide.type];
   return (
-    <div className="px-10 pt-7 pb-3">
-      <div className="flex items-center gap-3 mb-1.5">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: badgeColour }}>
+    <div className="px-7 pt-5 pb-3">
+      <div className="flex items-center gap-3 rounded-2xl border px-3.5 py-2.5 shadow-sm backdrop-blur-sm" style={{ background: theme.highContrast ? "#FFFFFF" : "rgba(255,255,255,0.84)", borderColor: `${badgeColour}35` }}>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm" style={{ background: badgeColour }}>
           <Icon className="w-4 h-4 text-white" />
         </div>
-        <h2 className="text-[1.35rem] font-bold leading-tight" style={{ color: theme.primary }}>{slide.title}</h2>
-        {/* Pedagogy badge — Rosenshine + Bloom for the teacher's eye. Hidden
-            in the PPTX export and in print, but visible in the on-screen editor
-            so ECTs/SLT can see why each slide is here. */}
+        <div className="min-w-0 flex-1">
+          <div className="text-[9px] font-bold uppercase tracking-[0.16em] mb-0.5" style={{ color: badgeColour }}>{SLIDE_LABELS[slide.type] || slide.type}</div>
+          <h2 className="text-[1.2rem] font-bold leading-tight truncate" style={{ color: theme.primary }}>{slide.title}</h2>
+        </div>
+        {/* Pedagogy badges stay available to the teacher in the editor, while
+            the instruction itself remains the dominant classroom element. */}
         {ped && ped.bloom !== "—" && (
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="ml-auto flex items-center gap-1.5 shrink-0">
             {ped.rosenshine && (
-              <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-700 border border-indigo-200" title="Rosenshine's Principles of Instruction">{ped.rosenshine}</span>
+              <span className="hidden md:inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-700 border border-indigo-200" title="Rosenshine's Principles of Instruction">{ped.rosenshine}</span>
             )}
             <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide bg-amber-50 text-amber-800 border border-amber-200" title="Bloom's taxonomy band">{ped.bloom}</span>
           </div>
         )}
       </div>
-      <div className="h-[3px] w-14 rounded-full" style={{ background: badgeColour }} />
     </div>
   );
 }
@@ -2214,7 +2219,7 @@ function renderLayoutSlide(
   const Shell: React.FC<{ children: React.ReactNode; contentClass?: string }> = ({ children, contentClass }) => (
     <div className="flex flex-col h-full">
       <SlideHeader slide={slide} theme={theme} Icon={Icon} />
-      <div className={`flex-1 px-10 pb-7 ${contentClass || "flex flex-col justify-center gap-2"}`}>
+      <div className={`flex-1 mx-7 mb-6 rounded-2xl border px-5 pb-4 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm overflow-hidden ${contentClass || "flex flex-col justify-center gap-2"}`} style={{ background: theme.highContrast ? "#FFFFFF" : "rgba(255,255,255,0.80)", borderColor: `${theme.secondary}22` }}>
         {children}
       </div>
     </div>
@@ -2515,6 +2520,7 @@ function FullSlideView({
   revealLevel = Infinity,
   branding,
   symbolSupport = false,
+  subject,
 }: {
   slide: SlideContent;
   theme: ComposedTheme;
@@ -2527,9 +2533,12 @@ function FullSlideView({
   /** V5 — when true, render an ARASAAC pictogram above each word-bank /
    *  key-terms / vocab-reference term (opt-in SEND symbol support). */
   symbolSupport?: boolean;
+  /** Active deck subject drives decorative, non-essential background motifs. */
+  subject?: string;
 }) {
   const Icon = SLIDE_ICONS[slide.type] || BookOpen;
   const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
+  const visual = getPresentationSubjectVisual(subject, theme, Boolean(theme.highContrast));
 
   const renderSlideContent = () => {
     switch (slide.type) {
@@ -3759,9 +3768,12 @@ function FullSlideView({
   return (
     <div
       className="w-full rounded-2xl overflow-hidden shadow-2xl"
+      data-subject-motif={visual.motif}
+      role="group"
+      aria-label={`${slide.title}. ${SLIDE_LABELS[slide.type] || slide.type}. Slide ${index + 1} of ${total}.`}
       style={{
         aspectRatio: "16/9",
-        background: isTitleSlide ? theme.gradient : theme.bg,
+        background: isTitleSlide ? visual.titleBackground : visual.surfaceBackground,
         position: "relative",
         // theme.fontFamily wins (SEND), then any preview-level wrapper font
         // (the parent supplies a CSS variable for subject-aware font when no
@@ -3770,6 +3782,12 @@ function FullSlideView({
         lineHeight: theme.lineHeight || undefined,
       }}
     >
+      {/* Subject visual label is descriptive only; all teaching content remains in the main slide body. */}
+      {(isTitleSlide || slide.type === "section-divider") && (
+        <div className="absolute top-5 left-7 z-10 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.88)", borderColor: "rgba(255,255,255,0.28)", background: "rgba(15,23,42,0.18)" }}>
+          {visual.label}
+        </div>
+      )}
       {/* Top accent bar — coloured by slide type */}
       {!isTitleSlide && (
         <div className="absolute top-0 left-0 right-0 h-[4px]" style={{ background: badgeColour }} />
@@ -3904,6 +3922,7 @@ async function exportToPptx(
   const slideBgClean = bgClean;
   const slideTextClean = isDark ? "E2E8F0" : textClean;
   const slideTitleClean = isDark ? "E2E8F0" : primaryClean;
+  const deckVisual = getPresentationSubjectVisual(presentation.subject, theme, Boolean(theme.highContrast));
 
   // ── Per-slide-type colour lookup (matches SLIDE_TYPE_COLOURS) ──────────────
   // The preview uses these as the left accent bar colour; the PPTX export
@@ -4144,6 +4163,25 @@ async function exportToPptx(
           x: 0, y: 0, w: 10, h: 5.625,
           sizing: { type: "cover", w: 10, h: 5.625 },
           transparency: 70, // 0=opaque, 100=invisible
+        });
+      }
+      // Subject-responsive title motif. This is decorative only: the visible
+      // title and subtitle always carry the lesson's essential meaning.
+      if (!theme.highContrast) {
+        pSlide.addShape(pptx.ShapeType.ellipse, {
+          x: 7.7, y: 0.35, w: 2.1, h: 2.1,
+          fill: { type: "solid", color: accentClean, transparency: 55 },
+          line: { color: accentClean, transparency: 100 },
+        });
+        pSlide.addShape(pptx.ShapeType.ellipse, {
+          x: 8.55, y: 2.15, w: 1.05, h: 1.05,
+          fill: { type: "solid", color: secondaryClean, transparency: 60 },
+          line: { color: secondaryClean, transparency: 100 },
+        });
+        pSlide.addText(deckVisual.label.toUpperCase(), {
+          x: 0.5, y: 0.4, w: isSplit ? 3.9 : 9, h: 0.25,
+          fontSize: 8, bold: true, color: "DCE7FF", charSpacing: 1.8,
+          align: isSplit ? "left" : "center", fontFace: pptxFont,
         });
       }
       // Decorative accent bar
@@ -4802,6 +4840,9 @@ function PresenterMode({
   const secs = timerSeconds == null ? null : timerSeconds % 60;
   const timerLow = (timerSeconds ?? 9999) < 60;
   const timerStr = timerSeconds == null ? "—" : `${mins}:${(secs as number).toString().padStart(2, "0")}`;
+  const timerAlertClass = timerLow
+    ? theme.banAlarmRed ? "bg-amber-400 text-amber-950" : "bg-red-500 text-white animate-pulse"
+    : "bg-slate-800";
 
   if (!slide) return null;
 
@@ -4812,6 +4853,9 @@ function PresenterMode({
       onKeyDown={onKeyDown}
       ref={el => el?.focus()}
     >
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        Slide {activeSlide + 1} of {total}: {slide.title}.
+      </div>
       {/* Blackout / whiteout overlay (B / W keys) ───────────────────────── */}
       {blackout !== "none" && (
         <div
@@ -4831,16 +4875,16 @@ function PresenterMode({
       <div className="flex-1 flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-6xl" style={{ aspectRatio: "16/9" }}>
-            <FullSlideView slide={slide} theme={theme} index={activeSlide} total={total} revealLevel={revealLevel} branding={branding} symbolSupport={symbolSupport} />
+            <FullSlideView slide={slide} theme={theme} index={activeSlide} total={total} revealLevel={revealLevel} branding={branding} symbolSupport={symbolSupport} subject={presentation.subject} />
           </div>
         </div>
         {/* Bottom control strip ───────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-6 py-2 bg-black/60 text-white text-xs">
           <div className="flex items-center gap-3">
-            <button onClick={() => onSetActive(Math.max(0, activeSlide - 1))} disabled={activeSlide === 0} className="flex items-center gap-1 disabled:opacity-30 hover:text-gray-300">
+            <button aria-label="Previous slide" onClick={() => onSetActive(Math.max(0, activeSlide - 1))} disabled={activeSlide === 0} className="flex items-center gap-1 disabled:opacity-30 hover:text-gray-300">
               <ChevronLeft className="w-4 h-4" /> Prev
             </button>
-            <button onClick={() => onSetActive(Math.min(total - 1, activeSlide + 1))} disabled={activeSlide === total - 1} className="flex items-center gap-1 disabled:opacity-30 hover:text-gray-300">
+            <button aria-label="Next slide" onClick={() => onSetActive(Math.min(total - 1, activeSlide + 1))} disabled={activeSlide === total - 1} className="flex items-center gap-1 disabled:opacity-30 hover:text-gray-300">
               Next <ChevronRight className="w-4 h-4" />
             </button>
             <div className="opacity-70 ml-2">{activeSlide + 1} / {total}</div>
@@ -4860,7 +4904,7 @@ function PresenterMode({
             <Clock className="w-3.5 h-3.5 opacity-60" />
             <div className="text-sm font-mono">{wall}</div>
           </div>
-          <button onClick={onTogglePause} className={`text-xs font-mono px-2 py-1 rounded ${timerLow ? "bg-red-500 text-white animate-pulse" : "bg-slate-800"}`}>
+          <button aria-label={timerPaused ? "Resume slide timer" : "Pause slide timer"} onClick={onTogglePause} className={`text-xs font-mono px-2 py-1 rounded ${timerAlertClass}`}>
             {timerPaused ? <Play className="w-3 h-3 inline" /> : <Pause className="w-3 h-3 inline" />} {timerStr}
           </button>
         </div>
@@ -4870,7 +4914,7 @@ function PresenterMode({
           {next ? (
             <div className="rounded-md overflow-hidden border border-slate-700 bg-white" style={{ aspectRatio: "16/9" }}>
               <div className="w-full h-full transform scale-[0.4] origin-top-left" style={{ width: "250%", height: "250%" }}>
-                <FullSlideView slide={next} theme={theme} index={activeSlide + 1} total={total} symbolSupport={symbolSupport} />
+                <FullSlideView slide={next} theme={theme} index={activeSlide + 1} total={total} symbolSupport={symbolSupport} subject={presentation.subject} />
               </div>
             </div>
           ) : (
@@ -4908,6 +4952,7 @@ export default function PresentationMaker() {
 
   // Form state
   const [subject, setSubject] = useState("");
+  const activeSubjectProfile = getSubjectProfile(subject);
   const [yearGroup, setYearGroup] = useState("");
   const [topic, setTopic] = useState("");
   const [lessonType, setLessonType] = useState("introduction");
@@ -4927,20 +4972,17 @@ export default function PresentationMaker() {
   // optional free-text notes, comma-separated).
   const sendNeeds = [...sendNeedIds, sendNeedsNotes.trim()].filter(Boolean).join(",");
   const [additionalNotes, setAdditionalNotes] = useState("");
-  const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("navy");
+  // Subject-responsive visual storytelling is the default; teachers can still
+  // choose a fixed palette when it serves a particular lesson or school style.
+  const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("subject-auto" as ThemeKey);
   const [readingAge, setReadingAge] = useState<number>(12);
   const [examBoard, setExamBoard] = useState("none");
   const [differentiationLevel, setDifferentiationLevel] = useState<"foundation" | "core" | "extension">("core");
 
-  // Auto-select Rainbow theme for primary school year groups
-  const handleYearGroupChange = (value: string) => {
-    setYearGroup(value);
-    if (/year [1-6]|ks1|ks2|reception/i.test(value)) {
-      setSelectedTheme("rainbow");
-    } else if (selectedTheme === "rainbow") {
-      setSelectedTheme("navy");
-    }
-  };
+  // Year group should never silently overwrite a teacher's visual choice.
+  // The default subject-auto theme remains suitable for primary and secondary
+  // slides because it changes only the non-essential background motif.
+  const handleYearGroupChange = (value: string) => setYearGroup(value);
 
   // Generation state
   const [loading, setLoading] = useState(false);
@@ -5172,7 +5214,7 @@ export default function PresentationMaker() {
             if (!curr) return curr;
             // Bail if the user has already moved on to a different deck.
             if (curr.title !== parsed.title || curr.slides.length !== resolvedSlides.length) return curr;
-            return { ...curr, slides: resolvedSlides as typeof curr.slides };
+            return { ...curr, slides: resolvedSlides as unknown as typeof curr.slides };
           });
         } catch (e) {
           // Resolution is best-effort — never block the generation flow.
@@ -5326,7 +5368,7 @@ No markdown, no code fences, JSON only.`;
           setPresentation((curr) => {
             if (!curr) return curr;
             if (curr.slides.length !== resolved.length) return curr;
-            return { ...curr, slides: resolved as typeof curr.slides };
+            return { ...curr, slides: resolved as unknown as typeof curr.slides };
           });
         } catch { /* best-effort */ }
       })();
@@ -5907,7 +5949,7 @@ Return JSON only.`;
               </div>
               <div>
                 <h1 className="text-base font-bold text-gray-900">Presentation Maker</h1>
-                <p className="text-xs text-gray-500">AI-powered lesson slides</p>
+                <p className="text-xs text-gray-500">Lesson-ready slides, handouts and presenter tools</p>
               </div>
             </div>
           </div>
@@ -5940,8 +5982,14 @@ Return JSON only.`;
               >
                 🏫 School
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setIsFullscreen(true)} className="text-xs gap-1">
-                <Maximize2 className="w-3 h-3" />Present
+              <Button
+                size="sm"
+                onClick={() => setIsFullscreen(true)}
+                className="text-xs gap-1 text-white shadow-sm hover:opacity-95"
+                style={{ background: theme.gradient, border: "none" }}
+                title="Start the full classroom presenter view"
+              >
+                <Play className="w-3 h-3" />Start lesson
               </Button>
               <Button
                 variant="outline" size="sm" onClick={() => setShowDisplayPrefs(p => !p)}
@@ -6217,8 +6265,9 @@ Return JSON only.`;
                 {/* Theme Picker */}
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                    <Palette className="w-3 h-3" /> Theme
+                    <Palette className="w-3 h-3" /> Lesson visual style
                   </Label>
+                  <p className="text-[11px] leading-relaxed text-gray-500">Dynamic Subject is the lesson-ready default: it adds a subtle subject motif to the opening and background while keeping teaching content on clear, high-contrast surfaces.</p>
                   <div className="grid grid-cols-3 gap-1.5">
                     {/* Subject-auto theme — pulls palette from subject-profiles.ts */}
                     <button
@@ -6229,11 +6278,11 @@ Return JSON only.`;
                       title={subject ? `Use the ${subject} palette automatically` : "Pick a subject first"}
                     >
                       <div className="h-4 rounded mb-1" style={{
-                        background: subject
-                          ? `linear-gradient(135deg, #${getSubjectProfile(subject).palette.darkBg} 0%, #${getSubjectProfile(subject).palette.accent1} 100%)`
+                        background: activeSubjectProfile
+                          ? `linear-gradient(135deg, #${activeSubjectProfile.palette.darkBg} 0%, #${activeSubjectProfile.palette.accent1} 100%)`
                           : "linear-gradient(135deg,#64748b,#94a3b8)",
                       }} />
-                      <div className="text-[9px] font-bold text-gray-700 truncate">✨ Subject Auto</div>
+                      <div className="text-[9px] font-bold text-gray-700 truncate">✨ Dynamic Subject</div>
                     </button>
                     {(Object.entries(THEMES) as [ThemeKey, typeof THEMES[ThemeKey]][]).map(([key, t]) => (
                       <button
@@ -6433,6 +6482,7 @@ Return JSON only.`;
                       total={presentation.slides.length}
                       branding={identity}
                       symbolSupport={symbolSupport}
+                      subject={presentation.subject}
                     />
                     {/* Navigation */}
                     <div className="flex items-center justify-between mt-3">
@@ -7006,7 +7056,7 @@ Return JSON only.`;
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-semibold">Original</span>
               </div>
-              <FullSlideView slide={presentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={presentation.slides.length} symbolSupport={symbolSupport} />
+              <FullSlideView slide={presentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={presentation.slides.length} symbolSupport={symbolSupport} subject={presentation.subject} />
               {presentation.slides[comparisonActiveSlide]?.speakerNotes && (
                 <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
                   <strong>Notes:</strong> {presentation.slides[comparisonActiveSlide].speakerNotes}
@@ -7018,7 +7068,7 @@ Return JSON only.`;
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-semibold">SEND Adapted</span>
               </div>
-              <FullSlideView slide={adaptedPresentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={adaptedPresentation.slides.length} symbolSupport={symbolSupport} />
+              <FullSlideView slide={adaptedPresentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={adaptedPresentation.slides.length} symbolSupport={symbolSupport} subject={adaptedPresentation.subject} />
               {adaptedPresentation.slides[comparisonActiveSlide]?.speakerNotes && (
                 <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-700">
                   <strong>Notes:</strong> {adaptedPresentation.slides[comparisonActiveSlide].speakerNotes}

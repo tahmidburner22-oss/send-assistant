@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
 import { callAI, parseWithFixes, repairTruncatedJson } from "@/lib/ai";
 import { subjects, sendNeeds } from "@/lib/send-data";
+import { getWorksheetOverlayColor, resolveWorksheetOverlayId } from "@/lib/worksheetOverlay";
 import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers, Copy, Share2, Link, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ import WorksheetErrorBoundary from "@/components/WorksheetErrorBoundary";
 import GoldWorksheetFrame from "@/components/GoldWorksheetFrame";
 import { downloadGoldWorksheetPdf, printGoldWorksheet } from "@/lib/mathsGoldPdf";
 import { getTopicImages } from "@/lib/topic-image-bank";
+import { TeacherPageHeader } from "@/components/TeacherWorkspace";
 
 type Section = {
   id?: string;
@@ -113,7 +115,10 @@ function enrichAtomicStructureSections(ws: Worksheet, sections: Section[]): Sect
 }
 
 function buildSections(ws: Worksheet): Section[] {
-  if (ws.sections && ws.sections.length > 0) return enrichAtomicStructureSections(ws, ws.sections as Section[]);
+  // Structured sections returned from the authorised API are canonical. History
+  // must render those records exactly as saved; heuristic enrichment is reserved
+  // only for old text-only worksheets that have no section data to preserve.
+  if (ws.sections && ws.sections.length > 0) return ws.sections as Section[];
   const source = ws.teacherContent || ws.content || "";
   if (!source) return [];
 
@@ -239,7 +244,14 @@ export default function History() {
   useEffect(() => { refreshData(); }, []);
 
   // ── Assign to student state ─────────────────────────────────────────────────
-  const [assignItem, setAssignItem] = useState<{ title: string; type: string; content: string } | null>(null);
+  const [assignItem, setAssignItem] = useState<{
+    title: string;
+    type: string;
+    content: string;
+    subtitle?: string;
+    sections?: Worksheet["sections"];
+    metadata?: Worksheet["metadata"];
+  } | null>(null);
   const [assignChildId, setAssignChildId] = useState<string>("");
   const [assigning, setAssigning] = useState(false);
 
@@ -339,8 +351,15 @@ export default function History() {
     if (!assignItem || !assignChildId) return;
     setAssigning(true);
     try {
-      await assignWork(assignChildId, { title: assignItem.title, type: assignItem.type as any, content: assignItem.content });
-      toast.success(`Assigned to student successfully!`);
+      await assignWork(assignChildId, {
+        title: assignItem.title,
+        type: assignItem.type as any,
+        content: assignItem.content,
+        subtitle: assignItem.subtitle,
+        sections: assignItem.sections,
+        metadata: assignItem.metadata ? { ...assignItem.metadata, source: "history-reassignment" } : { source: "history-reassignment" },
+      });
+      toast.success("Assigned. The saved pupil view is ready to review.");
       setAssignItem(null);
       setAssignChildId("");
     } catch {
@@ -354,7 +373,10 @@ export default function History() {
   const [selectedWs, setSelectedWs] = useState<Worksheet | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editedSections, setEditedSections] = useState<Record<number, string>>({});
-  const [viewMode, setViewMode] = useState<"teacher" | "student">("teacher");
+  // History opens in the pupil-safe view so a teacher first verifies the
+  // material as it was assigned. Teacher-only material remains one explicit
+  // switch away rather than appearing by default.
+  const [viewMode, setViewMode] = useState<"teacher" | "student">("student");
   const [saving, setSaving] = useState(false);
   const [editType, setEditType] = useState<"none" | "manual" | "ai">("none");
   const [aiEditPrompt, setAiEditPrompt] = useState("");
@@ -380,7 +402,7 @@ export default function History() {
     setSelectedWs(ws);
     setEditMode(false);
     setEditedSections({});
-    setViewMode("teacher");
+    setViewMode("student");
     setEditType("none");
     setAiEditPrompt("");
     setHiddenSections(new Set());
@@ -419,13 +441,24 @@ export default function History() {
   }
 
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <p className="text-sm text-muted-foreground">View and edit your previously generated worksheets and stories.</p>
+    <div className="teacher-workspace space-y-4">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24 }}>
+        <TeacherPageHeader
+          eyebrow="Review workspace"
+          title="Materials, history and provenance"
+          description="Re-open the exact saved pupil-facing structure, then choose teacher review tools deliberately. Saved diagrams, response space and print settings remain attached to each worksheet."
+          icon={FileText}
+          meta={
+            <>
+              <span className="rounded-full border border-brand/20 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-brand">{worksheetHistory.length} worksheet{worksheetHistory.length === 1 ? "" : "s"}</span>
+              <span className="rounded-full border border-border/60 bg-white/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">{storyHistory.length} stor{storyHistory.length === 1 ? "y" : "ies"}</span>
+            </>
+          }
+        />
       </motion.div>
 
       <Tabs defaultValue="worksheets">
-        <TabsList className="w-full grid grid-cols-3 h-10">
+        <TabsList className="h-auto w-full grid grid-cols-3 rounded-xl border border-border/50 bg-white/70 p-1">
           <TabsTrigger value="worksheets" className="text-xs gap-1.5">
             <FileText className="w-3.5 h-3.5" /> Worksheets ({worksheetHistory.length})
           </TabsTrigger>
@@ -547,7 +580,14 @@ export default function History() {
                       </div>
                     </div>
                     <div className="flex gap-1.5">
-                      <Button variant="outline" size="sm" title="Assign to student" onClick={e => { e.stopPropagation(); setAssignItem({ title: ws.title, type: "worksheet", content: ws.content || "" }); }}>
+                      <Button variant="outline" size="sm" title="Assign to student" onClick={e => { e.stopPropagation(); setAssignItem({
+                        title: ws.title,
+                        subtitle: ws.subtitle,
+                        type: "worksheet",
+                        content: ws.content || "",
+                        sections: ws.sections,
+                        metadata: ws.metadata,
+                      }); }}>
                         <UserPlus className="w-3.5 h-3.5" />
                       </Button>
                       <Button variant="outline" size="sm" title="Duplicate" onClick={e => { e.stopPropagation(); handleDuplicate(ws); }}>
@@ -655,6 +695,13 @@ export default function History() {
           {selectedWs && (() => {
             const sections = buildSections(selectedWs);
             const visibleSections = viewMode === "teacher" ? sections : sections.filter(s => !s.teacherOnly);
+            const resolvedHistoryOverlayId = selectedWs.overlay || resolveWorksheetOverlayId({
+              sendNeed: selectedWs.sendNeed,
+              selectedOverlayId: "none",
+              mode: "auto",
+              protectedLayout: Boolean(selectedWs.goldHtml),
+            });
+            const resolvedHistoryOverlayColor = getWorksheetOverlayColor(resolvedHistoryOverlayId);
 
             return (
               <div className="space-y-4 mt-1">
@@ -663,14 +710,16 @@ export default function History() {
                   {/* Teacher / Student toggle */}
                   {!selectedWs.goldHtml && <div className="flex bg-muted rounded-lg p-0.5">
                     <button
-                      onClick={() => setViewMode("teacher")}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${viewMode === "teacher" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"}`}>
-                      <GraduationCap className="w-3.5 h-3.5" /> Teacher
+                      onClick={() => setViewMode("student")}
+                      aria-pressed={viewMode === "student"}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${viewMode === "student" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"}`}>
+                      <Eye className="w-3.5 h-3.5" /> Pupil view
                     </button>
                     <button
-                      onClick={() => setViewMode("student")}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${viewMode === "student" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"}`}>
-                      <Eye className="w-3.5 h-3.5" /> Student
+                      onClick={() => setViewMode("teacher")}
+                      aria-pressed={viewMode === "teacher"}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${viewMode === "teacher" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"}`}>
+                      <GraduationCap className="w-3.5 h-3.5" /> Teacher view
                     </button>
                   </div>}
 
@@ -773,6 +822,46 @@ export default function History() {
                     </Button>
                   )}
                 </div>
+
+                {/* The viewer tells the teacher which version is on screen and
+                    preserves the educational provenance that informed it. */}
+                {!selectedWs.goldHtml && (() => {
+                  const meta = (selectedWs.metadata || {}) as Record<string, unknown>;
+                  const adaptations = Array.isArray(meta.adaptations)
+                    ? meta.adaptations.filter((item): item is string => typeof item === "string").slice(0, 3)
+                    : [];
+                  const reference = typeof meta.curriculumReference === "string"
+                    ? meta.curriculumReference
+                    : typeof meta.specRef === "string" ? meta.specRef : null;
+                  return (
+                    <div className="rounded-xl border border-border/60 bg-muted/25 p-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${viewMode === "student" ? "bg-brand-light text-brand" : "bg-indigo-100 text-indigo-800"}`}>
+                          {viewMode === "student" ? "Pupil-safe version" : "Teacher review version"}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {viewMode === "student"
+                            ? "Teacher-only answers, notes and metadata are hidden."
+                            : "Includes teacher-only answers and review material where available."}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
+                        {[selectedWs.subject, selectedWs.topic, selectedWs.yearGroup, selectedWs.examBoard].filter(Boolean).map(item => (
+                          <span key={String(item)} className="rounded-full border border-border/70 bg-background px-2 py-1 text-muted-foreground">{String(item)}</span>
+                        ))}
+                        {reference && <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-indigo-700">{reference}</span>}
+                      </div>
+                      {adaptations.length > 0 && (
+                        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                          <span className="font-semibold text-foreground">Visible support:</span> {adaptations.join(" · ")}
+                        </p>
+                      )}
+                      {resolvedHistoryOverlayId === "cream" && (
+                        <p className="mt-2 text-[11px] font-medium text-amber-900">Cream accessibility overlay applied for dyslexia.</p>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* AI edit prompt panel */}
                 {editType === "ai" && (
@@ -977,15 +1066,15 @@ export default function History() {
                     {(() => {
                       const wsData = toWorksheetData(selectedWs);
                       const allSections = wsData.sections;
-                      const indices = allSections.map((_, i) => i);
-                      const visibleIndices = indices.filter(i => !hiddenSections.has(i));
-                      const visibleSecs = visibleIndices.map(i => allSections[i]);
+                      const indices: number[] = allSections.map((_: unknown, i: number) => i);
+                      const visibleIndices = indices.filter((i: number) => !hiddenSections.has(i));
+                      const visibleSecs = visibleIndices.map((i: number) => allSections[i]);
                       return (
                         <WorksheetRenderer
                           worksheet={{ ...wsData, sections: visibleSecs }}
                           viewMode={viewMode}
                           textSize={15}
-                          overlayColor="transparent"
+                          overlayColor={resolvedHistoryOverlayId === "none" ? "transparent" : resolvedHistoryOverlayColor}
                           editedSections={editedSections}
                           editMode={false}
                           isRevisionMat={sections.some(s => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title")}
