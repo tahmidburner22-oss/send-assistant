@@ -227,14 +227,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <DSLBanner />
 
       <header
-        className="sticky top-0 z-40 backdrop-blur-md border-b"
-        style={{ backgroundColor: `${theme.primary}15`, borderColor: `${theme.primary}30` }}
+        className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-xl"
+        style={{ borderColor: `${theme.primary}20` }}
       >
-        <div className="flex items-center justify-between px-4 h-14">
-          <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors">
-            <Menu className="w-5 h-5 text-foreground" />
-          </button>
-          <h1 className="text-base font-semibold text-foreground truncate max-w-[200px]">
+        <div className="flex items-center justify-between h-16 px-4 lg:px-6 max-w-[1680px] mx-auto">
+          <div className="flex items-center gap-2 min-w-0">
+            <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors lg:hidden" aria-label="Open navigation">
+              <Menu className="w-5 h-5 text-foreground" />
+            </button>
+            <Link href="/home" className="hidden lg:flex items-center gap-2.5 mr-4 group">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm overflow-hidden bg-white ring-1 ring-border/60 group-hover:scale-[1.03] transition-transform">
+                <img src="/logo.png" alt="Adaptly" className="w-full h-full object-cover" />
+              </div>
+              <div className="leading-none">
+                <span className="block text-sm font-bold tracking-tight text-foreground">Adaptly</span>
+                <span className="block mt-1 text-[9px] font-semibold tracking-[0.12em] uppercase text-muted-foreground">Teacher workspace</span>
+              </div>
+            </Link>
+          </div>
+          <h1 className="text-base font-semibold text-foreground truncate max-w-[200px] lg:max-w-none lg:mr-auto">
             {currentPage?.label || "Adaptly"}
           </h1>
           <div className="flex items-center gap-1">
@@ -571,16 +582,59 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
 
-      <main className="pb-8 overflow-x-hidden w-full">
-        <motion.div
-          key={location}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15 }}
-        >
-          {children}
-        </motion.div>
-      </main>
+      <div className="max-w-[1680px] mx-auto flex items-stretch px-0 lg:px-5">
+        <aside className="hidden lg:flex w-[236px] shrink-0 sticky top-16 h-[calc(100vh-4rem)] self-start flex-col py-6 pr-5" aria-label="Teacher workspace navigation">
+          <div className="teacher-nav-rail p-2.5 flex flex-col h-[calc(100vh-6.5rem)]">
+            <p className="px-2.5 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Your teaching day</p>
+            <div className="space-y-1">
+              <Link href="/home" className={`teacher-rail-link ${location === "/home" ? "teacher-rail-link-active" : ""}`}>
+                <Home className="w-4 h-4" /> Home
+              </Link>
+              <Link href="/worksheets" className={`teacher-rail-link ${location.startsWith("/worksheets") ? "teacher-rail-link-active" : ""}`}>
+                <Pencil className="w-4 h-4" /> Worksheet studio
+              </Link>
+              <Link href="/pupils" className={`teacher-rail-link ${location.startsWith("/pupils") ? "teacher-rail-link-active" : ""}`}>
+                <Users className="w-4 h-4" /> Pupil profiles
+              </Link>
+              <Link href="/academic-screenings" className={`teacher-rail-link ${location.startsWith("/academic-screenings") ? "teacher-rail-link-active" : ""}`}>
+                <ClipboardList className="w-4 h-4" /> Screenings
+              </Link>
+            </div>
+            <div className="mt-6 pt-5 border-t border-border/60">
+              <p className="px-2.5 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Plan & support</p>
+              <div className="space-y-1">
+                {hubs.filter(hub => ["SEND Hub", "Revision Hub", "Planning Hub", "Classroom Hub"].includes(hub.label)).map(hub => {
+                  const Icon = hub.icon;
+                  const active = isHubActive(hub);
+                  return (
+                    <Link key={hub.path} href={hub.path} className={`teacher-rail-link ${active ? "teacher-rail-link-active" : ""}`}>
+                      <Icon className="w-4 h-4" /> {hub.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="mt-auto pt-5 border-t border-border/60 space-y-1">
+              <Link href="/settings" className={`teacher-rail-link ${location.startsWith("/settings") ? "teacher-rail-link-active" : ""}`}>
+                <Settings className="w-4 h-4" /> Settings
+              </Link>
+              <button onClick={() => window.dispatchEvent(new CustomEvent("adaptly:feedback"))} className="teacher-rail-link w-full text-left">
+                <MessageSquare className="w-4 h-4" /> Feedback
+              </button>
+            </div>
+          </div>
+        </aside>
+        <main className="pb-10 overflow-x-hidden min-w-0 flex-1 w-full">
+          <motion.div
+            key={location}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {children}
+          </motion.div>
+        </main>
+      </div>
     </div>
   );
 }
