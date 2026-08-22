@@ -201,7 +201,7 @@ export const GOLD_CSS = `
 .ws-root .t1 { font-family: var(--ws-title-font); font-size: ${fs(20)}; font-weight: bold; color: #0f204b; line-height: 1.1; }
 .ws-root .t2 { font-family: var(--ws-title-font); font-size: ${fs(18)}; font-weight: bold; color: #0f204b; line-height: 1.1; }
 .ws-root .ws-badge-label { font-size: ${fs(7.5)}; color: #1f5fa6; font-weight: bold; }
-.ws-root .ws-adaptation-note { display: inline-block; max-width: 58mm; margin-top: 2px; padding: 1px 3px; border: 1px solid #1f5fa6; border-radius: 2px; color: #1f5fa6; background: #ffffff; font-size: ${fs(6.8)}; font-weight: bold; line-height: 1.15; text-align: right; }
+.ws-root .ws-adaptation-note { display: block; margin-top: 1px; color: #1f5fa6; background: transparent; font-size: ${fs(6.2)}; font-weight: bold; line-height: 1; text-align: right; white-space: nowrap; }
 
 .ws-root .lo { position: absolute; top: 16mm; left: 0; right: 0; height: 9mm; background: white; border: 1.5px solid #1f5fa6; border-radius: 4px; text-align: center; line-height: 9mm; font-weight: bold; font-size: ${fs(10.5)}; }
 
@@ -542,8 +542,16 @@ export function renderGoldWorksheetBody(data: GoldWorksheet, notes: GoldAdaptati
   const titleLines = (data.title || "").split("\n");
   const titleL1 = pp(titleLines[0] ?? "");
   const titleL2 = pp(titleLines[1] ?? "");
+  const compactAdaptationLabels = notes.map((note) => {
+    if (note.id === "reading-age") {
+      const age = note.label.match(/Reading age (\d+)/)?.[1];
+      return age ? `Age ${age}` : "Reading support";
+    }
+    return note.label.replace(/-friendly$/i, "");
+  });
+  const fullAdaptationRecord = notes.map((note) => pp(note.label)).join(" · ");
   const adaptationSummary = notes.length > 0
-    ? `<div class="ws-adaptation-note">SEND overlay active<br>Adaptations: ${notes.map((note) => pp(note.label)).join(" · ")}</div>`
+    ? `<div class="ws-adaptation-note">Support: ${compactAdaptationLabels.join(" · ")}</div><!-- Adaptations: ${fullAdaptationRecord} -->`
     : "";
 
   return `<div class="page">
