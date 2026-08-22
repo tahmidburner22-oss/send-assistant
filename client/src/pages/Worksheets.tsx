@@ -1572,7 +1572,13 @@ export default function Worksheets() {
     if (preSelectedTopic) setTopic(preSelectedTopic);
   }, []);
 
-  const overlayBg = colorOverlays.find(o => o.id === colorOverlay)?.color || "#ffffff";
+  // Dedicated worksheet formats are contractual printable documents. Their paper
+  // and card interiors must remain white: SEND support is expressed through
+  // approved typography and coloured outlines, never a tinted PDF/print page.
+  const hasDedicatedLayout = Boolean(goldWorksheet || scienceWorksheet || humanitiesWorksheet);
+  const overlayBg = hasDedicatedLayout
+    ? "#ffffff"
+    : (colorOverlays.find(o => o.id === colorOverlay)?.color || "#ffffff");
 
   // ─── Page-count enforcement for student view ────────────────────────────────
   // When the user selects a page limit (targetPages > 0) and viewMode is "student",
@@ -2994,7 +3000,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         content,
         teacherContent,
         rating,
-        overlay: colorOverlay,
+        overlay: hasDedicatedLayout ? "none" : colorOverlay,
         sections: sectionsWithEdits,
         metadata: generated.metadata as any,
         sourceLibraryId: (generated as any).sourceLibraryId,
@@ -3010,7 +3016,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         sendNeed: generated.metadata?.sendNeed,
         difficulty: generated.metadata?.difficulty,
         examBoard: generated.metadata?.examBoard,
-        content, teacherContent, rating, overlay: colorOverlay,
+        content, teacherContent, rating, overlay: hasDedicatedLayout ? "none" : colorOverlay,
         // Preserve full sections for re-editing
         sections: sectionsWithEdits,
         metadata: generated.metadata as any,
@@ -6978,17 +6984,28 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           {showOverlayPicker && (
             <Card className="border-border/50 no-print">
               <CardContent className="p-3">
-                <p className="text-xs text-muted-foreground mb-2">Colour overlay applies to screen, print, and PDF.</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {colorOverlays.map(o => (
-                    <button key={o.id} onClick={() => { setColorOverlay(o.id); setShowOverlayPicker(false); }}
-                      className={`p-2 rounded-lg border-2 transition-all text-center ${colorOverlay === o.id ? "border-brand" : "border-transparent hover:border-border"}`}
-                      style={{ backgroundColor: o.color }}>
-                      <div className="text-xs font-medium text-gray-800">{o.name}</div>
-                      <div className="text-[9px] text-gray-600 mt-0.5 leading-tight">{o.description}</div>
-                    </button>
-                  ))}
-                </div>
+                {hasDedicatedLayout ? (
+                  <div role="status" aria-live="polite" className="space-y-1">
+                    <p className="text-xs font-semibold text-foreground">White paper is locked for this approved layout.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Maths, Science, Humanities and Business fixed documents keep white page and card interiors in preview, print and PDF. SEND support uses the approved coloured outlines and accessibility profile instead.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground mb-2">Colour overlay applies to screen, print, and PDF.</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {colorOverlays.map(o => (
+                        <button key={o.id} onClick={() => { setColorOverlay(o.id); setShowOverlayPicker(false); }}
+                          className={`p-2 rounded-lg border-2 transition-all text-center ${colorOverlay === o.id ? "border-brand" : "border-transparent hover:border-border"}`}
+                          style={{ backgroundColor: o.color }}>
+                          <div className="text-xs font-medium text-gray-800">{o.name}</div>
+                          <div className="text-[9px] text-gray-600 mt-0.5 leading-tight">{o.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
