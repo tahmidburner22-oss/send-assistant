@@ -21,6 +21,8 @@ interface SENDInfoPanelProps {
   context?: "worksheet" | "story" | "differentiation" | "questions" | "scheduler";
   /** Optional extra className */
   className?: string;
+  /** Use the concise, geometry-preserving explanation for approved Maths templates. */
+  mode?: "default" | "maths-gold";
 }
 
 const CONTEXT_LABELS: Record<string, string> = {
@@ -31,7 +33,7 @@ const CONTEXT_LABELS: Record<string, string> = {
   scheduler: "What will change in auto-generated worksheets",
 };
 
-export default function SENDInfoPanel({ sendNeedId, context = "worksheet", className = "" }: SENDInfoPanelProps) {
+export default function SENDInfoPanel({ sendNeedId, context = "worksheet", className = "", mode = "default" }: SENDInfoPanelProps) {
   if (!sendNeedId || sendNeedId === "none-selected" || sendNeedId === "none") return null;
 
   // The picker may emit "asc:asc-demand-avoidant". Look up the base need by
@@ -45,6 +47,39 @@ export default function SENDInfoPanel({ sendNeedId, context = "worksheet", class
     : null;
 
   const heading = CONTEXT_LABELS[context] ?? CONTEXT_LABELS.worksheet;
+
+  // Approved KS3/KS4 Maths templates do not use the legacy section-flow
+  // adaptation engine. Their PDF reference geometry is immutable, so explain
+  // only the adaptations that can actually be applied without changing pages,
+  // boxes, worked examples, or question allocation.
+  if (mode === "maths-gold") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        className={`rounded-xl border border-purple-200 bg-purple-50 p-3 space-y-2 ${className}`}
+      >
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-semibold text-purple-800">{need.name}</span>
+              <Badge className="text-[10px] bg-purple-100 text-purple-700 border-purple-200">Approved Maths layout</Badge>
+            </div>
+            <p className="text-xs text-purple-800 mt-1 leading-relaxed">
+              The approved two-page landscape structure stays unchanged. SEND support adjusts readable typography and spacing only.
+            </p>
+          </div>
+        </div>
+        <ul className="text-xs text-purple-800 space-y-1 list-disc pl-5">
+          <li>Every page and box interior remains white; coloured outlines remain visible.</li>
+          <li>Worked examples, question boxes, equations, answers, and the two-page sequence are not moved, added, or removed.</li>
+          <li>The applied SEND and reading-age adjustments are listed in the worksheet header and included in its PDF export.</li>
+        </ul>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

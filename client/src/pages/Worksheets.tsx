@@ -5040,7 +5040,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 </div>{/* End core settings box */}
 
                 {sendNeed && sendNeed !== "none-selected" && (
-                  <SENDInfoPanel sendNeedId={sendNeed} context="worksheet" />
+                  <SENDInfoPanel
+                    sendNeedId={sendNeed}
+                    context="worksheet"
+                    mode={findGoldEntry(topic, subtopic) && isMathsSubject(subject) ? "maths-gold" : "default"}
+                  />
                 )}
 
                 {/* Advanced Options - collapsible */}
