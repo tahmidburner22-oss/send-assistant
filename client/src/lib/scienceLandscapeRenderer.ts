@@ -1,4 +1,4 @@
-export type ScienceLayoutKind = "timeline" | "formula" | "interpretation" | "primary-observation";
+export type ScienceLayoutKind = "timeline" | "formula" | "interpretation" | "primary-observation" | "cells" | "photosynthesis" | "genetics" | "forces" | "energy" | "waves" | "ionic" | "covalent" | "rates";
 
 export interface ScienceLandscapeOptions {
   subject: string;
@@ -101,6 +101,18 @@ function scienceCss(): string {
   .big-box { height:62mm; border:.6mm dashed #2d72ad; border-radius:3mm; margin-top:5mm; display:flex; align-items:center; justify-content:center; color:#54718d; font-size:11pt; }
   .tick { display:block; margin:3mm 0; font-size:10pt; } .tick::before { content:'□'; margin-right:2mm; font-size:14pt; vertical-align:-1pt; }
   svg { max-width:100%; height:auto; }
+  .concept-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:3mm; margin-top:3mm; }
+  .concept-card { height:57mm; border:.5mm solid #1f5fa6; border-radius:2mm; overflow:hidden; background:#ffffff; }
+  .concept-card h3 { margin:0; padding:1.6mm 2.3mm; color:#123a78; font-size:8.4pt; font-weight:800; border-bottom:.35mm solid #1f5fa6; text-align:center; }
+  .concept-card .diagram { height:22mm; display:flex; align-items:center; justify-content:center; padding:1mm 2mm 0; }
+  .concept-card .diagram svg { width:100%; height:21mm; }
+  .concept-card p { margin:1.2mm 2.3mm; font-size:7.4pt; line-height:1.2; }
+  .compact-questions { margin-top:3mm; }
+  .compact-questions .q { min-height:26mm; padding:2.2mm; font-size:8.2pt; line-height:1.18; }
+  .compact-questions .work { height:6mm; margin-top:1.5mm; }
+  .punnett { width:100%; border-collapse:collapse; font-size:8pt; text-align:center; }
+  .punnett td, .punnett th { border:.35mm solid #65748a; padding:1.1mm; }
+  .punnett th { color:#123a78; background:#edf4fb; }
   @media print { .science-page { break-after: page; } }
   `;
 }
@@ -151,19 +163,166 @@ function primaryObservation(options: ScienceLandscapeOptions): string {
   return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, topic.toUpperCase() + " — LOOK, SORT AND EXPLAIN")}<div class="purpose surface"><b>Today:</b> Look closely. Say what you notice. Record one science idea.</div><div class="primary"><div class="card surface"><h3>1. LOOK</h3><p>Look at the object, photo or real item your teacher gives you.</p><div class="big-box">Draw what you see here.</div></div><div class="card surface"><h3>2. SORT</h3><p>Tick the words that match.</p><span class="tick">hard</span><span class="tick">soft</span><span class="tick">living</span><span class="tick">not living</span><span class="tick">rough</span><span class="tick">smooth</span></div><div class="card surface"><h3>3. SAY AND WRITE</h3><p>Finish the sentence.</p><p>I notice that it is</p><div class="big-box" style="height:25mm">________________</div><p>My science word is</p><div class="big-box" style="height:25mm">________________</div></div></div></section></div>`;
 }
 
+type ConceptCard = { heading: string; diagram: string; body: string };
+type ConceptDefinition = {
+  layout: ScienceLayoutKind;
+  title: string;
+  lead: string;
+  simpleLead: string;
+  cards: [ConceptCard, ConceptCard, ConceptCard];
+  questions: [string, string, string, string];
+  simpleQuestions: [string, string, string, string];
+  leftFooter: string;
+  rightFooter: string;
+};
+
+function learnerText(options: ScienceLandscapeOptions, standard: string, simpler: string): string {
+  return (options.readingAge || 0) > 0 && (options.readingAge || 0) <= 10 ? simpler : standard;
+}
+
+function cellSvg(plant: boolean): string {
+  if (plant) return `<svg viewBox="0 0 150 92" aria-label="plant cell with cell wall, vacuole, chloroplasts and nucleus"><rect x="17" y="8" width="116" height="76" rx="8" fill="#edf8ea" stroke="#356f3c" stroke-width="3"/><rect x="24" y="15" width="102" height="62" rx="7" fill="#f7fff4" stroke="#79a26d" stroke-width="2"/><rect x="51" y="23" width="46" height="46" rx="8" fill="#dcecf5" stroke="#6287a6"/><circle cx="39" cy="33" r="8" fill="#b98aaf" stroke="#734763"/><ellipse cx="109" cy="29" rx="7" ry="4" fill="#71a843"/><ellipse cx="110" cy="55" rx="7" ry="4" fill="#71a843"/><ellipse cx="37" cy="60" rx="7" ry="4" fill="#71a843"/><text x="20" y="91" font-size="8" fill="#264d2c">cell wall</text><text x="61" y="50" font-size="8" fill="#385f7a">vacuole</text></svg>`;
+  return `<svg viewBox="0 0 150 92" aria-label="animal cell with membrane, cytoplasm, nucleus and mitochondria"><ellipse cx="75" cy="47" rx="58" ry="35" fill="#f4f7fb" stroke="#52739a" stroke-width="3"/><circle cx="65" cy="43" r="13" fill="#b98aaf" stroke="#734763" stroke-width="2"/><path d="M101 30c10 2 10 13 0 16c-10-3-10-14 0-16z" fill="#e1a63c" stroke="#946313"/><path d="M97 57c10 2 10 13 0 16c-10-3-10-14 0-16z" fill="#e1a63c" stroke="#946313"/><circle cx="42" cy="60" r="3" fill="#5c88b6"/><circle cx="49" cy="26" r="3" fill="#5c88b6"/><text x="20" y="90" font-size="8" fill="#365675">cell membrane</text></svg>`;
+}
+
+function leafSvg(): string { return `<svg viewBox="0 0 150 92" aria-label="leaf showing carbon dioxide entering and oxygen leaving during photosynthesis"><path d="M76 82C22 66 24 20 77 10c42 9 50 46-1 72z" fill="#7abf62" stroke="#2d713a" stroke-width="3"/><path d="M73 76L80 21M78 50L49 35M77 55l27-19" stroke="#ffffff" stroke-width="2"/><path d="M7 32h35" stroke="#355d9d" stroke-width="3"/><path d="M42 32l-9-5v10z" fill="#355d9d"/><path d="M111 57h32" stroke="#c25d5d" stroke-width="3"/><path d="M143 57l-9-5v10z" fill="#c25d5d"/><text x="2" y="25" font-size="9" fill="#294b7c">CO₂ in</text><text x="106" y="50" font-size="9" fill="#914040">O₂ out</text></svg>`; }
+
+function forcesSvg(): string { return `<svg viewBox="0 0 150 92" aria-label="free body diagram showing balanced driving and resistive forces"><rect x="53" y="43" width="44" height="22" rx="4" fill="#dce8f5" stroke="#345b8a" stroke-width="2"/><circle cx="63" cy="69" r="6" fill="#4a596d"/><circle cx="88" cy="69" r="6" fill="#4a596d"/><path d="M52 51H14" stroke="#bc5949" stroke-width="3"/><path d="M14 51l9-5v10z" fill="#bc5949"/><path d="M98 51h38" stroke="#3d8b57" stroke-width="3"/><path d="M136 51l-9-5v10z" fill="#3d8b57"/><path d="M75 43V15" stroke="#7153a1" stroke-width="3"/><path d="M75 15l-5 9h10z" fill="#7153a1"/><path d="M75 75v12" stroke="#b98620" stroke-width="3"/><path d="M75 87l-5-9h10z" fill="#b98620"/><text x="1" y="45" font-size="8">resistance</text><text x="106" y="45" font-size="8">drive</text><text x="81" y="20" font-size="8">normal</text><text x="81" y="88" font-size="8">weight</text></svg>`; }
+
+function energySvg(): string { return `<svg viewBox="0 0 150 92" aria-label="energy store transfer diagram"><rect x="7" y="27" width="39" height="35" rx="5" fill="#e2effa" stroke="#3973a4" stroke-width="2"/><rect x="104" y="27" width="39" height="35" rx="5" fill="#f9eadf" stroke="#bc7b38" stroke-width="2"/><path d="M49 45h51" stroke="#6852a2" stroke-width="4"/><path d="M100 45l-10-6v12z" fill="#6852a2"/><text x="12" y="44" font-size="8">kinetic</text><text x="12" y="54" font-size="8">store</text><text x="110" y="44" font-size="8">thermal</text><text x="110" y="54" font-size="8">store</text><text x="56" y="37" font-size="8">work done</text><text x="60" y="59" font-size="8">by friction</text></svg>`; }
+
+function wavesSvg(): string { return `<svg viewBox="0 0 150 92" aria-label="transverse wave labelled with amplitude and wavelength"><path d="M8 49 C18 14 33 14 43 49 S68 84 78 49 S103 14 113 49 S138 84 146 49" fill="none" stroke="#2d6da8" stroke-width="3"/><path d="M8 49H146" stroke="#8797a8" stroke-dasharray="3 3"/><path d="M43 13V49" stroke="#a45b59" stroke-width="2"/><path d="M43 13l-4 7h8z" fill="#a45b59"/><path d="M43 49l-4-7h8z" fill="#a45b59"/><path d="M43 78H113" stroke="#53743d" stroke-width="2"/><path d="M43 78l7-4v8zM113 78l-7-4v8z" fill="#53743d"/><text x="46" y="31" font-size="8">amplitude</text><text x="65" y="89" font-size="8">wavelength</text></svg>`; }
+
+function ionicSvg(): string { return `<svg viewBox="0 0 150 92" aria-label="ionic bonding diagram showing electron transfer from sodium to chlorine"><circle cx="33" cy="47" r="20" fill="#f5e4d5" stroke="#bd7d3c" stroke-width="2"/><circle cx="118" cy="47" r="20" fill="#e2edf9" stroke="#476f9d" stroke-width="2"/><text x="22" y="51" font-size="15" font-weight="bold">Na⁺</text><text x="108" y="51" font-size="15" font-weight="bold">Cl⁻</text><path d="M58 47h35" stroke="#7552a2" stroke-width="3"/><path d="M93 47l-9-5v10z" fill="#7552a2"/><text x="58" y="39" font-size="8">electron</text><circle cx="93" cy="57" r="3" fill="#284f86"/><text x="14" y="84" font-size="8">opposite charges attract</text></svg>`; }
+
+function covalentSvg(): string { return `<svg viewBox="0 0 150 92" aria-label="water molecule showing shared electron pairs in covalent bonds"><text x="26" y="50" font-size="18" font-weight="bold">H</text><text x="69" y="50" font-size="20" font-weight="bold">O</text><text x="112" y="50" font-size="18" font-weight="bold">H</text><path d="M44 45h23M88 45h23" stroke="#35679d" stroke-width="3"/><circle cx="55" cy="40" r="2.3" fill="#35679d"/><circle cx="59" cy="50" r="2.3" fill="#b65a63"/><circle cx="96" cy="40" r="2.3" fill="#35679d"/><circle cx="100" cy="50" r="2.3" fill="#b65a63"/><circle cx="74" cy="25" r="2.3" fill="#b65a63"/><circle cx="80" cy="25" r="2.3" fill="#b65a63"/><circle cx="74" cy="67" r="2.3" fill="#b65a63"/><circle cx="80" cy="67" r="2.3" fill="#b65a63"/><text x="47" y="82" font-size="8">shared pairs form bonds</text></svg>`; }
+
+function ratesSvg(): string { return `<svg viewBox="0 0 150 92" aria-label="product against time graph for rate of reaction"><path d="M24 10V75H142" fill="none" stroke="#40566f" stroke-width="2"/><path d="M25 73 C38 39 55 24 81 19 C104 15 126 15 140 15" fill="none" stroke="#3d8b57" stroke-width="3"/><path d="M33 61L65 29" stroke="#b35e50" stroke-width="2" stroke-dasharray="3 2"/><text x="3" y="14" font-size="8">product</text><text x="108" y="88" font-size="8">time</text><text x="46" y="48" font-size="8">steep = fast</text><text x="102" y="29" font-size="8">finished</text></svg>`; }
+
+function conceptPage(options: ScienceLandscapeOptions, definition: ConceptDefinition): string {
+  const lead = learnerText(options, definition.lead, definition.simpleLead);
+  const questions = (options.readingAge || 0) > 0 && (options.readingAge || 0) <= 10 ? definition.simpleQuestions : definition.questions;
+  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, definition.title)}<div class="purpose surface"><b>Task:</b> ${esc(lead)}</div><div class="concept-grid">${definition.cards.map((card) => `<div class="concept-card surface"><h3>${esc(card.heading)}</h3><div class="diagram">${card.diagram}</div><p>${card.body}</p></div>`).join("")}</div><div class="questions compact-questions">${questions.map((question, index) => `<div class="q surface"><span class="qnum">${index + 1}</span>${esc(question)}<div class="work"></div></div>`).join("")}</div><div class="bottom-strip"><div class="strip surface"><b>REMEMBER:</b> ${definition.leftFooter}</div><div class="strip surface"><b>CHECK:</b> ${definition.rightFooter}</div></div></section></div>`;
+}
+
+function secondaryConcept(text: string): ConceptDefinition | null {
+  if (/(cell|microscopy|microscope)/.test(text)) return {
+    layout: "cells", title: "CELLS AND MICROSCOPY — COMPARE AND EXPLAIN", lead: "Compare the cell diagrams and link each structure to its function.", simpleLead: "Look at the cells. Match each part to its job.",
+    cards: [
+      { heading: "ANIMAL CELL", diagram: cellSvg(false), body: "Animal cells have a membrane, cytoplasm, nucleus, mitochondria and ribosomes." },
+      { heading: "PLANT CELL", diagram: cellSvg(true), body: "Plant cells also have a cellulose cell wall, chloroplasts and a permanent vacuole." },
+      { heading: "MICROSCOPE SKILL", diagram: `<svg viewBox="0 0 150 92" aria-label="microscope and magnification scale"><path d="M56 16l21 22-9 9-21-22zM67 42l15 15M72 22l12-10M67 57q23 0 24 19H43q1-19 24-19z" fill="none" stroke="#355f91" stroke-width="4"/><path d="M20 82h110" stroke="#3d5d78" stroke-width="3"/><text x="92" y="36" font-size="8">image size</text><text x="92" y="47" font-size="8">÷ real size</text></svg>`, body: "Magnification = image size ÷ real size. Use the same units before you calculate." }
+    ],
+    questions: ["Name two structures found in both plant and animal cells.", "Explain why chloroplasts are only found in plant cells.", "A 40 mm image represents a 0.02 mm cell. Calculate magnification.", "State one improvement an electron microscope gives over a light microscope."],
+    simpleQuestions: ["Name two parts in both cells.", "Why does a plant cell need chloroplasts?", "A 40 mm picture shows a 0.02 mm cell. Find magnification.", "Give one way an electron microscope is better."],
+    leftFooter: "A plant cell wall is made from cellulose.", rightFooter: "Use matching units in every magnification calculation."
+  };
+  if (/(photosynthesis|photo synthesis)/.test(text)) return {
+    layout: "photosynthesis", title: "PHOTOSYNTHESIS — PROCESS AND VARIABLES", lead: "Use the model to explain how a leaf makes glucose.", simpleLead: "Use the picture to say how a leaf makes glucose.",
+    cards: [
+      { heading: "IN A LEAF", diagram: leafSvg(), body: "Carbon dioxide enters through stomata. Water reaches the leaf in xylem. Oxygen can leave." },
+      { heading: "WORD EQUATION", diagram: `<svg viewBox="0 0 150 92" aria-label="photosynthesis word equation"><text x="8" y="35" font-size="10" font-weight="bold">carbon dioxide</text><text x="47" y="52" font-size="10">+ water</text><path d="M20 66h107" stroke="#3d8b57" stroke-width="3"/><path d="M127 66l-10-5v10z" fill="#3d8b57"/><text x="41" y="83" font-size="8">light and chlorophyll</text></svg>`, body: "carbon dioxide + water → glucose + oxygen. Light energy is absorbed by chlorophyll." },
+      { heading: "RATE FACTORS", diagram: `<svg viewBox="0 0 150 92" aria-label="three factors affecting photosynthesis"><circle cx="28" cy="38" r="14" fill="#f6cf54" stroke="#bd8e16"/><path d="M75 23v31M61 39h28" stroke="#3e83b2" stroke-width="3"/><path d="M111 59c8-19 22-25 31-31" stroke="#4b984c" stroke-width="4"/><text x="9" y="76" font-size="8">light</text><text x="54" y="76" font-size="8">CO₂</text><text x="103" y="76" font-size="8">temperature</text></svg>`, body: "Light intensity, carbon dioxide concentration and temperature can change the rate." }
+    ],
+    questions: ["Write the word equation for photosynthesis.", "Explain why a plant needs chlorophyll.", "Name two variables that can limit the rate of photosynthesis.", "A plant is in darkness. State what happens to the photosynthesis rate."],
+    simpleQuestions: ["Write the photosynthesis word equation.", "Why does a plant need chlorophyll?", "Name two things that change the rate.", "What happens in the dark?"],
+    leftFooter: "Glucose may be used in respiration or stored as starch.", rightFooter: "Do not confuse photosynthesis with respiration."
+  };
+  if (/(genetic|inheritance|allele|punnett|\bgene\b|\bdna\b)/.test(text)) return {
+    layout: "genetics", title: "GENETICS — ALLELES AND INHERITANCE", lead: "Interpret the genetic cross and use the key scientific terms.", simpleLead: "Use the square and the key words to answer.",
+    cards: [
+      { heading: "CORE WORDS", diagram: `<svg viewBox="0 0 150 92" aria-label="DNA chromosome gene relationship"><path d="M31 13c26 18 26 47 0 66M53 13c-26 18-26 47 0 66" fill="none" stroke="#7a58a2" stroke-width="4"/><path d="M31 24h22M31 43h22M31 62h22" stroke="#2f79b8" stroke-width="3"/><path d="M91 19v54M113 19v54" stroke="#b45b64" stroke-width="7"/><text x="12" y="90" font-size="8">DNA</text><text x="88" y="90" font-size="8">chromosome</text></svg>`, body: "DNA forms chromosomes. A gene is a short section of DNA. Alleles are forms of a gene." },
+      { heading: "PUNNETT SQUARE", diagram: `<table class="punnett" aria-label="Punnett square for Bb crossed with Bb"><tr><th></th><th>B</th><th>b</th></tr><tr><th>B</th><td>BB</td><td>Bb</td></tr><tr><th>b</th><td>Bb</td><td>bb</td></tr></table>`, body: "For a Bb × Bb cross, B is dominant and b is recessive." },
+      { heading: "READ THE RESULT", diagram: `<svg viewBox="0 0 150 92" aria-label="genetic cross outcome ratio"><rect x="16" y="24" width="88" height="17" fill="#6f9b56"/><rect x="16" y="42" width="29" height="17" fill="#d78690"/><text x="110" y="36" font-size="10">3 dominant</text><text x="110" y="55" font-size="10">1 recessive</text></svg>`, body: "The predicted phenotype ratio is 3 dominant : 1 recessive for this single-gene cross." }
+    ],
+    questions: ["Define the term allele.", "State the genotype of a heterozygous individual in the model.", "What is the probability of the recessive phenotype in the cross?", "Explain why a dominant allele can be expressed in Bb."],
+    simpleQuestions: ["What is an allele?", "Which genotype is heterozygous?", "What chance is there of the recessive trait?", "Why can B show in Bb?"],
+    leftFooter: "Genotype is the allele combination; phenotype is the shown characteristic.", rightFooter: "A Punnett square predicts probability, not certainty."
+  };
+  if (/(ionic)/.test(text)) return {
+    layout: "ionic", title: "IONIC BONDING — ELECTRON TRANSFER", lead: "Use the diagram to explain how sodium chloride forms.", simpleLead: "Use the diagram to say how sodium chloride forms.",
+    cards: [
+      { heading: "ELECTRON TRANSFER", diagram: ionicSvg(), body: "A metal loses outer electrons. A non-metal gains them. This creates oppositely charged ions." },
+      { heading: "IONIC LATTICE", diagram: `<svg viewBox="0 0 150 92" aria-label="giant ionic lattice with alternating positive and negative ions">${Array.from({ length: 12 }, (_, i) => { const x = 31 + (i % 4) * 28; const y = 25 + Math.floor(i / 4) * 23; const plus = (i + Math.floor(i / 4)) % 2 === 0; return `<circle cx="${x}" cy="${y}" r="9" fill="${plus ? "#f5ddd4" : "#dfeaf7"}" stroke="#55718e"/><text x="${x - 3}" y="${y + 4}" font-size="12">${plus ? "+" : "−"}</text>`; }).join("")}</svg>`, body: "A giant lattice has strong electrostatic attractions in every direction." },
+      { heading: "PROPERTY LINK", diagram: `<svg viewBox="0 0 150 92" aria-label="ionic compound conducting when molten"><path d="M38 16v54q0 9 10 9h54q10 0 10-9V16" fill="#e7f3ff" stroke="#4b80b0" stroke-width="3"/><path d="M38 52h74" stroke="#4b80b0" stroke-width="2"/><circle cx="60" cy="61" r="4" fill="#cc6b5c"/><circle cx="83" cy="66" r="4" fill="#456eaa"/><text x="45" y="88" font-size="8">ions move when molten</text></svg>`, body: "Molten or dissolved ionic compounds conduct because ions can move and carry charge." }
+    ],
+    questions: ["State what happens to an electron when sodium reacts with chlorine.", "Explain why sodium becomes a positive ion.", "Name the force holding ions together in a giant ionic lattice.", "Explain why solid sodium chloride does not conduct electricity."],
+    simpleQuestions: ["Where does sodium’s electron go?", "Why is sodium positive?", "What holds the ions together?", "Why does solid sodium chloride not conduct?"],
+    leftFooter: "Ionic bonding is attraction between oppositely charged ions.", rightFooter: "Charges must balance in an ionic formula."
+  };
+  if (/(covalent)/.test(text)) return {
+    layout: "covalent", title: "COVALENT BONDING — SHARED ELECTRONS", lead: "Use the model to explain how atoms form covalent bonds.", simpleLead: "Use the model to say how atoms form covalent bonds.",
+    cards: [
+      { heading: "SHARED PAIRS", diagram: covalentSvg(), body: "Covalent bonds form when atoms share pairs of electrons. The bonds between atoms are strong." },
+      { heading: "SMALL MOLECULES", diagram: `<svg viewBox="0 0 150 92" aria-label="small covalent molecule showing weak forces between molecules"><circle cx="45" cy="46" r="18" fill="#e6f0fb" stroke="#4b75a1"/><circle cx="97" cy="46" r="18" fill="#e6f0fb" stroke="#4b75a1"/><path d="M63 46h16" stroke="#a66a6a" stroke-width="2" stroke-dasharray="3 3"/><text x="25" y="82" font-size="8">weak forces between molecules</text></svg>`, body: "Small molecules have weak forces between molecules, so many have low melting and boiling points." },
+      { heading: "GIANT STRUCTURES", diagram: `<svg viewBox="0 0 150 92" aria-label="giant covalent network"><path d="M32 20l27 16-27 16-27-16zM86 20l27 16-27 16-27-16zM59 52l27 16-27 16-27-16z" fill="none" stroke="#527f52" stroke-width="2"/><text x="26" y="87" font-size="8">many strong covalent bonds</text></svg>`, body: "Giant covalent structures have many strong covalent bonds, giving very high melting points." }
+    ],
+    questions: ["State what is shared in a covalent bond.", "Name the molecule shown in the first model.", "Explain why small molecular substances often have low boiling points.", "State one difference between a small molecule and a giant covalent structure."],
+    simpleQuestions: ["What is shared in a covalent bond?", "Name the first molecule.", "Why do small molecules boil easily?", "Give one difference between the two structures."],
+    leftFooter: "Do not break covalent bonds when a small molecule boils.", rightFooter: "Use a line to show one shared electron pair."
+  };
+  if (/(rate|reaction rate|collision)/.test(text)) return {
+    layout: "rates", title: "RATES OF REACTION — DATA AND COLLISIONS", lead: "Interpret the graph and explain why conditions change reaction rate.", simpleLead: "Read the graph. Say why a reaction can be faster.",
+    cards: [
+      { heading: "RATE GRAPH", diagram: ratesSvg(), body: "The gradient shows rate. A steep gradient means a faster reaction. A flat line means the reaction has finished." },
+      { heading: "MEAN RATE", diagram: `<svg viewBox="0 0 150 92" aria-label="mean rate formula"><text x="24" y="38" font-size="13" font-weight="bold">rate = amount</text><path d="M32 45h79" stroke="#385f8d" stroke-width="2"/><text x="48" y="63" font-size="13" font-weight="bold">time</text><text x="29" y="82" font-size="8">g/s or cm³/s</text></svg>`, body: "Mean rate = quantity of reactant used or product formed ÷ time taken." },
+      { heading: "COLLISION THEORY", diagram: `<svg viewBox="0 0 150 92" aria-label="particle collision model"><circle cx="40" cy="39" r="11" fill="#de8c70"/><circle cx="78" cy="39" r="11" fill="#6e9fce"/><path d="M53 39h12" stroke="#7552a2" stroke-width="3"/><path d="M65 39l-8-5v10z" fill="#7552a2"/><circle cx="55" cy="70" r="11" fill="#de8c70"/><circle cx="91" cy="70" r="11" fill="#6e9fce"/><text x="15" y="88" font-size="8">successful collisions need enough energy</text></svg>`, body: "Reactions happen when particles collide with enough energy. More frequent successful collisions increase rate." }
+    ],
+    questions: ["A reaction makes 36 cm³ of gas in 12 s. Calculate the mean rate.", "State what a flat section of a product-time graph means.", "Explain how increasing temperature changes collision rate.", "Name one factor, other than temperature, that increases rate."],
+    simpleQuestions: ["36 cm³ forms in 12 s. Find the mean rate.", "What does a flat graph line mean?", "How does heating make reactions faster?", "Name one other way to make a reaction faster."],
+    leftFooter: "A catalyst provides a route with lower activation energy.", rightFooter: "Always include units in a calculated rate."
+  };
+  if (/(force|motion|newton)/.test(text)) return {
+    layout: "forces", title: "FORCES — RESULTANT AND MOTION", lead: "Read the force diagram and use the equations to explain the motion.", simpleLead: "Read the force picture. Use the equations to answer.",
+    cards: [
+      { heading: "FREE-BODY MODEL", diagram: forcesSvg(), body: "Forces are vectors: they have size and direction. Balanced forces have a zero resultant." },
+      { heading: "RESULTANT FORCE", diagram: `<svg viewBox="0 0 150 92" aria-label="resultant force arrows"><path d="M13 40h43" stroke="#c35d4d" stroke-width="5"/><path d="M56 40l-11-7v14z" fill="#c35d4d"/><path d="M137 58H76" stroke="#3e8a58" stroke-width="5"/><path d="M76 58l11-7v14z" fill="#3e8a58"/><text x="19" y="31" font-size="9">400 N</text><text x="104" y="79" font-size="9">650 N</text><text x="43" y="89" font-size="8">resultant = 250 N left</text></svg>`, body: "For forces in one straight line, subtract opposing forces to find the resultant." },
+      { heading: "EQUATIONS", diagram: `<svg viewBox="0 0 150 92" aria-label="force equations"><text x="28" y="36" font-size="16" font-weight="bold">F = m × a</text><text x="24" y="65" font-size="16" font-weight="bold">W = m × g</text><text x="26" y="84" font-size="8">use kg, m/s² and N</text></svg>`, body: "A resultant force changes velocity. Weight is the force caused by gravity." }
+    ],
+    questions: ["Two forces are 700 N right and 450 N left. Calculate the resultant.", "State what happens to velocity when resultant force is zero.", "Calculate the weight of a 3 kg object where g = 9.8 N/kg.", "A 4 kg trolley accelerates at 2 m/s². Calculate the resultant force."],
+    simpleQuestions: ["700 N right and 450 N left. Find the resultant.", "What happens when resultant force is zero?", "Find the weight of 3 kg when g = 9.8 N/kg.", "A 4 kg trolley accelerates at 2 m/s². Find force."],
+    leftFooter: "Mass is measured in kg; weight is measured in N.", rightFooter: "A zero resultant can mean stationary or constant velocity."
+  };
+  if (/(energy|kinetic|conservation)/.test(text)) return {
+    layout: "energy", title: "ENERGY STORES — TRANSFER AND DISSIPATION", lead: "Track energy stores and explain how energy is transferred or dissipated.", simpleLead: "Track where energy starts and where it goes.",
+    cards: [
+      { heading: "STORE CHANGE", diagram: energySvg(), body: "Energy is stored in kinetic, thermal, chemical, gravitational and other stores. It is transferred between stores." },
+      { heading: "USEFUL OR DISSIPATED", diagram: `<svg viewBox="0 0 150 92" aria-label="useful and dissipated energy bars"><rect x="21" y="22" width="37" height="48" fill="#5d9a57"/><rect x="83" y="45" width="37" height="25" fill="#d18753"/><text x="17" y="84" font-size="8">useful output</text><text x="75" y="84" font-size="8">dissipated</text></svg>`, body: "Energy cannot be created or destroyed. Dissipated energy is often spread to the surroundings thermally." },
+      { heading: "KINETIC ENERGY", diagram: `<svg viewBox="0 0 150 92" aria-label="kinetic energy equation"><text x="20" y="45" font-size="17" font-weight="bold">Eₖ = ½ m v²</text><text x="28" y="69" font-size="8">energy in J, mass in kg, speed in m/s</text></svg>`, body: "Use the correct units. Doubling speed has a larger effect than doubling mass because speed is squared." }
+    ],
+    questions: ["A moving bicycle stops. Name the initial and final main energy stores.", "State one pathway that transfers energy when brakes act.", "Calculate kinetic energy for a 2 kg object moving at 3 m/s.", "Explain one way to reduce unwanted energy transfer in a machine."],
+    simpleQuestions: ["A bike stops. Name its first and last main stores.", "How do brakes transfer energy?", "Find kinetic energy for 2 kg moving at 3 m/s.", "How can a machine waste less energy?"],
+    leftFooter: "Energy is conserved in a closed system.", rightFooter: "Dissipated does not mean destroyed."
+  };
+  if (/(wave|wavelength|frequency|amplitude)/.test(text)) return {
+    layout: "waves", title: "WAVES — DESCRIBE AND CALCULATE", lead: "Label the wave model and apply the wave equation.", simpleLead: "Label the wave and use the equation.",
+    cards: [
+      { heading: "TRANSVERSE WAVE", diagram: wavesSvg(), body: "Amplitude is maximum displacement. Wavelength is the distance between matching points on adjacent waves." },
+      { heading: "LONGITUDINAL WAVE", diagram: `<svg viewBox="0 0 150 92" aria-label="longitudinal wave with compressions and rarefactions">${Array.from({ length: 13 }, (_, i) => `<line x1="${17 + i * 9}" y1="24" x2="${17 + i * 9}" y2="68" stroke="#527fac" stroke-width="${i % 5 < 3 ? 3 : 1}"/>`).join("")}<text x="15" y="84" font-size="8">compression</text><text x="87" y="84" font-size="8">rarefaction</text></svg>`, body: "Longitudinal waves have compressions and rarefactions. Sound in air is longitudinal." },
+      { heading: "WAVE EQUATION", diagram: `<svg viewBox="0 0 150 92" aria-label="wave speed formula"><text x="28" y="44" font-size="18" font-weight="bold">v = f × λ</text><text x="22" y="70" font-size="8">m/s = Hz × m</text></svg>`, body: "Frequency is waves per second. Wave speed is the speed energy moves through a medium." }
+    ],
+    questions: ["State the difference between a transverse and a longitudinal wave.", "Identify the amplitude and wavelength on the first diagram.", "Calculate wave speed for f = 5 Hz and λ = 2 m.", "State what travels in a sound wave: particles, energy, or both."],
+    simpleQuestions: ["How are transverse and longitudinal waves different?", "Show amplitude and wavelength on the first diagram.", "Find wave speed when f = 5 Hz and λ = 2 m.", "What travels in a sound wave?"],
+    leftFooter: "Waves transfer energy, not matter from source to receiver.", rightFooter: "Use metres for wavelength in the equation."
+  };
+  return null;
+}
+
 export function canRenderScienceLandscape(options: ScienceLandscapeOptions): boolean {
   const subject = norm(options.subject);
   if (!/(science|biology|chemistry|physics)/.test(subject)) return false;
   if (isPrimary(options.yearGroup)) return true;
   const text = norm(`${options.topic} ${options.subtopic || ""}`);
-  return /(atomic|model|concentration|solution|metallic|bonding)/.test(text);
+  return /(atomic|model|concentration|solution|metallic)/.test(text) || secondaryConcept(text) !== null;
 }
 
 export function renderScienceLandscape(options: ScienceLandscapeOptions): ScienceLandscapeDocument {
   const text = norm(`${options.topic} ${options.subtopic || ""}`);
   const primary = isPrimary(options.yearGroup);
-  const layout: ScienceLayoutKind = primary ? "primary-observation" : /(atomic|model)/.test(text) ? "timeline" : /(concentration|solution)/.test(text) ? "formula" : "interpretation";
-  const title = primary ? `${options.topic || "Science"} — Look, Sort and Explain` : layout === "timeline" ? "Atomic Structure — How Models Changed" : layout === "formula" ? "Concentration of Solutions" : "Metallic Bonding — Structure and Properties";
-  const html = `<!doctype html><html><head><meta charset="UTF-8"><title>${esc(title)}</title><style>${scienceCss()}</style></head><body>${layout === "timeline" ? timeline(options) : layout === "formula" ? formula(options) : layout === "interpretation" ? interpretation(options) : primaryObservation(options)}</body></html>`;
+  const concept = secondaryConcept(text);
+  const layout: ScienceLayoutKind = primary ? "primary-observation" : /(atomic|model)/.test(text) ? "timeline" : /(concentration|solution)/.test(text) ? "formula" : /(metallic)/.test(text) ? "interpretation" : concept?.layout || "primary-observation";
+  const title = primary ? `${options.topic || "Science"} — Look, Sort and Explain` : layout === "timeline" ? "Atomic Structure — How Models Changed" : layout === "formula" ? "Concentration of Solutions" : layout === "interpretation" ? "Metallic Bonding — Structure and Properties" : concept?.title || "Science";
+  const body = layout === "timeline" ? timeline(options) : layout === "formula" ? formula(options) : layout === "interpretation" ? interpretation(options) : layout === "primary-observation" ? primaryObservation(options) : conceptPage(options, concept!);
+  const html = `<!doctype html><html><head><meta charset="UTF-8"><title>${esc(title)}</title><style>${scienceCss()}</style></head><body>${body}</body></html>`;
   return { title, layout, html, adaptations: supportNotes(options) };
 }

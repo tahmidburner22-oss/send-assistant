@@ -47,7 +47,41 @@ describe("science landscape renderer", () => {
     expect(canRenderScienceLandscape({ subject: "Science", yearGroup: "Year 2", topic: "Plants" })).toBe(true);
   });
 
+  it("routes the supplied Biology, Chemistry and Physics expansion topics to dedicated one-page layouts", () => {
+    const cases = [
+      [chemistry("Cells and Microscopy"), "cells", "plant cell with cell wall"],
+      [chemistry("Photosynthesis"), "photosynthesis", "leaf showing carbon dioxide entering"],
+      [chemistry("Genetics and Inheritance"), "genetics", "Punnett square"],
+      [chemistry("Ionic Bonding"), "ionic", "electron transfer from sodium"],
+      [chemistry("Covalent Bonding"), "covalent", "shared electron pairs"],
+      [chemistry("Rates of Reaction"), "rates", "product against time graph"],
+      [{ ...chemistry("Forces"), subject: "Physics" }, "forces", "free body diagram"],
+      [{ ...chemistry("Energy Stores"), subject: "Physics" }, "energy", "energy store transfer"],
+      [{ ...chemistry("Waves"), subject: "Physics" }, "waves", "transverse wave labelled"],
+    ] as const;
+    for (const [options, layout, diagram] of cases) {
+      const document = renderScienceLandscape(options);
+      expect(document.layout).toBe(layout);
+      expect(canRenderScienceLandscape(options)).toBe(true);
+      expect((document.html.match(/class="science-page"/g) || [])).toHaveLength(1);
+      expect(document.html).toContain('data-send="1"');
+      expect(document.html).toContain("Support: Dyslexia · Age 10");
+      expect(document.html).toContain(diagram);
+    }
+  });
+
+  it("keeps reading-age adaptation limited to learner-facing wording in the expansion layouts", () => {
+    const standard = renderScienceLandscape({ subject: "Physics", yearGroup: "Year 10", topic: "Waves", sendNeedId: "Dyslexia", readingAge: 14 });
+    const adapted = renderScienceLandscape({ subject: "Physics", yearGroup: "Year 10", topic: "Waves", sendNeedId: "Dyslexia", readingAge: 10 });
+    expect(standard.layout).toBe("waves");
+    expect(adapted.layout).toBe("waves");
+    expect((standard.html.match(/class="science-page"/g) || [])).toHaveLength(1);
+    expect((adapted.html.match(/class="science-page"/g) || [])).toHaveLength(1);
+    expect(adapted.html).toContain("How are transverse and longitudinal waves different?");
+    expect(standard.html).toContain("State the difference between a transverse and a longitudinal wave.");
+  });
+
   it("does not claim a dedicated secondary Science template for an unsupported topic", () => {
-    expect(canRenderScienceLandscape({ subject: "Science", yearGroup: "Year 8", topic: "Forces" })).toBe(false);
+    expect(canRenderScienceLandscape({ subject: "Science", yearGroup: "Year 8", topic: "Magnets" })).toBe(false);
   });
 });
