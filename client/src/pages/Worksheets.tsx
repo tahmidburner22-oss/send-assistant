@@ -4130,13 +4130,17 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const subtopicTerms = new Set(compact(entry.subtopic).split("-"));
         const overlap = terms.filter((term) => topicTerms.has(term) || subtopicTerms.has(term)).length;
         const exactSubtopic = compact(entry.subtopic) === compact(nextTopic) ? 100 : 0;
-        const exactTopic = compact(entry.topic) === compact(nextTopic) ? 40 : 0;
-        return { entry, score: exactSubtopic + exactTopic + overlap };
+        return { entry, score: exactSubtopic + overlap };
       }).filter((candidate) => candidate.score > 0)
         .sort((a, b) => b.score - a.score || a.entry.num - b.entry.num);
       if (ranked.length === 0) return null;
       const best = ranked[0];
-      return ranked.filter((candidate) => candidate.score === best.score).length === 1 ? best.entry : null;
+      // A bare umbrella topic such as ‘fractions’ is intentionally blocked. A
+      // two-term or exact subtopic request resolves deterministically to the
+      // primary approved entry; explicit words such as ‘all operations’ raise
+      // their matching category above that primary fallback.
+      if (best.score < 2) return null;
+      return best.entry;
     };
     try {
       // KS3/KS4 Maths is immutable: the natural-language shortcut may only load
