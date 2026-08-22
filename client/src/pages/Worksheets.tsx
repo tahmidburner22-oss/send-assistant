@@ -4112,10 +4112,87 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     }, 3500);
 
     let generatedWs: AnyWorksheet | null = null;
+    let nlGoldHtml: string | undefined;
+    let nlGoldSlug: string | undefined;
+    const isNlKs3OrKs4Maths = !examStyle
+      && isMathsSubject(nextSubject)
+      && /^Year\s+(?:7|8|9|10|11)$/i.test(nextYearGroup || "");
+    const resolveNlGoldEntry = (): GoldManifestEntry | null => {
+      const compact = (value: string) => String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, "-");
+      const ignored = new Set(["a", "an", "and", "for", "in", "math", "maths", "mathematics", "of", "on", "pupil", "the", "with", "worksheet", "year", "dyslexia"]);
+      const terms = compact(`${nextTopic} ${rawPrompt}`).split("-").filter((term) => term.length > 2 && !ignored.has(term));
+      const ranked = MATHS_GOLD_MANIFEST.map((entry) => {
+        const topicTerms = new Set(compact(entry.topic).split("-"));
+        const subtopicTerms = new Set(compact(entry.subtopic).split("-"));
+        const overlap = terms.filter((term) => topicTerms.has(term) || subtopicTerms.has(term)).length;
+        const exactSubtopic = compact(entry.subtopic) === compact(nextTopic) ? 100 : 0;
+        const exactTopic = compact(entry.topic) === compact(nextTopic) ? 40 : 0;
+        return { entry, score: exactSubtopic + exactTopic + overlap };
+      }).filter((candidate) => candidate.score > 0)
+        .sort((a, b) => b.score - a.score || a.entry.num - b.entry.num);
+      if (ranked.length === 0) return null;
+      const best = ranked[0];
+      return ranked.filter((candidate) => candidate.score === best.score).length === 1 ? best.entry : null;
+    };
     try {
-      // Try the worksheet library first for the natural-language quick-generate path as well.
-      // Previously this path skipped library lookup entirely and always went straight to AI.
-      try {
+      // KS3/KS4 Maths is immutable: the natural-language shortcut may only load
+      // an approved two-page landscape template, never a legacy library or AI document.
+      if (isNlKs3OrKs4Maths) {
+        const goldEntry = resolveNlGoldEntry();
+        if (!goldEntry) {
+          toast.error("Use a specific approved Maths subtopic, for example ‘multiplying fractions’. A legacy portrait worksheet was not created.");
+          return;
+        }
+        setGenerationStatus("Building approved two-page Maths worksheet...");
+        const goldData = await loadGoldWorksheet(goldEntry.slug);
+        if (!goldData) {
+          toast.error("The approved Maths template could not be loaded. A legacy portrait worksheet was not created.");
+          return;
+        }
+        const activeSend = hasSendNeed ? nextSendNeed : undefined;
+        const theme = getGoldSendTheme(activeSend);
+        const adapted = applyGoldMathsAdaptations(goldData, {
+          sendNeedId: activeSend,
+          readingAge: parsed.readingAge ?? readingAge,
+          sendTheme: theme,
+        });
+        const html = renderGoldWorksheetHtml(adapted.worksheet, theme, adapted.notes);
+        const title = (adapted.worksheet.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
+        nlGoldHtml = html;
+        nlGoldSlug = goldEntry.slug;
+        setGoldWorksheetSync({ html, title, entry: goldEntry, sendNeed: activeSend });
+        setScienceWorksheet(null);
+        setHumanitiesWorksheet(null);
+        generatedWs = {
+          title,
+          sections: [],
+          metadata: {
+            subject: nextSubject,
+            topic: goldEntry.topic,
+            subtopic: goldEntry.subtopic,
+            yearGroup: nextYearGroup,
+            sendNeed: activeSend,
+            difficulty: nextDifficulty,
+            examBoard: "General",
+            fixedLandscape: "approved-maths-gold",
+            adaptations: adapted.notes,
+          },
+          isAI: false,
+          fromLibrary: true,
+          libraryCurated: true,
+          sourceCanonicalTopicKey: goldEntry.slug,
+        } as unknown as AnyWorksheet;
+        toast.success("Approved two-page Maths worksheet ready!");
+      }
+
+      // Try the worksheet library first for non-Maths natural-language requests.
+      if (!generatedWs) {
+        // Previously this path skipped library lookup entirely and always went straight to AI.
+        try {
         const authHeaders: Record<string, string> = {};
         // Always use the difficulty tier — SEND need is applied on top, not instead of the difficulty tier
         // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
@@ -4217,8 +4294,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             toast.success("Worksheet loaded from library!");
           }
         }
-      } catch (libErr) {
-        console.warn("Natural-language library lookup failed, falling back to AI:", libErr);
+        } catch (libErr) {
+          console.warn("Natural-language library lookup failed, falling back to AI:", libErr);
+        }
       }
 
       if (!generatedWs && useAI) {
@@ -4332,6 +4410,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         sourceLibraryId: (ws as any).sourceLibraryId,
         sourceCanonicalTopicKey: (ws as any).sourceCanonicalTopicKey,
         isAI: isAIWorksheet(ws),
+        goldHtml: nlGoldHtml,
+        goldSlug: nlGoldSlug,
       }).then(saved => {
         setSavedWorksheetId(saved.id);
         refreshData();
