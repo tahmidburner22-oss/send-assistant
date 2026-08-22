@@ -24,13 +24,28 @@ export interface Notification {
 // In-memory map: userId → Set of connected WebSocket clients
 const connections = new Map<string, Set<WebSocket>>();
 
+function getSocketToken(req: IncomingMessage): string | null {
+  const url = new URL(req.url || "", "http://localhost");
+  const queryToken = url.searchParams.get("token");
+  if (queryToken) return queryToken;
+
+  // Same-origin WebSocket handshakes include the existing httpOnly session
+  // cookie. This is the secure default after the application token migration.
+  const cookieHeader = req.headers.cookie || "";
+  const tokenCookie = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith("token="));
+  return tokenCookie ? decodeURIComponent(tokenCookie.slice("token=".length)) : null;
+}
+
 export function initWebSocketServer(httpServer: Server): WebSocketServer {
   const wss = new WebSocketServer({ server: httpServer, path: "/api/ws" });
 
   wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-    // Extract token from query string: /api/ws?token=<jwt>
-    const url = new URL(req.url || "", "http://localhost");
-    const token = url.searchParams.get("token");
+    // Prefer the existing same-origin httpOnly session cookie. A query token is
+    // retained as a backwards-compatible fallback for older clients.
+    const token = getSocketToken(req);
 
     if (!token) {
       ws.close(4001, "Unauthorised: no token");
@@ -69,8 +84,8 @@ export function initWebSocketServer(httpServer: Server): WebSocketServer {
     ws.on("message", (data) => {
       try {
         const msg = JSON.parse(data.toString());
-        if (msg.type === "mark_read" && msg.id) {
-          markNotificationRead(userId, msg.id);
+        if (msg.type === "mark_read" && (msg.id || msg.notificationId)) {
+          markNotificationRead(userId, msg.id || msg.notificationId);
         } else if (msg.type === "mark_all_read") {
           markAllNotificationsRead(userId);
         } else if (msg.type === "ping") {

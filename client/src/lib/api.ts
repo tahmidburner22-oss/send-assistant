@@ -28,21 +28,42 @@ export function getAuthHeader(): Record<string, string> {
 
 // ── Core fetch wrapper ────────────────────────────────────────────────────────
 // noRedirect: if true, throw on 401 instead of redirecting (used for background saves)
+const DEFAULT_API_TIMEOUT_MS = 45_000;
+
+type ApiRequestOptions = RequestInit & {
+  noRedirect?: boolean;
+  timeoutMs?: number;
+};
+
 async function apiFetch<T>(
   path: string,
-  options: RequestInit & { noRedirect?: boolean } = {}
+  options: ApiRequestOptions = {}
 ): Promise<T> {
-  const { noRedirect, ...fetchOptions } = options;
+  const { noRedirect, timeoutMs = DEFAULT_API_TIMEOUT_MS, ...fetchOptions } = options;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(fetchOptions.headers as Record<string, string>),
   };
 
-  const res = await fetch(`${API_BASE}/api${path}`, {
-    ...fetchOptions,
-    headers,
-    credentials: "include", // Always send httpOnly cookie
-  });
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/api${path}`, {
+      ...fetchOptions,
+      headers,
+      credentials: "include", // Always send httpOnly cookie
+      signal: controller.signal,
+    });
+  } catch (error: any) {
+    if (controller.signal.aborted) {
+      throw new Error("The service took too long to respond. Please try again.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 
   if (res.status === 401) {
     // Don't redirect for auth check endpoints — they're expected to return 401 when not logged in
@@ -80,7 +101,7 @@ export const auth = {
 
   logout: () => apiFetch<{ message: string }>("/auth/logout", { method: "POST" }),
 
-  me: () => apiFetch<{ user: any; school: any }>("/auth/me"),
+  me: () => apiFetch<{ user: any; school: any }>("/auth/me", { timeoutMs: 12_000 }),
 
   forgotPassword: (email: string) =>
     apiFetch<{ message: string }>("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) }),

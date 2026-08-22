@@ -131,6 +131,7 @@ interface AppState {
   isLoggedIn: boolean;
   mfaRequired: boolean;
   pendingToken: string | null;
+  sessionError: string | null;
 }
 
 interface AppContextType extends AppState {
@@ -162,6 +163,7 @@ interface AppContextType extends AppState {
   deleteParentNewsletter: (id: string) => void;
   setColorOverlay: (overlay: string) => void;
   refreshData: () => Promise<void>;
+  retrySession: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -175,7 +177,7 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
     attendanceRecords: [], ideas: [],
     parentNewsletters: (() => { try { return JSON.parse(localStorage.getItem("adaptly_newsletters") || "[]"); } catch { return []; } })(),
     colorOverlay: "none",
-    isLoggedIn: false, mfaRequired: false, pendingToken: null,
+    isLoggedIn: false, mfaRequired: false, pendingToken: null, sessionError: null,
   });
 
   const loadUserData = useCallback(async () => {
@@ -203,15 +205,30 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
     } catch (err) { console.error("Failed to load user data:", err); }
   }, []);
 
+  const retrySession = useCallback(async () => {
+    setState(s => ({ ...s, loading: true, sessionError: null }));
+    try {
+      // Session is cookie-based: always verify the existing httpOnly session.
+      const { user, school } = await authApi.me();
+      setState(s => ({ ...s, user, school, isLoggedIn: true, loading: false, sessionError: null }));
+      void loadUserData();
+    } catch (error: any) {
+      if (error?.message === "Session expired") {
+        // An unauthenticated visitor should still follow the standard protected
+        // route redirect, not see a connectivity-recovery panel.
+        setState(s => ({ ...s, loading: false, isLoggedIn: false, sessionError: null }));
+        return;
+      }
+      const message = error?.message === "The service took too long to respond. Please try again."
+        ? "The service is taking longer than usual to wake up. Try again, or return to sign in."
+        : "We could not restore your session. Try again, or return to sign in.";
+      setState(s => ({ ...s, loading: false, isLoggedIn: false, sessionError: message }));
+    }
+  }, [loadUserData]);
+
   useEffect(() => {
-    // Session is cookie-based: always try /auth/me to check if a valid session exists
-    authApi.me()
-      .then(({ user, school }) => {
-        setState(s => ({ ...s, user, school, isLoggedIn: true, loading: false }));
-        loadUserData();
-      })
-      .catch(() => { setState(s => ({ ...s, loading: false })); });
-  }, []);
+    void retrySession();
+  }, [retrySession]);
 
   // Session keep-alive: refresh session every 20 minutes to prevent expiry
   useEffect(() => {
@@ -430,7 +447,7 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   return (
-    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, deleteAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, deleteWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, saveParentNewsletter, deleteParentNewsletter, setColorOverlay, refreshData }}>
+    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, deleteAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, deleteWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, saveParentNewsletter, deleteParentNewsletter, setColorOverlay, refreshData, retrySession }}>
       {childrenProp}
     </AppContext.Provider>
   );

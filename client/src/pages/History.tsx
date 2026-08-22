@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import type { Worksheet, Story, Differentiation } from "@/contexts/AppContext";
 import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import WorksheetErrorBoundary from "@/components/WorksheetErrorBoundary";
+import GoldWorksheetFrame from "@/components/GoldWorksheetFrame";
+import { downloadGoldWorksheetPdf, printGoldWorksheet } from "@/lib/mathsGoldPdf";
 import { getTopicImages } from "@/lib/topic-image-bank";
 
 type Section = {
@@ -504,6 +506,7 @@ export default function History() {
             const subjectName = subjects.find(s => s.id === ws.subject)?.name || ws.subject;
             const needName = ws.sendNeed ? sendNeeds.find(n => n.id === ws.sendNeed)?.name : null;
             const wsIsRM = (ws.sections || []).some((s: any) => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title");
+            const isApprovedMaths = Boolean(ws.goldHtml);
             return (
               <motion.div key={ws.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
                 <Card className={`border-border/50 hover:shadow-md transition-shadow ${bulkMode ? "" : "cursor-pointer"} ${isSelected ? "ring-2 ring-brand border-brand" : ""}`}
@@ -516,6 +519,7 @@ export default function History() {
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-semibold text-foreground truncate">{ws.title.split(' | ')[0].split(' | ')[0]}</h4>
                         {wsIsRM && <span className="text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-300 rounded px-1.5 py-0.5 flex-shrink-0">Revision Mat</span>}
+                        {isApprovedMaths && <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 rounded px-1.5 py-0.5 flex-shrink-0">Approved 2-page Maths</span>}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {subjectName} · {ws.yearGroup} · {ws.difficulty}{needName ? ` · ${needName}` : ""}
@@ -640,7 +644,7 @@ export default function History() {
 
       {/* ── Worksheet viewer / editor dialog ── */}
       <Dialog open={!!selectedWs} onOpenChange={open => { if (!open) { setSelectedWs(null); setEditMode(false); setEditedSections({}); setHiddenSections(new Set()); setHideHeader(false); } }}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className={`${selectedWs?.goldHtml ? "max-w-6xl" : "max-w-2xl"} max-h-[85vh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 pr-8">
               <span className="flex-1 truncate">{selectedWs?.title}</span>
@@ -657,7 +661,7 @@ export default function History() {
                 {/* Toolbar */}
                 <div className="flex flex-wrap items-center gap-2">
                   {/* Teacher / Student toggle */}
-                  <div className="flex bg-muted rounded-lg p-0.5">
+                  {!selectedWs.goldHtml && <div className="flex bg-muted rounded-lg p-0.5">
                     <button
                       onClick={() => setViewMode("teacher")}
                       className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${viewMode === "teacher" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"}`}>
@@ -668,10 +672,14 @@ export default function History() {
                       className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${viewMode === "student" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"}`}>
                       <Eye className="w-3.5 h-3.5" /> Student
                     </button>
-                  </div>
+                  </div>}
+
+                  {selectedWs.goldHtml && (
+                    <span className="rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-900">Approved two-page landscape format</span>
+                  )}
 
                   {/* Edit with AI button */}
-                  {editType === "none" && (
+                  {!selectedWs.goldHtml && editType === "none" && (
                     <>
                       <Button
                         size="sm"
@@ -691,14 +699,14 @@ export default function History() {
                   )}
 
                   {/* AI edit panel trigger */}
-                  {editType === "ai" && (
+                  {!selectedWs.goldHtml && editType === "ai" && (
                     <Button size="sm" variant="outline" className="gap-1.5 text-amber-600 border-amber-300" onClick={() => { setEditType("none"); setAiEditPrompt(""); }}>
                       <X className="h-3.5 w-3.5" />Cancel AI Edit
                     </Button>
                   )}
 
                   {/* Manual edit cancel/save */}
-                  {editType === "manual" && (
+                  {!selectedWs.goldHtml && editType === "manual" && (
                     <>
                       <Button size="sm" variant="outline" className="gap-1.5 text-amber-600 border-amber-300" onClick={() => { setEditMode(false); setEditType("none"); setEditedSections({}); }}>
                         <X className="h-3.5 w-3.5" />Cancel
@@ -719,8 +727,11 @@ export default function History() {
                   {(() => {
                     const isRM = sections.some(s => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title");
                     return (
+                      <>
                       <Button size="sm" variant="outline" onClick={() => {
-                        if (isRM) {
+                        if (selectedWs.goldHtml) {
+                          printGoldWorksheet(selectedWs.goldHtml);
+                        } else if (isRM) {
                           const style = document.createElement("style");
                           style.id = "rm-landscape-print";
                           style.textContent = "@page { size: A4 landscape; margin: 5mm; }";
@@ -731,8 +742,21 @@ export default function History() {
                           window.print();
                         }
                       }}>
-                        Print{isRM ? " (Landscape)" : ""}
+                        Print{selectedWs.goldHtml || isRM ? " (Landscape)" : ""}
                       </Button>
+                      {selectedWs.goldHtml && (
+                        <Button size="sm" variant="outline" className="gap-1.5" onClick={async () => {
+                          try {
+                            await downloadGoldWorksheetPdf(selectedWs.goldHtml!, selectedWs.title);
+                            toast.success("Two-page Maths PDF downloaded.");
+                          } catch {
+                            toast.error("Could not create the Maths PDF. Please try again.");
+                          }
+                        }}>
+                          <FileText className="h-3.5 w-3.5" />Download PDF
+                        </Button>
+                      )}
+                      </>
                     );
                   })()}
 
@@ -915,8 +939,10 @@ export default function History() {
                   </div>
                 )}
 
-                {/* Worksheet content — WorksheetRenderer in view mode, editable sections in manual edit mode */}
-                {editType === "manual" ? (
+                {/* Worksheet content — approved Maths retains its self-contained fixed document. */}
+                {selectedWs.goldHtml ? (
+                  <GoldWorksheetFrame html={selectedWs.goldHtml} title={selectedWs.title} />
+                ) : editType === "manual" ? (
                   <div className="space-y-3">
                     {sections.map((section, i) => {
                       if (viewMode === "student" && section.teacherOnly) return null;

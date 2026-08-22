@@ -150,7 +150,34 @@ function PageLoader() {
   );
 }
 
-function SessionLoader() {
+function SessionLoader({
+  error,
+  onRetry,
+  onSignIn,
+}: {
+  error?: string | null;
+  onRetry?: () => void;
+  onSignIn?: () => void;
+}) {
+  // A delayed service startup should never leave a teacher on an indefinite
+  // skeleton. Offer a clear, keyboard-accessible recovery state after the
+  // session request reaches its bounded timeout.
+  if (error) {
+    return (
+      <main className="min-h-screen grid place-items-center bg-background p-6" aria-labelledby="session-recovery-title">
+        <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+          <div className="mx-auto mb-4 grid h-11 w-11 place-items-center rounded-full bg-amber-100 text-amber-800 text-lg font-semibold" aria-hidden="true">!</div>
+          <h1 id="session-recovery-title" className="text-lg font-semibold text-foreground">We are still opening your workspace</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{error}</p>
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <button type="button" onClick={onRetry} className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Try again</button>
+            <button type="button" onClick={onSignIn} className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Return to sign in</button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   // Full-screen skeleton shown while the auth session boots.
   // Mimics the eventual app shell (top bar + sidebar + content) so the
   // transition into the real layout is visually quiet.
@@ -204,17 +231,17 @@ function ClientRedirect({ to }: { to: string }) {
 }
 
 function ProtectedRoutes() {
-  const { isLoggedIn, loading } = useApp();
+  const { isLoggedIn, loading, sessionError, retrySession } = useApp();
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (!loading && !isLoggedIn) {
+    if (!loading && !isLoggedIn && !sessionError) {
       navigate("/login", { replace: true });
     }
-  }, [loading, isLoggedIn, navigate]);
+  }, [loading, isLoggedIn, sessionError, navigate]);
 
   if (loading || !isLoggedIn) {
-    return <SessionLoader />;
+    return <SessionLoader error={sessionError} onRetry={() => { void retrySession(); }} onSignIn={() => navigate("/login", { replace: true })} />;
   }
 
   return (

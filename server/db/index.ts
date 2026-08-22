@@ -113,11 +113,14 @@ function resetCounter() {
 export const db = {
   /** Execute a raw SQL string (DDL / multi-statement). */
   async exec(sql: string): Promise<void> {
-    // Split on semicolons for multi-statement DDL
-    const statements = sql
+    // Remove line comments before splitting statements. Previously a segment that
+    // began with a comment was discarded wholesale, taking the following CREATE
+    // TABLE statement with it and leaving production tables absent after startup.
+    const withoutLineComments = sql.replace(/--[^\n\r]*/g, "");
+    const statements = withoutLineComments
       .split(";")
       .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith("--"));
+      .filter((s) => s.length > 0);
     const client = await pool.connect();
     try {
       for (const stmt of statements) {
@@ -923,6 +926,33 @@ export async function initDb() {
   for (const sql of alterMigrations) {
     try { await query(sql); } catch (e: any) { /* ignore if already exists */ }
   }
+
+  // Do not report a healthy database when the schema runner skipped a commented
+  // statement. These tables are required by core workspace, library, and schedule
+  // workflows, so fail fast with a precise startup error rather than emitting
+  // repeated runtime failures after the service starts.
+  const requiredTables = [
+    "users",
+    "sessions",
+    "worksheets",
+    "worksheet_library",
+    "worksheet_library_assets",
+    "pupil_documents",
+    "scheduler_configs",
+    "notifications",
+  ];
+  const tableCheck = await query(
+    `SELECT table_name FROM information_schema.tables
+     WHERE table_schema = 'public' AND table_name = ANY($1::text[])`,
+    [requiredTables]
+  );
+  const presentTables = new Set(tableCheck.rows.map((row: { table_name: string }) => row.table_name));
+  const missingTables = requiredTables.filter((table) => !presentTables.has(table));
+  if (missingTables.length > 0) {
+    throw new Error(`Database schema incomplete. Missing required tables: ${missingTables.join(", ")}`);
+  }
+  console.log("✅ Required database tables verified");
+
   // Fix canonical_topic_key for maths library entries that may have been incorrectly assigned
   // This ensures "Algebraic Fractions" doesn't match "Quadratic Equations" etc.
   try {

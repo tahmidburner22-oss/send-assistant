@@ -94,7 +94,7 @@ import {
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
   MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode, BookOpenCheck, Camera,
-  Languages, MoreHorizontal,
+  Languages, MoreHorizontal, Lock,
 } from "lucide-react";
 
 // Lane 1.3 — toolbar declutter. Secondary actions collapse into a single
@@ -897,8 +897,18 @@ export default function Worksheets() {
     if (!topic) return;
     if (!selectableTopics.length) return;
     const isInList = selectableTopics.some(st => st.topic === topic);
-    if (!isInList) setShowTopicSuggestions(true);
-  }, [topic, selectableTopics]);
+    if (!isInList) {
+      // KS3/KS4 Maths intentionally has no custom-topic escape hatch: every
+      // available option must resolve to one approved fixed-layout template.
+      if (usesApprovedMathsTemplates) {
+        setTopic("");
+        setSubtopic("");
+        setShowTopicSuggestions(false);
+      } else {
+        setShowTopicSuggestions(true);
+      }
+    }
+  }, [topic, selectableTopics, usesApprovedMathsTemplates]);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
@@ -4861,12 +4871,24 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   );
                 })()}
 
+                {usesApprovedMathsTemplates && (
+                  <section className="rounded-xl border border-emerald-300 bg-emerald-50/70 p-3" aria-label="Approved Maths template mode">
+                    <div className="flex items-start gap-2">
+                      <Lock className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" aria-hidden="true" />
+                      <div>
+                        <p className="text-sm font-semibold text-emerald-950">Approved two-page Maths template mode</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-emerald-900">The selected template always prints as two A4 landscape pages. Worked examples, question boxes, answers, colours, and page geometry are locked. SEND and reading-age choices are applied without changing the layout.</p>
+                      </div>
+                    </div>
+                  </section>
+                )}
+
                 {/* PR-B (W5/W12) — opt-in generation biases.
                     - Lesson archetype (G3): biases section ordering + intent.
                     - Real-world context (H3): biases stems towards a chosen domain.
                     Both are optional; clearing them returns to the existing
                     behaviour. */}
-                <div className="grid grid-cols-2 gap-3" data-testid="generation-options-panel">
+                <div className={`grid grid-cols-2 gap-3 ${usesApprovedMathsTemplates ? "hidden" : ""}`} data-testid="generation-options-panel">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Lesson archetype <span className="text-muted-foreground font-normal">(optional)</span></Label>
                     <div className="flex items-center gap-2">
@@ -4915,7 +4937,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className={`grid gap-3 ${usesApprovedMathsTemplates ? "grid-cols-1" : "grid-cols-2"}`}>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">SEND Need</Label>
                     <Select value={sendNeed} onValueChange={setSendNeed}>
@@ -4926,7 +4948,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className={`space-y-1.5 ${usesApprovedMathsTemplates ? "hidden" : ""}`}>
                     <Label className="text-xs font-medium">
                       {subjectTierMode[subject?.toLowerCase()] === "tiered" ? "Tier" :
                        subjectTierMode[subject?.toLowerCase()] === "eleven-plus" ? "Level" : "Difficulty"}
@@ -4944,7 +4966,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 </div>
 
                 {/* Sections selector with page estimate */}
-                <div className="space-y-1.5">
+                <div className={`space-y-1.5 ${usesApprovedMathsTemplates ? "hidden" : ""}`}>
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-medium">Sections</Label>
                     <span className="text-xs font-semibold text-brand">
@@ -5059,7 +5081,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 )}
 
                 {/* Advanced Options - collapsible */}
-                <details ref={advancedOptionsRef} className="group">
+                <details ref={advancedOptionsRef} className={`group ${usesApprovedMathsTemplates ? "hidden" : ""}`}>
                   <summary className="flex items-center gap-2 cursor-pointer p-3 rounded-xl border border-border/40 bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
                     <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90 transition-transform" />
                     <span className="text-sm font-medium text-foreground">Advanced Options</span>

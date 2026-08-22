@@ -51,13 +51,17 @@ export function useNotificationWS({
   const pingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryCount = useRef(0);
+  const shouldReconnectRef = useRef(true);
 
   const connect = useCallback(() => {
-    if (!token) return;
+    if (!shouldReconnectRef.current) return;
     if (wsRef.current && wsRef.current.readyState < WebSocket.CLOSING) return;
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const url = `${protocol}//${window.location.host}/api/ws?token=${encodeURIComponent(token)}`;
+    // The platform now authenticates through an httpOnly cookie. The optional
+    // query token is retained only for older callers that still supply one.
+    const tokenSuffix = token ? `?token=${encodeURIComponent(token)}` : "";
+    const url = `${protocol}//${window.location.host}/api/ws${tokenSuffix}`;
 
     const ws = new WebSocket(url);
     wsRef.current = ws;
@@ -108,6 +112,7 @@ export function useNotificationWS({
     ws.onclose = () => {
       setIsConnected(false);
       if (pingRef.current) clearInterval(pingRef.current);
+      if (!shouldReconnectRef.current) return;
       // Exponential back-off reconnect (max 30 s)
       const delay = Math.min(1000 * 2 ** retryCount.current, 30_000);
       retryCount.current += 1;
@@ -116,11 +121,14 @@ export function useNotificationWS({
   }, [token, maxNotifs]);
 
   useEffect(() => {
+    shouldReconnectRef.current = true;
     connect();
     return () => {
+      shouldReconnectRef.current = false;
       if (pingRef.current) clearInterval(pingRef.current);
       if (retryRef.current) clearTimeout(retryRef.current);
       wsRef.current?.close();
+      wsRef.current = null;
     };
   }, [connect]);
 
