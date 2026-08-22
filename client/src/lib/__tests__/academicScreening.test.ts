@@ -32,6 +32,14 @@ describe("academic screening engine", () => {
     }
   });
 
+  it("keeps the authored cell-function answer scientifically accurate", () => {
+    const [item] = buildAcademicScreening({ subject: "science", yearGroup: "Year 10", duration: 15 });
+    expect(item.prompt).toContain("controls the activities of the cell");
+    expect(item.correctAnswer).toBe("Nucleus");
+    expect(item.options).toContain("Nucleus");
+    expect(item.explanation).toContain("nucleus");
+  });
+
   it("returns the same balanced item sequence for the same configuration", () => {
     const first = buildAcademicScreening({ subject: "mathematics", yearGroup: "Year 10", duration: 30 });
     const second = buildAcademicScreening({ subject: "mathematics", yearGroup: "Year 10", duration: 30 });
