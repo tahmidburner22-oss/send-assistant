@@ -1,14 +1,13 @@
 /**
  * mathsGoldPdf.ts
  *
- * Print / PDF export for the "gold" maths worksheet layout.
+ * Print / PDF export for fixed-layout worksheet documents.
  *
- * The gold renderer (mathsGoldRenderer.ts) already emits a COMPLETE,
- * self-contained, print-ready HTML document: two fixed `.page` divs of
- * 285mm × 200mm inside an `@page { size: A4 landscape; margin: 5mm 6mm }`
- * box. 285×200mm is exactly the printable area of A4 landscape (297×210mm)
- * once the 6mm/5mm margins are removed, so the on-screen spread, the printed
- * page and the exported PDF are pixel-for-pixel identical.
+ * The dedicated Maths and Science renderers emit self-contained, print-ready
+ * A4-landscape HTML documents. Maths uses two fixed `.page` elements; Science
+ * uses one fixed `.science-page` element. Both use the same 285mm × 200mm
+ * printable area inside the A4 landscape page margins, so preview, print, and
+ * export retain identical geometry.
  *
  * Because that document is already laid out, we do NOT run it through the
  * portrait section-flow pipeline in pdf-generator-v2 (serialise → measure →
@@ -48,7 +47,7 @@ async function waitForIframe(iframe: HTMLIFrameElement): Promise<Document> {
 }
 
 /**
- * Download the gold worksheet as a 2-page A4-landscape PDF.
+ * Download a fixed-layout worksheet as an A4-landscape PDF.
  *
  * @param html      a complete document from renderGoldWorksheetHtml()
  * @param filename  output filename (".pdf" appended if missing)
@@ -66,8 +65,8 @@ export async function downloadGoldWorksheetPdf(
     iframe.srcdoc = html;
     const doc = await waitForIframe(iframe);
 
-    const pages = Array.from(doc.querySelectorAll<HTMLElement>(".page"));
-    if (pages.length === 0) throw new Error("gold document has no .page elements");
+    const pages = Array.from(doc.querySelectorAll<HTMLElement>(".page, .science-page"));
+    if (pages.length === 0) throw new Error("fixed-layout document has no exportable page elements");
 
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
