@@ -30,6 +30,7 @@ import GoldWorksheetFrame from "@/components/GoldWorksheetFrame";
 import { findGoldEntry, loadGoldWorksheet, type GoldManifestEntry } from "@/data/maths-gold/manifest";
 import { renderGoldWorksheetHtml } from "@/lib/mathsGoldRenderer";
 import { getGoldSendTheme } from "@/lib/mathsGoldSend";
+import { applyGoldMathsAdaptations } from "@/lib/mathsGoldAdaptations";
 import { downloadGoldWorksheetPdf, printGoldWorksheet } from "@/lib/mathsGoldPdf";
 import ProgressionStrip from "@/components/ProgressionStrip";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
@@ -1784,8 +1785,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
         const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
         const theme = getGoldSendTheme(activeSend);
-        const html = renderGoldWorksheetHtml(data, theme);
-        const flatTitle = (data.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
+        const adapted = applyGoldMathsAdaptations(data, { sendNeedId: activeSend, readingAge, sendTheme: theme });
+        const html = renderGoldWorksheetHtml(adapted.worksheet, theme, adapted.notes);
+        const flatTitle = (adapted.worksheet.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
         setGoldWorksheetSync({ html, title: flatTitle, entry: goldEntry, sendNeed: activeSend });
         setGenerated({
           title: flatTitle,
@@ -1814,6 +1816,27 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         return false;
       }
     };
+
+    // KS3/KS4 Maths uses only the approved two-page landscape registry. It must
+    // never fall through to the generic library/AI section-flow renderer, which
+    // produces the legacy portrait layout. A precise subtopic is required because
+    // each approved template has its own fixed worked examples and question boxes.
+    const isKs3OrKs4Maths = !examStyle
+      && isMathsSubject(subject)
+      && /^Year\s+(?:7|8|9|10|11)$/i.test(yearGroup || "");
+    if (isKs3OrKs4Maths) {
+      if (!subtopic) {
+        toast.error("Choose a Maths subtopic to open its approved two-page worksheet template.");
+        setLoading(false);
+        setGenerationStatus("");
+        return;
+      }
+      if (await tryGoldMathsFallback()) return;
+      toast.error("This Maths subtopic does not yet have an approved two-page template, so no legacy portrait worksheet was created.");
+      setLoading(false);
+      setGenerationStatus("");
+      return;
+    }
 
     // ── LIBRARY LOOKUP: Check if a master worksheet exists for this topic ──────
     // Always try the library first (even when SEND need is selected, or year group differs).
@@ -1979,8 +2002,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   if (goldData) {
                     const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
                     const theme = getGoldSendTheme(activeSend);
-                    const goldHtml = renderGoldWorksheetHtml(goldData, theme);
-                    const goldTitle = (goldData.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
+                    const adapted = applyGoldMathsAdaptations(goldData, { sendNeedId: activeSend, readingAge, sendTheme: theme });
+                    const goldHtml = renderGoldWorksheetHtml(adapted.worksheet, theme, adapted.notes);
+                    const goldTitle = (adapted.worksheet.title || goldEntry.subtopic).replace(/\n/g, " ").trim();
                     // Store in local vars BEFORE setGoldWorksheet so the save block below
                     // can read them synchronously (React state updates are async).
                     _capturedGoldHtml = goldHtml;
@@ -4808,13 +4832,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 {topic && (() => {
                   const subtopics = getSubtopics(topic);
                   if (subtopics.length === 0) return null;
+                  const requiresApprovedMathsSubtopic = isMathsSubject(subject)
+                    && /^Year\s+(?:7|8|9|10|11)$/i.test(yearGroup || "");
                   return (
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Subtopic <span className="text-muted-foreground font-normal">(optional — narrows the worksheet focus)</span></Label>
+                      <Label className="text-xs font-medium">Subtopic <span className="text-muted-foreground font-normal">{requiresApprovedMathsSubtopic ? "(required for the approved two-page Maths worksheet)" : "(optional — narrows the worksheet focus)"}</span></Label>
                       <Select value={subtopic || "__all__"} onValueChange={(val) => setSubtopic(val === "__all__" ? "" : val)}>
                         <SelectTrigger className="h-10"><SelectValue placeholder="Select a subtopic (optional)" /></SelectTrigger>
                         <SelectContent className="max-h-64">
-                          <SelectItem value="__all__">Whole topic (no subtopic)</SelectItem>
+                          {!requiresApprovedMathsSubtopic && <SelectItem value="__all__">Whole topic (no subtopic)</SelectItem>}
                           {subtopics.map((st, i) => (
                             <SelectItem key={i} value={st}>{st}</SelectItem>
                           ))}

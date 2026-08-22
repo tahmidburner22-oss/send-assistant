@@ -57,7 +57,7 @@ const GOLD_SEND_THEMES: Record<string, GoldTheme> = {
     lineScale: 1.14,
     letterSpacing: "0.03em",
     wordSpacing: "0.12em",
-    pageBg: "#FAF3E0", // cream — reduces visual stress / glare
+    // Keep the page white so a teacher can apply a separate physical or digital overlay.
     textColor: "#1a1a1a",
     label: "Dyslexia-friendly",
   },
@@ -105,14 +105,14 @@ const GOLD_SEND_THEMES: Record<string, GoldTheme> = {
     fontFamily: VERDANA,
     fontScale: 1.02,
     lineScale: 1.08,
-    pageBg: "#FBFBF6", // soft off-white — lowers glare/distraction
+    // White background retained; only typography and spacing adapt.
     label: "ADHD-friendly",
   },
   asc: {
     fontFamily: VERDANA,
     fontScale: 1.02,
     lineScale: 1.08,
-    pageBg: "#FBFBF6", // calm, low-contrast surface
+    // White background retained; only typography and spacing adapt.
     label: "Autism-friendly",
   },
   asperger: {
@@ -126,21 +126,21 @@ const GOLD_SEND_THEMES: Record<string, GoldTheme> = {
     fontFamily: VERDANA,
     fontScale: 1.02,
     lineScale: 1.08,
-    pageBg: "#FBFCFE", // calm pale-blue tint
+    // White background retained; only typography and spacing adapt.
     label: "Low-anxiety",
   },
   semh: {
     fontFamily: VERDANA,
     fontScale: 1.02,
     lineScale: 1.08,
-    pageBg: "#FBFCFE",
+    // White background retained; only typography and spacing adapt.
     label: "SEMH-friendly",
   },
   "pda-odd": {
     fontFamily: VERDANA,
     fontScale: 1.02,
     lineScale: 1.08,
-    pageBg: "#FBFCFE",
+    // White background retained; only typography and spacing adapt.
     label: "Low-demand",
   },
   vi: {
@@ -182,7 +182,7 @@ const GOLD_SEND_THEMES: Record<string, GoldTheme> = {
     fontScale: 1.04,
     lineScale: 1.14,
     letterSpacing: "0.02em",
-    pageBg: "#FAFAF5",
+    // White background retained; only typography and spacing adapt.
     label: "Working memory support",
   },
   // ASC sub-profiles — all inherit the base ASC calm layout
@@ -190,21 +190,21 @@ const GOLD_SEND_THEMES: Record<string, GoldTheme> = {
     fontFamily: VERDANA,
     fontScale: 1.02,
     lineScale: 1.08,
-    pageBg: "#FBFBF6",
+    // White background retained; only typography and spacing adapt.
     label: "Autism-friendly (Social)",
   },
   "asc-demand-avoidant": {
     fontFamily: VERDANA,
     fontScale: 1.02,
     lineScale: 1.08,
-    pageBg: "#FBFCFE",
+    // White background retained; only typography and spacing adapt.
     label: "Autism-friendly (PDA)",
   },
   "asc-sensory": {
     fontFamily: VERDANA,
     fontScale: 1.02,
     lineScale: 1.06,
-    pageBg: "#F8F8F4", // muted, minimal contrast
+    // White background retained; only typography and spacing adapt.
     label: "Autism-friendly (Sensory)",
   },
   "asc-rigid": {

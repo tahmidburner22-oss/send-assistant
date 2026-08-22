@@ -18,6 +18,8 @@
  * add, remove or reorder content. See mathsGoldSend.ts for the theme map.
  */
 
+import type { GoldAdaptationNote } from "@/lib/mathsGoldAdaptations";
+
 // ─── Schema ────────────────────────────────────────────────────────────────
 
 export interface GoldInfoParagraph {
@@ -199,6 +201,7 @@ export const GOLD_CSS = `
 .ws-root .t1 { font-family: var(--ws-title-font); font-size: ${fs(20)}; font-weight: bold; color: #0f204b; line-height: 1.1; }
 .ws-root .t2 { font-family: var(--ws-title-font); font-size: ${fs(18)}; font-weight: bold; color: #0f204b; line-height: 1.1; }
 .ws-root .ws-badge-label { font-size: ${fs(7.5)}; color: #1f5fa6; font-weight: bold; }
+.ws-root .ws-adaptation-note { margin-top: 2px; color: #1f5fa6; font-size: ${fs(6.4)}; font-weight: bold; line-height: 1.2; }
 
 .ws-root .lo { position: absolute; top: 16mm; left: 0; right: 0; height: 9mm; background: white; border: 1.5px solid #1f5fa6; border-radius: 4px; text-align: center; line-height: 9mm; font-weight: bold; font-size: ${fs(10.5)}; }
 
@@ -527,10 +530,13 @@ const FOOTER_HTML = `    <div class="foot-row">
     </div>`;
 
 /** Render just the two `.page` divs (no <html>/<style> wrapper). */
-export function renderGoldWorksheetBody(data: GoldWorksheet): string {
+export function renderGoldWorksheetBody(data: GoldWorksheet, notes: GoldAdaptationNote[] = []): string {
   const titleLines = (data.title || "").split("\n");
   const titleL1 = pp(titleLines[0] ?? "");
   const titleL2 = pp(titleLines[1] ?? "");
+  const adaptationSummary = notes.length > 0
+    ? `<div class="ws-adaptation-note">Adaptations: ${notes.map((note) => pp(note.label)).join(" · ")}</div>`
+    : "";
 
   return `<div class="page">
     <div class="p1-header">
@@ -539,7 +545,7 @@ export function renderGoldWorksheetBody(data: GoldWorksheet): string {
             <div class="t1">${titleL1}</div>
             <div class="t2">${titleL2}</div>
         </div>
-        <div class="p1-hr">Date: _____________________</div>
+        <div class="p1-hr"><div>Date: _____________________</div>${adaptationSummary}</div>
     </div>
     <div class="lo">${pp(data.objective)}</div>
 ${renderInfoBoxes(data)}
@@ -563,7 +569,8 @@ ${FOOTER_HTML}
  */
 export function renderGoldWorksheetHtml(
   data: GoldWorksheet,
-  theme?: GoldTheme
+  theme?: GoldTheme,
+  notes: GoldAdaptationNote[] = []
 ): string {
   const styleVars = themeToStyleVars(theme);
   const rootStyle = styleVars ? ` style="${styleVars}"` : "";
@@ -581,7 +588,7 @@ ${GOLD_CSS}
 </head>
 <body>
 <div class="ws-root"${rootStyle}${sendAttr}>
-${renderGoldWorksheetBody(data)}
+${renderGoldWorksheetBody(data, notes)}
 </div>
 </body>
 </html>`;
