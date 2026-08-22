@@ -1120,6 +1120,7 @@ export default function Worksheets() {
   const [showSectionPicker, setShowSectionPicker] = useState(false);
   const [editType, setEditType] = useState<"ai" | "manual" | "none">("none");
   const [editedSections, setEditedSections] = useState<Record<number, string>>({});
+  const [showProtectedEditNotice, setShowProtectedEditNotice] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   // AI Edit state
   const [aiEditSectionIndex, setAiEditSectionIndex] = useState<number | null>(null);
@@ -6663,11 +6664,25 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               <>
                 <Button variant="outline" size="sm"
                   className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
-                  onClick={() => { setEditMode(true); setEditType("ai"); }}>
+                  onClick={() => {
+                    if (goldWorksheet || scienceWorksheet || humanitiesWorksheet) {
+                      setShowProtectedEditNotice(true);
+                      return;
+                    }
+                    setEditMode(true);
+                    setEditType("ai");
+                  }}>
                   <Sparkles className="w-3.5 h-3.5" />Edit with AI
                 </Button>
                 <Button variant="outline" size="sm" className="gap-1.5"
-                  onClick={() => { setEditMode(true); setEditType("manual"); }}>
+                  onClick={() => {
+                    if (goldWorksheet || scienceWorksheet || humanitiesWorksheet) {
+                      setShowProtectedEditNotice(true);
+                      return;
+                    }
+                    setEditMode(true);
+                    setEditType("manual");
+                  }}>
                   <PenLine className="w-3.5 h-3.5" />Edit Manually
                 </Button>
               </>
@@ -7441,6 +7456,21 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           </Button>
         </div>
       )}
+
+      {/* Protected layout editor notice. Dedicated documents must never enter the generic editor, which could imply that their fixed geometry is editable. */}
+      <Dialog open={showProtectedEditNotice} onOpenChange={setShowProtectedEditNotice}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Lock className="h-4 w-4 text-emerald-700" />Protected worksheet layout</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <p>This approved worksheet keeps its page count, box positions, question structure and white-paper print layout fixed.</p>
+            <p>To preserve that contract, generic manual and AI section editing are not available here. SEND support and reading-age wording are already applied safely without moving the layout.</p>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900">Use the generator settings, differentiation workflow or a new approved template request to create an alternative safely.</div>
+            <div className="flex justify-end"><Button onClick={() => setShowProtectedEditNotice(false)} className="rounded-xl bg-brand hover:bg-brand/90">Understood</Button></div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* AI Edit Section Modal */}
       <Dialog open={aiEditSectionIndex !== null} onOpenChange={(open) => !open && setAiEditSectionIndex(null)}>
