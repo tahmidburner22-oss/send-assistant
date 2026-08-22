@@ -34,6 +34,8 @@ interface GoldWorksheetFrameProps {
    * typography overlays apply to the gold layout.
    */
   a11yProfileId?: string;
+  /** Number of fixed A4 landscape pages. Defaults to the existing two-page Maths spread. */
+  pageCount?: number;
 }
 
 /**
@@ -75,13 +77,13 @@ function injectA11yProfile(html: string, profileId: string | undefined): string 
   return result;
 }
 
-export default function GoldWorksheetFrame({ html, title = "Worksheet preview", a11yProfileId }: GoldWorksheetFrameProps) {
+export default function GoldWorksheetFrame({ html, title = "Worksheet preview", a11yProfileId, pageCount = 2 }: GoldWorksheetFrameProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [scale, setScale] = useState(1);
   // Natural (unscaled) height of the document content — measured after load,
   // falling back to the nominal 2-page height until then.
-  const [contentH, setContentH] = useState(PAGE_H_PX * 2);
+  const [contentH, setContentH] = useState(PAGE_H_PX * pageCount);
 
   // Apply a11y profile to the HTML document
   const processedHtml = useMemo(
@@ -116,14 +118,14 @@ export default function GoldWorksheetFrame({ html, title = "Worksheet preview", 
       const h = Math.max(
         doc.body?.scrollHeight ?? 0,
         doc.documentElement?.scrollHeight ?? 0,
-        PAGE_H_PX * 2
+        PAGE_H_PX * pageCount
       );
       setContentH(h);
     } catch {
       /* cross-origin shouldn't happen with srcDoc — ignore */
     }
     recompute();
-  }, [recompute]);
+  }, [recompute, pageCount]);
 
   return (
     <div ref={wrapRef} style={{ width: "100%", overflow: "hidden" }}>

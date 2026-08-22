@@ -32,6 +32,7 @@ import { renderGoldWorksheetHtml } from "@/lib/mathsGoldRenderer";
 import { getGoldSendTheme } from "@/lib/mathsGoldSend";
 import { applyGoldMathsAdaptations } from "@/lib/mathsGoldAdaptations";
 import { downloadGoldWorksheetPdf, printGoldWorksheet } from "@/lib/mathsGoldPdf";
+import { canRenderScienceLandscape, renderScienceLandscape } from "@/lib/scienceLandscapeRenderer";
 import ProgressionStrip from "@/components/ProgressionStrip";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
@@ -935,6 +936,13 @@ export default function Worksheets() {
     entry: GoldManifestEntry;
     sendNeed?: string;
   } | null>(null);
+  // Dedicated Science layouts are original one-page A4 landscape documents.
+  // They have their own state so no Science path can fall into the retired Maths renderer.
+  const [scienceWorksheet, setScienceWorksheet] = useState<{
+    html: string;
+    title: string;
+    sendNeed?: string;
+  } | null>(null);
   // Ref mirror of goldWorksheet — updated synchronously alongside the state.
   // Used in the render section so the gold iframe shows immediately even
   // when React batches the state update (e.g. inside async functions).
@@ -1787,8 +1795,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setRating(0);
     setSavedWorksheetId(null);
     setVoiceAnswers({});
-    // Clear any previous gold spread; only the gold branch below re-populates it.
+    // Clear prior dedicated fixed-layout documents before choosing the next route.
         setGoldWorksheetSync(null);
+        setScienceWorksheet(null);
     // ── GOLD MATHS FALLBACK ──────────────────────────────────────────────────
     // Bundled JSON remains a resilient fallback when the database has not yet
     // been migrated/imported. The library lookup runs first so every one of the
@@ -1836,6 +1845,39 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         return false;
       }
     };
+
+    // ── DEDICATED SCIENCE LANDSCAPES ─────────────────────────────────────────
+    // Science has its own original one-page A4 landscape structures. The route is
+    // intentionally separate from both the locked Maths JSON corpus and the generic
+    // section-flow renderer so a supported Science topic cannot lose its print-safe
+    // fixed geometry when SEND or reading-age support is selected.
+    const tryScienceLandscape = (): boolean => {
+      if (examStyle || !canRenderScienceLandscape({ subject, yearGroup, topic, subtopic, sendNeedId: sendNeed, readingAge, examBoard })) return false;
+      try {
+        setGenerationStatus("Building dedicated Science worksheet...");
+        const science = renderScienceLandscape({ subject, yearGroup, topic, subtopic, sendNeedId: sendNeed, readingAge, examBoard });
+        const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
+        setScienceWorksheet({ html: science.html, title: science.title, sendNeed: activeSend });
+        setGenerated({
+          title: science.title,
+          sections: [],
+          metadata: { subject, topic, subtopic, yearGroup, sendNeed: activeSend, difficulty, examBoard: examBoard !== "none" ? examBoard : "General", scienceLandscape: science.layout, adaptations: science.adaptations },
+          isAI: false,
+        } as unknown as AnyWorksheet);
+        setHiddenSections(new Set());
+        setHideHeader(false);
+        setDiffVersions({});
+        toast.success("Dedicated Science landscape worksheet ready!");
+        setLoading(false);
+        setGenerationStatus("");
+        return true;
+      } catch (scienceErr) {
+        console.warn("[Science landscape] failed, allowing normal fallback:", scienceErr);
+        setScienceWorksheet(null);
+        return false;
+      }
+    };
+    if (tryScienceLandscape()) return;
 
     // KS3/KS4 Maths uses only the approved two-page landscape registry. It must
     // never fall through to the generic library/AI section-flow renderer, which
@@ -3108,7 +3150,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   // ═══ §HANDLE-PDF · PDF download (pixel-perfect HTML-to-PDF) ════════════════
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
   const handleDownloadPdf = async () => {
-    if (!generated && !goldWorksheet) { toast.error("No worksheet loaded"); return; }
+    if (!generated && !goldWorksheet && !scienceWorksheet) { toast.error("No worksheet loaded"); return; }
     // ── Gold maths layout — export the pre-built landscape document directly,
     // so the PDF is pixel-identical to the on-screen spread. ──────────────────
     if (goldWorksheet) {
@@ -3120,6 +3162,19 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       } catch (err) {
         console.error("[Gold] PDF export failed:", err);
         toast.error("PDF export failed. Try Print instead.", { id: "gold-pdf" });
+      }
+      return;
+    }
+    // ── Dedicated Science layout — retain the fixed one-page landscape document. ──
+    if (scienceWorksheet) {
+      try {
+        const fname = `${scienceWorksheet.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}.pdf`;
+        toast.loading("Generating PDF...", { id: "science-pdf" });
+        await downloadGoldWorksheetPdf(scienceWorksheet.html, fname);
+        toast.success("PDF downloaded!", { id: "science-pdf" });
+      } catch (err) {
+        console.error("[Science landscape] PDF export failed:", err);
+        toast.error("PDF export failed. Try Print instead.", { id: "science-pdf" });
       }
       return;
     }
@@ -3434,6 +3489,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       printGoldWorksheet(goldWorksheet.html);
       return;
     }
+    if (scienceWorksheet) {
+      if (currentPupilHash) setLastPrintedPupilHash(currentPupilHash);
+      printGoldWorksheet(scienceWorksheet.html);
+      return;
+    }
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) return;
     // Lane 1.4 — record the pupil-facing snapshot at the moment of
@@ -3478,6 +3538,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     if (goldWorksheet) {
       setPrintPreviewViewMode(previewViewMode);
       setPrintPreviewHtml(goldWorksheet.html);
+      setPrintPreviewLoading(false);
+      setShowPrintPreview(true);
+      return;
+    }
+    if (scienceWorksheet) {
+      setPrintPreviewViewMode(previewViewMode);
+      setPrintPreviewHtml(scienceWorksheet.html);
       setPrintPreviewLoading(false);
       setShowPrintPreview(true);
       return;
@@ -6957,8 +7024,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 {goldWorksheet && (
                   <GoldWorksheetFrame html={goldWorksheet.html} title={goldWorksheet.title} a11yProfileId={activeA11yProfileId} />
                 )}
-                {/* Show WorksheetRenderer only when NOT in edit mode */}
-                {!goldWorksheet && !editMode && (
+                {scienceWorksheet && (
+                  <GoldWorksheetFrame html={scienceWorksheet.html} title={scienceWorksheet.title} a11yProfileId={activeA11yProfileId} pageCount={1} />
+                )}
+                {/* Show WorksheetRenderer only when no dedicated fixed-layout document is active. */}
+                {!goldWorksheet && !scienceWorksheet && !editMode && (
                   <WorksheetRenderer
                     worksheet={{
                       title: generated.title,
@@ -7019,7 +7089,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   />
                 )}
                 {/* Inline section edit rendering (Manual + AI) */}
-                {!goldWorksheet && editMode && (
+                {!goldWorksheet && !scienceWorksheet && editMode && (
                   <div className="mt-4 space-y-3">
                     {(generated.sections || []).map((section, i) => {
                       if (hiddenSections.has(i)) return null;
