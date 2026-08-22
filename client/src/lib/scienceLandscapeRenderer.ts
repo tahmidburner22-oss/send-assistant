@@ -50,7 +50,6 @@ function scienceCss(): string {
   html, body { margin: 0; padding: 0; background: #ffffff; color: #17223b; font-family: Arial, Helvetica, sans-serif; }
   .science-root { width: 285mm; }
   .science-page { position: relative; width: 285mm; height: 200mm; overflow: hidden; background: #ffffff; padding: 8mm; }
-  .science-page, .science-page * { background-color: transparent; }
   .science-page .surface { background: #ffffff; }
   .head { height: 24mm; border-bottom: 1.25mm solid #123a78; position: relative; padding-bottom: 3mm; }
   .tag { display:inline-block; border: .6mm solid #123a78; border-radius: 2mm; padding: 1.3mm 3mm; color:#123a78; font-size: 8pt; font-weight: 700; letter-spacing: .15mm; }

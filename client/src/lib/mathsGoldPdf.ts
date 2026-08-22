@@ -83,7 +83,7 @@ export async function downloadGoldWorksheetPdf(
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: null,
+        backgroundColor: "#ffffff",
         logging: false,
         windowWidth: PAGE_W_PX,
         width: pages[i].offsetWidth,
