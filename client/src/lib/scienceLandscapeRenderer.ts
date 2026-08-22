@@ -96,9 +96,21 @@ function scienceCss(): string {
   .bottom-strip { position:absolute; left:8mm; right:8mm; bottom:7mm; height:13mm; display:grid; grid-template-columns:1fr 1fr; gap:3mm; }
   .strip { border:.45mm solid #123a78; border-radius:2mm; padding:2mm 3mm; background:#ffffff; font-size:8.2pt; }
   .strip b { color:#123a78; }
-  .primary { display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:4mm; margin-top:5mm; }
-  .primary .card { min-height:116mm; padding:3mm; } .primary h3 { font-size:12pt; } .primary p { font-size:10.5pt; line-height:1.35; }
-  .big-box { height:62mm; border:.6mm dashed #2d72ad; border-radius:3mm; margin-top:5mm; display:flex; align-items:center; justify-content:center; color:#54718d; font-size:11pt; }
+  .primary { display:grid; grid-template-columns:repeat(3, 1fr); gap:4mm; margin-top:5mm; }
+  .primary-card { min-height:116mm; padding:3mm; border:.65mm solid #1f5fa6; border-radius:3mm; background:#ffffff; overflow:hidden; }
+  .primary-card.look { border-color:#187f8c; } .primary-card.sort { border-color:#b36c16; } .primary-card.explain { border-color:#6c4fa2; }
+  .primary-card h3 { margin:0; padding:0 0 2mm; border-bottom:.45mm solid currentColor; font-size:12pt; font-weight:800; text-align:center; }
+  .primary-card.look h3 { color:#187f8c; } .primary-card.sort h3 { color:#a55c0b; } .primary-card.explain h3 { color:#60418f; }
+  .primary-card p { margin:2.5mm 0; font-size:10.5pt; line-height:1.35; }
+  .primary-icon { width:18mm; height:18mm; margin:2mm auto; border:.55mm solid currentColor; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#ffffff; font-size:15pt; font-weight:800; }
+  .primary-model { height:40mm; display:flex; align-items:center; justify-content:center; margin:2mm 0; }
+  .primary-model svg { width:100%; height:38mm; }
+  .choice { display:block; margin:2.5mm 0; padding:1.5mm 2mm; border:.4mm solid #8d9aae; border-radius:2mm; background:#ffffff; font-size:10pt; line-height:1.2; }
+  .choice::before { content:'□'; margin-right:2mm; font-size:14pt; vertical-align:-1pt; }
+  .word-chip { display:inline-block; margin:1mm .8mm 1mm 0; padding:1.2mm 2mm; border:.4mm solid #77879b; border-radius:5mm; background:#ffffff; font-size:9pt; font-weight:700; }
+  .short-line { height:10mm; margin-top:2.5mm; border-bottom:.5mm solid #64748b; }
+  .prompt-label { margin-top:3mm; font-size:9.5pt; font-weight:800; }
+  .big-box { height:48mm; border:.6mm dashed #2d72ad; border-radius:3mm; margin-top:4mm; display:flex; align-items:center; justify-content:center; color:#54718d; background:#ffffff; font-size:11pt; }
   .tick { display:block; margin:3mm 0; font-size:10pt; } .tick::before { content:'□'; margin-right:2mm; font-size:14pt; vertical-align:-1pt; }
   svg { max-width:100%; height:auto; }
   .concept-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:3mm; margin-top:3mm; }
@@ -158,9 +170,62 @@ function interpretation(options: ScienceLandscapeOptions): string {
   return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, "METALLIC BONDING — STRUCTURE AND PROPERTIES", "Interpretation and practice")}<div class="purpose surface"><b>Key idea:</b> Metallic bonding is the strong electrostatic attraction between positive metal ions and delocalised electrons.</div><div class="two-col"><div class="panel surface"><h2>1. LABEL THE STRUCTURE</h2><p>Use the terms in the box to label the particle model.</p><div class="label-bank surface"><span>delocalised electrons</span><span>positive metal ions</span><span>layers can slide</span></div>${latticeSvg()}<div class="response">Label 1: __________________<br><br>Label 2: __________________<br><br>Label 3: __________________</div></div><div class="panel surface"><h2>2. MALLEABILITY</h2><p>The diagram shows layers of positive metal ions. A force can make the layers move.</p>${latticeSvg()}<p class="hint">Explain why the layers of ions can slide over each other without the bonding breaking.</p><div class="response"></div></div></div><div class="bottom-strip"><div class="strip surface"><b>TIP:</b> Positive metal ions are held together by a “sea” of delocalised electrons.</div><div class="strip surface"><b>THINK:</b> Which property of a metal does this structure explain: conductivity, malleability, or both?</div></div></section></div>`;
 }
 
+type PrimaryScienceLesson = {
+  title: string;
+  objective: string;
+  look: string;
+  sort: string;
+  explain: string;
+};
+
+function primaryPlantSvg(): string {
+  return `<svg viewBox="0 0 160 100" aria-label="simple labelled plant with roots, stem, leaves and flower"><path d="M78 86V34" stroke="#3e7a43" stroke-width="5"/><path d="M78 52L48 39M78 63l30-15" stroke="#3e7a43" stroke-width="4"/><ellipse cx="45" cy="36" rx="17" ry="9" fill="#ffffff" stroke="#3e7a43" stroke-width="3"/><ellipse cx="111" cy="45" rx="17" ry="9" fill="#ffffff" stroke="#3e7a43" stroke-width="3"/><circle cx="78" cy="27" r="13" fill="#ffffff" stroke="#bc6950" stroke-width="4"/><path d="M78 86c-10 4-18 8-27 13M78 86c10 4 18 8 27 13M78 86v14" stroke="#9a6b3c" stroke-width="3"/><text x="4" y="38" font-size="10">leaf</text><text x="117" y="23" font-size="10">flower</text><text x="87" y="70" font-size="10">stem</text><text x="87" y="96" font-size="10">roots</text></svg>`;
+}
+
+function primaryMatterSvg(): string {
+  return `<svg viewBox="0 0 160 100" aria-label="three particle models labelled solid liquid and gas"><g fill="#ffffff" stroke="#3971a2" stroke-width="2"><rect x="5" y="18" width="42" height="50" rx="4"/><rect x="59" y="18" width="42" height="50" rx="4"/><rect x="113" y="18" width="42" height="50" rx="4"/></g><g fill="#3971a2"><circle cx="16" cy="29" r="4"/><circle cx="28" cy="29" r="4"/><circle cx="40" cy="29" r="4"/><circle cx="16" cy="42" r="4"/><circle cx="28" cy="42" r="4"/><circle cx="40" cy="42" r="4"/><circle cx="16" cy="55" r="4"/><circle cx="28" cy="55" r="4"/><circle cx="40" cy="55" r="4"/><circle cx="68" cy="34" r="4"/><circle cx="88" cy="29" r="4"/><circle cx="78" cy="48" r="4"/><circle cx="94" cy="56" r="4"/><circle cx="120" cy="27" r="4"/><circle cx="146" cy="43" r="4"/><circle cx="128" cy="59" r="4"/></g><text x="7" y="86" font-size="10">solid</text><text x="58" y="86" font-size="10">liquid</text><text x="115" y="86" font-size="10">gas</text></svg>`;
+}
+
+function primaryCircuitSvg(): string {
+  return `<svg viewBox="0 0 160 100" aria-label="complete circuit with battery switch and bulb"><path d="M29 50h25m24 0h26m23 0h25M29 50V78h103V50" fill="none" stroke="#465c78" stroke-width="3"/><line x1="54" y1="36" x2="54" y2="64" stroke="#465c78" stroke-width="3"/><line x1="61" y1="30" x2="61" y2="70" stroke="#465c78" stroke-width="5"/><path d="M78 50h14l11-10" fill="none" stroke="#465c78" stroke-width="3"/><circle cx="130" cy="50" r="15" fill="#ffffff" stroke="#b26e18" stroke-width="3"/><path d="M122 42l16 16m0-16l-16 16" stroke="#b26e18" stroke-width="2"/><text x="33" y="22" font-size="10">battery</text><text x="76" y="22" font-size="10">switch</text><text x="120" y="22" font-size="10">bulb</text></svg>`;
+}
+
+function primaryLesson(options: ScienceLandscapeOptions): PrimaryScienceLesson {
+  const topic = norm(options.topic);
+  if (/(plant|flower|tree)/.test(topic)) return {
+    title: "PLANTS — LOOK, SORT AND EXPLAIN",
+    objective: "I can name the main parts of a plant.",
+    look: `<p>Look at the plant.</p><div class="primary-model">${primaryPlantSvg()}</div><p>Point to each part.</p>`,
+    sort: `<p>Match the labels to the plant.</p><span class="word-chip">root</span><span class="word-chip">stem</span><span class="word-chip">leaf</span><span class="word-chip">flower</span><p class="prompt-label">Tick what plants need.</p><span class="choice">water</span><span class="choice">light</span><span class="choice">soil</span>`,
+    explain: `<p>Say it. Then write it.</p><p class="prompt-label">The roots take in</p><div class="short-line"></div><p class="prompt-label">A leaf helps a plant</p><div class="short-line"></div>`,
+  };
+  if (/(state|matter|solid|liquid|gas)/.test(topic)) return {
+    title: "STATES OF MATTER — LOOK, SORT AND EXPLAIN",
+    objective: "I can sort solids, liquids and gases.",
+    look: `<p>Look at the particle pictures.</p><div class="primary-model">${primaryMatterSvg()}</div><p>A solid keeps its shape.</p>`,
+    sort: `<p>Read each science fact.</p><span class="choice">A liquid can flow.</span><span class="choice">A gas fills its container.</span><span class="choice">A solid keeps its shape.</span>`,
+    explain: `<p>Say it. Then write it.</p><p class="prompt-label">Ice is a</p><div class="short-line"></div><p class="prompt-label">Water vapour is a</p><div class="short-line"></div>`,
+  };
+  if (/(electric|circuit|battery)/.test(topic)) return {
+    title: "ELECTRICITY — COMPLETE CIRCUITS",
+    objective: "I can name the parts of a simple circuit.",
+    look: `<p>Look at the complete circuit.</p><div class="primary-model">${primaryCircuitSvg()}</div><p>A complete circuit is a closed loop.</p>`,
+    sort: `<p>Say the name of each part.</p><span class="word-chip">battery</span><span class="word-chip">switch</span><span class="word-chip">bulb</span><p class="prompt-label">Tick what makes the bulb light.</p><span class="choice">a closed loop</span><span class="choice">a gap in the wire</span>`,
+    explain: `<p>Say it. Then write it.</p><p class="prompt-label">The battery gives</p><div class="short-line"></div><p class="prompt-label">The switch can</p><div class="short-line"></div>`,
+  };
+  const safeTopic = esc(options.topic || "Science");
+  return {
+    title: `${safeTopic.toUpperCase()} — LOOK, SORT AND EXPLAIN`,
+    objective: `I can share one clear science idea about ${safeTopic}.`,
+    look: `<p>Look at the model or real object.</p><div class="big-box">Draw one useful detail.</div><p>Say what you notice.</p>`,
+    sort: `<p>Sort the ideas with your teacher.</p><span class="choice">I can see it.</span><span class="choice">I can test it.</span><span class="choice">I can explain it.</span>`,
+    explain: `<p>Say it. Then write it.</p><p class="prompt-label">My science idea is</p><div class="short-line"></div><p class="prompt-label">I know this because</p><div class="short-line"></div>`,
+  };
+}
+
 function primaryObservation(options: ScienceLandscapeOptions): string {
-  const topic = options.topic || "Plants";
-  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, topic.toUpperCase() + " — LOOK, SORT AND EXPLAIN")}<div class="purpose surface"><b>Today:</b> Look closely. Say what you notice. Record one science idea.</div><div class="primary"><div class="card surface"><h3>1. LOOK</h3><p>Look at the object, photo or real item your teacher gives you.</p><div class="big-box">Draw what you see here.</div></div><div class="card surface"><h3>2. SORT</h3><p>Tick the words that match.</p><span class="tick">hard</span><span class="tick">soft</span><span class="tick">living</span><span class="tick">not living</span><span class="tick">rough</span><span class="tick">smooth</span></div><div class="card surface"><h3>3. SAY AND WRITE</h3><p>Finish the sentence.</p><p>I notice that it is</p><div class="big-box" style="height:25mm">________________</div><p>My science word is</p><div class="big-box" style="height:25mm">________________</div></div></div></section></div>`;
+  const lesson = primaryLesson(options);
+  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}"><section class="science-page">${header(options, lesson.title)}<div class="purpose surface"><b>Today:</b> ${lesson.objective}</div><div class="primary"><div class="primary-card look surface"><div class="primary-icon">1</div><h3>LOOK</h3>${lesson.look}</div><div class="primary-card sort surface"><div class="primary-icon">2</div><h3>SORT</h3>${lesson.sort}</div><div class="primary-card explain surface"><div class="primary-icon">3</div><h3>SAY AND WRITE</h3>${lesson.explain}</div></div></section></div>`;
 }
 
 type ConceptCard = { heading: string; diagram: string; body: string };

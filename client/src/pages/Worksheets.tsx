@@ -41,6 +41,7 @@ import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel, aiGenerateWorksheetFromClassBrief } from "@/lib/ai";
 import { isMathsSubject } from "@/lib/mathsVerifier";
 import type { ClassAutoBrief } from "@/lib/class-auto-brief";
+import { GenerationTimeoutError, withGenerationTimeout } from "@/lib/boundedGeneration";
 import { runFactCheck } from "@/lib/fact-checker";
 import { tagWorksheetForPupil } from "@/lib/evidence-tagger";
 import EvidencePackDialog from "@/components/EvidencePackDialog";
@@ -84,6 +85,7 @@ import {
 import { ArchetypePickerDialog } from "@/components/ArchetypePickerDialog";
 // PR-B (W8) — three-tier differentiation toolbar button.
 import { ThreeTierButton } from "@/components/ThreeTierButton";
+import { stampGroupMetadata } from "@/lib/threeTierDifferentiation";
 // PR-B (W12) — real-world context picker (lightweight inline select; no
 // new component file).
 import { listContexts } from "@/lib/realWorldContextLibrary";
@@ -627,6 +629,12 @@ export default function Worksheets() {
     try { updatePreference("worksheetGenerationMode", next); } catch { /* swallow */ }
   }, [updatePreference]);
   const [autoSelectedClassId, setAutoSelectedClassId] = useState<string>("");
+  // Auto-from-class may depend on an external provider. A monotonically
+  // increasing request id lets Cancel and Retry safely ignore late results.
+  const autoGenerationRequestRef = useRef(0);
+  const [lastAutoBrief, setLastAutoBrief] = useState<ClassAutoBrief | null>(null);
+  const [autoGenerationStatus, setAutoGenerationStatus] = useState("");
+  const [autoGenerationFailed, setAutoGenerationFailed] = useState(false);
   // FEAT-6 — Evidence Pack dialog (EHCP/IEP tagger + Annual-Review export).
   const { pupilId: scopedPupilId } = usePupilScope();
   const [evidencePackOpen, setEvidencePackOpen] = useState(false);
@@ -2682,8 +2690,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       return;
     }
 
+    const requestId = autoGenerationRequestRef.current + 1;
+    autoGenerationRequestRef.current = requestId;
+    setLastAutoBrief(brief);
+    setAutoGenerationFailed(false);
     setLoading(true);
-    setGenerationStatus("Generating from class brief...");
+    setGenerationStatus("Preparing your class-aware worksheet…");
+    setAutoGenerationStatus("Preparing the class profile and lesson focus…");
     setEditedSections({});
     setEditMode(false);
     setRating(0);
@@ -2691,10 +2704,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setVoiceAnswers({});
 
     try {
-      const result = await aiGenerateWorksheetFromClassBrief(brief, {
+      const operation = aiGenerateWorksheetFromClassBrief(brief, {
         // Caller-side overrides: any fields the teacher has already chosen in
         // the manual form take precedence over the brief defaults so flipping
-        // between Manual ↔ Auto feels coherent.
+        // between Manual and Auto feels coherent.
         subject: subject || brief.suggestedSubject || "",
         yearGroup: yearGroup || brief.classLabel,
         difficulty,
@@ -2706,26 +2719,53 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         readingAge: readingAge || undefined,
         selectedSections: selectedSections as string[],
       });
+      setGenerationStatus("Finalising your worksheet…");
+      setAutoGenerationStatus("Building the worksheet from the class brief…");
+      const result = await withGenerationTimeout(operation);
+      // The teacher may have cancelled or started a newer request while the
+      // provider was working. Never replace their current work with a stale result.
+      if (autoGenerationRequestRef.current !== requestId) return;
 
       const generatedWs = { ...result, isAI: true } as AIWorksheet;
       setGenerated(generatedWs);
       setHiddenSections(new Set());
       setHideHeader(false);
       setDiffVersions({});
+      setAutoGenerationStatus("Worksheet ready.");
       toast.success(`Worksheet generated for ${brief.classLabel}!`);
     } catch (err: any) {
+      if (autoGenerationRequestRef.current !== requestId) return;
       const errMsg = err?.message || String(err);
       console.error("[Auto-from-class] generation failed:", errMsg);
+      setAutoGenerationFailed(true);
+      if (err instanceof GenerationTimeoutError) {
+        setAutoGenerationStatus("This is taking longer than expected. You can retry or edit the prepared details in Manual mode.");
+        toast.error("Auto generation timed out after one minute. Retry, or use Edit in form — your class details are still ready.", { duration: 9000 });
+        return;
+      }
       if (errMsg.startsWith("AUTH_REQUIRED") || errMsg.includes("Session expired") || errMsg.includes("Authentication required")) {
         toast.error("Your session has expired. Redirecting to login...", { duration: 4000 });
         setTimeout(() => { window.location.href = "/login"; }, 2000);
         return;
       }
-      toast.error("Auto generation failed. Try again, or click \"Edit in form\" to refine the inputs.");
+      setAutoGenerationStatus("We could not finish this generation. Retry, or edit the prepared details in Manual mode.");
+      toast.error(`Auto generation did not complete: ${errMsg.slice(0, 160)}. Retry, or click \"Edit in form\" to refine the inputs.`, { duration: 9000 });
     } finally {
-      setGenerationStatus("");
-      setLoading(false);
+      if (autoGenerationRequestRef.current === requestId) {
+        setGenerationStatus("");
+        setLoading(false);
+      }
     }
+  };
+
+  const handleCancelAutoGeneration = () => {
+    if (!loading) return;
+    autoGenerationRequestRef.current += 1;
+    setLoading(false);
+    setGenerationStatus("");
+    setAutoGenerationStatus("Generation cancelled. Your class details are still available to retry or edit.");
+    setAutoGenerationFailed(true);
+    toast.info("Auto generation cancelled. No worksheet was replaced.");
   };
 
   // ─── Generate Diagnostic Starter ────────────────────────────────────────────
@@ -4867,6 +4907,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     selectedClassId={autoSelectedClassId}
                     onClassChange={setAutoSelectedClassId}
                     busy={loading}
+                    generationStatus={autoGenerationStatus}
+                    canRetry={autoGenerationFailed && !!lastAutoBrief}
+                    onCancel={handleCancelAutoGeneration}
+                    onRetry={() => { if (lastAutoBrief) void handleGenerateFromClassBrief(lastAutoBrief); }}
                     onGenerate={(brief) => { void handleGenerateFromClassBrief(brief); }}
                     onEditInForm={(prefill) => {
                       // Pre-fill manual form fields, then flip back to Manual.
@@ -6734,7 +6778,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 HA concurrently. We adapt G9's tier alphabet (LA/MA/HA) onto the
                 existing 'foundation' | 'higher' API; the MA tier is the
                 untransformed sheet. */}
-            {generated && (
+            {/* The protected Maths, Science and Humanities documents have immutable
+                renderer contracts. Three-tier AI differentiation is available only
+                for standard section-flow worksheets, where it cannot alter a fixed
+                layout or accidentally invoke an empty-section protected document. */}
+            {generated && !hasDedicatedLayout && (
               <ThreeTierButton
                 worksheet={generated}
                 differentiate={async (ws, tier) => {
@@ -6749,6 +6797,44 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     title: (ws as { title?: string }).title,
                   });
                   return { ...ws, sections: out.sections } as typeof ws;
+                }}
+                onSaveAll={async (tierSet) => {
+                  const readyTiers = tierSet.results.filter((result) => result.status === "fulfilled" && result.worksheet);
+                  if (readyTiers.length === 0) throw new Error("No completed tier is available to save.");
+                  const saved = await Promise.all(readyTiers.map(async (result) => {
+                    const tierWorksheet = stampGroupMetadata({
+                      ...(result.worksheet as AnyWorksheet),
+                      title: `${(result.worksheet as AnyWorksheet).title} — ${result.tier}`,
+                    } as AnyWorksheet, tierSet.groupId, result.tier);
+                    const tierSections = (tierWorksheet.sections || []).map((section) => ({ ...section }));
+                    const content = tierSections
+                      .filter((section) => !section.teacherOnly)
+                      .map((section) => `## ${section.title}\n${section.content}`)
+                      .join("\n\n");
+                    const teacherContent = tierSections
+                      .map((section) => `## ${section.title}\n${section.content}`)
+                      .join("\n\n");
+                    return saveWorksheet({
+                      title: tierWorksheet.title,
+                      subtitle: (tierWorksheet as any).subtitle,
+                      subject: tierWorksheet.metadata?.subject || subject,
+                      topic: tierWorksheet.metadata?.topic || topic,
+                      yearGroup: tierWorksheet.metadata?.yearGroup || yearGroup,
+                      sendNeed: tierWorksheet.metadata?.sendNeed,
+                      difficulty: tierWorksheet.metadata?.difficulty || difficulty,
+                      examBoard: tierWorksheet.metadata?.examBoard || examBoard,
+                      content,
+                      teacherContent,
+                      rating: 0,
+                      overlay: colorOverlay,
+                      sections: tierSections,
+                      metadata: tierWorksheet.metadata as any,
+                      isAI: true,
+                    });
+                  }));
+                  setSavedWorksheetId(saved[0]?.id || null);
+                  await refreshData();
+                  toast.success(`${saved.length} differentiated version${saved.length === 1 ? "" : "s"} saved to History.`);
                 }}
               />
             )}

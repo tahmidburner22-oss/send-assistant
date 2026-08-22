@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Users, AlertCircle, Pencil } from "lucide-react";
+import { Sparkles, Users, AlertCircle, Pencil, RefreshCw, X } from "lucide-react";
 import type { Child } from "@/contexts/AppContext";
 import {
   buildClassAutoBrief,
@@ -50,6 +50,13 @@ interface Props {
   onEditInForm: (prefill: AutoFromClassPrefill) => void;
   /** Disable the action buttons while a generation is running. */
   busy?: boolean;
+  /** Plain-language stage text supplied by the parent workflow. */
+  generationStatus?: string;
+  /** Cancels the visible request and ignores any later stale completion. */
+  onCancel?: () => void;
+  /** Retries the last valid class brief after a failure or timeout. */
+  onRetry?: () => void;
+  canRetry?: boolean;
 }
 
 export function AutoFromClassPanel({
@@ -60,6 +67,10 @@ export function AutoFromClassPanel({
   onGenerate,
   onEditInForm,
   busy = false,
+  generationStatus,
+  onCancel,
+  onRetry,
+  canRetry = false,
 }: Props) {
   // Distinct yearGroups become the class options. Sorted naturally.
   const classOptions = useMemo(() => {
@@ -236,8 +247,19 @@ export function AutoFromClassPanel({
             <div className="text-[11px] text-amber-700">Add a topic via "Edit in form" before generating.</div>
           )}
 
+          {/* Bounded generation status and recovery actions. The parent owns
+              the request token, so Cancel safely ignores a late provider result. */}
+          {busy && (
+            <div className="rounded-lg border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-xs text-indigo-900" role="status" aria-live="polite">
+              <span className="flex items-center gap-2">
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                {generationStatus || "Preparing a class-aware worksheet…"}
+              </span>
+            </div>
+          )}
+
           {/* Actions */}
-          <div className="flex gap-2 pt-1">
+          <div className="flex flex-wrap gap-2 pt-1">
             <Button
               onClick={handleGenerate}
               disabled={busy || !usable}
@@ -248,6 +270,28 @@ export function AutoFromClassPanel({
               <Sparkles className="w-4 h-4 mr-1.5" />
               Generate for {brief.classLabel}
             </Button>
+            {busy && onCancel && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onCancel}
+                data-testid="auto-from-class-cancel"
+              >
+                <X className="w-4 h-4 mr-1.5" />
+                Cancel
+              </Button>
+            )}
+            {!busy && canRetry && onRetry && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRetry}
+                data-testid="auto-from-class-retry"
+              >
+                <RefreshCw className="w-4 h-4 mr-1.5" />
+                Retry generation
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

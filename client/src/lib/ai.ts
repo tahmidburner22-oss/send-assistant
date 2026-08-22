@@ -85,6 +85,7 @@ import { runWorksheetPostValidators } from './worksheetPostValidator';
 // Y1-2 / Y3-4 / Y5-6 three-bucket switch in the primary system
 // prompt). Spec: docs/primary-worksheet-improvement-plan.md W1.
 import { renderPrimaryReadingProfilePrompt } from './primaryReadingProfile';
+import { formatPrimaryWorksheetRules } from './primaryWorksheetPolicy';
 
 // FEAT-PB6 — SEND fidelity audit. Probes every worksheetRules entry for the
 // pupil's SEND profile and emits a per-rule pass/fail report so teachers can
@@ -3212,6 +3213,9 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
       `5. No HTML, no markdown, no code fences in content strings.`,
       `6. Each step, question, or item must be on its own line using \\n.`,
     ];
+    if (isPrimary) {
+      structuredUserRules.push(formatPrimaryWorksheetRules(params.yearGroup));
+    }
     if (isMaths) {
       structuredUserRules.push(`7. MATHS ONLY: All questions in EVERY section must be 100% calculation-based only. Never ask students to explain, describe, define, or write prose. Every question must require a numerical or algebraic calculation. Use LaTeX for all math expressions.`);
     }
@@ -3541,6 +3545,7 @@ ${examBoardNote} ${lengthNote}
 ${pageCountNote}
 ${readingAgeNote}
 ${primaryLayoutNote}
+${isPrimary ? formatPrimaryWorksheetRules(params.yearGroup) : ""}
 ${mathsNote}
 ${sendNote}
 ${stemPreservationNote}

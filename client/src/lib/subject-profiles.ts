@@ -867,7 +867,7 @@ export function detectSubject(input: string | undefined | null): SubjectKey {
     [/(german|deutsch|grammatik|akkusativ|dativ)/, "german"],
     [/(modern foreign language|\bmfl\b|language learning)/, "mfl_generic"],
     [/(french|français|vocabulaire|grammaire|conjugaison)/, "french"],
-    [/(religious studies|\brs\b|religion|christian|islam|jud|hindu|buddh|sikh|theolog)/, "religious_studies"],
+    [/(religious studies|\brs\b|\bre\b|religion|christian|islam|jud|hindu|buddh|sikh|theolog)/, "religious_studies"],
     [/(sociolog|durkheim|marx(ism)?|functionalism|interactionism|feminism)/, "sociology"],
     [/(psycholog|cognitive|behaviou?ral|milgram|asch|loftus|freud|piaget)/, "psychology"],
     [/(business|economics|marketing|enterprise|finance|stakeholder)/, "business"],
