@@ -7403,14 +7403,20 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   <span className="text-sm text-muted-foreground">Rate this lesson:</span>
                   <div className="flex gap-1">
                     {[1,2,3,4,5].map(s => (
-                      <button key={s} onClick={() => {
+                      <button
+                        key={s}
+                        type="button"
+                        aria-label={`Rate this lesson ${s} out of 5`}
+                        aria-pressed={s === rating}
+                        title={`Rate this lesson ${s} out of 5`}
+                        onClick={() => {
                         setRating(s);
                         // Immediately persist rating if worksheet is already saved
                         if (savedWorksheetId) {
                           updateWorksheet(savedWorksheetId, { rating: s }).catch(() => {});
                         }
                       }}>
-                        <Star className={`w-5 h-5 ${s <= rating ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
+                        <Star className={`w-5 h-5 ${s <= rating ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} aria-hidden="true" />
                       </button>
                     ))}
                   </div>
