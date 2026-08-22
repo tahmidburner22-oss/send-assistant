@@ -27,7 +27,7 @@ import GoldWorksheetFrame from "@/components/GoldWorksheetFrame";
 // For maths subtopics that ship a bundled JSON worksheet we render the
 // "gold-standard" landscape spread instead of the section-flow layout. SEND
 // is applied as a non-destructive typography/colour overlay only.
-import { findGoldEntry, loadGoldWorksheet, type GoldManifestEntry } from "@/data/maths-gold/manifest";
+import { findGoldEntry, hasGoldWorksheet, loadGoldWorksheet, MATHS_GOLD_MANIFEST, type GoldManifestEntry } from "@/data/maths-gold/manifest";
 import { renderGoldWorksheetHtml } from "@/lib/mathsGoldRenderer";
 import { getGoldSendTheme } from "@/lib/mathsGoldSend";
 import { applyGoldMathsAdaptations } from "@/lib/mathsGoldAdaptations";
@@ -875,6 +875,16 @@ export default function Worksheets() {
     if (!subject || !yearGroup) return [];
     return getSyllabusTopics(subject, yearGroup);
   }, [subject, yearGroup]);
+  const usesApprovedMathsTemplates = isMathsSubject(subject)
+    && /^Year\s+(?:7|8|9|10|11)$/i.test(yearGroup || "");
+  // The KS3/KS4 Maths interface must expose only topics with a supplied,
+  // approved two-page JSON template. This prevents a non-template label from
+  // reaching the retired portrait renderer or producing an ambiguous error.
+  const selectableTopics = useMemo(() => {
+    if (!usesApprovedMathsTemplates) return syllabusTopics;
+    const approvedTopics = new Set(MATHS_GOLD_MANIFEST.map((entry) => entry.topic));
+    return syllabusTopics.filter((item) => approvedTopics.has(item.topic));
+  }, [syllabusTopics, usesApprovedMathsTemplates]);
 
   // Topic combobox bug fix (audit): if a topic value is set (e.g. via URL
   // prefill, curriculum-progression chip, or saved preset) but it is NOT one
@@ -885,10 +895,10 @@ export default function Worksheets() {
   // audit.
   useEffect(() => {
     if (!topic) return;
-    if (!syllabusTopics.length) return;
-    const isInList = syllabusTopics.some(st => st.topic === topic);
+    if (!selectableTopics.length) return;
+    const isInList = selectableTopics.some(st => st.topic === topic);
     if (!isInList) setShowTopicSuggestions(true);
-  }, [topic, syllabusTopics]);
+  }, [topic, selectableTopics]);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
@@ -4714,7 +4724,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
                 <div className="space-y-1.5 relative">
                   <Label className="text-xs font-medium">Topic *</Label>
-                  {syllabusTopics.length > 0 ? (
+                  {selectableTopics.length > 0 ? (
                     <div className="space-y-1">
                       {/*
                        * Topic combobox bug fix: when the user picks "Enter custom topic..."
@@ -4737,7 +4747,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                         />
                       ) : (
                         <Select
-                          value={syllabusTopics.some(st => st.topic === topic) ? topic : ""}
+                          value={selectableTopics.some(st => st.topic === topic) ? topic : ""}
                           onValueChange={(val) => {
                             if (val === "__custom__") { setTopic(""); setShowTopicSuggestions(true); }
                             else { setTopic(val); setShowTopicSuggestions(false); }
@@ -4750,7 +4760,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                             if (!useKsGroups) {
                               return (
                                 <>
-                                  {syllabusTopics.map((st, i) => {
+                                  {selectableTopics.map((st, i) => {
                                     const isFromPriorYear = st.yearGroup && yearGroup && st.yearGroup !== yearGroup;
                                     return (
                                       <SelectItem key={i} value={st.topic}>
@@ -4761,14 +4771,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                                       </SelectItem>
                                     );
                                   })}
-                                  <SelectItem value="__custom__">Enter custom topic...</SelectItem>
+                                  {!usesApprovedMathsTemplates && <SelectItem value="__custom__">Enter custom topic...</SelectItem>}
                                 </>
                               );
                             }
                             // Group topics by KS stage for Maths and Science
-                            const groups: Record<string, typeof syllabusTopics> = {};
+                            const groups: Record<string, typeof selectableTopics> = {};
                             const ksOrder = ['KS1', 'KS2', 'KS3', 'KS4', 'KS5'];
-                            for (const st of syllabusTopics) {
+                            for (const st of selectableTopics) {
                               const ks = st.ksStage || 'Other';
                               if (!groups[ks]) groups[ks] = [];
                               groups[ks].push(st);
@@ -4797,7 +4807,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                                     ))}
                                   </SelectGroup>
                                 ))}
-                                <SelectItem value="__custom__">Enter custom topic...</SelectItem>
+                                {!usesApprovedMathsTemplates && <SelectItem value="__custom__">Enter custom topic...</SelectItem>}
                               </>
                             );
                           })()}
@@ -4817,8 +4827,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   ) : (
                     <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder={subject && yearGroup ? "No syllabus data — type a topic" : "Select subject & year group first"} className="h-10" />
                   )}
-                  {syllabusTopics.length > 0 && !showTopicSuggestions && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{syllabusTopics.length} curriculum topics for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
+                  {selectableTopics.length > 0 && !showTopicSuggestions && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{usesApprovedMathsTemplates ? `${selectableTopics.length} approved two-page templates available` : `${selectableTopics.length} curriculum topics`} for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
                       const yr = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10);
                       if (yr >= 2 && yr <= 6) return ` (Years 1–${yr})`;
                       if (yr >= 8 && yr <= 11) return ` (Years 7–${yr})`;
@@ -4830,10 +4840,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
                 {/* Subtopic dropdown — appears after topic is selected */}
                 {topic && (() => {
-                  const subtopics = getSubtopics(topic);
+                  const requiresApprovedMathsSubtopic = usesApprovedMathsTemplates;
+                  const subtopics = (requiresApprovedMathsSubtopic
+                    ? getSubtopics(topic).filter((item) => hasGoldWorksheet(topic, item))
+                    : getSubtopics(topic));
                   if (subtopics.length === 0) return null;
-                  const requiresApprovedMathsSubtopic = isMathsSubject(subject)
-                    && /^Year\s+(?:7|8|9|10|11)$/i.test(yearGroup || "");
                   return (
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Subtopic <span className="text-muted-foreground font-normal">{requiresApprovedMathsSubtopic ? "(required for the approved two-page Maths worksheet)" : "(optional — narrows the worksheet focus)"}</span></Label>
