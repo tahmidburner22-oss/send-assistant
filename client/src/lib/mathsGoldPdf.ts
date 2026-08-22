@@ -3,9 +3,10 @@
  *
  * Print / PDF export for fixed-layout worksheet documents.
  *
- * The dedicated Maths and Science renderers emit self-contained, print-ready
- * A4-landscape HTML documents. Maths uses two fixed `.page` elements; Science
- * uses one fixed `.science-page` element. Both use the same 285mm × 200mm
+ * The dedicated Maths, Science and Humanities renderers emit self-contained,
+ * print-ready A4-landscape HTML documents. Maths uses two fixed `.page`
+ * elements; Science uses one `.science-page`; Humanities uses two
+ * `.humanities-page` elements. All use the same 285mm × 200mm
  * printable area inside the A4 landscape page margins, so preview, print, and
  * export retain identical geometry.
  *
@@ -65,7 +66,7 @@ export async function downloadGoldWorksheetPdf(
     iframe.srcdoc = html;
     const doc = await waitForIframe(iframe);
 
-    const pages = Array.from(doc.querySelectorAll<HTMLElement>(".page, .science-page"));
+    const pages = Array.from(doc.querySelectorAll<HTMLElement>(".page, .science-page, .humanities-page"));
     if (pages.length === 0) throw new Error("fixed-layout document has no exportable page elements");
 
     const html2canvas = (await import("html2canvas")).default;
