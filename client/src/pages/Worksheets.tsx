@@ -1489,6 +1489,7 @@ export default function Worksheets() {
     }
     setTtsPlaying(false);
     setTtsLoading(false);
+    toast.info("Read aloud stopped.");
   }, []);
 
   // Read the full worksheet aloud using neural TTS
@@ -1533,6 +1534,7 @@ export default function Worksheets() {
       audio.onerror = () => { setTtsPlaying(false); setTtsLoading(false); toast.error("Audio playback failed."); };
       await audio.play();
       setTtsPlaying(true);
+      toast.success("Read aloud started. Use Stop reading in the toolbar to pause.");
     } catch (e: any) {
       toast.error(e.message || "Read aloud failed. Please try again.");
     } finally {
@@ -6655,6 +6657,17 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             >
               <Eye className="w-3.5 h-3.5" /> Print Preview
             </button>
+            {(ttsLoading || ttsPlaying) && (
+              <button
+                onClick={handleReadAloud}
+                className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-100"
+                aria-label={ttsLoading ? "Read aloud is loading" : "Stop reading worksheet aloud"}
+              >
+                {ttsLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <VolumeX className="h-3.5 w-3.5" />}
+                {ttsLoading ? "Loading audio…" : "Stop reading"}
+              </button>
+            )}
+            <span className="sr-only" aria-live="polite">{ttsLoading ? "Read aloud is loading" : ttsPlaying ? "Worksheet is being read aloud" : ""}</span>
           </div>
 
           {/* Toolbar Row 2 */}
