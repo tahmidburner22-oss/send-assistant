@@ -6767,12 +6767,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   <span className="flex-1 text-sm">Overlay</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => setShowA11yPicker(!showA11yPicker)}
+                  onClick={() => {
+                    const isProtectedLayout = Boolean(goldWorksheet || scienceWorksheet || humanitiesWorksheet);
+                    if (isProtectedLayout) setActiveA11yProfileId("standard");
+                    setShowA11yPicker(!showA11yPicker);
+                  }}
                   className="cursor-pointer"
                 >
                   <Eye className="w-4 h-4 mr-2 text-muted-foreground" />
                   <span className="flex-1 text-sm">Typography</span>
-                  {activeA11yProfileId !== "standard" && (
+                  {activeA11yProfileId !== "standard" && !(goldWorksheet || scienceWorksheet || humanitiesWorksheet) && (
                     <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">on</span>
                   )}
                 </DropdownMenuItem>
@@ -7079,30 +7083,39 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           {showA11yPicker && (
             <Card className="border-border/50 no-print">
               <CardContent className="p-3">
-                <p className="text-xs text-muted-foreground mb-2">
-                  Adaptive typography for dyslexia, low vision, EAL, and visual stress. Applies to screen, print, and PDF — the worksheet is regenerated visually but the questions stay the same.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {DEFAULT_A11Y_PROFILES.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => {
-                        setActiveA11yProfileId(p.id);
-                        setShowA11yPicker(false);
-                        // Persist to the live worksheet metadata so the renderer + PDF pick it up
-                        setGenerated((prev: any) => {
-                          if (!prev) return prev;
-                          return { ...prev, metadata: { ...(prev.metadata || {}), accessibilityProfile: p.id } };
-                        });
-                      }}
-                      className={`p-2 rounded-lg border-2 transition-all text-left ${activeA11yProfileId === p.id ? "border-brand bg-brand-light/30" : "border-border/50 hover:border-border"}`}
-                      style={p.background ? { backgroundColor: p.background } : undefined}
-                    >
-                      <div className="text-xs font-semibold text-foreground">{p.label}</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{p.description}</div>
-                    </button>
-                  ))}
-                </div>
+                {(goldWorksheet || scienceWorksheet || humanitiesWorksheet) ? (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900">
+                    <p className="flex items-center gap-1.5 font-semibold"><Lock className="h-3.5 w-3.5" />Typography is protected for this approved layout</p>
+                    <p className="mt-1 leading-relaxed">This document keeps its exact page geometry and white paper/card interiors in preview, print and PDF. Its approved SEND type, spacing and coloured-outline support are already built in; reading-age selection changes vocabulary only.</p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Adaptive typography for dyslexia, low vision, EAL, and visual stress. Applies to screen, print, and PDF — the worksheet is regenerated visually but the questions stay the same.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {DEFAULT_A11Y_PROFILES.map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => {
+                            setActiveA11yProfileId(p.id);
+                            setShowA11yPicker(false);
+                            // Persist to the live worksheet metadata so the renderer + PDF pick it up
+                            setGenerated((prev: any) => {
+                              if (!prev) return prev;
+                              return { ...prev, metadata: { ...(prev.metadata || {}), accessibilityProfile: p.id } };
+                            });
+                          }}
+                          className={`p-2 rounded-lg border-2 transition-all text-left ${activeA11yProfileId === p.id ? "border-brand bg-brand-light/30" : "border-border/50 hover:border-border"}`}
+                          style={p.background ? { backgroundColor: p.background } : undefined}
+                        >
+                          <div className="text-xs font-semibold text-foreground">{p.label}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{p.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}

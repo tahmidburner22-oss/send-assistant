@@ -11,13 +11,13 @@
  * spread shrinks to fit on narrow screens and never overflows horizontally,
  * while staying pixel-faithful to the printed/PDF output.
  *
- * a11yProfileId — when supplied, the matching accessibility profile CSS is
- * injected into the iframe document so typography overlays (OpenDyslexic,
- * Lexend, Atkinson Hyperlegible, visual-stress tints, large print) apply to
- * the gold layout exactly as they do to the standard worksheet renderer.
+ * a11yProfileId is deliberately ignored for dedicated layouts. The approved
+ * templates have fixed physical geometry and white paper interiors; allowing
+ * typography overlays could reflow content or introduce a tinted print/PDF
+ * background. SEND adaptations remain in the renderer's approved outline and
+ * vocabulary layer instead.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getA11yProfileById, buildA11yProfileCss, A11Y_FONTS_HEAD_HTML } from "@/lib/accessibility-profiles";
 
 // True on-screen pixel size of one 285mm × 200mm page at 96dpi.
 const PAGE_W_PX = Math.round((285 * 96) / 25.4); // ≈ 1077
@@ -29,9 +29,8 @@ interface GoldWorksheetFrameProps {
   /** Optional title for the iframe (accessibility). */
   title?: string;
   /**
-   * Optional accessibility profile id (from DEFAULT_A11Y_PROFILES).
-   * When set, the matching CSS is injected into the iframe document so
-   * typography overlays apply to the gold layout.
+   * Retained for call-site compatibility. Dedicated fixed layouts deliberately
+   * ignore typography profiles to preserve their approved white-paper geometry.
    */
   a11yProfileId?: string;
   /** Number of fixed A4 landscape pages. Defaults to the existing two-page Maths spread. */
@@ -39,42 +38,12 @@ interface GoldWorksheetFrameProps {
 }
 
 /**
- * Inject accessibility profile CSS into the gold worksheet HTML document.
- * The profile CSS is scoped to `.ws-a11y-{id}` — we add that class to the
- * <body> element so it cascades to all content without touching the layout.
+ * Dedicated documents do not accept typography profile CSS. This defensive
+ * guard protects every caller, including history re-open, from non-white or
+ * reflowing profile styles reaching preview, print or PDF output.
  */
-function injectA11yProfile(html: string, profileId: string | undefined): string {
-  if (!profileId || profileId === "standard") return html;
-  const profile = getA11yProfileById(profileId);
-  if (!profile || profile.id === "standard") return html;
-
-  const css = buildA11yProfileCss(profile);
-  if (!css) return html;
-
-  // Inject font <link> tags + profile CSS into <head>
-  const headInjection = `${A11Y_FONTS_HEAD_HTML}\n<style>\n${css}\n</style>`;
-  const bodyClass = `ws-a11y-${profile.id}`;
-
-  let result = html;
-  // Insert into <head>
-  result = result.replace("</head>", `${headInjection}\n</head>`);
-  // Add data-send to ws-root so the SEND CSS overrides (strip box fills) fire
-  result = result.replace(
-    /<div class="ws-root"([^>]*)>/,
-    (match, attrs) => {
-      if (attrs.includes('data-send')) return match; // already set
-      return `<div class="ws-root"${attrs} data-send="1">`;
-    }
-  );
-  // Add class to <body> — handle both <body> and <body ...attrs>
-  result = result.replace(/<body([^>]*)>/, (match, attrs) => {
-    const existingClass = attrs.match(/class="([^"]*)"/);
-    if (existingClass) {
-      return `<body${attrs.replace(`class="${existingClass[1]}"`, `class="${existingClass[1]} ${bodyClass}"`)}>`;
-    }
-    return `<body${attrs} class="${bodyClass}">`;
-  });
-  return result;
+function injectA11yProfile(html: string, _profileId: string | undefined): string {
+  return html;
 }
 
 export default function GoldWorksheetFrame({ html, title = "Worksheet preview", a11yProfileId, pageCount = 2 }: GoldWorksheetFrameProps) {
