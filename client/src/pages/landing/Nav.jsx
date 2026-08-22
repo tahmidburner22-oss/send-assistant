@@ -133,7 +133,7 @@ export default function Nav() {
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Start free CTA — 350ms (replaces the "Search" pill from the spec). */}
               <a
-                href="https://adaptly.co.uk/login"
+                href="/login"
                 data-testid="nav-cta-start"
                 className="hidden sm:inline-flex items-center gap-2 rounded-full bg-white text-black font-medium text-xs sm:text-sm px-4 md:px-6 py-2 sm:py-2.5 hover:bg-white/85 transition-colors animate-blur-fade-up"
                 style={{ animationDelay: STAGGER.cta }}
@@ -206,7 +206,7 @@ export default function Nav() {
               {/* CTA section visible on small screens where the inline CTA is hidden. */}
               <div className="mt-4 pt-4 border-t border-gray-800 sm:hidden">
                 <a
-                  href="https://adaptly.co.uk/login"
+                  href="/login"
                   onClick={() => setOpen(false)}
                   className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-white text-black font-medium text-sm px-6 py-3"
                 >

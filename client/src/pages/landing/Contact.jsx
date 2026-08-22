@@ -29,7 +29,7 @@ export default function Contact() {
 
             <div className="mt-12 flex flex-wrap justify-center gap-3">
               <a
-                href="https://adaptly.co.uk/login"
+                href="/login"
                 data-testid="contact-cta-primary"
                 className="gradient-pill group inline-flex items-center gap-3 rounded-full px-7 py-4 text-sm md:text-base font-medium uppercase tracking-widest"
               >

@@ -16,7 +16,7 @@ export const HERO = {
   sub:
     "Adaptly gives every teacher and SENCO a full suite of AI-powered tools — from EHCP drafting and worksheet generation to behaviour plans and parent communications — built around UK law and the SEND Code of Practice.",
   badges: ["GDPR Compliant", "SEND Code of Practice", "Ofsted Ready", "DfE Aligned", "No card required"],
-  ctaPrimary: { label: "Start free today", href: "https://adaptly.co.uk/login" },
+  ctaPrimary: { label: "Start free today", href: "/login" },
   ctaSecondary: { label: "See the platform", href: "#services" },
 };
 

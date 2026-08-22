@@ -489,7 +489,7 @@ export default function Hero() {
             className="mt-8 sm:mt-10 flex flex-wrap items-center gap-3 sm:gap-4"
           >
             <a
-              href="https://adaptly.co.uk/login"
+              href="/login"
               data-testid="hero-cta-primary"
               className="group relative inline-flex items-center gap-2 rounded-full px-7 sm:px-8 py-3 sm:py-3.5 text-sm sm:text-base font-semibold text-cream-50 overflow-hidden"
               style={{
