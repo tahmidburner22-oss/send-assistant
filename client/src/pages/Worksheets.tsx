@@ -6641,6 +6641,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               <button onClick={() => setTextSize(Math.max(10, textSize - 2))} aria-label="Decrease text size" className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomOut className="w-3.5 h-3.5" aria-hidden="true" /></button>
               <span className="text-xs font-medium px-1.5 min-w-[32px] text-center" aria-label={`Text size ${textSize} pixels`}>{textSize}px</span>
               <button onClick={() => setTextSize(Math.min(24, textSize + 2))} aria-label="Increase text size" className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomIn className="w-3.5 h-3.5" aria-hidden="true" /></button>
+              <button
+                onClick={() => setTextSize(14)}
+                aria-label="Reset text size to 14 pixels"
+                title="Reset text size"
+                disabled={textSize === 14}
+                className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground disabled:opacity-35 disabled:cursor-not-allowed"
+              ><RotateCcw className="w-3.5 h-3.5" aria-hidden="true" /></button>
             </div>
             <button
               onClick={() => handleOpenPrintPreview(viewMode)}
