@@ -691,3 +691,90 @@ router.post("/spaced-repetition", requireAuth, async (req: Request, res: Respons
 
   res.json({ intervalDays, nextReview: nextReviewStr, easeFactor });
 });
+
+
+// ── Original Academic Screening Reports ─────────────────────────────────────
+const ACADEMIC_SCREENING_SUBJECTS = new Set(["mathematics", "english", "science"]);
+const ACADEMIC_SCREENING_DURATIONS = new Set([15, 30, 60]);
+
+router.get("/academic-screenings", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user!.schoolId) return res.status(400).json({ error: "A school account is required for academic screening reports." });
+  const rows = await db.prepare(
+    `SELECT r.*, p.name AS pupil_name
+     FROM academic_screening_results r
+     LEFT JOIN pupils p ON p.id = r.pupil_id
+     WHERE r.school_id = ?
+     ORDER BY r.created_at DESC
+     LIMIT 100`
+  ).all(req.user!.schoolId) as any[];
+  res.json(rows.map((row) => ({
+    id: row.id,
+    pupilId: row.pupil_id || undefined,
+    pupilName: row.pupil_name || undefined,
+    subject: row.subject,
+    yearGroup: row.year_group,
+    durationMinutes: row.duration_minutes,
+    score: row.score,
+    totalQuestions: row.total_questions,
+    percentage: row.percentage,
+    timeTakenSeconds: row.time_taken_seconds,
+    curriculumAgeMonths: row.curriculum_age_months,
+    responses: JSON.parse(row.responses_json || "{}"),
+    domainResults: JSON.parse(row.domain_results_json || "[]"),
+    strengths: JSON.parse(row.strengths_json || "[]"),
+    focusAreas: JSON.parse(row.focus_areas_json || "[]"),
+    revisionTips: JSON.parse(row.revision_tips_json || "[]"),
+    itemResults: JSON.parse(row.item_results_json || "[]"),
+    createdAt: row.created_at,
+  })));
+});
+
+router.post("/academic-screenings", requireAuth, async (req: Request, res: Response) => {
+  try {
+    if (!req.user!.schoolId) return res.status(400).json({ error: "A school account is required for academic screening reports." });
+    const {
+      pupilId, subject, yearGroup, durationMinutes, score, totalQuestions, percentage,
+      timeTakenSeconds, curriculumAgeMonths, responses, domainResults, strengths,
+      focusAreas, revisionTips, itemResults,
+    } = req.body || {};
+    if (!ACADEMIC_SCREENING_SUBJECTS.has(subject)) return res.status(400).json({ error: "Choose Mathematics, English, or Science." });
+    if (!/^Year\s+(?:7|8|9|10|11)$/i.test(yearGroup || "")) return res.status(400).json({ error: "Choose a year group from Year 7 to Year 11." });
+    if (!ACADEMIC_SCREENING_DURATIONS.has(Number(durationMinutes))) return res.status(400).json({ error: "Choose a 15, 30, or 60 minute screen." });
+    if (![score, totalQuestions, percentage, timeTakenSeconds, curriculumAgeMonths].every(Number.isFinite)) {
+      return res.status(400).json({ error: "The screening result is incomplete." });
+    }
+    if (score < 0 || totalQuestions < 1 || score > totalQuestions || percentage < 0 || percentage > 100 || timeTakenSeconds < 0) {
+      return res.status(400).json({ error: "The screening result contains invalid values." });
+    }
+    if (pupilId) {
+      const pupil = await db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(pupilId, req.user!.schoolId) as any;
+      if (!pupil) return res.status(404).json({ error: "Selected pupil was not found in this school." });
+    }
+    const id = uuidv4();
+    await db.prepare(
+      `INSERT INTO academic_screening_results (
+        id, school_id, pupil_id, created_by, subject, year_group, duration_minutes,
+        score, total_questions, percentage, time_taken_seconds, curriculum_age_months,
+        responses_json, domain_results_json, strengths_json, focus_areas_json,
+        revision_tips_json, item_results_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      id, req.user!.schoolId, pupilId || null, req.user!.id, subject, yearGroup,
+      Number(durationMinutes), score, totalQuestions, percentage, timeTakenSeconds,
+      curriculumAgeMonths, JSON.stringify(responses || {}), JSON.stringify(domainResults || []),
+      JSON.stringify(strengths || []), JSON.stringify(focusAreas || []),
+      JSON.stringify(revisionTips || []), JSON.stringify(itemResults || [])
+    );
+    void auditLog(req.user!.id, req.user!.schoolId, "academic_screening.completed", "academic_screening", id, { subject, yearGroup, durationMinutes, score, totalQuestions }, req.ip);
+    res.status(201).json({ id });
+  } catch (error) {
+    console.error("[POST /academic-screenings]", error);
+    res.status(500).json({ error: "Could not save the academic screening report." });
+  }
+});
+
+router.delete("/academic-screenings/:id", requireAuth, async (req: Request, res: Response) => {
+  if (!req.user!.schoolId) return res.status(400).json({ error: "A school account is required for academic screening reports." });
+  await db.prepare("DELETE FROM academic_screening_results WHERE id = ? AND school_id = ?").run(req.params.id, req.user!.schoolId);
+  res.json({ message: "Academic screening report deleted." });
+});

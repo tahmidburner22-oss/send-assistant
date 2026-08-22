@@ -201,7 +201,7 @@ export const GOLD_CSS = `
 .ws-root .t1 { font-family: var(--ws-title-font); font-size: ${fs(20)}; font-weight: bold; color: #0f204b; line-height: 1.1; }
 .ws-root .t2 { font-family: var(--ws-title-font); font-size: ${fs(18)}; font-weight: bold; color: #0f204b; line-height: 1.1; }
 .ws-root .ws-badge-label { font-size: ${fs(7.5)}; color: #1f5fa6; font-weight: bold; }
-.ws-root .ws-adaptation-note { margin-top: 2px; color: #1f5fa6; font-size: ${fs(6.4)}; font-weight: bold; line-height: 1.2; }
+.ws-root .ws-adaptation-note { display: inline-block; max-width: 58mm; margin-top: 2px; padding: 1px 3px; border: 1px solid #1f5fa6; border-radius: 2px; color: #1f5fa6; background: #ffffff; font-size: ${fs(6.8)}; font-weight: bold; line-height: 1.15; text-align: right; }
 
 .ws-root .lo { position: absolute; top: 16mm; left: 0; right: 0; height: 9mm; background: white; border: 1.5px solid #1f5fa6; border-radius: 4px; text-align: center; line-height: 9mm; font-weight: bold; font-size: ${fs(10.5)}; }
 
@@ -327,6 +327,14 @@ export const GOLD_CSS = `
 .ws-root[data-send] .fb-tips  { background: transparent; }
 .ws-root[data-send] .fb-check { background: transparent; }
 .ws-root[data-send] .fb-badge { background: transparent; }
+/* A visible but non-geometric SEND indicator. CSS outlines do not consume
+   internal box space, so they cannot reduce text capacity or cause reflow. */
+.ws-root[data-send] .ic-blue { outline: 0.5px solid #1f5fa6; outline-offset: -3px; }
+.ws-root[data-send] .ic-green { outline: 0.5px solid #1e7d2e; outline-offset: -3px; }
+.ws-root[data-send] .ic-yellow { outline: 0.5px solid #b8860b; outline-offset: -3px; }
+.ws-root[data-send] .ex-c-1, .ws-root[data-send] .ex-c-2 { outline: 0.5px solid #1f5fa6; outline-offset: -3px; }
+.ws-root[data-send] .ex-c-3 { outline: 0.5px solid #cc0000; outline-offset: -3px; }
+.ws-root[data-send] .ex-c-4 { outline: 0.5px solid #1e7d2e; outline-offset: -3px; }
 `;
 
 // ─── Theme → CSS variables ───────────────────────────────────────────────────
@@ -535,7 +543,7 @@ export function renderGoldWorksheetBody(data: GoldWorksheet, notes: GoldAdaptati
   const titleL1 = pp(titleLines[0] ?? "");
   const titleL2 = pp(titleLines[1] ?? "");
   const adaptationSummary = notes.length > 0
-    ? `<div class="ws-adaptation-note">Adaptations: ${notes.map((note) => pp(note.label)).join(" · ")}</div>`
+    ? `<div class="ws-adaptation-note">SEND overlay active<br>Adaptations: ${notes.map((note) => pp(note.label)).join(" · ")}</div>`
     : "";
 
   return `<div class="page">

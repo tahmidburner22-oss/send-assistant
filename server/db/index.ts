@@ -705,6 +705,31 @@ CREATE TABLE IF NOT EXISTS worksheet_library_assets (
 CREATE INDEX IF NOT EXISTS idx_assets_library_entry ON worksheet_library_assets(library_entry_id);
 CREATE INDEX IF NOT EXISTS idx_assets_section_key ON worksheet_library_assets(section_key);
 
+-- Academic screening results (original subject attainment screens).
+CREATE TABLE IF NOT EXISTS academic_screening_results (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  pupil_id TEXT REFERENCES pupils(id) ON DELETE SET NULL,
+  created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+  subject TEXT NOT NULL,
+  year_group TEXT NOT NULL,
+  duration_minutes INTEGER NOT NULL,
+  score INTEGER NOT NULL,
+  total_questions INTEGER NOT NULL,
+  percentage INTEGER NOT NULL,
+  time_taken_seconds INTEGER NOT NULL,
+  curriculum_age_months INTEGER NOT NULL,
+  responses_json TEXT NOT NULL DEFAULT '{}',
+  domain_results_json TEXT NOT NULL DEFAULT '[]',
+  strengths_json TEXT NOT NULL DEFAULT '[]',
+  focus_areas_json TEXT NOT NULL DEFAULT '[]',
+  revision_tips_json TEXT NOT NULL DEFAULT '[]',
+  item_results_json TEXT NOT NULL DEFAULT '[]',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_academic_screening_school ON academic_screening_results(school_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_academic_screening_pupil ON academic_screening_results(pupil_id, created_at DESC);
+
 -- Quiz Results
 CREATE TABLE IF NOT EXISTS quiz_results (
   id TEXT PRIMARY KEY,
@@ -940,6 +965,7 @@ export async function initDb() {
     "pupil_documents",
     "scheduler_configs",
     "notifications",
+    "academic_screening_results",
   ];
   const tableCheck = await query(
     `SELECT table_name FROM information_schema.tables

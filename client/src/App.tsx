@@ -95,6 +95,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const HelpCentre = lazy(() => import("./pages/HelpCentre"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const SendScreener = lazy(() => import("./pages/SendScreener"));
+const AcademicScreenings = lazy(() => import("./pages/AcademicScreenings"));
 const QuizGame = lazy(() => import("./pages/QuizGame"));
 const QuizJoin = lazy(() => import("./pages/QuizJoin"));
 const SharedWorksheet = lazy(() => import("./pages/SharedWorksheet"));
@@ -291,8 +292,9 @@ function ProtectedRoutes() {
             <Route path="/skill-ladder" component={SkillLadder} />
             <Route path="/daily-work" component={DailyWork} />
 
-            {/* SEND Screener */}
+            {/* SEND and academic screening */}
             <Route path="/send-screener" component={SendScreener} />
+            <Route path="/academic-screenings" component={AcademicScreenings} />
 
             {/* Classroom live tools */}
             <Route path="/quiz-game" component={QuizGame} />

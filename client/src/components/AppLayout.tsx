@@ -57,7 +57,7 @@ const hubs = [
     color: "text-teal-600",
     bg: "bg-teal-50",
     description: "Past papers, flash cards, quizzes & audio",
-    toolPrefixes: ["/past-papers","/revision-hub","/tools/flash-cards","/worksheets","/tools/quiz-gen","/tools/vocabulary","/quiz-game","/tools/comprehension"],
+    toolPrefixes: ["/past-papers","/revision-hub","/tools/flash-cards","/worksheets","/tools/quiz-gen","/tools/vocabulary","/quiz-game","/tools/comprehension","/academic-screenings"],
   },
   {
     path: "/planning-hub",
@@ -116,6 +116,7 @@ const allKnownPaths: { path: string; label: string }[] = [
   { path: "/tools/adaptation-hub", label: "Resource Adaptation Hub" },
   { path: "/tools/teaching-agent", label: "SEND Teaching Agent" },
   { path: "/send-screener", label: "SEND Needs Screener" },
+  { path: "/academic-screenings", label: "Academic Screenings" },
   { path: "/visual-timetable", label: "Visual Timetable" },
   { path: "/past-papers", label: "Past Papers" },
   { path: "/revision-hub", label: "Audio Revision Hub" },

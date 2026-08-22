@@ -56,6 +56,7 @@ const coreItems = [
 const sendItems = [
   { path: "/tools/iep-generator",       label: "EHCP Plan Generator",    icon: FileCheck,   group: "SEND Tools", keywords: ["ehcp", "iep", "plan", "education health care", "senco", "draft"] },
   { path: "/send-screener",             label: "SEND Needs Screener",     icon: ScanSearch,  group: "SEND Tools", keywords: ["screener", "needs", "assessment", "identify", "send"] },
+  { path: "/academic-screenings",       label: "Academic Screenings",    icon: BarChart3,   group: "Assessment", keywords: ["maths", "english", "science", "screening", "timed", "assessment", "working age"] },
   { path: "/tools/social-stories",      label: "Social Stories",          icon: BookOpen,    group: "SEND Tools", keywords: ["social stories", "autism", "asd", "behaviour", "narrative"] },
   { path: "/tools/pupil-passport",      label: "Pupil Passport",          icon: IdCard,      group: "SEND Tools", keywords: ["pupil passport", "profile", "one page", "student info"] },
   { path: "/tools/smart-targets",       label: "SMART Targets",           icon: CheckSquare, group: "SEND Tools", keywords: ["smart targets", "goals", "objectives", "iep targets"] },

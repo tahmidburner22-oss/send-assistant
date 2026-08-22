@@ -18,16 +18,16 @@ export interface GoldAdaptationResult {
 }
 
 const SEND_SUPPORT_DETAILS: Record<string, string> = {
-  dyslexia: "Clear sans-serif type, extra word and letter spacing, white worksheet surface.",
+  dyslexia: "White worksheet surface, clear sans-serif text, reinforced coloured outlines, and a visible support indicator.",
   adhd: "Calm white surface and readable task spacing.",
   asc: "Consistent visual routine, clear wording, and calm white surface.",
   asperger: "Consistent visual routine, clear wording, and calm white surface.",
   eal: "Clear spacing and straightforward instruction wording.",
-  mld: "Clear sans-serif type, generous spacing, and short direct prompts.",
-  slcn: "Straightforward wording, clear spacing, and short direct prompts.",
+  mld: "Clear standard-width type, a white worksheet surface, and short direct prompts.",
+  slcn: "Straightforward wording, clear standard-width type, and short direct prompts.",
   dyscalculia: "Readable number layout, clear type, and consistent mathematical notation.",
-  "working-memory": "Generous spacing and a consistent page routine to support place-keeping.",
-  dyspraxia: "Clear type and generous spacing for visual tracking.",
+  "working-memory": "A consistent page routine, white worksheet surface, and reinforced outlines to support place-keeping.",
+  dyspraxia: "Clear standard-width type, white worksheet surface, and reinforced coloured outlines for visual tracking.",
   vi: "High-contrast text with the largest geometry-safe type scale.",
   hi: "Clear written prompts and a consistent page routine.",
   anxiety: "Calm white surface and direct, low-pressure wording.",

@@ -46,100 +46,102 @@ export interface GoldSendOptions {
  * SEND_OVERLAY_MAP in worksheet-generator.ts. Anything not listed (or
  * "none-selected"/undefined) yields the unadapted base worksheet.
  *
- * Scales are bounded: fontScale <= 1.12, lineScale <= 1.18 to guarantee the
- * fixed 2-page geometry never overflows.
+ * The approved templates have fixed box heights, so the overlay does not scale
+ * font metrics or line heights. Those changes can reflow text within a box even
+ * when the page count stays at two. Accessibility support is therefore delivered
+ * through white surfaces, visible outline cues, recorded adaptations, and the
+ * separate vocabulary layer rather than geometry-risking font enlargement.
  */
 const GOLD_SEND_THEMES: Record<string, GoldTheme> = {
   dyslexia: {
-    fontFamily: VERDANA,
-    titleFamily: VERDANA,
-    fontScale: 1.04,
-    lineScale: 1.14,
-    letterSpacing: "0.03em",
-    wordSpacing: "0.12em",
+    fontFamily: SANS,
+    titleFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
+    letterSpacing: "0",
+    wordSpacing: "0",
     // Keep the page white so a teacher can apply a separate physical or digital overlay.
     textColor: "#1a1a1a",
     label: "Dyslexia-friendly",
   },
   dyspraxia: {
-    fontFamily: VERDANA,
-    titleFamily: VERDANA,
-    fontScale: 1.04,
-    lineScale: 1.12,
-    letterSpacing: "0.02em",
+    fontFamily: SANS,
+    titleFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
+    letterSpacing: "0",
     label: "Dyspraxia-friendly",
   },
   mld: {
-    fontFamily: VERDANA,
-    titleFamily: VERDANA,
-    fontScale: 1.06,
-    lineScale: 1.16,
-    letterSpacing: "0.02em",
-    wordSpacing: "0.08em",
+    fontFamily: SANS,
+    titleFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
+    letterSpacing: "0",
+    wordSpacing: "0",
     label: "MLD-friendly",
   },
   dyscalculia: {
-    fontFamily: VERDANA,
-    titleFamily: VERDANA,
-    fontScale: 1.06,
-    lineScale: 1.12,
+    fontFamily: SANS,
+    titleFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     label: "Dyscalculia-friendly",
   },
   slcn: {
-    fontFamily: VERDANA,
-    titleFamily: VERDANA,
-    fontScale: 1.04,
-    lineScale: 1.12,
-    wordSpacing: "0.08em",
+    fontFamily: SANS,
+    titleFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
+    wordSpacing: "0",
     label: "SLCN-friendly",
   },
   eal: {
-    fontFamily: VERDANA,
-    titleFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.1,
-    wordSpacing: "0.06em",
+    fontFamily: SANS,
+    titleFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
+    wordSpacing: "0",
     label: "EAL support",
   },
   adhd: {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     // White background retained; only typography and spacing adapt.
     label: "ADHD-friendly",
   },
   asc: {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     // White background retained; only typography and spacing adapt.
     label: "Autism-friendly",
   },
   asperger: {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
-    pageBg: "#FBFBF6",
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     label: "Autism-friendly",
   },
   anxiety: {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     // White background retained; only typography and spacing adapt.
     label: "Low-anxiety",
   },
   semh: {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     // White background retained; only typography and spacing adapt.
     label: "SEMH-friendly",
   },
   "pda-odd": {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     // White background retained; only typography and spacing adapt.
     label: "Low-demand",
   },
@@ -149,69 +151,68 @@ const GOLD_SEND_THEMES: Record<string, GoldTheme> = {
     // within the fixed 2-page layout this is the largest overflow-safe boost.
     fontFamily: SANS,
     titleFamily: SANS,
-    fontScale: 1.12,
-    lineScale: 1.16,
-    letterSpacing: "0.02em",
+    fontScale: 1,
+    lineScale: 1,
+    letterSpacing: "0",
     textColor: "#000000",
     pageBg: "#ffffff",
     label: "Large print (high contrast)",
   },
   hi: {
     // Hearing impairment: layout already self-contained; minor clarity boost.
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     label: "HI-friendly",
   },
   tourettes: {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     label: "Calm layout",
   },
   "older-learners": {
-    fontFamily: VERDANA,
-    fontScale: 1.0,
-    lineScale: 1.06,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     label: "Age-appropriate",
   },
   // Working memory: generous spacing so students can hold their place
   // without losing context; slightly larger text reduces re-reading load.
   "working-memory": {
-    fontFamily: VERDANA,
-    fontScale: 1.04,
-    lineScale: 1.14,
-    letterSpacing: "0.02em",
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
+    letterSpacing: "0",
     // White background retained; only typography and spacing adapt.
     label: "Working memory support",
   },
   // ASC sub-profiles — all inherit the base ASC calm layout
   "asc-social": {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     // White background retained; only typography and spacing adapt.
     label: "Autism-friendly (Social)",
   },
   "asc-demand-avoidant": {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     // White background retained; only typography and spacing adapt.
     label: "Autism-friendly (PDA)",
   },
   "asc-sensory": {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.06,
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     // White background retained; only typography and spacing adapt.
     label: "Autism-friendly (Sensory)",
   },
   "asc-rigid": {
-    fontFamily: VERDANA,
-    fontScale: 1.02,
-    lineScale: 1.08,
-    pageBg: "#FBFBF6",
+    fontFamily: SANS,
+    fontScale: 1,
+    lineScale: 1,
     label: "Autism-friendly (Routine)",
   },
 };

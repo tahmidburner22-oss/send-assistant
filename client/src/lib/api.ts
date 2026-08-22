@@ -218,6 +218,11 @@ export const data = {
     vote: (id: string) => apiFetch<any>(`/data/ideas/${id}/vote`, { method: "POST" }),
   },
   analytics: () => apiFetch<any>("/data/analytics"),
+  academicScreenings: {
+    list: () => apiFetch<any[]>("/data/academic-screenings"),
+    create: (d: any) => apiFetch<{ id: string }>("/data/academic-screenings", { method: "POST", body: JSON.stringify(d) }),
+    delete: (id: string) => apiFetch<any>(`/data/academic-screenings/${id}`, { method: "DELETE" }),
+  },
   cookieConsent: (d: any) => apiFetch<any>("/data/cookie-consent", { method: "POST", body: JSON.stringify(d) }),
   completeOnboarding: () => apiFetch<any>("/data/onboarding-complete", { method: "POST" }),
   sendParentMessage: (pupilId: string, subject: string, message: string) =>
