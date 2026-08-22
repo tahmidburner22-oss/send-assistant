@@ -646,10 +646,10 @@ const MARKS_SHORT_BRACKET_RE  = /\[(\d+)[Mm]\]/g;
 function convertMarksBrackets(value: unknown): { value: unknown; changed: boolean } {
   if (typeof value !== "string" || !value) return { value, changed: false };
   let next = value;
-  // Handle [Nm] / [NM] shorthand first
-  next = next.replace(MARKS_SHORT_BRACKET_RE, (_m, n) => `(${n} marks)`);
-  // Handle [N marks] / [N marks total]
-  next = next.replace(MARKS_SQUARE_BRACKET_RE, (_m, n, _word) => `(${n} marks)`);
+  // Handle [Nm] / [NM] shorthand first, retaining singular grammar for one mark.
+  next = next.replace(MARKS_SHORT_BRACKET_RE, (_m, n) => `(${n} ${Number(n) === 1 ? "mark" : "marks"})`);
+  // Handle [N marks] / [N marks total] with the same visible grammar.
+  next = next.replace(MARKS_SQUARE_BRACKET_RE, (_m, n, _word) => `(${n} ${Number(n) === 1 ? "mark" : "marks"})`);
   return { value: next, changed: next !== value };
 }
 
@@ -1263,7 +1263,7 @@ export function enforceMarkAllocationVariety(
 
   if (reStampedCount > 0) {
     warnings.push(
-      `[RC4] Re-stamped mark allocations on ${reStampedCount} Section 3 question${reStampedCount === 1 ? "" : "s"} ` +
+      `[RC4/IMP-09] Re-stamped mark allocations on ${reStampedCount} Section 3 question${reStampedCount === 1 ? "" : "s"} ` +
       `to match command-word tariff table (was: all ${currentTariffs[0]} marks).`,
     );
   } else {

@@ -237,17 +237,14 @@ export function UserPreferencesProvider({
   useEffect(() => {
     const local = loadPrefs(userId);
     setPreferences(local);
-    // Fetch server preferences and merge (server wins for sidebarCollapsed, local wins for everything else)
+    // Fetch the authenticated profile preferences. The server copy is the cross-device source of truth; local storage remains the fast offline fallback.
     fetch('/api/data/preferences', {
       credentials: 'include',
     })
       .then(r => r.ok ? r.json() : null)
       .then(serverPrefs => {
         if (!serverPrefs || typeof serverPrefs !== 'object') return;
-        // Merge: server sidebarCollapsed overrides local (this is the cross-device state)
-        const merged: UserPreferences = { ...DEFAULT_PREFERENCES, ...local, ...{
-          sidebarCollapsed: serverPrefs.sidebarCollapsed ?? local.sidebarCollapsed ?? [],
-        }};
+        const merged: UserPreferences = { ...DEFAULT_PREFERENCES, ...local, ...serverPrefs };
         setPreferences(merged);
         savePrefs(merged, userId);
       })
@@ -324,6 +321,7 @@ export function UserPreferencesProvider({
         : [...prev.dashboardCards, cardId];
       const next = { ...prev, dashboardCards: cards };
       savePrefs(next, userId);
+      syncToServer(next);
       return next;
     });
   }, [userId]);
@@ -335,6 +333,7 @@ export function UserPreferencesProvider({
         : [...prev.dashboardSubjects, subject];
       const next = { ...prev, dashboardSubjects: subjects };
       savePrefs(next, userId);
+      syncToServer(next);
       return next;
     });
   }, [userId]);
@@ -346,6 +345,7 @@ export function UserPreferencesProvider({
         : [...prev.dashboardPinnedTools, path];
       const next = { ...prev, dashboardPinnedTools: pinned };
       savePrefs(next, userId);
+      syncToServer(next);
       return next;
     });
   }, [userId]);
@@ -354,6 +354,7 @@ export function UserPreferencesProvider({
     setPreferences(prev => {
       const next = { ...prev, showWorksheetLibrary: show };
       savePrefs(next, userId);
+      syncToServer(next);
       return next;
     });
   }, [userId]);
