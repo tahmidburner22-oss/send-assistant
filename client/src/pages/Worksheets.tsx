@@ -42,6 +42,7 @@ import { getSubtopics } from "@/lib/subtopics-data";
 import { getGcseTopicChoices, isGcseTopicCatalogueSubject } from "@/lib/gcseTopicCatalogue";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel, aiGenerateWorksheetFromClassBrief } from "@/lib/ai";
 import { isMathsSubject } from "@/lib/mathsVerifier";
+import { buildSendAdaptationSummary } from "@/lib/sendDescriptionEnforcer";
 import type { ClassAutoBrief } from "@/lib/class-auto-brief";
 import { GenerationTimeoutError, withGenerationTimeout } from "@/lib/boundedGeneration";
 import { runFactCheck } from "@/lib/fact-checker";
@@ -929,6 +930,10 @@ export default function Worksheets() {
   const selectedGcseTopic = useMemo(
     () => usesGcseTopicCatalogue ? syllabusTopics.find((entry) => entry.topic === topic) : undefined,
     [usesGcseTopicCatalogue, syllabusTopics, topic],
+  );
+  const sendAdaptationSummary = useMemo(
+    () => buildSendAdaptationSummary(sendNeed),
+    [sendNeed],
   );
   // Existing approved KS3/KS4 Maths templates retain their immutable rendering
   // route. GCSE curriculum selection itself remains independent from renderer
@@ -5404,6 +5409,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                         {sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                    {sendAdaptationSummary && (
+                      <p className="rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-2 text-[11px] leading-relaxed text-sky-950" data-testid="send-adaptation-preview">
+                        {sendAdaptationSummary}
+                      </p>
+                    )}
                   </div>
                   <div className={`space-y-1.5 ${usesApprovedMathsTemplates || usesGcseTopicCatalogue ? "hidden" : ""}`}>
                     <Label className="text-xs font-medium">
