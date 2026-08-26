@@ -24,6 +24,7 @@ export interface ScreeningItem {
   marks: number;
   suggestedSeconds: number;
   curriculumReference: string;
+  partialMarkKeywords?: string[][];
 }
 
 export interface ScreeningConfig {
@@ -111,6 +112,17 @@ function isCorrect(item: ScreeningItem, answer: string): boolean {
   return accepted.includes(candidate);
 }
 
+function marksForResponse(item: ScreeningItem, answer: string): number {
+  if (isCorrect(item, answer)) return item.marks;
+  if (!item.partialMarkKeywords?.length) return 0;
+  const candidate = normaliseAnswer(answer);
+  const componentMarks = item.partialMarkKeywords.reduce((total, alternatives) => {
+    const hasComponent = alternatives.some((term) => candidate.includes(normaliseAnswer(term)));
+    return total + (hasComponent ? 1 : 0);
+  }, 0);
+  return Math.min(item.marks, componentMarks);
+}
+
 export function markAcademicScreening(
   items: ScreeningItem[],
   answers: Record<string, string>,
@@ -118,13 +130,15 @@ export function markAcademicScreening(
   timeTakenSeconds: number,
 ): ScreeningReport {
   const itemResults = items.map((item) => {
-    const correct = isCorrect(item, answers[item.id] || "");
+    const answer = answers[item.id] || "";
+    const marksAwarded = marksForResponse(item, answer);
+    const correct = marksAwarded === item.marks;
     return {
       itemId: item.id,
       correct,
       expectedAnswer: item.correctAnswer,
       explanation: item.explanation,
-      marksAwarded: correct ? item.marks : 0,
+      marksAwarded,
       marksAvailable: item.marks,
     };
   });

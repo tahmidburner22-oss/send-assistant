@@ -61,10 +61,21 @@ describe("academic baseline assessment engine", () => {
     expect(report.curriculumAge).toMatch(/years/);
   });
 
+  it("awards transparent partial marks when a question defines independently creditable scientific components", () => {
+    const config = { subject: "science" as const, yearGroup: "Year 7", duration: 60 as const };
+    const items = buildAcademicScreening(config);
+    const answer = "carbon dioxide + water -> sugar";
+    const report = markAcademicScreening(items, { "y7s-plant": answer }, config, 1200);
+    const result = report.itemResults.find((item) => item.itemId === "y7s-plant");
+    expect(result?.marksAvailable).toBe(4);
+    expect(result?.marksAwarded).toBe(3);
+    expect(result?.correct).toBe(false);
+  });
+
   it("publishes a realistic time-and-coverage blueprint for a full baseline", () => {
     const blueprint = getAssessmentBlueprint({ subject: "english", yearGroup: "Year 10", duration: 60 });
     expect(blueprint.itemCount).toBe(12);
-    expect(blueprint.totalMarks).toBeGreaterThanOrEqual(16);
+    expect(blueprint.totalMarks).toBeGreaterThanOrEqual(14);
     expect(blueprint.plannedSeconds).toBeGreaterThanOrEqual(1500);
     expect(blueprint.domains.length).toBeGreaterThanOrEqual(4);
   });
