@@ -379,6 +379,15 @@
   border-color: var(--card-border-override) !important;
 }
 
+/* Pupil access tools are an on-screen layer. Focus mode must never affect the
+   protected worksheet source when the user prints or downloads a PDF. */
+@media screen {
+  .pupil-focus-source { display: none !important; }
+}
+@media print {
+  .pupil-focus-source { display: block !important; }
+}
+
 /* deploy trigger v3 — auto-save all worksheets + larger diagrams */
 
 /* ───────────────────────────────────────────────────────────────────────

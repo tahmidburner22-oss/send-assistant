@@ -95,6 +95,8 @@ import { stampGroupMetadata } from "@/lib/threeTierDifferentiation";
 import { listContexts } from "@/lib/realWorldContextLibrary";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import WorksheetAccessibilityPreview from "@/components/WorksheetAccessibilityPreview";
+import PupilAccessPanel from "@/components/PupilAccessPanel";
+import { buildPupilReaderSegments } from "@/lib/pupilAccessibility";
 import { learnerSupportPrompt } from "@/lib/learnerSupportProfile";
 import DiagnosticStarterSheet from "@/components/DiagnosticStarterSheet";
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
@@ -1202,6 +1204,7 @@ export default function Worksheets() {
   }, []);
 
   const [viewMode, setViewMode] = useState<"teacher" | "student">("student");
+  const [pupilFocusMode, setPupilFocusMode] = useState(false);
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [showA11yPicker, setShowA11yPicker] = useState(false);
   const [activeA11yProfileId, setActiveA11yProfileId] = useState<string>("standard");
@@ -1746,6 +1749,20 @@ export default function Worksheets() {
 
     return sections;
   }, [generated, viewMode, targetPages, editedSections]);
+
+  // The pupil reader operates on a separate, plain-text access layer. It never
+  // writes into the source worksheet DOM, so Gold/Science/Humanities print
+  // geometry and PDF export remain protected.
+  const pupilReaderSegments = useMemo(() => {
+    if (!generated) return [];
+    const fixedLayoutHtml = goldWorksheet?.html || scienceWorksheet?.html || humanitiesWorksheet?.html;
+    return buildPupilReaderSegments({
+      title: generated.title,
+      sections: generated.sections || [],
+      hiddenSectionIndexes: hiddenSections,
+      fixedLayoutHtml,
+    });
+  }, [generated, goldWorksheet, scienceWorksheet, humanitiesWorksheet, hiddenSections]);
 
   // ═══ §HANDLE-GENERATE · generate worksheet (calls aiGenerateWorksheet) ═════
   // ─── Generate worksheet ────────────────────────────────────────────────────
@@ -7572,8 +7589,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             />
           )}
 
+          {/* The pupil access layer is screen-only and does not modify source worksheet HTML. */}
+          {viewMode === "student" && !editMode && (
+            <PupilAccessPanel
+              segments={pupilReaderSegments}
+              onFocusModeChange={setPupilFocusMode}
+            />
+          )}
+
           {/* Worksheet content — uses new WorksheetRenderer for pixel-perfect print/PDF */}
-          <div ref={worksheetRef} className="worksheet-content" style={{ backgroundColor: overlayBg }}>
+          <div ref={worksheetRef} className={`worksheet-content ${pupilFocusMode ? "pupil-focus-source" : ""}`} style={{ backgroundColor: overlayBg }}>
             <Card className="border-border/50 overflow-hidden" style={{ backgroundColor: overlayBg }}>
               <CardContent className="p-2 sm:p-3" style={{ backgroundColor: overlayBg }}>
                 {/* Gold maths layout — JSON-driven 2-page A4 landscape spread.
