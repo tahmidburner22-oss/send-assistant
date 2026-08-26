@@ -63,6 +63,10 @@ function scienceCss(): string {
   .tag { display:inline-block; border: .6mm solid #123a78; border-radius: 2mm; padding: 1.3mm 3mm; color:#123a78; font-size: 8pt; font-weight: 700; letter-spacing: .15mm; }
   .head-title { text-align:center; font-size: 20pt; line-height:1.04; font-weight: 800; letter-spacing:.2mm; color:#102f64; margin: 2mm 34mm 0; }
   .head-sub { text-align:center; font-size: 9pt; color:#263a70; margin-top: 1mm; font-weight: 600; }
+  /* The reviewed atomic title is intentionally two lines. Reserve dedicated
+     header clearance so its second line cannot meet the fixed divider. */
+  .science-root.atomic-structure-layout .head { height:30mm; }
+  .science-root.atomic-structure-layout .head-title { font-size:18pt; line-height:1.06; margin-top:1.5mm; }
   .name { position:absolute; top:0; right:0; width:43mm; border: .45mm solid #17223b; border-radius:2mm; padding:1.6mm 2mm; font-size:7pt; line-height: 2.7mm; background:#fff; }
   .support { position:absolute; top:14mm; right:0; font-size:6.2pt; font-weight:700; color:#1f5fa6; white-space:nowrap; }
   .purpose { margin-top:4mm; height:10mm; border:.55mm solid #1f5fa6; border-radius: 2.5mm; display:flex; align-items:center; padding:0 4mm; font-size:10pt; font-weight:600; background:#ffffff; }
@@ -294,7 +298,8 @@ function ratesSvg(): string { return `<svg viewBox="0 0 150 92" aria-label="prod
 function conceptPage(options: ScienceLandscapeOptions, definition: ConceptDefinition): string {
   const lead = learnerText(options, definition.lead, definition.simpleLead);
   const questions = (options.readingAge || 0) > 0 && (options.readingAge || 0) <= 10 ? definition.simpleQuestions : definition.questions;
-  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, definition.title)}<div class="purpose surface">${purposeContent(options, `<b>Task:</b> ${esc(lead)}`)}</div><div class="concept-grid">${definition.cards.map((card) => `<div class="concept-card surface"><h3>${esc(card.heading)}</h3><div class="diagram">${card.diagram}</div><p>${card.body}</p></div>`).join("")}</div><div class="questions compact-questions">${questions.map((question, index) => `<div class="q surface"><span class="qnum">${index + 1}</span>${esc(question)}<div class="work"></div></div>`).join("")}</div><div class="bottom-strip"><div class="strip surface"><b>REMEMBER:</b> ${definition.leftFooter}</div><div class="strip surface"><b>CHECK:</b> ${definition.rightFooter}</div></div></section></div>`;
+  const rootClass = definition.layout === "atomic-structure" ? "science-root atomic-structure-layout" : "science-root";
+  return `<div class="${rootClass}" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, definition.title)}<div class="purpose surface">${purposeContent(options, `<b>Task:</b> ${esc(lead)}`)}</div><div class="concept-grid">${definition.cards.map((card) => `<div class="concept-card surface"><h3>${esc(card.heading)}</h3><div class="diagram">${card.diagram}</div><p>${card.body}</p></div>`).join("")}</div><div class="questions compact-questions">${questions.map((question, index) => `<div class="q surface"><span class="qnum">${index + 1}</span>${esc(question)}<div class="work"></div></div>`).join("")}</div><div class="bottom-strip"><div class="strip surface"><b>REMEMBER:</b> ${definition.leftFooter}</div><div class="strip surface"><b>CHECK:</b> ${definition.rightFooter}</div></div></section></div>`;
 }
 
 function secondaryConcept(text: string): ConceptDefinition | null {

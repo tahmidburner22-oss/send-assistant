@@ -39,6 +39,19 @@ describe("science landscape renderer", () => {
     }
   });
 
+  it("reserves header clearance for the reviewed atomic layout without changing its one-page contract", () => {
+    const atomic = renderScienceLandscape({
+      ...chemistry("Atomic structure and isotopes"),
+      layoutOverride: "atomic-structure",
+      learningObjective: "Describe the atom as a positively charged nucleus surrounded by negatively charged electrons.",
+    });
+    expect(atomic.layout).toBe("atomic-structure");
+    expect((atomic.html.match(/class="science-page"/g) || [])).toHaveLength(1);
+    expect(atomic.html).toContain('class="science-root atomic-structure-layout"');
+    expect(atomic.html).toContain('.science-root.atomic-structure-layout .head { height:30mm; }');
+    expect(atomic.html).toContain('font-size:18pt; line-height:1.06; margin-top:1.5mm;');
+  });
+
   it("keeps scientific diagrams deterministic and topic-specific", () => {
     const atomic = renderScienceLandscape(chemistry("Atomic Structure and Models"));
     const concentration = renderScienceLandscape(chemistry("Concentration of Solutions"));
