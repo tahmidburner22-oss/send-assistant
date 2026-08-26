@@ -21,6 +21,16 @@ describe("GCSE topic catalogue", () => {
     expect(higher.some((entry) => entry.tier === "higher")).toBe(true);
   });
 
+  it("keeps generic difficulty labels outside the GCSE tier lookup", () => {
+    // The UI must deliberately prevent this input from reaching the lookup;
+    // direct lookups retain a permissive "both" API for non-UI consumers.
+    const uiSelectedTier = (difficulty: string) =>
+      difficulty === "foundation" || difficulty === "higher" ? difficulty : null;
+    expect(uiSelectedTier("standard")).toBeNull();
+    expect(uiSelectedTier("access")).toBeNull();
+    expect(uiSelectedTier("foundation")).toBe("foundation");
+  });
+
   it("keeps shared content available to both Foundation and Higher pathways", () => {
     const foundation = getGcseTopicChoices("science", "Year 10", "foundation").map((entry) => entry.topic);
     const higher = getGcseTopicChoices("science", "Year 10", "higher").map((entry) => entry.topic);

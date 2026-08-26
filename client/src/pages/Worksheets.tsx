@@ -895,9 +895,13 @@ export default function Worksheets() {
   const [showTopicSuggestions, setShowTopicSuggestions] = useState(false);
   const usesGcseTopicCatalogue = isGcseTopicCatalogueSubject(subject)
     && /^Year\s+(?:10|11)$/i.test(yearGroup || "");
+  // GCSE tier must be consciously selected. Generic generator levels such as
+  // "standard" are deliberately not treated as a GCSE pathway, preventing
+  // Higher-only content leaking into an unselected or Foundation flow.
+  const selectedGcseTier = difficulty === "foundation" || difficulty === "higher" ? difficulty : null;
   const gcseTopicChoices = useMemo(
-    () => usesGcseTopicCatalogue ? getGcseTopicChoices(subject, yearGroup, difficulty) : [],
-    [usesGcseTopicCatalogue, subject, yearGroup, difficulty],
+    () => usesGcseTopicCatalogue && selectedGcseTier ? getGcseTopicChoices(subject, yearGroup, selectedGcseTier) : [],
+    [usesGcseTopicCatalogue, selectedGcseTier, subject, yearGroup],
   );
   const syllabusTopics = useMemo<TopicPickerOption[]>(() => {
     if (!subject || !yearGroup) return [];
@@ -5121,7 +5125,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <Label className="text-xs font-semibold text-blue-950">Step 2 — Select GCSE tier *</Label>
-                        <p className="mt-0.5 text-[11px] leading-relaxed text-blue-800">Choose Foundation or Higher first. The topic list then shows only the individual DfE-aligned targets available on that pathway.</p>
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-blue-800">Choose Foundation or Higher first. The topic list stays locked until you select a pathway, then shows only the individual DfE-aligned targets available on that tier.</p>
                       </div>
                       <span className="shrink-0 rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-blue-700">{yearGroup}</span>
                     </div>
@@ -5264,12 +5268,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       )}
                     </div>
                   ) : usesGcseTopicCatalogue ? (
-                    <Input value="" disabled placeholder={difficulty === "foundation" || difficulty === "higher" ? "No DfE-aligned topics are available for this pathway" : "Select Foundation or Higher to see individual curriculum topics"} className="h-10 bg-muted" />
+                    <Input value="" disabled placeholder={selectedGcseTier ? "No DfE-aligned topics are available for this pathway" : "Step 2: select Foundation or Higher to see individual curriculum topics"} className="h-10 bg-muted" />
                   ) : (
                     <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder={subject && yearGroup ? "No syllabus data — type a topic" : "Select year group and subject first"} className="h-10" />
                   )}
                   {selectableTopics.length > 0 && !showTopicSuggestions && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{usesApprovedMathsTemplates ? `${selectableTopics.length} approved two-page templates available` : usesGcseTopicCatalogue ? `${selectableTopics.length} individual DfE-aligned ${difficulty === "higher" ? "Higher" : "Foundation"} topics` : `${selectableTopics.length} curriculum topics`} for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{usesApprovedMathsTemplates ? `${selectableTopics.length} approved two-page templates available` : usesGcseTopicCatalogue ? `${selectableTopics.length} individual DfE-aligned ${selectedGcseTier === "higher" ? "Higher" : "Foundation"} topics` : `${selectableTopics.length} curriculum topics`} for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
                       const yr = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10);
                       if (yr >= 2 && yr <= 6) return ` (Years 1–${yr})`;
                       if (yr >= 8 && yr <= 11) return ` (Years 7–${yr})`;
