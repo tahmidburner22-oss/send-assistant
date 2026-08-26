@@ -28,6 +28,17 @@ describe("science landscape renderer", () => {
     }
   });
 
+  it("renders a selected curriculum objective in existing protected purpose boxes", () => {
+    const objective = "Describe the atom as a positively charged nucleus surrounded by negatively charged electrons.";
+    const timeline = renderScienceLandscape({ ...chemistry("Atomic Structure and Models"), learningObjective: objective });
+    const interpretation = renderScienceLandscape({ ...chemistry("Metallic Bonding"), learningObjective: objective });
+    const concept = renderScienceLandscape({ ...chemistry("Photosynthesis"), learningObjective: objective });
+    for (const document of [timeline, interpretation, concept]) {
+      expect((document.html.match(/class="science-page"/g) || [])).toHaveLength(1);
+      expect(document.html).toContain(`<b>Learning objective:</b> ${objective}`);
+    }
+  });
+
   it("keeps scientific diagrams deterministic and topic-specific", () => {
     const atomic = renderScienceLandscape(chemistry("Atomic Structure and Models"));
     const concentration = renderScienceLandscape(chemistry("Concentration of Solutions"));
