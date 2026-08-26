@@ -39,6 +39,7 @@ import ProgressionStrip from "@/components/ProgressionStrip";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
+import { getGcseTopicChoices, isGcseTopicCatalogueSubject } from "@/lib/gcseTopicCatalogue";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel, aiGenerateWorksheetFromClassBrief } from "@/lib/ai";
 import { isMathsSubject } from "@/lib/mathsVerifier";
 import type { ClassAutoBrief } from "@/lib/class-auto-brief";
@@ -887,14 +888,41 @@ export default function Worksheets() {
   const [additionalInstructions, setAdditionalInstructions] = useState(() => preSelectedDescription);
   // Pre-fill additional instructions from URL description param (from Curriculum Progression)
   useEffect(() => { if (preSelectedDescription) setAdditionalInstructions(preSelectedDescription); }, []);
-  // Syllabus-based topic suggestions
+  // Syllabus-based topic suggestions. GCSE Maths and Science use an explicit
+  // DfE-aligned catalogue so teachers choose Year → Tier → individual target
+  // rather than searching through broad umbrella labels.
+  type TopicPickerOption = SyllabusTopic & { strand?: string; objective?: string; tier?: "foundation" | "higher" | "both" };
   const [showTopicSuggestions, setShowTopicSuggestions] = useState(false);
-  const syllabusTopics = useMemo(() => {
+  const usesGcseTopicCatalogue = isGcseTopicCatalogueSubject(subject)
+    && /^Year\s+(?:10|11)$/i.test(yearGroup || "");
+  const gcseTopicChoices = useMemo(
+    () => usesGcseTopicCatalogue ? getGcseTopicChoices(subject, yearGroup, difficulty) : [],
+    [usesGcseTopicCatalogue, subject, yearGroup, difficulty],
+  );
+  const syllabusTopics = useMemo<TopicPickerOption[]>(() => {
     if (!subject || !yearGroup) return [];
+    if (usesGcseTopicCatalogue) {
+      return gcseTopicChoices.map((choice) => ({
+        topic: choice.topic,
+        keyVocabulary: [],
+        yearGroup: choice.yearGroup,
+        ksStage: "KS4",
+        strand: choice.strand,
+        objective: choice.objective,
+        tier: choice.tier,
+      }));
+    }
     return getSyllabusTopics(subject, yearGroup);
-  }, [subject, yearGroup]);
+  }, [subject, yearGroup, usesGcseTopicCatalogue, gcseTopicChoices]);
+  const selectedGcseTopic = useMemo(
+    () => usesGcseTopicCatalogue ? syllabusTopics.find((entry) => entry.topic === topic) : undefined,
+    [usesGcseTopicCatalogue, syllabusTopics, topic],
+  );
+  // Existing approved KS3/KS4 Maths templates retain their immutable rendering
+  // route. GCSE curriculum selection itself remains independent from renderer
+  // availability, so missing choices are no longer hidden from teachers.
   const usesApprovedMathsTemplates = isMathsSubject(subject)
-    && /^Year\s+(?:7|8|9|10|11)$/i.test(yearGroup || "");
+    && /^Year\s+(?:7|8|9)$/i.test(yearGroup || "");
   // The KS3/KS4 Maths interface must expose only topics with a supplied,
   // approved two-page JSON template. This prevents a non-template label from
   // reaching the retired portrait renderer or producing an ambiguous error.
@@ -916,9 +944,10 @@ export default function Worksheets() {
     if (!selectableTopics.length) return;
     const isInList = selectableTopics.some(st => st.topic === topic);
     if (!isInList) {
-      // KS3/KS4 Maths intentionally has no custom-topic escape hatch: every
-      // available option must resolve to one approved fixed-layout template.
-      if (usesApprovedMathsTemplates) {
+      // Protected KS3 Maths keeps its approved-template-only route. GCSE
+      // catalogue entries remain controlled choices rather than falling back
+      // to a free-text topic when a teacher changes tier.
+      if (usesApprovedMathsTemplates || usesGcseTopicCatalogue) {
         setTopic("");
         setSubtopic("");
         setShowTopicSuggestions(false);
@@ -926,7 +955,7 @@ export default function Worksheets() {
         setShowTopicSuggestions(true);
       }
     }
-  }, [topic, selectableTopics, usesApprovedMathsTemplates]);
+  }, [topic, selectableTopics, usesApprovedMathsTemplates, usesGcseTopicCatalogue]);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
@@ -5066,16 +5095,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Subject *</Label>
-                    <Select value={subject} onValueChange={setSubject}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Select subject" /></SelectTrigger>
-                      <SelectContent>{filteredSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Year Group *</Label>
                     <Select value={yearGroup} onValueChange={v => {
                       setYearGroup(v);
+                      setTopic("");
+                      setSubtopic("");
                       // Do NOT auto-set readingAge here — 0 means "Auto (match year group)"
                       // and is the correct default. Only the slider should change readingAge.
                     }}>
@@ -5083,7 +5107,40 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       <SelectContent>{yearGroups.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Subject *</Label>
+                    <Select value={subject} onValueChange={v => { setSubject(v); setTopic(""); setSubtopic(""); }}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select subject" /></SelectTrigger>
+                      <SelectContent>{filteredSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
+                {usesGcseTopicCatalogue && (
+                  <div className="space-y-2 rounded-xl border border-blue-200 bg-blue-50/70 p-3" data-testid="gcse-tier-step">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <Label className="text-xs font-semibold text-blue-950">Step 2 — Select GCSE tier *</Label>
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-blue-800">Choose Foundation or Higher first. The topic list then shows only the individual DfE-aligned targets available on that pathway.</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-blue-700">{yearGroup}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {getDifficultyOptions(subject || "").filter(option => option.id !== "mixed").map(option => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => { setDifficulty(option.id); setTopic(""); setSubtopic(""); }}
+                          className={`rounded-lg border px-3 py-2 text-left text-xs font-semibold transition-colors ${difficulty === option.id ? "border-brand bg-brand text-white" : "border-blue-200 bg-white text-blue-950 hover:border-blue-400"}`}
+                          aria-pressed={difficulty === option.id}
+                        >
+                          <span className="block">{option.name}</span>
+                          <span className={`mt-0.5 block text-[10px] font-normal ${difficulty === option.id ? "text-blue-50" : "text-blue-700"}`}>{option.description}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-1.5 relative">
                   <Label className="text-xs font-medium">Topic *</Label>
@@ -5119,6 +5176,25 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                           <SelectTrigger className="h-10"><SelectValue placeholder="Select a curriculum topic" /></SelectTrigger>
                         <SelectContent className="max-h-64">
                           {(() => {
+                            if (usesGcseTopicCatalogue) {
+                              const groups: Record<string, typeof selectableTopics> = {};
+                              for (const entry of selectableTopics) {
+                                const strand = entry.strand || "Other curriculum targets";
+                                if (!groups[strand]) groups[strand] = [];
+                                groups[strand].push(entry);
+                              }
+                              return Object.entries(groups).map(([strand, entries]) => (
+                                <SelectGroup key={strand}>
+                                  <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1">{strand}</SelectLabel>
+                                  {entries.map((entry) => (
+                                    <SelectItem key={entry.topic} value={entry.topic}>
+                                      <span>{entry.topic}</span>
+                                      {entry.tier === "both" && <span className="ml-2 text-[10px] text-muted-foreground">(Both tiers)</span>}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              ));
+                            }
                             const useKsGroups = subject === 'mathematics' || subject === 'science';
                             if (!useKsGroups) {
                               return (
@@ -5134,7 +5210,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                                       </SelectItem>
                                     );
                                   })}
-                                  {!usesApprovedMathsTemplates && <SelectItem value="__custom__">Enter custom topic...</SelectItem>}
+                                  {!usesApprovedMathsTemplates && !usesGcseTopicCatalogue && <SelectItem value="__custom__">Enter custom topic...</SelectItem>}
                                 </>
                               );
                             }
@@ -5170,7 +5246,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                                     ))}
                                   </SelectGroup>
                                 ))}
-                                {!usesApprovedMathsTemplates && <SelectItem value="__custom__">Enter custom topic...</SelectItem>}
+                                {!usesApprovedMathsTemplates && !usesGcseTopicCatalogue && <SelectItem value="__custom__">Enter custom topic...</SelectItem>}
                               </>
                             );
                           })()}
@@ -5187,11 +5263,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                         </button>
                       )}
                     </div>
+                  ) : usesGcseTopicCatalogue ? (
+                    <Input value="" disabled placeholder={difficulty === "foundation" || difficulty === "higher" ? "No DfE-aligned topics are available for this pathway" : "Select Foundation or Higher to see individual curriculum topics"} className="h-10 bg-muted" />
                   ) : (
-                    <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder={subject && yearGroup ? "No syllabus data — type a topic" : "Select subject & year group first"} className="h-10" />
+                    <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder={subject && yearGroup ? "No syllabus data — type a topic" : "Select year group and subject first"} className="h-10" />
                   )}
                   {selectableTopics.length > 0 && !showTopicSuggestions && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{usesApprovedMathsTemplates ? `${selectableTopics.length} approved two-page templates available` : `${selectableTopics.length} curriculum topics`} for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{usesApprovedMathsTemplates ? `${selectableTopics.length} approved two-page templates available` : usesGcseTopicCatalogue ? `${selectableTopics.length} individual DfE-aligned ${difficulty === "higher" ? "Higher" : "Foundation"} topics` : `${selectableTopics.length} curriculum topics`} for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
                       const yr = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10);
                       if (yr >= 2 && yr <= 6) return ` (Years 1–${yr})`;
                       if (yr >= 8 && yr <= 11) return ` (Years 7–${yr})`;
@@ -5199,10 +5277,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       return "";
                     })()}</p>
                   )}
+                  {selectedGcseTopic?.objective && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-relaxed text-emerald-950" data-testid="gcse-learning-objective-preview">
+                      <span className="font-semibold">Learning Objective:</span> {selectedGcseTopic.objective}
+                    </div>
+                  )}
                 </div>
 
                 {/* Subtopic dropdown — appears after topic is selected */}
-                {topic && (() => {
+                {topic && !usesGcseTopicCatalogue && (() => {
                   const requiresApprovedMathsSubtopic = usesApprovedMathsTemplates;
                   const subtopics = (requiresApprovedMathsSubtopic
                     ? getSubtopics(topic).filter((item) => hasGoldWorksheet(topic, item))
@@ -5301,7 +5384,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className={`space-y-1.5 ${usesApprovedMathsTemplates ? "hidden" : ""}`}>
+                  <div className={`space-y-1.5 ${usesApprovedMathsTemplates || usesGcseTopicCatalogue ? "hidden" : ""}`}>
                     <Label className="text-xs font-medium">
                       {subjectTierMode[subject?.toLowerCase()] === "tiered" ? "Tier" :
                        subjectTierMode[subject?.toLowerCase()] === "eleven-plus" ? "Level" : "Difficulty"}
