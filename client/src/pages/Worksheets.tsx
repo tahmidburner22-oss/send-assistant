@@ -34,6 +34,7 @@ import { getGoldSendTheme } from "@/lib/mathsGoldSend";
 import { applyGoldMathsAdaptations } from "@/lib/mathsGoldAdaptations";
 import { downloadGoldWorksheetPdf, printGoldWorksheet } from "@/lib/mathsGoldPdf";
 import { canRenderScienceLandscape, renderScienceLandscape } from "@/lib/scienceLandscapeRenderer";
+import { resolveGcseScienceRenderRoute } from "@/lib/scienceGcseRouting";
 import { canRenderHumanitiesLandscape, renderHumanitiesLandscape } from "@/lib/humanitiesLandscapeRenderer";
 import ProgressionStrip from "@/components/ProgressionStrip";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
@@ -914,7 +915,13 @@ export default function Worksheets() {
     return null;
   }, [yearGroup]);
   const scienceSubject = String(subject || "").toLowerCase().trim();
-  const usesScienceImageTaxonomy = Boolean(scienceStageForYearGroup) && ["science", "biology", "chemistry", "physics", "combined science", "triple science"].includes(scienceSubject);
+  // At GCSE the general Science selector must begin with the authored DfE
+  // catalogue and an explicit tier. The image taxonomy remains an asset and
+  // subtopic source for non-GCSE stages and distinct science disciplines.
+  const usesGcseScienceCatalogue = scienceSubject === "science" && /^Year\s+(?:10|11)$/i.test(yearGroup || "");
+  const usesScienceImageTaxonomy = Boolean(scienceStageForYearGroup)
+    && !usesGcseScienceCatalogue
+    && ["science", "biology", "chemistry", "physics", "combined science", "triple science"].includes(scienceSubject);
   const scienceTaxonomyEntries = useMemo(() => {
     if (!usesScienceImageTaxonomy || !scienceStageForYearGroup) return [];
     const disciplineFilter = scienceSubject === "science" || scienceSubject === "combined science" || scienceSubject === "triple science"
@@ -922,7 +929,7 @@ export default function Worksheets() {
       : scienceSubject;
     return SCIENCE_IMAGE_TAXONOMY.filter((entry) => entry.stage === scienceStageForYearGroup && (!disciplineFilter || entry.discipline === disciplineFilter));
   }, [usesScienceImageTaxonomy, scienceStageForYearGroup, scienceSubject]);
-  const usesGcseTopicCatalogue = !usesScienceImageTaxonomy && isGcseTopicCatalogueSubject(subject)
+  const usesGcseTopicCatalogue = isGcseTopicCatalogueSubject(subject)
     && /^Year\s+(?:10|11)$/i.test(yearGroup || "");
   // GCSE tier must be consciously selected. Generic generator levels such as
   // "standard" are deliberately not treated as a GCSE pathway, preventing
@@ -961,6 +968,10 @@ export default function Worksheets() {
   const selectedGcseTopic = useMemo(
     () => (usesGcseTopicCatalogue || usesScienceImageTaxonomy) ? syllabusTopics.find((entry) => entry.topic === topic) : undefined,
     [usesGcseTopicCatalogue, usesScienceImageTaxonomy, syllabusTopics, topic],
+  );
+  const selectedGcseScienceRoute = useMemo(
+    () => usesGcseScienceCatalogue ? resolveGcseScienceRenderRoute(selectedGcseTopic) : undefined,
+    [usesGcseScienceCatalogue, selectedGcseTopic],
   );
   const sendAdaptationSummary = useMemo(
     () => buildSendAdaptationSummary(sendNeed),
@@ -1909,6 +1920,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         ? `${effectiveAdditionalInstructions}\n\n${objectiveBlock}`
         : objectiveBlock;
     }
+    // An individual DfE Science target without a reviewed fixed layout uses the
+    // generic route. Its visuals must still directly teach the exact objective;
+    // a loosely related atom/model diagram is not an acceptable substitute.
+    if (usesGcseScienceCatalogue && selectedGcseTopic && selectedGcseScienceRoute?.kind === "generic") {
+      const visualFidelityBlock = "SCIENCE VISUAL FIDELITY: Every diagram, model or visual must directly teach the exact required learning objective. Do not include a decorative or approximately related diagram. If a suitable accurate visual cannot be made, use a labelled text-based model, table or worked representation instead.";
+      effectiveAdditionalInstructions = effectiveAdditionalInstructions
+        ? `${effectiveAdditionalInstructions}\n\n${visualFidelityBlock}`
+        : visualFidelityBlock;
+    }
     // The pupil support profile is deliberately teacher-authored and bounded.
     // It may guide access and removable scaffolds, but must not become a proxy
     // for lowering curriculum demand, marks or fixed-layout worksheet geometry.
@@ -2008,10 +2028,26 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     // section-flow renderer so a supported Science topic cannot lose its print-safe
     // fixed geometry when SEND or reading-age support is selected.
     const tryScienceLandscape = (): boolean => {
-      if (examStyle || !canRenderScienceLandscape({ subject, yearGroup, topic, subtopic, sendNeedId: sendNeed, readingAge, examBoard })) return false;
+      const strictGcseScience = usesGcseScienceCatalogue && Boolean(selectedGcseTopic);
+      const routeIsDedicated = selectedGcseScienceRoute?.kind === "dedicated";
+      const legacyRouteIsSupported = canRenderScienceLandscape({ subject, yearGroup, topic, subtopic, sendNeedId: sendNeed, readingAge, examBoard });
+      // GCSE DfE choices may enter a dedicated layout only through the exact,
+      // reviewed resolver. Non-mapped choices continue to generic generation
+      // with the required exact LO instead of using fuzzy keyword matching.
+      if (examStyle || (strictGcseScience ? !routeIsDedicated : !legacyRouteIsSupported)) return false;
       try {
         setGenerationStatus("Building dedicated Science worksheet...");
-        const science = renderScienceLandscape({ subject, yearGroup, topic, subtopic, sendNeedId: sendNeed, readingAge, examBoard, learningObjective: selectedGcseTopic?.objective });
+        const science = renderScienceLandscape({
+          subject,
+          yearGroup,
+          topic,
+          subtopic,
+          sendNeedId: sendNeed,
+          readingAge,
+          examBoard,
+          learningObjective: selectedGcseTopic?.objective,
+          layoutOverride: routeIsDedicated ? selectedGcseScienceRoute.layout : undefined,
+        });
         const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
         setScienceWorksheet({ html: science.html, title: science.title, sendNeed: activeSend });
         setGenerated({

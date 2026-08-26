@@ -1,4 +1,4 @@
-export type ScienceLayoutKind = "timeline" | "formula" | "interpretation" | "primary-observation" | "cells" | "photosynthesis" | "genetics" | "forces" | "energy" | "waves" | "ionic" | "covalent" | "rates";
+export type ScienceLayoutKind = "timeline" | "atomic-structure" | "formula" | "interpretation" | "primary-observation" | "cells" | "photosynthesis" | "genetics" | "forces" | "energy" | "waves" | "ionic" | "covalent" | "rates";
 
 export interface ScienceLandscapeOptions {
   subject: string;
@@ -10,6 +10,8 @@ export interface ScienceLandscapeOptions {
   examBoard?: string;
   /** Curriculum-aligned objective rendered in the existing purpose box. */
   learningObjective?: string;
+  /** A reviewed curriculum route may select a dedicated layout without fuzzy keyword matching. */
+  layoutOverride?: ScienceLayoutKind;
 }
 
 export interface ScienceLandscapeDocument {
@@ -296,6 +298,17 @@ function conceptPage(options: ScienceLandscapeOptions, definition: ConceptDefini
 }
 
 function secondaryConcept(text: string): ConceptDefinition | null {
+  if (/(atomic structure|atom isotopes|isotopes nuclear)/.test(text)) return {
+    layout: "atomic-structure", title: "ATOMIC STRUCTURE — NUCLEUS, ELECTRONS AND ISOTOPES", lead: "Use the atomic models to describe the nucleus, electrons and isotopes.", simpleLead: "Use the atom pictures to describe the nucleus and electrons.",
+    cards: [
+      { heading: "NUCLEAR ATOM", diagram: `<svg viewBox="0 0 150 92" aria-label="nuclear atom labelled with positive nucleus and negative electrons"><circle cx="75" cy="46" r="15" fill="#f2d5bf" stroke="#a65d36" stroke-width="2"/><circle cx="75" cy="46" r="30" fill="none" stroke="#466f9f" stroke-width="2"/><circle cx="75" cy="46" r="42" fill="none" stroke="#466f9f" stroke-width="2"/><circle cx="75" cy="16" r="3" fill="#2f7bb8"/><circle cx="105" cy="46" r="3" fill="#2f7bb8"/><circle cx="75" cy="88" r="3" fill="#2f7bb8"/><text x="60" y="50" font-size="12" font-weight="bold">p⁺ n⁰</text><text x="4" y="16" font-size="8">negative electrons</text><text x="5" y="84" font-size="8">positive nucleus</text></svg>`, body: "The small positive nucleus contains protons and neutrons. Negative electrons move around the nucleus." },
+      { heading: "ISOTOPES", diagram: `<svg viewBox="0 0 150 92" aria-label="two carbon isotopes with six protons and different neutron numbers"><circle cx="42" cy="45" r="22" fill="#f3ddca" stroke="#a96c42" stroke-width="2"/><circle cx="108" cy="45" r="22" fill="#f3ddca" stroke="#a96c42" stroke-width="2"/><text x="25" y="49" font-size="10" font-weight="bold">6p, 6n</text><text x="91" y="49" font-size="10" font-weight="bold">6p, 8n</text><text x="16" y="78" font-size="9">carbon-12</text><text x="82" y="78" font-size="9">carbon-14</text></svg>`, body: "Isotopes of the same element have the same number of protons but different numbers of neutrons." },
+      { heading: "NOTATION", diagram: `<svg viewBox="0 0 150 92" aria-label="isotope notation for carbon twelve"><text x="42" y="36" font-size="12">mass number</text><path d="M62 40L78 46" stroke="#436d9a" stroke-width="2"/><text x="54" y="65" font-size="25" font-weight="bold">¹²₆C</text><text x="92" y="55" font-size="10">atomic number</text><path d="M91 50L78 57" stroke="#436d9a" stroke-width="2"/></svg>`, body: "Mass number = protons + neutrons. Atomic number = number of protons." }
+    ],
+    questions: ["State the charge of the nucleus.", "Name the particles found in the nucleus.", "Explain how carbon-12 and carbon-14 are isotopes of the same element.", "An atom has 8 protons and 10 neutrons. State its atomic number and mass number."],
+    simpleQuestions: ["What charge does the nucleus have?", "Which particles are in the nucleus?", "Why are carbon-12 and carbon-14 isotopes?", "An atom has 8 protons and 10 neutrons. Give its atomic number and mass number."],
+    leftFooter: "The number of protons identifies the element.", rightFooter: "Neutral atoms have equal numbers of protons and electrons."
+  };
   if (/(cell|microscopy|microscope)/.test(text)) return {
     layout: "cells", title: "CELLS AND MICROSCOPY — COMPARE AND EXPLAIN", lead: "Compare the cell diagrams and link each structure to its function.", simpleLead: "Look at the cells. Match each part to its job.",
     cards: [
@@ -410,9 +423,20 @@ export function renderScienceLandscape(options: ScienceLandscapeOptions): Scienc
   const text = norm(`${options.topic} ${options.subtopic || ""}`);
   const primary = isPrimary(options.yearGroup);
   const concept = secondaryConcept(text);
-  const layout: ScienceLayoutKind = primary ? "primary-observation" : /(atomic|model)/.test(text) ? "timeline" : /(concentration|solution)/.test(text) ? "formula" : /(metallic)/.test(text) ? "interpretation" : concept?.layout || "primary-observation";
-  const title = primary ? `${options.topic || "Science"} — Look, Sort and Explain` : layout === "timeline" ? "Atomic Structure — How Models Changed" : layout === "formula" ? "Concentration of Solutions" : layout === "interpretation" ? "Metallic Bonding — Structure and Properties" : concept?.title || "Science";
-  const body = layout === "timeline" ? timeline(options) : layout === "formula" ? formula(options) : layout === "interpretation" ? interpretation(options) : layout === "primary-observation" ? primaryObservation(options) : conceptPage(options, concept!);
+  const layout: ScienceLayoutKind = primary
+    ? "primary-observation"
+    : options.layoutOverride ?? (/(atomic|model)/.test(text)
+      ? "timeline"
+      : /(concentration|solution)/.test(text)
+        ? "formula"
+        : /(metallic)/.test(text)
+          ? "interpretation"
+          : concept?.layout || "primary-observation");
+  const selectedConcept = layout === "atomic-structure"
+    ? secondaryConcept("atomic structure isotopes")
+    : concept;
+  const title = primary ? `${options.topic || "Science"} — Look, Sort and Explain` : layout === "timeline" ? "Atomic Structure — How Models Changed" : layout === "formula" ? "Concentration of Solutions" : layout === "interpretation" ? "Metallic Bonding — Structure and Properties" : selectedConcept?.title || "Science";
+  const body = layout === "timeline" ? timeline(options) : layout === "formula" ? formula(options) : layout === "interpretation" ? interpretation(options) : layout === "primary-observation" ? primaryObservation(options) : conceptPage(options, selectedConcept!);
   const html = `<!doctype html><html><head><meta charset="UTF-8"><title>${esc(title)}</title><style>${scienceCss()}</style></head><body>${body}</body></html>`;
   return { title, layout, html, adaptations: supportNotes(options) };
 }
