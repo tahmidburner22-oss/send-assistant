@@ -128,6 +128,21 @@ describe("enforceSendDescription — guards", () => {
 });
 
 describe("buildSendAdaptationSummary", () => {
+  it("uses concise, plain-language wording for dyslexia", () => {
+    const text = buildSendAdaptationSummary("dyslexia");
+    expect(text).toContain("clearer font");
+    expect(text).toContain("easier to read and follow");
+    expect(text).toContain("learning goal and level of challenge stay the same");
+    expect(text!.length).toBeLessThan(260);
+  });
+
+  it("keeps autism profile-specific while remaining concise", () => {
+    const text = buildSendAdaptationSummary("asc:pda");
+    expect(text).toContain("Pathological Demand Avoidance (PDA) profile");
+    expect(text).toContain("learning goal stays the same");
+    expect(text!.length).toBeLessThan(420);
+  });
+
   it("returns null for an unknown need (so no low-value generic block is inserted)", () => {
     expect(buildSendAdaptationSummary("totally-unknown-need-xyz")).toBeNull();
   });

@@ -151,51 +151,53 @@ export function hasMeaningfulSend(sendNeed?: string | null): boolean {
 }
 
 /**
- * Build the 2–3 sentence pupil/teacher-facing adaptation summary for a
- * sendNeed. Returns null when the need is unknown (caller then leaves the
- * worksheet untouched rather than inserting a generic, low-value block).
+ * Short, teacher-friendly explanation of what the selected support changes.
+ * These statements intentionally describe the access change rather than a
+ * diagnosis. They are suitable for the worksheet header, the teacher view and
+ * the pupil-facing copy without becoming technical or overly clinical.
+ */
+const PLAIN_LANGUAGE_ADAPTATION_SUMMARIES: Record<string, string> = {
+  dyslexia: "Uses a clearer font, more space between lines and shorter instructions so the text is easier to read and follow.",
+  adhd: "Breaks work into short chunks with checkboxes and clear action words so pupils can focus on one step at a time.",
+  asc: "Uses clear, literal wording, numbered steps and a predictable structure so instructions are easy to follow.",
+  mld: "Shows one small step at a time, with worked examples and helpful prompts so new learning feels manageable.",
+  eal: "Explains key vocabulary, uses short sentences and adds visual support so pupils can understand the English used in the task.",
+  dyscalculia: "Breaks calculations into numbered steps and repeats key methods so pupils can work through maths with confidence.",
+  slcn: "Uses short sentences, key-word support and sentence starters so pupils can understand and respond to each task.",
+  semh: "Uses calm wording, clear steps and optional challenge so pupils can start work without feeling overwhelmed.",
+  vi: "Uses larger, high-contrast text and labels every visual so pupils can access the information clearly.",
+  hi: "Writes instructions clearly and provides visual cues so pupils do not need to rely on hearing the task explained.",
+};
+
+/**
+ * Build a concise summary of the selected SEND support. Returns null when the
+ * need is unknown, so callers do not insert a generic or inaccurate claim.
  */
 export function buildSendAdaptationSummary(sendNeed: string): string | null {
   const { base, profile } = normaliseSendNeed(sendNeed);
   const desc = getSendDescription(base) || getSendDescription(sendNeed);
   if (!desc) return null;
 
-  const affect = desc.howItAffectsLearning[0] || "";
+  const plainSummary = PLAIN_LANGUAGE_ADAPTATION_SUMMARIES[desc.id]
+    || "Uses clear instructions and practical support so pupils can access the same learning goal.";
 
-  // Autism — name the specific sub-profile and its concrete adaptation method.
+  // Autism remains profile-aware, but the explanation stays brief and concrete.
   if (desc.id === "asc") {
     const hay = `${profile} ${sendNeed}`.toLowerCase();
     const sub = ASD_SUBPROFILES.find((s) => s.match.test(hay));
     if (sub) {
-      return [
-        `This worksheet has been adapted for pupils with ${desc.label} — specifically a ${sub.name}.`,
-        `${capFirst(trimDot(affect))}.`,
-        `For this profile, ${trimDot(sub.method)}, while the questions and structure stay the same.`,
-      ].join(" ");
+      return `${desc.label} support: ${plainSummary} For this ${sub.name}, ${lowerFirst(trimDot(sub.method))}. The learning goal stays the same.`;
     }
-    // Autism with no identifiable sub-profile: still name the spectrum and the
-    // fact that adaptations are tailored per profile.
-    const how = desc.howAdaptlyAdapts.slice(0, 2).map((h) => lowerFirst(trimDot(h)));
-    return [
-      `This worksheet has been adapted for pupils with ${desc.label}. Autism is a spectrum, so the adaptations are tailored to the pupil's profile.`,
-      `${capFirst(trimDot(affect))}.`,
-      `In practice: ${how.join("; ")}.`,
-    ].join(" ");
+    return `${desc.label} support: ${plainSummary} Autism is a spectrum, so support can be tailored to the pupil. The learning goal and level of challenge stay the same.`;
   }
 
-  // All other needs.
-  const how = desc.howAdaptlyAdapts.slice(0, 2).map((h) => lowerFirst(trimDot(h)));
-  return [
-    `This worksheet has been adapted for pupils with ${desc.label}.`,
-    `${capFirst(trimDot(affect))}.`,
-    `To support this: ${how.join("; ")}. The academic content is unchanged — these adaptations only make it easier to access.`,
-  ].join(" ");
+  return `${desc.label} support: ${plainSummary} The learning goal and level of challenge stay the same.`;
 }
 
 /**
  * Guarantee a "How this worksheet is adapted" block naming the specific SEND
- * adaptation (incl. the autism sub-profile) and describing it in 2–3
- * sentences. No-op when no SEND need is set or the need is unknown.
+ * adaptation (including the autism sub-profile) in plain language. No-op when
+ * no SEND need is set or the need is unknown.
  *
  * Generic over the worksheet shape so it slots into the ai.ts structured
  * chain without a cast.

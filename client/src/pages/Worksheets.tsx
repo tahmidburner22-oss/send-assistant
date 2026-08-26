@@ -845,6 +845,14 @@ export default function Worksheets() {
   // Reset subtopic when topic changes
   useEffect(() => { setSubtopic(""); }, [topic]);
   useEffect(() => { setOverlayMode("auto"); }, [sendNeed]);
+  // A visible, curriculum-aligned Learning Objective is non-negotiable for
+  // every worksheet type. Preserve it even when a saved preset was created
+  // before this requirement was introduced.
+  useEffect(() => {
+    setSelectedSections((previous) => previous.includes("learning-objective")
+      ? previous
+      : ["learning-objective", ...previous]);
+  }, [selectedSections]);
 
   // PR-M1 / PR-M2 — When the user switches INTO a maths subject, strip
   // 'true-false', 'mcq' (PR-M1) and 'word-bank-gap-fill' (PR-M2) from the
@@ -1841,6 +1849,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     // the next worksheet auto-targets those errors. Library lookup is left
     // alone (uses raw additionalInstructions) so its cache key stays stable.
     let effectiveAdditionalInstructions = additionalInstructions || "";
+    // GCSE catalogue choices carry a DfE-aligned objective. It is an authored
+    // curriculum requirement, not a suggestion to the model: every generated
+    // worksheet must print it in the existing Learning Objective area.
+    if (selectedGcseTopic?.objective) {
+      const objectiveBlock = `REQUIRED LEARNING OBJECTIVE: Use this exact curriculum-aligned wording in the worksheet's Learning Objective section: "${selectedGcseTopic.objective}". Keep it visible on the pupil copy. Do not replace it with a broader or simpler objective.`;
+      effectiveAdditionalInstructions = effectiveAdditionalInstructions
+        ? `${effectiveAdditionalInstructions}\n\n${objectiveBlock}`
+        : objectiveBlock;
+    }
     // The pupil support profile is deliberately teacher-authored and bounded.
     // It may guide access and removable scaffolds, but must not become a proxy
     // for lowering curriculum demand, marks or fixed-layout worksheet geometry.
@@ -1943,13 +1960,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       if (examStyle || !canRenderScienceLandscape({ subject, yearGroup, topic, subtopic, sendNeedId: sendNeed, readingAge, examBoard })) return false;
       try {
         setGenerationStatus("Building dedicated Science worksheet...");
-        const science = renderScienceLandscape({ subject, yearGroup, topic, subtopic, sendNeedId: sendNeed, readingAge, examBoard });
+        const science = renderScienceLandscape({ subject, yearGroup, topic, subtopic, sendNeedId: sendNeed, readingAge, examBoard, learningObjective: selectedGcseTopic?.objective });
         const activeSend = sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined;
         setScienceWorksheet({ html: science.html, title: science.title, sendNeed: activeSend });
         setGenerated({
           title: science.title,
           sections: [],
-          metadata: { subject, topic, subtopic, yearGroup, sendNeed: activeSend, difficulty, examBoard: examBoard !== "none" ? examBoard : "General", scienceLandscape: science.layout, adaptations: science.adaptations },
+          metadata: { subject, topic, subtopic, yearGroup, sendNeed: activeSend, difficulty, examBoard: examBoard !== "none" ? examBoard : "General", learningObjective: selectedGcseTopic?.objective, scienceLandscape: science.layout, adaptations: science.adaptations },
           isAI: false,
         } as unknown as AnyWorksheet);
         setHiddenSections(new Set());
@@ -5446,11 +5463,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       { id: 'revision-tips', label: 'Examiner Tips' },
                       { id: 'self-reflection', label: 'Self Reflection' },
                     ] as const).map(sec => (
-                      <label key={sec.id} className="flex items-center gap-2 cursor-pointer select-none">
+                      <label key={sec.id} className={`flex items-center gap-2 select-none ${sec.id === 'learning-objective' ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                         <input
                           type="checkbox"
                           checked={selectedSections.includes(sec.id)}
+                          disabled={sec.id === 'learning-objective'}
+                          aria-label={sec.id === 'learning-objective' ? 'Learning Objective is required on every worksheet' : sec.label}
                           onChange={e => {
+                            if (sec.id === 'learning-objective') return;
                             const checked = e.target.checked;
                             // When ticking Retrieval, auto-open Advanced Options and focus the retrieval topic field
                             if (sec.id === 'retrieval' && checked) {
@@ -5469,7 +5489,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       </label>
                     ))}
                   </div>
-                  <p className="text-[10px] text-muted-foreground">All sections selected by default except Retrieval. Untick any you don't want included.</p>
+                  <p className="text-[10px] text-muted-foreground">The Learning Objective is required on every worksheet. All other sections are selected by default except Retrieval.</p>
                 </div>
 
                 {/* Reading Age Slider */}

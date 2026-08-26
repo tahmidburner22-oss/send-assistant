@@ -8,6 +8,8 @@ export interface ScienceLandscapeOptions {
   sendNeedId?: string;
   readingAge?: number;
   examBoard?: string;
+  /** Curriculum-aligned objective rendered in the existing purpose box. */
+  learningObjective?: string;
 }
 
 export interface ScienceLandscapeDocument {
@@ -241,7 +243,8 @@ function primaryLesson(options: ScienceLandscapeOptions): PrimaryScienceLesson {
 
 function primaryObservation(options: ScienceLandscapeOptions): string {
   const lesson = primaryLesson(options);
-  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, lesson.title)}<div class="purpose surface"><b>Today:</b> ${lesson.objective}</div><div class="primary"><div class="primary-card look surface"><div class="primary-icon">1</div><h3>LOOK</h3>${lesson.look}</div><div class="primary-card sort surface"><div class="primary-icon">2</div><h3>SORT</h3>${lesson.sort}</div><div class="primary-card explain surface"><div class="primary-icon">3</div><h3>SAY AND WRITE</h3>${lesson.explain}</div></div></section></div>`;
+  const objective = esc(options.learningObjective || lesson.objective);
+  return `<div class="science-root" data-send="${supportNotes(options).length ? "1" : "0"}" data-support-mode="${supportMode(options)}"><section class="science-page">${header(options, lesson.title)}<div class="purpose surface"><b>Learning objective:</b> ${objective}</div><div class="primary"><div class="primary-card look surface"><div class="primary-icon">1</div><h3>LOOK</h3>${lesson.look}</div><div class="primary-card sort surface"><div class="primary-icon">2</div><h3>SORT</h3>${lesson.sort}</div><div class="primary-card explain surface"><div class="primary-icon">3</div><h3>SAY AND WRITE</h3>${lesson.explain}</div></div></section></div>`;
 }
 
 type ConceptCard = { heading: string; diagram: string; body: string };
