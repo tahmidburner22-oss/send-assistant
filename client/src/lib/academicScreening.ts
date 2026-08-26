@@ -107,6 +107,8 @@ function normaliseAnswer(answer: string): string {
 }
 
 function isCorrect(item: ScreeningItem, answer: string): boolean {
+  // Choices are supplied by the interface and must preserve punctuation-sensitive distinctions.
+  if (item.kind === "multiple-choice") return answer.trim().toLocaleLowerCase() === item.correctAnswer.trim().toLocaleLowerCase();
   const candidate = normaliseAnswer(answer);
   const accepted = [item.correctAnswer, ...(item.acceptedAnswers || [])].map(normaliseAnswer);
   return accepted.includes(candidate);

@@ -39,8 +39,8 @@ for (const subject of SUBJECTS) {
       if (q.suggestedSeconds < 60 || q.suggestedSeconds > 300) add("error", "TIME_RANGE", q, `Suggested time must be 60–300 seconds; found ${q.suggestedSeconds}.`);
       if (q.suggestedSeconds < q.marks * 50) add("warning", "TIME_MARK_RATIO", q, `${q.marks} marks have only ${q.suggestedSeconds} seconds.`);
       if (q.kind === "multiple-choice") {
-        const matches = (q.options || []).filter((option) => normalise(option) === normalise(q.correctAnswer));
-        if (!q.options || q.options.length !== 4 || matches.length !== 1) add("error", "CHOICE_KEY", q, "A multiple-choice item needs four options and exactly one matching correct option.");
+        const matches = (q.options || []).filter((option) => option.trim() === q.correctAnswer.trim());
+        if (!q.options || q.options.length !== 4 || matches.length !== 1) add("error", "CHOICE_KEY", q, "A multiple-choice item needs four displayed options and exactly one exact matching correct option.");
       }
       if (q.kind === "short-answer" && q.marks >= 2 && (!q.acceptedAnswers || q.acceptedAnswers.length === 0)) add("warning", "LIMITED_VARIANTS", q, "A multi-mark short answer has no accepted alternative phrasing.");
       const key = normalise(q.prompt);

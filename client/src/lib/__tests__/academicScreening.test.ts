@@ -51,7 +51,7 @@ describe("academic baseline assessment engine", () => {
   it("marks authored answers safely against available marks rather than raw item count", () => {
     const config = { subject: "english" as const, yearGroup: "Year 7", duration: 15 as const };
     const items = buildAcademicScreening(config);
-    const answers = Object.fromEntries(items.map((item) => [item.id, `  ${item.correctAnswer.toUpperCase()}.  `]));
+    const answers = Object.fromEntries(items.map((item) => [item.id, item.kind === "multiple-choice" ? item.correctAnswer : `  ${item.correctAnswer.toUpperCase()}.  `]));
     const report = markAcademicScreening(items, answers, config, 810);
     expect(report.score).toBe(report.total);
     expect(report.total).toBeGreaterThan(items.length);
@@ -59,6 +59,17 @@ describe("academic baseline assessment engine", () => {
     expect(report.itemResults.every((result) => result.marksAwarded === result.marksAvailable)).toBe(true);
     expect(report.focusAreas).toHaveLength(0);
     expect(report.curriculumAge).toMatch(/years/);
+  });
+
+  it("keeps punctuation-distinct multiple-choice options separate when marking", () => {
+    const config = { subject: "english" as const, yearGroup: "Year 7", duration: 15 as const };
+    const items = buildAcademicScreening(config);
+    const punctuation = items.find((item) => item.id === "y7e-punctuation");
+    expect(punctuation).toBeDefined();
+    const incorrectReport = markAcademicScreening(items, { "y7e-punctuation": "When did you arrive? Asked Sam." }, config, 900);
+    const correctReport = markAcademicScreening(items, { "y7e-punctuation": "\"When did you arrive?\" asked Sam." }, config, 900);
+    expect(incorrectReport.itemResults.find((item) => item.itemId === "y7e-punctuation")?.marksAwarded).toBe(0);
+    expect(correctReport.itemResults.find((item) => item.itemId === "y7e-punctuation")?.marksAwarded).toBe(1);
   });
 
   it("awards transparent partial marks when a question defines independently creditable scientific components", () => {
