@@ -30,6 +30,25 @@ const PAGE_H_MM = A4_L_H_MM - MARGIN_Y_MM * 2; // 200
 // iframe). Higher html2canvas `scale` gives the actual export resolution.
 const PAGE_W_PX = Math.round((PAGE_W_MM * 96) / 25.4); // ≈ 1077
 
+export type FixedLayoutPdfKind = "gold" | "zero-margin";
+
+/**
+ * Preserve the print contract of each fixed renderer. Maths Gold defines a
+ * 6 mm × 5 mm @page margin, while Science and Humanities define @page margin: 0.
+ * Applying the Gold offset to those zero-margin documents translated every
+ * element in their downloadable PDFs even though their internal boxes were
+ * correctly positioned.
+ */
+export function fixedLayoutPdfPlacement(kind: FixedLayoutPdfKind) {
+  return kind === "gold"
+    ? { x: MARGIN_X_MM, y: MARGIN_Y_MM, width: PAGE_W_MM, height: PAGE_H_MM }
+    : { x: 0, y: 0, width: PAGE_W_MM, height: PAGE_H_MM };
+}
+
+function pageKindForExport(page: HTMLElement): FixedLayoutPdfKind {
+  return page.classList.contains("page") ? "gold" : "zero-margin";
+}
+
 /** Wait for an iframe's document to be ready (fonts + a paint or two). */
 async function waitForIframe(iframe: HTMLIFrameElement): Promise<Document> {
   await new Promise<void>((resolve, reject) => {
@@ -91,13 +110,14 @@ export async function downloadGoldWorksheetPdf(
         height: pages[i].offsetHeight,
       });
       if (i > 0) pdf.addPage();
+      const placement = fixedLayoutPdfPlacement(pageKindForExport(pages[i]));
       pdf.addImage(
         canvas.toDataURL("image/jpeg", 0.95),
         "JPEG",
-        MARGIN_X_MM,
-        MARGIN_Y_MM,
-        PAGE_W_MM,
-        PAGE_H_MM
+        placement.x,
+        placement.y,
+        placement.width,
+        placement.height
       );
     }
 
