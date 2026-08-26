@@ -35,18 +35,24 @@ export default function ClassroomHub() {
         },
         {
           n: "4",
+          title: "Establish a reliable baseline",
+          blurb: "Launch a year-specific Maths, English or Science baseline test with original exam-style questions, mark allocations and time guidance. Results identify domain strengths and teaching priorities.",
+          toolIds: ["baseline-assessment"],
+        },
+        {
+          n: "5",
           title: "Check for understanding",
           blurb: "Live QuizBlast for whole class plus a printable quiz for those who need a paper version. Per-question miss-rate heatmap surfaces the pupils who need a reteach.",
           toolIds: ["quizblast", "quiz-generator", "exit-ticket"],
         },
         {
-          n: "5",
+          n: "6",
           title: "Track progress on the rung",
-          blurb: "Quiz / exit-ticket results auto-update the Skill Ladder. Cohort gaps surface as small-group worksheets.",
+          blurb: "Quiz, exit-ticket and baseline evidence informs the Skill Ladder. Cohort gaps surface as small-group worksheets.",
           toolIds: ["skill-ladder"],
         },
         {
-          n: "6",
+          n: "7",
           title: "Step back and look across",
           blurb: "Cohort and intervention-ROI views from the Analytics dashboard — drill through to the named pupils underneath.",
           toolIds: ["analytics-dashboard"],

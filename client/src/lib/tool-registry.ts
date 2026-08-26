@@ -315,6 +315,17 @@ export const TOOLS: ToolEntry[] = [
     writeBack: false,
   },
   {
+    id: "baseline-assessment",
+    label: "Baseline Assessment",
+    path: "/academic-screenings",
+    hub: "classroom",
+    icon: BarChart3,
+    colour: "text-blue-700 bg-blue-50",
+    description: "Year-specific Maths, English and Science baseline tests with timed marks and domain reports.",
+    sendTo: ["skill-ladder", "worksheet-generator", "rubric-generator"],
+    writeBack: true,
+  },
+  {
     id: "skill-ladder",
     label: "Skill Ladder",
     path: "/skill-ladder",

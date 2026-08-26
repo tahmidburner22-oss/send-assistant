@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildAcademicScreening,
+  getAssessmentBlueprint,
   getItemCount,
   markAcademicScreening,
   type AcademicSubject,
@@ -10,15 +11,15 @@ import {
 const subjects: AcademicSubject[] = ["mathematics", "english", "science"];
 const durations: AssessmentDuration[] = [15, 30, 60];
 
-describe("academic screening engine", () => {
-  it("builds the required number of original mixed-format questions for every subject and duration", () => {
+describe("academic baseline assessment engine", () => {
+  it("builds the required number of distinct, marked and timed questions for every subject and duration", () => {
     for (const subject of subjects) {
       for (const duration of durations) {
         const items = buildAcademicScreening({ subject, yearGroup: "Year 9", duration });
         expect(items).toHaveLength(getItemCount(duration));
         expect(new Set(items.map((item) => item.id)).size).toBe(items.length);
-        expect(items.some((item) => item.kind === "multiple-choice")).toBe(true);
-        expect(items.some((item) => item.kind === "short-answer")).toBe(true);
+        expect(items.every((item) => item.marks >= 1 && item.suggestedSeconds >= 60)).toBe(true);
+        expect(items.every((item) => item.curriculumReference.length > 0)).toBe(true);
       }
     }
   });
@@ -32,29 +33,40 @@ describe("academic screening engine", () => {
     }
   });
 
-  it("keeps the authored cell-function answer scientifically accurate", () => {
-    const [item] = buildAcademicScreening({ subject: "science", yearGroup: "Year 10", duration: 15 });
-    expect(item.prompt).toContain("controls the activities of the cell");
-    expect(item.correctAnswer).toBe("Nucleus");
-    expect(item.options).toContain("Nucleus");
+  it("keeps the authored Year 7 cell-function answer scientifically accurate", () => {
+    const [item] = buildAcademicScreening({ subject: "science", yearGroup: "Year 7", duration: 15 });
+    expect(item.prompt).toContain("controls the activities of a cell");
+    expect(item.correctAnswer).toBe("nucleus");
+    expect(item.options).toContain("nucleus");
     expect(item.explanation).toContain("nucleus");
   });
 
-  it("returns the same balanced item sequence for the same configuration", () => {
-    const first = buildAcademicScreening({ subject: "mathematics", yearGroup: "Year 10", duration: 30 });
-    const second = buildAcademicScreening({ subject: "mathematics", yearGroup: "Year 10", duration: 30 });
-    expect(second).toEqual(first);
+  it("uses a different baseline for different year groups", () => {
+    const year7 = buildAcademicScreening({ subject: "mathematics", yearGroup: "Year 7", duration: 60 });
+    const year11 = buildAcademicScreening({ subject: "mathematics", yearGroup: "Year 11", duration: 60 });
+    expect(year7.map((item) => item.id)).not.toEqual(year11.map((item) => item.id));
+    expect(year7.map((item) => item.prompt)).not.toEqual(year11.map((item) => item.prompt));
   });
 
-  it("marks case, trailing punctuation, and whitespace safely for authored short answers", () => {
-    const items = buildAcademicScreening({ subject: "english", yearGroup: "Year 7", duration: 15 });
+  it("marks authored answers safely against available marks rather than raw item count", () => {
+    const config = { subject: "english" as const, yearGroup: "Year 7", duration: 15 as const };
+    const items = buildAcademicScreening(config);
     const answers = Object.fromEntries(items.map((item) => [item.id, `  ${item.correctAnswer.toUpperCase()}.  `]));
-    const report = markAcademicScreening(items, answers, { subject: "english", yearGroup: "Year 7", duration: 15 }, 810);
-    expect(report.score).toBe(items.length);
+    const report = markAcademicScreening(items, answers, config, 810);
+    expect(report.score).toBe(report.total);
+    expect(report.total).toBeGreaterThan(items.length);
     expect(report.percentage).toBe(100);
-    expect(report.strengths.length).toBeGreaterThan(0);
+    expect(report.itemResults.every((result) => result.marksAwarded === result.marksAvailable)).toBe(true);
     expect(report.focusAreas).toHaveLength(0);
     expect(report.curriculumAge).toMatch(/years/);
+  });
+
+  it("publishes a realistic time-and-coverage blueprint for a full baseline", () => {
+    const blueprint = getAssessmentBlueprint({ subject: "english", yearGroup: "Year 10", duration: 60 });
+    expect(blueprint.itemCount).toBe(12);
+    expect(blueprint.totalMarks).toBeGreaterThanOrEqual(16);
+    expect(blueprint.plannedSeconds).toBeGreaterThanOrEqual(1500);
+    expect(blueprint.domains.length).toBeGreaterThanOrEqual(4);
   });
 
   it("identifies focus areas and revision actions from low domain performance", () => {
