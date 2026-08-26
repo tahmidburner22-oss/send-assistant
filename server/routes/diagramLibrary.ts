@@ -17,6 +17,18 @@ interface DiagramLibraryEntry {
   source?: string | null;
   curated?: boolean | number | null;
   diagram_type?: string | null;
+  stage?: string | null;
+  discipline?: string | null;
+  subtopic?: string | null;
+  canonical_topic_key?: string | null;
+  canonical_subtopic_key?: string | null;
+  visual_profile?: string | null;
+  specification_refs?: string | null;
+  required_practical?: boolean | number | null;
+  generator_model?: string | null;
+  prompt_version?: string | null;
+  review_status?: string | null;
+  alt_text?: string | null;
 }
 
 const router = Router();
@@ -27,7 +39,10 @@ router.get("/entries", requireAuth, async (req: any, res) => {
   try {
     const result = await query(
       `SELECT id, title, subject, topic, year_group, description, image_url, asset_ref,
-              tags, source, curated, diagram_type, created_at, updated_at
+              tags, source, curated, diagram_type, stage, discipline, subtopic,
+              canonical_topic_key, canonical_subtopic_key, visual_profile, specification_refs,
+              required_practical, generator_model, prompt_version, review_status, alt_text,
+              created_at, updated_at
        FROM diagram_library
        ORDER BY curated DESC, subject ASC, title ASC`
     );
@@ -65,6 +80,13 @@ router.get("/search", requireAuth, async (req: any, res) => {
       return res.status(400).json({ error: "subject or topic required" });
     }
 
+    // New science-library assets must have GPT Image 2 provenance and a completed
+    // scientific review. Legacy or unreviewed images must never be selected for science.
+    const scienceRequest = ["science", "biology", "chemistry", "physics", "combined science", "triple science"].includes(subjectRaw);
+    const sciencePublishFilter = scienceRequest
+      ? " AND generator_model = 'gpt-image-2' AND review_status = 'approved'"
+      : "";
+
     // Map slot to diagram_type filter (primary + backup fallback)
     let typeFilter: string | null = null;
     let backupTypeFilter: string | null = null;
@@ -79,7 +101,7 @@ router.get("/search", requireAuth, async (req: any, res) => {
         `SELECT id, title, subject, topic, year_group, description, image_url, asset_ref,
                 tags, source, curated, diagram_type
          FROM diagram_library
-         WHERE diagram_type IN (${placeholders})
+         WHERE diagram_type IN (${placeholders})${sciencePublishFilter}
          ORDER BY curated DESC, subject ASC, title ASC`,
         types
       );
@@ -93,6 +115,7 @@ router.get("/search", requireAuth, async (req: any, res) => {
           `SELECT id, title, subject, topic, year_group, description, image_url, asset_ref,
                   tags, source, curated, diagram_type
            FROM diagram_library
+           WHERE 1 = 1${sciencePublishFilter}
            ORDER BY curated DESC, subject ASC, title ASC`
         )).rows as DiagramLibraryEntry[]);
     if (!entries.length) {
@@ -258,9 +281,24 @@ router.get("/entries/:id", requireAuth, async (req: any, res) => {
 // Create a new diagram entry
 router.post("/entries", requireAuth, async (req: any, res) => {
   try {
-    const { title, subject, topic, year_group, description, image_url, asset_ref, tags, diagram_type } = req.body;
+    const {
+      title, subject, topic, year_group, description, image_url, asset_ref, tags, diagram_type,
+      stage, discipline, subtopic, canonical_topic_key, canonical_subtopic_key, visual_profile,
+      specification_refs, required_practical, generator_model, generation_prompt, prompt_version,
+      review_status, scientific_review_notes, alt_text, source,
+    } = req.body;
     if (!title || !image_url) return res.status(400).json({ error: "title and image_url are required" });
     const tagsArr = Array.isArray(tags) ? tags : [];
+    const scienceAsset = ["science", "biology", "chemistry", "physics", "combined science", "triple science"].includes(String(subject || "").toLowerCase().trim());
+    if (scienceAsset && generator_model !== "gpt-image-2") {
+      return res.status(400).json({ error: "Science diagram assets must be generated with gpt-image-2." });
+    }
+    if (scienceAsset && !subtopic) {
+      return res.status(400).json({ error: "Science diagram assets require a precise subtopic." });
+    }
+    if (scienceAsset && !generation_prompt) {
+      return res.status(400).json({ error: "Science diagram assets require an immutable generation prompt." });
+    }
     // Auto-detect diagram_type from title if not provided
     let dtype = diagram_type || "diagram_a";
     if (!diagram_type) {
@@ -270,10 +308,24 @@ router.post("/entries", requireAuth, async (req: any, res) => {
     }
     const id = uuidv4();
     await query(
-      `INSERT INTO diagram_library (id, title, subject, topic, year_group, description, image_url, asset_ref, tags, source, curated, diagram_type, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ai', 0, $10, NOW(), NOW())`,
-      [id, title, subject || null, topic || null, year_group || null,
-       description || null, image_url, asset_ref || null, JSON.stringify(tagsArr), dtype]
+      `INSERT INTO diagram_library (
+         id, title, subject, topic, year_group, description, image_url, asset_ref, tags, source, curated, diagram_type,
+         stage, discipline, subtopic, canonical_topic_key, canonical_subtopic_key, visual_profile, specification_refs,
+         required_practical, generator_model, generation_prompt, prompt_version, review_status, scientific_review_notes, alt_text,
+         created_at, updated_at
+       ) VALUES (
+         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 0, $11,
+         $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26,
+         NOW(), NOW()
+       )`,
+      [
+        id, title, subject || null, topic || null, year_group || null,
+        description || null, image_url, asset_ref || null, JSON.stringify(tagsArr), source || "ai",
+        dtype, stage || null, discipline || null, subtopic || "", canonical_topic_key || null,
+        canonical_subtopic_key || null, visual_profile || null, JSON.stringify(Array.isArray(specification_refs) ? specification_refs : []),
+        required_practical ? 1 : 0, generator_model || null, generation_prompt || null, prompt_version || null,
+        review_status || (scienceAsset ? "pending_scientific_review" : "legacy"), scientific_review_notes || null, alt_text || null,
+      ]
     );
     res.json({ id, message: "Diagram saved to library" });
   } catch (err: any) {
@@ -476,3 +528,88 @@ function subjectFamilyStatic(s: string): string {
 }
 
 export default router;
+
+
+// ─── POST /api/diagram-library/science-batch ─────────────────────────────────
+// Imports or updates generated science assets from the validated taxonomy manifest.
+// This route deliberately rejects every non-GPT Image 2 asset and leaves entries
+// pending until a scientific reviewer has approved them.
+router.post("/science-batch", requireAuth, async (req: any, res) => {
+  try {
+    const role = String(req.user?.role || "").toLowerCase();
+    if (!["admin", "superadmin"].includes(role)) {
+      return res.status(403).json({ error: "Only administrators can import the science image library." });
+    }
+
+    const entries = Array.isArray(req.body?.entries) ? req.body.entries : [];
+    if (!entries.length) return res.status(400).json({ error: "entries must be a non-empty array" });
+    if (entries.length > 100) return res.status(400).json({ error: "Import no more than 100 entries per request" });
+
+    const allowedTypes = new Set(["diagram_a", "diagram_b", "revision_map"]);
+    const allowedStages = new Set(["KS1", "KS2", "KS3", "GCSE"]);
+    let imported = 0;
+    for (const entry of entries) {
+      if (!entry || typeof entry !== "object") return res.status(400).json({ error: "Every entry must be an object" });
+      if (entry.generatorModel !== "gpt-image-2") return res.status(400).json({ error: "Only gpt-image-2 assets may enter the science library." });
+      if (!allowedTypes.has(entry.diagramType)) return res.status(400).json({ error: "Invalid science diagram type" });
+      if (!allowedStages.has(entry.stage)) return res.status(400).json({ error: "Invalid science stage" });
+      if (!entry.assetId || !entry.title || !entry.topic || !entry.subtopic || !entry.imageUrl || !entry.prompt || !entry.promptVersion) {
+        return res.status(400).json({ error: "Science entries require assetId, title, topic, subtopic, imageUrl, prompt and promptVersion" });
+      }
+      if (!String(entry.imageUrl).startsWith("/diagram-library/science/")) {
+        return res.status(400).json({ error: "Science imageUrl must point to the deployed diagram-library/science asset directory" });
+      }
+      const tags = Array.isArray(entry.tags) ? entry.tags : [];
+      const specificationRefs = Array.isArray(entry.specificationRefs) ? entry.specificationRefs : [];
+      const reviewStatus = entry.reviewStatus === "approved" ? "approved" : "pending_scientific_review";
+      await query(
+        `INSERT INTO diagram_library (
+           id, title, subject, topic, year_group, description, image_url, asset_ref, tags, source, curated, diagram_type,
+           stage, discipline, subtopic, canonical_topic_key, canonical_subtopic_key, visual_profile, specification_refs,
+           required_practical, generator_model, generation_prompt, prompt_version, review_status, scientific_review_notes, alt_text,
+           created_at, updated_at
+         ) VALUES (
+           $1, $2, 'Science', $3, $4, $5, $6, $7, $8, 'science-gpt-image-2', 1, $9,
+           $10, $11, $12, $13, $14, $15, $16, $17, 'gpt-image-2', $18, $19, $20, $21, $22,
+           NOW(), NOW()
+         ) ON CONFLICT (id) DO UPDATE SET
+           title = EXCLUDED.title,
+           topic = EXCLUDED.topic,
+           year_group = EXCLUDED.year_group,
+           description = EXCLUDED.description,
+           image_url = EXCLUDED.image_url,
+           asset_ref = EXCLUDED.asset_ref,
+           tags = EXCLUDED.tags,
+           diagram_type = EXCLUDED.diagram_type,
+           stage = EXCLUDED.stage,
+           discipline = EXCLUDED.discipline,
+           subtopic = EXCLUDED.subtopic,
+           canonical_topic_key = EXCLUDED.canonical_topic_key,
+           canonical_subtopic_key = EXCLUDED.canonical_subtopic_key,
+           visual_profile = EXCLUDED.visual_profile,
+           specification_refs = EXCLUDED.specification_refs,
+           required_practical = EXCLUDED.required_practical,
+           generator_model = EXCLUDED.generator_model,
+           generation_prompt = EXCLUDED.generation_prompt,
+           prompt_version = EXCLUDED.prompt_version,
+           review_status = EXCLUDED.review_status,
+           scientific_review_notes = EXCLUDED.scientific_review_notes,
+           alt_text = EXCLUDED.alt_text,
+           updated_at = NOW()`,
+        [
+          entry.assetId, entry.title, entry.topic, (entry.yearGroups || []).join(", "), entry.learningFocus || null,
+          entry.imageUrl, entry.assetId, JSON.stringify(tags), entry.diagramType,
+          entry.stage, entry.discipline || null, entry.subtopic, entry.canonicalTopicKey || canonicalTopicKey(entry.topic),
+          entry.canonicalSubtopicKey || canonicalTopicKey(entry.subtopic), entry.visualProfile || null, JSON.stringify(specificationRefs),
+          entry.requiredPractical ? 1 : 0, entry.prompt, entry.promptVersion, reviewStatus,
+          entry.scientificReviewNotes || null, entry.altText || null,
+        ]
+      );
+      imported += 1;
+    }
+    res.json({ success: true, imported, status: "Science assets were imported with GPT Image 2 provenance." });
+  } catch (err: any) {
+    console.error("[diagramLibrary] POST /science-batch error:", err);
+    res.status(500).json({ error: "Failed to import science image batch" });
+  }
+});

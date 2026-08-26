@@ -40,6 +40,7 @@ import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
 import { getGcseTopicChoices, isGcseTopicCatalogueSubject } from "@/lib/gcseTopicCatalogue";
+import { SCIENCE_IMAGE_TAXONOMY, type ScienceImageTopic } from "@shared/scienceImageTaxonomy";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel, aiGenerateWorksheetFromClassBrief } from "@/lib/ai";
 import { isMathsSubject } from "@/lib/mathsVerifier";
 import { buildSendAdaptationSummary } from "@/lib/sendDescriptionEnforcer";
@@ -902,7 +903,24 @@ export default function Worksheets() {
   // rather than searching through broad umbrella labels.
   type TopicPickerOption = SyllabusTopic & { strand?: string; objective?: string; tier?: "foundation" | "higher" | "both" };
   const [showTopicSuggestions, setShowTopicSuggestions] = useState(false);
-  const usesGcseTopicCatalogue = isGcseTopicCatalogueSubject(subject)
+  const scienceStageForYearGroup = useMemo<ScienceImageTopic["stage"] | null>(() => {
+    const year = Number((yearGroup || "").replace(/\D/g, ""));
+    if (year >= 1 && year <= 2) return "KS1";
+    if (year >= 3 && year <= 6) return "KS2";
+    if (year >= 7 && year <= 9) return "KS3";
+    if (year >= 10 && year <= 11) return "GCSE";
+    return null;
+  }, [yearGroup]);
+  const scienceSubject = String(subject || "").toLowerCase().trim();
+  const usesScienceImageTaxonomy = Boolean(scienceStageForYearGroup) && ["science", "biology", "chemistry", "physics", "combined science", "triple science"].includes(scienceSubject);
+  const scienceTaxonomyEntries = useMemo(() => {
+    if (!usesScienceImageTaxonomy || !scienceStageForYearGroup) return [];
+    const disciplineFilter = scienceSubject === "science" || scienceSubject === "combined science" || scienceSubject === "triple science"
+      ? null
+      : scienceSubject;
+    return SCIENCE_IMAGE_TAXONOMY.filter((entry) => entry.stage === scienceStageForYearGroup && (!disciplineFilter || entry.discipline === disciplineFilter));
+  }, [usesScienceImageTaxonomy, scienceStageForYearGroup, scienceSubject]);
+  const usesGcseTopicCatalogue = !usesScienceImageTaxonomy && isGcseTopicCatalogueSubject(subject)
     && /^Year\s+(?:10|11)$/i.test(yearGroup || "");
   // GCSE tier must be consciously selected. Generic generator levels such as
   // "standard" are deliberately not treated as a GCSE pathway, preventing
@@ -914,6 +932,17 @@ export default function Worksheets() {
   );
   const syllabusTopics = useMemo<TopicPickerOption[]>(() => {
     if (!subject || !yearGroup) return [];
+    if (usesScienceImageTaxonomy) {
+      return Array.from(new Map(scienceTaxonomyEntries.map((entry) => [entry.topic, entry])).values()).map((entry) => ({
+        topic: entry.topic,
+        keyVocabulary: [],
+        yearGroup,
+        ksStage: entry.stage === "GCSE" ? "KS4" : entry.stage,
+        strand: entry.discipline,
+        objective: entry.learningFocus,
+        tier: "both" as const,
+      }));
+    }
     if (usesGcseTopicCatalogue) {
       return gcseTopicChoices.map((choice) => ({
         topic: choice.topic,
@@ -926,10 +955,10 @@ export default function Worksheets() {
       }));
     }
     return getSyllabusTopics(subject, yearGroup);
-  }, [subject, yearGroup, usesGcseTopicCatalogue, gcseTopicChoices]);
+  }, [subject, yearGroup, usesScienceImageTaxonomy, scienceTaxonomyEntries, usesGcseTopicCatalogue, gcseTopicChoices]);
   const selectedGcseTopic = useMemo(
-    () => usesGcseTopicCatalogue ? syllabusTopics.find((entry) => entry.topic === topic) : undefined,
-    [usesGcseTopicCatalogue, syllabusTopics, topic],
+    () => (usesGcseTopicCatalogue || usesScienceImageTaxonomy) ? syllabusTopics.find((entry) => entry.topic === topic) : undefined,
+    [usesGcseTopicCatalogue, usesScienceImageTaxonomy, syllabusTopics, topic],
   );
   const sendAdaptationSummary = useMemo(
     () => buildSendAdaptationSummary(sendNeed),
@@ -972,7 +1001,7 @@ export default function Worksheets() {
         setShowTopicSuggestions(true);
       }
     }
-  }, [topic, selectableTopics, usesApprovedMathsTemplates, usesGcseTopicCatalogue]);
+  }, [topic, selectableTopics, usesApprovedMathsTemplates, usesGcseTopicCatalogue, usesScienceImageTaxonomy]);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
@@ -5196,7 +5225,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                           value={selectableTopics.some(st => st.topic === topic) ? topic : ""}
                           onValueChange={(val) => {
                             if (val === "__custom__") { setTopic(""); setShowTopicSuggestions(true); }
-                            else { setTopic(val); setShowTopicSuggestions(false); }
+                            else { setTopic(val); setSubtopic(""); setShowTopicSuggestions(false); }
                           }}
                         >
                           <SelectTrigger className="h-10"><SelectValue placeholder="Select a curriculum topic" /></SelectTrigger>
@@ -5313,17 +5342,20 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 {/* Subtopic dropdown — appears after topic is selected */}
                 {topic && !usesGcseTopicCatalogue && (() => {
                   const requiresApprovedMathsSubtopic = usesApprovedMathsTemplates;
-                  const subtopics = (requiresApprovedMathsSubtopic
-                    ? getSubtopics(topic).filter((item) => hasGoldWorksheet(topic, item))
-                    : getSubtopics(topic));
+                  const requiresScienceSubtopic = usesScienceImageTaxonomy;
+                  const subtopics = requiresScienceSubtopic
+                    ? scienceTaxonomyEntries.filter((entry) => entry.topic === topic).map((entry) => entry.subtopic)
+                    : (requiresApprovedMathsSubtopic
+                      ? getSubtopics(topic).filter((item) => hasGoldWorksheet(topic, item))
+                      : getSubtopics(topic));
                   if (subtopics.length === 0) return null;
                   return (
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Subtopic <span className="text-muted-foreground font-normal">{requiresApprovedMathsSubtopic ? "(required for the approved two-page Maths worksheet)" : "(optional — narrows the worksheet focus)"}</span></Label>
+                      <Label className="text-xs font-medium">Subtopic <span className="text-muted-foreground font-normal">{requiresScienceSubtopic ? "(required — selects a precise GPT Image 2 science diagram)" : requiresApprovedMathsSubtopic ? "(required for the approved two-page Maths worksheet)" : "(optional — narrows the worksheet focus)"}</span></Label>
                       <Select value={subtopic || "__all__"} onValueChange={(val) => setSubtopic(val === "__all__" ? "" : val)}>
-                        <SelectTrigger className="h-10"><SelectValue placeholder="Select a subtopic (optional)" /></SelectTrigger>
+                        <SelectTrigger className="h-10"><SelectValue placeholder={requiresScienceSubtopic ? "Select a science subtopic" : "Select a subtopic (optional)"} /></SelectTrigger>
                         <SelectContent className="max-h-64">
-                          {!requiresApprovedMathsSubtopic && <SelectItem value="__all__">Whole topic (no subtopic)</SelectItem>}
+                          {!requiresApprovedMathsSubtopic && !requiresScienceSubtopic && <SelectItem value="__all__">Whole topic (no subtopic)</SelectItem>}
                           {subtopics.map((st, i) => (
                             <SelectItem key={i} value={st}>{st}</SelectItem>
                           ))}

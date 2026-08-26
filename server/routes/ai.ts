@@ -1739,7 +1739,7 @@ REMINDER: All labels in Zone B (x=55-150), C (x=550-645), D (y=45-52), or E (y=4
 
 // ── POST /api/ai/diagram — dedicated diagram generation with fallback chain ───
 router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
-  const { subject, topic, yearGroup, sendNeed, slot } = req.body;
+  const { subject, topic, subtopic, yearGroup, sendNeed, slot } = req.body;
   if (!subject || !topic) return res.status(400).json({ error: "subject and topic required" });
 
   // slot: 'A' = first/best match, 'B' = second-best match (different image)
@@ -1748,7 +1748,15 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   const yr = yearGroup || "Year 9";
   const subjectLower = String(subject).toLowerCase();
   const topicLower = String(topic).toLowerCase();
-  const combined = `${subjectLower} ${topicLower}`;
+  const subtopicLower = String(subtopic || "").toLowerCase().trim();
+  const combined = `${subjectLower} ${topicLower} ${subtopicLower}`;
+  const isScienceRequest = ["science", "biology", "chemistry", "physics", "combined science", "triple science"].includes(subjectLower.trim());
+  // The new science library is deliberately subtopic-addressable. Without a
+  // specific subtopic, returning a merely related picture is more harmful than
+  // leaving the visual slot empty.
+  if (isScienceRequest && !subtopicLower) {
+    return res.json({ imageUrl: null, caption: `Choose a specific science subtopic for ${topic}`, attribution: null, provider: "none", type: "none", imageKind: "none" });
+  }
 
   const fitMeta = {
     maxWidth: 560,
@@ -1793,8 +1801,9 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     // Fast targeted query: filter by diagram_type + subject + topic at DB level.
     // Also filter out broken entries (image_url starting with '[FAILED]')
     const subjectPat = `%${subjectLower}%`;
-    const topicWords = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
-    const topicPat = topicWords.length > 0 ? `%${topicWords[0]}%` : `%${topicLower}%`;
+    const lookupTerms = `${topicLower} ${subtopicLower}`.trim();
+    const topicWords = lookupTerms.split(/\s+/).filter((w: string) => w.length > 3);
+    const topicPat = topicWords.length > 0 ? `%${topicWords[0]}%` : `%${lookupTerms}%`;
     const brokenFilter = `image_url NOT LIKE '[FAILED]%' AND image_url IS NOT NULL AND image_url != ''`;
     // ── Topic LIKE construction ────────────────────────────────────────────
     // Previously the filter only used the FIRST significant topic word, e.g.
@@ -1809,16 +1818,18 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
       ? topicWords.map((w: string) => `%${w}%`)
       : [`%${topicLower}%`];
     const topicConditionParts = topicWordPatterns.map((_, idx) =>
-      `(LOWER(topic) LIKE $${idx + 3} OR LOWER(title) LIKE $${idx + 3} OR LOWER(COALESCE(tags, '')) LIKE $${idx + 3})`
+      `(LOWER(topic) LIKE $${idx + 3} OR LOWER(COALESCE(subtopic, '')) LIKE $${idx + 3} OR LOWER(title) LIKE $${idx + 3} OR LOWER(COALESCE(tags, '')) LIKE $${idx + 3})`
     );
     const topicCondition = topicConditionParts.join(" OR ");
     let targetedRows = await dbQuery(
-      `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated, diagram_type
+      `SELECT id, title, subject, topic, subtopic, year_group, image_url, description, tags, curated, diagram_type,
+              canonical_topic_key, canonical_subtopic_key, generator_model, review_status
        FROM diagram_library
        WHERE diagram_type = $1
          AND (LOWER(subject) LIKE $2 OR LOWER(title) LIKE $2)
          AND (${topicCondition})
          AND ${brokenFilter}
+         ${isScienceRequest ? "AND generator_model = 'gpt-image-2' AND review_status = 'approved'" : ""}
        ORDER BY curated DESC, subject ASC, title ASC
        LIMIT 80`,
       [diagramTypeFilter, subjectPat, ...topicWordPatterns]
@@ -1828,7 +1839,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     // select from topic-bearing candidates, otherwise the section remains blank.
     // If still no results (diagram_type column not yet migrated on this DB), fall back to title-based type filtering
     // Handles BOTH em-dash (—) and en-dash (–) used in different entry title formats
-    if (targetedRows.rows.length === 0) {
+    if (targetedRows.rows.length === 0 && !isScienceRequest) {
       const titleTypeCondition = diagramSlot === 'B'
         ? `(LOWER(title) LIKE '%diagram b%' OR LOWER(title) LIKE '% – diagram b%' OR LOWER(title) LIKE '%— b%' OR LOWER(title) LIKE '%– b%')`
         : diagramSlot === 'REVISION'
@@ -1865,30 +1876,35 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
         return v;
       };
       const requestedTopicKey = canonicalTopicKey(topicLower);
+      const requestedSubtopicKey = canonicalTopicKey(subtopicLower || topicLower);
       const isMathsRequest = subjectFamily(subjectLower) === "maths";
       // Score each entry for relevance with hard topic gates.
       const scored = entries.map((e) => {
         const eSubject = (e.subject || "").toLowerCase().trim();
         const eTopic = (e.topic || "").toLowerCase().trim();
+        const eSubtopic = (e.subtopic || "").toLowerCase().trim();
         const eTitle = (e.title || "").toLowerCase().trim();
         const eYearGroup = (e.year_group || "").toLowerCase().trim();
         const eTags: string[] = (() => {
           try { return JSON.parse(e.tags || "[]").map((t: string) => String(t).toLowerCase().trim()); } catch { return []; }
         })();
-        const searchable = [eTopic, eTitle, ...eTags].filter(Boolean).join(" ");
-        const entryTopicKey = canonicalTopicKey(eTopic || eTitle || eTags.join(" "));
+        const searchable = [eTopic, eSubtopic, eTitle, ...eTags].filter(Boolean).join(" ");
+        const entryTopicKey = canonicalTopicKey(e.canonical_topic_key || eTopic || eTitle || eTags.join(" "));
+        const entrySubtopicKey = canonicalTopicKey(e.canonical_subtopic_key || eSubtopic || eTitle || eTags.join(" "));
         const canonicalMatch = entryTopicKey === requestedTopicKey || topicsMatch(eTopic || eTitle, topicLower);
+        const exactSubtopicMatch = !subtopicLower || entrySubtopicKey === requestedSubtopicKey || topicsMatch(eSubtopic || eTitle, subtopicLower);
         const subjectMatch = !eSubject || eSubject === subjectLower || subjectFamily(eSubject) === subjectFamily(subjectLower) || eSubject.includes(subjectLower) || subjectLower.includes(eSubject);
         const yrLower = yearGroup ? yearGroup.toLowerCase() : "";
         const yrNum = yrLower.match(/(\d+)/)?.[1];
         const yearGroupMatch = !yrLower || !eYearGroup || eYearGroup === yrLower || (!!yrNum && (eYearGroup.includes(yrNum) || eTitle.includes(`year ${yrNum}`)));
         const topicWords2 = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
         const matchedWords = topicWords2.filter((tw: string) => searchable.includes(tw));
-        const passesGate = subjectMatch && yearGroupMatch && (canonicalMatch || matchedWords.length >= Math.min(2, topicWords2.length || 1));
+        const passesGate = subjectMatch && yearGroupMatch && exactSubtopicMatch && (canonicalMatch || matchedWords.length >= Math.min(2, topicWords2.length || 1));
         let score = 0;
         if (subjectMatch) score += 25;
         if (yearGroupMatch) score += 12;
         if (canonicalMatch) score += 80;
+        if (exactSubtopicMatch && subtopicLower) score += 80;
         // Bumped from *6 capped at 18 to *10 capped at 32 so partial-match
         // entries (the typical case for maths topics, e.g. library row
         // "Linear equations" matching worksheet topic "Solving linear
@@ -1949,7 +1965,10 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   // When MATHS_AI_SVG_ALLOWED_SCHOOL_IDS is empty AND MATHS_AI_SVG_ADMIN_ONLY
   // is unset, we keep the legacy "all maths" behaviour for backwards
   // compatibility — schools never lose a feature on a deploy.
-  const aiSvgEnabled = (process.env.MATHS_AI_SVG_ENABLED ?? "true").toLowerCase() !== "false";
+  // Science image-library policy: new worksheet diagram assets are sourced only
+  // from the curated GPT Image 2 library. The legacy freeform SVG generator is
+  // permanently disabled and retained temporarily only as unreachable legacy code.
+  const aiSvgEnabled = false;
   const isMathsRequest =
     subjectLower === "maths" ||
     subjectLower === "math" ||
