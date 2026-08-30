@@ -33,7 +33,7 @@ def rgba_to_rgb_bytes(path):
     background = Image.new("RGB", img.size, (255, 255, 255))
     background.paste(img, mask=img.split()[3])
     buf = io.BytesIO()
-    background.save(buf, format="PNG")
+    background.save(buf, format="PNG", optimize=False)
     buf.seek(0)
     return buf.read()
 
